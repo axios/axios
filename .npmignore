@@ -1,0 +1,12 @@
+**/.*
+*.md
+*.iml
+example
+bower_components
+node_modules
+lib
+specs
+index.js
+karma.conf.js
+Gruntfile.js
+package.json

@@ -1,0 +1,43 @@
+{
+  "name": "axios",
+  "version": "0.0.0",
+  "description": "Lightweight Promise based XHR library",
+  "main": "index.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mzabriskie/axios.git"
+  },
+  "keywords": [
+    "xhr",
+    "http",
+    "ajax",
+    "promise"
+  ],
+  "author": "Matt Zabriskie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mzabriskie/axios/issues"
+  },
+  "homepage": "https://github.com/mzabriskie/axios",
+  "dependencies": {
+    "es6-promise": "^1.0.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "webpack": "^1.3.3-beta2",
+    "webpack-dev-server": "^1.4.10",
+    "grunt-webpack": "^1.0.8",
+    "load-grunt-tasks": "^0.6.0",
+    "karma": "^0.12.21",
+    "karma-jasmine": "^0.1.5",
+    "grunt-karma": "^0.8.3",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "karma-jasmine-ajax": "^0.1.4",
+    "grunt-update-json": "^0.1.3"
+  }
+}

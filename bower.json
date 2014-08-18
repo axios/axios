@@ -1,0 +1,35 @@
+{
+	"name": "axios",
+	"main": "./dist/axios.js",
+	"version": "0.0.0",
+	"homepage": "https://github.com/mzabriskie/axios",
+	"authors": [
+		"Matt Zabriskie"
+	],
+	"description": "Lightweight Promise based XHR library",
+	"moduleType": [
+		"amd",
+		"globals"
+	],
+	"keywords": [
+		"xhr",
+		"http",
+		"ajax",
+		"promise"
+	],
+	"license": "MIT",
+	"ignore": [
+		"**/.*",
+		"*.md",
+		"*.iml",
+		"example",
+		"bower_components",
+		"node_modules",
+		"lib",
+		"specs",
+		"index.js",
+		"karma.conf.js",
+		"Gruntfile.js",
+		"package.json"
+	]
+}

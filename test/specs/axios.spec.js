@@ -88,6 +88,19 @@ describe('axios', function () {
       expect(request.requestHeaders['X-Requested-With']).toEqual('XMLHttpRequest');
     });
 
+    it('should accept params', function () {
+      axios({
+        url: '/foo',
+        params: {
+          foo: 123,
+          bar: 456
+        }
+      });
+
+      var request = jasmine.Ajax.requests.mostRecent();
+      expect(request.url).toBe('/foo?foo=123&bar=456');
+    });
+
     it('should allow overriding default headers', function () {
       axios({
         headers: {

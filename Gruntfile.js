@@ -33,6 +33,10 @@ module.exports = function(grunt) {
       }
     },
 
+    nodeunit: {
+      all: ['test/unit/*.js']
+    },
+
     webpack: generateWebpackConfig(),
 
     watch: {
@@ -41,13 +45,13 @@ module.exports = function(grunt) {
         tasks: ['build']
       },
       test: {
-        files: ['lib/**/*.js', 'specs/**/*.js'],
+        files: ['lib/**/*.js', 'test/**/*.js'],
         tasks: ['test']
       }
     }
   });
 
-  grunt.registerTask('test', ['webpack:global', 'karma:single']);
+  grunt.registerTask('test', ['webpack:global', 'nodeunit', 'karma:single']);
   grunt.registerTask('build', ['webpack']);
   grunt.registerTask('publish', ['clean', 'test', 'build', 'update_json']);
 

@@ -4,7 +4,8 @@
   "description": "Lightweight Promise based XHR library",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "start": "node ./sandbox/index.js"
   },
   "repository": {
     "type": "git",
@@ -38,6 +39,7 @@
     "grunt-karma": "^0.8.3",
     "karma-phantomjs-launcher": "^0.1.4",
     "karma-jasmine-ajax": "^0.1.4",
-    "grunt-update-json": "^0.1.3"
+    "grunt-update-json": "^0.1.3",
+    "grunt-contrib-nodeunit": "^0.4.1"
   }
 }

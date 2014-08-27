@@ -16,7 +16,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'dist/axios.js',
-      'specs/axios.spec.js'
+      'test/specs/axios.spec.js'
     ],
 
 

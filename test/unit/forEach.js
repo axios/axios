@@ -29,5 +29,27 @@ module.exports = {
     test.equal(keys, 'bar');
     test.equal(vals, 6);
     test.done();
+  },
+
+  testUndefined: function (test) {
+    var count = 0;
+
+    forEach(undefined, function () {
+      count++;
+    });
+
+    test.equals(count, 0);
+    test.done();
+  },
+
+  testFunction: function (test) {
+    var count = 0;
+
+    forEach(function () {}, function () {
+      count++;
+    })
+
+    test.equals(count, 1);
+    test.done();
   }
 };

@@ -11,6 +11,9 @@ Performing a `GET` request
 axios.get('/user?ID=12345')
 	.success(function (response) {
 		console.log(response);
+	})
+	.error(function (response) {
+		console.log(response);
 	});
 	
 // Optionally the request above could also be done as
@@ -20,6 +23,9 @@ axios.get('/user', {
 	}
 })
 .success(function (response) {
+	console.log(response);
+})
+.error(function (response) {
 	console.log(response);
 });
 ```
@@ -32,6 +38,9 @@ axios.post('/user', {
 	lastName: 'Flintstone'
 })
 .success(function (response) {
+	console.log(response);
+})
+.error(function (response) {
 	console.log(response);
 });
 ```

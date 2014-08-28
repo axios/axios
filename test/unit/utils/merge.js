@@ -1,4 +1,4 @@
-var merge = require('../../lib/merge');
+var merge = require('../../../lib/utils').merge;
 
 module.exports = {
   testImmutability: function (test) {

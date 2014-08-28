@@ -1,4 +1,4 @@
-var forEach = require('../../lib/forEach');
+var forEach = require('../../../lib/utils').forEach;
 
 module.exports = {
   testArray: function (test) {

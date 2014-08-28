@@ -34,7 +34,7 @@ module.exports = function(grunt) {
     },
 
     nodeunit: {
-      all: ['test/unit/*.js']
+      all: ['test/unit/**/*.js']
     },
 
     webpack: generateWebpackConfig(),

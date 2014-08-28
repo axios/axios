@@ -103,9 +103,13 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 		firstName: 'Fred'
 	},
 	
+	// `withCredentials` indicates whether or not cross-site Access-Control requests
+	// should be made using credentials
 	withCredentials: true,
 	
-	responseType: 'json' // default
+	// `responseType` indicates the type of data that the server will responsd with
+	// options are 'arraybuffer', 'blob', 'document', 'json', 'text'
+	responseType: 'json'
 }
 ```
 

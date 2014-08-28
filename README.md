@@ -9,12 +9,12 @@ Performing a `GET` request
 ```js
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
-	.success(function (response) {
-		console.log(response);
-	})
-	.error(function (response) {
-		console.log(response);
-	});
+.success(function (response) {
+	console.log(response);
+})
+.error(function (response) {
+	console.log(response);
+});
 	
 // Optionally the request above could also be done as
 axios.get('/user', {
@@ -155,6 +155,10 @@ Using npm:
 ```bash
 $ npm install axios
 ```
+
+## Compatability
+
+Tested to work with >=IE8, Chrome, Firefox, Safari, and Opera.
 
 ## Attribution
 

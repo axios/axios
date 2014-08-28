@@ -1,12 +1,9 @@
 **/.*
-*.md
 *.iml
 example
-bower_components
 node_modules
-lib
-specs
-index.js
-karma.conf.js
+sandbox
+test
+bower.json
 Gruntfile.js
-package.json
+karma.conf.js

@@ -23,13 +23,13 @@
 		"*.md",
 		"*.iml",
 		"example",
-		"bower_components",
-		"node_modules",
 		"lib",
-		"specs",
+		"node_modules",
+		"sandbox",
+		"test",
+		"Gruntfile.js",
 		"index.js",
 		"karma.conf.js",
-		"Gruntfile.js",
 		"package.json"
 	]
 }

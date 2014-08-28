@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+  <head>
+    <title>axios</title>
+    <style type="text/css">
+      body {
+        color: #222;
+        font-family: "Helvetica Neue", sans-serif;
+        font-weight: 200;
+        margin: 0 50px;
+      }
+
+      a {
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      a, a:hover, a:focus, a:active {
+        color: #3378b8;
+      }
+
+      .error {
+        color: #d9534f;
+      }
+
+      strong {
+        font-weight: 400;
+      }
+
+      h1 {
+        color: #666;
+        font-weight: 300;
+      }
+
+      ul {
+        padding: 0;
+        list-style-type: none;
+      }
+
+      li {
+        margin-bottom: 25px;
+      }
+
+      li img {
+        border-radius: 3px;
+        float: left;
+        margin-right: 25px;
+        height: 50px;
+        width: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>People</h1>
+    <ul id="people"></ul>
+
+    <script src="../dist/axios.min.js"></script>
+    <script>
+      axios.get('people.json')
+        .success(function (response) {
+          var people = [];
+
+          response.data.forEach(function (person) {
+            people.push(
+              '<li>' +
+                '<img src="https://avatars.githubusercontent.com/u/' + person.avatar + '?s=50"/>' +
+                '<strong>' + person.name + '</strong>' +
+                '<div>Github: <a href="https://github.com/' + person.github + '" target="_blank">' + person.github + '</a></div>' +
+                '<div>Twitter: <a href="https://twitter.com/' + person.twitter + '" target="_blank">' + person.twitter + '</a></div>' +
+              '</li>'
+            );
+          });
+
+          document.getElementById('people').innerHTML = people.join('');
+        })
+        .error(function(response) {
+          document.getElementById('people').innerHTML = '<li class="error">' + response.data + '</li>';
+        });
+    </script>
+  </body>
+</html>

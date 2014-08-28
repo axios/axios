@@ -63,24 +63,31 @@ module.exports = function(grunt) {
       output: {
         path: 'dist/',
         filename: 'axios.js',
+        sourceMapFilename: 'axios.map',
         library: 'axios'
       },
-      devtool: '#inline-source-map'
+      devtool: 'source-map'
     };
 
     ['amd', 'global'].forEach(function (key) {
       webpackConfig[key] = JSON.parse(JSON.stringify(webpackBase));
       webpackConfig[key + '-min'] = JSON.parse(JSON.stringify(webpackBase));
-      webpackConfig[key + '-min'].pugins = [
-        new webpack.optimize.UglifyJsPlugin()
-      ];
+
+      // TODO: UglifyJsPlugin doesn' work, but optimize.minimize is deprecated
+      webpackConfig[key + '-min'].optimize = {minimize: true};
+//      webpackConfig[key + '-min'].pugins = [
+//        new webpack.optimize.UglifyJsPlugin()
+//      ];
     });
 
     webpackConfig['amd'].output.filename = 'axios.amd.js';
+    webpackConfig['amd'].output.sourceMapFilename = 'axios.amd.map';
     webpackConfig['amd'].output.libraryTarget = 'amd';
     webpackConfig['amd-min'].output.filename = 'axios.amd.min.js';
+    webpackConfig['amd-min'].output.sourceMapFilename = 'axios.amd.min.map';
     webpackConfig['amd-min'].output.libraryTarget = 'amd';
     webpackConfig['global-min'].output.filename = 'axios.min.js';
+    webpackConfig['global-min'].output.sourceMapFilename = 'axios.min.map';
 
     return webpackConfig;
   }

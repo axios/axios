@@ -2,6 +2,11 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
+    meta: {
+      banner: '/* <%= pkg.name %> v<%= pkg.version %> | (c) <%= grunt.template.today("yyyy") %> by Matt Zabriskie */\n'
+    },
+
     clean: {
       dist: 'dist/**'
     },
@@ -18,6 +23,18 @@ module.exports = function(grunt) {
           'license',
           'keywords'
         ]
+      }
+    },
+
+    usebanner: {
+      all: {
+        options: {
+          banner: '<%= meta.banner %>',
+          linebreak: false
+        },
+        files: {
+          src: ['dist/axios.min.js', 'dist/axios.amd.min.js']
+        }
       }
     },
 
@@ -53,7 +70,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', ['webpack:global', 'nodeunit', 'karma:single']);
   grunt.registerTask('build', ['webpack']);
-  grunt.registerTask('publish', ['clean', 'test', 'build', 'update_json']);
+  grunt.registerTask('publish', ['clean', 'test', 'build', 'usebanner', 'update_json']);
 
   function generateWebpackConfig() {
     var webpack = require('webpack');

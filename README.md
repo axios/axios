@@ -103,7 +103,7 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 
 ### Config
 
-This is the available config options for making requests. Only the `url` is required. Requests will default to `GET` if not specified.
+This is the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 
 ```js
 {

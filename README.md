@@ -145,8 +145,8 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 	// should be made using credentials
 	withCredentials: false, // default
 	
-	// `responseType` indicates the type of data that the server will responsd with
-	// config are 'arraybuffer', 'blob', 'document', 'json', 'text'
+	// `responseType` indicates the type of data that the server will respond with
+	// options are 'arraybuffer', 'blob', 'document', 'json', 'text'
 	responseType: 'json', // default
 	
 	// `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
@@ -173,7 +173,7 @@ axios.get('/user/12345')
 		// `headers` the headers that the server responded with
 		headers,
 		
-		// `config` is the config that were provided to `axios` for the request
+		// `config` is the config that was provided to `axios` for the request
 		config
 		) {
 		// Do something with result
@@ -183,7 +183,9 @@ axios.get('/user/12345')
 
 ## Thanks
 
-axios is heavily inspired by Angular's $http service.
+axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [Angular](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of Angular.
+
+axios uses the [es6-promise](https://github.com/jakearchibald/es6-promise) polyfill by [Jake Archibald](https://github.com/jakearchibald). Until we [can use](http://caniuse.com/promises) ES6 Promises natively in all browsers, this polyfill is a life saver.
 
 ## License
 

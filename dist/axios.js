@@ -51,12 +51,14 @@ var axios =
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Promise = __webpack_require__(7).Promise;
+	var Promise = __webpack_require__(9).Promise;
 	var buildUrl = __webpack_require__(2);
-	var defaults = __webpack_require__(3);
-	var parseHeaders = __webpack_require__(4);
-	var transformData = __webpack_require__(5);
-	var utils = __webpack_require__(6);
+	var cookies = __webpack_require__(3);
+	var defaults = __webpack_require__(4);
+	var parseHeaders = __webpack_require__(5);
+	var transformData = __webpack_require__(6);
+	var urlIsSameOrigin = __webpack_require__(7);
+	var utils = __webpack_require__(8);
 	
 	var axios = module.exports = function axios(options) {
 	  options = utils.merge({
@@ -115,9 +117,17 @@ var axios =
 	      options.headers || {}
 	    );
 	
+	    // Add xsrf header
+	    var xsrfValue = urlIsSameOrigin(options.url)
+	        ? cookies.read(options.xsrfCookieName || defaults.xsrfCookieName)
+	        : undefined;
+	    if (xsrfValue) {
+	      headers[options.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
+	    }
+	
 	    utils.forEach(headers, function (val, key) {
 	      // Remove Content-Type if data is undefined
-	      if (typeof data === 'undefined' && key.toLowerCase() === 'content-type') {
+	      if (!data && key.toLowerCase() === 'content-type') {
 	        delete headers[key];
 	      }
 	      // Otherwise add header to the request
@@ -201,7 +211,7 @@ var axios =
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -251,7 +261,49 @@ var axios =
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
+	
+	module.exports = {
+	  write: function write(name, value, expires, path, domain, secure) {
+	    var cookie = [];
+	    cookie.push(name + '=' + encodeURIComponent(value));
+	
+	    if (utils.isNumber(expires)) {
+	      cookie.push('expires=' + new Date(expires).toGMTString());
+	    }
+	
+	    if (utils.isString(path)) {
+	      cookie.push('path=' + path);
+	    }
+	
+	    if (utils.isString(domain)) {
+	      cookie.push('domain=' + domain);
+	    }
+	
+	    if (secure === true) {
+	      cookie.push('secure');
+	    }
+	
+	    document.cookie = cookie.join('; ');
+	  },
+	
+	  read: function read(name) {
+	    var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+	    return (match ? decodeURIComponent(match[3]) : null);
+	  },
+	
+	  remove: function remove(name) {
+	    this.write(name, '', Date.now() - 86400000);
+	  }
+	};
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(8);
 	
 	var JSON_START = /^\s*(\[|\{[^\{])/;
 	var JSON_END = /[\}\]]\s*$/;
@@ -287,17 +339,17 @@ var axios =
 	    put: utils.merge(CONTENT_TYPE_APPLICATION_JSON)
 	  },
 	
-	  xsrfCookiName: 'XSRF-TOKEN',
+	  xsrfCookieName: 'XSRF-TOKEN',
 	  xsrfHeaderName: 'X-XSRF-TOKEN'
 	};
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	/**
 	 * Parse headers into an object
@@ -331,12 +383,12 @@ var axios =
 	};
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	/**
 	 * Transform the data for a request or a response
@@ -355,7 +407,62 @@ var axios =
 	};
 
 /***/ },
-/* 6 */
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var msie = /(msie|trident)/i.test(navigator.userAgent);
+	var utils = __webpack_require__(8);
+	var urlParsingNode = document.createElement('a');
+	var originUrl = urlResolve(window.location.href);
+	
+	/**
+	 * Parse a URL to discover it's components
+	 *
+	 * @param {String} url The URL to be parsed
+	 * @returns {Object}
+	 */
+	function urlResolve(url) {
+	  var href = url;
+	
+	  if (msie) {
+	    // IE needs attribute set twice to normalize properties
+	    urlParsingNode.setAttribute('href', href);
+	    href = urlParsingNode.href;
+	  }
+	
+	  urlParsingNode.setAttribute('href', href);
+	
+	  // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+	  return {
+	    href: urlParsingNode.href,
+	    protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+	    host: urlParsingNode.host,
+	    search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+	    hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+	    hostname: urlParsingNode.hostname,
+	    port: urlParsingNode.port,
+	    pathname: (urlParsingNode.pathname.charAt(0) === '/')
+	      ? urlParsingNode.pathname
+	      : '/' + urlParsingNode.pathname
+	  };
+	}
+	
+	/**
+	 * Determine if a URL shares the same origin as the current location
+	 *
+	 * @param {String} requestUrl The URL to test
+	 * @returns {boolean} True if URL shares the same origin, otherwise false
+	 */
+	module.exports = function urlIsSameOrigin(requestUrl) {
+	  var parsed = (utils.isString(requestUrl)) ? urlResolve(requestUrl) : requestUrl;
+	  return (parsed.protocol === originUrl.protocol &&
+	        parsed.host === originUrl.host);
+	};
+
+/***/ },
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// utils is a library of generic helper functions non-specific to axios
@@ -370,6 +477,26 @@ var axios =
 	 */
 	function isArray(val) {
 	  return toString.call(val) === '[object Array]';
+	}
+	
+	/**
+	 * Determine if a value is a String
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a String, otherwise false
+	 */
+	function isString(val) {
+	  return typeof val === 'string';
+	}
+	
+	/**
+	 * Determine if a value is a Number
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a Number, otherwise false
+	 */
+	function isNumber(val) {
+	  return typeof val === 'number';
 	}
 	
 	/**
@@ -409,7 +536,7 @@ var axios =
 	 * @returns {boolean} True if value is a Blob, otherwise false
 	 */
 	function isBlob(val) {
-	  return toString.call(val) !== '[object Blob]';
+	  return toString.call(val) === '[object Blob]';
 	}
 	
 	/**
@@ -493,6 +620,8 @@ var axios =
 	
 	module.exports = {
 	  isArray: isArray,
+	  isString: isString,
+	  isNumber: isNumber,
 	  isObject: isObject,
 	  isDate: isDate,
 	  isFile: isFile,
@@ -503,30 +632,30 @@ var axios =
 	};
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var Promise = __webpack_require__(8).Promise;
-	var polyfill = __webpack_require__(9).polyfill;
+	var Promise = __webpack_require__(10).Promise;
+	var polyfill = __webpack_require__(11).polyfill;
 	exports.Promise = Promise;
 	exports.polyfill = polyfill;
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var config = __webpack_require__(10).config;
-	var configure = __webpack_require__(10).configure;
-	var objectOrFunction = __webpack_require__(11).objectOrFunction;
-	var isFunction = __webpack_require__(11).isFunction;
-	var now = __webpack_require__(11).now;
-	var all = __webpack_require__(12).all;
-	var race = __webpack_require__(13).race;
-	var staticResolve = __webpack_require__(14).resolve;
-	var staticReject = __webpack_require__(15).reject;
-	var asap = __webpack_require__(16).asap;
+	var config = __webpack_require__(12).config;
+	var configure = __webpack_require__(12).configure;
+	var objectOrFunction = __webpack_require__(13).objectOrFunction;
+	var isFunction = __webpack_require__(13).isFunction;
+	var now = __webpack_require__(13).now;
+	var all = __webpack_require__(14).all;
+	var race = __webpack_require__(15).race;
+	var staticResolve = __webpack_require__(16).resolve;
+	var staticReject = __webpack_require__(17).reject;
+	var asap = __webpack_require__(18).asap;
 	
 	var counter = 0;
 	
@@ -729,13 +858,13 @@ var axios =
 	exports.Promise = Promise;
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {"use strict";
 	/*global self*/
-	var RSVPPromise = __webpack_require__(8).Promise;
-	var isFunction = __webpack_require__(11).isFunction;
+	var RSVPPromise = __webpack_require__(10).Promise;
+	var isFunction = __webpack_require__(13).isFunction;
 	
 	function polyfill() {
 	  var local;
@@ -773,7 +902,7 @@ var axios =
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -793,7 +922,7 @@ var axios =
 	exports.configure = configure;
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -820,14 +949,14 @@ var axios =
 	exports.now = now;
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	/* global toString */
 	
-	var isArray = __webpack_require__(11).isArray;
-	var isFunction = __webpack_require__(11).isFunction;
+	var isArray = __webpack_require__(13).isArray;
+	var isFunction = __webpack_require__(13).isFunction;
 	
 	/**
 	  Returns a promise that is fulfilled when all the given promises have been
@@ -918,12 +1047,12 @@ var axios =
 	exports.all = all;
 
 /***/ },
-/* 13 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	/* global toString */
-	var isArray = __webpack_require__(11).isArray;
+	var isArray = __webpack_require__(13).isArray;
 	
 	/**
 	  `RSVP.race` allows you to watch a series of promises and act as soon as the
@@ -1012,7 +1141,7 @@ var axios =
 	exports.race = race;
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1032,7 +1161,7 @@ var axios =
 	exports.resolve = resolve;
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1084,7 +1213,7 @@ var axios =
 	exports.reject = reject;
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {"use strict";
@@ -1148,10 +1277,10 @@ var axios =
 	}
 	
 	exports.asap = asap;
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(17)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(19)))
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser

@@ -39,7 +39,9 @@ describe('axios', function () {
     });
 
     it('should default common headers', function () {
-      axios();
+      axios({
+        url: '/foo'
+      });
 
       var request = jasmine.Ajax.requests.mostRecent();
       var headers = axios.defaults.headers.common;
@@ -52,7 +54,12 @@ describe('axios', function () {
 
     it('should add extra headers for post', function () {
       axios({
-        method: 'post'
+        method: 'post',
+        url: '/foo',
+        data: {
+          firstName: 'foo',
+          lastName: 'bar'
+        }
       });
 
       var request = jasmine.Ajax.requests.mostRecent();
@@ -63,6 +70,16 @@ describe('axios', function () {
         }
       }
     });
+
+    it('should remove content-type if data is empty', function () {
+      axios({
+        method: 'post',
+        url: '/foo'
+      });
+
+      var request = jasmine.Ajax.requests.mostRecent();
+      expect(request.requestHeaders['content-type']).toEqual(undefined);
+    });
   });
 
   describe('options', function () {
@@ -71,7 +88,9 @@ describe('axios', function () {
     });
 
     it('should default method to get', function () {
-      axios();
+      axios({
+        url: '/foo'
+      });
 
       var request = jasmine.Ajax.requests.mostRecent();
       expect(request.method).toBe('get');
@@ -79,6 +98,7 @@ describe('axios', function () {
 
     it('should accept headers', function () {
       axios({
+        url: '/foo',
         headers: {
           'X-Requested-With': 'XMLHttpRequest'
         }
@@ -103,6 +123,7 @@ describe('axios', function () {
 
     it('should allow overriding default headers', function () {
       axios({
+        url: '/foo',
         headers: {
           'Accept': 'foo/bar'
         }
@@ -110,6 +131,31 @@ describe('axios', function () {
 
       var request = jasmine.Ajax.requests.mostRecent();
       expect(request.requestHeaders['Accept']).toEqual('foo/bar');
+    });
+  });
+
+  describe('xsrf', function () {
+    afterEach(function () {
+      document.cookie = axios.defaults.xsrfCookieName + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
+    });
+
+    it('should not set xsrf header if cookie is null', function () {
+      axios({
+        url: '/foo'
+      });
+
+      var request = jasmine.Ajax.requests.mostRecent();
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+    });
+
+    it('should set xsrf header if cookie is set', function () {
+      document.cookie = axios.defaults.xsrfCookieName + '=12345';
+      axios({
+        url: '/foo'
+      });
+
+      var request = jasmine.Ajax.requests.mostRecent();
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
     });
   });
 });

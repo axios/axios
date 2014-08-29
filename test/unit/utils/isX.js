@@ -7,6 +7,18 @@ module.exports = {
     test.done();
   },
 
+  testIsString: function (test) {
+    test.equals(utils.isString(''), true);
+    test.equals(utils.isString({toString: function () { return ''; }}), false);
+    test.done();
+  },
+
+  testIsNumber: function (test) {
+    test.equals(utils.isNumber(123), true);
+    test.equals(utils.isNumber('123'), false);
+    test.done();
+  },
+
   testIsObject: function (test) {
     test.equals(utils.isObject({}), true);
     test.equals(utils.isObject(null), false);

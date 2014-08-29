@@ -47,9 +47,9 @@ axios.post('/user', {
 
 ## Request API
 
-Requests can be made by passing the relevant options to `axios`.
+Requests can be made by passing the relevant config to `axios`.
 
-##### axios(options)
+##### axios(config)
 
 ```js
 axios({
@@ -62,17 +62,17 @@ axios({
 
 For convenience aliases have been provided for all supported request methods.
 
-##### axios.get(url[, options])
-##### axios.delete(url[, options])
-##### axios.head(url[, options])
-##### axios.post(url[, data[, options]])
-##### axios.put(url[, data[, options]])
-##### axios.patch(url[, data[, options]])
+##### axios.get(url[, config])
+##### axios.delete(url[, config])
+##### axios.head(url[, config])
+##### axios.post(url[, data[, config]])
+##### axios.put(url[, data[, config]])
+##### axios.patch(url[, data[, config]])
 
 ###### NOTE
-When using the alias methods `url`, `method`, and `data` properties don't need to be specified in options.
+When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
-### Options
+### Config
 
 ```js
 {
@@ -117,7 +117,7 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 	withCredentials: true,
 	
 	// `responseType` indicates the type of data that the server will responsd with
-	// options are 'arraybuffer', 'blob', 'document', 'json', 'text'
+	// config are 'arraybuffer', 'blob', 'document', 'json', 'text'
 	responseType: 'json'
 }
 ```
@@ -137,7 +137,7 @@ For either `success` or `error`, the following response will be provided.
 	// `headers` the headers that the server responded with
 	headers: {/*...*/},
 	
-	// `config` are the options that were provided to `axios` for the request
+	// `config` are the config that were provided to `axios` for the request
 	config: {/*...*/}
 }
 ```

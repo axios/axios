@@ -1,6 +1,14 @@
 # axios [![Build Status](https://travis-ci.org/mzabriskie/axios.svg?branch=master)](https://travis-ci.org/mzabriskie/axios)
 
-Lightweight Promise based XHR library
+Promise based XHR library
+
+## Features
+
+- Making [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) supporting the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
+- Transforming request and response data
+- Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
+- Specifying HTTP request headers
+- Automatic transforms for JSON data
 
 ## Example
 
@@ -9,43 +17,43 @@ Performing a `GET` request
 ```js
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
-.then(function (response) {
-	console.log(response);
-})
+	.then(function (response) {
+		console.log(response);
+	})
 	
 // Optionally the request above could also be done as
 axios.get('/user', {
-	params: {
-		ID: 12345
-	}
-})
-.then(function (response) {
-	console.log(response);
-})
+		params: {
+			ID: 12345
+		}
+	})
+	.then(function (response) {
+		console.log(response);
+	})
 ```
 
 Performing a `POST` request
 
 ```js
 axios.post('/user', {
-	firstName: 'Fred',
-	lastName: 'Flintstone'
-})
-.then(function (response) {
-	console.log(response);
-})
+		firstName: 'Fred',
+		lastName: 'Flintstone'
+	})
+	.then(function (response) {
+		console.log(response);
+	})
 ```
 
 Aliases are provided for success and error
 
 ```js
 axios.get('/user/12345')
-.success(function () {
-	console.log('user found');
-})
-.error(function () {
-	console.log('error finding user');
-});
+	.success(function () {
+		console.log('user found');
+	})
+	.error(function () {
+		console.log('error finding user');
+	});
 ```
 
 ## Request API
@@ -56,8 +64,8 @@ Requests can be made by passing the relevant config to `axios`.
 
 ```js
 axios({
-	url: '/user/12345',
-	method: 'get'
+	method: 'get',
+	url: '/user/12345'
 });
 ```
 
@@ -135,19 +143,23 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 
 For either `success` or `error`, the following response will be provided.
 
-```js
-{
-	// `data` is the response that was provided by the server
-	data: {/*...*/}	,
-	
-	// `status` is the HTTP status code from the server response
-	status: 200,
-	
-	// `headers` the headers that the server responded with
-	headers: {/*...*/},
-	
-	// `config` is the config that were provided to `axios` for the request
-	config: {/*...*/}
+```
+axios.get('/user/12345')
+	.success(function (
+		// `data` is the response that was provided by the server
+		data,
+		
+		// `status` is the HTTP status code from the server response
+		status,
+		
+		// `headers` the headers that the server responded with
+		headers,
+		
+		// `config` is the config that were provided to `axios` for the request
+		config
+		) {
+		// Do something with result
+	});
 }
 ```
 
@@ -169,7 +181,7 @@ $ npm install axios
 
 Tested to work with >=IE8, Chrome, Firefox, Safari, and Opera.
 
-## Attribution
+## Thanks
 
 axios is heavily inspired by Angular's $http service.
 

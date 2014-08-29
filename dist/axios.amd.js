@@ -98,11 +98,14 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	        };
 	
 	        // Resolve or reject the Promise based on the status
-	        if (request.status >= 200 && request.status < 300) {
-	          resolve(response);
-	        } else {
-	          reject(response);
-	        }
+	        (request.status >= 200 && request.status < 300
+	          ? resolve
+	          : reject)(
+	            response.data,
+	            response.status,
+	            response.headers,
+	            response.config
+	          );
 	
 	        // Clean up request
 	        request = null;

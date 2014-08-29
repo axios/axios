@@ -58,10 +58,10 @@
     <script src="../dist/axios.min.js"></script>
     <script>
       axios.get('people.json')
-        .success(function (response) {
+        .success(function (data) {
           var people = [];
 
-          response.data.forEach(function (person) {
+          data.forEach(function (person) {
             people.push(
               '<li>' +
                 '<img src="https://avatars.githubusercontent.com/u/' + person.avatar + '?s=50"/>' +
@@ -74,8 +74,8 @@
 
           document.getElementById('people').innerHTML = people.join('');
         })
-        .error(function(response) {
-          document.getElementById('people').innerHTML = '<li class="error">' + response.data + '</li>';
+        .error(function(data) {
+          document.getElementById('people').innerHTML = '<li class="error">' + data + '</li>';
         });
     </script>
   </body>

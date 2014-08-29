@@ -131,11 +131,11 @@
         request.innerHTML = JSON.stringify(options, null, 2);
 
         axios(options)
-          .success(function (res) {
-            response.innerHTML = JSON.stringify(res.data, null, 2);
+          .success(function (data) {
+            response.innerHTML = JSON.stringify(data, null, 2);
           })
-          .error(function (res) {
-            response.innerHTML = JSON.stringify(res.data, null, 2);
+          .error(function (data) {
+            response.innerHTML = JSON.stringify(data, null, 2);
           });
       };
 

@@ -10,6 +10,24 @@ Promise based XHR library
 - Specifying HTTP request headers
 - Automatic transforms for JSON data
 
+## Installing
+
+Using bower:
+
+```bash
+$ bower install axios
+```
+
+Using npm:
+
+```bash
+$ npm install axios
+```
+
+## Compatability
+
+Tested to work with >=IE8, Chrome, Firefox, Safari, and Opera.
+
 ## Example
 
 Performing a `GET` request
@@ -143,7 +161,7 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 
 For either `success` or `error`, the following response will be provided.
 
-```
+```js
 axios.get('/user/12345')
 	.success(function (
 		// `data` is the response that was provided by the server
@@ -162,24 +180,6 @@ axios.get('/user/12345')
 	});
 }
 ```
-
-## Installing
-
-Using bower:
-
-```bash
-$ bower install axios
-```
-
-Using npm:
-
-```bash
-$ npm install axios
-```
-
-## Compatability
-
-Tested to work with >=IE8, Chrome, Firefox, Safari, and Opera.
 
 ## Thanks
 

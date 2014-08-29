@@ -1,7 +1,7 @@
 {
   "name": "axios",
-  "version": "0.0.0",
-  "description": "Lightweight Promise based XHR library",
+  "version": "0.1.0",
+  "description": "Promise based XHR library",
   "main": "index.js",
   "scripts": {
     "test": "grunt test",

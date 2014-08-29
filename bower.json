@@ -1,12 +1,12 @@
 {
 	"name": "axios",
 	"main": "./dist/axios.js",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"homepage": "https://github.com/mzabriskie/axios",
 	"authors": [
 		"Matt Zabriskie"
 	],
-	"description": "Lightweight Promise based XHR library",
+	"description": "Promise based XHR library",
 	"moduleType": [
 		"amd",
 		"globals"
@@ -20,7 +20,6 @@
 	"license": "MIT",
 	"ignore": [
 		"**/.*",
-		"*.md",
 		"*.iml",
 		"example",
 		"lib",

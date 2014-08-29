@@ -60,27 +60,27 @@ var axios =
 	var urlIsSameOrigin = __webpack_require__(7);
 	var utils = __webpack_require__(8);
 	
-	var axios = module.exports = function axios(options) {
-	  options = utils.merge({
+	var axios = module.exports = function axios(config) {
+	  config = utils.merge({
 	    method: 'get',
 	    transformRequest: defaults.transformRequest,
 	    transformResponse: defaults.transformResponse
-	  }, options);
+	  }, config);
 	
 	  // Don't allow overriding defaults.withCredentials
-	  options.withCredentials = options.withCredentials || defaults.withCredentials;
+	  config.withCredentials = config.withCredentials || defaults.withCredentials;
 	
 	  var promise = new Promise(function (resolve, reject) {
 	    // Create the request
 	    var request = new(XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
 	    var data = transformData(
-	      options.data,
-	      options.headers,
-	      options.transformRequest
+	      config.data,
+	      config.headers,
+	      config.transformRequest
 	    );
 	
 	    // Open the request
-	    request.open(options.method, buildUrl(options.url, options.params), true);
+	    request.open(config.method, buildUrl(config.url, config.params), true);
 	
 	    // Listen for ready state
 	    request.onreadystatechange = function () {
@@ -91,11 +91,11 @@ var axios =
 	          data: transformData(
 	            request.responseText,
 	            headers,
-	            options.transformResponse
+	            config.transformResponse
 	          ),
 	          status: request.status,
 	          headers: headers,
-	          config: options
+	          config: config
 	        };
 	
 	        // Resolve or reject the Promise based on the status
@@ -113,16 +113,16 @@ var axios =
 	    // Merge headers and add to request
 	    var headers = utils.merge(
 	      defaults.headers.common,
-	      defaults.headers[options.method] || {},
-	      options.headers || {}
+	      defaults.headers[config.method] || {},
+	      config.headers || {}
 	    );
 	
 	    // Add xsrf header
-	    var xsrfValue = urlIsSameOrigin(options.url)
-	        ? cookies.read(options.xsrfCookieName || defaults.xsrfCookieName)
+	    var xsrfValue = urlIsSameOrigin(config.url)
+	        ? cookies.read(config.xsrfCookieName || defaults.xsrfCookieName)
 	        : undefined;
 	    if (xsrfValue) {
-	      headers[options.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
+	      headers[config.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
 	    }
 	
 	    utils.forEach(headers, function (val, key) {
@@ -137,14 +137,14 @@ var axios =
 	    });
 	
 	    // Add withCredentials to request if needed
-	    if (options.withCredentials) {
+	    if (config.withCredentials) {
 	      request.withCredentials = true;
 	    }
 	
 	    // Add responseType to request if needed
-	    if (options.responseType) {
+	    if (config.responseType) {
 	      try {
-	        request.responseType = options.responseType;
+	        request.responseType = config.responseType;
 	      } catch (e) {
 	        if (request.responseType !== 'json') {
 	          throw e;
@@ -184,8 +184,8 @@ var axios =
 	
 	function createShortMethods() {
 	  utils.forEach(arguments, function (method) {
-	    axios[method] = function (url, options) {
-	      return axios(utils.merge(options || {}, {
+	    axios[method] = function (url, config) {
+	      return axios(utils.merge(config || {}, {
 	        method: method,
 	        url: url
 	      }));
@@ -195,8 +195,8 @@ var axios =
 	
 	function createShortMethodsWithData() {
 	  utils.forEach(arguments, function (method) {
-	    axios[method] = function (url, data, options) {
-	      return axios(utils.merge(options || {}, {
+	    axios[method] = function (url, data, config) {
+	      return axios(utils.merge(config || {}, {
 	        method: method,
 	        url: url,
 	        data: data

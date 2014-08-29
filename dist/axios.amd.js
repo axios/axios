@@ -59,27 +59,27 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	var urlIsSameOrigin = __webpack_require__(7);
 	var utils = __webpack_require__(8);
 	
-	var axios = module.exports = function axios(options) {
-	  options = utils.merge({
+	var axios = module.exports = function axios(config) {
+	  config = utils.merge({
 	    method: 'get',
 	    transformRequest: defaults.transformRequest,
 	    transformResponse: defaults.transformResponse
-	  }, options);
+	  }, config);
 	
 	  // Don't allow overriding defaults.withCredentials
-	  options.withCredentials = options.withCredentials || defaults.withCredentials;
+	  config.withCredentials = config.withCredentials || defaults.withCredentials;
 	
 	  var promise = new Promise(function (resolve, reject) {
 	    // Create the request
 	    var request = new(XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
 	    var data = transformData(
-	      options.data,
-	      options.headers,
-	      options.transformRequest
+	      config.data,
+	      config.headers,
+	      config.transformRequest
 	    );
 	
 	    // Open the request
-	    request.open(options.method, buildUrl(options.url, options.params), true);
+	    request.open(config.method, buildUrl(config.url, config.params), true);
 	
 	    // Listen for ready state
 	    request.onreadystatechange = function () {
@@ -90,11 +90,11 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	          data: transformData(
 	            request.responseText,
 	            headers,
-	            options.transformResponse
+	            config.transformResponse
 	          ),
 	          status: request.status,
 	          headers: headers,
-	          config: options
+	          config: config
 	        };
 	
 	        // Resolve or reject the Promise based on the status
@@ -112,16 +112,16 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	    // Merge headers and add to request
 	    var headers = utils.merge(
 	      defaults.headers.common,
-	      defaults.headers[options.method] || {},
-	      options.headers || {}
+	      defaults.headers[config.method] || {},
+	      config.headers || {}
 	    );
 	
 	    // Add xsrf header
-	    var xsrfValue = urlIsSameOrigin(options.url)
-	        ? cookies.read(options.xsrfCookieName || defaults.xsrfCookieName)
+	    var xsrfValue = urlIsSameOrigin(config.url)
+	        ? cookies.read(config.xsrfCookieName || defaults.xsrfCookieName)
 	        : undefined;
 	    if (xsrfValue) {
-	      headers[options.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
+	      headers[config.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
 	    }
 	
 	    utils.forEach(headers, function (val, key) {
@@ -136,14 +136,14 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	    });
 	
 	    // Add withCredentials to request if needed
-	    if (options.withCredentials) {
+	    if (config.withCredentials) {
 	      request.withCredentials = true;
 	    }
 	
 	    // Add responseType to request if needed
-	    if (options.responseType) {
+	    if (config.responseType) {
 	      try {
-	        request.responseType = options.responseType;
+	        request.responseType = config.responseType;
 	      } catch (e) {
 	        if (request.responseType !== 'json') {
 	          throw e;
@@ -183,8 +183,8 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	function createShortMethods() {
 	  utils.forEach(arguments, function (method) {
-	    axios[method] = function (url, options) {
-	      return axios(utils.merge(options || {}, {
+	    axios[method] = function (url, config) {
+	      return axios(utils.merge(config || {}, {
 	        method: method,
 	        url: url
 	      }));
@@ -194,8 +194,8 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	function createShortMethodsWithData() {
 	  utils.forEach(arguments, function (method) {
-	    axios[method] = function (url, data, options) {
-	      return axios(utils.merge(options || {}, {
+	    axios[method] = function (url, data, config) {
+	      return axios(utils.merge(config || {}, {
 	        method: method,
 	        url: url,
 	        data: data
@@ -263,12 +263,12 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	var utils = __webpack_require__(8);
 	
 	module.exports = {
-	  write: function (name, value, expires, path, domain, secure) {
+	  write: function write(name, value, expires, path, domain, secure) {
 	    var cookie = [];
 	    cookie.push(name + '=' + encodeURIComponent(value));
 	
 	    if (utils.isNumber(expires)) {
-	      cookie.push('expires=' + new Date(exires).toGMTString());
+	      cookie.push('expires=' + new Date(expires).toGMTString());
 	    }
 	
 	    if (utils.isString(path)) {
@@ -286,12 +286,12 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	    document.cookie = cookie.join('; ');
 	  },
 	
-	  read: function (name) {
+	  read: function read(name) {
 	    var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
 	    return (match ? decodeURIComponent(match[3]) : null);
 	  },
 	
-	  remove: function (name) {
+	  remove: function remove(name) {
 	    this.write(name, '', Date.now() - 86400000);
 	  }
 	};
@@ -411,7 +411,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 
 	'use strict';
 	
-	var msie = /trident/i.test(navigator.userAgent);
+	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var utils = __webpack_require__(8);
 	var urlParsingNode = document.createElement('a');
 	var originUrl = urlResolve(window.location.href);

@@ -103,13 +103,15 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 
 ### Config
 
+This is the available config options for making requests. Only the `url` is required. Requests will default to `GET` if not specified.
+
 ```js
 {
 	// `url` is the server URL that will be used for the request
 	url: '/user',
 	
 	// `method` is the request method to be used when making the request
-	method: 'get',
+	method: 'get', // default
 	
 	// `transformRequest` allows changes to the request data before it is sent to the server
 	// This is only applicable for request methods 'PUT', 'POST', and 'PATCH'

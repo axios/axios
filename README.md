@@ -9,12 +9,9 @@ Performing a `GET` request
 ```js
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
-.success(function (response) {
+.then(function (response) {
 	console.log(response);
 })
-.error(function (response) {
-	console.log(response);
-});
 	
 // Optionally the request above could also be done as
 axios.get('/user', {
@@ -22,12 +19,9 @@ axios.get('/user', {
 		ID: 12345
 	}
 })
-.success(function (response) {
+.then(function (response) {
 	console.log(response);
 })
-.error(function (response) {
-	console.log(response);
-});
 ```
 
 Performing a `POST` request
@@ -37,11 +31,20 @@ axios.post('/user', {
 	firstName: 'Fred',
 	lastName: 'Flintstone'
 })
-.success(function (response) {
+.then(function (response) {
 	console.log(response);
 })
-.error(function (response) {
-	console.log(response);
+```
+
+Aliases are provided for success and error
+
+```js
+axios.get('/user/12345')
+.success(function () {
+	console.log('user found');
+})
+.error(function () {
+	console.log('error finding user');
 });
 ```
 
@@ -114,11 +117,17 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 	
 	// `withCredentials` indicates whether or not cross-site Access-Control requests
 	// should be made using credentials
-	withCredentials: true,
+	withCredentials: false, // default
 	
 	// `responseType` indicates the type of data that the server will responsd with
 	// config are 'arraybuffer', 'blob', 'document', 'json', 'text'
-	responseType: 'json'
+	responseType: 'json', // default
+	
+	// `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
+	xsrfCookieName: 'XSRF-TOKEN', // default
+	
+	// `xsrfHeaderName` is the name of the http header that carries the xsrf token value
+	xsrfHeaderName: 'X-XSRF-TOKEN' // default
 }
 ```
 
@@ -137,7 +146,7 @@ For either `success` or `error`, the following response will be provided.
 	// `headers` the headers that the server responded with
 	headers: {/*...*/},
 	
-	// `config` are the config that were provided to `axios` for the request
+	// `config` is the config that were provided to `axios` for the request
 	config: {/*...*/}
 }
 ```

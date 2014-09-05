@@ -38,6 +38,9 @@ axios.get('/user?ID=12345')
 	.then(function (response) {
 		console.log(response);
 	})
+	.catch(function (response) {
+		console.log(response);
+	});
 	
 // Optionally the request above could also be done as
 axios.get('/user', {
@@ -48,6 +51,9 @@ axios.get('/user', {
 	.then(function (response) {
 		console.log(response);
 	})
+	.catch(function (response) {
+		console.log(response);
+	});
 ```
 
 Performing a `POST` request
@@ -60,6 +66,9 @@ axios.post('/user', {
 	.then(function (response) {
 		console.log(response);
 	})
+	.catch(function (response) {
+		console.log(response);
+	});
 ```
 
 Aliases are provided for success and error

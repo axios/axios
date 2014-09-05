@@ -22,6 +22,11 @@ describe('axios', function () {
       expect(typeof axios.defaults).toEqual('object');
       expect(typeof axios.defaults.headers).toEqual('object');
     });
+
+    it('should have all/spread helpers', function () {
+      expect(typeof axios.all).toEqual('function');
+      expect(typeof axios.spread).toEqual('function');
+    });
   });
 
   describe('wrapper', function () {

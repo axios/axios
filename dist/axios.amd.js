@@ -50,7 +50,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Promise = __webpack_require__(9).Promise;
+	var Promise = __webpack_require__(10).Promise;
 	var buildUrl = __webpack_require__(2);
 	var cookies = __webpack_require__(3);
 	var defaults = __webpack_require__(4);
@@ -58,6 +58,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	var transformData = __webpack_require__(6);
 	var urlIsSameOrigin = __webpack_require__(7);
 	var utils = __webpack_require__(8);
+	var spread = __webpack_require__(9);
 	
 	var axios = module.exports = function axios(config) {
 	  config = utils.merge({
@@ -179,6 +180,10 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	// Expose defaults
 	axios.defaults = defaults;
+	
+	// Expose all/spread
+	axios.all = Promise.all;
+	axios.spread = spread;
 	
 	// Provide aliases for supported request methods
 	createShortMethods('delete', 'get', 'head');
@@ -637,27 +642,57 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-	var Promise = __webpack_require__(10).Promise;
-	var polyfill = __webpack_require__(11).polyfill;
-	exports.Promise = Promise;
-	exports.polyfill = polyfill;
+	/**
+	 * Syntactic sugar for invoking a function and expanding an array for arguments.
+	 *
+	 * Common use case would be to use `Function.prototype.apply`.
+	 *
+	 *  ```js
+	 *  function f(x, y, z) {}
+	 *  var args = [1, 2, 3];
+	 *  f.apply(null, args);
+	 *  ```
+	 *
+	 * With `spread` this example can be re-written.
+	 *
+	 *  ```js
+	 *  spread(function(x, y, z) {})([1, 2, 3]);
+	 *  ```
+	 *
+	 * @param {Function} callback
+	 * @returns {Function}
+	 */
+	module.exports = function spread(callback) {
+	  return function (arr) {
+	    callback.apply(null, arr);
+	  };
+	};
 
 /***/ },
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var config = __webpack_require__(12).config;
-	var configure = __webpack_require__(12).configure;
-	var objectOrFunction = __webpack_require__(13).objectOrFunction;
-	var isFunction = __webpack_require__(13).isFunction;
-	var now = __webpack_require__(13).now;
-	var all = __webpack_require__(14).all;
-	var race = __webpack_require__(15).race;
-	var staticResolve = __webpack_require__(16).resolve;
-	var staticReject = __webpack_require__(17).reject;
-	var asap = __webpack_require__(18).asap;
+	var Promise = __webpack_require__(11).Promise;
+	var polyfill = __webpack_require__(12).polyfill;
+	exports.Promise = Promise;
+	exports.polyfill = polyfill;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var config = __webpack_require__(13).config;
+	var configure = __webpack_require__(13).configure;
+	var objectOrFunction = __webpack_require__(14).objectOrFunction;
+	var isFunction = __webpack_require__(14).isFunction;
+	var now = __webpack_require__(14).now;
+	var all = __webpack_require__(15).all;
+	var race = __webpack_require__(16).race;
+	var staticResolve = __webpack_require__(17).resolve;
+	var staticReject = __webpack_require__(18).reject;
+	var asap = __webpack_require__(19).asap;
 	
 	var counter = 0;
 	
@@ -860,13 +895,13 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	exports.Promise = Promise;
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {"use strict";
 	/*global self*/
-	var RSVPPromise = __webpack_require__(10).Promise;
-	var isFunction = __webpack_require__(13).isFunction;
+	var RSVPPromise = __webpack_require__(11).Promise;
+	var isFunction = __webpack_require__(14).isFunction;
 	
 	function polyfill() {
 	  var local;
@@ -904,7 +939,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -924,7 +959,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	exports.configure = configure;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -951,14 +986,14 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	exports.now = now;
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	/* global toString */
 	
-	var isArray = __webpack_require__(13).isArray;
-	var isFunction = __webpack_require__(13).isFunction;
+	var isArray = __webpack_require__(14).isArray;
+	var isFunction = __webpack_require__(14).isFunction;
 	
 	/**
 	  Returns a promise that is fulfilled when all the given promises have been
@@ -1049,12 +1084,12 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	exports.all = all;
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	/* global toString */
-	var isArray = __webpack_require__(13).isArray;
+	var isArray = __webpack_require__(14).isArray;
 	
 	/**
 	  `RSVP.race` allows you to watch a series of promises and act as soon as the
@@ -1143,7 +1178,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	exports.race = race;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1163,7 +1198,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	exports.resolve = resolve;
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1215,7 +1250,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	exports.reject = reject;
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {"use strict";
@@ -1279,10 +1314,10 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	}
 	
 	exports.asap = asap;
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(19)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(20)))
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser

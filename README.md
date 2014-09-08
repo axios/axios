@@ -129,6 +129,8 @@ When using the alias methods `url`, `method`, and `data` properties don't need t
 
 ### Concurrency
 
+Helper functions for dealing with concurrent requests.
+
 ##### axios.all(iterable)
 ##### axios.spread(callback)
 

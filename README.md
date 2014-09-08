@@ -83,6 +83,23 @@ axios.get('/user/12345')
 	});
 ```
 
+Performing multiple concurrent requests
+
+```
+function getUserAccount() {
+	return axios.get('/user/12345');
+}
+
+function getUserPermissions() {
+	return axios.get('/user/permissions/12345');
+}
+
+axios.all([getUserAccount(), getUserPermissions()])
+	.then(axios.spread(function (acct, perms) {
+		// Both requests are now complete
+	}));
+```
+
 ## Request API
 
 Requests can be made by passing the relevant config to `axios`.
@@ -109,6 +126,11 @@ For convenience aliases have been provided for all supported request methods.
 
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
+
+### Concurrency
+
+##### axios.all(iterable)
+##### axios.spread(callback)
 
 ### Config
 

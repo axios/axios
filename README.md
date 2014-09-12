@@ -4,13 +4,13 @@ Promise based HTTP client for the browser and node.js
 
 ## Features
 
-- Making [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
-- Making [http](http://nodejs.org/api/http.html) requests from node.js
+- Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
+- Make [http](http://nodejs.org/api/http.html) requests from node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
-- Transforming request and response data
-- Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
-- Specifying HTTP request headers
+- Transform request and response data
 - Automatic transforms for JSON data
+- Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
+- Specify HTTP request headers
 
 ## Installing
 

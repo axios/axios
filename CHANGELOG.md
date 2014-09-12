@@ -8,3 +8,7 @@
 
 - Adding support for all and spread
 - Adding support for node
+
+### 0.2.1 (Sep 12, 2014)
+
+- Fixing build problem causing ridiculous file sizes

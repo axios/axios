@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt test",
-    "start": "node ./sandbox/index.js"
+    "start": "node ./sandbox/server.js"
   },
   "repository": {
     "type": "git",

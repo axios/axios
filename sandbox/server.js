@@ -4,6 +4,16 @@ var path = require('path');
 var http = require('http');
 var server;
 
+function pipeFileToResponse(res, file, type) {
+  if (type) {
+    res.writeHead(200, {
+      'Content-Type': type
+    });
+  }
+
+  fs.createReadStream(path.join(__dirname, file)).pipe(res);
+}
+
 server = http.createServer(function (req, res) {
   req.setEncoding('utf8');
 
@@ -17,12 +27,11 @@ server = http.createServer(function (req, res) {
   }
 
   if (pathname === '/index.html') {
-    fs.createReadStream(path.join(__dirname, pathname)).pipe(res);
+    pipeFileToResponse(res, './client.html');
   } else if (pathname === '/axios.js') {
-    res.writeHead(200, {
-      'Content-Type': 'text/javascript'
-    });
-    fs.createReadStream(path.join(__dirname, '../dist/axios.js')).pipe(res);
+    pipeFileToResponse(res, '../dist/axios.js', 'text/javascript');
+  } else if (pathname === '/axios.map') {
+    pipeFileToResponse(res, '../dist/axios.map', 'text/javascript');
   } else if (pathname === '/api') {
     var status;
     var result;

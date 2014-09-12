@@ -1,10 +1,12 @@
 # axios [![Build Status](https://travis-ci.org/mzabriskie/axios.svg?branch=master)](https://travis-ci.org/mzabriskie/axios)
 
-Promise based XHR library
+Promise based HTTP client for the browser and node.js
 
 ## Features
 
-- Making [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) supporting the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
+- Making [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
+- Making [http](http://nodejs.org/api/http.html) requests from node.js
+- Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
 - Transforming request and response data
 - Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
 - Specifying HTTP request headers

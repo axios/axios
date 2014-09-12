@@ -26,7 +26,7 @@ Using npm:
 $ npm install axios
 ```
 
-## Compatability
+## Compatibility
 
 Tested to work with >=IE8, Chrome, Firefox, Safari, and Opera.
 

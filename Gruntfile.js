@@ -83,6 +83,11 @@ module.exports = function(grunt) {
         sourceMapFilename: 'axios.map',
         library: 'axios'
       },
+      externals: [
+        {
+          './adapters/http': 'var undefined'
+        }
+      ],
       devtool: 'source-map'
     };
 

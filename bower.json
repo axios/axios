@@ -1,12 +1,12 @@
 {
 	"name": "axios",
 	"main": "./dist/axios.js",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"homepage": "https://github.com/mzabriskie/axios",
 	"authors": [
 		"Matt Zabriskie"
 	],
-	"description": "Promise based XHR library",
+	"description": "Promise based HTTP client for the browser and node.js",
 	"moduleType": [
 		"amd",
 		"globals"
@@ -15,7 +15,8 @@
 		"xhr",
 		"http",
 		"ajax",
-		"promise"
+		"promise",
+		"node"
 	],
 	"license": "MIT",
 	"ignore": [

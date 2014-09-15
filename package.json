@@ -43,5 +43,8 @@
     "grunt-update-json": "^0.1.3",
     "grunt-contrib-nodeunit": "^0.4.1",
     "grunt-banner": "^0.2.3"
+  },
+  "browser": {
+    "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   }
 }

@@ -6,8 +6,8 @@
 
 ### 0.2.0 (Sep 12, 2014)
 
-- Adding support for all and spread
-- Adding support for node
+- Adding support for `all` and `spread`
+- Adding support for node.js
 
 ### 0.2.1 (Sep 12, 2014)
 
@@ -16,3 +16,9 @@
 ### 0.2.2 (Sep 14, 2014)
 
 - Fixing bundling with browserify
+
+### 0.3.0 (Sep 16, 2014)
+
+- Fixing `success` and `error` to properly receive response data as individual arguments (#8)
+- Updating `then` and `catch` to receive response data as a signle object
+- Fixing issue with `all` not working (#7)

@@ -83,7 +83,7 @@ define("axios", ["undefined"], function(__WEBPACK_EXTERNAL_MODULE_2__) { return 
 	  // Provide alias for success
 	  promise.success = function success(fn) {
 	    promise.then(function(response) {
-	      fn(response);
+	      fn(response.data, response.status, response.headers, response.config);
 	    });
 	    return promise;
 	  };
@@ -91,7 +91,7 @@ define("axios", ["undefined"], function(__WEBPACK_EXTERNAL_MODULE_2__) { return 
 	  // Provide alias for error
 	  promise.error = function error(fn) {
 	    promise.then(null, function(response) {
-	      fn(response);
+	      fn(response.data, response.status, response.headers, response.config);
 	    });
 	    return promise;
 	  };
@@ -437,12 +437,7 @@ define("axios", ["undefined"], function(__WEBPACK_EXTERNAL_MODULE_2__) { return 
 	      // Resolve or reject the Promise based on the status
 	      (request.status >= 200 && request.status < 300
 	        ? resolve
-	        : reject)(
-	          response.data,
-	          response.status,
-	          response.headers,
-	          response.config
-	        );
+	        : reject)(response);
 	
 	      // Clean up request
 	      request = null;

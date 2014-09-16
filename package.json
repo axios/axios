@@ -31,7 +31,7 @@
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-watch": "^0.6.1",
-    "webpack": "^1.3.3-beta2",
+    "webpack": "^1.4.0-beta9",
     "webpack-dev-server": "^1.4.10",
     "grunt-webpack": "^1.0.8",
     "load-grunt-tasks": "^0.6.0",

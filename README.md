@@ -102,7 +102,7 @@ axios.all([getUserAccount(), getUserPermissions()])
 	}));
 ```
 
-## Request API
+## axios API
 
 Requests can be made by passing the relevant config to `axios`.
 
@@ -136,7 +136,7 @@ Helper functions for dealing with concurrent requests.
 ##### axios.all(iterable)
 ##### axios.spread(callback)
 
-### Config
+## Request API
 
 This is the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 

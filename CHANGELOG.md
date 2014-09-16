@@ -20,5 +20,5 @@
 ### 0.3.0 (Sep 16, 2014)
 
 - Fixing `success` and `error` to properly receive response data as individual arguments ([#8](https://github.com/mzabriskie/axios/issues/8))
-- Updating `then` and `catch` to receive response data as a signle object
+- Updating `then` and `catch` to receive response data as a single object
 - Fixing issue with `all` not working ([#7](https://github.com/mzabriskie/axios/issues/7))

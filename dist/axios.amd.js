@@ -103,7 +103,9 @@ define("axios", ["undefined"], function(__WEBPACK_EXTERNAL_MODULE_2__) { return 
 	axios.defaults = defaults;
 	
 	// Expose all/spread
-	axios.all = Promise.all;
+	axios.all = function (promises) {
+	  return Promise.all(promises);
+	};
 	axios.spread = spread;
 	
 	// Provide aliases for supported request methods

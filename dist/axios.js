@@ -104,7 +104,9 @@ var axios =
 	axios.defaults = defaults;
 	
 	// Expose all/spread
-	axios.all = Promise.all;
+	axios.all = function (promises) {
+	  return Promise.all(promises);
+	};
 	axios.spread = spread;
 	
 	// Provide aliases for supported request methods

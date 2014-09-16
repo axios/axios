@@ -67,4 +67,39 @@ describe('promise', function () {
       expect(config.url).toEqual('/foo');
     });
   });
+
+  it('should support all', function () {
+    var fulfilled = false;
+
+    axios.all([true, 123]).then(function () {
+      fulfilled = true;
+    });
+
+    waitsFor(function () {
+      return fulfilled;
+    });
+
+    runs(function () {
+      expect(fulfilled).toEqual(true);
+    });
+  });
+
+  it('should support spread', function () {
+    var sum = 0;
+    var fulfilled = false;
+
+    axios.all([123, 456]).then(axios.spread(function (a, b) {
+      sum = a + b;
+      fulfilled = true;
+    }));
+
+    waitsFor(function () {
+      return fulfilled;
+    });
+
+    runs(function () {
+      expect(fulfilled).toEqual(true);
+      expect(sum).toEqual(123 + 456);
+    });
+  });
 });

@@ -101,6 +101,30 @@ describe('axios', function () {
       expect(request.method).toBe('get');
     });
 
+    it('should provide status', function () {
+      var status;
+      var finished = false;
+      var p = axios({
+        url: '/foo'
+      }).success(function (data, st) {
+        status = st;
+        finished = true;
+      });
+
+      var request = jasmine.Ajax.requests.mostRecent();
+      request.response({
+        status: 200,
+        responseText: '{"hello":"world"}'
+      });
+
+      waitsFor(function() {
+        return finished;
+      });
+      runs(function () {
+        expect(status).toBe(200);
+      });
+    });
+
     it('should accept headers', function () {
       axios({
         url: '/foo',

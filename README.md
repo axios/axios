@@ -150,6 +150,7 @@ This is the available config options for making requests. Only the `url` is requ
 	
 	// `transformRequest` allows changes to the request data before it is sent to the server
 	// This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
+	// The last function in the array must return a string or an ArrayBuffer
 	transformRequest: [function (data) {
 		// Do whatever you want to transform the data
 		
@@ -174,6 +175,7 @@ This is the available config options for making requests. Only the `url` is requ
 	
 	// `data` is the data to be sent as the request body
 	// Only applicable for request methods 'PUT', 'POST', and 'PATCH'
+	// When no `transformRequest` is set, must be a string, an ArrayBuffer or a hash
 	data: {
 		firstName: 'Fred'
 	},

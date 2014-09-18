@@ -45,6 +45,42 @@ describe('wrapper', function () {
     }
   });
 
+  it('should support binary data as array buffer', function () {
+    var input = new Int8Array(2);
+    input[0] = 1;
+    input[1] = 2;
+
+    axios({
+      method: 'post',
+      url: '/foo',
+      data: input.buffer
+    });
+
+    var request = jasmine.Ajax.requests.mostRecent();
+    var output = new Int8Array(request.params.buffer);
+    expect(output.length).toEqual(2);
+    expect(output[0]).toEqual(1);
+    expect(output[1]).toEqual(2);
+  });
+
+  it('should support binary data as array buffer view', function () {
+    var input = new Int8Array(2);
+    input[0] = 1;
+    input[1] = 2;
+
+    axios({
+      method: 'post',
+      url: '/foo',
+      data: input
+    });
+
+    var request = jasmine.Ajax.requests.mostRecent();
+    var output = new Int8Array(request.params.buffer);
+    expect(output.length).toEqual(2);
+    expect(output[0]).toEqual(1);
+    expect(output[1]).toEqual(2);
+  });
+
   it('should remove content-type if data is empty', function () {
     axios({
       method: 'post',

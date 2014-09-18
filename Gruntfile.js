@@ -68,9 +68,9 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('test', ['webpack:global', 'nodeunit', 'karma:single']);
-  grunt.registerTask('build', ['webpack']);
-  grunt.registerTask('publish', ['clean', 'test', 'build', 'usebanner', 'update_json']);
+  grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['webpack:global', 'nodeunit', 'karma:single']);
+  grunt.registerTask('build', 'Run webpack and bundle the source', ['webpack']);
+  grunt.registerTask('publish', 'Prepare the code for release', ['clean', 'test', 'build', 'usebanner', 'update_json']);
 
   function generateWebpackConfig() {
     var webpack = require('webpack');

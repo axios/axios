@@ -30,10 +30,7 @@ describe('wrapper', function () {
     axios({
       method: 'post',
       url: '/foo',
-      data: {
-        firstName: 'foo',
-        lastName: 'bar'
-      }
+      data: 'fizz=buzz'
     });
 
     var request = jasmine.Ajax.requests.mostRecent();
@@ -43,6 +40,20 @@ describe('wrapper', function () {
         expect(request.requestHeaders[key]).toEqual(headers[key]);
       }
     }
+  });
+
+  it('should use application/json when posting an object', function () {
+    axios({
+      url: '/foo/bar',
+      method: 'post',
+      data: {
+        firstName: 'foo',
+        lastName: 'bar'
+      }
+    });
+
+    var request = jasmine.Ajax.requests.mostRecent();
+    expect(request.requestHeaders['Content-Type']).toEqual('application/json;charset=utf-8');
   });
 
   it('should support binary data as array buffer', function () {

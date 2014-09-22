@@ -19,6 +19,12 @@ module.exports = {
     test.done();
   },
 
+  testIsUndefined: function (test) {
+    test.equals(utils.isUndefined(), true);
+    test.equals(utils.isUndefined(null), false);
+    test.done();
+  },
+
   testIsObject: function (test) {
     test.equals(utils.isObject({}), true);
     test.equals(utils.isObject(null), false);

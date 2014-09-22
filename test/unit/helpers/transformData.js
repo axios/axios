@@ -1,4 +1,4 @@
-var transformData = require('../../lib/transformData');
+var transformData = require('../../../lib/helpers/transformData');
 
 module.exports = {
   testSingleFunction: function (test) {

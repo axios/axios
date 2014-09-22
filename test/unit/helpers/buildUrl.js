@@ -1,4 +1,4 @@
-var buildUrl = require('../../lib/buildUrl');
+var buildUrl = require('../../../lib/helpers/buildUrl');
 
 module.exports = {
   testNullParams: function (test) {

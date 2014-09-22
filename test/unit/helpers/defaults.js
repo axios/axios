@@ -1,4 +1,4 @@
-var defaults = require('../../lib/defaults');
+var defaults = require('../../../lib/defaults');
 
 module.exports = {
   testTransformRequestJson: function (test) {

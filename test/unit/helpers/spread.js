@@ -1,4 +1,4 @@
-var spread = require('../../lib/spread');
+var spread = require('../../../lib/helpers/spread');
 
 module.exports = {
   testSpread: function (test) {

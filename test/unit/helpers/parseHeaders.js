@@ -1,4 +1,4 @@
-var parseHeaders = require('../../lib/parseHeaders');
+var parseHeaders = require('../../../lib/helpers/parseHeaders');
 
 module.exports = {
   testParse: function (test) {

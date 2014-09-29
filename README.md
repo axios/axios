@@ -11,6 +11,7 @@ Promise based HTTP client for the browser and node.js
 - Automatic transforms for JSON data
 - Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
 - Specify HTTP request headers
+- JSONP support with [jsonp](https://github.com/webmodules/jsonp)
 
 ## Installing
 
@@ -43,7 +44,7 @@ axios.get('/user?ID=12345')
 	.catch(function (response) {
 		console.log(response);
 	});
-	
+
 // Optionally the request above could also be done as
 axios.get('/user', {
 		params: {
@@ -122,6 +123,7 @@ For convenience aliases have been provided for all supported request methods.
 ##### axios.get(url[, config])
 ##### axios.delete(url[, config])
 ##### axios.head(url[, config])
+##### axios.jsonp(url[, config])
 ##### axios.post(url[, data[, config]])
 ##### axios.put(url[, data[, config]])
 ##### axios.patch(url[, data[, config]])
@@ -144,53 +146,53 @@ This is the available config options for making requests. Only the `url` is requ
 {
 	// `url` is the server URL that will be used for the request
 	url: '/user',
-	
+
 	// `method` is the request method to be used when making the request
 	method: 'get', // default
-	
+
 	// `transformRequest` allows changes to the request data before it is sent to the server
 	// This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
 	// The last function in the array must return a string or an ArrayBuffer
 	transformRequest: [function (data) {
 		// Do whatever you want to transform the data
-		
+
 		return data;
 	}],
-	
+
 	// `transformResponse` allows changes to the response data to be made before
 	// it is passed to the success/error handlers
 	transformResponse: [function (data) {
 		// Do whatever you want to transform the data
-		
+
 		return data;
 	}],
-	
+
 	// `headers` are custom headers to be sent
 	headers: {'X-Requested-With': 'XMLHttpRequest'},
-	
+
 	// `param` are the URL parameters to be sent with the request
 	params: {
 		ID: 12345
 	},
-	
+
 	// `data` is the data to be sent as the request body
 	// Only applicable for request methods 'PUT', 'POST', and 'PATCH'
 	// When no `transformRequest` is set, must be a string, an ArrayBuffer or a hash
 	data: {
 		firstName: 'Fred'
 	},
-	
+
 	// `withCredentials` indicates whether or not cross-site Access-Control requests
 	// should be made using credentials
 	withCredentials: false, // default
-	
+
 	// `responseType` indicates the type of data that the server will respond with
 	// options are 'arraybuffer', 'blob', 'document', 'json', 'text'
 	responseType: 'json', // default
-	
+
 	// `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
 	xsrfCookieName: 'XSRF-TOKEN', // default
-	
+
 	// `xsrfHeaderName` is the name of the http header that carries the xsrf token value
 	xsrfHeaderName: 'X-XSRF-TOKEN' // default
 }
@@ -204,13 +206,13 @@ The response for a request contains the following information.
 {
 	// `data` is the response that was provided by the server
 	data: {},
-	
+
 	// `status` is the HTTP status code from the server response
 	status: 200,
-	
+
 	// `headers` the headers that the server responded with
 	headers: {},
-	
+
 	// `config` is the config that was provided to `axios` for the request
 	config: {}
 }

@@ -25,7 +25,8 @@
   },
   "homepage": "https://github.com/mzabriskie/axios",
   "dependencies": {
-    "es6-promise": "^1.0.0"
+    "es6-promise": "^1.0.0",
+    "jsonp": "0.0.4"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

@@ -73,18 +73,6 @@ axios.post('/user', {
 	});
 ```
 
-Aliases are provided for success and error
-
-```js
-axios.get('/user/12345')
-	.success(function () {
-		console.log('user found');
-	})
-	.error(function () {
-		console.log('error finding user');
-	});
-```
-
 Performing multiple concurrent requests
 
 ```js
@@ -158,7 +146,7 @@ This is the available config options for making requests. Only the `url` is requ
 	}],
 	
 	// `transformResponse` allows changes to the response data to be made before
-	// it is passed to the success/error handlers
+	// it is passed to then/catch
 	transformResponse: [function (data) {
 		// Do whatever you want to transform the data
 		
@@ -216,7 +204,7 @@ The response for a request contains the following information.
 }
 ```
 
-When using `then` or `catch`, you will receive a single response object.
+When using `then` or `catch`, you will receive the response as follows:
 
 ```js
 axios.get('/user/12345')
@@ -226,19 +214,6 @@ axios.get('/user/12345')
 		console.log(response.headers);
 		console.log(response.config);
 	});
-```
-
-For either `success` or `error`, the response is broken up into individual arguments.
-
-```js
-axios.get('/user/12345')
-	.success(function (data, status, headers, config) {
-		console.log(data);
-		console.log(status);
-		console.log(headers);
-		console.log(config);
-	});
-}
 ```
 
 ## Credits

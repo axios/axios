@@ -18,6 +18,10 @@
     <h3>Input</h3>
     <form role="form" onsubmit="return false;">
       <div class="form-group">
+        <label for="url">URL</label>
+        <input id="url" type="url" class="form-control" placeholder="/api"/>
+      </div>
+      <div class="form-group">
         <label for="method">Method</label>
         <select id="method" class="form-control">
           <option value="GET">GET</option>
@@ -69,6 +73,7 @@
         }
       }
 
+      var url = document.getElementById('url');
       var method = document.getElementById('method');
       var params = document.getElementById('params');
       var data = document.getElementById('data');
@@ -82,7 +87,7 @@
       }
 
       function getUrl() {
-        return '/api';
+        return url.value.length === 0 ? '/api' : url.value;
       }
 
       function getParams() {
@@ -131,12 +136,16 @@
         request.innerHTML = JSON.stringify(options, null, 2);
 
         axios(options)
-          .success(function (data) {
-            response.innerHTML = JSON.stringify(data, null, 2);
+          .then(function (res) {
+            response.innerHTML = JSON.stringify(res.data, null, 2);
           })
-          .error(function (data) {
-            response.innerHTML = JSON.stringify(data, null, 2);
+          .catch(function (res) {
+            response.innerHTML = JSON.stringify(res.data, null, 2);
           });
+      };
+
+      url.onchange = function () {
+        localStorage.setItem('url', url.value);
       };
 
       method.onchange = function () {

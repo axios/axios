@@ -33,7 +33,7 @@ module.exports = function(grunt) {
           linebreak: false
         },
         files: {
-          src: ['dist/axios.min.js', 'dist/axios.amd.min.js']
+          src: ['dist/*.min.js']
         }
       }
     },

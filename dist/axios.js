@@ -54,11 +54,11 @@ var axios =
 	/* WEBPACK VAR INJECTION */(function(process) {var Promise = __webpack_require__(13).Promise;
 	var defaults = __webpack_require__(3);
 	var utils = __webpack_require__(4);
-	var spread = __webpack_require__(5);
 	
 	var axios = module.exports = function axios(config) {
 	  config = utils.merge({
 	    method: 'get',
+	    headers: {},
 	    transformRequest: defaults.transformRequest,
 	    transformResponse: defaults.transformResponse
 	  }, config);
@@ -70,7 +70,7 @@ var axios =
 	    try {
 	      // For browsers use XHR adapter
 	      if (typeof window !== 'undefined') {
-	        __webpack_require__(6)(resolve, reject, config);
+	        __webpack_require__(5)(resolve, reject, config);
 	      }
 	      // For node use HTTP adapter
 	      else if (typeof process !== 'undefined') {
@@ -81,8 +81,23 @@ var axios =
 	    }
 	  });
 	
+	  function deprecatedMethod(method, instead, docs) {
+	    try {
+	      console.warn(
+	        'DEPRECATED method `' + method + '`.' +
+	        (instead ? ' Use `' + instead + '` instead.' : '') +
+	        ' This method will be removed in a future release.');
+	
+	      if (docs) {
+	        console.warn('For more information about usage see ' + docs);
+	      }
+	    } catch (e) {}
+	  }
+	
 	  // Provide alias for success
 	  promise.success = function success(fn) {
+	    deprecatedMethod('success', 'then', 'https://github.com/mzabriskie/axios/blob/master/README.md#response-api');
+	
 	    promise.then(function(response) {
 	      fn(response.data, response.status, response.headers, response.config);
 	    });
@@ -91,6 +106,8 @@ var axios =
 	
 	  // Provide alias for error
 	  promise.error = function error(fn) {
+	    deprecatedMethod('error', 'catch', 'https://github.com/mzabriskie/axios/blob/master/README.md#response-api');
+	
 	    promise.then(null, function(response) {
 	      fn(response.data, response.status, response.headers, response.config);
 	    });
@@ -107,7 +124,7 @@ var axios =
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = spread;
+	axios.spread = __webpack_require__(6);
 	
 	// Provide aliases for supported request methods
 	createShortMethods('delete', 'get', 'head');
@@ -155,12 +172,12 @@ var axios =
 	var JSON_START = /^\s*(\[|\{[^\{])/;
 	var JSON_END = /[\}\]]\s*$/;
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
-	var CONTENT_TYPE_APPLICATION_JSON = {
-	  'Content-Type': 'application/json;charset=utf-8'
+	var DEFAULT_CONTENT_TYPE = {
+	  'Content-Type': 'application/x-www-form-urlencoded'
 	};
 	
 	module.exports = {
-	  transformRequest: [function (data) {
+	  transformRequest: [function (data, headers) {
 	    if (utils.isArrayBuffer(data)) {
 	      return data;
 	    }
@@ -168,6 +185,10 @@ var axios =
 	      return data.buffer;
 	    }
 	    if (utils.isObject(data) && !utils.isFile(data) && !utils.isBlob(data)) {
+	      // Set application/json if no Content-Type has been specified
+	      if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+	        headers['Content-Type'] = 'application/json;charset=utf-8';
+	      }
 	      return JSON.stringify(data);
 	    }
 	    return data;
@@ -187,9 +208,9 @@ var axios =
 	    common: {
 	      'Accept': 'application/json, text/plain, */*'
 	    },
-	    patch: utils.merge(CONTENT_TYPE_APPLICATION_JSON),
-	    post: utils.merge(CONTENT_TYPE_APPLICATION_JSON),
-	    put: utils.merge(CONTENT_TYPE_APPLICATION_JSON)
+	    patch: utils.merge(DEFAULT_CONTENT_TYPE),
+	    post: utils.merge(DEFAULT_CONTENT_TYPE),
+	    put: utils.merge(DEFAULT_CONTENT_TYPE)
 	  },
 	
 	  xsrfCookieName: 'XSRF-TOKEN',
@@ -256,6 +277,16 @@ var axios =
 	 */
 	function isNumber(val) {
 	  return typeof val === 'number';
+	}
+	
+	/**
+	 * Determine if a value is undefined
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if the value is undefined, otherwise false
+	 */
+	function isUndefined(val) {
+	  return typeof val === 'undefined';
 	}
 	
 	/**
@@ -384,6 +415,7 @@ var axios =
 	  isString: isString,
 	  isNumber: isNumber,
 	  isObject: isObject,
+	  isUndefined: isUndefined,
 	  isDate: isDate,
 	  isFile: isFile,
 	  isBlob: isBlob,
@@ -396,43 +428,13 @@ var axios =
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Syntactic sugar for invoking a function and expanding an array for arguments.
-	 *
-	 * Common use case would be to use `Function.prototype.apply`.
-	 *
-	 *  ```js
-	 *  function f(x, y, z) {}
-	 *  var args = [1, 2, 3];
-	 *  f.apply(null, args);
-	 *  ```
-	 *
-	 * With `spread` this example can be re-written.
-	 *
-	 *  ```js
-	 *  spread(function(x, y, z) {})([1, 2, 3]);
-	 *  ```
-	 *
-	 * @param {Function} callback
-	 * @returns {Function}
-	 */
-	module.exports = function spread(callback) {
-	  return function (arr) {
-	    callback.apply(null, arr);
-	  };
-	};
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
+	var defaults = __webpack_require__(3);
+	var utils = __webpack_require__(4);
 	var buildUrl = __webpack_require__(8);
 	var cookies = __webpack_require__(9);
-	var defaults = __webpack_require__(3);
 	var parseHeaders = __webpack_require__(10);
 	var transformData = __webpack_require__(11);
 	var urlIsSameOrigin = __webpack_require__(12);
-	var utils = __webpack_require__(4);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -521,6 +523,36 @@ var axios =
 	
 	  // Send the request
 	  request.send(data);
+	};
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Syntactic sugar for invoking a function and expanding an array for arguments.
+	 *
+	 * Common use case would be to use `Function.prototype.apply`.
+	 *
+	 *  ```js
+	 *  function f(x, y, z) {}
+	 *  var args = [1, 2, 3];
+	 *  f.apply(null, args);
+	 *  ```
+	 *
+	 * With `spread` this example can be re-written.
+	 *
+	 *  ```js
+	 *  spread(function(x, y, z) {})([1, 2, 3]);
+	 *  ```
+	 *
+	 * @param {Function} callback
+	 * @returns {Function}
+	 */
+	module.exports = function spread(callback) {
+	  return function (arr) {
+	    callback.apply(null, arr);
+	  };
 	};
 
 /***/ },

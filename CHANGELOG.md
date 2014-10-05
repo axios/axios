@@ -26,3 +26,12 @@
 ### 0.3.1 (Sep 16, 2014)
 
 - Fixing missing post body when using node.js ([#3](https://github.com/mzabriskie/axios/issues/3))
+
+### 0.4.0 (Oct 03, 2014)
+
+- Adding support for `ArrayBuffer` and `ArrayBufferView`
+- Adding support for utf-8 for node.js
+- Adding support for SSL for node.js ([#12](https://github.com/mzabriskie/axios/issues/12))
+- Fixing incorrect `Content-Type` header ([#9](https://github.com/mzabriskie/axios/issues/9))
+- Adding standalone build without bundled es6-promise ([#11](https://github.com/mzabriskie/axios/issues/11))
+- Deprecating `success`/`error` in favor of `then`/`catch`

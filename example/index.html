@@ -54,6 +54,8 @@
   <body>
     <h1>People</h1>
     <ul id="people"></ul>
+    <h1>JSONP</h1>
+    <ul id="gravatar"></ul>
 
     <script src="../dist/axios.min.js"></script>
     <script>
@@ -77,6 +79,24 @@
         .error(function(data) {
           document.getElementById('people').innerHTML = '<li class="error">' + data + '</li>';
         });
+
+      axios.jsonp('https://secure.gravatar.com/21403b8b5f544512598fe92a6f62eb5d.json')
+        .success(function (data) {
+          var gravatar = data.entry.map(function (user) {
+            return (
+              '<li>' +
+                '<img src="' + user.thumbnailUrl + '"/>' +
+                '<strong>' + user.displayName + '</strong>' +
+                '<div>Profile: <a href="' + user.profileUrl + ' " target="_blank">' + user.profileUrl + '</a></div>' +
+              '</li>'
+            )
+          });
+
+          document.getElementById('gravatar').innerHTML = gravatar;
+        })
+        .error(function(data) {
+          document.getElementById('gravatar').innerHTML = '<li class="error">' + data + '</li>';
+        })
     </script>
   </body>
 </html>

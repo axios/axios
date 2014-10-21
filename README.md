@@ -179,7 +179,12 @@ This is the available config options for making requests. Only the `url` is requ
   xsrfCookieName: 'XSRF-TOKEN', // default
 
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
-  xsrfHeaderName: 'X-XSRF-TOKEN' // default
+  xsrfHeaderName: 'X-XSRF-TOKEN', // default
+
+  // `adapter` is a custom adapter function for http implementation. By default
+  // axios uses a xhr adapter in the browser and node.js http module in
+  // node.js. See lib/adapters for examples on how to implement one.
+  adapter: function(resolve, reject, config) { }
 }
 ```
 

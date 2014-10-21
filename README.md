@@ -239,6 +239,21 @@ axios.get('/user/12345')
   });
 ```
 
+## Custom axios instances
+
+```js
+var defaultConfig = {
+  headers: {
+    "x-api-key": "foobar"
+  }
+};
+
+var apiRequest = require("axios").createAxios(defaultConfig);
+```
+
+This creates a new axios instance with a custom default options. In this
+example it used to create some api service specific http client.
+
 ## Credits
 
 axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [Angular](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of Angular.

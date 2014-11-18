@@ -1,3 +1,6 @@
 .idea
 *.iml
 node_modules
+.tscache
+test/typescript/axios.js*
+

@@ -29,20 +29,21 @@
   },
   "devDependencies": {
     "grunt": "^0.4.5",
+    "grunt-banner": "^0.2.3",
     "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-nodeunit": "^0.4.1",
     "grunt-contrib-watch": "^0.6.1",
-    "webpack": "^1.4.0-beta9",
-    "webpack-dev-server": "^1.4.10",
+    "grunt-karma": "^0.8.3",
+    "grunt-ts": "^1.12.1",
+    "grunt-update-json": "^0.1.3",
     "grunt-webpack": "^1.0.8",
-    "load-grunt-tasks": "^0.6.0",
     "karma": "^0.12.21",
     "karma-jasmine": "^0.1.5",
-    "grunt-karma": "^0.8.3",
-    "karma-phantomjs-launcher": "^0.1.4",
     "karma-jasmine-ajax": "^0.1.4",
-    "grunt-update-json": "^0.1.3",
-    "grunt-contrib-nodeunit": "^0.4.1",
-    "grunt-banner": "^0.2.3"
+    "karma-phantomjs-launcher": "^0.1.4",
+    "load-grunt-tasks": "^0.6.0",
+    "webpack": "^1.4.0-beta9",
+    "webpack-dev-server": "^1.4.10"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

@@ -11,6 +11,16 @@ module.exports = function(grunt) {
       dist: 'dist/**'
     },
 
+    ts: {
+      test: {
+        src: ['test/typescript/*.ts'],
+        out: 'test/typescript/out.js',
+        options: {
+          module: 'commonjs',
+        }
+      }
+    },
+
     update_json: {
       bower: {
         src: 'package.json',
@@ -68,7 +78,7 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['webpack:global', 'nodeunit', 'karma:single']);
+  grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['webpack:global', 'nodeunit', 'karma:single', 'ts']);
   grunt.registerTask('build', 'Run webpack and bundle the source', ['webpack']);
   grunt.registerTask('publish', 'Prepare the code for release', ['clean', 'test', 'build', 'usebanner', 'update_json']);
 

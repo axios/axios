@@ -234,6 +234,14 @@ axios.get('/user/12345')
   });
 ```
 
+## TypeScript Definition
+Axios includes a [TypeScript](http://typescriptlang.org) definition.
+```typescript
+/// <reference path="axios.d.ts" />
+import axios = require('axios');
+axios.get('/user?ID=12345');
+```
+
 ## Credits
 
 axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [Angular](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of Angular.

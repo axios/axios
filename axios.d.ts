@@ -8,18 +8,12 @@ declare var axios: axios.AxiosStatic
 declare module axios {
   interface AxiosStatic {
     (options: axios.RequestOptions): axios.Promise;
-    get(url: string): axios.Promise;
-    get(url: string, options?: any): axios.Promise;
-    post(url: string): axios.Promise;
-    post(url: string, data?: any): axios.Promise;
-    put(url: string): axios.Promise;
-    put(url: string, data?: any): axios.Promise;
-    delete(url: string): axios.Promise;
-    delete(url: string, data?: any): axios.Promise;
-    patch(url: string): axios.Promise;
-    patch(url: string, data?: any): axios.Promise;
-    head(url: string): axios.Promise;
-    head(url: string, options?: any): axios.Promise;
+    get(url: string, config?: any): axios.Promise;
+    delete(url: string, config?: any): axios.Promise;
+    head(url: string, config?: any): axios.Promise;
+    post(url: string, data: any, config?: any): axios.Promise;
+    put(url: string, data: any, config?: any): axios.Promise;
+    patch(url: string, data: any, config?: any): axios.Promise;
     all(iterable: any): axios.Promise;
     spread(callback: any): axios.Promise;
   }

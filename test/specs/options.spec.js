@@ -3,49 +3,89 @@ describe('options', function () {
     jasmine.Ajax.install();
   });
 
+  afterEach(function () {
+    jasmine.Ajax.uninstall();
+  });
+
   it('should default method to get', function () {
-    axios({
-      url: '/foo'
+    var request;
+
+    runs(function () {
+      axios({
+        url: '/foo'
+      });
     });
 
-    var request = jasmine.Ajax.requests.mostRecent();
-    expect(request.method).toBe('get');
+    waitsFor(function () {
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      expect(request.method).toBe('get');
+    });
   });
 
   it('should accept headers', function () {
-    axios({
-      url: '/foo',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+    var request;
+
+    runs(function () {
+      axios({
+        url: '/foo',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
     });
 
-    var request = jasmine.Ajax.requests.mostRecent();
-    expect(request.requestHeaders['X-Requested-With']).toEqual('XMLHttpRequest');
+    waitsFor(function () {
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      expect(request.requestHeaders['X-Requested-With']).toEqual('XMLHttpRequest');
+    });
   });
 
   it('should accept params', function () {
-    axios({
-      url: '/foo',
-      params: {
-        foo: 123,
-        bar: 456
-      }
+    var request;
+
+    runs(function () {
+      axios({
+        url: '/foo',
+        params: {
+          foo: 123,
+          bar: 456
+        }
+      });
     });
 
-    var request = jasmine.Ajax.requests.mostRecent();
-    expect(request.url).toBe('/foo?foo=123&bar=456');
+    waitsFor(function () {
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      expect(request.url).toBe('/foo?foo=123&bar=456');
+    });
   });
 
   it('should allow overriding default headers', function () {
-    axios({
-      url: '/foo',
-      headers: {
-        'Accept': 'foo/bar'
-      }
+    var request;
+
+    runs(function () {
+      axios({
+        url: '/foo',
+        headers: {
+          'Accept': 'foo/bar'
+        }
+      });
     });
 
-    var request = jasmine.Ajax.requests.mostRecent();
-    expect(request.requestHeaders['Accept']).toEqual('foo/bar');
+    waitsFor(function () {
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      expect(request.requestHeaders['Accept']).toEqual('foo/bar');
+    });
   });
 });

@@ -3,26 +3,35 @@ describe('promise', function () {
     jasmine.Ajax.install();
   });
 
+  afterEach(function () {
+    jasmine.Ajax.uninstall();
+  });
+
   it('should provide succinct object to then', function () {
-    var response;
-    var fulfilled = false;
+    var request, response;
 
-    axios({
-      url: '/foo'
-    }).then(function (r) {
+    runs(function () {
+      axios({
+        url: '/foo'
+      }).then(function (r) {
         response = r;
-        fulfilled = true;
       });
-
-    var request = jasmine.Ajax.requests.mostRecent();
-    request.response({
-      status: 200,
-      responseText: '{"hello":"world"}'
     });
 
     waitsFor(function () {
-      return fulfilled;
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      request.response({
+        status: 200,
+        responseText: '{"hello":"world"}'
+      });
     });
+
+    waitsFor(function () {
+      return response;
+    }, 'waiting for the response', 100);
 
     runs(function () {
       expect(typeof response).toEqual('object');
@@ -34,31 +43,34 @@ describe('promise', function () {
   });
 
   it('should provide verbose arguments to success', function () {
-    var data;
-    var status;
-    var headers;
-    var config;
-    var fulfilled = false;
+    var request, data, status, headers, config;
 
-    axios({
-      url: '/foo'
-    }).success(function (d, s, h, c) {
+    runs(function () {
+      axios({
+        url: '/foo'
+      }).success(function (d, s, h, c) {
         data = d;
         status = s;
         headers = h;
         config = c;
         fulfilled = true;
       });
-
-    var request = jasmine.Ajax.requests.mostRecent();
-    request.response({
-      status: 200,
-      responseText: '{"hello":"world"}'
     });
 
     waitsFor(function () {
-      return fulfilled;
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      request.response({
+        status: 200,
+        responseText: '{"hello":"world"}'
+      });
     });
+
+    waitsFor(function () {
+      return data;
+    }, 'waiting for the data', 100);
 
     runs(function () {
       expect(data.hello).toEqual('world');

@@ -21,7 +21,7 @@ describe('options', function () {
     }, 'waiting for the request', 100);
 
     runs(function () {
-      expect(request.method).toBe('get');
+      expect(request.method).toBe('GET');
     });
   });
 

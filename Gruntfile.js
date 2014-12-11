@@ -112,6 +112,8 @@ module.exports = function(grunt) {
 //      ];
     });
 
+    var EXTERNAL_PROMISE = '{Promise: Promise}';
+
     webpackConfig['amd'].output.filename = 'axios.amd.js';
     webpackConfig['amd'].output.sourceMapFilename = 'axios.amd.map';
     webpackConfig['amd'].output.libraryTarget = 'amd';
@@ -119,7 +121,7 @@ module.exports = function(grunt) {
     webpackConfig['amd-standalone'].output.filename = 'axios.amd.standalone.js';
     webpackConfig['amd-standalone'].output.sourceMapFilename = 'axios.amd.standalone.map';
     webpackConfig['amd-standalone'].output.libraryTarget = 'amd';
-    webpackConfig['amd-standalone'].externals[0]['es6-promise'] = 'var undefined';
+    webpackConfig['amd-standalone'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
 
     webpackConfig['amd-min'].output.filename = 'axios.amd.min.js';
     webpackConfig['amd-min'].output.sourceMapFilename = 'axios.amd.min.map';
@@ -128,18 +130,18 @@ module.exports = function(grunt) {
     webpackConfig['amd-standalone-min'].output.filename = 'axios.amd.standalone.min.js';
     webpackConfig['amd-standalone-min'].output.sourceMapFilename = 'axios.amd.standalone.min.map';
     webpackConfig['amd-standalone-min'].output.libraryTarget = 'amd';
-    webpackConfig['amd-standalone-min'].externals[0]['es6-promise'] = 'var undefined';
+    webpackConfig['amd-standalone-min'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
 
     webpackConfig['global-standalone'].output.filename = 'axios.standalone.js';
     webpackConfig['global-standalone'].output.sourceMapFilename = 'axios.standalone.map';
-    webpackConfig['global-standalone'].externals[0]['es6-promise'] = 'var undefined';
+    webpackConfig['global-standalone'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
 
     webpackConfig['global-min'].output.filename = 'axios.min.js';
     webpackConfig['global-min'].output.sourceMapFilename = 'axios.min.map';
 
     webpackConfig['global-standalone-min'].output.filename = 'axios.standalone.min.js';
     webpackConfig['global-standalone-min'].output.sourceMapFilename = 'axios.standalone.min.map';
-    webpackConfig['global-standalone-min'].externals[0]['es6-promise'] = 'var undefined';
+    webpackConfig['global-standalone-min'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
 
     return webpackConfig;
   }

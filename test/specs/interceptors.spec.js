@@ -63,7 +63,7 @@ describe('interceptors', function () {
         responseText: 'OK'
       });
 
-      expect(request.method).toBe('post');
+      expect(request.method).toBe('POST');
       expect(request.url).toBe('/bar');
     });
   });

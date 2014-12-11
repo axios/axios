@@ -66,20 +66,22 @@ var axios =
 	  // Don't allow overriding defaults.withCredentials
 	  config.withCredentials = config.withCredentials || defaults.withCredentials;
 	
-	  var promise = new Promise(function (resolve, reject) {
-	    try {
-	      // For browsers use XHR adapter
-	      if (typeof window !== 'undefined') {
-	        __webpack_require__(5)(resolve, reject, config);
+	  var serverRequest = function (config) {
+	    return new Promise(function (resolve, reject) {
+	      try {
+	        // For browsers use XHR adapter
+	        if (typeof window !== 'undefined') {
+	          __webpack_require__(5)(resolve, reject, config);
+	        }
+	        // For node use HTTP adapter
+	        else if (typeof process !== 'undefined') {
+	          __webpack_require__(2)(resolve, reject, config);
+	        }
+	      } catch (e) {
+	        reject(e);
 	      }
-	      // For node use HTTP adapter
-	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(2)(resolve, reject, config);
-	      }
-	    } catch (e) {
-	      reject(e);
-	    }
-	  });
+	    });
+	  };
 	
 	  function deprecatedMethod(method, instead, docs) {
 	    try {
@@ -92,6 +94,24 @@ var axios =
 	        console.warn('For more information about usage see ' + docs);
 	      }
 	    } catch (e) {}
+	  }
+	
+	  var chain = [serverRequest, undefined];
+	  var promise = Promise.resolve(config);
+	
+	  utils.forEach(axios.interceptors.request.handlers, function (interceptor) {
+	    chain.unshift(interceptor.request, interceptor.requestError);
+	  });
+	
+	  utils.forEach(axios.interceptors.response.handlers, function (interceptor) {
+	    chain.push(interceptor.response, interceptor.responseError);
+	  });
+	
+	  while (chain.length) {
+	    var thenFn = chain.shift();
+	    var rejectFn = chain.shift();
+	
+	    promise = promise.then(thenFn, rejectFn);
 	  }
 	
 	  // Provide alias for success
@@ -126,6 +146,22 @@ var axios =
 	};
 	axios.spread = __webpack_require__(6);
 	
+	// interceptors
+	axios.interceptors = {
+	  request: {
+	    handlers: [],
+	    use: function (thenFn, rejectFn) {
+	      axios.interceptors.request.handlers.push({ request: thenFn, requestError: rejectFn });
+	    }
+	  },
+	  response: {
+	    handlers: [],
+	    use: function (thenFn, rejectFn) {
+	      axios.interceptors.response.handlers.push({ response: thenFn, responseError: rejectFn });
+	    }
+	  }
+	};
+	
 	// Provide aliases for supported request methods
 	createShortMethods('delete', 'get', 'head');
 	createShortMethodsWithData('post', 'put', 'patch');
@@ -152,6 +188,7 @@ var axios =
 	    };
 	  });
 	}
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
 
 /***/ },
@@ -243,6 +280,16 @@ var axios =
 	 */
 	function isArrayBuffer(val) {
 	  return toString.call(val) === '[object ArrayBuffer]';
+	}
+	
+	/**
+	 * Determine if a value is a FormData
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is an FormData, otherwise false
+	 */
+	function isFormData(val) {
+	  return toString.call(val) === '[object FormData]';
 	}
 	
 	/**
@@ -411,6 +458,7 @@ var axios =
 	module.exports = {
 	  isArray: isArray,
 	  isArrayBuffer: isArrayBuffer,
+	  isFormData: isFormData,
 	  isArrayBufferView: isArrayBufferView,
 	  isString: isString,
 	  isNumber: isNumber,
@@ -451,9 +499,13 @@ var axios =
 	    config.headers || {}
 	  );
 	
+	  if (utils.isFormData(data)) {
+	    delete headers['Content-Type']; // Let the browser set it
+	  }
+	
 	  // Create the request
 	  var request = new(XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
-	  request.open(config.method, buildUrl(config.url, config.params), true);
+	  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params), true);
 	
 	  // Listen for ready state
 	  request.onreadystatechange = function () {

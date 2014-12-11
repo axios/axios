@@ -52,8 +52,8 @@ var axios =
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {var Promise = __webpack_require__(2).Promise;
-	var defaults = __webpack_require__(3);
-	var utils = __webpack_require__(4);
+	var defaults = __webpack_require__(4);
+	var utils = __webpack_require__(5);
 	
 	var axios = module.exports = function axios(config) {
 	  config = utils.merge({
@@ -66,20 +66,22 @@ var axios =
 	  // Don't allow overriding defaults.withCredentials
 	  config.withCredentials = config.withCredentials || defaults.withCredentials;
 	
-	  var promise = new Promise(function (resolve, reject) {
-	    try {
-	      // For browsers use XHR adapter
-	      if (typeof window !== 'undefined') {
-	        __webpack_require__(5)(resolve, reject, config);
+	  var serverRequest = function (config) {
+	    return new Promise(function (resolve, reject) {
+	      try {
+	        // For browsers use XHR adapter
+	        if (typeof window !== 'undefined') {
+	          __webpack_require__(6)(resolve, reject, config);
+	        }
+	        // For node use HTTP adapter
+	        else if (typeof process !== 'undefined') {
+	          __webpack_require__(3)(resolve, reject, config);
+	        }
+	      } catch (e) {
+	        reject(e);
 	      }
-	      // For node use HTTP adapter
-	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(2)(resolve, reject, config);
-	      }
-	    } catch (e) {
-	      reject(e);
-	    }
-	  });
+	    });
+	  };
 	
 	  function deprecatedMethod(method, instead, docs) {
 	    try {
@@ -92,6 +94,24 @@ var axios =
 	        console.warn('For more information about usage see ' + docs);
 	      }
 	    } catch (e) {}
+	  }
+	
+	  var chain = [serverRequest, undefined];
+	  var promise = Promise.resolve(config);
+	
+	  utils.forEach(axios.interceptors.request.handlers, function (interceptor) {
+	    chain.unshift(interceptor.request, interceptor.requestError);
+	  });
+	
+	  utils.forEach(axios.interceptors.response.handlers, function (interceptor) {
+	    chain.push(interceptor.response, interceptor.responseError);
+	  });
+	
+	  while (chain.length) {
+	    var thenFn = chain.shift();
+	    var rejectFn = chain.shift();
+	
+	    promise = promise.then(thenFn, rejectFn);
 	  }
 	
 	  // Provide alias for success
@@ -124,7 +144,23 @@ var axios =
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(6);
+	axios.spread = __webpack_require__(7);
+	
+	// interceptors
+	axios.interceptors = {
+	  request: {
+	    handlers: [],
+	    use: function (thenFn, rejectFn) {
+	      axios.interceptors.request.handlers.push({ request: thenFn, requestError: rejectFn });
+	    }
+	  },
+	  response: {
+	    handlers: [],
+	    use: function (thenFn, rejectFn) {
+	      axios.interceptors.response.handlers.push({ response: thenFn, responseError: rejectFn });
+	    }
+	  }
+	};
 	
 	// Provide aliases for supported request methods
 	createShortMethods('delete', 'get', 'head');
@@ -152,21 +188,29 @@ var axios =
 	    };
 	  });
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = undefined;
+	module.exports = {Promise: Promise};
 
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
+	if(typeof undefined === 'undefined') {var e = new Error("Cannot find module \"undefined\""); e.code = 'MODULE_NOT_FOUND'; throw e;}
+	module.exports = undefined;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(5);
 	
 	var JSON_START = /^\s*(\[|\{[^\{])/;
 	var JSON_END = /[\}\]]\s*$/;
@@ -217,7 +261,7 @@ var axios =
 	};
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// utils is a library of generic helper functions non-specific to axios
@@ -242,6 +286,16 @@ var axios =
 	 */
 	function isArrayBuffer(val) {
 	  return toString.call(val) === '[object ArrayBuffer]';
+	}
+	
+	/**
+	 * Determine if a value is a FormData
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is an FormData, otherwise false
+	 */
+	function isFormData(val) {
+	  return toString.call(val) === '[object FormData]';
 	}
 	
 	/**
@@ -410,6 +464,7 @@ var axios =
 	module.exports = {
 	  isArray: isArray,
 	  isArrayBuffer: isArrayBuffer,
+	  isFormData: isFormData,
 	  isArrayBufferView: isArrayBufferView,
 	  isString: isString,
 	  isNumber: isNumber,
@@ -424,16 +479,16 @@ var axios =
 	};
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var defaults = __webpack_require__(3);
-	var utils = __webpack_require__(4);
-	var buildUrl = __webpack_require__(8);
-	var cookies = __webpack_require__(9);
-	var parseHeaders = __webpack_require__(10);
-	var transformData = __webpack_require__(11);
-	var urlIsSameOrigin = __webpack_require__(12);
+	var defaults = __webpack_require__(4);
+	var utils = __webpack_require__(5);
+	var buildUrl = __webpack_require__(9);
+	var cookies = __webpack_require__(10);
+	var parseHeaders = __webpack_require__(11);
+	var transformData = __webpack_require__(12);
+	var urlIsSameOrigin = __webpack_require__(13);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -450,9 +505,13 @@ var axios =
 	    config.headers || {}
 	  );
 	
+	  if (utils.isFormData(data)) {
+	    delete headers['Content-Type']; // Let the browser set it
+	  }
+	
 	  // Create the request
 	  var request = new(XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
-	  request.open(config.method, buildUrl(config.url, config.params), true);
+	  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params), true);
 	
 	  // Listen for ready state
 	  request.onreadystatechange = function () {
@@ -525,7 +584,7 @@ var axios =
 	};
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -555,7 +614,7 @@ var axios =
 	};
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -624,12 +683,12 @@ var axios =
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(5);
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -674,12 +733,12 @@ var axios =
 	};
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(5);
 	
 	module.exports = {
 	  write: function write(name, value, expires, path, domain, secure) {
@@ -716,12 +775,12 @@ var axios =
 	};
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(5);
 	
 	/**
 	 * Parse headers into an object
@@ -755,12 +814,12 @@ var axios =
 	};
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(5);
 	
 	/**
 	 * Transform the data for a request or a response
@@ -779,13 +838,13 @@ var axios =
 	};
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var msie = /(msie|trident)/i.test(navigator.userAgent);
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(5);
 	var urlParsingNode = document.createElement('a');
 	var originUrl = urlResolve(window.location.href);
 	

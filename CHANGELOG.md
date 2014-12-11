@@ -39,3 +39,10 @@
 ### 0.4.1 (Oct 15, 2014)
 
 - Adding error handling to request for node.js ([#18](https://github.com/mzabriskie/axios/issues/18))
+
+### 0.4.2 (Dec 10, 2014)
+
+- Fixing issue with `Content-Type` when using `FormData` ([#22](https://github.com/mzabriskie/axios/issues/22))
+- Adding support for TypeScript ([#25](https://github.com/mzabriskie/axios/issues/25))
+- Fixing issue with standalone build ([#29](https://github.com/mzabriskie/axios/issues/29))
+- Fixing issue with verbs needing to be capitalized in some browsers ([#30](https://github.com/mzabriskie/axios/issues/30))

@@ -114,4 +114,20 @@ describe('promise', function () {
       expect(sum).toEqual(123 + 456);
     });
   });
+
+  it('should support finally', function () {
+    var finallyFulfilled = false;
+
+    axios.all([123]).finally(function () {
+      finallyFulfilled = true;
+    });
+
+    waitsFor(function () {
+      return finallyFulfilled;
+    });
+
+    runs(function () {
+      expect(finallyFulfilled).toEqual(true);
+    });
+  });
 });

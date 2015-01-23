@@ -296,4 +296,50 @@ describe('interceptors', function () {
       expect(response.data).toBe('OK123');
     });
   });
+
+  it('should allow removing interceptors', function () {
+    var request, response, intercept;
+
+    runs(function () {
+      axios.interceptors.response.use(function (data) {
+        data.data = data.data + '1';
+        return data;
+      });
+      intercept = axios.interceptors.response.use(function (data) {
+        data.data = data.data + '2';
+        return data;
+      });
+      axios.interceptors.response.use(function (data) {
+        data.data = data.data + '3';
+        return data;
+      });
+
+      axios.interceptors.response.eject(intercept);
+
+      axios({
+        url: '/foo'
+      }).then(function (data) {
+        response = data;
+      });
+    });
+
+    waitsFor(function () {
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      request.response({
+        status: 200,
+        responseText: 'OK'
+      });
+    });
+
+    waitsFor(function () {
+      return response;
+    }, 'waiting for the response', 100);
+
+    runs(function () {
+      expect(response.data).toBe('OK13');
+    });
+  });
 });

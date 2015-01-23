@@ -46,3 +46,8 @@
 - Adding support for TypeScript ([#25](https://github.com/mzabriskie/axios/issues/25))
 - Fixing issue with standalone build ([#29](https://github.com/mzabriskie/axios/issues/29))
 - Fixing issue with verbs needing to be capitalized in some browsers ([#30](https://github.com/mzabriskie/axios/issues/30))
+
+### 0.5.0 (Jan 23, 2015)
+
+- Adding support for intercepetors
+- Updating es6-promise dependency

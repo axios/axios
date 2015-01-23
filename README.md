@@ -1,4 +1,9 @@
-# axios [![Build Status](https://travis-ci.org/mzabriskie/axios.svg?branch=master)](https://travis-ci.org/mzabriskie/axios)
+#axios
+
+[![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
+[![npm downloadsi](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
+[![build status](https://img.shields.io/travis/mzabriskie/axios.svg?style=flat-square)](https://travis-ci.org/mzabriskie/axios)
+[![dependency status](https://img.shields.io/david/mzabriskie/axios.svg?style=flat-square)](https://david-dm.org/mzabriskie/axios)
 
 Promise based HTTP client for the browser and node.js
 
@@ -7,6 +12,7 @@ Promise based HTTP client for the browser and node.js
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
 - Make [http](http://nodejs.org/api/http.html) requests from node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
+- Intercept request and response
 - Transform request and response data
 - Automatic transforms for JSON data
 - Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
@@ -215,6 +221,37 @@ axios.get('/user/12345')
 });
 ```
 
+## Interceptors
+
+You can intercept requests or responses before they are handled by `then` or `catch`.
+
+```js
+// Add a request interceptor
+axios.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    return config;
+  }, function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+  });
+
+// Add a response interceptor
+axios.interceptors.response.use(function (response) {
+    // Do something with response data
+    return response;
+  }, function (error) {
+    // Do something with response error
+    return Promise.reject(error);
+  });
+```
+
+If you may need to remove an interceptor later you can.
+
+```js
+var myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+axios.interceptors.request.eject(myInterceptor);
+```
+
 ## Handling Errors
 
 ```js
@@ -235,7 +272,7 @@ axios.get('/user/12345')
 ```
 
 ## TypeScript Definition
-Axios includes a [TypeScript](http://typescriptlang.org) definition.
+axios includes a [TypeScript](http://typescriptlang.org) definition.
 ```typescript
 /// <reference path="axios.d.ts" />
 import axios = require('axios');

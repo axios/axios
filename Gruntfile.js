@@ -64,7 +64,7 @@ module.exports = function(grunt) {
       all: ['test/unit/**/*.js']
     },
 
-    webpack: generateWebpackConfig(),
+    webpack: require('./webpack.config.js'),
 
     watch: {
       build: {
@@ -81,68 +81,4 @@ module.exports = function(grunt) {
   grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['webpack:global', 'nodeunit', 'karma:single', 'ts']);
   grunt.registerTask('build', 'Run webpack and bundle the source', ['webpack']);
   grunt.registerTask('publish', 'Prepare the code for release', ['clean', 'test', 'build', 'usebanner', 'update_json']);
-
-  function generateWebpackConfig() {
-    var webpack = require('webpack');
-    var webpackConfig = {};
-    var webpackBase = {
-      entry: './index.js',
-      output: {
-        path: 'dist/',
-        filename: 'axios.js',
-        sourceMapFilename: 'axios.map',
-        library: 'axios'
-      },
-      externals: [
-        {
-          './adapters/http': 'var undefined'
-        }
-      ],
-      devtool: 'source-map'
-    };
-
-    ['amd', 'global', 'amd-standalone', 'global-standalone'].forEach(function (key) {
-      webpackConfig[key] = JSON.parse(JSON.stringify(webpackBase));
-      webpackConfig[key + '-min'] = JSON.parse(JSON.stringify(webpackBase));
-
-      // TODO: UglifyJsPlugin doesn' work, but optimize.minimize is deprecated
-      webpackConfig[key + '-min'].optimize = {minimize: true};
-//      webpackConfig[key + '-min'].pugins = [
-//        new webpack.optimize.UglifyJsPlugin()
-//      ];
-    });
-
-    var EXTERNAL_PROMISE = '{Promise: Promise}';
-
-    webpackConfig['amd'].output.filename = 'axios.amd.js';
-    webpackConfig['amd'].output.sourceMapFilename = 'axios.amd.map';
-    webpackConfig['amd'].output.libraryTarget = 'amd';
-
-    webpackConfig['amd-standalone'].output.filename = 'axios.amd.standalone.js';
-    webpackConfig['amd-standalone'].output.sourceMapFilename = 'axios.amd.standalone.map';
-    webpackConfig['amd-standalone'].output.libraryTarget = 'amd';
-    webpackConfig['amd-standalone'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
-
-    webpackConfig['amd-min'].output.filename = 'axios.amd.min.js';
-    webpackConfig['amd-min'].output.sourceMapFilename = 'axios.amd.min.map';
-    webpackConfig['amd-min'].output.libraryTarget = 'amd';
-
-    webpackConfig['amd-standalone-min'].output.filename = 'axios.amd.standalone.min.js';
-    webpackConfig['amd-standalone-min'].output.sourceMapFilename = 'axios.amd.standalone.min.map';
-    webpackConfig['amd-standalone-min'].output.libraryTarget = 'amd';
-    webpackConfig['amd-standalone-min'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
-
-    webpackConfig['global-standalone'].output.filename = 'axios.standalone.js';
-    webpackConfig['global-standalone'].output.sourceMapFilename = 'axios.standalone.map';
-    webpackConfig['global-standalone'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
-
-    webpackConfig['global-min'].output.filename = 'axios.min.js';
-    webpackConfig['global-min'].output.sourceMapFilename = 'axios.min.map';
-
-    webpackConfig['global-standalone-min'].output.filename = 'axios.standalone.min.js';
-    webpackConfig['global-standalone-min'].output.sourceMapFilename = 'axios.standalone.min.map';
-    webpackConfig['global-standalone-min'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
-
-    return webpackConfig;
-  }
 };

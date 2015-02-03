@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>axios - post example</title>
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+  </head>
+  <body class="container">
+    <h1>axios.post</h1>
+
+    <form role="form" class="form" onsubmit="return false;">
+      <div class="form-group">
+        <label for="url">URL</label>
+        <input id="url" type="text" class="form-control"/>
+      </div>
+      <div class="form-group">
+        <label for="data">Body</label>
+        <textarea id="data" class="form-control" rows="5"></textarea>
+      </div>
+      <button id="post" type="button" class="btn btn-primary">POST</button>
+    </form>
+
+    <div id="output" class="container"></div>
+
+    <script src="/dist/axios.min.js"></script>
+    <script>
+      (function () {
+        var output = document.getElementById('output');
+        document.getElementById('post').onclick = function () {
+          var url = document.getElementById('url').value;
+          var data = document.getElementById('data').value;
+
+          axios.post(url, JSON.parse(data))
+            .then(function (res) {
+              output.className = 'container';
+              output.innerHTML = res.data;
+            })
+            .catch(function (res) {
+              output.className = 'container text-danger';
+              output.innerHTML = res.data;
+            });
+        };
+      })();
+    </script>
+  </body>
+</html>

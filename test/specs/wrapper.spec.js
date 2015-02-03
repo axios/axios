@@ -166,4 +166,41 @@ describe('wrapper', function () {
       expect(request.requestHeaders['content-type']).toEqual(undefined);
     });
   });
+
+  // TODO this won't work until karma-jasmine updates to jasmine-ajax 2.99.0
+  /*
+  it('should support array buffer response', function () {
+    var request, response;
+
+    runs(function () {
+      axios({
+        url: '/foo',
+        responseType: 'arraybuffer'
+      }).then(function (data) {
+        response = data;
+      });
+    });
+
+    waitsFor(function () {
+      return request = jasmine.Ajax.requests.mostRecent();
+    }, 'waiting for the request', 100);
+
+    runs(function () {
+      request.response({
+        status: 200,
+        response: new ArrayBuffer(16)
+      });
+      request.response = new ArrayBuffer(16);
+    });
+
+    waitsFor(function () {
+      return response;
+    }, 'waiting for the response', 100);
+
+    runs(function () {
+      expect(response.data.byteLength).toBe(16);
+    });
+  });
+  */
+
 });

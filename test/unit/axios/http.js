@@ -10,7 +10,6 @@ module.exports = {
   },
 
   testJSON: function (test) {
-    console.log('testJSON');
     var data = {
       firstName: 'Fred',
       lastName: 'Flintstone',

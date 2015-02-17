@@ -146,7 +146,7 @@ describe('wrapper', function () {
     }, 0);
   });
 
-  // TODO this won't work until karma-jasmine updates to jasmine-ajax 2.99.0
+  // TODO this won't work until karma-jasmine updates to jasmine-ajax 3.0.0
   /*
   it('should support array buffer response', function (done) {
     var request, response;
@@ -176,12 +176,11 @@ describe('wrapper', function () {
       });
 
       setTimeout(function () {
-        console.log(response.data);
-        expect(response.data.byteLength).toBe(16);
+        expect(response.data.byteLength).toBe(22);
         done();
       }, 0);
     }, 0);
   });
-  */
+  //*/
 
 });

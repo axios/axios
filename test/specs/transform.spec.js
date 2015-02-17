@@ -7,102 +7,90 @@ describe('transform', function () {
     jasmine.Ajax.uninstall();
   });
 
-  it('should transform JSON to string', function () {
+  it('should transform JSON to string', function (done) {
     var request;
     var data = {
       foo: 'bar'
     };
 
-    runs(function () {
-      axios({
-        url: '/foo',
-        method: 'post',
-        data: data
-      });
+    axios({
+      url: '/foo',
+      method: 'post',
+      data: data
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(request.params).toEqual('{"foo":"bar"}');
-    });
+      done();
+    }, 0);
   });
 
-  it('should override default transform', function () {
+  it('should override default transform', function (done) {
     var request;
     var data = {
       foo: 'bar'
     };
 
-    runs(function () {
-      axios({
-        url: '/foo',
-        method: 'post',
-        data: data,
-        transformRequest: function (data) {
-          return data;
-        }
-      });
+    axios({
+      url: '/foo',
+      method: 'post',
+      data: data,
+      transformRequest: function (data) {
+        return data;
+      }
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(typeof request.params).toEqual('object');
-    });
+      done();
+    }, 0);
   });
 
-  it('should allow an Array of transformers', function () {
+  it('should allow an Array of transformers', function (done) {
     var request;
     var data = {
       foo: 'bar'
     };
 
-    runs(function () {
-      axios({
-        url: '/foo',
-        method: 'post',
-        data: data,
-        transformRequest: axios.defaults.transformRequest.concat(
-          function (data) {
-            return data.replace('bar', 'baz');
-          }
-        )
-      });
+    axios({
+      url: '/foo',
+      method: 'post',
+      data: data,
+      transformRequest: axios.defaults.transformRequest.concat(
+        function (data) {
+          return data.replace('bar', 'baz');
+        }
+      )
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(request.params).toEqual('{"foo":"baz"}');
-    });
+      done();
+    }, 0);
   });
 
-  it('should allowing mutating headers', function () {
+  it('should allowing mutating headers', function (done) {
     var token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36);
     var request;
 
-    runs(function () {
-      axios({
-        url: '/foo',
-        transformRequest: function (data, headers) {
-          headers['X-Authorization'] = token;
-        }
-      });
+    axios({
+      url: '/foo',
+      transformRequest: function (data, headers) {
+        headers['X-Authorization'] = token;
+      }
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(request.requestHeaders['X-Authorization']).toEqual(token);
-    });
+      done();
+    }, 0);
   });
 });

@@ -7,96 +7,79 @@ describe('promise', function () {
     jasmine.Ajax.uninstall();
   });
 
-  it('should provide succinct object to then', function () {
+  it('should provide succinct object to then', function (done) {
     var request, response;
 
-    runs(function () {
-      axios({
-        url: '/foo'
-      }).then(function (r) {
-        response = r;
-      });
+    axios({
+      url: '/foo'
+    }).then(function (r) {
+      response = r;
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
-      request.response({
+      request.respondWith({
         status: 200,
         responseText: '{"hello":"world"}'
       });
-    });
 
-    waitsFor(function () {
-      return response;
-    }, 'waiting for the response', 100);
-
-    runs(function () {
-      expect(typeof response).toEqual('object');
-      expect(response.data.hello).toEqual('world');
-      expect(response.status).toEqual(200);
-      expect(response.headers['content-type']).toEqual('application/json');
-      expect(response.config.url).toEqual('/foo');
-    });
+      setTimeout(function () {
+        expect(typeof response).toEqual('object');
+        expect(response.data.hello).toEqual('world');
+        expect(response.status).toEqual(200);
+        expect(response.headers['content-type']).toEqual('application/json');
+        expect(response.config.url).toEqual('/foo');
+        done();
+      }, 0);
+    }, 0);
   });
 
-  it('should provide verbose arguments to success', function () {
+  it('should provide verbose arguments to success', function (done) {
     var request, data, status, headers, config;
 
-    runs(function () {
-      axios({
-        url: '/foo'
-      }).success(function (d, s, h, c) {
-        data = d;
-        status = s;
-        headers = h;
-        config = c;
-        fulfilled = true;
-      });
+    axios({
+      url: '/foo'
+    }).success(function (d, s, h, c) {
+      data = d;
+      status = s;
+      headers = h;
+      config = c;
+      fulfilled = true;
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
-      request.response({
+      request.respondWith({
         status: 200,
         responseText: '{"hello":"world"}'
       });
-    });
 
-    waitsFor(function () {
-      return data;
-    }, 'waiting for the data', 100);
-
-    runs(function () {
-      expect(data.hello).toEqual('world');
-      expect(status).toBe(200);
-      expect(headers['content-type']).toEqual('application/json');
-      expect(config.url).toEqual('/foo');
-    });
+      setTimeout(function () {
+        expect(data.hello).toEqual('world');
+        expect(status).toBe(200);
+        expect(headers['content-type']).toEqual('application/json');
+        expect(config.url).toEqual('/foo');
+        done();
+      }, 0);
+    }, 0);
   });
 
-  it('should support all', function () {
+  it('should support all', function (done) {
     var fulfilled = false;
 
     axios.all([true, 123]).then(function () {
       fulfilled = true;
     });
 
-    waitsFor(function () {
-      return fulfilled;
-    });
-
-    runs(function () {
+    setTimeout(function () {
       expect(fulfilled).toEqual(true);
-    });
+      done();
+    }, 0);
   });
 
-  it('should support spread', function () {
+  it('should support spread', function (done) {
     var sum = 0;
     var fulfilled = false;
 
@@ -105,13 +88,10 @@ describe('promise', function () {
       fulfilled = true;
     }));
 
-    waitsFor(function () {
-      return fulfilled;
-    });
-
-    runs(function () {
+    setTimeout(function () {
       expect(fulfilled).toEqual(true);
       expect(sum).toEqual(123 + 456);
-    });
+      done();
+    }, 0);
   });
 });

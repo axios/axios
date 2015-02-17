@@ -7,199 +7,180 @@ describe('wrapper', function () {
     jasmine.Ajax.uninstall();
   });
 
-  it('should make an http request', function () {
+  it('should make an http request', function (done) {
     var request;
 
-    runs(function () {
-      axios({
-        url: '/foo'
-      });
+    axios({
+      url: '/foo'
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
-      expect(request.url).toBe('/foo')
-    });
+      expect(request.url).toBe('/foo');
+      done();
+    }, 0);
   });
 
-  it('should default common headers', function () {
+  it('should default common headers', function (done) {
     var request;
     var headers = axios.defaults.headers.common;
 
-    runs(function () {
-      axios({
-        url: '/foo'
-      });
+    axios({
+      url: '/foo'
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       for (var key in headers) {
         if (headers.hasOwnProperty(key)) {
           expect(request.requestHeaders[key]).toEqual(headers[key]);
         }
       }
-    });
+      done();
+    }, 0);
   });
 
-  it('should add extra headers for post', function () {
+  it('should add extra headers for post', function (done) {
     var request;
     var headers = axios.defaults.headers.common;
 
-    runs(function () {
-      axios({
-        method: 'post',
-        url: '/foo',
-        data: 'fizz=buzz'
-      });
+    axios({
+      method: 'post',
+      url: '/foo',
+      data: 'fizz=buzz'
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       for (var key in headers) {
         if (headers.hasOwnProperty(key)) {
           expect(request.requestHeaders[key]).toEqual(headers[key]);
         }
       }
-    });
+      done();
+    }, 0);
   });
 
-  it('should use application/json when posting an object', function () {
+  it('should use application/json when posting an object', function (done) {
     var request;
 
-    runs(function () {
-      axios({
-        url: '/foo/bar',
-        method: 'post',
-        data: {
-          firstName: 'foo',
-          lastName: 'bar'
-        }
-      });
+    axios({
+      url: '/foo/bar',
+      method: 'post',
+      data: {
+        firstName: 'foo',
+        lastName: 'bar'
+      }
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(request.requestHeaders['Content-Type']).toEqual('application/json;charset=utf-8');
-    });
+      done();
+    }, 0);
   });
 
-  it('should support binary data as array buffer', function () {
+  it('should support binary data as array buffer', function (done) {
     var request;
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
 
-    runs(function () {
-      axios({
-        method: 'post',
-        url: '/foo',
-        data: input.buffer
-      });
+    axios({
+      method: 'post',
+      url: '/foo',
+      data: input.buffer
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       var output = new Int8Array(request.params.buffer);
       expect(output.length).toEqual(2);
       expect(output[0]).toEqual(1);
       expect(output[1]).toEqual(2);
-    });
+      done();
+    }, 0);
   });
 
-  it('should support binary data as array buffer view', function () {
+  it('should support binary data as array buffer view', function (done) {
     var request;
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
 
-    runs(function () {
-      axios({
-        method: 'post',
-        url: '/foo',
-        data: input
-      });
+    axios({
+      method: 'post',
+      url: '/foo',
+      data: input
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       var output = new Int8Array(request.params.buffer);
       expect(output.length).toEqual(2);
       expect(output[0]).toEqual(1);
       expect(output[1]).toEqual(2);
-    });
+      done();
+    }, 0);
   });
 
-  it('should remove content-type if data is empty', function () {
+  it('should remove content-type if data is empty', function (done) {
     var request;
 
-    runs(function () {
-      axios({
-        method: 'post',
-        url: '/foo'
-      });
+    axios({
+      method: 'post',
+      url: '/foo'
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(request.requestHeaders['content-type']).toEqual(undefined);
-    });
+      done();
+    }, 0);
   });
 
   // TODO this won't work until karma-jasmine updates to jasmine-ajax 2.99.0
   /*
-  it('should support array buffer response', function () {
+  it('should support array buffer response', function (done) {
     var request, response;
 
-    runs(function () {
-      axios({
-        url: '/foo',
-        responseType: 'arraybuffer'
-      }).then(function (data) {
-        response = data;
-      });
+    function str2ab(str) {
+      var buff = new ArrayBuffer(str.length * 2);
+      var view = new Uint16Array(buff);
+      for ( var i=0, l=str.length; i<l; i++) {
+        view[i] = str.charCodeAt(i);
+      }
+      return buff;
+    }
+
+    axios({
+      url: '/foo',
+      responseType: 'arraybuffer'
+    }).then(function (data) {
+      response = data;
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
-      request.response({
+      request.respondWith({
         status: 200,
-        response: new ArrayBuffer(16)
+        response: str2ab('Hello world')
       });
-      request.response = new ArrayBuffer(16);
-    });
 
-    waitsFor(function () {
-      return response;
-    }, 'waiting for the response', 100);
-
-    runs(function () {
-      expect(response.data.byteLength).toBe(16);
-    });
+      setTimeout(function () {
+        console.log(response.data);
+        expect(response.data.byteLength).toBe(16);
+        done();
+      }, 0);
+    }, 0);
   });
   */
 

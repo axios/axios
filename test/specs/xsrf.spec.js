@@ -8,40 +8,34 @@ describe('xsrf', function () {
     jasmine.Ajax.uninstall();
   });
 
-  it('should not set xsrf header if cookie is null', function () {
+  it('should not set xsrf header if cookie is null', function (done) {
     var request;
 
-    runs(function () {
-      axios({
-        url: '/foo'
-      });
+    axios({
+      url: '/foo'
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
-    });
+      done();
+    }, 0);
   });
 
-  it('should set xsrf header if cookie is set', function () {
+  it('should set xsrf header if cookie is set', function (done) {
     var request;
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
-    runs(function () {
-      axios({
-        url: '/foo'
-      });
+    axios({
+      url: '/foo'
     });
 
-    waitsFor(function () {
-      return request = jasmine.Ajax.requests.mostRecent();
-    }, 'waiting for the request', 100);
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
 
-    runs(function () {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
-    });
+      done();
+    }, 0);
   });
 });

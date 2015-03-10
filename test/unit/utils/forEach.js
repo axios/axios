@@ -12,6 +12,19 @@ module.exports = {
     test.done();
   },
 
+  testArguments: function (test) {
+    var sum = 0;
+
+    (function () {
+      forEach(arguments, function (val) {
+        sum += val;
+      });
+    })(1, 2, 3, 4, 5);
+
+    test.equal(sum, 15);
+    test.done();
+  },
+
   testObject: function (test) {
     var keys = '';
     var vals = 0;

@@ -58,7 +58,14 @@ var axios =
 	var InterceptorManager = __webpack_require__(6);
 	
 	// Polyfill ES6 Promise if needed
-	__webpack_require__(9).polyfill();
+	(function () {
+	  // webpack is being used to set es6-promise to the native Promise
+	  // for the standalone build. It's necessary to make sure polyfill exists.
+	  var P = __webpack_require__(9);
+	  if (P && typeof P.polyfill === 'function') {
+	    P.polyfill();
+	  }
+	})();
 	
 	var axios = module.exports = function axios(config) {
 	  config = utils.merge({
@@ -361,15 +368,15 @@ var axios =
 	  }
 	
 	  // Check if obj is array-like
-	  var isArray = obj.constructor === Array || typeof obj.callee === 'function';
+	  var isArrayLike = isArray(obj) || (typeof obj === 'object' && !isNaN(obj.length));
 	
 	  // Force an array if not already something iterable
-	  if (typeof obj !== 'object' && !isArray) {
+	  if (typeof obj !== 'object' && !isArrayLike) {
 	    obj = [obj];
 	  }
 	
 	  // Iterate over array values
-	  if (isArray) {
+	  if (isArrayLike) {
 	    for (var i=0, l=obj.length; i<l; i++) {
 	      fn.call(null, obj[i], i, obj);
 	    }
@@ -427,6 +434,7 @@ var axios =
 	  merge: merge,
 	  trim: trim
 	};
+
 
 /***/ },
 /* 4 */
@@ -620,9 +628,10 @@ var axios =
 	    if (request && request.readyState === 4) {
 	      // Prepare the response
 	      var headers = parseHeaders(request.getAllResponseHeaders());
+	      var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
 	      var response = {
 	        data: transformData(
-	          request.responseText,
+	          responseData,
 	          headers,
 	          config.transformResponse
 	        ),
@@ -684,6 +693,7 @@ var axios =
 	  // Send the request
 	  request.send(data);
 	};
+
 
 /***/ },
 /* 9 */

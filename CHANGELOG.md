@@ -51,3 +51,8 @@
 
 - Adding support for intercepetors
 - Updating es6-promise dependency
+
+### 0.5.1 (Mar 10, 2015)
+
+- Fixing issue using strict mode
+- Fixing issue with standalone build

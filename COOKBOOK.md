@@ -44,7 +44,7 @@ axios
   });
 ```
 
-### Inflate/Defalte
+### Inflate/Deflate
 
 ```bash
 $ npm install axios pako --save

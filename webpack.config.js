@@ -13,11 +13,6 @@ var base = {
       './adapters/http': 'var undefined'
     }
   ],
-  // module: {
-  //   loaders: [
-  //     { test: /\.js$/, loader: '6to5-loader' }
-  //   ]
-  // },
   devtool: 'source-map'
 };
 

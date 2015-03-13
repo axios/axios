@@ -200,6 +200,9 @@ The response for a request contains the following information.
 
   // `status` is the HTTP status code from the server response
   status: 200,
+  
+  // `statusText` is the HTTP status message from the server response
+  status: 'OK',
 
   // `headers` the headers that the server responded with
   headers: {},
@@ -216,6 +219,7 @@ axios.get('/user/12345')
   .then(function(response) {
     console.log(response.data);
     console.log(response.status);
+    console.log(response.statusText);
     console.log(response.headers);
     console.log(response.config);
 });

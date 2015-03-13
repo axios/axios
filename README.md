@@ -202,7 +202,7 @@ The response for a request contains the following information.
   status: 200,
   
   // `statusText` is the HTTP status message from the server response
-  status: 'OK',
+  statusText: 'OK',
 
   // `headers` the headers that the server responded with
   headers: {},

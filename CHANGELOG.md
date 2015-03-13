@@ -49,10 +49,14 @@
 
 ### 0.5.0 (Jan 23, 2015)
 
-- Adding support for intercepetors
+- Adding support for intercepetors ([#14](https://github.com/mzabriskie/axios/issues/14))
 - Updating es6-promise dependency
 
 ### 0.5.1 (Mar 10, 2015)
 
-- Fixing issue using strict mode
-- Fixing issue with standalone build
+- Fixing issue using strict mode ([#45](https://github.com/mzabriskie/axios/issues/45))
+- Fixing issue with standalone build ([#47](https://github.com/mzabriskie/axios/issues/47))
+
+### 0.5.2 (Mar 13, 2015)
+
+- Adding support for `statusText` in response ([#46](https://github.com/mzabriskie/axios/issues/46))

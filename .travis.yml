@@ -4,3 +4,5 @@ email:
   on_success: never
 before_script:
   - npm install -g grunt-cli
+after_success:
+  - npm run coveralls

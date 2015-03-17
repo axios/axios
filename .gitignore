@@ -1,6 +1,8 @@
-.idea
 *.iml
-node_modules
+.idea
 .tscache
+.DS_Store
+node_modules/
+coverage/
 test/typescript/axios.js*
 

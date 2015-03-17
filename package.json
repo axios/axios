@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt test",
-    "start": "node ./sandbox/server.js"
+    "start": "node ./sandbox/server.js",
+    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
     "es6-promise": "^2.0.1"
   },
   "devDependencies": {
+    "coveralls": "^2.11.2",
     "grunt": "^0.4.5",
     "grunt-banner": "^0.3.1",
     "grunt-contrib-clean": "^0.6.0",
@@ -39,6 +41,7 @@
     "grunt-update-json": "^0.2.1",
     "grunt-webpack": "^1.0.8",
     "karma": "^0.12.31",
+    "karma-coverage": "^0.2.7",
     "karma-jasmine": "^0.3.5",
     "karma-jasmine-ajax": "^0.1.12",
     "karma-phantomjs-launcher": "^0.1.4",

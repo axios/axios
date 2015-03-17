@@ -33,6 +33,7 @@
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-nodeunit": "^0.4.1",
     "grunt-contrib-watch": "^0.6.1",
+    "grunt-eslint": "^9.0.0",
     "grunt-karma": "^0.10.1",
     "grunt-ts": "^3.0.0",
     "grunt-update-json": "^0.2.1",

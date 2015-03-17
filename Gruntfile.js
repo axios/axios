@@ -48,6 +48,10 @@ module.exports = function(grunt) {
       }
     },
 
+    eslint: {
+      target: ['lib/**/*.js']
+    },
+
     karma: {
       options: {
         configFile: 'karma.conf.js'
@@ -78,7 +82,7 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['webpack:global', 'nodeunit', 'karma:single', 'ts']);
+  grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['eslint', 'webpack:global', 'nodeunit', 'karma:single', 'ts']);
   grunt.registerTask('build', 'Run webpack and bundle the source', ['webpack']);
   grunt.registerTask('publish', 'Prepare the code for release', ['clean', 'test', 'build', 'usebanner', 'update_json']);
 };

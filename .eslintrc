@@ -1,0 +1,13 @@
+{
+  "globals": {
+    "console": true,
+    "module": true,
+    "require": true
+  },
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "quotes": "single"
+  }
+}

@@ -5,7 +5,8 @@
     "require": true
   },
   "env": {
-    "browser": true
+    "browser": true,
+    "node": true
   },
   "rules": {
     "quotes": "single"

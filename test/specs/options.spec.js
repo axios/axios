@@ -1,3 +1,5 @@
+var axios = require('../../index');
+
 describe('options', function () {
   beforeEach(function () {
     jasmine.Ajax.install();

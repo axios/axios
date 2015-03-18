@@ -15,8 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'dist/axios.js',
-      'test/specs/**/*.spec.js'
+      'webpack.tests.js'
     ],
 
 
@@ -29,7 +28,12 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'dist/axios.js': 'coverage'
+      'webpack.tests.js': ['webpack', 'sourcemap', 'coverage']
+    },
+
+
+    webpack: {
+      devtool: 'inline-source-map'
     },
 
 
@@ -38,11 +42,13 @@ module.exports = function(config) {
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: ['progress', 'coverage'],
 
+    
     coverageReporter: {
       type: 'lcov',
       dir: 'coverage/',
       subdir: '.'
     },
+
 
     // web server port
     port: 9876,

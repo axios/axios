@@ -1,18 +1,17 @@
 var forEach = require('../../../lib/utils').forEach;
 
-module.exports = {
-  testArray: function (test) {
+describe('utils::forEach', function () {
+  it('should loop over an array', function () {
     var sum = 0;
 
     forEach([1, 2, 3, 4, 5], function (val) {
       sum += val;
     });
 
-    test.equal(sum, 15);
-    test.done();
-  },
+    expect(sum).toEqual(15);
+  });
 
-  testArguments: function (test) {
+  it('should loop over arguments', function () {
     var sum = 0;
 
     (function () {
@@ -21,11 +20,10 @@ module.exports = {
       });
     })(1, 2, 3, 4, 5);
 
-    test.equal(sum, 15);
-    test.done();
-  },
+    expect(sum).toEqual(15);
+  });
 
-  testObject: function (test) {
+  it('should loop over object keys', function () {
     var keys = '';
     var vals = 0;
     var obj = {
@@ -39,30 +37,28 @@ module.exports = {
       vals += v;
     });
 
-    test.equal(keys, 'bar');
-    test.equal(vals, 6);
-    test.done();
-  },
+    expect(keys).toEqual('bar');
+    expect(vals).toEqual(6);
+  });
 
-  testUndefined: function (test) {
+  it('should handle undefined gracefully', function () {
     var count = 0;
 
     forEach(undefined, function () {
       count++;
     });
 
-    test.equals(count, 0);
-    test.done();
-  },
+    expect(count).toEqual(0);
+  });
 
-  testFunction: function (test) {
+  it('should make an array out of non-array argument', function () {
     var count = 0;
 
     forEach(function () {}, function () {
       count++;
-    })
+    });
 
-    test.equals(count, 1);
-    test.done();
-  }
-};
+    expect(count).toEqual(1);
+  });
+});
+

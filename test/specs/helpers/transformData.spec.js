@@ -1,18 +1,17 @@
 var transformData = require('../../../lib/helpers/transformData');
 
-module.exports = {
-  testSingleFunction: function (test) {
+describe('helpers::transformData', function () {
+  it('should support a single transformer', function () {
     var data;
     data = transformData(data, null, function (data) {
       data = 'foo';
       return data;
     });
 
-    test.equals(data, 'foo');
-    test.done();
-  },
+    expect(data).toEqual('foo');
+  });
 
-  testFunctionArray: function (test) {
+  it('should support an array of transformers', function () {
     var data = '';
     data = transformData(data, null, [function (data) {
       data += 'f';
@@ -25,7 +24,7 @@ module.exports = {
       return data;
     }]);
 
-    test.equals(data, 'foo');
-    test.done();
-  }
-};
+    expect(data).toEqual('foo');
+  });
+});
+

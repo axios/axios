@@ -33,6 +33,11 @@ module.exports = function(config) {
 
 
     webpack: {
+      externals: [
+        {
+          './adapters/http': 'var undefined'
+        }
+      ],
       devtool: 'inline-source-map'
     },
 

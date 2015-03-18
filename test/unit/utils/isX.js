@@ -7,6 +7,27 @@ module.exports = {
     test.done();
   },
 
+  testIsArrayBuffer: function (test) {
+    test.equals(utils.isArrayBuffer(new ArrayBuffer(2)), true);
+    test.done();
+  },
+
+  testIsArrayBufferView: function (test) {
+    test.equals(utils.isArrayBufferView(new DataView(new ArrayBuffer(2))), true);
+    test.done();
+  },
+
+  // TODO These tests need a browser to run
+  // testIsFormData: function (test) {
+  //   test.equals(utils.isFormData(new FormData()), true);
+  //   test.done();
+  // },
+  //
+  // testIsBlob: function (test) {
+  //   test.equals(utils.isBlob(new Blob(['<h1>Foo</h1>'], {type: 'text/html'})), true);
+  //   test.done();
+  // },
+
   testIsString: function (test) {
     test.equals(utils.isString(''), true);
     test.equals(utils.isString({toString: function () { return ''; }}), false);

@@ -1,3 +1,5 @@
+var webpack = require('webpack');
+
 var EXTERNAL_PROMISE = '{Promise: Promise}';
 var config = {};
 var base = {
@@ -20,11 +22,9 @@ var base = {
   config[key] = JSON.parse(JSON.stringify(base));
   config[key + '-min'] = JSON.parse(JSON.stringify(base));
 
-  // TODO: UglifyJsPlugin doesn' work, but optimize.minimize is deprecated
-  config[key + '-min'].optimize = {minimize: true};
-//   config[key + '-min'].pugins = [
-//     new webpack.optimize.UglifyJsPlugin()
-//   ];
+  config[key + '-min'].plugins = [
+    new webpack.optimize.UglifyJsPlugin()
+  ];
 });
 
 config['amd'].output.filename = 'axios.amd.js';

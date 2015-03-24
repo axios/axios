@@ -52,5 +52,8 @@
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
+  },
+  "typescript": {
+    "definition": "./axios.d.ts"
   }
 }

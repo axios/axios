@@ -28,13 +28,13 @@ var base = {
 });
 
 config['amd'].output.filename = 'axios.amd.js';
-config['amd'].output.sourceMapFilename = 'axios.amd.map';
 config['amd'].output.libraryTarget = 'amd';
+config['amd'].devtool = 'inline-source-map';
 
 config['amd-standalone'].output.filename = 'axios.amd.standalone.js';
-config['amd-standalone'].output.sourceMapFilename = 'axios.amd.standalone.map';
 config['amd-standalone'].output.libraryTarget = 'amd';
 config['amd-standalone'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
+config['amd-standalone'].devtool = 'inline-source-map';
 
 config['amd-min'].output.filename = 'axios.amd.min.js';
 config['amd-min'].output.sourceMapFilename = 'axios.amd.min.map';
@@ -46,8 +46,10 @@ config['amd-standalone-min'].output.libraryTarget = 'amd';
 config['amd-standalone-min'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
 
 config['global-standalone'].output.filename = 'axios.standalone.js';
-config['global-standalone'].output.sourceMapFilename = 'axios.standalone.map';
 config['global-standalone'].externals[0]['es6-promise'] = EXTERNAL_PROMISE;
+config['global-standalone'].devtool = 'inline-source-map';
+
+config['global'].devtool = 'inline-source-map';
 
 config['global-min'].output.filename = 'axios.min.js';
 config['global-min'].output.sourceMapFilename = 'axios.min.map';

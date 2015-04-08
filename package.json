@@ -41,6 +41,7 @@
     "grunt-ts": "^3.0.0",
     "grunt-update-json": "^0.2.1",
     "grunt-webpack": "^1.0.8",
+    "jasmine-core": "^2.2.0",
     "karma": "^0.12.31",
     "karma-coverage": "^0.2.7",
     "karma-jasmine": "^0.3.5",

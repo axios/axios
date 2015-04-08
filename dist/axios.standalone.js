@@ -185,6 +185,9 @@ var axios =
 	
 	module.exports = {
 	  transformRequest: [function (data, headers) {
+	    if(utils.isFormData(data)) {
+	      return data;
+	    }
 	    if (utils.isArrayBuffer(data)) {
 	      return data;
 	    }

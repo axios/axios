@@ -64,3 +64,7 @@
 ### 0.5.3 (Apr 07, 2015)
 
 - Using JSON.parse unconditionally when transforming response string ([#55](https://github.com/mzabriskie/axios/issues/55))
+
+### 0.5.4 (Apr 08, 2015)
+
+- Fixing issue with FormData not being sent ([#53](https://github.com/mzabriskie/axios/issues/53))

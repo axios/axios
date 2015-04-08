@@ -178,6 +178,9 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	module.exports = {
 	  transformRequest: [function (data, headers) {
+	    if(utils.isFormData(data)) {
+	      return data;
+	    }
 	    if (utils.isArrayBuffer(data)) {
 	      return data;
 	    }

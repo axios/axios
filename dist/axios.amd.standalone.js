@@ -184,6 +184,9 @@ define("axios", ["{Promise: Promise}"], function(__WEBPACK_EXTERNAL_MODULE_2__) 
 	
 	module.exports = {
 	  transformRequest: [function (data, headers) {
+	    if(utils.isFormData(data)) {
+	      return data;
+	    }
 	    if (utils.isArrayBuffer(data)) {
 	      return data;
 	    }

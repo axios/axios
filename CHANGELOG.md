@@ -60,3 +60,7 @@
 ### 0.5.2 (Mar 13, 2015)
 
 - Adding support for `statusText` in response ([#46](https://github.com/mzabriskie/axios/issues/46))
+
+### 0.5.3 (Apr 07, 2015)
+
+- Using JSON.parse unconditionally when transforming response string ([#55](https://github.com/mzabriskie/axios/issues/55))

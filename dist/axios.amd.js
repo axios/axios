@@ -50,6 +50,8 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
 	var deprecatedMethod = __webpack_require__(4);
@@ -132,32 +134,33 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	};
 	
 	// Provide aliases for supported request methods
-	createShortMethods('delete', 'get', 'head');
-	createShortMethodsWithData('post', 'put', 'patch');
+	(function () {
+	  function createShortMethods() {
+	    utils.forEach(arguments, function (method) {
+	      axios[method] = function (url, config) {
+	        return axios(utils.merge(config || {}, {
+	          method: method,
+	          url: url
+	        }));
+	      };
+	    });
+	  }
 	
-	function createShortMethods() {
-	  utils.forEach(arguments, function (method) {
-	    axios[method] = function (url, config) {
-	      return axios(utils.merge(config || {}, {
-	        method: method,
-	        url: url
-	      }));
-	    };
-	  });
-	}
+	  function createShortMethodsWithData() {
+	    utils.forEach(arguments, function (method) {
+	      axios[method] = function (url, data, config) {
+	        return axios(utils.merge(config || {}, {
+	          method: method,
+	          url: url,
+	          data: data
+	        }));
+	      };
+	    });
+	  }
 	
-	function createShortMethodsWithData() {
-	  utils.forEach(arguments, function (method) {
-	    axios[method] = function (url, data, config) {
-	      return axios(utils.merge(config || {}, {
-	        method: method,
-	        url: url,
-	        data: data
-	      }));
-	    };
-	  });
-	}
-	
+	  createShortMethods('delete', 'get', 'head');
+	  createShortMethodsWithData('post', 'put', 'patch');
+	})();
 
 
 /***/ },
@@ -168,8 +171,6 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	var utils = __webpack_require__(3);
 	
-	var JSON_START = /^\s*(\[|\{[^\{])/;
-	var JSON_END = /[\}\]]\s*$/;
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
 	  'Content-Type': 'application/x-www-form-urlencoded'
@@ -196,9 +197,9 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  transformResponse: [function (data) {
 	    if (typeof data === 'string') {
 	      data = data.replace(PROTECTION_PREFIX, '');
-	      if (JSON_START.test(data) && JSON_END.test(data)) {
+	      try {
 	        data = JSON.parse(data);
-	      }
+	      } catch (e) {}
 	    }
 	    return data;
 	  }],
@@ -216,10 +217,15 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  xsrfHeaderName: 'X-XSRF-TOKEN'
 	};
 
+
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	
+	/*global toString:true*/
+	
 	// utils is a library of generic helper functions non-specific to axios
 	
 	var toString = Object.prototype.toString;
@@ -376,7 +382,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	  // Iterate over array values
 	  if (isArrayLike) {
-	    for (var i=0, l=obj.length; i<l; i++) {
+	    for (var i = 0, l = obj.length; i < l; i++) {
 	      fn.call(null, obj[i], i, obj);
 	    }
 	  }
@@ -407,7 +413,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	 * @param {Object} obj1 Object to merge
 	 * @returns {Object} Result of all merge properties
 	 */
-	function merge(obj1/*, obj2, obj3, ...*/) {
+	function merge(/*obj1, obj2, obj3, ...*/) {
 	  var result = {};
 	  forEach(arguments, function (obj) {
 	    forEach(obj, function (val, key) {
@@ -506,7 +512,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	function InterceptorManager() {
 	  this.handlers = [];
-	};
+	}
 	
 	/**
 	 * Add a new interceptor to the stack
@@ -547,18 +553,19 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  utils.forEach(this.handlers, function (h) {
 	    if (h !== null) {
 	      fn(h);
-	    } 
+	    }
 	  });
 	};
 	
 	module.exports = InterceptorManager;
-	
 
 
 /***/ },
 /* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	
 	/**
 	 * Syntactic sugar for invoking a function and expanding an array for arguments.
 	 *
@@ -585,10 +592,15 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  };
 	};
 
+
 /***/ },
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+	
+	/*global ActiveXObject:true*/
+	
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
 	var buildUrl = __webpack_require__(11);
@@ -606,42 +618,42 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  );
 	
 	  // Merge headers
-	  var headers = utils.merge(
+	  var requestHeaders = utils.merge(
 	    defaults.headers.common,
 	    defaults.headers[config.method] || {},
 	    config.headers || {}
 	  );
 	
 	  if (utils.isFormData(data)) {
-	    delete headers['Content-Type']; // Let the browser set it
+	    delete requestHeaders['Content-Type']; // Let the browser set it
 	  }
 	
 	  // Create the request
-	  var request = new(XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
+	  var request = new (XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
 	  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params), true);
 	
 	  // Listen for ready state
 	  request.onreadystatechange = function () {
 	    if (request && request.readyState === 4) {
 	      // Prepare the response
-	      var headers = parseHeaders(request.getAllResponseHeaders());
+	      var responseHeaders = parseHeaders(request.getAllResponseHeaders());
 	      var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
 	      var response = {
 	        data: transformData(
 	          responseData,
-	          headers,
+	          responseHeaders,
 	          config.transformResponse
 	        ),
 	        status: request.status,
 	        statusText: request.statusText,
-	        headers: headers,
+	        headers: responseHeaders,
 	        config: config
 	      };
 	
 	      // Resolve or reject the Promise based on the status
-	      (request.status >= 200 && request.status < 300
-	        ? resolve
-	        : reject)(response);
+	      (request.status >= 200 && request.status < 300 ?
+	        resolve :
+	        reject)(response);
 	
 	      // Clean up request
 	      request = null;
@@ -649,18 +661,18 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  };
 	
 	  // Add xsrf header
-	  var xsrfValue = urlIsSameOrigin(config.url)
-	    ? cookies.read(config.xsrfCookieName || defaults.xsrfCookieName)
-	    : undefined;
+	  var xsrfValue = urlIsSameOrigin(config.url) ?
+	      cookies.read(config.xsrfCookieName || defaults.xsrfCookieName) :
+	      undefined;
 	  if (xsrfValue) {
-	    headers[config.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
+	    requestHeaders[config.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
 	  }
 	
 	  // Add headers to the request
-	  utils.forEach(headers, function (val, key) {
+	  utils.forEach(requestHeaders, function (val, key) {
 	    // Remove Content-Type if data is undefined
 	    if (!data && key.toLowerCase() === 'content-type') {
-	      delete headers[key];
+	      delete requestHeaders[key];
 	    }
 	    // Otherwise add header to the request
 	    else {
@@ -1823,6 +1835,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  }
 	};
 
+
 /***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
@@ -1847,7 +1860,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	module.exports = function parseHeaders(headers) {
 	  var parsed = {}, key, val, i;
 	
-	  if (!headers) return parsed;
+	  if (!headers) { return parsed; }
 	
 	  utils.forEach(headers.split('\n'), function(line) {
 	    i = line.indexOf(':');
@@ -1861,6 +1874,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	
 	  return parsed;
 	};
+
 
 /***/ },
 /* 14 */
@@ -1886,16 +1900,17 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  return data;
 	};
 
+
 /***/ },
 /* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var utils = __webpack_require__(3);
+	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var urlParsingNode = document.createElement('a');
-	var originUrl = urlResolve(window.location.href);
+	var originUrl;
 	
 	/**
 	 * Parse a URL to discover it's components
@@ -1923,11 +1938,13 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	    hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
 	    hostname: urlParsingNode.hostname,
 	    port: urlParsingNode.port,
-	    pathname: (urlParsingNode.pathname.charAt(0) === '/')
-	      ? urlParsingNode.pathname
-	      : '/' + urlParsingNode.pathname
+	    pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+	              urlParsingNode.pathname :
+	              '/' + urlParsingNode.pathname
 	  };
 	}
+	
+	originUrl = urlResolve(window.location.href);
 	
 	/**
 	 * Determine if a URL shares the same origin as the current location
@@ -1940,6 +1957,7 @@ define("axios", [], function() { return /******/ (function(modules) { // webpack
 	  return (parsed.protocol === originUrl.protocol &&
 	        parsed.host === originUrl.host);
 	};
+
 
 /***/ },
 /* 16 */

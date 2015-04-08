@@ -23,6 +23,31 @@ function listDirs(root) {
   return dirs;
 }
 
+function getIndexTemplate() {
+  var links = dirs.map(function (dir) {
+    var url = '/' + dir;
+    return '<li onclick="document.location=\'' + url + '\'"><a href="' + url + '">' + url + '</a></li>';
+  });
+
+  return (
+    '<!doctype html>' +
+    '<html>' +
+    '<head>' +
+    '<title>axios examples</title>' +
+    '<style>' +
+    'body {padding:25px;}' +
+    'ul {margin:0; padding:0; list-style:none;}' +
+    'li {padding:5px 10px;}' +
+    'li:hover {background:#eee; cursor:pointer;}' +
+    'a {text-decoration:none; color:#0080ff;}' +
+    '</style>' +
+    '<body>' +
+    '<ul>' +
+    links.join('') +
+    '</ul>'
+  );
+}
+
 function sendResponse(res, statusCode, body) {
   res.writeHead(statusCode);
   res.write(body);
@@ -72,10 +97,7 @@ server = http.createServer(function (req, res) {
 
   // Process /
   if (url === '/' || url === '/index.html') {
-    var links = dirs.map(function (dir) {
-      return '<li><a href="/' + dir + '">' + dir + '</a></li>';
-    });
-    send200(res, '<!doctype html><html><body><ul>' + links.join('') + '</ul>');
+    send200(res, getIndexTemplate());
     return;
   }
 

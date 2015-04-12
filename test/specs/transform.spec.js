@@ -29,6 +29,31 @@ describe('transform', function () {
     }, 0);
   });
 
+  it('should transform string to JSON', function (done) {
+    var request, response;
+
+    axios({
+      url: '/foo'
+    }).then(function (data) {
+      response = data;
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+      
+      setTimeout(function () {
+        expect(typeof response.data).toEqual('object');
+        expect(response.data.foo).toEqual('bar');
+        done();
+      }, 0);
+    }, 0);
+  });
+
   it('should override default transform', function (done) {
     var request;
     var data = {

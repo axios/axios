@@ -1,6 +1,6 @@
 var axios = require('../../index');
 
-describe('wrapper', function () {
+describe('requests', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
   });
@@ -24,65 +24,35 @@ describe('wrapper', function () {
     }, 0);
   });
 
-  it('should default common headers', function (done) {
-    var request;
-    var headers = axios.defaults.headers.common;
+  it('should supply correct response', function (done) {
+    var request, response;
 
     axios({
+      method: 'post',
       url: '/foo'
+    }).then(function (res) {
+      response = res;
     });
 
     setTimeout(function () {
       request = jasmine.Ajax.requests.mostRecent();
 
-      for (var key in headers) {
-        if (headers.hasOwnProperty(key)) {
-          expect(request.requestHeaders[key]).toEqual(headers[key]);
+      request.respondWith({
+        status: 200,
+        statusText: 'OK',
+        responseText: '{"foo": "bar"}',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      }
-      done();
-    }, 0);
-  });
+      });
 
-  it('should add extra headers for post', function (done) {
-    var request;
-    var headers = axios.defaults.headers.common;
-
-    axios({
-      method: 'post',
-      url: '/foo',
-      data: 'fizz=buzz'
-    });
-
-    setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
-
-      for (var key in headers) {
-        if (headers.hasOwnProperty(key)) {
-          expect(request.requestHeaders[key]).toEqual(headers[key]);
-        }
-      }
-      done();
-    }, 0);
-  });
-
-  it('should use application/json when posting an object', function (done) {
-    var request;
-
-    axios({
-      url: '/foo/bar',
-      method: 'post',
-      data: {
-        firstName: 'foo',
-        lastName: 'bar'
-      }
-    });
-
-    setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
-
-      expect(request.requestHeaders['Content-Type']).toEqual('application/json;charset=utf-8');
-      done();
+      setTimeout(function () {
+        expect(response.data.foo).toEqual('bar');
+        expect(response.status).toEqual(200);
+        expect(response.statusText).toEqual('OK');
+        expect(response.headers['content-type']).toEqual('application/json');
+        done();
+      }, 0);
     }, 0);
   });
 
@@ -129,54 +99,6 @@ describe('wrapper', function () {
       expect(output[0]).toEqual(1);
       expect(output[1]).toEqual(2);
       done();
-    }, 0);
-  });
-
-  it('should remove content-type if data is empty', function (done) {
-    var request;
-
-    axios({
-      method: 'post',
-      url: '/foo'
-    });
-
-    setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
-
-      expect(request.requestHeaders['content-type']).toEqual(undefined);
-      done();
-    }, 0);
-  });
-
-  it('should supply correct response', function (done) {
-    var request, response;
-
-    axios({
-      method: 'post',
-      url: '/foo'
-    }).then(function (res) {
-      response = res;
-    });
-
-    setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
-
-      request.respondWith({
-        status: 200,
-        statusText: 'OK',
-        responseText: '{"foo": "bar"}',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      setTimeout(function () {
-        expect(response.data.foo).toEqual('bar');
-        expect(response.status).toEqual(200);
-        expect(response.statusText).toEqual('OK');
-        expect(response.headers['content-type']).toEqual('application/json');
-        done();
-      }, 0);
     }, 0);
   });
 

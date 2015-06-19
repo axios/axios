@@ -76,7 +76,7 @@ module.exports = function(grunt) {
         tasks: ['build']
       },
       test: {
-        files: ['lib/**/*.js', 'test/**/*.js'],
+        files: ['lib/**/*.js', 'test/**/*.js', '!test/typescript/axios.js', '!test/typescript/out.js'],
         tasks: ['test']
       }
     }

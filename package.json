@@ -26,11 +26,9 @@
     "url": "https://github.com/mzabriskie/axios/issues"
   },
   "homepage": "https://github.com/mzabriskie/axios",
-  "dependencies": {
-    "es6-promise": "^2.3.0"
-  },
   "devDependencies": {
     "coveralls": "^2.11.2",
+    "es6-promise": "^2.3.0",
     "grunt": "^0.4.5",
     "grunt-banner": "^0.4.0",
     "grunt-contrib-clean": "^0.6.0",

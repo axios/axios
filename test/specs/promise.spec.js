@@ -1,3 +1,4 @@
+require('es6-promise').polyfill();
 var axios = require('../../index');
 
 describe('promise', function () {

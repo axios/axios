@@ -41,6 +41,11 @@ module.exports = function(config) {
       devtool: 'inline-source-map'
     },
 
+    webpackServer: {
+      stats: {
+        colors: true
+      }
+    },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

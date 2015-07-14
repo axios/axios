@@ -53,23 +53,23 @@ var axios =
 
 	'use strict';
 	
-	var defaults = __webpack_require__(3);
-	var utils = __webpack_require__(4);
-	var deprecatedMethod = __webpack_require__(5);
-	var dispatchRequest = __webpack_require__(6);
-	var InterceptorManager = __webpack_require__(7);
+	var defaults = __webpack_require__(2);
+	var utils = __webpack_require__(3);
+	var deprecatedMethod = __webpack_require__(4);
+	var dispatchRequest = __webpack_require__(5);
+	var InterceptorManager = __webpack_require__(13);
 	
 	// Polyfill ES6 Promise if needed
 	(function () {
 	  // webpack is being used to set es6-promise to the native Promise
 	  // for the standalone build. It's necessary to make sure polyfill exists.
-	  var P = __webpack_require__(2);
+	  var P = __webpack_require__(14);
 	  if (P && typeof P.polyfill === 'function') {
 	    P.polyfill();
 	  }
 	})();
 	
-	var axios = module.exports = function axios(config) {
+	var axios = module.exports = function (config) {
 	  config = utils.merge({
 	    method: 'get',
 	    headers: {},
@@ -126,7 +126,7 @@ var axios =
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(8);
+	axios.spread = __webpack_require__(15);
 	
 	// Expose interceptors
 	axios.interceptors = {
@@ -168,15 +168,9 @@ var axios =
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = {Promise: Promise};
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(3);
 	
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
@@ -209,7 +203,7 @@ var axios =
 	      data = data.replace(PROTECTION_PREFIX, '');
 	      try {
 	        data = JSON.parse(data);
-	      } catch (e) {}
+	      } catch (e) { /* Ignore */ }
 	    }
 	    return data;
 	  }],
@@ -229,8 +223,8 @@ var axios =
 
 
 /***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/* 3 */
+/***/ function(module, exports) {
 
 	'use strict';
 	
@@ -452,8 +446,8 @@ var axios =
 
 
 /***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
+/* 4 */
+/***/ function(module, exports) {
 
 	'use strict';
 	
@@ -475,12 +469,12 @@ var axios =
 	    if (docs) {
 	      console.warn('For more information about usage see ' + docs);
 	    }
-	  } catch (e) {}
+	  } catch (e) { /* Ignore */ }
 	};
 
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -497,11 +491,11 @@ var axios =
 	    try {
 	      // For browsers use XHR adapter
 	      if (typeof window !== 'undefined') {
-	        __webpack_require__(9)(resolve, reject, config);
+	        __webpack_require__(7)(resolve, reject, config);
 	      }
 	      // For node use HTTP adapter
 	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(9)(resolve, reject, config);
+	        __webpack_require__(7)(resolve, reject, config);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -510,7 +504,103 @@ var axios =
 	};
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
+	
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+	
+	function cleanUpNextTick() {
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+	
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = setTimeout(cleanUpNextTick);
+	    draining = true;
+	
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            currentQueue[queueIndex].run();
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    clearTimeout(timeout);
+	}
+	
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
+	
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+	
+	function noop() {}
+	
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+	
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+	
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
 
 /***/ },
 /* 7 */
@@ -518,106 +608,15 @@ var axios =
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
-	
-	function InterceptorManager() {
-	  this.handlers = [];
-	}
-	
-	/**
-	 * Add a new interceptor to the stack
-	 *
-	 * @param {Function} fulfilled The function to handle `then` for a `Promise`
-	 * @param {Function} rejected The function to handle `reject` for a `Promise`
-	 *
-	 * @return {Number} An ID used to remove interceptor later
-	 */
-	InterceptorManager.prototype.use = function (fulfilled, rejected) {
-	  this.handlers.push({
-	    fulfilled: fulfilled,
-	    rejected: rejected
-	  });
-	  return this.handlers.length - 1;
-	};
-	
-	/**
-	 * Remove an interceptor from the stack
-	 *
-	 * @param {Number} id The ID that was returned by `use`
-	 */
-	InterceptorManager.prototype.eject = function (id) {
-	  if (this.handlers[id]) {
-	    this.handlers[id] = null;
-	  }
-	};
-	
-	/**
-	 * Iterate over all the registered interceptors
-	 *
-	 * This method is particularly useful for skipping over any
-	 * interceptors that may have become `null` calling `remove`.
-	 *
-	 * @param {Function} fn The function to call for each interceptor
-	 */
-	InterceptorManager.prototype.forEach = function (fn) {
-	  utils.forEach(this.handlers, function (h) {
-	    if (h !== null) {
-	      fn(h);
-	    }
-	  });
-	};
-	
-	module.exports = InterceptorManager;
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	/**
-	 * Syntactic sugar for invoking a function and expanding an array for arguments.
-	 *
-	 * Common use case would be to use `Function.prototype.apply`.
-	 *
-	 *  ```js
-	 *  function f(x, y, z) {}
-	 *  var args = [1, 2, 3];
-	 *  f.apply(null, args);
-	 *  ```
-	 *
-	 * With `spread` this example can be re-written.
-	 *
-	 *  ```js
-	 *  spread(function(x, y, z) {})([1, 2, 3]);
-	 *  ```
-	 *
-	 * @param {Function} callback
-	 * @returns {Function}
-	 */
-	module.exports = function spread(callback) {
-	  return function (arr) {
-	    callback.apply(null, arr);
-	  };
-	};
-
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
 	/*global ActiveXObject:true*/
 	
-	var defaults = __webpack_require__(3);
-	var utils = __webpack_require__(4);
-	var buildUrl = __webpack_require__(11);
-	var cookies = __webpack_require__(12);
-	var parseHeaders = __webpack_require__(13);
-	var transformData = __webpack_require__(14);
-	var urlIsSameOrigin = __webpack_require__(15);
+	var defaults = __webpack_require__(2);
+	var utils = __webpack_require__(3);
+	var buildUrl = __webpack_require__(8);
+	var cookies = __webpack_require__(9);
+	var parseHeaders = __webpack_require__(10);
+	var transformData = __webpack_require__(11);
+	var urlIsSameOrigin = __webpack_require__(12);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -633,6 +632,9 @@ var axios =
 	    defaults.headers[config.method] || {},
 	    config.headers || {}
 	  );
+	
+	  // Indicate that request is being made with XHR
+	  requestHeaders['X-Requested-With'] = 'XMLHttpRequest';
 	
 	  if (utils.isFormData(data)) {
 	    delete requestHeaders['Content-Type']; // Let the browser set it
@@ -716,76 +718,12 @@ var axios =
 
 
 /***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-	
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-	
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    draining = true;
-	    var currentQueue;
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        var i = -1;
-	        while (++i < len) {
-	            currentQueue[i]();
-	        }
-	        len = queue.length;
-	    }
-	    draining = false;
-	}
-	process.nextTick = function (fun) {
-	    queue.push(fun);
-	    if (!draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-	
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-	
-	function noop() {}
-	
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-	
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-	
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
-
-/***/ },
-/* 11 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(3);
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -838,12 +776,12 @@ var axios =
 
 
 /***/ },
-/* 12 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(3);
 	
 	module.exports = {
 	  write: function write(name, value, expires, path, domain, secure) {
@@ -881,12 +819,12 @@ var axios =
 
 
 /***/ },
-/* 13 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(3);
 	
 	/**
 	 * Parse headers into an object
@@ -921,12 +859,12 @@ var axios =
 
 
 /***/ },
-/* 14 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(3);
 	
 	/**
 	 * Transform the data for a request or a response
@@ -946,12 +884,12 @@ var axios =
 
 
 /***/ },
-/* 15 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(4);
+	var utils = __webpack_require__(3);
 	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var urlParsingNode = document.createElement('a');
 	var originUrl;
@@ -1000,6 +938,103 @@ var axios =
 	  var parsed = (utils.isString(requestUrl)) ? urlResolve(requestUrl) : requestUrl;
 	  return (parsed.protocol === originUrl.protocol &&
 	        parsed.host === originUrl.host);
+	};
+
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(3);
+	
+	function InterceptorManager() {
+	  this.handlers = [];
+	}
+	
+	/**
+	 * Add a new interceptor to the stack
+	 *
+	 * @param {Function} fulfilled The function to handle `then` for a `Promise`
+	 * @param {Function} rejected The function to handle `reject` for a `Promise`
+	 *
+	 * @return {Number} An ID used to remove interceptor later
+	 */
+	InterceptorManager.prototype.use = function (fulfilled, rejected) {
+	  this.handlers.push({
+	    fulfilled: fulfilled,
+	    rejected: rejected
+	  });
+	  return this.handlers.length - 1;
+	};
+	
+	/**
+	 * Remove an interceptor from the stack
+	 *
+	 * @param {Number} id The ID that was returned by `use`
+	 */
+	InterceptorManager.prototype.eject = function (id) {
+	  if (this.handlers[id]) {
+	    this.handlers[id] = null;
+	  }
+	};
+	
+	/**
+	 * Iterate over all the registered interceptors
+	 *
+	 * This method is particularly useful for skipping over any
+	 * interceptors that may have become `null` calling `remove`.
+	 *
+	 * @param {Function} fn The function to call for each interceptor
+	 */
+	InterceptorManager.prototype.forEach = function (fn) {
+	  utils.forEach(this.handlers, function (h) {
+	    if (h !== null) {
+	      fn(h);
+	    }
+	  });
+	};
+	
+	module.exports = InterceptorManager;
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+	module.exports = {Promise: Promise};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Syntactic sugar for invoking a function and expanding an array for arguments.
+	 *
+	 * Common use case would be to use `Function.prototype.apply`.
+	 *
+	 *  ```js
+	 *  function f(x, y, z) {}
+	 *  var args = [1, 2, 3];
+	 *  f.apply(null, args);
+	 *  ```
+	 *
+	 * With `spread` this example can be re-written.
+	 *
+	 *  ```js
+	 *  spread(function(x, y, z) {})([1, 2, 3]);
+	 *  ```
+	 *
+	 * @param {Function} callback
+	 * @returns {Function}
+	 */
+	module.exports = function spread(callback) {
+	  return function (arr) {
+	    callback.apply(null, arr);
+	  };
 	};
 
 

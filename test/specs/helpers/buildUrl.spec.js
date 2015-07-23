@@ -44,5 +44,13 @@ describe('helpers::buildUrl', function () {
       bar: 'baz'
     })).toEqual('/foo?foo=bar&bar=baz');
   });
+
+  it('should support "length" parameter', function () {
+    expect(buildUrl('/foo', {
+      query: 'bar',
+      start: 0,
+      length: 5
+    })).toEqual('/foo?query=bar&start=0&length=5');
+  });
 });
 

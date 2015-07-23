@@ -56,6 +56,29 @@ describe('requests', function () {
     }, 0);
   });
 
+  it('should allow overriding Content-Type header case-insensitive', function (done) {
+    var request, response;
+    var contentType = 'application/vnd.myapp.type+json';
+
+    axios({
+      url: '/foo',
+      method: 'post',
+      data: { prop: 'value' },
+      headers: {
+        'content-type': contentType
+      }
+    }).then(function (res) {
+      response = res;
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+      
+      expect(request.requestHeaders['Content-Type']).toEqual(contentType);
+      done();
+    });
+  });
+
   it('should support binary data as array buffer', function (done) {
     var request;
     var input = new Int8Array(2);

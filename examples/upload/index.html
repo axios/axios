@@ -26,7 +26,13 @@
           data.append('foo', 'bar');
           data.append('file', document.getElementById('file').files[0]);
 
-          axios.put('/upload/server', data)
+          var config = {
+            progress: function(progressEvent) {
+              var percentCompleted = progressEvent.loaded / progressEvent.total;
+            }
+          };
+
+          axios.put('/upload/server', data, config)
             .then(function (res) {
               output.className = 'container';
               output.innerHTML = res.data;
@@ -40,4 +46,3 @@
     </script>
   </body>
 </html>
-

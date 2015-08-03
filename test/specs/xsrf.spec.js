@@ -14,7 +14,8 @@ describe('xsrf', function () {
     var request;
 
     axios({
-      url: '/foo'
+      url: '/foo',
+      xsrf: true
     });
 
     setTimeout(function () {
@@ -30,7 +31,8 @@ describe('xsrf', function () {
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
     axios({
-      url: '/foo'
+      url: '/foo',
+      xsrf: true
     });
 
     setTimeout(function () {

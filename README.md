@@ -49,7 +49,7 @@ axios.get('/user?ID=12345')
   .catch(function (response) {
     console.log(response);
   });
-	
+
 // Optionally the request above could also be done as
 axios.get('/user', {
     params: {
@@ -147,7 +147,7 @@ This is the available config options for making requests. Only the `url` is requ
   // The last function in the array must return a string or an ArrayBuffer
   transformRequest: [function (data) {
     // Do whatever you want to transform the data
-	
+
     return data;
   }],
 
@@ -155,7 +155,7 @@ This is the available config options for making requests. Only the `url` is requ
   // it is passed to then/catch
   transformResponse: [function (data) {
     // Do whatever you want to transform the data
-	
+
     return data;
   }],
 
@@ -182,10 +182,15 @@ This is the available config options for making requests. Only the `url` is requ
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text'
   responseType: 'json', // default
 
-  // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
+  // `xsrf` indicates whether or not cross-site request forgery protection is enabled
+  xsrf: false, // default
+
+  // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token.
+  // used only when `xsrf` is true
   xsrfCookieName: 'XSRF-TOKEN', // default
 
-  // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
+  // `xsrfHeaderName` is the name of the http header that carries the xsrf token value.
+  // used only when `xsrf` is true
   xsrfHeaderName: 'X-XSRF-TOKEN' // default
 }
 ```
@@ -201,7 +206,7 @@ The response for a request contains the following information.
 
   // `status` is the HTTP status code from the server response
   status: 200,
-  
+
   // `statusText` is the HTTP status message from the server response
   statusText: 'OK',
 

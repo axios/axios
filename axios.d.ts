@@ -17,7 +17,7 @@ declare module axios {
     all(iterable: any): axios.Promise;
     spread(callback: any): axios.Promise;
   }
-  
+
   interface Response {
     data?: any;
     status?: number;
@@ -39,6 +39,7 @@ declare module axios {
     data?: any;
     withCredentials?: boolean;
     responseType?: string;
+    xsrf?: boolean;
     xsrfCookieName?: string;
     xsrfHeaderName?: string;
   }

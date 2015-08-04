@@ -16,7 +16,18 @@ describe('helpers::buildUrl', function () {
       foo: {
         bar: 'baz'
       }
-    })).toEqual('/foo?foo=' + encodeURI('{"bar":"baz"}'));
+    })).toEqual('/foo?foo[bar]=baz');
+  });
+
+  it('should support deep object params', function () {
+    expect(buildUrl('/foo', {
+      foo: {
+        bar: {
+          baz: 'qux'
+        },
+        quux: 'corge'
+      }
+    })).toEqual('/foo?foo[bar][baz]=qux&foo[quux]=corge');
   });
 
   it('should support date params', function () {
@@ -25,6 +36,22 @@ describe('helpers::buildUrl', function () {
     expect(buildUrl('/foo', {
       date: date
     })).toEqual('/foo?date=' + date.toISOString());
+  });
+
+  it('should support null params', function () {
+    expect(buildUrl('/foo', {
+      foo: {
+        bar: null
+      }
+    })).toEqual('/foo?foo[bar]=');
+  });
+
+  it('should support undefined params', function () {
+    expect(buildUrl('/foo', {
+      foo: {
+        bar: undefined
+      }
+    })).toEqual('/foo?foo[bar]=');
   });
 
   it('should support array params', function () {

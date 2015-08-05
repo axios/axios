@@ -48,10 +48,10 @@
     "karma-jasmine-ajax": "^0.1.12",
     "karma-phantomjs-launcher": "^0.2.0",
     "karma-sourcemap-loader": "^0.3.5",
-    "karma-webpack": "^1.5.1",
+    "karma-webpack": "1.6.0",
     "load-grunt-tasks": "^3.2.0",
     "minimist": "^1.1.1",
-    "webpack": "^1.9.11",
+    "webpack": "1.10.3",
     "webpack-dev-server": "^1.9.0"
   },
   "browser": {

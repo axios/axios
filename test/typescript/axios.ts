@@ -106,7 +106,7 @@ axios({
     },
     withCredentials: false, // default
     responseType: 'json', // default
-    xsrf: false, // default
+    xsrfEnabled: true, // default
     xsrfCookieName: 'XSRF-TOKEN', // default
     xsrfHeaderName: 'X-XSRF-TOKEN' // default
 });

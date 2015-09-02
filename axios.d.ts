@@ -39,7 +39,7 @@ declare module axios {
     data?: any;
     withCredentials?: boolean;
     responseType?: string;
-    xsrf?: boolean;
+    xsrfEnabled?: boolean;
     xsrfCookieName?: string;
     xsrfHeaderName?: string;
   }

@@ -182,8 +182,8 @@ This is the available config options for making requests. Only the `url` is requ
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text'
   responseType: 'json', // default
 
-  // `xsrf` indicates whether or not cross-site request forgery protection is enabled
-  xsrf: false, // default
+  // `xsrfEnabled` indicates whether or not cross-site request forgery protection is enabled
+  xsrfEnabled: true, // default
 
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token.
   // used only when `xsrf` is true

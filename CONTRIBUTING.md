@@ -38,9 +38,8 @@ Examples are included in part to allow manual testing.
 Running example
 
 ```bash
-$ npm install -g http-server
-$ http-server
-# Open 127.0.0.1:8080/example
+$ npm run examples
+# Open 127.0.0.1:3000
 ```
 
 Running sandbox in browser

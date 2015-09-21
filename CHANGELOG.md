@@ -68,3 +68,14 @@
 ### 0.5.4 (Apr 08, 2015)
 
 - Fixing issue with FormData not being sent ([#53](https://github.com/mzabriskie/axios/issues/53))
+
+### 0.6.0 (Sep 21, 2015)
+
+- Removing deprecated success/error aliases
+- Fixing issue with array params not being properly encoded ([#49](https://github.com/mzabriskie/axios/pull/49))
+- Fixing issue with User-Agent getting overridden ([#69](https://github.com/mzabriskie/axios/issues/69))
+- Adding support for timeout config ([#56](https://github.com/mzabriskie/axios/issues/56))
+- Removing es6-promise dependency
+- Fixing issue preventing `length` to be used as a parameter ([#91](https://github.com/mzabriskie/axios/pull/91))
+- Fixing issue with IE8 ([#85](https://github.com/mzabriskie/axios/pull/85))
+- Converting build to UMD

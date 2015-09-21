@@ -1,4 +1,4 @@
-// Type definitions for Axios v0.4.1
+// Type definitions for Axios v0.6.0
 // Project: https://github.com/mzabriskie/axios
 
 

@@ -9,21 +9,6 @@ describe('headers', function () {
     jasmine.Ajax.uninstall();
   });
 
-  it('should add X-Requested-With header', function (done) {
-    var request;
-
-    axios({
-      url: '/foo'
-    });
-
-    setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
-
-      expect(request.requestHeaders['X-Requested-With']).toEqual('XMLHttpRequest');
-      done();
-    });
-  });
-
   it('should default common headers', function (done) {
     var request;
     var headers = axios.defaults.headers.common;

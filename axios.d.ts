@@ -26,8 +26,8 @@ declare module axios {
   }
 
   interface Promise {
-    then(response: axios.Response): axios.Promise;
-    catch(response: axios.Response): axios.Promise;
+    then(onFulfilled:(response: axios.Response) => void): axios.Promise;
+    catch(onRejected:(response: axios.Response) => void): axios.Promise;
   }
 
   interface RequestOptions {

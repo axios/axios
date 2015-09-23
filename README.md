@@ -18,6 +18,10 @@ Promise based HTTP client for the browser and node.js
 - Automatic transforms for JSON data
 - Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
 
+## Semver
+
+Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
+
 ## Installing
 
 Using bower:
@@ -39,7 +43,7 @@ Tested to work with >=IE8, Chrome, Firefox, Safari, and Opera.
 ## Promises
 
 axios depends on a native ES6 Promise implementation to be [supported](http://caniuse.com/promises).
-If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise)
+If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## Example
 

@@ -28,7 +28,6 @@
   "homepage": "https://github.com/mzabriskie/axios",
   "devDependencies": {
     "coveralls": "^2.11.3",
-    "es6-promise": "^3.0.2",
     "grunt": "^0.4.5",
     "grunt-banner": "^0.5.0",
     "grunt-cli": "^0.1.13",
@@ -59,5 +58,8 @@
   },
   "typescript": {
     "definition": "./axios.d.ts"
+  },
+  "dependencies": {
+    "native-or-bluebird": "^1.2.0"
   }
 }

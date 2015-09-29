@@ -1,3 +1,4 @@
+var Promise = require('native-or-bluebird');
 var axios = require('../../index');
 
 describe('interceptors', function () {
@@ -13,7 +14,7 @@ describe('interceptors', function () {
 
   it('should add a request interceptor', function (done) {
     var request;
-    
+
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
       return config;
@@ -150,7 +151,7 @@ describe('interceptors', function () {
         status: 200,
         responseText: 'OK'
       });
-      
+
       setTimeout(function () {
         expect(response.data).toBe('OK - modified by interceptor');
         done();
@@ -251,7 +252,7 @@ describe('interceptors', function () {
         status: 200,
         responseText: 'OK'
       });
-      
+
       setTimeout(function () {
         expect(response.data).toBe('OK123');
         done();

@@ -79,3 +79,13 @@
 - Fixing issue preventing `length` to be used as a parameter ([#91](https://github.com/mzabriskie/axios/pull/91))
 - Fixing issue with IE8 ([#85](https://github.com/mzabriskie/axios/pull/85))
 - Converting build to UMD
+
+### 0.7.0 (Sep 29, 2015)
+
+- Fixing issue with minified bundle in IE8 ([#87](https://github.com/mzabriskie/axios/pull/87))
+- Adding support for passing agent in node ([#102](https://github.com/mzabriskie/axios/pull/102))
+- Adding support for returning result from `axios.spread` for chaining ([#106](https://github.com/mzabriskie/axios/pull/106))
+- Fixing typescript definition ([#105](https://github.com/mzabriskie/axios/pull/105))
+- Fixing default timeout config for node ([#112](https://github.com/mzabriskie/axios/pull/112))
+- Adding support for use in web workers, and react-native ([#70](https://github.com/mzabriskie/axios/issue/70)), ([#98](https://github.com/mzabriskie/axios/pull/98))
+- Adding support for fetch like API `axios(url[, config])` ([#116](https://github.com/mzabriskie/axios/issues/116))

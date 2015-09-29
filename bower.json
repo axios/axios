@@ -22,15 +22,17 @@
 	"ignore": [
 		"**/.*",
 		"*.iml",
-		"example",
+		"examples",
 		"lib",
 		"node_modules",
 		"sandbox",
 		"test",
 		"CONTRIBUTING.md",
+    "COOKBOOK.md",
 		"Gruntfile.js",
 		"index.js",
 		"karma.conf.js",
-		"package.json"
+		"package.json",
+    "webpack.*.js"
 	]
 }

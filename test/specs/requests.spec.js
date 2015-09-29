@@ -9,6 +9,19 @@ describe('requests', function () {
     jasmine.Ajax.uninstall();
   });
 
+  it('should treat single string arg as url', function (done) {
+    var request;
+
+    axios('/foo');
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.url).toBe('/foo');
+      done();
+    }, 0);
+  });
+
   it('should make an http request', function (done) {
     var request;
 

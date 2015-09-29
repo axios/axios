@@ -43,7 +43,7 @@ module.exports = function(grunt) {
           linebreak: false
         },
         files: {
-          src: ['dist/*.min.js']
+          src: ['dist/*.js']
         }
       }
     },

@@ -1,10 +1,13 @@
 **/.*
 *.iml
-example
-node_modules
-sandbox
-test
+coverage/
+examples/
+node_modules/
+sandbox/
+test/
 bower.json
 CONTRIBUTING.md
+COOKBOOK.md
 Gruntfile.js
 karma.conf.js
+webpack.*.js

@@ -18,6 +18,23 @@ describe('requests', function () {
       request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.url).toBe('/foo');
+      expect(request.method).toBe('GET');
+      done();
+    }, 0);
+  });
+
+  it('should allow string arg as url, and config arg', function (done) {
+    var request;
+
+    axios('/foo', {
+      method: 'POST'
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.url).toBe('/foo');
+      expect(request.method).toBe('POST');
       done();
     }, 0);
   });

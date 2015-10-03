@@ -41,6 +41,7 @@ declare module axios {
     responseType?: string;
     xsrfCookieName?: string;
     xsrfHeaderName?: string;
+    paramsSerializer?: (params: any) => string;
   }
 }
 

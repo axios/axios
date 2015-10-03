@@ -46,6 +46,7 @@
     "karma-jasmine": "0.3.6",
     "karma-jasmine-ajax": "0.1.13",
     "karma-phantomjs-launcher": "0.2.1",
+    "karma-sinon": "1.0.4",
     "karma-sourcemap-loader": "0.3.5",
     "karma-webpack": "1.7.0",
     "load-grunt-tasks": "3.3.0",

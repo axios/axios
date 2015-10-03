@@ -169,6 +169,12 @@ This is the available config options for making requests. Only the `url` is requ
     ID: 12345
   },
 
+  // `paramsSerializer` is an optional function in charge of serializing `params`
+  // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
+  paramsSerializer: function(params) {
+    return Qs.stringify(params, {arrayFormat: 'brackets'})
+  },
+
   // `data` is the data to be sent as the request body
   // Only applicable for request methods 'PUT', 'POST', and 'PATCH'
   // When no `transformRequest` is set, must be a string, an ArrayBuffer or a hash

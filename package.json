@@ -40,6 +40,7 @@
     "grunt-ts": "5.0.0-beta.5",
     "grunt-update-json": "0.2.1",
     "grunt-webpack": "1.0.11",
+    "istanbul-instrumenter-loader": "^0.1.3",
     "jasmine-core": "2.3.4",
     "karma": "0.13.10",
     "karma-coverage": "0.5.2",

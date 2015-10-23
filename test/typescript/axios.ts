@@ -110,9 +110,9 @@ axios({
   xsrfHeaderName: 'X-XSRF-TOKEN' // default
 });
 
-var instance = axios.createNew();
+var instance = axios.create();
 
-axios.createNew({
+axios.create({
   transformRequest: (data) => {
     return data.doSomething();
   },

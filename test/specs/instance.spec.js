@@ -10,7 +10,7 @@ describe('instance', function () {
   });
 
   it('should make an http request', function (done) {
-    var instance = axios.createNew();
+    var instance = axios.create();
 
     instance.request({
       url: '/foo'
@@ -25,7 +25,7 @@ describe('instance', function () {
   });
 
   it('should use instance options', function (done) {
-    var instance = axios.createNew({ timeout: 1000 });
+    var instance = axios.create({ timeout: 1000 });
 
     instance.request({
       url: '/foo'

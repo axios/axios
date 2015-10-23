@@ -33,12 +33,12 @@ describe('static api', function () {
   });
 
   it('should have factory method', function () {
-    expect(typeof axios.createNew).toEqual('function');
+    expect(typeof axios.create).toEqual('function');
   });
 });
 
 describe('instance api', function () {
-  var instance = axios.createNew();
+  var instance = axios.create();
 
   it('should have request methods', function () {
     expect(typeof instance.request).toEqual('function');

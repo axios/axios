@@ -17,7 +17,7 @@ declare module axios {
 
   interface AxiosStatic extends AxiosRequestMethods {
     (options: axios.RequestOptions): axios.Promise;
-    createNew(defaultOptions?: axios.InstanceOptions): AxiosInstance;
+    create(defaultOptions?: axios.InstanceOptions): AxiosInstance;
     all(iterable: any): axios.Promise;
     spread(callback: any): axios.Promise;
   }

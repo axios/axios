@@ -29,6 +29,7 @@ declare module axios {
   interface Response {
     data?: any;
     status?: number;
+    statusText?: string;
     headers?: any;
     config?: any;
   }

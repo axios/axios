@@ -10,7 +10,7 @@
     <form role="form" class="form" onsubmit="return false;">
       <div class="form-group">
         <label for="data">JSON</label>
-        <textarea id="data" class="form-control" rows="5">"data"</textarea>
+        <textarea id="data" class="form-control" rows="5"></textarea>
       </div>
       <button id="post" type="button" class="btn btn-primary">POST</button>
     </form>
@@ -24,9 +24,7 @@
         document.getElementById('post').onclick = function () {
           var data = document.getElementById('data').value;
 
-          axios.post('/post/server', data,{
-            xDomain : true
-          },JSON.parse(data))
+          axios.post('/post/server', JSON.parse(data))
             .then(function (res) {
               output.className = 'container';
               output.innerHTML = res.data;

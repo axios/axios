@@ -59,7 +59,8 @@ describe('requests', function () {
 
     axios({
       method: 'post',
-      url: 'www.someurl.com/foo'
+      url: 'www.someurl.com/foo',
+      xDomain: true
     }).then(function(res){
       response = res;
     });

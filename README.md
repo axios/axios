@@ -186,6 +186,10 @@ This is the available config options for making requests. Only the `url` is requ
   // If the request takes longer than `timeout`, the request will be aborted.
   timeout: 1000,
 
+  // `xDomain` indicates whether the request is cross domain.
+  // This option is required to be passed to support cross domain requests on IE 8/9 
+  xDomain: false, //default
+
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials
   withCredentials: false, // default

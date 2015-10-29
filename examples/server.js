@@ -76,6 +76,7 @@ dirs = listDirs(__dirname);
 
 server = http.createServer(function (req, res) {
   var url = req.url;
+  res.setHeader("Access-Control-Allow-Origin", "*");
 
   // Process axios itself
   if (/axios\.min\.js$/.test(url)) {

@@ -132,9 +132,34 @@ Helper functions for dealing with concurrent requests.
 ##### axios.all(iterable)
 ##### axios.spread(callback)
 
+### Creating an instance
+
+You can create a new instance of axios with a custom config.
+
+##### axios.create([config])
+
+```js
+var instance = axios.create({
+  timeout: 1000,
+  headers: {'X-Custom-Header': 'foobar'}
+});
+```
+
+### Instance methods
+
+The available instance methods are listed below. The specified config will be merged with the instance config.
+
+##### axios#request(config)
+##### axios#get(url[, config])
+##### axios#delete(url[, config])
+##### axios#head(url[, config])
+##### axios#post(url[, data[, config]])
+##### axios#put(url[, data[, config]])
+##### axios#patch(url[, data[, config]])
+
 ## Request API
 
-This is the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
+These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 
 ```js
 {
@@ -167,6 +192,12 @@ This is the available config options for making requests. Only the `url` is requ
   // `param` are the URL parameters to be sent with the request
   params: {
     ID: 12345
+  },
+
+  // `paramsSerializer` is an optional function in charge of serializing `params`
+  // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
+  paramsSerializer: function(params) {
+    return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
 
   // `data` is the data to be sent as the request body
@@ -261,6 +292,13 @@ If you may need to remove an interceptor later you can.
 ```js
 var myInterceptor = axios.interceptors.request.use(function () {/*...*/});
 axios.interceptors.request.eject(myInterceptor);
+```
+
+You can add interceptors to a custom instance of axios.
+
+```js
+var instance = axios.create();
+instance.interceptors.request.use(function () {/*...*/});
 ```
 
 ## Handling Errors

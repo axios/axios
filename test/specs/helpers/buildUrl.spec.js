@@ -52,5 +52,14 @@ describe('helpers::buildUrl', function () {
       length: 5
     })).toEqual('/foo?query=bar&start=0&length=5');
   });
+
+  it('should use serializer if provided', function () {
+    serializer = sinon.stub();
+    params = {foo: 'bar'};
+    serializer.returns('foo=bar');
+    expect(buildUrl('/foo', params, serializer)).toEqual('/foo?foo=bar');
+    expect(serializer.calledOnce).toBe(true);
+    expect(serializer.calledWith(params)).toBe(true);
+  })
 });
 

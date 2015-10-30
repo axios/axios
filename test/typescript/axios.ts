@@ -4,11 +4,11 @@ import axios = require('axios');
 
 axios.get('/user?ID=12345')
   .then(function (response) {
-      console.log(response);
-    })
+    console.log(response);
+  })
   .catch(function (response) {
-      console.log(response);
-    });
+    console.log(response);
+  });
 
 axios.get('/user', {
     params: {
@@ -96,16 +96,64 @@ axios({
 });
 
 axios({
-    url: "hi",
-    headers: {'X-Requested-With': 'XMLHttpRequest'},
+  url: "hi",
+  headers: {'X-Requested-With': 'XMLHttpRequest'},
+  params: {
+    ID: 12345
+  },
+  data: {
+    firstName: 'Fred'
+  },
+  withCredentials: false, // default
+  responseType: 'json', // default
+  xsrfCookieName: 'XSRF-TOKEN', // default
+  xsrfHeaderName: 'X-XSRF-TOKEN' // default
+});
+
+var instance = axios.create();
+
+axios.create({
+  transformRequest: (data) => {
+    return data.doSomething();
+  },
+  transformResponse: (data) => {
+    return data.doSomethingElse();
+  },
+  headers: {'X-Requested-With': 'XMLHttpRequest'},
+  timeout: 1000,
+  withCredentials: false, // default
+  responseType: 'json', // default
+  xsrfCookieName: 'XSRF-TOKEN', // default
+  xsrfHeaderName: 'X-XSRF-TOKEN' // default
+});
+
+instance.request({
+    method: 'get',
+    url: '/user/12345'
+  })
+  .then(function (response) {
+    console.log(response);
+  })
+  .catch(function (response) {
+    console.log(response);
+  });
+
+instance.get('/user?ID=12345')
+  .then(function (response) {
+    console.log(response);
+  })
+  .catch(function (response) {
+    console.log(response);
+  });
+
+instance.get('/user', {
     params: {
       ID: 12345
-    },
-    data: {
-      firstName: 'Fred'
-    },
-    withCredentials: false, // default
-    responseType: 'json', // default
-    xsrfCookieName: 'XSRF-TOKEN', // default
-    xsrfHeaderName: 'X-XSRF-TOKEN' // default
-});
+    }
+  })
+  .then(function (response) {
+    console.log(response);
+  })
+  .catch(function (response) {
+    console.log(response);
+  });

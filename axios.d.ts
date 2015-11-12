@@ -13,6 +13,10 @@ declare module axios {
     post(url: string, data: any, config?: any): axios.Promise;
     put(url: string, data: any, config?: any): axios.Promise;
     patch(url: string, data: any, config?: any): axios.Promise;
+    interceptors: {
+      request: Interceptor,
+      response: Interceptor
+    }
   }
 
   interface AxiosStatic extends AxiosRequestMethods {
@@ -49,6 +53,18 @@ declare module axios {
     xsrfCookieName?: string;
     xsrfHeaderName?: string;
     paramsSerializer?: (params: any) => string;
+  }
+
+  interface success {
+    (response: Response) : void
+  }
+  interface error {
+    error(response: axios.Response) : void;
+  }
+
+  interface Interceptor {
+    use(success :success, error?: error): void;
+    eject(interceptor: Interceptor);
   }
 
   interface RequestOptions extends InstanceOptions {

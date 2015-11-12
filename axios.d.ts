@@ -13,7 +13,6 @@ declare module axios {
     post(url: string, data: any, config?: any): axios.Promise;
     put(url: string, data: any, config?: any): axios.Promise;
     patch(url: string, data: any, config?: any): axios.Promise;
-    interceptors: Interceptors;
   }
 
   interface AxiosStatic extends AxiosRequestMethods {
@@ -21,6 +20,7 @@ declare module axios {
     create(defaultOptions?: axios.InstanceOptions): AxiosInstance;
     all(iterable: any): axios.Promise;
     spread(callback: any): axios.Promise;
+    interceptors: Interceptors;
   }
 
   interface AxiosInstance extends AxiosRequestMethods  {

@@ -13,10 +13,7 @@ declare module axios {
     post(url: string, data: any, config?: any): axios.Promise;
     put(url: string, data: any, config?: any): axios.Promise;
     patch(url: string, data: any, config?: any): axios.Promise;
-    interceptors: {
-      request: Interceptor,
-      response: Interceptor
-    }
+    interceptors: Interceptors;
   }
 
   interface AxiosStatic extends AxiosRequestMethods {
@@ -62,9 +59,14 @@ declare module axios {
     error(response: axios.Response) : void;
   }
 
+  interface Interceptors {
+    response: Interceptor;
+    request: Interceptor;
+  }
+
   interface Interceptor {
     use(success :success, error?: error): void;
-    eject(interceptor: Interceptor);
+    eject(interceptor: Interceptor): void;
   }
 
   interface RequestOptions extends InstanceOptions {

@@ -1,5 +1,6 @@
 var axios = require('../../../index');
 var http = require('http');
+var zlib = require('zlib');
 var server;
 
 module.exports = {
@@ -24,6 +25,29 @@ module.exports = {
         test.deepEqual(res.data, data);
         test.done();
       });
+    });
+  },
+
+  testTransparentGunzip: function (test) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    zlib.gzip(JSON.stringify(data), function(err, zipped) {
+
+      server = http.createServer(function (req, res) {
+        res.setHeader('Content-Type', 'application/json;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      }).listen(4444, function () {
+        axios.get('http://localhost:4444/').then(function (res) {
+          test.deepEqual(res.data, data);
+          test.done();
+        });
+      });
+
     });
   },
 

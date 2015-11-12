@@ -24,6 +24,7 @@ declare module axios {
   }
 
   interface AxiosInstance extends AxiosRequestMethods  {
+    interceptors: Interceptors;
     request(options: axios.RequestOptions): axios.Promise;
   }
 

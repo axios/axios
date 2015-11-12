@@ -54,10 +54,10 @@ declare module axios {
   }
 
   interface success {
-    (response: Response) : void
+    (response: Response): void
   }
   interface error {
-    error(response: axios.Response) : void;
+    (response: axios.Response): void;
   }
 
   interface Interceptors {

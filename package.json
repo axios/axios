@@ -59,6 +59,7 @@
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   },
+  "typings": "./index.d.ts",
   "typescript": {
     "definition": "./axios.d.ts"
   }

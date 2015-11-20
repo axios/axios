@@ -62,5 +62,8 @@
   },
   "typescript": {
     "definition": "./axios.d.ts"
+  },
+  "dependencies": {
+    "follow-redirects": "0.0.7"
   }
 }

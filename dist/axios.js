@@ -1,3 +1,4 @@
+/* axios v0.7.0 | (c) 2015 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -65,23 +66,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
 	var dispatchRequest = __webpack_require__(4);
-	var InterceptorManager = __webpack_require__(11);
+	var InterceptorManager = __webpack_require__(12);
 	
-	function Axios (defaultConfig) {
-	  this.defaultConfig = utils.merge({
-	    headers: {},
-	    timeout: defaults.timeout,
-	    transformRequest: defaults.transformRequest,
-	    transformResponse: defaults.transformResponse
-	  }, defaultConfig);
-	
-	  this.interceptors = {
-	    request: new InterceptorManager(),
-	    response: new InterceptorManager()
-	  };
-	}
-	
-	Axios.prototype.request = function (config) {
+	var axios = module.exports = function (config) {
 	  // Allow for axios('example/url'[, config]) a la fetch API
 	  if (typeof config === 'string') {
 	    config = utils.merge({
@@ -89,7 +76,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, arguments[1]);
 	  }
 	
-	  config = utils.merge(this.defaultConfig, { method: 'get' }, config);
+	  config = utils.merge({
+	    method: 'get',
+	    headers: {},
+	    timeout: defaults.timeout,
+	    transformRequest: defaults.transformRequest,
+	    transformResponse: defaults.transformResponse
+	  }, config);
 	
 	  // Don't allow overriding defaults.withCredentials
 	  config.withCredentials = config.withCredentials || defaults.withCredentials;
@@ -98,11 +91,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var chain = [dispatchRequest, undefined];
 	  var promise = Promise.resolve(config);
 	
-	  this.interceptors.request.forEach(function (interceptor) {
+	  axios.interceptors.request.forEach(function (interceptor) {
 	    chain.unshift(interceptor.fulfilled, interceptor.rejected);
 	  });
 	
-	  this.interceptors.response.forEach(function (interceptor) {
+	  axios.interceptors.response.forEach(function (interceptor) {
 	    chain.push(interceptor.fulfilled, interceptor.rejected);
 	  });
 	
@@ -113,14 +106,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return promise;
 	};
 	
-	var defaultInstance = new Axios();
-	
-	var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
-	
-	axios.create = function (defaultConfig) {
-	  return new Axios(defaultConfig);
-	};
-	
 	// Expose defaults
 	axios.defaults = defaults;
 	
@@ -128,48 +113,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(12);
+	axios.spread = __webpack_require__(13);
 	
 	// Expose interceptors
-	axios.interceptors = defaultInstance.interceptors;
+	axios.interceptors = {
+	  request: new InterceptorManager(),
+	  response: new InterceptorManager()
+	};
 	
 	// Provide aliases for supported request methods
 	(function () {
 	  function createShortMethods() {
 	    utils.forEach(arguments, function (method) {
-	      Axios.prototype[method] = function (url, config) {
-	        return this.request(utils.merge(config || {}, {
+	      axios[method] = function (url, config) {
+	        return axios(utils.merge(config || {}, {
 	          method: method,
 	          url: url
 	        }));
 	      };
-	      axios[method] = bind(Axios.prototype[method], defaultInstance);
 	    });
 	  }
 	
 	  function createShortMethodsWithData() {
 	    utils.forEach(arguments, function (method) {
-	      Axios.prototype[method] = function (url, data, config) {
-	        return this.request(utils.merge(config || {}, {
+	      axios[method] = function (url, data, config) {
+	        return axios(utils.merge(config || {}, {
 	          method: method,
 	          url: url,
 	          data: data
 	        }));
 	      };
-	      axios[method] = bind(Axios.prototype[method], defaultInstance);
 	    });
 	  }
 	
 	  createShortMethods('delete', 'get', 'head');
 	  createShortMethodsWithData('post', 'put', 'patch');
 	})();
-	
-	// Helpers
-	function bind (fn, thisArg) {
-	  return function () {
-	    return fn.apply(thisArg, Array.prototype.slice.call(arguments));
-	  };
-	}
 
 
 /***/ },
@@ -499,7 +478,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 	
 	/**
 	 * Dispatch a request to the server using whichever adapter
@@ -513,11 +492,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    try {
 	      // For browsers use XHR adapter
 	      if ((typeof XMLHttpRequest !== 'undefined') || (typeof ActiveXObject !== 'undefined')) {
-	        __webpack_require__(5)(resolve, reject, config);
+	        __webpack_require__(6)(resolve, reject, config);
 	      }
 	      // For node use HTTP adapter
 	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(5)(resolve, reject, config);
+	        __webpack_require__(6)(resolve, reject, config);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -525,10 +504,108 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	};
 	
-
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
 /* 5 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
+	
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+	
+	function cleanUpNextTick() {
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+	
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = setTimeout(cleanUpNextTick);
+	    draining = true;
+	
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    clearTimeout(timeout);
+	}
+	
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
+	
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+	
+	function noop() {}
+	
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+	
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+	
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
+
+/***/ },
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -537,9 +614,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
-	var buildUrl = __webpack_require__(6);
-	var parseHeaders = __webpack_require__(7);
-	var transformData = __webpack_require__(8);
+	var buildUrl = __webpack_require__(7);
+	var parseHeaders = __webpack_require__(8);
+	var transformData = __webpack_require__(9);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -560,30 +637,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    delete requestHeaders['Content-Type']; // Let the browser set it
 	  }
 	
-	  var adapter = (XMLHttpRequest || ActiveXObject), 
-	      loadEvent = 'onreadystatechange', 
-	      xDomain = false;
-	
-	  // For IE 8/9 CORS support
-	  if(config.xDomain && window.XDomainRequest){
-	    adapter = window.XDomainRequest;
-	    loadEvent = 'onload';
-	    xDomain = true;
-	  }
-	
 	  // Create the request
-	  var request = new adapter('Microsoft.XMLHTTP');
-	
-	  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params, config.paramsSerializer), true);
+	  var request = new (XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
+	  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params), true);
 	
 	  // Set the request timeout in MS
 	  request.timeout = config.timeout;
 	
 	  // Listen for ready state
-	  request[loadEvent] = function () {
-	    if (request && (request.readyState === 4 || xDomain)) {
+	  request.onreadystatechange = function () {
+	    if (request && request.readyState === 4) {
 	      // Prepare the response
-	      var responseHeaders = xDomain ? null : parseHeaders(request.getAllResponseHeaders());
+	      var responseHeaders = parseHeaders(request.getAllResponseHeaders());
 	      var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
 	      var response = {
 	        data: transformData(
@@ -596,8 +661,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        headers: responseHeaders,
 	        config: config
 	      };
+	
 	      // Resolve or reject the Promise based on the status
-	      ((request.status >= 200 && request.status < 300) || (request.responseText && xDomain) ?
+	      (request.status >= 200 && request.status < 300 ?
 	        resolve :
 	        reject)(response);
 	
@@ -610,8 +676,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // This is only done if running in a standard browser environment.
 	  // Specifically not if we're in a web worker, or react-native.
 	  if (utils.isStandardBrowserEnv()) {
-	    var cookies = __webpack_require__(9);
-	    var urlIsSameOrigin = __webpack_require__(10);
+	    var cookies = __webpack_require__(10);
+	    var urlIsSameOrigin = __webpack_require__(11);
 	
 	    // Add xsrf header
 	    var xsrfValue = urlIsSameOrigin(config.url) ?
@@ -624,17 +690,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  // Add headers to the request
-	  if(!xDomain)
-	    utils.forEach(requestHeaders, function (val, key) {
-	      // Remove Content-Type if data is undefined
-	      if (!data && key.toLowerCase() === 'content-type') {
-	        delete requestHeaders[key];
-	      }
-	      // Otherwise add header to the request
-	      else {
-	        request.setRequestHeader(key, val);
-	      }
-	    });
+	  utils.forEach(requestHeaders, function (val, key) {
+	    // Remove Content-Type if data is undefined
+	    if (!data && key.toLowerCase() === 'content-type') {
+	      delete requestHeaders[key];
+	    }
+	    // Otherwise add header to the request
+	    else {
+	      request.setRequestHeader(key, val);
+	    }
+	  });
 	
 	  // Add withCredentials to request if needed
 	  if (config.withCredentials) {
@@ -662,7 +727,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -687,47 +752,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {object} [params] The params to be appended
 	 * @returns {string} The formatted url
 	 */
-	module.exports = function buildUrl(url, params, paramsSerializer) {
+	module.exports = function buildUrl(url, params) {
 	  if (!params) {
 	    return url;
 	  }
 	
-	  var serializedParams;
-	  if (paramsSerializer) {
-	    serializedParams = paramsSerializer(params);
-	  }
-	  else {
-	    var parts = [];
+	  var parts = [];
 	
-	    utils.forEach(params, function (val, key) {
-	      if (val === null || typeof val === 'undefined') {
-	        return;
+	  utils.forEach(params, function (val, key) {
+	    if (val === null || typeof val === 'undefined') {
+	      return;
+	    }
+	
+	    if (utils.isArray(val)) {
+	      key = key + '[]';
+	    }
+	
+	    if (!utils.isArray(val)) {
+	      val = [val];
+	    }
+	
+	    utils.forEach(val, function (v) {
+	      if (utils.isDate(v)) {
+	        v = v.toISOString();
 	      }
-	
-	      if (utils.isArray(val)) {
-	        key = key + '[]';
+	      else if (utils.isObject(v)) {
+	        v = JSON.stringify(v);
 	      }
-	
-	      if (!utils.isArray(val)) {
-	        val = [val];
-	      }
-	
-	      utils.forEach(val, function (v) {
-	        if (utils.isDate(v)) {
-	          v = v.toISOString();
-	        }
-	        else if (utils.isObject(v)) {
-	          v = JSON.stringify(v);
-	        }
-	        parts.push(encode(key) + '=' + encode(v));
-	      });
+	      parts.push(encode(key) + '=' + encode(v));
 	    });
+	  });
 	
-	    serializedParams = parts.join('&');
-	  }
-	
-	  if (serializedParams) {
-	    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
+	  if (parts.length > 0) {
+	    url += (url.indexOf('?') === -1 ? '?' : '&') + parts.join('&');
 	  }
 	
 	  return url;
@@ -735,7 +792,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -775,7 +832,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -800,7 +857,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -849,7 +906,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -913,7 +970,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -971,7 +1028,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';

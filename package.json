@@ -4,7 +4,7 @@
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test",
+    "test": "./node_modules/.bin/grunt test",
     "start": "node ./sandbox/server.js",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"

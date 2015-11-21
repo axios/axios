@@ -54,6 +54,41 @@ describe('requests', function () {
     }, 0);
   });
 
+  it('should make cross domian http request', function (done) {
+    var request, response;
+
+    axios({
+      method: 'post',
+      url: 'www.someurl.com/foo',
+      xDomain: true
+    }).then(function(res){
+      response = res;
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+      request.respondWith({
+        status: 200,
+        statusText: 'OK',
+        responseText: '{"foo": "bar"}',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      setTimeout(function () {
+        expect(response.data.foo).toEqual('bar');
+        expect(response.status).toEqual(200);
+        expect(response.statusText).toEqual('OK');
+        expect(response.headers['content-type']).toEqual('application/json');
+        done();
+      }, 0);
+
+    }, 0);
+
+  });
+
+
   it('should supply correct response', function (done) {
     var request, response;
 

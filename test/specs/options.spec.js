@@ -78,4 +78,42 @@ describe('options', function () {
       done();
     }, 0);
   });
+
+  it('should accept base URL', function (done) {
+    var request;
+
+    const instance = axios.create({
+      baseURL: 'http://test.com/'
+    });
+
+    instance.request({
+      url: '/foo'
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.url).toBe('http://test.com/foo');
+      done();
+    }, 0);
+  });
+
+  it('should ignore base URL if request URL is absolute', function (done) {
+    var request;
+
+    const instance = axios.create({
+      baseURL: 'http://someurl.com/'
+    });
+
+    instance.request({
+      url: 'http://someotherurl.com/'
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.url).toBe('http://someotherurl.com/');
+      done();
+    }, 0);
+  });
 });

@@ -215,6 +215,14 @@ These are the available config options for making requests. Only the `url` is re
   // should be made using credentials
   withCredentials: false, // default
 
+  // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
+  // The username can be supplied as `user` or `username`
+  // The password can be supplied as `pass` or `password`
+  auth: {
+    user: 'janedoe',
+    pass: 's00pers3cret'
+  }
+
   // `responseType` indicates the type of data that the server will respond with
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text'
   responseType: 'json', // default

@@ -1,6 +1,15 @@
 var axios = require('../../index');
 
-describe('basicAuth without btoa polyfill', function () {
+describe('basicAuth with btoa polyfill', function () {
+  beforeAll(function() {
+    this.original_btoa = window.btoa;
+    window.btoa = undefined;
+  })
+
+  afterAll(function() {
+    window.btoa = this.original_btoa;
+  })
+
   beforeEach(function () {
     jasmine.Ajax.install();
   });
@@ -36,7 +45,7 @@ describe('basicAuth without btoa polyfill', function () {
     }).then(function(response) {
       done(new Error('Should not succeed to make a HTTP Basic auth request with non-latin1 chars in credentials.'))
     }).catch(function(error) {
-      expect(error.message).toEqual('INVALID_CHARACTER_ERR: DOM Exception 5')
+      expect(error.message).toEqual('\'btoa\' failed: The string to be encoded contains characters outside of the Latin1 range.')
       done()
     });
   });

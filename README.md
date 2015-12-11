@@ -51,7 +51,7 @@ axios.get('/user?ID=12345')
   .catch(function (response) {
     console.log(response);
   });
-	
+
 // Optionally the request above could also be done as
 axios.get('/user', {
     params: {
@@ -174,7 +174,7 @@ These are the available config options for making requests. Only the `url` is re
   // The last function in the array must return a string or an ArrayBuffer
   transformRequest: [function (data) {
     // Do whatever you want to transform the data
-	
+
     return data;
   }],
 
@@ -182,7 +182,7 @@ These are the available config options for making requests. Only the `url` is re
   // it is passed to then/catch
   transformResponse: [function (data) {
     // Do whatever you want to transform the data
-	
+
     return data;
   }],
 
@@ -215,6 +215,14 @@ These are the available config options for making requests. Only the `url` is re
   // should be made using credentials
   withCredentials: false, // default
 
+  // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
+  // This will set an `Authorization` header, overwriting any existing
+  // `Authorization` custom headers you have set using `headers`.
+  auth: {
+    username: 'janedoe',
+    password: 's00pers3cret'
+  }
+
   // `responseType` indicates the type of data that the server will respond with
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text'
   responseType: 'json', // default
@@ -238,7 +246,7 @@ The response for a request contains the following information.
 
   // `status` is the HTTP status code from the server response
   status: 200,
-  
+
   // `statusText` is the HTTP status message from the server response
   statusText: 'OK',
 

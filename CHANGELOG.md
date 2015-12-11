@@ -89,3 +89,15 @@
 - Fixing default timeout config for node ([#112](https://github.com/mzabriskie/axios/pull/112))
 - Adding support for use in web workers, and react-native ([#70](https://github.com/mzabriskie/axios/issue/70)), ([#98](https://github.com/mzabriskie/axios/pull/98))
 - Adding support for fetch like API `axios(url[, config])` ([#116](https://github.com/mzabriskie/axios/issues/116))
+
+### 0.8.0 (Dec 11, 2015)
+
+- Adding support for creating instances of axios ([#123](https://github.com/mzabriskie/axios/pull/123))
+- Fixing http adapter to use `Buffer` instead of `String` in case of `responseType === 'arraybuffer'` ([#128](https://github.com/mzabriskie/axios/pull/128))
+- Adding support for using custom parameter serializer with `paramsSerializer` option ([#121](https://github.com/mzabriskie/axios/pull/121))
+- Fixing issue in IE8 caused by `forEach` on `arguments` ([#127](https://github.com/mzabriskie/axios/pull/127))
+- Adding support for following redirects in node ([#146](https://github.com/mzabriskie/axios/pull/146))
+- Adding support for transparent decompression if `content-encoding` is set ([#149](https://github.com/mzabriskie/axios/pull/149))
+- Adding support for transparent XDomainRequest to handle cross domain requests in IE9 ([#140](https://github.com/mzabriskie/axios/pull/140))
+- Adding support for HTTP basic auth via Authorization header ([#167](https://github.com/mzabriskie/axios/pull/167))
+- Adding support for baseURL option ([#160](https://github.com/mzabriskie/axios/pull/160))

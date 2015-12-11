@@ -38,4 +38,38 @@ describe('instance', function () {
       done();
     }, 0);
   });
+
+  it('should have interceptors on the instance', function (done) {
+    axios.interceptors.request.use(function (config) {
+      config.foo = true;
+      return config;
+    });
+
+    var instance = axios.create();
+    instance.interceptors.request.use(function (config) {
+      config.bar = true;
+      return config;
+    });
+
+    var response;
+    instance.request({
+      url: '/foo'
+    }).then(function (res) {
+      response = res;
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      request.respondWith({
+        status: 200
+      });
+
+      setTimeout(function () {
+        expect(response.config.foo).toEqual(undefined);
+        expect(response.config.bar).toEqual(true);
+        done();
+      });
+    }, 0);
+  });
 });

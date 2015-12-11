@@ -49,6 +49,7 @@ declare module axios {
     xsrfCookieName?: string;
     xsrfHeaderName?: string;
     paramsSerializer?: (params: any) => string;
+    baseURL?: string;
   }
 
   interface RequestOptions extends InstanceOptions {

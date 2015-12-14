@@ -21,7 +21,6 @@ module.exports = function setupBasicAuthTest() {
     setTimeout(function () {
       var request = jasmine.Ajax.requests.mostRecent();
 
-      // TODO uncomment this once #169 is resolved
       expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==');
       done();
     }, 0);

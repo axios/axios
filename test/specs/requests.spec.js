@@ -1,4 +1,5 @@
 var axios = require('../../index');
+var defaults = require('../../lib/defaults');
 
 describe('requests', function () {
   beforeEach(function () {
@@ -75,7 +76,7 @@ describe('requests', function () {
           'Content-Type': 'application/json'
         }
       });
-      
+
       setTimeout(function () {
         expect(response.data.foo).toEqual('bar');
         expect(response.status).toEqual(200);
@@ -138,7 +139,7 @@ describe('requests', function () {
 
     setTimeout(function () {
       request = jasmine.Ajax.requests.mostRecent();
-      
+
       expect(request.requestHeaders['Content-Type']).toEqual(contentType);
       done();
     });
@@ -224,4 +225,19 @@ describe('requests', function () {
     }, 0);
   });
 
+  it('should use overridden defaults.timeout', function (done) {
+    var request;
+    var originalTimeout = defaults.timeout;
+    defaults.timeout = 5000;
+
+    axios({ url: '/foo' });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.timeout).toBe(5000);
+      defaults.timeout = originalTimeout;
+      done();
+    }, 0);
+  });
 });

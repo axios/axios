@@ -240,4 +240,19 @@ describe('requests', function () {
       done();
     }, 0);
   });
+
+  it('should use overridden defaults.baseURL', function (done) {
+    var request;
+    defaults.baseURL = 'http://test.com/';
+
+    axios({ url: '/foo' });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.url).toBe('http://test.com/foo');
+      delete defaults.baseURL;
+      done();
+    }, 0);
+  });
 });

@@ -23,5 +23,20 @@ describe('utils::merge', function () {
     expect(d.foo).toEqual(789);
     expect(d.bar).toEqual(456);
   });
+
+  it('should merge recursively', function () {
+    var a = {foo: {bar: 123}};
+    var b = {foo: {baz: 456}, bar: {qux: 789}};
+    
+    expect(merge(a, b)).toEqual({
+      foo: {
+        bar: 123,
+        baz: 456
+      },
+      bar: {
+        qux: 789
+      }
+    });
+  });
 });
 

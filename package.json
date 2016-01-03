@@ -1,10 +1,11 @@
 {
   "name": "axios",
-  "version": "0.7.0",
+  "version": "0.8.1",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test",
+    "build": "./node_modules/.bin/grunt build",
+    "test": "./node_modules/.bin/grunt test",
     "start": "node ./sandbox/server.js",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
@@ -47,6 +48,7 @@
     "karma-jasmine": "0.3.6",
     "karma-jasmine-ajax": "0.1.13",
     "karma-phantomjs-launcher": "0.2.1",
+    "karma-sinon": "1.0.4",
     "karma-sourcemap-loader": "0.3.5",
     "karma-webpack": "1.7.0",
     "load-grunt-tasks": "3.3.0",
@@ -60,5 +62,8 @@
   },
   "typescript": {
     "definition": "./axios.d.ts"
+  },
+  "dependencies": {
+    "follow-redirects": "0.0.7"
   }
 }

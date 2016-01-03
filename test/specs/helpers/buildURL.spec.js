@@ -1,18 +1,18 @@
-var buildUrl = require('../../../lib/helpers/buildUrl');
+var buildURL = require('../../../lib/helpers/buildURL');
 
-describe('helpers::buildUrl', function () {
+describe('helpers::buildURL', function () {
   it('should support null params', function () {
-    expect(buildUrl('/foo')).toEqual('/foo');
+    expect(buildURL('/foo')).toEqual('/foo');
   });
 
   it('should support params', function () {
-    expect(buildUrl('/foo', {
+    expect(buildURL('/foo', {
       foo: 'bar'
     })).toEqual('/foo?foo=bar');
   });
 
   it('should support object params', function () {
-    expect(buildUrl('/foo', {
+    expect(buildURL('/foo', {
       foo: {
         bar: 'baz'
       }
@@ -22,35 +22,45 @@ describe('helpers::buildUrl', function () {
   it('should support date params', function () {
     var date = new Date();
 
-    expect(buildUrl('/foo', {
+    expect(buildURL('/foo', {
       date: date
     })).toEqual('/foo?date=' + date.toISOString());
   });
 
   it('should support array params', function () {
-    expect(buildUrl('/foo', {
+    expect(buildURL('/foo', {
       foo: ['bar', 'baz']
     })).toEqual('/foo?foo[]=bar&foo[]=baz');
   });
 
   it('should support special char params', function () {
-    expect(buildUrl('/foo', {
+    expect(buildURL('/foo', {
       foo: '@:$, '
     })).toEqual('/foo?foo=@:$,+');
   });
 
   it('should support existing params', function () {
-    expect(buildUrl('/foo?foo=bar', {
+    expect(buildURL('/foo?foo=bar', {
       bar: 'baz'
     })).toEqual('/foo?foo=bar&bar=baz');
   });
 
   it('should support "length" parameter', function () {
-    expect(buildUrl('/foo', {
+    expect(buildURL('/foo', {
       query: 'bar',
       start: 0,
       length: 5
     })).toEqual('/foo?query=bar&start=0&length=5');
   });
+
+  it('should use serializer if provided', function () {
+    serializer = sinon.stub();
+    params = {foo: 'bar'};
+    serializer.returns('foo=bar');
+    expect(buildURL('/foo', params, serializer)).toEqual('/foo?foo=bar');
+    expect(serializer.calledOnce).toBe(true);
+    expect(serializer.calledWith(params)).toBe(true);
+  })
 });
+
 

@@ -40,4 +40,37 @@ describe('xsrf', function () {
       done();
     }, 0);
   });
+
+  it('should not set xsrf header for cross origin', function (done) {
+    var request;
+    document.cookie = axios.defaults.xsrfCookieName + '=12345';
+
+    axios({
+      url: 'http://example.com/'
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+      done();
+    });
+  });
+
+  it('should set xsrf header for cross origin when using withCredentials', function (done) {
+    var request;
+    document.cookie = axios.defaults.xsrfCookieName + '=12345';
+
+    axios({
+      url: 'http://example.com/',
+      withCredentials: true
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
+      done();
+    });
+  });
 });

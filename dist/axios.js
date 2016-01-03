@@ -1,4 +1,4 @@
-/* axios v0.7.0 | (c) 2015 by Matt Zabriskie */
+/* axios v0.8.0 | (c) 2015 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -67,8 +67,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	var utils = __webpack_require__(3);
 	var dispatchRequest = __webpack_require__(4);
 	var InterceptorManager = __webpack_require__(12);
+	var isAbsoluteURL = __webpack_require__(13);
+	var combineURLs = __webpack_require__(14);
+	var bind = __webpack_require__(15);
 	
-	var axios = module.exports = function (config) {
+	function Axios(defaultConfig) {
+	  this.defaultConfig = utils.merge({
+	    headers: {},
+	    timeout: defaults.timeout,
+	    transformRequest: defaults.transformRequest,
+	    transformResponse: defaults.transformResponse
+	  }, defaultConfig);
+	
+	  this.interceptors = {
+	    request: new InterceptorManager(),
+	    response: new InterceptorManager()
+	  };
+	}
+	
+	Axios.prototype.request = function request(config) {
+	  /*eslint no-param-reassign:0*/
 	  // Allow for axios('example/url'[, config]) a la fetch API
 	  if (typeof config === 'string') {
 	    config = utils.merge({
@@ -76,13 +94,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, arguments[1]);
 	  }
 	
-	  config = utils.merge({
-	    method: 'get',
-	    headers: {},
-	    timeout: defaults.timeout,
-	    transformRequest: defaults.transformRequest,
-	    transformResponse: defaults.transformResponse
-	  }, config);
+	  config = utils.merge(this.defaultConfig, { method: 'get' }, config);
+	
+	  if (config.baseURL && !isAbsoluteURL(config.url)) {
+	    config.url = combineURLs(config.baseURL, config.url);
+	  }
 	
 	  // Don't allow overriding defaults.withCredentials
 	  config.withCredentials = config.withCredentials || defaults.withCredentials;
@@ -91,11 +107,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var chain = [dispatchRequest, undefined];
 	  var promise = Promise.resolve(config);
 	
-	  axios.interceptors.request.forEach(function (interceptor) {
+	  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
 	    chain.unshift(interceptor.fulfilled, interceptor.rejected);
 	  });
 	
-	  axios.interceptors.response.forEach(function (interceptor) {
+	  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
 	    chain.push(interceptor.fulfilled, interceptor.rejected);
 	  });
 	
@@ -106,49 +122,49 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return promise;
 	};
 	
+	var defaultInstance = new Axios();
+	
+	var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
+	
+	axios.create = function create(defaultConfig) {
+	  return new Axios(defaultConfig);
+	};
+	
 	// Expose defaults
 	axios.defaults = defaults;
 	
 	// Expose all/spread
-	axios.all = function (promises) {
+	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(13);
+	axios.spread = __webpack_require__(16);
 	
 	// Expose interceptors
-	axios.interceptors = {
-	  request: new InterceptorManager(),
-	  response: new InterceptorManager()
-	};
+	axios.interceptors = defaultInstance.interceptors;
 	
 	// Provide aliases for supported request methods
-	(function () {
-	  function createShortMethods() {
-	    utils.forEach(arguments, function (method) {
-	      axios[method] = function (url, config) {
-	        return axios(utils.merge(config || {}, {
-	          method: method,
-	          url: url
-	        }));
-	      };
-	    });
-	  }
+	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+	  /*eslint func-names:0*/
+	  Axios.prototype[method] = function(url, config) {
+	    return this.request(utils.merge(config || {}, {
+	      method: method,
+	      url: url
+	    }));
+	  };
+	  axios[method] = bind(Axios.prototype[method], defaultInstance);
+	});
 	
-	  function createShortMethodsWithData() {
-	    utils.forEach(arguments, function (method) {
-	      axios[method] = function (url, data, config) {
-	        return axios(utils.merge(config || {}, {
-	          method: method,
-	          url: url,
-	          data: data
-	        }));
-	      };
-	    });
-	  }
-	
-	  createShortMethods('delete', 'get', 'head');
-	  createShortMethodsWithData('post', 'put', 'patch');
-	})();
+	utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+	  /*eslint func-names:0*/
+	  Axios.prototype[method] = function(url, data, config) {
+	    return this.request(utils.merge(config || {}, {
+	      method: method,
+	      url: url,
+	      data: data
+	    }));
+	  };
+	  axios[method] = bind(Axios.prototype[method], defaultInstance);
+	});
 
 
 /***/ },
@@ -165,8 +181,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	module.exports = {
-	  transformRequest: [function (data, headers) {
-	    if(utils.isFormData(data)) {
+	  transformRequest: [function transformResponseJSON(data, headers) {
+	    if (utils.isFormData(data)) {
 	      return data;
 	    }
 	    if (utils.isArrayBuffer(data)) {
@@ -178,7 +194,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (utils.isObject(data) && !utils.isFile(data) && !utils.isBlob(data)) {
 	      // Set application/json if no Content-Type has been specified
 	      if (!utils.isUndefined(headers)) {
-	        utils.forEach(headers, function (val, key) {
+	        utils.forEach(headers, function processContentTypeHeader(val, key) {
 	          if (key.toLowerCase() === 'content-type') {
 	            headers['Content-Type'] = val;
 	          }
@@ -193,7 +209,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return data;
 	  }],
 	
-	  transformResponse: [function (data) {
+	  transformResponse: [function transformResponseJSON(data) {
+	    /*eslint no-param-reassign:0*/
 	    if (typeof data === 'string') {
 	      data = data.replace(PROTECTION_PREFIX, '');
 	      try {
@@ -268,11 +285,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
 	 */
 	function isArrayBufferView(val) {
+	  var result;
 	  if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
-	    return ArrayBuffer.isView(val);
+	    result = ArrayBuffer.isView(val);
 	  } else {
-	    return (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
+	    result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
 	  }
+	  return result;
 	}
 	
 	/**
@@ -356,16 +375,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	/**
-	 * Determine if a value is an Arguments object
-	 *
-	 * @param {Object} val The value to test
-	 * @returns {boolean} True if value is an Arguments object, otherwise false
-	 */
-	function isArguments(val) {
-	  return toString.call(val) === '[object Arguments]';
-	}
-	
-	/**
 	 * Determine if we're running in a standard browser environment
 	 *
 	 * This allows axios to run in a web worker, and react-native.
@@ -376,7 +385,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *  typeof document -> undefined
 	 *
 	 * react-native:
-	 *  typeof document.createelement -> undefined
+	 *  typeof document.createElement -> undefined
 	 */
 	function isStandardBrowserEnv() {
 	  return (
@@ -389,7 +398,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Iterate over an Array or an Object invoking a function for each item.
 	 *
-	 * If `obj` is an Array or arguments callback will be called passing
+	 * If `obj` is an Array callback will be called passing
 	 * the value, index, and complete array for each item.
 	 *
 	 * If 'obj' is an Object callback will be called passing
@@ -404,22 +413,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 	
-	  // Check if obj is array-like
-	  var isArrayLike = isArray(obj) || isArguments(obj);
-	
 	  // Force an array if not already something iterable
-	  if (typeof obj !== 'object' && !isArrayLike) {
+	  if (typeof obj !== 'object' && !isArray(obj)) {
+	    /*eslint no-param-reassign:0*/
 	    obj = [obj];
 	  }
 	
-	  // Iterate over array values
-	  if (isArrayLike) {
+	  if (isArray(obj)) {
+	    // Iterate over array values
 	    for (var i = 0, l = obj.length; i < l; i++) {
 	      fn.call(null, obj[i], i, obj);
 	    }
-	  }
-	  // Iterate over object keys
-	  else {
+	  } else {
+	    // Iterate over object keys
 	    for (var key in obj) {
 	      if (obj.hasOwnProperty(key)) {
 	        fn.call(null, obj[key], key, obj);
@@ -445,13 +451,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} obj1 Object to merge
 	 * @returns {Object} Result of all merge properties
 	 */
-	function merge(/*obj1, obj2, obj3, ...*/) {
+	function merge(/* obj1, obj2, obj3, ... */) {
 	  var result = {};
-	  forEach(arguments, function (obj) {
-	    forEach(obj, function (val, key) {
-	      result[key] = val;
-	    });
-	  });
+	  function assignValue(val, key) {
+	    result[key] = val;
+	  }
+	
+	  for (var i = 0, l = arguments.length; i < l; i++) {
+	    forEach(arguments[i], assignValue);
+	  }
 	  return result;
 	}
 	
@@ -478,7 +486,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	'use strict';
 	
 	/**
 	 * Dispatch a request to the server using whichever adapter
@@ -488,15 +496,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {Promise} The Promise to be fulfilled
 	 */
 	module.exports = function dispatchRequest(config) {
-	  return new Promise(function (resolve, reject) {
+	  return new Promise(function executor(resolve, reject) {
 	    try {
-	      // For browsers use XHR adapter
 	      if ((typeof XMLHttpRequest !== 'undefined') || (typeof ActiveXObject !== 'undefined')) {
-	        __webpack_require__(6)(resolve, reject, config);
-	      }
-	      // For node use HTTP adapter
-	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(6)(resolve, reject, config);
+	        // For browsers use XHR adapter
+	        __webpack_require__(5)(resolve, reject, config);
+	      } else if (typeof process !== 'undefined') {
+	        // For node use HTTP adapter
+	        __webpack_require__(5)(resolve, reject, config);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -504,108 +511,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	};
 	
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
 
 /***/ },
 /* 5 */
-/***/ function(module, exports) {
-
-	// shim for using process in browser
-	
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-	var currentQueue;
-	var queueIndex = -1;
-	
-	function cleanUpNextTick() {
-	    draining = false;
-	    if (currentQueue.length) {
-	        queue = currentQueue.concat(queue);
-	    } else {
-	        queueIndex = -1;
-	    }
-	    if (queue.length) {
-	        drainQueue();
-	    }
-	}
-	
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    var timeout = setTimeout(cleanUpNextTick);
-	    draining = true;
-	
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        while (++queueIndex < len) {
-	            if (currentQueue) {
-	                currentQueue[queueIndex].run();
-	            }
-	        }
-	        queueIndex = -1;
-	        len = queue.length;
-	    }
-	    currentQueue = null;
-	    draining = false;
-	    clearTimeout(timeout);
-	}
-	
-	process.nextTick = function (fun) {
-	    var args = new Array(arguments.length - 1);
-	    if (arguments.length > 1) {
-	        for (var i = 1; i < arguments.length; i++) {
-	            args[i - 1] = arguments[i];
-	        }
-	    }
-	    queue.push(new Item(fun, args));
-	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-	
-	// v8 likes predictible objects
-	function Item(fun, array) {
-	    this.fun = fun;
-	    this.array = array;
-	}
-	Item.prototype.run = function () {
-	    this.fun.apply(null, this.array);
-	};
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-	
-	function noop() {}
-	
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-	
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-	
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
-
-/***/ },
-/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -614,9 +523,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
-	var buildUrl = __webpack_require__(7);
-	var parseHeaders = __webpack_require__(8);
-	var transformData = __webpack_require__(9);
+	var buildURL = __webpack_require__(6);
+	var parseHeaders = __webpack_require__(7);
+	var transformData = __webpack_require__(8);
+	var isURLSameOrigin = __webpack_require__(9);
+	var btoa = window.btoa || __webpack_require__(10);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -637,18 +548,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	    delete requestHeaders['Content-Type']; // Let the browser set it
 	  }
 	
+	  var Adapter = (XMLHttpRequest || ActiveXObject);
+	  var loadEvent = 'onreadystatechange';
+	  var xDomain = false;
+	
+	  // For IE 8/9 CORS support
+	  if (!isURLSameOrigin(config.url) && window.XDomainRequest) {
+	    Adapter = window.XDomainRequest;
+	    loadEvent = 'onload';
+	    xDomain = true;
+	  }
+	
+	  // HTTP basic authentication
+	  if (config.auth) {
+	    var username = config.auth.username || '';
+	    var password = config.auth.password || '';
+	    requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+	  }
+	
 	  // Create the request
-	  var request = new (XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
-	  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params), true);
+	  var request = new Adapter('Microsoft.XMLHTTP');
+	  request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
 	
 	  // Set the request timeout in MS
 	  request.timeout = config.timeout;
 	
 	  // Listen for ready state
-	  request.onreadystatechange = function () {
-	    if (request && request.readyState === 4) {
+	  request[loadEvent] = function handleReadyState() {
+	    if (request && (request.readyState === 4 || xDomain)) {
 	      // Prepare the response
-	      var responseHeaders = parseHeaders(request.getAllResponseHeaders());
+	      var responseHeaders = xDomain ? null : parseHeaders(request.getAllResponseHeaders());
 	      var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
 	      var response = {
 	        data: transformData(
@@ -661,9 +590,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        headers: responseHeaders,
 	        config: config
 	      };
-	
 	      // Resolve or reject the Promise based on the status
-	      (request.status >= 200 && request.status < 300 ?
+	      ((request.status >= 200 && request.status < 300) || (xDomain && request.responseText) ?
 	        resolve :
 	        reject)(response);
 	
@@ -676,11 +604,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // This is only done if running in a standard browser environment.
 	  // Specifically not if we're in a web worker, or react-native.
 	  if (utils.isStandardBrowserEnv()) {
-	    var cookies = __webpack_require__(10);
-	    var urlIsSameOrigin = __webpack_require__(11);
+	    var cookies = __webpack_require__(11);
 	
 	    // Add xsrf header
-	    var xsrfValue = urlIsSameOrigin(config.url) ?
+	    var xsrfValue =  config.withCredentials || isURLSameOrigin(config.url) ?
 	        cookies.read(config.xsrfCookieName || defaults.xsrfCookieName) :
 	        undefined;
 	
@@ -690,16 +617,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  // Add headers to the request
-	  utils.forEach(requestHeaders, function (val, key) {
-	    // Remove Content-Type if data is undefined
-	    if (!data && key.toLowerCase() === 'content-type') {
-	      delete requestHeaders[key];
-	    }
-	    // Otherwise add header to the request
-	    else {
-	      request.setRequestHeader(key, val);
-	    }
-	  });
+	  if (!xDomain) {
+	    utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+	      if (!data && key.toLowerCase() === 'content-type') {
+	        // Remove Content-Type if data is undefined
+	        delete requestHeaders[key];
+	      } else {
+	        // Otherwise add header to the request
+	        request.setRequestHeader(key, val);
+	      }
+	    });
+	  }
 	
 	  // Add withCredentials to request if needed
 	  if (config.withCredentials) {
@@ -727,7 +655,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -752,47 +680,55 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {object} [params] The params to be appended
 	 * @returns {string} The formatted url
 	 */
-	module.exports = function buildUrl(url, params) {
+	module.exports = function buildURL(url, params, paramsSerializer) {
+	  /*eslint no-param-reassign:0*/
 	  if (!params) {
 	    return url;
 	  }
 	
-	  var parts = [];
+	  var serializedParams;
+	  if (paramsSerializer) {
+	    serializedParams = paramsSerializer(params);
+	  } else {
+	    var parts = [];
 	
-	  utils.forEach(params, function (val, key) {
-	    if (val === null || typeof val === 'undefined') {
-	      return;
-	    }
-	
-	    if (utils.isArray(val)) {
-	      key = key + '[]';
-	    }
-	
-	    if (!utils.isArray(val)) {
-	      val = [val];
-	    }
-	
-	    utils.forEach(val, function (v) {
-	      if (utils.isDate(v)) {
-	        v = v.toISOString();
+	    utils.forEach(params, function serialize(val, key) {
+	      if (val === null || typeof val === 'undefined') {
+	        return;
 	      }
-	      else if (utils.isObject(v)) {
-	        v = JSON.stringify(v);
+	
+	      if (utils.isArray(val)) {
+	        key = key + '[]';
 	      }
-	      parts.push(encode(key) + '=' + encode(v));
+	
+	      if (!utils.isArray(val)) {
+	        val = [val];
+	      }
+	
+	      utils.forEach(val, function parseValue(v) {
+	        if (utils.isDate(v)) {
+	          v = v.toISOString();
+	        } else if (utils.isObject(v)) {
+	          v = JSON.stringify(v);
+	        }
+	        parts.push(encode(key) + '=' + encode(v));
+	      });
 	    });
-	  });
 	
-	  if (parts.length > 0) {
-	    url += (url.indexOf('?') === -1 ? '?' : '&') + parts.join('&');
+	    serializedParams = parts.join('&');
+	  }
+	
+	  if (serializedParams) {
+	    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
 	  }
 	
 	  return url;
 	};
+	
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -813,11 +749,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {Object} Headers parsed into an object
 	 */
 	module.exports = function parseHeaders(headers) {
-	  var parsed = {}, key, val, i;
+	  var parsed = {};
+	  var key;
+	  var val;
+	  var i;
 	
 	  if (!headers) { return parsed; }
 	
-	  utils.forEach(headers.split('\n'), function(line) {
+	  utils.forEach(headers.split('\n'), function parser(line) {
 	    i = line.indexOf(':');
 	    key = utils.trim(line.substr(0, i)).toLowerCase();
 	    val = utils.trim(line.substr(i + 1));
@@ -832,7 +771,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -848,7 +787,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {*} The resulting transformed data
 	 */
 	module.exports = function transformData(data, headers, fns) {
-	  utils.forEach(fns, function (fn) {
+	  /*eslint no-param-reassign:0*/
+	  utils.forEach(fns, function transform(fn) {
 	    data = fn(data, headers);
 	  });
 	
@@ -857,52 +797,119 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	/**
-	 * WARNING:
-	 *  This file makes references to objects that aren't safe in all environments.
-	 *  Please see lib/utils.isStandardBrowserEnv before including this file.
-	 */
-	
 	var utils = __webpack_require__(3);
 	
-	module.exports = {
-	  write: function write(name, value, expires, path, domain, secure) {
-	    var cookie = [];
-	    cookie.push(name + '=' + encodeURIComponent(value));
+	module.exports = (
+	  utils.isStandardBrowserEnv() ?
 	
-	    if (utils.isNumber(expires)) {
-	      cookie.push('expires=' + new Date(expires).toGMTString());
+	  // Standard browser envs have full support of the APIs needed to test
+	  // whether the request URL is of the same origin as current location.
+	  (function standardBrowserEnv() {
+	    var msie = /(msie|trident)/i.test(navigator.userAgent);
+	    var urlParsingNode = document.createElement('a');
+	    var originURL;
+	
+	    /**
+	    * Parse a URL to discover it's components
+	    *
+	    * @param {String} url The URL to be parsed
+	    * @returns {Object}
+	    */
+	    function resolveURL(url) {
+	      var href = url;
+	
+	      if (msie) {
+	        // IE needs attribute set twice to normalize properties
+	        urlParsingNode.setAttribute('href', href);
+	        href = urlParsingNode.href;
+	      }
+	
+	      urlParsingNode.setAttribute('href', href);
+	
+	      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+	      return {
+	        href: urlParsingNode.href,
+	        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+	        host: urlParsingNode.host,
+	        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+	        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+	        hostname: urlParsingNode.hostname,
+	        port: urlParsingNode.port,
+	        pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+	                  urlParsingNode.pathname :
+	                  '/' + urlParsingNode.pathname
+	      };
 	    }
 	
-	    if (utils.isString(path)) {
-	      cookie.push('path=' + path);
+	    originURL = resolveURL(window.location.href);
+	
+	    /**
+	    * Determine if a URL shares the same origin as the current location
+	    *
+	    * @param {String} requestURL The URL to test
+	    * @returns {boolean} True if URL shares the same origin, otherwise false
+	    */
+	    return function isURLSameOrigin(requestURL) {
+	      var parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
+	      return (parsed.protocol === originURL.protocol &&
+	            parsed.host === originURL.host);
+	    };
+	  })() :
+	
+	  // Non standard browser envs (web workers, react-native) lack needed support.
+	  (function nonStandardBrowserEnv() {
+	    return function isURLSameOrigin() {
+	      return true;
+	    };
+	  })()
+	);
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	// btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
+	
+	var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+	
+	function InvalidCharacterError(message) {
+	  this.message = message;
+	}
+	InvalidCharacterError.prototype = new Error;
+	InvalidCharacterError.prototype.code = 5;
+	InvalidCharacterError.prototype.name = 'InvalidCharacterError';
+	
+	function btoa(input) {
+	  var str = String(input);
+	  var output = '';
+	  for (
+	    // initialize result and counter
+	    var block, charCode, idx = 0, map = chars;
+	    // if the next str index does not exist:
+	    //   change the mapping table to "="
+	    //   check if d has no fractional digits
+	    str.charAt(idx | 0) || (map = '=', idx % 1);
+	    // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
+	    output += map.charAt(63 & block >> 8 - idx % 1 * 8)
+	  ) {
+	    charCode = str.charCodeAt(idx += 3 / 4);
+	    if (charCode > 0xFF) {
+	      throw new InvalidCharacterError('INVALID_CHARACTER_ERR: DOM Exception 5');
 	    }
-	
-	    if (utils.isString(domain)) {
-	      cookie.push('domain=' + domain);
-	    }
-	
-	    if (secure === true) {
-	      cookie.push('secure');
-	    }
-	
-	    document.cookie = cookie.join('; ');
-	  },
-	
-	  read: function read(name) {
-	    var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-	    return (match ? decodeURIComponent(match[3]) : null);
-	  },
-	
-	  remove: function remove(name) {
-	    this.write(name, '', Date.now() - 86400000);
+	    block = block << 8 | charCode;
 	  }
-	};
+	  return output;
+	}
+	
+	module.exports = btoa;
 
 
 /***/ },
@@ -911,62 +918,57 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
-	/**
-	 * WARNING:
-	 *  This file makes references to objects that aren't safe in all environments.
-	 *  Please see lib/utils.isStandardBrowserEnv before including this file.
-	 */
-	
 	var utils = __webpack_require__(3);
-	var msie = /(msie|trident)/i.test(navigator.userAgent);
-	var urlParsingNode = document.createElement('a');
-	var originUrl;
 	
-	/**
-	 * Parse a URL to discover it's components
-	 *
-	 * @param {String} url The URL to be parsed
-	 * @returns {Object}
-	 */
-	function urlResolve(url) {
-	  var href = url;
+	module.exports = (
+	  utils.isStandardBrowserEnv() ?
 	
-	  if (msie) {
-	    // IE needs attribute set twice to normalize properties
-	    urlParsingNode.setAttribute('href', href);
-	    href = urlParsingNode.href;
-	  }
+	  // Standard browser envs support document.cookie
+	  (function standardBrowserEnv() {
+	    return {
+	      write: function write(name, value, expires, path, domain, secure) {
+	        var cookie = [];
+	        cookie.push(name + '=' + encodeURIComponent(value));
 	
-	  urlParsingNode.setAttribute('href', href);
+	        if (utils.isNumber(expires)) {
+	          cookie.push('expires=' + new Date(expires).toGMTString());
+	        }
 	
-	  // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-	  return {
-	    href: urlParsingNode.href,
-	    protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-	    host: urlParsingNode.host,
-	    search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-	    hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-	    hostname: urlParsingNode.hostname,
-	    port: urlParsingNode.port,
-	    pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
-	              urlParsingNode.pathname :
-	              '/' + urlParsingNode.pathname
-	  };
-	}
+	        if (utils.isString(path)) {
+	          cookie.push('path=' + path);
+	        }
 	
-	originUrl = urlResolve(window.location.href);
+	        if (utils.isString(domain)) {
+	          cookie.push('domain=' + domain);
+	        }
 	
-	/**
-	 * Determine if a URL shares the same origin as the current location
-	 *
-	 * @param {String} requestUrl The URL to test
-	 * @returns {boolean} True if URL shares the same origin, otherwise false
-	 */
-	module.exports = function urlIsSameOrigin(requestUrl) {
-	  var parsed = (utils.isString(requestUrl)) ? urlResolve(requestUrl) : requestUrl;
-	  return (parsed.protocol === originUrl.protocol &&
-	        parsed.host === originUrl.host);
-	};
+	        if (secure === true) {
+	          cookie.push('secure');
+	        }
+	
+	        document.cookie = cookie.join('; ');
+	      },
+	
+	      read: function read(name) {
+	        var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+	        return (match ? decodeURIComponent(match[3]) : null);
+	      },
+	
+	      remove: function remove(name) {
+	        this.write(name, '', Date.now() - 86400000);
+	      }
+	    };
+	  })() :
+	
+	  // Non standard browser env (web workers, react-native) lack needed support.
+	  (function nonStandardBrowserEnv() {
+	    return {
+	      write: function write() {},
+	      read: function read() { return null; },
+	      remove: function remove() {}
+	    };
+	  })()
+	);
 
 
 /***/ },
@@ -989,7 +991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @return {Number} An ID used to remove interceptor later
 	 */
-	InterceptorManager.prototype.use = function (fulfilled, rejected) {
+	InterceptorManager.prototype.use = function use(fulfilled, rejected) {
 	  this.handlers.push({
 	    fulfilled: fulfilled,
 	    rejected: rejected
@@ -1002,7 +1004,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @param {Number} id The ID that was returned by `use`
 	 */
-	InterceptorManager.prototype.eject = function (id) {
+	InterceptorManager.prototype.eject = function eject(id) {
 	  if (this.handlers[id]) {
 	    this.handlers[id] = null;
 	  }
@@ -1012,12 +1014,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Iterate over all the registered interceptors
 	 *
 	 * This method is particularly useful for skipping over any
-	 * interceptors that may have become `null` calling `remove`.
+	 * interceptors that may have become `null` calling `eject`.
 	 *
 	 * @param {Function} fn The function to call for each interceptor
 	 */
-	InterceptorManager.prototype.forEach = function (fn) {
-	  utils.forEach(this.handlers, function (h) {
+	InterceptorManager.prototype.forEach = function forEach(fn) {
+	  utils.forEach(this.handlers, function forEachHandler(h) {
 	    if (h !== null) {
 	      fn(h);
 	    }
@@ -1029,6 +1031,61 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Determines whether the specified URL is absolute
+	 *
+	 * @param {string} url The URL to test
+	 * @returns {boolean} True if the specified URL is absolute, otherwise false
+	 */
+	module.exports = function isAbsoluteURL(url) {
+	  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+	  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+	  // by any combination of letters, digits, plus, period, or hyphen.
+	  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
+	};
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Creates a new URL by combining the specified URLs
+	 *
+	 * @param {string} baseURL The base URL
+	 * @param {string} relativeURL The relative URL
+	 * @returns {string} The combined URL
+	 */
+	module.exports = function combineURLs(baseURL, relativeURL) {
+	  return baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '');
+	};
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function bind(fn, thisArg) {
+	  return function wrap() {
+	    var args = new Array(arguments.length);
+	    for (var i = 0; i < args.length; i++) {
+	      args[i] = arguments[i];
+	    }
+	    return fn.apply(thisArg, args);
+	  };
+	};
+
+
+/***/ },
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1054,7 +1111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {Function}
 	 */
 	module.exports = function spread(callback) {
-	  return function (arr) {
+	  return function wrap(arr) {
 	    return callback.apply(null, arr);
 	  };
 	};

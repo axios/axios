@@ -43,4 +43,12 @@ describe('helpers::httpVerbEvaluator', function () {
     expect(result.indexOf('LINK')).toBe(-1);
     expect(result.indexOf('UNLOCK')).not.toBe(-1);
   });
+
+  it('throws error unless a name is provided', function () {
+    var config = [{}];
+
+    expect(function () {
+      httpVerbEvaluator(config, false);
+    }).toThrow(new Error('Every http method config object must contain a "name" parameter!'));
+  });
 });

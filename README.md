@@ -184,7 +184,7 @@ These are the available config options for making requests. Only the `url` is re
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute. 
+  // `baseURL` will be prepended to `url` unless `url` is absolute.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs 
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
@@ -263,7 +263,14 @@ These are the available config options for making requests. Only the `url` is re
   // as well as 'GET' downloads
   progress: function(progressEvent) {
     // Do whatever you want with the native progress event
-  }
+  },
+
+  // `http_verbs` contain custom http verbs that are from now on accessible
+  // as instance methods of the axios object just like `axios.get()`
+  http_verbs: [
+    { name: 'LOCK', with_body: false },
+    { name: 'LINK', with_body: true }
+  ]
 }
 ```
 
@@ -343,7 +350,7 @@ instance.defaults.timeout = 2500;
 // Override timeout for this request as it's known to take a long time
 instance.get('/longRequest', {
   timeout: 5000
-}); 
+});
 ```
 
 ## Interceptors
@@ -416,7 +423,7 @@ If your environment doesn't support ES6 Promises, you can [polyfill](https://git
 axios includes a [TypeScript](http://typescriptlang.org) definition.
 ```typescript
 /// <reference path="axios.d.ts" />
-import * as axios from 'axios';
+import axios = require('axios');
 axios.get('/user?ID=12345');
 ```
 

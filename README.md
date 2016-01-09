@@ -267,7 +267,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `http_verbs` contain custom http verbs that are from now on accessible
   // as instance methods of the axios object just like `axios.get()`
-  http_verbs: [
+  httpVerbs: [
     { name: 'LOCK', with_body: false },
     { name: 'LINK', with_body: true }
   ]

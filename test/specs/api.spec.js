@@ -66,8 +66,17 @@ describe('instance api', function () {
   });
 
   it('should differ between methods accepting a body and methods that don\'t', function () {
+    // custom aliases
     expect(instance.lock.length).toEqual(2);
     expect(instance.link.length).toEqual(3);
     expect(instance.unlock.length).toEqual(2);
+
+    // default aliases
+    expect(instance.get.length).toEqual(2);
+    expect(instance.head.length).toEqual(2);
+    expect(instance.delete.length).toEqual(2);
+    expect(instance.post.length).toEqual(3);
+    expect(instance.put.length).toEqual(3);
+    expect(instance.patch.length).toEqual(3);
   });
 });

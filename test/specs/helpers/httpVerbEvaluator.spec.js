@@ -1,16 +1,6 @@
 var httpVerbEvaluator = require('../../../lib/helpers/httpVerbEvaluator');
 
 describe('helpers::httpVerbEvaluator', function () {
-  it('returns default array if no http verb config is present and no http body is necessary', function () {
-    var result = httpVerbEvaluator(undefined, false);
-    expect(result).toEqual(['delete', 'get', 'head']);
-  });
-
-  it('returns default array if no http verb config is present, but http body is necessary', function () {
-    var result = httpVerbEvaluator(undefined, true);
-    expect(result).toEqual(['post', 'put', 'patch']);
-  });
-
   it('returns all items with http body', function () {
     var config = [
       {
@@ -20,7 +10,7 @@ describe('helpers::httpVerbEvaluator', function () {
     ];
 
     var result = httpVerbEvaluator(config, true);
-    expect(result.indexOf('LINK')).not.toBe(-1);
+    expect(result.indexOf('link')).not.toBe(-1);
   });
 
   it('returns all items without http body', function () {
@@ -39,9 +29,9 @@ describe('helpers::httpVerbEvaluator', function () {
     ];
 
     var result = httpVerbEvaluator(config, false);
-    expect(result.indexOf('LOCK')).not.toBe(-1);
-    expect(result.indexOf('LINK')).toBe(-1);
-    expect(result.indexOf('UNLOCK')).not.toBe(-1);
+    expect(result.indexOf('lock')).not.toBe(-1);
+    expect(result.indexOf('link')).toBe(-1);
+    expect(result.indexOf('unlock')).not.toBe(-1);
   });
 
   it('throws error unless a name is provided', function () {

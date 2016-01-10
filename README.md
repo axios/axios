@@ -391,6 +391,22 @@ var instance = axios.create();
 instance.interceptors.request.use(function () {/*...*/});
 ```
 
+If you'd like to expand the instance api with more http methods such as "LINK" then you can configure the using *axios.create*:
+
+```js
+var instance = axios.create({
+  httpVerbs: [
+    { name: 'LINK', with_body: true },
+    { name: 'LOCK' }
+  ]
+});
+```
+
+Now the variable __instance__ has the following methods:
+
+- __instance#link(url[, data[, config]])__
+- __instance#lock(url[, config])
+
 ## Handling Errors
 
 ```js

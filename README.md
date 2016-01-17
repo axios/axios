@@ -167,13 +167,13 @@ These are the available config options for making requests. Only the `url` is re
   // `url` is the server URL that will be used for the request
   url: '/user',
   
+  // `method` is the request method to be used when making the request
+  method: 'get', // default
+
   // `baseURL` will be prepended to `url` unless `url` is absolute. 
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs 
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
-
-  // `method` is the request method to be used when making the request
-  method: 'get', // default
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
@@ -220,6 +220,12 @@ These are the available config options for making requests. Only the `url` is re
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials
   withCredentials: false, // default
+
+  // `adapter` allows custom handling of requests which makes testing easier.
+  // Call `resolve` or `reject` and supply a valid response (see [response docs](#response-api)).
+  adapter: function (resolve, reject, config) {
+    /* ... */
+  },
 
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing

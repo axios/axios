@@ -1,5 +1,13 @@
 # Changelog
 
+### 0.9.0 (Jan 18, 2016)
+
+- Adding support for custom adapters
+- Fixing Content-Type header being removed when data is false ([#195](https://github.com/mzabriskie/axios/pull/195))
+- Improving XDomainRequest implementation ([#185](https://github.com/mzabriskie/axios/pull/185))
+- Improving config merging and order of precedence ([#183](https://github.com/mzabriskie/axios/pull/183))
+- Fixing XDomainRequest support for only <= IE9 ([#182](https://github.com/mzabriskie/axios/pull/182))
+
 ### 0.8.1 (Dec 14, 2015)
 
 - Adding support for passing XSRF token for cross domain requests when using `withCredentials` ([#168](https://github.com/mzabriskie/axios/pull/168))

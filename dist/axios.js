@@ -1,4 +1,4 @@
-/* axios v0.8.0 | (c) 2015 by Matt Zabriskie */
+/* axios v0.9.0 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -70,15 +70,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var isAbsoluteURL = __webpack_require__(13);
 	var combineURLs = __webpack_require__(14);
 	var bind = __webpack_require__(15);
+	var transformData = __webpack_require__(8);
 	
 	function Axios(defaultConfig) {
-	  this.defaultConfig = utils.merge({
-	    headers: {},
-	    timeout: defaults.timeout,
-	    transformRequest: defaults.transformRequest,
-	    transformResponse: defaults.transformResponse
-	  }, defaultConfig);
-	
+	  this.defaults = utils.merge({}, defaultConfig);
 	  this.interceptors = {
 	    request: new InterceptorManager(),
 	    response: new InterceptorManager()
@@ -94,14 +89,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, arguments[1]);
 	  }
 	
-	  config = utils.merge(this.defaultConfig, { method: 'get' }, config);
+	  config = utils.merge(defaults, this.defaults, { method: 'get' }, config);
 	
+	  // Support baseURL config
 	  if (config.baseURL && !isAbsoluteURL(config.url)) {
 	    config.url = combineURLs(config.baseURL, config.url);
 	  }
 	
 	  // Don't allow overriding defaults.withCredentials
-	  config.withCredentials = config.withCredentials || defaults.withCredentials;
+	  config.withCredentials = config.withCredentials || this.defaults.withCredentials;
+	
+	  // Transform request data
+	  config.data = transformData(
+	    config.data,
+	    config.headers,
+	    config.transformRequest
+	  );
+	
+	  // Flatten headers
+	  config.headers = utils.merge(
+	    config.headers.common || {},
+	    config.headers[config.method] || {},
+	    config.headers || {}
+	  );
+	
+	  utils.forEach(
+	    ['delete', 'get', 'head', 'post', 'put', 'patch', 'common'],
+	    function cleanHeaderConfig(method) {
+	      delete config.headers[method];
+	    }
+	  );
 	
 	  // Hook up interceptors middleware
 	  var chain = [dispatchRequest, undefined];
@@ -122,8 +139,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return promise;
 	};
 	
-	var defaultInstance = new Axios();
-	
+	var defaultInstance = new Axios(defaults);
 	var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
 	
 	axios.create = function create(defaultConfig) {
@@ -131,7 +147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	// Expose defaults
-	axios.defaults = defaults;
+	axios.defaults = defaultInstance.defaults;
 	
 	// Expose all/spread
 	axios.all = function all(promises) {
@@ -454,7 +470,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	function merge(/* obj1, obj2, obj3, ... */) {
 	  var result = {};
 	  function assignValue(val, key) {
-	    result[key] = val;
+	    if (typeof result[key] === 'object' && typeof val === 'object') {
+	      result[key] = merge(result[key], val);
+	    } else {
+	      result[key] = val;
+	    }
 	  }
 	
 	  for (var i = 0, l = arguments.length; i < l; i++) {
@@ -498,12 +518,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = function dispatchRequest(config) {
 	  return new Promise(function executor(resolve, reject) {
 	    try {
-	      if ((typeof XMLHttpRequest !== 'undefined') || (typeof ActiveXObject !== 'undefined')) {
+	      var adapter;
+	
+	      if (typeof config.adapter === 'function') {
+	        // For custom adapter support
+	        adapter = config.adapter;
+	      } else if (typeof XMLHttpRequest !== 'undefined') {
 	        // For browsers use XHR adapter
-	        __webpack_require__(5)(resolve, reject, config);
+	        adapter = __webpack_require__(5);
 	      } else if (typeof process !== 'undefined') {
 	        // For node use HTTP adapter
-	        __webpack_require__(5)(resolve, reject, config);
+	        adapter = __webpack_require__(5);
+	      }
+	
+	      if (typeof adapter === 'function') {
+	        adapter(resolve, reject, config);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -519,9 +548,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
-	/*global ActiveXObject:true*/
-	
-	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
 	var buildURL = __webpack_require__(6);
 	var parseHeaders = __webpack_require__(7);
@@ -530,33 +556,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	var btoa = window.btoa || __webpack_require__(10);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
-	  // Transform request data
-	  var data = transformData(
-	    config.data,
-	    config.headers,
-	    config.transformRequest
-	  );
+	  var requestData = config.data;
+	  var requestHeaders = config.headers;
 	
-	  // Merge headers
-	  var requestHeaders = utils.merge(
-	    defaults.headers.common,
-	    defaults.headers[config.method] || {},
-	    config.headers || {}
-	  );
-	
-	  if (utils.isFormData(data)) {
+	  if (utils.isFormData(requestData)) {
 	    delete requestHeaders['Content-Type']; // Let the browser set it
 	  }
 	
-	  var Adapter = (XMLHttpRequest || ActiveXObject);
-	  var loadEvent = 'onreadystatechange';
-	  var xDomain = false;
+	  var request = new XMLHttpRequest();
 	
 	  // For IE 8/9 CORS support
-	  if (!isURLSameOrigin(config.url) && window.XDomainRequest) {
-	    Adapter = window.XDomainRequest;
-	    loadEvent = 'onload';
-	    xDomain = true;
+	  // Only supports POST and GET calls and doesn't returns the response headers.
+	  if (window.XDomainRequest && !('withCredentials' in request) && !isURLSameOrigin(config.url)) {
+	    request = new window.XDomainRequest();
 	  }
 	
 	  // HTTP basic authentication
@@ -566,38 +578,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	    requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
 	  }
 	
-	  // Create the request
-	  var request = new Adapter('Microsoft.XMLHTTP');
 	  request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
 	
 	  // Set the request timeout in MS
 	  request.timeout = config.timeout;
 	
 	  // Listen for ready state
-	  request[loadEvent] = function handleReadyState() {
-	    if (request && (request.readyState === 4 || xDomain)) {
-	      // Prepare the response
-	      var responseHeaders = xDomain ? null : parseHeaders(request.getAllResponseHeaders());
-	      var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
-	      var response = {
-	        data: transformData(
-	          responseData,
-	          responseHeaders,
-	          config.transformResponse
-	        ),
-	        status: request.status,
-	        statusText: request.statusText,
-	        headers: responseHeaders,
-	        config: config
-	      };
-	      // Resolve or reject the Promise based on the status
-	      ((request.status >= 200 && request.status < 300) || (xDomain && request.responseText) ?
-	        resolve :
-	        reject)(response);
-	
-	      // Clean up request
-	      request = null;
+	  request.onload = function handleLoad() {
+	    if (!request) {
+	      return;
 	    }
+	    // Prepare the response
+	    var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+	    var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
+	    var response = {
+	      data: transformData(
+	        responseData,
+	        responseHeaders,
+	        config.transformResponse
+	      ),
+	      status: request.status,
+	      statusText: request.statusText,
+	      headers: responseHeaders,
+	      config: config
+	    };
+	    // Resolve or reject the Promise based on the status
+	    ((request.status >= 200 && request.status < 300) || (!('status' in request) && request.responseText) ?
+	      resolve :
+	      reject)(response);
+	
+	    // Clean up request
+	    request = null;
 	  };
 	
 	  // Add xsrf header
@@ -607,19 +618,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var cookies = __webpack_require__(11);
 	
 	    // Add xsrf header
-	    var xsrfValue =  config.withCredentials || isURLSameOrigin(config.url) ?
-	        cookies.read(config.xsrfCookieName || defaults.xsrfCookieName) :
+	    var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
+	        cookies.read(config.xsrfCookieName) :
 	        undefined;
 	
 	    if (xsrfValue) {
-	      requestHeaders[config.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
+	      requestHeaders[config.xsrfHeaderName] = xsrfValue;
 	    }
 	  }
 	
 	  // Add headers to the request
-	  if (!xDomain) {
+	  if ('setRequestHeader' in request) {
 	    utils.forEach(requestHeaders, function setRequestHeader(val, key) {
-	      if (!data && key.toLowerCase() === 'content-type') {
+	      if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
 	        // Remove Content-Type if data is undefined
 	        delete requestHeaders[key];
 	      } else {
@@ -645,12 +656,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	
-	  if (utils.isArrayBuffer(data)) {
-	    data = new DataView(data);
+	  if (utils.isArrayBuffer(requestData)) {
+	    requestData = new DataView(requestData);
 	  }
 	
 	  // Send the request
-	  request.send(data);
+	  request.send(requestData);
 	};
 
 

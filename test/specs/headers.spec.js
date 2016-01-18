@@ -99,7 +99,7 @@ describe('headers', function () {
     }, 0);
   });
 
-  xit('should preserve content-type if data is false', function (done) {
+  it('should preserve content-type if data is false', function (done) {
     axios({
       url: '/foo',
       method: 'post',

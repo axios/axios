@@ -144,6 +144,32 @@ describe('requests', function () {
     }, 0);
   });
 
+  // https://github.com/mzabriskie/axios/issues/201
+  it('should fix IE no content error', function (done) {
+    var request, response;
+
+    axios({
+      url: '/foo'
+    }).then(function (res) {
+      response = res
+    });
+
+    setTimeout(function () {
+      request = jasmine.Ajax.requests.mostRecent();
+
+      request.respondWith({
+        status: 1223,
+        statusText: 'Unknown'
+      });
+
+      setTimeout(function () {
+        expect(response.status).toEqual(204);
+        expect(response.statusText).toEqual('No Content');
+        done();
+      }, 0);
+    }, 0);
+  });
+
   it('should allow overriding Content-Type header case-insensitive', function (done) {
     var request, response;
     var contentType = 'application/vnd.myapp.type+json';

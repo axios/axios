@@ -54,6 +54,29 @@ describe('requests', function () {
     }, 0);
   });
 
+  it('should reject on network errors', function (done) {
+    // disable jasmine.Ajax since we're hitting a non-existant server anyway
+    jasmine.Ajax.uninstall();
+
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    var finish = function () {
+      expect(resolveSpy).not.toHaveBeenCalled();
+
+      expect(rejectSpy).toHaveBeenCalledWith(jasmine.any(Error));
+      expect(rejectSpy.calls.argsFor(0)[0].message).toEqual('Network Error');
+
+      done();
+    };
+
+    axios({
+      url: 'http://thisisnotaserver'
+    })
+    .then(resolveSpy, rejectSpy)
+    .then(finish, finish);
+  });
+
   it('should make cross domian http request', function (done) {
     var request, response;
 

@@ -1,4 +1,4 @@
-/* axios v0.9.0 | (c) 2016 by Matt Zabriskie */
+/* axios v0.9.1 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -597,15 +597,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	        responseHeaders,
 	        config.transformResponse
 	      ),
-	      status: request.status,
-	      statusText: request.statusText,
+	      // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
+	      status: request.status === 1223 ? 204 : request.status,
+	      statusText: request.status === 1223 ? 'No Content' : request.statusText,
 	      headers: responseHeaders,
 	      config: config
 	    };
+	
 	    // Resolve or reject the Promise based on the status
-	    ((request.status >= 200 && request.status < 300) || (!('status' in request) && request.responseText) ?
+	    ((response.status >= 200 && response.status < 300) ||
+	     (!('status' in request) && response.responseText) ?
 	      resolve :
 	      reject)(response);
+	
+	    // Clean up request
+	    request = null;
+	  };
+	
+	  // Handle low level network errors
+	  request.onerror = function handleError() {
+	    // Real errors are hidden from us by the browser
+	    // onerror should only fire if it's a network error
+	    reject(new Error('Network Error'));
 	
 	    // Clean up request
 	    request = null;

@@ -1,5 +1,12 @@
 # Changelog
 
+### 0.9.1 (Jan 24, 2016)
+
+- Improving handling of request timeout in node ([#124](https://github.com/mzabriskie/axios/issues/124))
+- Fixing network errors not rejecting ([#205](https://github.com/mzabriskie/axios/pull/205))
+- Fixing issue with IE rejecting on HTTP 204 ([#201](https://github.com/mzabriskie/axios/issues/201))
+- Fixing host/port when following redirects ([#198](https://github.com/mzabriskie/axios/pull/198))
+
 ### 0.9.0 (Jan 18, 2016)
 
 - Adding support for custom adapters

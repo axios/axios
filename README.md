@@ -303,7 +303,7 @@ var instance = axios.create({
   baseURL: 'https://api.example.com'
 });
 
-// Alter defaults after instace has been created
+// Alter defaults after instance has been created
 instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ```
 

@@ -2,7 +2,7 @@
 
 To run the examples:
 
-1. `git clone git@github.com:mzabriskie/axios.git`
+1. `git clone https://github.com/mzabriskie/axios.git`
 2. `npm install`
 3. `grunt build`
 4. `npm run examples`

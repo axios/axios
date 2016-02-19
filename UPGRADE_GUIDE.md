@@ -6,7 +6,7 @@ The `0.6.0` release contains mostly bug fixes, but there are a couple things to 
 
 #### ES6 Promise Polyfill
 
-Up until the `0.6.0` release ES6 `Promise` was being polyfilled using [es6-promise](https://github.com/jakearchibald/es6-promise). With this release, the polyfill has been removed, and you will need to supply the it yourself if your environment needs it.
+Up until the `0.6.0` release ES6 `Promise` was being polyfilled using [es6-promise](https://github.com/jakearchibald/es6-promise). With this release, the polyfill has been removed, and you will need to supply it yourself if your environment needs it.
 
 ```js
 require('es6-promise').polyfill();

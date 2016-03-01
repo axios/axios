@@ -396,7 +396,7 @@ If your environment doesn't support ES6 Promises, you can [polyfill](https://git
 axios includes a [TypeScript](http://typescriptlang.org) definition.
 ```typescript
 /// <reference path="axios.d.ts" />
-import axios = require('axios');
+import * as axios from 'axios';
 axios.get('/user?ID=12345');
 ```
 

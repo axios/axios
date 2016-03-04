@@ -81,8 +81,7 @@ describe('options', function () {
 
   it('should accept base URL', function (done) {
     var request;
-
-    const instance = axios.create({
+    var instance = axios.create({
       baseURL: 'http://test.com/'
     });
 
@@ -100,8 +99,7 @@ describe('options', function () {
 
   it('should ignore base URL if request URL is absolute', function (done) {
     var request;
-
-    const instance = axios.create({
+    var instance = axios.create({
       baseURL: 'http://someurl.com/'
     });
 

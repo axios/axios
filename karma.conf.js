@@ -61,6 +61,7 @@ module.exports = function(config) {
 
     // Opera
     if (runAll || process.env.SAUCE_OPERA) {
+      // TODO The available versions of Opera are too old and lack basic APIs
       // customLaunchers.SL_Opera11 = createCustomLauncher('opera', 11, 'Windows XP');
       // customLaunchers.SL_Opera12 = createCustomLauncher('opera', 12, 'Windows 7');
     }
@@ -78,7 +79,7 @@ module.exports = function(config) {
     if (runAll || process.env.SAUCE_EDGE) {
       customLaunchers.SL_Edge = createCustomLauncher('microsoftedge', null, 'Windows 10');
     }
-/*
+
     // IOS
     if (runAll || process.env.SAUCE_IOS) {
       // customLaunchers.SL_IOS7 = createCustomLauncher('iphone', '7.1', 'OS X 10.10');
@@ -91,7 +92,7 @@ module.exports = function(config) {
       customLaunchers.SL_Android4 = createCustomLauncher('android', '4.4', 'Linux');
       customLaunchers.SL_Android5 = createCustomLauncher('android', '5.1', 'Linux');
     }
-//*/
+
     browsers = Object.keys(customLaunchers);
   }
 

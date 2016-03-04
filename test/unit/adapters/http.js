@@ -117,7 +117,6 @@ module.exports = {
 
   testBasicAuth: function (test) {
     server = http.createServer(function (req, res) {
-      console.log(req.headers);
       res.end(req.headers.authorization);
     }).listen(4444, function () {
       var user = 'foo';

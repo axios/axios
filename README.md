@@ -24,6 +24,8 @@ Promise based HTTP client for the browser and node.js
 --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 
+[![Browser Matrix](https://saucelabs.com/browser-matrix/axios.svg)](https://saucelabs.com/u/axios)
+
 ## Installing
 
 Using bower:

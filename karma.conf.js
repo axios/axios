@@ -82,6 +82,7 @@ module.exports = function(config) {
 
     // IOS
     if (runAll || process.env.SAUCE_IOS) {
+      // TODO IOS7 capture always timesout
       // customLaunchers.SL_IOS7 = createCustomLauncher('iphone', '7.1', 'OS X 10.10');
       customLaunchers.SL_IOS8 = createCustomLauncher('iphone', '8.4', 'OS X 10.10');
       customLaunchers.SL_IOS9 = createCustomLauncher('iphone', '9.2', 'OS X 10.10');
@@ -135,9 +136,8 @@ module.exports = function(config) {
     port: 9876,
 
 
-
     // Increase timeout in case connection to CI is slow
-    captureTimeout: 120000,
+    captureTimeout: 180000,
 
 
     // enable / disable colors in the output (reporters and logs)

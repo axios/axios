@@ -10,14 +10,10 @@ describe('options', function () {
   });
 
   it('should default method to get', function (done) {
-    var request;
-
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.method).toBe('GET');
       done();
@@ -25,17 +21,14 @@ describe('options', function () {
   });
 
   it('should accept headers', function (done) {
-    var request;
-
-    axios({
-      url: '/foo',
+    axios('/foo', {
       headers: {
         'X-Requested-With': 'XMLHttpRequest'
       }
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders['X-Requested-With']).toEqual('XMLHttpRequest');
       done();
@@ -43,10 +36,7 @@ describe('options', function () {
   });
 
   it('should accept params', function (done) {
-    var request;
-
-    axios({
-      url: '/foo',
+    axios('/foo', {
       params: {
         foo: 123,
         bar: 456
@@ -54,7 +44,7 @@ describe('options', function () {
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.url).toBe('/foo?foo=123&bar=456');
       done();
@@ -62,17 +52,14 @@ describe('options', function () {
   });
 
   it('should allow overriding default headers', function (done) {
-    var request;
-
-    axios({
-      url: '/foo',
+    axios('/foo', {
       headers: {
         'Accept': 'foo/bar'
       }
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders['Accept']).toEqual('foo/bar');
       done();
@@ -80,17 +67,14 @@ describe('options', function () {
   });
 
   it('should accept base URL', function (done) {
-    var request;
     var instance = axios.create({
       baseURL: 'http://test.com/'
     });
 
-    instance.request({
-      url: '/foo'
-    });
+    instance.get('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.url).toBe('http://test.com/foo');
       done();
@@ -98,17 +82,14 @@ describe('options', function () {
   });
 
   it('should ignore base URL if request URL is absolute', function (done) {
-    var request;
     var instance = axios.create({
       baseURL: 'http://someurl.com/'
     });
 
-    instance.request({
-      url: 'http://someotherurl.com/'
-    });
+    instance.get('http://someotherurl.com/');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.url).toBe('http://someotherurl.com/');
       done();

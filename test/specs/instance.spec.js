@@ -12,9 +12,7 @@ describe('instance', function () {
   it('should make an http request', function (done) {
     var instance = axios.create();
 
-    instance.request({
-      url: '/foo'
-    });
+    instance.get('/foo');
 
     setTimeout(function () {
       request = jasmine.Ajax.requests.mostRecent();
@@ -27,9 +25,7 @@ describe('instance', function () {
   it('should use instance options', function (done) {
     var instance = axios.create({ timeout: 1000 });
 
-    instance.request({
-      url: '/foo'
-    });
+    instance.get('/foo');
 
     setTimeout(function () {
       request = jasmine.Ajax.requests.mostRecent();
@@ -52,14 +48,12 @@ describe('instance', function () {
     });
 
     var response;
-    instance.request({
-      url: '/foo'
-    }).then(function (res) {
+    instance.get('/foo').then(function (res) {
       response = res;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200

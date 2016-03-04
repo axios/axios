@@ -10,12 +10,10 @@ describe('requests', function () {
   });
 
   it('should treat single string arg as url', function (done) {
-    var request;
-
     axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.url).toBe('/foo');
       expect(request.method).toBe('GET');
@@ -24,14 +22,10 @@ describe('requests', function () {
   });
 
   it('should allow string arg as url, and config arg', function (done) {
-    var request;
-
-    axios('/foo', {
-      method: 'POST'
-    });
+    axios.post('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.url).toBe('/foo');
       expect(request.method).toBe('POST');
@@ -40,14 +34,10 @@ describe('requests', function () {
   });
 
   it('should make an http request', function (done) {
-    var request;
-
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.url).toBe('/foo');
       done();
@@ -68,26 +58,20 @@ describe('requests', function () {
       done();
     };
 
-    axios({
-      url: 'http://thisisnotaserver'
-    })
-    .then(resolveSpy, rejectSpy)
-    .then(finish, finish);
+    axios('http://thisisnotaserver')
+      .then(resolveSpy, rejectSpy)
+      .then(finish, finish);
   });
 
   it('should make cross domian http request', function (done) {
-    var request, response;
+    var response;
 
-    axios({
-      method: 'post',
-      url: 'www.someurl.com/foo',
-      xDomain: true
-    }).then(function(res){
+    axios.post('www.someurl.com/foo').then(function(res){
       response = res;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
       request.respondWith({
         status: 200,
         statusText: 'OK',
@@ -111,17 +95,14 @@ describe('requests', function () {
 
 
   it('should supply correct response', function (done) {
-    var request, response;
+    var response;
 
-    axios({
-      method: 'post',
-      url: '/foo'
-    }).then(function (res) {
+    axios.post('/foo').then(function (res) {
       response = res;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -144,16 +125,14 @@ describe('requests', function () {
 
   // https://github.com/mzabriskie/axios/issues/201
   it('should fix IE no content error', function (done) {
-    var request, response;
+    var response;
 
-    axios({
-      url: '/foo'
-    }).then(function (res) {
+    axios('/foo').then(function (res) {
       response = res
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 1223,
@@ -169,13 +148,10 @@ describe('requests', function () {
   });
 
   it('should allow overriding Content-Type header case-insensitive', function (done) {
-    var request, response;
+    var response;
     var contentType = 'application/vnd.myapp.type+json';
 
-    axios({
-      url: '/foo',
-      method: 'post',
-      data: { prop: 'value' },
+    axios.post('/foo', { prop: 'value' }, {
       headers: {
         'content-type': contentType
       }
@@ -184,7 +160,7 @@ describe('requests', function () {
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
       
       expect(request.requestHeaders['Content-Type']).toEqual(contentType);
       done();
@@ -192,19 +168,14 @@ describe('requests', function () {
   });
 
   it('should support binary data as array buffer', function (done) {
-    var request;
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
 
-    axios({
-      method: 'post',
-      url: '/foo',
-      data: input.buffer
-    });
+    axios.post('/foo', input.buffer);
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       var output = new Int8Array(request.params.buffer);
       expect(output.length).toEqual(2);
@@ -215,19 +186,14 @@ describe('requests', function () {
   });
 
   it('should support binary data as array buffer view', function (done) {
-    var request;
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
 
-    axios({
-      method: 'post',
-      url: '/foo',
-      data: input
-    });
+    axios.post('/foo', input);
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       var output = new Int8Array(request.params.buffer);
       expect(output.length).toEqual(2);
@@ -238,7 +204,7 @@ describe('requests', function () {
   });
 
   it('should support array buffer response', function (done) {
-    var request, response;
+    var response;
 
     function str2ab(str) {
       var buff = new ArrayBuffer(str.length * 2);
@@ -249,15 +215,14 @@ describe('requests', function () {
       return buff;
     }
 
-    axios({
-      url: '/foo',
+    axios('/foo', {
       responseType: 'arraybuffer'
     }).then(function (data) {
       response = data;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,

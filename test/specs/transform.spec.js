@@ -10,19 +10,14 @@ describe('transform', function () {
   });
 
   it('should transform JSON to string', function (done) {
-    var request;
     var data = {
       foo: 'bar'
     };
 
-    axios({
-      url: '/foo',
-      method: 'post',
-      data: data
-    });
+    axios.post('/foo', data);
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.params).toEqual('{"foo":"bar"}');
       done();
@@ -30,16 +25,14 @@ describe('transform', function () {
   });
 
   it('should transform string to JSON', function (done) {
-    var request, response;
+    var response;
 
-    axios({
-      url: '/foo'
-    }).then(function (data) {
+    axios('/foo').then(function (data) {
       response = data;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -55,22 +48,18 @@ describe('transform', function () {
   });
 
   it('should override default transform', function (done) {
-    var request;
     var data = {
       foo: 'bar'
     };
 
-    axios({
-      url: '/foo',
-      method: 'post',
-      data: data,
+    axios.post('/foo', data, {
       transformRequest: function (data) {
         return data;
       }
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(typeof request.params).toEqual('object');
       done();
@@ -78,15 +67,11 @@ describe('transform', function () {
   });
 
   it('should allow an Array of transformers', function (done) {
-    var request;
     var data = {
       foo: 'bar'
     };
 
-    axios({
-      url: '/foo',
-      method: 'post',
-      data: data,
+    axios.post('/foo', data, {
       transformRequest: axios.defaults.transformRequest.concat(
         function (data) {
           return data.replace('bar', 'baz');
@@ -95,7 +80,7 @@ describe('transform', function () {
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.params).toEqual('{"foo":"baz"}');
       done();
@@ -104,17 +89,15 @@ describe('transform', function () {
 
   it('should allowing mutating headers', function (done) {
     var token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36);
-    var request;
 
-    axios({
-      url: '/foo',
+    axios('/foo', {
       transformRequest: function (data, headers) {
         headers['X-Authorization'] = token;
       }
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders['X-Authorization']).toEqual(token);
       done();

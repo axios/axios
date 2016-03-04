@@ -11,14 +11,10 @@ describe('xsrf', function () {
   });
 
   it('should not set xsrf header if cookie is null', function (done) {
-    var request;
-
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
       done();
@@ -26,15 +22,12 @@ describe('xsrf', function () {
   });
 
   it('should set xsrf header if cookie is set', function (done) {
-    var request;
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
       done();
@@ -42,15 +35,12 @@ describe('xsrf', function () {
   });
 
   it('should not set xsrf header for cross origin', function (done) {
-    var request;
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
-    axios({
-      url: 'http://example.com/'
-    });
+    axios('http://example.com/');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
       done();
@@ -58,16 +48,14 @@ describe('xsrf', function () {
   });
 
   it('should set xsrf header for cross origin when using withCredentials', function (done) {
-    var request;
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
-    axios({
-      url: 'http://example.com/',
+    axios('http://example.com/', {
       withCredentials: true
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
       done();

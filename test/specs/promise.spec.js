@@ -11,16 +11,14 @@ describe('promise', function () {
   });
 
   it('should provide succinct object to then', function (done) {
-    var request, response;
+    var response;
 
-    axios({
-      url: '/foo'
-    }).then(function (r) {
+    axios('/foo').then(function (r) {
       response = r;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,

@@ -58,7 +58,7 @@ module.exports = function(config) {
       customLaunchers.SL_Safari8 = createCustomLauncher('safari', 8);
       customLaunchers.SL_Safari9 = createCustomLauncher('safari', 9);
     }
-/*
+
     // Opera
     if (runAll || process.env.SAUCE_OPERA) {
       // customLaunchers.SL_Opera11 = createCustomLauncher('opera', 11, 'Windows XP');
@@ -78,7 +78,7 @@ module.exports = function(config) {
     if (runAll || process.env.SAUCE_EDGE) {
       customLaunchers.SL_Edge = createCustomLauncher('microsoftedge', null, 'Windows 10');
     }
-
+/*
     // IOS
     if (runAll || process.env.SAUCE_IOS) {
       // customLaunchers.SL_IOS7 = createCustomLauncher('iphone', '7.1', 'OS X 10.10');

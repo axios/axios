@@ -172,7 +172,7 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#put(url[, data[, config]])
 ##### axios#patch(url[, data[, config]])
 
-## Request API
+## Request Config
 
 These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 
@@ -261,7 +261,7 @@ These are the available config options for making requests. Only the `url` is re
 }
 ```
 
-## Response API
+## Response Schema
 
 The response for a request contains the following information.
 

@@ -14,7 +14,7 @@ describe('adapter', function () {
     setTimeout(function () {
       expect(called).toBe(true);
       done();
-    }, 0);
+    }, 100);
   });
 });
 

@@ -51,14 +51,14 @@ module.exports = function(config) {
       // customLaunchers.SL_FirefoxDev = createCustomLauncher('firefox', 'dev');
       // customLaunchers.SL_FirefoxBeta = createCustomLauncher('firefox', 'beta');
     }
-/*
+
     // Safari
     if (runAll || process.env.SAUCE_SAFARI) {
       customLaunchers.SL_Safari7 = createCustomLauncher('safari', 7);
       customLaunchers.SL_Safari8 = createCustomLauncher('safari', 8);
       customLaunchers.SL_Safari9 = createCustomLauncher('safari', 9);
     }
-
+/*
     // Opera
     if (runAll || process.env.SAUCE_OPERA) {
       // customLaunchers.SL_Opera11 = createCustomLauncher('opera', 11, 'Windows XP');

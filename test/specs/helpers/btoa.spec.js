@@ -1,4 +1,5 @@
 var __btoa = require('../../../lib/helpers/btoa');
+var validateInvalidCharacterError = require('../__validateInvalidCharacterError');
 
 describe('btoa polyfill', function () {
   it('should behave the same as native window.btoa', function () {
@@ -22,6 +23,7 @@ describe('btoa polyfill', function () {
       err2 = e;
     }
 
-    expect(err1.message).toEqual(err2.message);
+    validateInvalidCharacterError(err1);
+    validateInvalidCharacterError(err2);
   });
 });

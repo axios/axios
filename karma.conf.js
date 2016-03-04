@@ -51,7 +51,7 @@ module.exports = function(config) {
       // customLaunchers.SL_FirefoxDev = createCustomLauncher('firefox', 'dev');
       // customLaunchers.SL_FirefoxBeta = createCustomLauncher('firefox', 'beta');
     }
-
+/*
     // Safari
     if (runAll || process.env.SAUCE_SAFARI) {
       customLaunchers.SL_Safari7 = createCustomLauncher('safari', 7);
@@ -91,7 +91,7 @@ module.exports = function(config) {
       customLaunchers.SL_Android4 = createCustomLauncher('android', '4.4', 'Linux');
       customLaunchers.SL_Android5 = createCustomLauncher('android', '5.1', 'Linux');
     }
-
+//*/
     browsers = Object.keys(customLaunchers);
   }
 

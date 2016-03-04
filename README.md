@@ -107,10 +107,22 @@ Requests can be made by passing the relevant config to `axios`.
 ##### axios(config)
 
 ```js
+// Send a POST request
 axios({
-  method: 'get',
-  url: '/user/12345'
+  method: 'post',
+  url: '/user/12345',
+  data: {
+    firstName: 'Fred',
+    lastName: 'Flintstone'
+  }
 });
+```
+
+##### axios(url[, config])
+
+```js
+// Sned a GET request (default method)
+axios('/user/12345');
 ```
 
 ### Request method aliases

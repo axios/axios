@@ -84,14 +84,16 @@ module.exports = function(config) {
     if (runAll || process.env.SAUCE_IOS) {
       // TODO IOS7 capture always timesout
       // customLaunchers.SL_IOS7 = createCustomLauncher('iphone', '7.1', 'OS X 10.10');
-      customLaunchers.SL_IOS8 = createCustomLauncher('iphone', '8.4', 'OS X 10.10');
-      customLaunchers.SL_IOS9 = createCustomLauncher('iphone', '9.2', 'OS X 10.10');
+      // TODO Mobile browsers are causing failures, possibly from too many concurrent VMs
+      // customLaunchers.SL_IOS8 = createCustomLauncher('iphone', '8.4', 'OS X 10.10');
+      // customLaunchers.SL_IOS9 = createCustomLauncher('iphone', '9.2', 'OS X 10.10');
     }
 
     // Android
     if (runAll || process.env.SAUCE_ANDROID) {
-      customLaunchers.SL_Android4 = createCustomLauncher('android', '4.4', 'Linux');
-      customLaunchers.SL_Android5 = createCustomLauncher('android', '5.1', 'Linux');
+      // TODO Mobile browsers are causing failures, possibly from too many concurrent VMs
+      // customLaunchers.SL_Android4 = createCustomLauncher('android', '4.4', 'Linux');
+      // customLaunchers.SL_Android5 = createCustomLauncher('android', '5.1', 'Linux');
     }
 
     browsers = Object.keys(customLaunchers);
@@ -137,7 +139,7 @@ module.exports = function(config) {
 
 
     // Increase timeout in case connection to CI is slow
-    captureTimeout: 180000,
+    captureTimeout: 120000,
 
 
     // enable / disable colors in the output (reporters and logs)

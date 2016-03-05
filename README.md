@@ -257,7 +257,11 @@ These are the available config options for making requests. Only the `url` is re
   xsrfCookieName: 'XSRF-TOKEN', // default
 
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
-  xsrfHeaderName: 'X-XSRF-TOKEN' // default
+  xsrfHeaderName: 'X-XSRF-TOKEN', // default
+
+  // 'maxContentLength' is the maximum size limit (in bytes) allowed for the data
+  // the server will respond with
+  maxContentLength: 3495
 }
 ```
 

@@ -32,9 +32,7 @@ describe('headers', function () {
   it('should default common headers', function (done) {
     var headers = axios.defaults.headers.common;
 
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
       var request = jasmine.Ajax.requests.mostRecent();
@@ -51,11 +49,7 @@ describe('headers', function () {
   it('should add extra headers for post', function (done) {
     var headers = axios.defaults.headers.common;
 
-    axios({
-      method: 'post',
-      url: '/foo',
-      data: 'fizz=buzz'
-    });
+    axios.post('/foo', 'fizz=buzz');
 
     setTimeout(function () {
       var request = jasmine.Ajax.requests.mostRecent();
@@ -70,13 +64,9 @@ describe('headers', function () {
   });
 
   it('should use application/json when posting an object', function (done) {
-    axios({
-      url: '/foo/bar',
-      method: 'post',
-      data: {
-        firstName: 'foo',
-        lastName: 'bar'
-      }
+    axios.post('/foo/bar', {
+      firstName: 'foo',
+      lastName: 'bar'
     });
 
     setTimeout(function () {
@@ -87,10 +77,7 @@ describe('headers', function () {
   });
 
   it('should remove content-type if data is empty', function (done) {
-    axios({
-      url: '/foo',
-      method: 'post'
-    });
+    axios.post('/foo');
 
     setTimeout(function () {
       var request = jasmine.Ajax.requests.mostRecent();
@@ -100,11 +87,7 @@ describe('headers', function () {
   });
 
   it('should preserve content-type if data is false', function (done) {
-    axios({
-      url: '/foo',
-      method: 'post',
-      data: false
-    });
+    axios.post('/foo', false);
 
     setTimeout(function () {
       var request = jasmine.Ajax.requests.mostRecent();

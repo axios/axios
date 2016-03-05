@@ -1,5 +1,7 @@
 # Contributing
 
+We are open to, and grateful for, any contributions made by the community. By contributing to axios, you agree to abide by the [code of conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md).
+
 ### Code Style
 
 Please follow the [node style guide](https://github.com/felixge/node-style-guide).

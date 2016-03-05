@@ -24,6 +24,8 @@ Promise based HTTP client for the browser and node.js
 --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 
+[![Browser Matrix](https://saucelabs.com/browser-matrix/axios.svg)](https://saucelabs.com/u/axios)
+
 ## Installing
 
 Using bower:
@@ -105,10 +107,22 @@ Requests can be made by passing the relevant config to `axios`.
 ##### axios(config)
 
 ```js
+// Send a POST request
 axios({
-  method: 'get',
-  url: '/user/12345'
+  method: 'post',
+  url: '/user/12345',
+  data: {
+    firstName: 'Fred',
+    lastName: 'Flintstone'
+  }
 });
+```
+
+##### axios(url[, config])
+
+```js
+// Sned a GET request (default method)
+axios('/user/12345');
 ```
 
 ### Request method aliases
@@ -158,7 +172,7 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#put(url[, data[, config]])
 ##### axios#patch(url[, data[, config]])
 
-## Request API
+## Request Config
 
 These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 
@@ -251,7 +265,7 @@ These are the available config options for making requests. Only the `url` is re
 }
 ```
 
-## Response API
+## Response Schema
 
 The response for a request contains the following information.
 
@@ -400,7 +414,7 @@ If your environment doesn't support ES6 Promises, you can [polyfill](https://git
 axios includes a [TypeScript](http://typescriptlang.org) definition.
 ```typescript
 /// <reference path="axios.d.ts" />
-import axios = require('axios');
+import * as axios from 'axios';
 axios.get('/user?ID=12345');
 ```
 

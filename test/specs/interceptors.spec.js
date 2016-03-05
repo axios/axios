@@ -12,19 +12,15 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor', function (done) {
-    var request;
-    
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
       return config;
     });
 
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -37,8 +33,6 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor that returns a new config object', function (done) {
-    var request;
-
     axios.interceptors.request.use(function () {
       return {
         url: '/bar',
@@ -46,12 +40,10 @@ describe('interceptors', function () {
       };
     });
 
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -65,8 +57,6 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor that returns a promise', function (done) {
-    var request;
-
     axios.interceptors.request.use(function (config) {
       return new Promise(function (resolve) {
         // do something async
@@ -77,12 +67,10 @@ describe('interceptors', function () {
       });
     });
 
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -95,8 +83,6 @@ describe('interceptors', function () {
   });
 
   it('should add multiple request interceptors', function (done) {
-    var request;
-
     axios.interceptors.request.use(function (config) {
       config.headers.test1 = '1';
       return config;
@@ -110,12 +96,10 @@ describe('interceptors', function () {
       return config;
     });
 
-    axios({
-      url: '/foo'
-    });
+    axios('/foo');
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -130,21 +114,19 @@ describe('interceptors', function () {
   });
 
   it('should add a response interceptor', function (done) {
-    var request, response;
+    var response;
 
     axios.interceptors.response.use(function (data) {
       data.data = data.data + ' - modified by interceptor';
       return data;
     });
 
-    axios({
-      url: '/foo'
-    }).then(function (data) {
+    axios('/foo').then(function (data) {
       response = data;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -159,7 +141,7 @@ describe('interceptors', function () {
   });
 
   it('should add a response interceptor that returns a new data object', function (done) {
-    var request, response;
+    var response;
 
     axios.interceptors.response.use(function () {
       return {
@@ -167,14 +149,12 @@ describe('interceptors', function () {
       };
     });
 
-    axios({
-      url: '/foo'
-    }).then(function (data) {
+    axios('/foo').then(function (data) {
       response = data;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -189,7 +169,7 @@ describe('interceptors', function () {
   });
 
   it('should add a response interceptor that returns a promise', function (done) {
-    var request, response;
+    var response;
 
     axios.interceptors.response.use(function (data) {
       return new Promise(function (resolve) {
@@ -201,14 +181,12 @@ describe('interceptors', function () {
       });
     });
 
-    axios({
-      url: '/foo'
-    }).then(function (data) {
+    axios('/foo').then(function (data) {
       response = data;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -223,7 +201,7 @@ describe('interceptors', function () {
   });
 
   it('should add multiple response interceptors', function (done) {
-    var request, response;
+    var response;
 
     axios.interceptors.response.use(function (data) {
       data.data = data.data + '1';
@@ -238,14 +216,12 @@ describe('interceptors', function () {
       return data;
     });
 
-    axios({
-      url: '/foo'
-    }).then(function (data) {
+    axios('/foo').then(function (data) {
       response = data;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,
@@ -260,7 +236,7 @@ describe('interceptors', function () {
   });
 
   it('should allow removing interceptors', function (done) {
-    var request, response, intercept;
+    var response, intercept;
 
     axios.interceptors.response.use(function (data) {
       data.data = data.data + '1';
@@ -277,14 +253,12 @@ describe('interceptors', function () {
 
     axios.interceptors.response.eject(intercept);
 
-    axios({
-      url: '/foo'
-    }).then(function (data) {
+    axios('/foo').then(function (data) {
       response = data;
     });
 
     setTimeout(function () {
-      request = jasmine.Ajax.requests.mostRecent();
+      var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
         status: 200,

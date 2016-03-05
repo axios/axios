@@ -1,9 +1,105 @@
 // Karma configuration
 // Generated on Fri Aug 15 2014 23:11:13 GMT-0500 (CDT)
 
-module.exports = function(config) {
-  config.set({
+function createCustomLauncher(browser, version, platform) {
+  return {
+    base: 'SauceLabs',
+    browserName: browser,
+    version: version,
+    platform: platform
+  };
+}
 
+module.exports = function(config) {
+  var customLaunchers = {};
+  var browsers = [];
+
+  if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
+    console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are set.');
+    browsers = ['Firefox', 'Chrome', 'Safari', 'Opera'];
+  } else {
+    customLaunchers = {};
+
+    var runAll = true;
+    var options = [
+      'SAUCE_CHROME',
+      'SAUCE_FIREFOX',
+      'SAUCE_SAFARI',
+      'SAUCE_OPERA',
+      'SAUCE_IE',
+      'SAUCE_EDGE',
+      'SAUCE_IOS',
+      'SAUCE_ANDROID'
+    ];
+
+    options.forEach(function (opt) {
+      if (process.env[opt]) {
+        runAll = false;
+      }
+    });
+
+    // Chrome
+    if (runAll || process.env.SAUCE_CHROME) {
+      customLaunchers.SL_Chrome = createCustomLauncher('chrome');
+      // customLaunchers.SL_ChromeDev = createCustomLauncher('chrome', 'dev');
+      // customLaunchers.SL_ChromeBeta = createCustomLauncher('chrome', 'beta');
+    }
+
+    // Firefox
+    if (runAll || process.env.SAUCE_FIREFOX) {
+      customLaunchers.SL_Firefox = createCustomLauncher('firefox');
+      // customLaunchers.SL_FirefoxDev = createCustomLauncher('firefox', 'dev');
+      // customLaunchers.SL_FirefoxBeta = createCustomLauncher('firefox', 'beta');
+    }
+
+    // Safari
+    if (runAll || process.env.SAUCE_SAFARI) {
+      customLaunchers.SL_Safari7 = createCustomLauncher('safari', 7);
+      customLaunchers.SL_Safari8 = createCustomLauncher('safari', 8);
+      customLaunchers.SL_Safari9 = createCustomLauncher('safari', 9);
+    }
+
+    // Opera
+    if (runAll || process.env.SAUCE_OPERA) {
+      // TODO The available versions of Opera are too old and lack basic APIs
+      // customLaunchers.SL_Opera11 = createCustomLauncher('opera', 11, 'Windows XP');
+      // customLaunchers.SL_Opera12 = createCustomLauncher('opera', 12, 'Windows 7');
+    }
+
+    // IE
+    if (runAll || process.env.SAUCE_IE) {
+      // TODO These need to be fixed
+      // customLaunchers.SL_IE8 = createCustomLauncher('internet explorer', 8, 'Windows 7');
+      // customLaunchers.SL_IE9 = createCustomLauncher('internet explorer', 9, 'Windows 2008');
+      // customLaunchers.SL_IE10 = createCustomLauncher('internet explorer', 10, 'Windows 2012');
+      customLaunchers.SL_IE11 = createCustomLauncher('internet explorer', 11, 'Windows 8.1');
+    }
+
+    // Edge
+    if (runAll || process.env.SAUCE_EDGE) {
+      customLaunchers.SL_Edge = createCustomLauncher('microsoftedge', null, 'Windows 10');
+    }
+
+    // IOS
+    if (runAll || process.env.SAUCE_IOS) {
+      // TODO IOS7 capture always timesout
+      // customLaunchers.SL_IOS7 = createCustomLauncher('iphone', '7.1', 'OS X 10.10');
+      // TODO Mobile browsers are causing failures, possibly from too many concurrent VMs
+      // customLaunchers.SL_IOS8 = createCustomLauncher('iphone', '8.4', 'OS X 10.10');
+      // customLaunchers.SL_IOS9 = createCustomLauncher('iphone', '9.2', 'OS X 10.10');
+    }
+
+    // Android
+    if (runAll || process.env.SAUCE_ANDROID) {
+      // TODO Mobile browsers are causing failures, possibly from too many concurrent VMs
+      // customLaunchers.SL_Android4 = createCustomLauncher('android', '4.4', 'Linux');
+      // customLaunchers.SL_Android5 = createCustomLauncher('android', '5.1', 'Linux');
+    }
+
+    browsers = Object.keys(customLaunchers);
+  }
+
+  config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -32,6 +128,43 @@ module.exports = function(config) {
     },
 
 
+    // test results reporter to use
+    // possible values: 'dots', 'progress'
+    // available reporters: https://npmjs.org/browse/keyword/karma-reporter
+    reporters: ['dots', 'coverage', 'saucelabs'],
+
+
+    // web server port
+    port: 9876,
+
+
+    // Increase timeout in case connection to CI is slow
+    captureTimeout: 120000,
+
+
+    // enable / disable colors in the output (reporters and logs)
+    colors: true,
+
+
+    // level of logging
+    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+    logLevel: config.LOG_INFO,
+
+
+    // enable / disable watching file and executing tests whenever any file changes
+    autoWatch: false,
+
+
+    // start these browsers
+    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
+    browsers: browsers,
+
+
+    // Continuous Integration mode
+    // if true, Karma captures browsers, runs the tests and exits
+    singleRun: false,
+
+    // Webpack config
     webpack: {
       cache: true,
       devtool: 'inline-source-map',
@@ -57,12 +190,8 @@ module.exports = function(config) {
       }
     },
 
-    // test results reporter to use
-    // possible values: 'dots', 'progress'
-    // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['dots', 'coverage'],
-
-
+    
+    // Coverage reporting
     coverageReporter: {
       type: 'lcov',
       dir: 'coverage/',
@@ -70,30 +199,16 @@ module.exports = function(config) {
     },
 
 
-    // web server port
-    port: 9876,
+    // SauceLabs config
+    sauceLabs: {
+      recordScreenshots: false,
+      connectOptions: {
+        port: 5757,
+        logfile: 'sauce_connect.log'
+      },
+      public: 'public'
+    },
 
-
-    // enable / disable colors in the output (reporters and logs)
-    colors: true,
-
-
-    // level of logging
-    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
-
-
-    // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: false,
-
-
-    // start these browsers
-    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS'],
-
-
-    // Continuous Integration mode
-    // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    customLaunchers: customLaunchers
   });
 };

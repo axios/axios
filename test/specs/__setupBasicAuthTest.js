@@ -1,4 +1,5 @@
 var axios = require('../../index');
+var validateInvalidCharacterError = require('./__validateInvalidCharacterError');
 
 module.exports = function setupBasicAuthTest() {
   beforeEach(function () {
@@ -10,8 +11,7 @@ module.exports = function setupBasicAuthTest() {
   });
 
   it('should accept HTTP Basic auth with username/password', function (done) {
-    axios({
-      url: '/foo',
+    axios('/foo', {
       auth: {
         username: 'Aladdin',
         password: 'open sesame'
@@ -27,8 +27,7 @@ module.exports = function setupBasicAuthTest() {
   });
 
   it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters', function (done) {
-    axios({
-      url: '/foo',
+    axios('/foo', {
       auth: {
         username: 'Aladßç£☃din',
         password: 'open sesame'
@@ -36,7 +35,7 @@ module.exports = function setupBasicAuthTest() {
     }).then(function(response) {
       done(new Error('Should not succeed to make a HTTP Basic auth request with non-latin1 chars in credentials.'));
     }).catch(function(error) {
-      expect(error.message).toEqual('INVALID_CHARACTER_ERR: DOM Exception 5');
+      validateInvalidCharacterError(error);
       done();
     });
   });

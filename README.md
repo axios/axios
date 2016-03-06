@@ -257,7 +257,13 @@ These are the available config options for making requests. Only the `url` is re
   xsrfCookieName: 'XSRF-TOKEN', // default
 
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
-  xsrfHeaderName: 'X-XSRF-TOKEN' // default
+  xsrfHeaderName: 'X-XSRF-TOKEN', // default
+
+  // `progress` allows handling of progress events for 'POST' and 'PUT uploads'
+  // as well as 'GET' downloads
+  progress: function(progressEvent) {
+    // Do whatever you want with the native progress event
+  }
 }
 ```
 

@@ -53,7 +53,7 @@ describe('interceptors', function () {
     });
   });
 
-  fit('should add a request interceptor that returns a promise', function (done) {
+  it('should add a request interceptor that returns a promise', function (done) {
     axios.interceptors.request.use(function (config) {
       return new Promise(function (resolve) {
         // do something async

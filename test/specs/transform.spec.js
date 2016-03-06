@@ -1,4 +1,5 @@
 var axios = require('../../index');
+var getAjaxRequest = require('./__getAjaxRequest');
 
 describe('transform', function () {
   beforeEach(function () {
@@ -16,12 +17,10 @@ describe('transform', function () {
 
     axios.post('/foo', data);
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.params).toEqual('{"foo":"bar"}');
       done();
-    }, 0);
+    });
   });
 
   it('should transform string to JSON', function (done) {
@@ -31,9 +30,7 @@ describe('transform', function () {
       response = data;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: '{"foo": "bar"}'
@@ -43,8 +40,8 @@ describe('transform', function () {
         expect(typeof response.data).toEqual('object');
         expect(response.data.foo).toEqual('bar');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
   it('should override default transform', function (done) {
@@ -58,12 +55,10 @@ describe('transform', function () {
       }
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(typeof request.params).toEqual('object');
       done();
-    }, 0);
+    });
   });
 
   it('should allow an Array of transformers', function (done) {
@@ -79,12 +74,10 @@ describe('transform', function () {
       )
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.params).toEqual('{"foo":"baz"}');
       done();
-    }, 0);
+    });
   });
 
   it('should allowing mutating headers', function (done) {
@@ -96,11 +89,9 @@ describe('transform', function () {
       }
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders['X-Authorization']).toEqual(token);
       done();
-    }, 0);
+    });
   });
 });

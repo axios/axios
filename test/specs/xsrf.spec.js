@@ -1,4 +1,5 @@
 var axios = require('../../index');
+var getAjaxRequest = require('./__getAjaxRequest');
 
 describe('xsrf', function () {
   beforeEach(function () {
@@ -13,12 +14,10 @@ describe('xsrf', function () {
   it('should not set xsrf header if cookie is null', function (done) {
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
       done();
-    }, 0);
+    });
   });
 
   it('should set xsrf header if cookie is set', function (done) {
@@ -26,12 +25,10 @@ describe('xsrf', function () {
 
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
       done();
-    }, 0);
+    });
   });
 
   it('should not set xsrf header for cross origin', function (done) {
@@ -39,9 +36,7 @@ describe('xsrf', function () {
 
     axios('http://example.com/');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
       done();
     });
@@ -54,9 +49,7 @@ describe('xsrf', function () {
       withCredentials: true
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
       done();
     });

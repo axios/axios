@@ -1,4 +1,5 @@
 var axios = require('../../index');
+var getAjaxRequest = require('./__getAjaxRequest');
 
 describe('interceptors', function () {
   beforeEach(function () {
@@ -19,9 +20,7 @@ describe('interceptors', function () {
 
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -29,7 +28,7 @@ describe('interceptors', function () {
 
       expect(request.requestHeaders.test).toBe('added by interceptor');
       done();
-    }, 0);
+    });
   });
 
   it('should add a request interceptor that returns a new config object', function (done) {
@@ -42,9 +41,7 @@ describe('interceptors', function () {
 
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -53,10 +50,10 @@ describe('interceptors', function () {
       expect(request.method).toBe('POST');
       expect(request.url).toBe('/bar');
       done();
-    }, 0);
+    });
   });
 
-  it('should add a request interceptor that returns a promise', function (done) {
+  fit('should add a request interceptor that returns a promise', function (done) {
     axios.interceptors.request.use(function (config) {
       return new Promise(function (resolve) {
         // do something async
@@ -69,9 +66,7 @@ describe('interceptors', function () {
 
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -79,7 +74,7 @@ describe('interceptors', function () {
 
       expect(request.requestHeaders.async).toBe('promise');
       done();
-    }, 100);
+    });
   });
 
   it('should add multiple request interceptors', function (done) {
@@ -98,7 +93,7 @@ describe('interceptors', function () {
 
     axios('/foo');
 
-    setTimeout(function () {
+    getAjaxRequest().then(function (request) {
       var request = jasmine.Ajax.requests.mostRecent();
 
       request.respondWith({
@@ -110,7 +105,7 @@ describe('interceptors', function () {
       expect(request.requestHeaders.test2).toBe('2');
       expect(request.requestHeaders.test3).toBe('3');
       done();
-    }, 0);
+    });
   });
 
   it('should add a response interceptor', function (done) {
@@ -125,9 +120,7 @@ describe('interceptors', function () {
       response = data;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -136,8 +129,8 @@ describe('interceptors', function () {
       setTimeout(function () {
         expect(response.data).toBe('OK - modified by interceptor');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
   it('should add a response interceptor that returns a new data object', function (done) {
@@ -153,9 +146,7 @@ describe('interceptors', function () {
       response = data;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -164,8 +155,8 @@ describe('interceptors', function () {
       setTimeout(function () {
         expect(response.data).toBe('stuff');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
   it('should add a response interceptor that returns a promise', function (done) {
@@ -185,9 +176,7 @@ describe('interceptors', function () {
       response = data;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -197,7 +186,7 @@ describe('interceptors', function () {
         expect(response.data).toBe('you have been promised!');
         done();
       }, 100);
-    }, 0);
+    });
   });
 
   it('should add multiple response interceptors', function (done) {
@@ -220,9 +209,7 @@ describe('interceptors', function () {
       response = data;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -231,8 +218,8 @@ describe('interceptors', function () {
       setTimeout(function () {
         expect(response.data).toBe('OK123');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
   it('should allow removing interceptors', function (done) {
@@ -257,9 +244,7 @@ describe('interceptors', function () {
       response = data;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -268,7 +253,7 @@ describe('interceptors', function () {
       setTimeout(function () {
         expect(response.data).toBe('OK13');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 });

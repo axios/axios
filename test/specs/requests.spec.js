@@ -1,4 +1,5 @@
 var axios = require('../../index');
+var getAjaxRequest = require('./__getAjaxRequest');
 
 describe('requests', function () {
   beforeEach(function () {
@@ -12,36 +13,30 @@ describe('requests', function () {
   it('should treat single string arg as url', function (done) {
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo');
       expect(request.method).toBe('GET');
       done();
-    }, 0);
+    });
   });
 
   it('should allow string arg as url, and config arg', function (done) {
     axios.post('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo');
       expect(request.method).toBe('POST');
       done();
-    }, 0);
+    });
   });
 
   it('should make an http request', function (done) {
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo');
       done();
-    }, 0);
+    });
   });
 
   it('should reject on network errors', function (done) {
@@ -70,8 +65,7 @@ describe('requests', function () {
       response = res;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         statusText: 'OK',
@@ -87,10 +81,8 @@ describe('requests', function () {
         expect(response.statusText).toEqual('OK');
         expect(response.headers['content-type']).toEqual('application/json');
         done();
-      }, 0);
-
-    }, 0);
-
+      });
+    });
   });
 
 
@@ -101,9 +93,7 @@ describe('requests', function () {
       response = res;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         statusText: 'OK',
@@ -119,8 +109,8 @@ describe('requests', function () {
         expect(response.statusText).toEqual('OK');
         expect(response.headers['content-type']).toEqual('application/json');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
   // https://github.com/mzabriskie/axios/issues/201
@@ -131,9 +121,7 @@ describe('requests', function () {
       response = res
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 1223,
         statusText: 'Unknown'
@@ -143,8 +131,8 @@ describe('requests', function () {
         expect(response.status).toEqual(204);
         expect(response.statusText).toEqual('No Content');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
   it('should allow overriding Content-Type header case-insensitive', function (done) {
@@ -159,9 +147,7 @@ describe('requests', function () {
       response = res;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-      
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders['Content-Type']).toEqual(contentType);
       done();
     });
@@ -174,15 +160,13 @@ describe('requests', function () {
 
     axios.post('/foo', input.buffer);
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       var output = new Int8Array(request.params.buffer);
       expect(output.length).toEqual(2);
       expect(output[0]).toEqual(1);
       expect(output[1]).toEqual(2);
       done();
-    }, 0);
+    });
   });
 
   it('should support binary data as array buffer view', function (done) {
@@ -192,15 +176,13 @@ describe('requests', function () {
 
     axios.post('/foo', input);
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       var output = new Int8Array(request.params.buffer);
       expect(output.length).toEqual(2);
       expect(output[0]).toEqual(1);
       expect(output[1]).toEqual(2);
       done();
-    }, 0);
+    });
   });
 
   it('should support array buffer response', function (done) {
@@ -221,9 +203,7 @@ describe('requests', function () {
       response = data;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         response: str2ab('Hello world')
@@ -232,8 +212,8 @@ describe('requests', function () {
       setTimeout(function () {
         expect(response.data.byteLength).toBe(22);
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
 });

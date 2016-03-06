@@ -1,6 +1,7 @@
 var axios = require('../../index');
 var defaults = require('../../lib/defaults');
 var utils = require('../../lib/utils');
+var getAjaxRequest = require('./__getAjaxRequest');
 
 describe('defaults', function () {
   var __defaults;
@@ -39,12 +40,10 @@ describe('defaults', function () {
   it('should use global defaults config', function (done) {
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo');
       done();
-    }, 0);
+    });
   });
 
   it('should use modified defaults config', function (done) {
@@ -52,12 +51,10 @@ describe('defaults', function () {
 
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.url).toBe('http://example.com/foo');
       done();
-    }, 0);
+    });
   });
 
   it('should use request config', function (done) {
@@ -65,12 +62,10 @@ describe('defaults', function () {
       baseURL: 'http://www.example.com'
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.url).toBe('http://www.example.com/foo');
       done();
-    }, 0);
+    });
   });
 
   it('should use default config for custom instance', function (done) {
@@ -82,12 +77,10 @@ describe('defaults', function () {
 
     instance.get('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[instance.defaults.xsrfHeaderName]).toEqual('foobarbaz');
       done();
-    }, 0);
+    });
   });
 
   it('should use header config', function (done) {
@@ -112,9 +105,7 @@ describe('defaults', function () {
       }
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       expect(request.requestHeaders).toEqual(
         utils.merge(defaults.headers.common, {
           'X-COMMON-HEADER': 'commonHeaderValue',
@@ -124,7 +115,7 @@ describe('defaults', function () {
         })
       );
       done();
-    }, 0);
+    });
   });
 
 });

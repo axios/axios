@@ -1,5 +1,6 @@
 require('es6-promise').polyfill();
 var axios = require('../../index');
+var getAjaxRequest = require('./__getAjaxRequest');
 
 describe('promise', function () {
   beforeEach(function () {
@@ -17,9 +18,7 @@ describe('promise', function () {
       response = r;
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: '{"hello":"world"}'
@@ -32,8 +31,8 @@ describe('promise', function () {
         expect(response.headers['content-type']).toEqual('application/json');
         expect(response.config.url).toEqual('/foo');
         done();
-      }, 0);
-    }, 0);
+      });
+    });
   });
 
   it('should support all', function (done) {
@@ -46,7 +45,7 @@ describe('promise', function () {
     setTimeout(function () {
       expect(fulfilled).toEqual(true);
       done();
-    }, 0);
+    }, 100);
   });
 
   it('should support spread', function (done) {
@@ -70,6 +69,6 @@ describe('promise', function () {
       expect(sum).toEqual(123 + 456);
       expect(result).toEqual('hello world');
       done();
-    }, 0);
+    }, 100);
   });
 });

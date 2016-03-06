@@ -1,4 +1,5 @@
 var axios = require('../../index');
+var getAjaxRequest = require('./__getAjaxRequest');
 
 function testHeaderValue(headers, key, val) {
   var found = false;
@@ -34,16 +35,14 @@ describe('headers', function () {
 
     axios('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       for (var key in headers) {
         if (headers.hasOwnProperty(key)) {
           expect(request.requestHeaders[key]).toEqual(headers[key]);
         }
       }
       done();
-    }, 0);
+    });
   });
 
   it('should add extra headers for post', function (done) {
@@ -51,16 +50,14 @@ describe('headers', function () {
 
     axios.post('/foo', 'fizz=buzz');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
+    getAjaxRequest().then(function (request) {
       for (var key in headers) {
         if (headers.hasOwnProperty(key)) {
           expect(request.requestHeaders[key]).toEqual(headers[key]);
         }
       }
       done();
-    }, 0);
+    });
   });
 
   it('should use application/json when posting an object', function (done) {
@@ -69,30 +66,27 @@ describe('headers', function () {
       lastName: 'bar'
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
+    getAjaxRequest().then(function (request) {
       testHeaderValue(request.requestHeaders, 'Content-Type', 'application/json;charset=utf-8');
       done();
-    }, 0);
+    });
   });
 
   it('should remove content-type if data is empty', function (done) {
     axios.post('/foo');
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
+    getAjaxRequest().then(function (request) {
       testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
       done();
-    }, 0);
+    });
   });
 
   it('should preserve content-type if data is false', function (done) {
     axios.post('/foo', false);
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
+    getAjaxRequest().then(function (request) {
       testHeaderValue(request.requestHeaders, 'Content-Type', 'application/x-www-form-urlencoded');
       done();
-    }, 0);
+    });
   });
 });

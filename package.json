@@ -34,7 +34,7 @@
     "grunt-banner": "0.6.0",
     "grunt-cli": "0.1.13",
     "grunt-contrib-clean": "1.0.0",
-    "grunt-contrib-nodeunit": "0.4.1",
+    "grunt-contrib-nodeunit": "1.0.0",
     "grunt-contrib-watch": "0.6.1",
     "grunt-eslint": "18.0.0",
     "grunt-karma": "0.12.1",

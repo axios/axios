@@ -263,7 +263,10 @@ These are the available config options for making requests. Only the `url` is re
   // as well as 'GET' downloads
   progress: function(progressEvent) {
     // Do whatever you want with the native progress event
-  }
+  },
+  
+  // `maxContentLength` defines the max size of the http response content allowed
+  maxContentLength: 2000
 }
 ```
 

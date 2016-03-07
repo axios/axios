@@ -1,7 +1,3 @@
-require('es6-promise').polyfill();
-var axios = require('../../index');
-var getAjaxRequest = require('./__getAjaxRequest');
-
 describe('promise', function () {
   beforeEach(function () {
     jasmine.Ajax.install();

@@ -1,4 +1,3 @@
-var setupBasicAuthTest = require('./__setupBasicAuthTest');
 var window_btoa;
 
 describe('basicAuth with btoa polyfill', function () {

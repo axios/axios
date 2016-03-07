@@ -1,6 +1,3 @@
-var axios = require('../../index');
-var getAjaxRequest = require('./__getAjaxRequest');
-
 function testHeaderValue(headers, key, val) {
   var found = false;
 

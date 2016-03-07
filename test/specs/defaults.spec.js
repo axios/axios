@@ -1,20 +1,16 @@
-var axios = require('../../index');
 var defaults = require('../../lib/defaults');
 var utils = require('../../lib/utils');
-var getAjaxRequest = require('./__getAjaxRequest');
 
 describe('defaults', function () {
-  var __defaults;
   var XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
 
   beforeEach(function () {
     jasmine.Ajax.install();
-    __defaults = axios.defaults;
   });
 
   afterEach(function () {
     jasmine.Ajax.uninstall();
-    axios.defaults = __defaults;
+    delete axios.defaults.baseURL;
     document.cookie = XSRF_COOKIE_NAME + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
   });
 

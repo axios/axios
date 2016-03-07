@@ -1,5 +1,3 @@
-var axios = require('../../index');
-
 describe('static api', function () {
   it('should have request method helpers', function () {
     expect(typeof axios.get).toEqual('function');

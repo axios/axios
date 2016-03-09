@@ -136,12 +136,13 @@ module.exports = {
       res.end(str);
     }).listen(4444, function () {
       var success = false, failure = false, error;
-
       axios.get('http://localhost:4444/', {
         maxContentLength: 2000
       }).then(function (res) {
         success = true;
+        console.log('success');
       }).catch(function (res) {
+        console.log('failure');
         error = res;
         failure = true;
       });

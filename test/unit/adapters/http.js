@@ -143,7 +143,7 @@ module.exports = {
       }).then(function (res) {
         success = true;
         console.log('success');
-      }).then(function (res) {
+      }).catch(function (res) {
         console.log('failure');
         error = res;
         failure = true;

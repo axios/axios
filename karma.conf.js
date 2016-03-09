@@ -1,6 +1,8 @@
 // Karma configuration
 // Generated on Fri Aug 15 2014 23:11:13 GMT-0500 (CDT)
 
+var webpack = require('webpack');
+
 function createCustomLauncher(browser, version, platform) {
   return {
     base: 'SauceLabs',
@@ -70,7 +72,7 @@ module.exports = function(config) {
     if (runAll || process.env.SAUCE_IE) {
       // TODO These need to be fixed
       // customLaunchers.SL_IE8 = createCustomLauncher('internet explorer', 8, 'Windows 7');
-      // customLaunchers.SL_IE9 = createCustomLauncher('internet explorer', 9, 'Windows 2008');
+      customLaunchers.SL_IE9 = createCustomLauncher('internet explorer', 9, 'Windows 2008');
       customLaunchers.SL_IE10 = createCustomLauncher('internet explorer', 10, 'Windows 2012');
       customLaunchers.SL_IE11 = createCustomLauncher('internet explorer', 11, 'Windows 8.1');
     }
@@ -183,6 +185,11 @@ module.exports = function(config) {
         {
           './adapters/http': 'var undefined'
         }
+      ],
+      plugins: [
+        new webpack.DefinePlugin({
+          'process.env.NODE_ENV': JSON.stringify('test')
+        })
       ]
     },
 

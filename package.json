@@ -4,7 +4,7 @@
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/grunt build",
+    "build": "NODE_ENV=production ./node_modules/.bin/grunt build",
     "test": "./node_modules/.bin/grunt test",
     "start": "node ./sandbox/server.js",
     "examples": "node ./examples/server.js",

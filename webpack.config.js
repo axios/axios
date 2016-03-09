@@ -22,15 +22,21 @@ function generateConfig(name) {
     ],
     devtool: 'source-map'
   };
+
+  config.plugins = [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    })
+  ];
  
   if (uglify) {
-    config.plugins = [
+    config.plugins.push(
       new webpack.optimize.UglifyJsPlugin({
         compressor: {
           warnings: false
         }
       })
-    ];
+    );
   }
 
   return config;

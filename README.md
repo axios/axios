@@ -209,7 +209,7 @@ These are the available config options for making requests. Only the `url` is re
   // `headers` are custom headers to be sent
   headers: {'X-Requested-With': 'XMLHttpRequest'},
 
-  // `param` are the URL parameters to be sent with the request
+  // `params` are the URL parameters to be sent with the request
   params: {
     ID: 12345
   },

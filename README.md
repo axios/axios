@@ -136,6 +136,24 @@ For convenience aliases have been provided for all supported request methods.
 ##### axios.put(url[, data[, config]])
 ##### axios.patch(url[, data[, config]])
 
+#### Custom method aliases
+
+If you'd like to expand the instance api with more http methods such as "LINK" then you can configure the using *axios.create*:
+
+```js
+var instance = axios.create({
+  httpVerbs: [
+    { name: 'LINK', with_body: true },
+    { name: 'LOCK' }
+  ]
+});
+```
+
+Now the variable __instance__ has the following methods including the default alias shown above:
+
+- __instance#link(url[, data[, config]])__
+- __instance#lock(url[, config])__
+
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
@@ -184,7 +202,7 @@ These are the available config options for making requests. Only the `url` is re
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute. 
+  // `baseURL` will be prepended to `url` unless `url` is absolute.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs 
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
@@ -263,7 +281,14 @@ These are the available config options for making requests. Only the `url` is re
   // as well as 'GET' downloads
   progress: function(progressEvent) {
     // Do whatever you want with the native progress event
-  }
+  },
+
+  // `http_verbs` contain custom http verbs that are from now on accessible
+  // as instance methods of the axios object just like `axios.get()`
+  httpVerbs: [
+    { name: 'LOCK', with_body: false },
+    { name: 'LINK', with_body: true }
+  ]
 }
 ```
 
@@ -343,7 +368,7 @@ instance.defaults.timeout = 2500;
 // Override timeout for this request as it's known to take a long time
 instance.get('/longRequest', {
   timeout: 5000
-}); 
+});
 ```
 
 ## Interceptors
@@ -416,7 +441,7 @@ If your environment doesn't support ES6 Promises, you can [polyfill](https://git
 axios includes a [TypeScript](http://typescriptlang.org) definition.
 ```typescript
 /// <reference path="axios.d.ts" />
-import * as axios from 'axios';
+import axios = require('axios');
 axios.get('/user?ID=12345');
 ```
 

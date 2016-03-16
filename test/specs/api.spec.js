@@ -36,7 +36,13 @@ describe('static api', function () {
 });
 
 describe('instance api', function () {
-  var instance = axios.create();
+  var instance = axios.create({
+    httpVerbs: [
+      { name: 'LOCK' },
+      { name: 'LINK', with_body: true },
+      { name: 'UNLOCK', with_body: false }
+    ]
+  });
 
   it('should have request methods', function () {
     expect(typeof instance.request).toEqual('function');
@@ -51,5 +57,26 @@ describe('instance api', function () {
   it('should have interceptors', function () {
     expect(typeof instance.interceptors.request).toEqual('object');
     expect(typeof instance.interceptors.response).toEqual('object');
+  });
+
+  it('should have custom method helpers', function () {
+    expect(typeof instance.lock).toEqual('function');
+    expect(typeof instance.link).toEqual('function');
+    expect(typeof instance.unlock).toEqual('function');
+  });
+
+  it('should differ between methods accepting a body and methods that don\'t', function () {
+    // custom aliases
+    expect(instance.lock.length).toEqual(2);
+    expect(instance.link.length).toEqual(3);
+    expect(instance.unlock.length).toEqual(2);
+
+    // default aliases
+    expect(instance.get.length).toEqual(2);
+    expect(instance.head.length).toEqual(2);
+    expect(instance.delete.length).toEqual(2);
+    expect(instance.post.length).toEqual(3);
+    expect(instance.put.length).toEqual(3);
+    expect(instance.patch.length).toEqual(3);
   });
 });

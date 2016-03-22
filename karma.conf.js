@@ -17,7 +17,7 @@ module.exports = function(config) {
   var browsers = [];
 
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
-    console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are set.');
+    console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.');
     browsers = ['Firefox', 'Chrome', 'Safari', 'Opera'];
   } else {
     customLaunchers = {};
@@ -199,7 +199,7 @@ module.exports = function(config) {
       }
     },
 
-    
+
     // Coverage reporting
     coverageReporter: {
       type: 'lcov',

@@ -97,8 +97,11 @@ module.exports = function(config) {
 
     browsers = Object.keys(customLaunchers);
   } else if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
-    console.log('Cannot run on Sauce Labs as encrypted environment variables are not available to PRs. Using PhantomJS.');
-    browsers = ['PhantomJS'];
+    console.log(
+      'Cannot run on Sauce Labs as encrypted environment variables are not available to PRs. ' +
+      'Running on Travis.'
+    );
+    browsers = ['Firefox'];
   } else {
     console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.');
     browsers = ['Firefox', 'Chrome', 'Safari', 'Opera'];

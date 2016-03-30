@@ -4,7 +4,7 @@
 [![build status](https://img.shields.io/travis/mzabriskie/axios.svg?style=flat-square)](https://travis-ci.org/mzabriskie/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![dev dependencies](https://img.shields.io/david/dev/mzabriskie/axios.svg?style=flat-square)](https://david-dm.org/mzabriskie/axios#info=devDependencies)
+[![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 
 Promise based HTTP client for the browser and node.js
 

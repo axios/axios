@@ -4,9 +4,12 @@
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
-    "build": "NODE_ENV=production ./node_modules/.bin/grunt build",
-    "test": "./node_modules/.bin/grunt test",
+    "test": "grunt test",
     "start": "node ./sandbox/server.js",
+    "build": "NODE_ENV=production grunt build",
+    "preversion": "npm test",
+    "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
+    "postversion": "git push && git push --tags",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
@@ -39,7 +42,6 @@
     "grunt-eslint": "18.0.0",
     "grunt-karma": "0.12.1",
     "grunt-ts": "5.3.2",
-    "grunt-update-json": "0.2.2",
     "grunt-webpack": "1.0.11",
     "istanbul-instrumenter-loader": "^0.2.0",
     "jasmine-core": "2.4.1",

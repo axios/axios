@@ -8,7 +8,7 @@ Please follow the [node style guide](https://github.com/felixge/node-style-guide
 
 ### Commit Messages
 
-Commit messages should be verb based.
+Commit messages should be verb based, using the following pattern:
 
 - `Fixing ...`
 - `Adding ...`
@@ -27,11 +27,18 @@ Please update the docs accordingly so that there are no discrepencies between th
 
 - `grunt test` run the jasmine and nodeunit tests
 - `grunt build` run webpack and bundle the source
-- `grunt publish` prepare the code for release
+- `grunt version` prepare the code for release
 - `grunt watch:test` watch for changes and run `test`
 - `grunt watch:build` watch for changes and run `build`
 
 Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
+
+### Releasing
+
+Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md) requires being updated manually. Once this has been done run the following commands:
+
+- `npm version <newversion> -m "Releasing %s"`
+- `npm publish`
 
 ### Running Examples
 

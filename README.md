@@ -180,18 +180,18 @@ These are the available config options for making requests. Only the `url` is re
 {
   // `url` is the server URL that will be used for the request
   url: '/user',
-  
+
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute. 
-  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs 
+  // `baseURL` will be prepended to `url` unless `url` is absolute.
+  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // The last function in the array must return a string or an ArrayBuffer
+  // The last function in the array must return a string, an ArrayBuffer, or a Stream
   transformRequest: [function (data) {
     // Do whatever you want to transform the data
 
@@ -222,7 +222,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `data` is the data to be sent as the request body
   // Only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // When no `transformRequest` is set, must be a string, an ArrayBuffer or a hash
+  // When no `transformRequest` is set, must be a string, an ArrayBuffer, a hash, or a Stream
   data: {
     firstName: 'Fred'
   },
@@ -250,7 +250,7 @@ These are the available config options for making requests. Only the `url` is re
   }
 
   // `responseType` indicates the type of data that the server will respond with
-  // options are 'arraybuffer', 'blob', 'document', 'json', 'text'
+  // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
   responseType: 'json', // default
 
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
@@ -264,7 +264,7 @@ These are the available config options for making requests. Only the `url` is re
   progress: function(progressEvent) {
     // Do whatever you want with the native progress event
   },
-  
+
   // `maxContentLength` defines the max size of the http response content allowed
   maxContentLength: 2000
 }
@@ -346,7 +346,7 @@ instance.defaults.timeout = 2500;
 // Override timeout for this request as it's known to take a long time
 instance.get('/longRequest', {
   timeout: 5000
-}); 
+});
 ```
 
 ## Interceptors

@@ -121,7 +121,7 @@ axios({
 ##### axios(url[, config])
 
 ```js
-// Sned a GET request (default method)
+// Send a GET request (default method)
 axios('/user/12345');
 ```
 

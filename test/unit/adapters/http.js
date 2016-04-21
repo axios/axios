@@ -2,6 +2,7 @@ var axios = require('../../../index');
 var http = require('http');
 var url = require('url');
 var zlib = require('zlib');
+var fs = require('fs');
 var server;
 
 module.exports = {
@@ -127,7 +128,7 @@ module.exports = {
       });
     });
   },
-  
+
   testMaxContentLength: function(test) {
     var str = Array(100000).join('ж');
 
@@ -145,13 +146,34 @@ module.exports = {
         error = res;
         failure = true;
       });
-      
+
       setTimeout(function () {
         test.equal(success, false, 'request should not succeed');
         test.equal(failure, true, 'request should fail');
         test.equal(error.message, 'maxContentLength size of 2000 exceeded');
         test.done();
       }, 100);
+    });
+  },
+
+  testStream: function(test) {
+    server = http.createServer(function (req, res) {
+      req.pipe(res);
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/',
+        fs.createReadStream(__filename), {
+        responseType: 'stream'
+      }).then(function (res) {
+        var stream = res.data;
+        var string = '';
+        stream.on('data', function (chunk) {
+          string += chunk.toString('utf8');
+        });
+        stream.on('end', function () {
+          test.equal(string, fs.readFileSync(__filename, 'utf8'));
+          test.done();
+        });
+      });
     });
   }
 };

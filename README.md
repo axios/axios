@@ -180,12 +180,12 @@ These are the available config options for making requests. Only the `url` is re
 {
   // `url` is the server URL that will be used for the request
   url: '/user',
-  
+
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute. 
-  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs 
+  // `baseURL` will be prepended to `url` unless `url` is absolute.
+  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
 
@@ -264,7 +264,7 @@ These are the available config options for making requests. Only the `url` is re
   progress: function(progressEvent) {
     // Do whatever you want with the native progress event
   },
-  
+
   // `maxContentLength` defines the max size of the http response content allowed
   maxContentLength: 2000
 }
@@ -346,7 +346,7 @@ instance.defaults.timeout = 2500;
 // Override timeout for this request as it's known to take a long time
 instance.get('/longRequest', {
   timeout: 5000
-}); 
+});
 ```
 
 ## Interceptors
@@ -422,6 +422,13 @@ axios includes a [TypeScript](http://typescriptlang.org) definition.
 import * as axios from 'axios';
 axios.get('/user?ID=12345');
 ```
+
+## Resources
+
+* [Changelog](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md)
+* [Ecosystem](https://github.com/mzabriskie/axios/blob/master/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/mzabriskie/axios/blob/master/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md)
 
 ## Credits
 

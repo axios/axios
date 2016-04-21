@@ -1,5 +1,16 @@
 # Changelog
 
+### 0.10.0 (Apr 20, 2016)
+
+- Fixing issue with some requests sending `undefined` instead of `null` ([#250](https://github.com/mzabriskie/axios/pull/250))
+- Fixing basic auth for HTTP adapter ([#252](https://github.com/mzabriskie/axios/pull/252))
+- Fixing request timeout for XHR adapter ([#227](https://github.com/mzabriskie/axios/pull/227))
+- Fixing IE8 support by using `onreadystatechange` instead of `onload` ([#249](https://github.com/mzabriskie/axios/pull/249))
+- Fixing IE9 cross domain requests ([#251](https://github.com/mzabriskie/axios/pull/251))
+- Adding `maxContentLength` option ([#275](https://github.com/mzabriskie/axios/pull/275))
+- Fixing XHR support for WebWorker environment ([#279](https://github.com/mzabriskie/axios/pull/279))
+- Adding request instance to response ([#200](https://github.com/mzabriskie/axios/pull/200))
+
 ### 0.9.1 (Jan 24, 2016)
 
 - Improving handling of request timeout in node ([#124](https://github.com/mzabriskie/axios/issues/124))

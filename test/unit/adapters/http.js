@@ -79,6 +79,32 @@ module.exports = {
     });
   },
 
+  testNoRedirect: function (test) {
+    var str = 'test response';
+
+    server = http.createServer(function (req, res) {
+      var parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/one') {
+        res.setHeader('NoRedirect', 'true');
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        res.end(str);
+      }
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/one', {
+        maxRedirects: 0
+      }).then(function (res) {
+        test.equal(res.status, 302);
+        test.equal(res.headers['noredirect'], 'true');
+        test.equal(res.headers['location'], '/two');
+        test.done();
+      });
+    });
+  },
+
   testTransparentGunzip: function (test) {
     var data = {
       firstName: 'Fred',

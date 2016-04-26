@@ -261,12 +261,20 @@ These are the available config options for making requests. Only the `url` is re
 
   // `progress` allows handling of progress events for 'POST' and 'PUT uploads'
   // as well as 'GET' downloads
-  progress: function(progressEvent) {
+  progress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 
   // `maxContentLength` defines the max size of the http response content allowed
-  maxContentLength: 2000
+  maxContentLength: 2000,
+
+  // `validateStatus` defines whether to resolve or reject the promise for a given
+  // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
+  // or `undefined`), the promise will be resolved; otherwise, the promise will be
+  // rejected.
+  validateStatus: function (status) {
+    return status >= 200 && status < 300; // default
+  }
 }
 ```
 
@@ -404,6 +412,16 @@ axios.get('/user/12345')
       console.log(response.config);
     }
   });
+```
+
+You can define a custom HTTP status code error range using the `validateStatus` config option.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: function (status) {
+    return status < 500; // Reject only if the status code is greater than or equal to 500
+  }
+})
 ```
 
 ## Semver

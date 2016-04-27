@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.11.0 (Apr 26, 2016)
+
+- Adding support for Stream with HTTP adapter ([#296](https://github.com/mzabriskie/axios/pull/296))
+- Adding support for custom HTTP status code error ranges ([#308](https://github.com/mzabriskie/axios/pull/308))
+- Fixing issue with ArrayBuffer ([#299](https://github.com/mzabriskie/axios/pull/299))
+
 ### 0.10.0 (Apr 20, 2016)
 
 - Fixing issue with some requests sending `undefined` instead of `null` ([#250](https://github.com/mzabriskie/axios/pull/250))

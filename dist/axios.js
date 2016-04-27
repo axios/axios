@@ -1,4 +1,4 @@
-/* axios v0.10.0 | (c) 2016 by Matt Zabriskie */
+/* axios v0.11.0 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -66,10 +66,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
 	var dispatchRequest = __webpack_require__(4);
-	var InterceptorManager = __webpack_require__(12);
-	var isAbsoluteURL = __webpack_require__(13);
-	var combineURLs = __webpack_require__(14);
-	var bind = __webpack_require__(15);
+	var InterceptorManager = __webpack_require__(13);
+	var isAbsoluteURL = __webpack_require__(14);
+	var combineURLs = __webpack_require__(15);
+	var bind = __webpack_require__(16);
 	var transformData = __webpack_require__(8);
 	
 	function Axios(defaultConfig) {
@@ -155,7 +155,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(16);
+	axios.spread = __webpack_require__(17);
 	
 	// Provide aliases for supported request methods
 	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
@@ -196,11 +196,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	module.exports = {
-	  transformRequest: [function transformRequestJSON(data, headers) {
-	    if (utils.isFormData(data)) {
-	      return data;
-	    }
-	    if (utils.isArrayBuffer(data)) {
+	  transformRequest: [function transformRequest(data, headers) {
+	    if (utils.isFormData(data) || utils.isArrayBuffer(data) || utils.isStream(data)) {
 	      return data;
 	    }
 	    if (utils.isArrayBufferView(data)) {
@@ -224,7 +221,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return data;
 	  }],
 	
-	  transformResponse: [function transformResponseJSON(data) {
+	  transformResponse: [function transformResponse(data) {
 	    /*eslint no-param-reassign:0*/
 	    if (typeof data === 'string') {
 	      data = data.replace(PROTECTION_PREFIX, '');
@@ -249,7 +246,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  xsrfCookieName: 'XSRF-TOKEN',
 	  xsrfHeaderName: 'X-XSRF-TOKEN',
 	
-	  maxContentLength: -1
+	  maxContentLength: -1,
+	
+	  validateStatus: function validateStatus(status) {
+	    return status >= 200 && status < 300;
+	  }
 	};
 
 
@@ -382,6 +383,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	/**
+	 * Determine if a value is a Function
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a Function, otherwise false
+	 */
+	function isFunction(val) {
+	  return toString.call(val) === '[object Function]';
+	}
+	
+	/**
+	 * Determine if a value is a Stream
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a Stream, otherwise false
+	 */
+	function isStream(val) {
+	  return isObject(val) && isFunction(val.pipe);
+	}
+	
+	/**
 	 * Trim excess whitespace off the beginning and end of a string
 	 *
 	 * @param {String} str The String to trim
@@ -496,6 +517,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  isDate: isDate,
 	  isFile: isFile,
 	  isBlob: isBlob,
+	  isFunction: isFunction,
+	  isStream: isStream,
 	  isStandardBrowserEnv: isStandardBrowserEnv,
 	  forEach: forEach,
 	  merge: merge,
@@ -555,6 +578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var transformData = __webpack_require__(8);
 	var isURLSameOrigin = __webpack_require__(9);
 	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(10);
+	var settle = __webpack_require__(11);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  var requestData = config.data;
@@ -622,11 +646,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      request: request
 	    };
 	
-	    // Resolve or reject the Promise based on the status
-	    ((response.status >= 200 && response.status < 300) ||
-	     (!('status' in request) && request.responseText) ?
-	      resolve :
-	      reject)(response);
+	    settle(resolve, reject, response);
 	
 	    // Clean up request
 	    request = null;
@@ -657,7 +677,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // This is only done if running in a standard browser environment.
 	  // Specifically not if we're in a web worker, or react-native.
 	  if (utils.isStandardBrowserEnv()) {
-	    var cookies = __webpack_require__(11);
+	    var cookies = __webpack_require__(12);
 	
 	    // Add xsrf header
 	    var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
@@ -705,11 +725,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else if (config.method === 'get') {
 	      request.addEventListener('progress', config.progress);
 	    }
-	  }
-	
-	  // Format request data
-	  if (utils.isArrayBuffer(requestData)) {
-	    requestData = new DataView(requestData);
 	  }
 	
 	  if (requestData === undefined) {
@@ -981,6 +996,30 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 11 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Resolve or reject a Promise based on response status.
+	 *
+	 * @param {Function} resolve A function that resolves the promise.
+	 * @param {Function} reject A function that rejects the promise.
+	 * @param {object} response The response.
+	 */
+	module.exports = function settle(resolve, reject, response) {
+	  var validateStatus = response.config.validateStatus;
+	  // Note: status is not exposed by XDomainRequest
+	  if (!response.status || !validateStatus || validateStatus(response.status)) {
+	    resolve(response);
+	  } else {
+	    reject(response);
+	  }
+	};
+
+
+/***/ },
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1039,7 +1078,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1097,7 +1136,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1117,7 +1156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1135,7 +1174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1152,7 +1191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';

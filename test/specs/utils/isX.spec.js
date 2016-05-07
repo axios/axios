@@ -1,5 +1,6 @@
 var utils = require('../../../lib/utils');
 var Stream = require('stream');
+var URLSearchParams = require('url-search-params');
 
 describe('utils::isX', function () {
   it('should validate Array', function () {
@@ -77,5 +78,10 @@ describe('utils::isX', function () {
   it('should validate Stream', function () {
     expect(utils.isStream(new Stream.Readable())).toEqual(true);
     expect(utils.isStream({ foo: 'bar' })).toEqual(false);
+  });
+
+  it('should validate URLSearchParams', function () {
+    expect(utils.isURLSearchParams(new URLSearchParams())).toEqual(true);
+    expect(utils.isURLSearchParams('foo=1&bar=2')).toEqual(false);
   });
 });

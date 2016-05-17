@@ -135,6 +135,7 @@ axios('/user/12345');
 
 For convenience aliases have been provided for all supported request methods.
 
+##### axios.request(config)
 ##### axios.get(url[, config])
 ##### axios.delete(url[, config])
 ##### axios.head(url[, config])

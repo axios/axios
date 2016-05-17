@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.11.1 (May 17, 2016)
+
+- Fixing IE CORS support ([#313](https://github.com/mzabriskie/axios/pull/313))
+- Fixing detection of `FormData` ([#325](https://github.com/mzabriskie/axios/pull/325))
+- Adding `Axios` class to exports ([#321](https://github.com/mzabriskie/axios/pull/321))
+
 ### 0.11.0 (Apr 26, 2016)
 
 - Adding support for Stream with HTTP adapter ([#296](https://github.com/mzabriskie/axios/pull/296))

@@ -1,6 +1,9 @@
 // Polyfill ES6 Promise
 require('es6-promise').polyfill();
 
+// Polyfill URLSearchParams
+URLSearchParams = require('url-search-params');
+
 // Import axios
 axios = require('../../index');
 

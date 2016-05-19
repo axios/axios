@@ -1,5 +1,3 @@
-var URLSearchParams = require('url-search-params');
-
 describe('requests', function () {
   beforeEach(function () {
     jasmine.Ajax.install();

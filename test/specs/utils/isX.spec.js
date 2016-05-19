@@ -1,6 +1,5 @@
 var utils = require('../../../lib/utils');
 var Stream = require('stream');
-var URLSearchParams = require('url-search-params');
 
 describe('utils::isX', function () {
   it('should validate Array', function () {

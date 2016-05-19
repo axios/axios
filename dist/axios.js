@@ -1,4 +1,4 @@
-/* axios v0.9.1 | (c) 2016 by Matt Zabriskie */
+/* axios v0.11.1 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -66,10 +66,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
 	var dispatchRequest = __webpack_require__(4);
-	var InterceptorManager = __webpack_require__(12);
-	var isAbsoluteURL = __webpack_require__(13);
-	var combineURLs = __webpack_require__(14);
-	var bind = __webpack_require__(15);
+	var InterceptorManager = __webpack_require__(13);
+	var isAbsoluteURL = __webpack_require__(14);
+	var combineURLs = __webpack_require__(15);
+	var bind = __webpack_require__(16);
 	var transformData = __webpack_require__(8);
 	
 	function Axios(defaultConfig) {
@@ -141,22 +141,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var defaultInstance = new Axios(defaults);
 	var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
+	module.exports.Axios = Axios;
 	
+	// Expose properties from defaultInstance
+	axios.defaults = defaultInstance.defaults;
+	axios.interceptors = defaultInstance.interceptors;
+	
+	// Factory for creating new instances
 	axios.create = function create(defaultConfig) {
 	  return new Axios(defaultConfig);
 	};
-	
-	// Expose defaults
-	axios.defaults = defaultInstance.defaults;
 	
 	// Expose all/spread
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(16);
-	
-	// Expose interceptors
-	axios.interceptors = defaultInstance.interceptors;
+	axios.spread = __webpack_require__(17);
 	
 	// Provide aliases for supported request methods
 	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
@@ -197,11 +197,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	module.exports = {
-	  transformRequest: [function transformResponseJSON(data, headers) {
-	    if (utils.isFormData(data)) {
-	      return data;
-	    }
-	    if (utils.isArrayBuffer(data)) {
+	  transformRequest: [function transformRequest(data, headers) {
+	    if (utils.isFormData(data) || utils.isArrayBuffer(data) || utils.isStream(data)) {
 	      return data;
 	    }
 	    if (utils.isArrayBufferView(data)) {
@@ -225,7 +222,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return data;
 	  }],
 	
-	  transformResponse: [function transformResponseJSON(data) {
+	  transformResponse: [function transformResponse(data) {
 	    /*eslint no-param-reassign:0*/
 	    if (typeof data === 'string') {
 	      data = data.replace(PROTECTION_PREFIX, '');
@@ -248,7 +245,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  timeout: 0,
 	
 	  xsrfCookieName: 'XSRF-TOKEN',
-	  xsrfHeaderName: 'X-XSRF-TOKEN'
+	  xsrfHeaderName: 'X-XSRF-TOKEN',
+	
+	  maxContentLength: -1,
+	
+	  validateStatus: function validateStatus(status) {
+	    return status >= 200 && status < 300;
+	  }
 	};
 
 
@@ -291,7 +294,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {boolean} True if value is an FormData, otherwise false
 	 */
 	function isFormData(val) {
-	  return toString.call(val) === '[object FormData]';
+	  return (typeof FormData !== 'undefined') && (val instanceof FormData);
 	}
 	
 	/**
@@ -378,6 +381,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function isBlob(val) {
 	  return toString.call(val) === '[object Blob]';
+	}
+	
+	/**
+	 * Determine if a value is a Function
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a Function, otherwise false
+	 */
+	function isFunction(val) {
+	  return toString.call(val) === '[object Function]';
+	}
+	
+	/**
+	 * Determine if a value is a Stream
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a Stream, otherwise false
+	 */
+	function isStream(val) {
+	  return isObject(val) && isFunction(val.pipe);
 	}
 	
 	/**
@@ -495,6 +518,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  isDate: isDate,
 	  isFile: isFile,
 	  isBlob: isBlob,
+	  isFunction: isFunction,
+	  isStream: isStream,
 	  isStandardBrowserEnv: isStandardBrowserEnv,
 	  forEach: forEach,
 	  merge: merge,
@@ -553,7 +578,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var parseHeaders = __webpack_require__(7);
 	var transformData = __webpack_require__(8);
 	var isURLSameOrigin = __webpack_require__(9);
-	var btoa = window.btoa || __webpack_require__(10);
+	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(10);
+	var settle = __webpack_require__(11);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  var requestData = config.data;
@@ -564,11 +590,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  var request = new XMLHttpRequest();
+	  var loadEvent = 'onreadystatechange';
+	  var xDomain = false;
 	
 	  // For IE 8/9 CORS support
 	  // Only supports POST and GET calls and doesn't returns the response headers.
-	  if (window.XDomainRequest && !('withCredentials' in request) && !isURLSameOrigin(config.url)) {
+	  // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
+	  if (("production") !== 'test' && typeof window !== 'undefined' && window.XDomainRequest && !('withCredentials' in request) && !isURLSameOrigin(config.url)) {
 	    request = new window.XDomainRequest();
+	    loadEvent = 'onload';
+	    xDomain = true;
+	    request.onprogress = function handleProgress() {};
+	    request.ontimeout = function handleTimeout() {};
 	  }
 	
 	  // HTTP basic authentication
@@ -584,13 +617,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  request.timeout = config.timeout;
 	
 	  // Listen for ready state
-	  request.onload = function handleLoad() {
-	    if (!request) {
+	  request[loadEvent] = function handleLoad() {
+	    if (!request || (request.readyState !== 4 && !xDomain)) {
 	      return;
 	    }
+	
+	    // The request errored out and we didn't get a response, this will be
+	    // handled by onerror instead
+	    if (request.status === 0) {
+	      return;
+	    }
+	
 	    // Prepare the response
 	    var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
-	    var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
+	    var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
 	    var response = {
 	      data: transformData(
 	        responseData,
@@ -601,14 +641,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      status: request.status === 1223 ? 204 : request.status,
 	      statusText: request.status === 1223 ? 'No Content' : request.statusText,
 	      headers: responseHeaders,
-	      config: config
+	      config: config,
+	      request: request
 	    };
 	
-	    // Resolve or reject the Promise based on the status
-	    ((response.status >= 200 && response.status < 300) ||
-	     (!('status' in request) && response.responseText) ?
-	      resolve :
-	      reject)(response);
+	    settle(resolve, reject, response);
 	
 	    // Clean up request
 	    request = null;
@@ -624,11 +661,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    request = null;
 	  };
 	
+	  // Handle timeout
+	  request.ontimeout = function handleTimeout() {
+	    var err = new Error('timeout of ' + config.timeout + 'ms exceeded');
+	    err.timeout = config.timeout;
+	    err.code = 'ECONNABORTED';
+	    reject(err);
+	
+	    // Clean up request
+	    request = null;
+	  };
+	
 	  // Add xsrf header
 	  // This is only done if running in a standard browser environment.
 	  // Specifically not if we're in a web worker, or react-native.
 	  if (utils.isStandardBrowserEnv()) {
-	    var cookies = __webpack_require__(11);
+	    var cookies = __webpack_require__(12);
 	
 	    // Add xsrf header
 	    var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
@@ -669,8 +717,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	
-	  if (utils.isArrayBuffer(requestData)) {
-	    requestData = new DataView(requestData);
+	  // Handle progress if needed
+	  if (config.progress) {
+	    if (config.method === 'post' || config.method === 'put') {
+	      request.upload.addEventListener('progress', config.progress);
+	    } else if (config.method === 'get') {
+	      request.addEventListener('progress', config.progress);
+	    }
+	  }
+	
+	  if (requestData === undefined) {
+	    requestData = null;
 	  }
 	
 	  // Send the request
@@ -904,12 +961,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 	
-	function InvalidCharacterError(message) {
-	  this.message = message;
+	function E() {
+	  this.message = 'String contains an invalid character';
 	}
-	InvalidCharacterError.prototype = new Error;
-	InvalidCharacterError.prototype.code = 5;
-	InvalidCharacterError.prototype.name = 'InvalidCharacterError';
+	E.prototype = new Error;
+	E.prototype.code = 5;
+	E.prototype.name = 'InvalidCharacterError';
 	
 	function btoa(input) {
 	  var str = String(input);
@@ -926,7 +983,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  ) {
 	    charCode = str.charCodeAt(idx += 3 / 4);
 	    if (charCode > 0xFF) {
-	      throw new InvalidCharacterError('INVALID_CHARACTER_ERR: DOM Exception 5');
+	      throw new E();
 	    }
 	    block = block << 8 | charCode;
 	  }
@@ -938,6 +995,30 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 11 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Resolve or reject a Promise based on response status.
+	 *
+	 * @param {Function} resolve A function that resolves the promise.
+	 * @param {Function} reject A function that rejects the promise.
+	 * @param {object} response The response.
+	 */
+	module.exports = function settle(resolve, reject, response) {
+	  var validateStatus = response.config.validateStatus;
+	  // Note: status is not exposed by XDomainRequest
+	  if (!response.status || !validateStatus || validateStatus(response.status)) {
+	    resolve(response);
+	  } else {
+	    reject(response);
+	  }
+	};
+
+
+/***/ },
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -996,7 +1077,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1054,7 +1135,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1074,7 +1155,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1092,7 +1173,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1109,7 +1190,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';

@@ -55,6 +55,52 @@ describe('requests', function () {
       .then(finish, finish);
   });
 
+  it('should reject when validateStatus returns false', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('/foo', {
+      validateStatus: function (status) {
+        return status !== 500;
+      }
+    }).then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).not.toHaveBeenCalled();
+        expect(rejectSpy).toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 500
+      });
+    });
+  });
+
+  it('should resolve when validateStatus returns true', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('/foo', {
+      validateStatus: function (status) {
+        return status === 500;
+      }
+    }).then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 500
+      });
+    });
+  });
+
   it('should make cross domian http request', function (done) {
     var response;
 
@@ -71,7 +117,7 @@ describe('requests', function () {
           'Content-Type': 'application/json'
         }
       });
-      
+
       setTimeout(function () {
         expect(response.data.foo).toEqual('bar');
         expect(response.status).toEqual(200);
@@ -164,7 +210,7 @@ describe('requests', function () {
     axios.post('/foo', input.buffer);
 
     getAjaxRequest().then(function (request) {
-      var output = new Int8Array(request.params.buffer);
+      var output = new Int8Array(request.params);
       expect(output.length).toEqual(2);
       expect(output[0]).toEqual(1);
       expect(output[1]).toEqual(2);
@@ -186,7 +232,7 @@ describe('requests', function () {
     axios.post('/foo', input);
 
     getAjaxRequest().then(function (request) {
-      var output = new Int8Array(request.params.buffer);
+      var output = new Int8Array(request.params);
       expect(output.length).toEqual(2);
       expect(output[0]).toEqual(1);
       expect(output[1]).toEqual(2);
@@ -200,7 +246,7 @@ describe('requests', function () {
       done();
       return;
     }
-    
+
     var response;
 
     function str2ab(str) {

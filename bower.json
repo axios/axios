@@ -1,38 +1,38 @@
 {
-	"name": "axios",
-	"main": "./dist/axios.js",
-	"version": "0.9.1",
-	"homepage": "https://github.com/mzabriskie/axios",
-	"authors": [
-		"Matt Zabriskie"
-	],
-	"description": "Promise based HTTP client for the browser and node.js",
-	"moduleType": [
-		"amd",
-		"globals"
-	],
-	"keywords": [
-		"xhr",
-		"http",
-		"ajax",
-		"promise",
-		"node"
-	],
-	"license": "MIT",
-	"ignore": [
-		"**/.*",
-		"*.iml",
-		"examples",
-		"lib",
-		"node_modules",
-		"sandbox",
-		"test",
-		"CONTRIBUTING.md",
+  "name": "axios",
+  "main": "./dist/axios.js",
+  "version": "0.11.1",
+  "homepage": "https://github.com/mzabriskie/axios",
+  "authors": [
+    "Matt Zabriskie"
+  ],
+  "description": "Promise based HTTP client for the browser and node.js",
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "xhr",
+    "http",
+    "ajax",
+    "promise",
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "*.iml",
+    "examples",
+    "lib",
+    "node_modules",
+    "sandbox",
+    "test",
+    "CONTRIBUTING.md",
     "COOKBOOK.md",
-		"Gruntfile.js",
-		"index.js",
-		"karma.conf.js",
-		"package.json",
+    "Gruntfile.js",
+    "index.js",
+    "karma.conf.js",
+    "package.json",
     "webpack.*.js"
-	]
+  ]
 }

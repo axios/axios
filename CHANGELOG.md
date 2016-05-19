@@ -1,5 +1,28 @@
 # Changelog
 
+### 0.11.1 (May 17, 2016)
+
+- Fixing IE CORS support ([#313](https://github.com/mzabriskie/axios/pull/313))
+- Fixing detection of `FormData` ([#325](https://github.com/mzabriskie/axios/pull/325))
+- Adding `Axios` class to exports ([#321](https://github.com/mzabriskie/axios/pull/321))
+
+### 0.11.0 (Apr 26, 2016)
+
+- Adding support for Stream with HTTP adapter ([#296](https://github.com/mzabriskie/axios/pull/296))
+- Adding support for custom HTTP status code error ranges ([#308](https://github.com/mzabriskie/axios/pull/308))
+- Fixing issue with ArrayBuffer ([#299](https://github.com/mzabriskie/axios/pull/299))
+
+### 0.10.0 (Apr 20, 2016)
+
+- Fixing issue with some requests sending `undefined` instead of `null` ([#250](https://github.com/mzabriskie/axios/pull/250))
+- Fixing basic auth for HTTP adapter ([#252](https://github.com/mzabriskie/axios/pull/252))
+- Fixing request timeout for XHR adapter ([#227](https://github.com/mzabriskie/axios/pull/227))
+- Fixing IE8 support by using `onreadystatechange` instead of `onload` ([#249](https://github.com/mzabriskie/axios/pull/249))
+- Fixing IE9 cross domain requests ([#251](https://github.com/mzabriskie/axios/pull/251))
+- Adding `maxContentLength` option ([#275](https://github.com/mzabriskie/axios/pull/275))
+- Fixing XHR support for WebWorker environment ([#279](https://github.com/mzabriskie/axios/pull/279))
+- Adding request instance to response ([#200](https://github.com/mzabriskie/axios/pull/200))
+
 ### 0.9.1 (Jan 24, 2016)
 
 - Improving handling of request timeout in node ([#124](https://github.com/mzabriskie/axios/issues/124))

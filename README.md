@@ -28,16 +28,22 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 
 ## Installing
 
-Using bower:
+Using cdn:
 
-```bash
-$ bower install axios
+```html
+<script src="https://npmcdn.com/axios/dist/axios.min.js"></script>
 ```
 
 Using npm:
 
 ```bash
 $ npm install axios
+```
+
+Using bower:
+
+```bash
+$ bower install axios
 ```
 
 ## Example
@@ -129,6 +135,7 @@ axios('/user/12345');
 
 For convenience aliases have been provided for all supported request methods.
 
+##### axios.request(config)
 ##### axios.get(url[, config])
 ##### axios.delete(url[, config])
 ##### axios.head(url[, config])
@@ -180,18 +187,18 @@ These are the available config options for making requests. Only the `url` is re
 {
   // `url` is the server URL that will be used for the request
   url: '/user',
-  
+
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute. 
-  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs 
+  // `baseURL` will be prepended to `url` unless `url` is absolute.
+  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // The last function in the array must return a string or an ArrayBuffer
+  // The last function in the array must return a string, an ArrayBuffer, or a Stream
   transformRequest: [function (data) {
     // Do whatever you want to transform the data
 
@@ -222,7 +229,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `data` is the data to be sent as the request body
   // Only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // When no `transformRequest` is set, must be a string, an ArrayBuffer or a hash
+  // When no `transformRequest` is set, must be a string, an ArrayBuffer, a hash, or a Stream
   data: {
     firstName: 'Fred'
   },
@@ -250,7 +257,7 @@ These are the available config options for making requests. Only the `url` is re
   }
 
   // `responseType` indicates the type of data that the server will respond with
-  // options are 'arraybuffer', 'blob', 'document', 'json', 'text'
+  // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
   responseType: 'json', // default
 
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
@@ -261,12 +268,20 @@ These are the available config options for making requests. Only the `url` is re
 
   // `progress` allows handling of progress events for 'POST' and 'PUT uploads'
   // as well as 'GET' downloads
-  progress: function(progressEvent) {
+  progress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
-  
+
   // `maxContentLength` defines the max size of the http response content allowed
-  maxContentLength: 2000
+  maxContentLength: 2000,
+
+  // `validateStatus` defines whether to resolve or reject the promise for a given
+  // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
+  // or `undefined`), the promise will be resolved; otherwise, the promise will be
+  // rejected.
+  validateStatus: function (status) {
+    return status >= 200 && status < 300; // default
+  }
 }
 ```
 
@@ -346,7 +361,7 @@ instance.defaults.timeout = 2500;
 // Override timeout for this request as it's known to take a long time
 instance.get('/longRequest', {
   timeout: 5000
-}); 
+});
 ```
 
 ## Interceptors
@@ -406,6 +421,16 @@ axios.get('/user/12345')
   });
 ```
 
+You can define a custom HTTP status code error range using the `validateStatus` config option.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: function (status) {
+    return status < 500; // Reject only if the status code is greater than or equal to 500
+  }
+})
+```
+
 ## Semver
 
 Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
@@ -422,6 +447,13 @@ axios includes a [TypeScript](http://typescriptlang.org) definition.
 import * as axios from 'axios';
 axios.get('/user?ID=12345');
 ```
+
+## Resources
+
+* [Changelog](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md)
+* [Ecosystem](https://github.com/mzabriskie/axios/blob/master/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/mzabriskie/axios/blob/master/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md)
 
 ## Credits
 

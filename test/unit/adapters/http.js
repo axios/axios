@@ -102,6 +102,18 @@ module.exports = {
     });
   },
 
+  testGunzipErrorHandling: function (test) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.setHeader('Content-Encoding', 'gzip');
+      res.end('invalid response');
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/').catch(function (error) {
+        test.done();
+      });
+    });
+  },
+
   testUTF8: function (test) {
     var str = Array(100000).join('ж');
 

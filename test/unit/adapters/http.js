@@ -162,8 +162,8 @@ module.exports = {
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
         fs.createReadStream(__filename), {
-        responseType: 'stream'
-      }).then(function (res) {
+          responseType: 'stream'
+        }).then(function (res) {
         var stream = res.data;
         var string = '';
         stream.on('data', function (chunk) {
@@ -175,5 +175,53 @@ module.exports = {
         });
       });
     });
+  },
+
+  testAbort: function (test) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.statusCode = 200;
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/foo',{requestId: 'requestId'})
+        .catch(function () {
+          test.equal(axios.requestManager.requests.length, 0);
+          test.done();
+        });
+
+      setTimeout(function () {
+        test.equal(axios.requestManager.requests.length, 1);
+        axios.abort('requestId');
+      }, 0);
+    });
+  },
+
+  testAbortOnRetry: function (test) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.statusCode = 200;
+        res.end();
+      }, 100);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/foo',{requestId: 'requestId'});
+
+      setTimeout(function () {
+        test.equal(axios.requestManager.requests.length, 1);
+        axios.get('http://localhost:4444/foo',{
+          requestId: 'requestId',
+          abortOnRetry: true
+        }).then(function (res) {
+          test.equal(res.status, 200);
+          test.equal(axios.requestManager.requests.length, 0);
+          test.done();
+        });
+
+        setTimeout(function () {
+          test.equal(axios.requestManager.requests.length, 1);
+        }, 0);
+      }, 0);
+    });
   }
+
 };

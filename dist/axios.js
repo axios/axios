@@ -1,4 +1,3 @@
-/* axios v0.11.1 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -67,9 +66,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var utils = __webpack_require__(3);
 	var dispatchRequest = __webpack_require__(4);
 	var InterceptorManager = __webpack_require__(13);
-	var isAbsoluteURL = __webpack_require__(14);
-	var combineURLs = __webpack_require__(15);
-	var bind = __webpack_require__(16);
+	var RequestManager = __webpack_require__(14);
+	var isAbsoluteURL = __webpack_require__(15);
+	var combineURLs = __webpack_require__(16);
+	var bind = __webpack_require__(17);
 	var transformData = __webpack_require__(8);
 	
 	function Axios(defaultConfig) {
@@ -78,6 +78,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    request: new InterceptorManager(),
 	    response: new InterceptorManager()
 	  };
+	  this.requestManager = new RequestManager();
 	}
 	
 	Axios.prototype.request = function request(config) {
@@ -121,7 +122,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  );
 	
 	  // Hook up interceptors middleware
-	  var chain = [dispatchRequest, undefined];
+	  var chain = [dispatchRequest.bind(null, this.requestManager), undefined];
 	  var promise = Promise.resolve(config);
 	
 	  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
@@ -141,11 +142,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var defaultInstance = new Axios(defaults);
 	var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
-	module.exports.Axios = Axios;
+	axios.request = bind(Axios.prototype.request, defaultInstance);
+	
+	// Expose Axios class to allow class inheritance
+	axios.Axios = Axios;
 	
 	// Expose properties from defaultInstance
 	axios.defaults = defaultInstance.defaults;
 	axios.interceptors = defaultInstance.interceptors;
+	axios.requestManager = defaultInstance.requestManager;
 	
 	// Factory for creating new instances
 	axios.create = function create(defaultConfig) {
@@ -156,7 +161,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(17);
+	
+	// Abort specific request
+	axios.abort = function abort(requestId) {
+	  if (typeof requestId !== 'string') {
+	    return false;
+	  }
+	  return this.requestManager.abort(requestId);
+	};
+	
+	axios.spread = __webpack_require__(18);
 	
 	// Provide aliases for supported request methods
 	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
@@ -241,6 +255,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    post: utils.merge(DEFAULT_CONTENT_TYPE),
 	    put: utils.merge(DEFAULT_CONTENT_TYPE)
 	  },
+	
+	  abortOnRetry: false,
 	
 	  timeout: 0,
 	
@@ -540,7 +556,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {object} config The config that is to be used for the request
 	 * @returns {Promise} The Promise to be fulfilled
 	 */
-	module.exports = function dispatchRequest(config) {
+	module.exports = function dispatchRequest(requestManager, config) {
 	  return new Promise(function executor(resolve, reject) {
 	    try {
 	      var adapter;
@@ -557,7 +573,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      if (typeof adapter === 'function') {
-	        adapter(resolve, reject, config);
+	        adapter(resolve, reject, config, requestManager);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -581,7 +597,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(10);
 	var settle = __webpack_require__(11);
 	
-	module.exports = function xhrAdapter(resolve, reject, config) {
+	module.exports = function xhrAdapter(resolve, reject, config, requestManager) {
 	  var requestData = config.data;
 	  var requestHeaders = config.headers;
 	
@@ -596,7 +612,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // For IE 8/9 CORS support
 	  // Only supports POST and GET calls and doesn't returns the response headers.
 	  // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
-	  if (("production") !== 'test' && typeof window !== 'undefined' && window.XDomainRequest && !('withCredentials' in request) && !isURLSameOrigin(config.url)) {
+	  if ((undefined) !== 'test' && typeof window !== 'undefined' && window.XDomainRequest && !('withCredentials' in request) && !isURLSameOrigin(config.url)) {
 	    request = new window.XDomainRequest();
 	    loadEvent = 'onload';
 	    xDomain = true;
@@ -644,6 +660,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      config: config,
 	      request: request
 	    };
+	
+	    requestManager.remove(request.requestId);
 	
 	    settle(resolve, reject, response);
 	
@@ -730,7 +748,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    requestData = null;
 	  }
 	
+	  // Abort if abortOnRetry is enabled
+	  if (config.abortOnRetry) {
+	    requestManager.abort(config.requestId);
+	  }
+	
 	  // Send the request
+	  requestManager.add(config.requestId, request);
 	  request.send(requestData);
 	};
 
@@ -1136,6 +1160,56 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(3);
+	
+	function RequestManager() {
+	  this.requests = [];
+	}
+	
+	RequestManager.prototype.add = function add(requestId, request) {
+	  if (requestId) {
+	    request.requestId = requestId;
+	    this.requests.push(request);
+	  }
+	};
+	
+	RequestManager.prototype.get = function get(requestId) {
+	  return this.requests.reduce(function reduceHandler(prev, curr) {
+	    return curr.requestId === requestId ? curr : prev;
+	  }, null);
+	};
+	
+	RequestManager.prototype.remove = function remove(requestId) {
+	  var requestIndex = null;
+	  utils.forEach(this.requests, function forEachHandler(request, index) {
+	    if (request.requestId === requestId) {
+	      requestIndex = index;
+	    }
+	  });
+	
+	  if (requestIndex !== null) {
+	    this.requests.splice(requestIndex, 1);
+	  }
+	};
+	
+	RequestManager.prototype.abort = function abort(requestId) {
+	  var request = this.get(requestId);
+	
+	  if (request && request.abort) {
+	    request.abort();
+	  }
+	  this.remove(requestId);
+	};
+	
+	module.exports = RequestManager;
+
+
+/***/ },
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1155,7 +1229,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1173,7 +1247,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1190,7 +1264,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	'use strict';

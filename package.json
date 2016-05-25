@@ -63,7 +63,8 @@
     "phantomjs-prebuilt": "2.1.6",
     "sinon": "1.17.3",
     "webpack": "1.12.14",
-    "webpack-dev-server": "1.14.1"
+    "webpack-dev-server": "1.14.1",
+    "url-search-params": "0.5.0"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

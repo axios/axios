@@ -217,6 +217,7 @@ These are the available config options for making requests. Only the `url` is re
   headers: {'X-Requested-With': 'XMLHttpRequest'},
 
   // `params` are the URL parameters to be sent with the request
+  // Must be a plain object or a URLSearchParams object
   params: {
     ID: 12345
   },
@@ -229,7 +230,10 @@ These are the available config options for making requests. Only the `url` is re
 
   // `data` is the data to be sent as the request body
   // Only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // When no `transformRequest` is set, must be a string, an ArrayBuffer, a hash, or a Stream
+  // When no `transformRequest` is set, must be of one of the following types:
+  // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
+  // - Browser only: FormData, File, Blob
+  // - Node only: Stream
   data: {
     firstName: 'Fred'
   },

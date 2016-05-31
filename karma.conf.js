@@ -150,7 +150,9 @@ module.exports = function(config) {
 
     // Increase timeout in case connection to CI is slow
     captureTimeout: 120000,
-
+    browserDisconnectTimeout : 60000,
+    browserDisconnectTolerance : 1,
+    browserNoActivityTimeout : 60000,//by default 10000
 
     // enable / disable colors in the output (reporters and logs)
     colors: true,

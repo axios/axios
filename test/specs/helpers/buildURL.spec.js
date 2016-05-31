@@ -1,4 +1,5 @@
 var buildURL = require('../../../lib/helpers/buildURL');
+var URLSearchParams = require('url-search-params');
 
 describe('helpers::buildURL', function () {
   it('should support null params', function () {
@@ -60,7 +61,9 @@ describe('helpers::buildURL', function () {
     expect(buildURL('/foo', params, serializer)).toEqual('/foo?foo=bar');
     expect(serializer.calledOnce).toBe(true);
     expect(serializer.calledWith(params)).toBe(true);
-  })
+  });
+
+  it('should support URLSearchParams', function () {
+    expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
+  });
 });
-
-

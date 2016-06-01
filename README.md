@@ -285,7 +285,11 @@ These are the available config options for making requests. Only the `url` is re
   // rejected.
   validateStatus: function (status) {
     return status >= 200 && status < 300; // default
-  }
+  },
+
+  // `maxRedirects` defines the maximum number of redirects to follow in node.js.
+  // If set to 0, no redirects will be followed.
+  maxRedirects: 5 // default
 }
 ```
 

@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.12.0 (May 31, 2016)
+
+- Adding support for `URLSearchParams` ([#317](https://github.com/mzabriskie/axios/pull/317))
+- Adding `maxRedirects` option ([#307](https://github.com/mzabriskie/axios/pull/307))
+
 ### 0.11.1 (May 17, 2016)
 
 - Fixing IE CORS support ([#313](https://github.com/mzabriskie/axios/pull/313))

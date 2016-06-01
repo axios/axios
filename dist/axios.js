@@ -1,4 +1,4 @@
-/* axios v0.11.1 | (c) 2016 by Matt Zabriskie */
+/* axios v0.12.0 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -65,12 +65,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var defaults = __webpack_require__(2);
 	var utils = __webpack_require__(3);
-	var dispatchRequest = __webpack_require__(4);
-	var InterceptorManager = __webpack_require__(13);
-	var isAbsoluteURL = __webpack_require__(14);
-	var combineURLs = __webpack_require__(15);
-	var bind = __webpack_require__(16);
-	var transformData = __webpack_require__(8);
+	var dispatchRequest = __webpack_require__(5);
+	var InterceptorManager = __webpack_require__(14);
+	var isAbsoluteURL = __webpack_require__(15);
+	var combineURLs = __webpack_require__(16);
+	var bind = __webpack_require__(17);
+	var transformData = __webpack_require__(9);
 	
 	function Axios(defaultConfig) {
 	  this.defaults = utils.merge({}, defaultConfig);
@@ -141,7 +141,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var defaultInstance = new Axios(defaults);
 	var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
-	module.exports.Axios = Axios;
+	axios.request = bind(Axios.prototype.request, defaultInstance);
+	
+	// Expose Axios class to allow class inheritance
+	axios.Axios = Axios;
 	
 	// Expose properties from defaultInstance
 	axios.defaults = defaultInstance.defaults;
@@ -156,7 +159,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(17);
+	axios.spread = __webpack_require__(18);
 	
 	// Provide aliases for supported request methods
 	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
@@ -190,33 +193,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	var utils = __webpack_require__(3);
+	var normalizeHeaderName = __webpack_require__(4);
 	
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
 	  'Content-Type': 'application/x-www-form-urlencoded'
 	};
 	
+	function setContentTypeIfUnset(headers, value) {
+	  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+	    headers['Content-Type'] = value;
+	  }
+	}
+	
 	module.exports = {
 	  transformRequest: [function transformRequest(data, headers) {
-	    if (utils.isFormData(data) || utils.isArrayBuffer(data) || utils.isStream(data)) {
+	    normalizeHeaderName(headers, 'Content-Type');
+	    if (utils.isFormData(data) ||
+	      utils.isArrayBuffer(data) ||
+	      utils.isStream(data) ||
+	      utils.isFile(data) ||
+	      utils.isBlob(data)
+	    ) {
 	      return data;
 	    }
 	    if (utils.isArrayBufferView(data)) {
 	      return data.buffer;
 	    }
-	    if (utils.isObject(data) && !utils.isFile(data) && !utils.isBlob(data)) {
-	      // Set application/json if no Content-Type has been specified
-	      if (!utils.isUndefined(headers)) {
-	        utils.forEach(headers, function processContentTypeHeader(val, key) {
-	          if (key.toLowerCase() === 'content-type') {
-	            headers['Content-Type'] = val;
-	          }
-	        });
-	
-	        if (utils.isUndefined(headers['Content-Type'])) {
-	          headers['Content-Type'] = 'application/json;charset=utf-8';
-	        }
-	      }
+	    if (utils.isURLSearchParams(data)) {
+	      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+	      return data.toString();
+	    }
+	    if (utils.isObject(data)) {
+	      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
 	      return JSON.stringify(data);
 	    }
 	    return data;
@@ -404,6 +413,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	/**
+	 * Determine if a value is a URLSearchParams object
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a URLSearchParams object, otherwise false
+	 */
+	function isURLSearchParams(val) {
+	  return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
+	}
+	
+	/**
 	 * Trim excess whitespace off the beginning and end of a string
 	 *
 	 * @param {String} str The String to trim
@@ -520,6 +539,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  isBlob: isBlob,
 	  isFunction: isFunction,
 	  isStream: isStream,
+	  isURLSearchParams: isURLSearchParams,
 	  isStandardBrowserEnv: isStandardBrowserEnv,
 	  forEach: forEach,
 	  merge: merge,
@@ -529,6 +549,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(3);
+	
+	module.exports = function normalizeHeaderName(headers, normalizedName) {
+	  utils.forEach(headers, function processHeader(value, name) {
+	    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {
+	      headers[normalizedName] = value;
+	      delete headers[name];
+	    }
+	  });
+	};
+
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -550,10 +588,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        adapter = config.adapter;
 	      } else if (typeof XMLHttpRequest !== 'undefined') {
 	        // For browsers use XHR adapter
-	        adapter = __webpack_require__(5);
+	        adapter = __webpack_require__(6);
 	      } else if (typeof process !== 'undefined') {
 	        // For node use HTTP adapter
-	        adapter = __webpack_require__(5);
+	        adapter = __webpack_require__(6);
 	      }
 	
 	      if (typeof adapter === 'function') {
@@ -568,18 +606,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(3);
-	var buildURL = __webpack_require__(6);
-	var parseHeaders = __webpack_require__(7);
-	var transformData = __webpack_require__(8);
-	var isURLSameOrigin = __webpack_require__(9);
-	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(10);
-	var settle = __webpack_require__(11);
+	var buildURL = __webpack_require__(7);
+	var parseHeaders = __webpack_require__(8);
+	var transformData = __webpack_require__(9);
+	var isURLSameOrigin = __webpack_require__(10);
+	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(11);
+	var settle = __webpack_require__(12);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  var requestData = config.data;
@@ -676,7 +714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // This is only done if running in a standard browser environment.
 	  // Specifically not if we're in a web worker, or react-native.
 	  if (utils.isStandardBrowserEnv()) {
-	    var cookies = __webpack_require__(12);
+	    var cookies = __webpack_require__(13);
 	
 	    // Add xsrf header
 	    var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
@@ -736,7 +774,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -770,6 +808,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var serializedParams;
 	  if (paramsSerializer) {
 	    serializedParams = paramsSerializer(params);
+	  } else if (utils.isURLSearchParams(params)) {
+	    serializedParams = params.toString();
 	  } else {
 	    var parts = [];
 	
@@ -805,11 +845,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  return url;
 	};
-	
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -852,7 +891,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -878,7 +917,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -952,7 +991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -994,7 +1033,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1018,7 +1057,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1077,7 +1116,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1135,7 +1174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1155,7 +1194,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1173,7 +1212,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1190,7 +1229,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	'use strict';

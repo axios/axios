@@ -1,6 +1,6 @@
-var settle = require('../../../lib/helpers/settle');
+var settle = require('../../../lib/core/settle');
 
-describe('helpers::settle', function() {
+describe('core::settle', function() {
   var resolve;
   var reject;
 

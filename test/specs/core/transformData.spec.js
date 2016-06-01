@@ -1,6 +1,6 @@
-var transformData = require('../../../lib/helpers/transformData');
+var transformData = require('../../../lib/core/transformData');
 
-describe('helpers::transformData', function () {
+describe('core::transformData', function () {
   it('should support a single transformer', function () {
     var data;
     data = transformData(data, null, function (data) {

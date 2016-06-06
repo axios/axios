@@ -35,8 +35,23 @@ module.exports = {
         test.equal(failure, true, 'request should fail');
         test.equal(error.code, 'ECONNABORTED');
         test.equal(error.message, 'timeout of 250ms exceeded');
+        test.equal(typeof error.config, 'object', 'error should have config');
         test.done();
       }, 300);
+    });
+  },
+
+  testNonArrayNonStreamData: function(test) {
+    server = http.createServer(function (req, res) {
+      res.end('Something');
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        data: 42
+      }).catch(function(error) {
+        test.equal(error.message, 'Data after transformation must be a string, an ArrayBuffer, or a Stream');
+        test.equal(typeof error.config, 'object', 'error should have config');
+        test.done();
+      });
     });
   },
 
@@ -144,6 +159,7 @@ module.exports = {
       res.end('invalid response');
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').catch(function (error) {
+        test.equal(typeof error.config, 'object', 'error should have config');
         test.done();
       });
     });
@@ -198,6 +214,7 @@ module.exports = {
         test.equal(success, false, 'request should not succeed');
         test.equal(failure, true, 'request should fail');
         test.equal(error.message, 'maxContentLength size of 2000 exceeded');
+        test.equal(typeof error.config, 'object', 'error should have config');
         test.done();
       }, 100);
     });

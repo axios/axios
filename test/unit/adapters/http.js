@@ -25,8 +25,8 @@ module.exports = {
         timeout: 250
       }).then(function (res) {
         success = true;
-      }).catch(function (res) {
-        error = res;
+      }).catch(function (err) {
+        error = err;
         failure = true;
       });
 
@@ -189,8 +189,8 @@ module.exports = {
         maxContentLength: 2000
       }).then(function (res) {
         success = true;
-      }).catch(function (res) {
-        error = res;
+      }).catch(function (err) {
+        error = err;
         failure = true;
       });
 

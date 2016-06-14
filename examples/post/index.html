@@ -29,9 +29,9 @@
               output.className = 'container';
               output.innerHTML = res.data;
             })
-            .catch(function (res) {
+            .catch(function (err) {
               output.className = 'container text-danger';
-              output.innerHTML = res.data;
+              output.innerHTML = err.message;
             });
         };
       })();

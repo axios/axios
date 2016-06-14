@@ -20,13 +20,13 @@
                   '<strong>' + person.name + '</strong>' +
                   '<div>Github: <a href="https://github.com/' + person.github + '" target="_blank">' + person.github + '</a></div>' +
                   '<div>Twitter: <a href="https://twitter.com/' + person.twitter + '" target="_blank">' + person.twitter + '</a></div>' +
-                '</div>' + 
+                '</div>' +
               '</li><br/>'
             );
           }).join('');
         })
-        .catch(function(data) {
-          document.getElementById('people').innerHTML = '<li class="text-danger">' + data + '</li>';
+        .catch(function (err) {
+          document.getElementById('people').innerHTML = '<li class="text-danger">' + err.message + '</li>';
         });
     </script>
   </body>

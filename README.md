@@ -56,8 +56,8 @@ axios.get('/user?ID=12345')
   .then(function (response) {
     console.log(response);
   })
-  .catch(function (response) {
-    console.log(response);
+  .catch(function (error) {
+    console.log(error);
   });
 
 // Optionally the request above could also be done as
@@ -69,8 +69,8 @@ axios.get('/user', {
   .then(function (response) {
     console.log(response);
   })
-  .catch(function (response) {
-    console.log(response);
+  .catch(function (error) {
+    console.log(error);
   });
 ```
 
@@ -84,8 +84,8 @@ axios.post('/user', {
   .then(function (response) {
     console.log(response);
   })
-  .catch(function (response) {
-    console.log(response);
+  .catch(function (error) {
+    console.log(error);
   });
 ```
 
@@ -414,18 +414,18 @@ instance.interceptors.request.use(function () {/*...*/});
 
 ```js
 axios.get('/user/12345')
-  .catch(function (response) {
-    if (response instanceof Error) {
-      // Something happened in setting up the request that triggered an Error
-      console.log('Error', response.message);
-    } else {
+  .catch(function (error) {
+    if (error.response) {
       // The request was made, but the server responded with a status code
       // that falls out of the range of 2xx
-      console.log(response.data);
-      console.log(response.status);
-      console.log(response.headers);
-      console.log(response.config);
+      console.log(error.response.data);
+      console.log(error.response.status);
+      console.log(error.response.headers);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Error', error.message);
     }
+    console.log(error.config);
   });
 ```
 

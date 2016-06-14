@@ -53,4 +53,12 @@ describe('instance api', function () {
     expect(typeof instance.interceptors.request).toEqual('object');
     expect(typeof instance.interceptors.response).toEqual('object');
   });
+
+  it('should have defaults', function () {
+    expect(typeof instance.defaults.headers).toEqual('object');
+    expect(typeof instance.defaults.headers.common).toEqual('object');
+    expect(typeof instance.defaults.headers.patch).toEqual('object');
+    expect(typeof instance.defaults.headers.post).toEqual('object');
+    expect(typeof instance.defaults.headers.put).toEqual('object');
+  });
 });

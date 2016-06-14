@@ -459,6 +459,7 @@ axios.get('/user?ID=12345');
 ## Resources
 
 * [Changelog](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/mzabriskie/axios/blob/master/UPGRADE_GUIDE.md)
 * [Ecosystem](https://github.com/mzabriskie/axios/blob/master/ECOSYSTEM.md)
 * [Contributing Guide](https://github.com/mzabriskie/axios/blob/master/CONTRIBUTING.md)
 * [Code of Conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md)

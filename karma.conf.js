@@ -148,8 +148,11 @@ module.exports = function(config) {
     port: 9876,
 
 
-    // Increase timeout in case connection to CI is slow
-    captureTimeout: 120000,
+    // Increase timeouts to prevent the issue with disconnected tests (https://goo.gl/nstA69)
+    captureTimeout: 4 * 60 * 1000,
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 1,
+    browserNoActivityTimeout: 4 * 60 * 1000,
 
 
     // enable / disable colors in the output (reporters and logs)

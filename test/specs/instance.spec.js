@@ -11,7 +11,7 @@ describe('instance', function () {
     var instance = axios.create();
 
     for (var prop in axios) {
-      if (['Axios', 'create', 'all', 'spread'].includes(prop)) {
+      if (['Axios', 'create', 'all', 'spread'].indexOf(prop) > -1) {
         continue;
       }
       expect(typeof instance[prop]).toBe(typeof axios[prop]);

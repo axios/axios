@@ -6,6 +6,28 @@ describe('instance', function () {
   afterEach(function () {
     jasmine.Ajax.uninstall();
   });
+  
+  it('should have the same methods as default instance', function () {
+    var instance = axios.create();
+
+    for (var prop in axios) {
+      if (['Axios', 'create', 'all', 'spread'].includes(prop)) {
+        continue;
+      }
+      expect(typeof instance[prop]).toBe(typeof axios[prop]);
+    }
+  });
+
+  it('should make an http request without verb helper', function (done) {
+    var instance = axios.create();
+
+    instance('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo');
+      done();
+    });
+  });
 
   it('should make an http request', function (done) {
     var instance = axios.create();

@@ -6,7 +6,6 @@ The modules under `adapters/` are modules that handle dispatching a request and 
 
 ```js
 var settle = require('./../core/settle');
-var transformData = require('./../core/transformData');
 
 module.exports myAdapter(resolve, reject, config) {
   // At this point:
@@ -14,15 +13,11 @@ module.exports myAdapter(resolve, reject, config) {
   //  - request transformers have already run
   //  - request interceptors have already run
   
-  // Make the request using config provided/
+  // Make the request using config provided
   // Upon response settle the Promise
   
   var response = {
-    data: transformData(
-      responseData,
-      responseHeaders,
-      config.transformResponse
-    ),
+    data: responseData,
     status: request.status,
     statusText: request.statusText,
     headers: responseHeaders,
@@ -33,6 +28,7 @@ module.exports myAdapter(resolve, reject, config) {
   settle(resolve, reject, response);
 
   // From here:
+  //  - response transformers will run
   //  - response interceptors will run
 }
 ```

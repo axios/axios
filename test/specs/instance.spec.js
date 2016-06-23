@@ -29,6 +29,15 @@ describe('instance', function () {
     });
   });
 
+  it('should have defaults.headers', function () {
+    var instance = axios.create({
+      baseURL: 'https://api.example.com'
+    });
+
+    expect(typeof instance.defaults.headers, 'object');
+    expect(typeof instance.defaults.headers.common, 'object');
+  });
+
   it('should have interceptors on the instance', function (done) {
     axios.interceptors.request.use(function (config) {
       config.foo = true;

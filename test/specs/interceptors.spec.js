@@ -39,11 +39,6 @@ describe('interceptors', function () {
     axios('/foo');
 
     getAjaxRequest().then(function (request) {
-      request.respondWith({
-        status: 200,
-        responseText: 'OK'
-      });
-
       expect(request.method).toBe('POST');
       expect(request.url).toBe('/bar');
       done();
@@ -64,11 +59,6 @@ describe('interceptors', function () {
     axios('/foo');
 
     getAjaxRequest().then(function (request) {
-      request.respondWith({
-        status: 200,
-        responseText: 'OK'
-      });
-
       expect(request.requestHeaders.async).toBe('promise');
       done();
     });
@@ -91,13 +81,6 @@ describe('interceptors', function () {
     axios('/foo');
 
     getAjaxRequest().then(function (request) {
-      var request = jasmine.Ajax.requests.mostRecent();
-
-      request.respondWith({
-        status: 200,
-        responseText: 'OK'
-      });
-
       expect(request.requestHeaders.test1).toBe('1');
       expect(request.requestHeaders.test2).toBe('2');
       expect(request.requestHeaders.test3).toBe('3');
@@ -251,6 +234,22 @@ describe('interceptors', function () {
         expect(response.data).toBe('OK13');
         done();
       });
+    });
+  });
+  
+  it('should execute interceptors before transformers', function (done) {
+    axios.interceptors.request.use(function (config) {
+      config.data.baz = 'qux';
+      return config;
+    });
+
+    axios.post('/foo', {
+      foo: 'bar'
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.params).toEqual('{"foo":"bar","baz":"qux"}');
+      done();
     });
   });
 });

@@ -53,9 +53,10 @@ module.exports = function(config) {
 
     // Safari
     if (runAll || process.env.SAUCE_SAFARI) {
+      // TODO: Fix the issue with disconnected tests
       // customLaunchers.SL_Safari7 = createCustomLauncher('safari', 7);
       // customLaunchers.SL_Safari8 = createCustomLauncher('safari', 8);
-      customLaunchers.SL_Safari9 = createCustomLauncher('safari', 9);
+      // customLaunchers.SL_Safari9 = createCustomLauncher('safari', 9);
     }
 
     // Opera
@@ -76,7 +77,8 @@ module.exports = function(config) {
 
     // Edge
     if (runAll || process.env.SAUCE_EDGE) {
-      customLaunchers.SL_Edge = createCustomLauncher('microsoftedge', null, 'Windows 10');
+      // TODO: Fix the issue with disconnected tests
+      // customLaunchers.SL_Edge = createCustomLauncher('microsoftedge', null, 'Windows 10');
     }
 
     // IOS

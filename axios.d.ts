@@ -60,6 +60,4 @@ declare module axios {
   }
 }
 
-declare module "axios" {
-  export = axios;
-}
+export = axios;

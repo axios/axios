@@ -7,6 +7,10 @@ URLSearchParams = require('url-search-params');
 // Import axios
 axios = require('../../index');
 
+// Jasmine config
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
+jasmine.getEnv().defaultTimeoutInterval = 20000;
+
 // Is this an old version of IE that lacks standard objects like DataView, ArrayBuffer, FormData, etc.
 isOldIE = /MSIE (8|9)\.0/.test(navigator.userAgent);
 

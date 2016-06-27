@@ -53,9 +53,10 @@ module.exports = function(config) {
 
     // Safari
     if (runAll || process.env.SAUCE_SAFARI) {
-      // TODO: Fix the issue with disconnected tests
       // customLaunchers.SL_Safari7 = createCustomLauncher('safari', 7);
       // customLaunchers.SL_Safari8 = createCustomLauncher('safari', 8);
+      
+      // TODO: Fix the issue with disconnected tests
       // customLaunchers.SL_Safari9 = createCustomLauncher('safari', 9);
     }
 
@@ -70,15 +71,17 @@ module.exports = function(config) {
     if (runAll || process.env.SAUCE_IE) {
       // TODO These need to be fixed
       // customLaunchers.SL_IE8 = createCustomLauncher('internet explorer', 8, 'Windows 7');
-      customLaunchers.SL_IE9 = createCustomLauncher('internet explorer', 9, 'Windows 2008');
+      
+      // TODO: Fix the issue with disconnected tests
+      // customLaunchers.SL_IE9 = createCustomLauncher('internet explorer', 9, 'Windows 2008');
+      
       customLaunchers.SL_IE10 = createCustomLauncher('internet explorer', 10, 'Windows 2012');
       customLaunchers.SL_IE11 = createCustomLauncher('internet explorer', 11, 'Windows 8.1');
     }
 
     // Edge
     if (runAll || process.env.SAUCE_EDGE) {
-      // TODO: Fix the issue with disconnected tests
-      // customLaunchers.SL_Edge = createCustomLauncher('microsoftedge', null, 'Windows 10');
+      customLaunchers.SL_Edge = createCustomLauncher('microsoftedge', null, 'Windows 10');
     }
 
     // IOS

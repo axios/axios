@@ -1,5 +1,6 @@
 var axios = require('../../../index');
 var http = require('http');
+var httpProxy = require('http-proxy');
 var url = require('url');
 var zlib = require('zlib');
 var fs = require('fs');

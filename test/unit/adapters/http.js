@@ -3,12 +3,16 @@ var http = require('http');
 var url = require('url');
 var zlib = require('zlib');
 var fs = require('fs');
-var server;
+var server, proxy;
 
 module.exports = {
   tearDown: function (callback) {
     server.close();
     server = null;
+    if (proxy) {
+      proxy.close()
+      proxy = null;
+    }
     callback();
   },
 
@@ -242,16 +246,16 @@ module.exports = {
   testProxy: function(test) {
     server = http.createServer(function(req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end('server response');
+      res.end('12345');
     }).listen(4444, function() {
-      // proxy
-      var proxyServer = http.createServer(function(request, response) {
+      proxy = http.createServer(function(request, response) {
         var parsed = url.parse(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
           path: parsed.path
         };
+
         http.get(opts, function(res) {
           var body = '';
           res.on('data', function(data) {
@@ -259,9 +263,10 @@ module.exports = {
           });
           res.on('end', function() {
             response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-            response.end(body + ' through proxy');
+            response.end(body + '6789');
           });
         });
+
       }).listen(4000, function() {
         axios.get('http://localhost:4444/', {
           proxy: {
@@ -269,7 +274,43 @@ module.exports = {
             port: 4000
           }
         }).then(function(res) {
-          test.equal(res.data, 'server response through proxy');
+          test.equal(res.data, '123456789', 'should pass through proxy');
+          test.done();
+        });
+      });
+    });
+  },
+
+  testHTTPProxyEnv: function(test) {
+    server = http.createServer(function(req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function() {
+      proxy = http.createServer(function(request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function(res) {
+          var body = '';
+          res.on('data', function(data) {
+            body += data;
+          });
+          res.on('end', function() {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+
+      }).listen(4000, function() {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+
+        axios.get('http://localhost:4444/').then(function(res) {
+          test.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
           test.done();
         });
       });

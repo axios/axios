@@ -36,6 +36,35 @@ describe('requests', function () {
     });
   });
 
+  it('should reject on adapter errors', function (done) {
+    // disable jasmine.Ajax since we're hitting a non-existant server anyway
+    jasmine.Ajax.uninstall();
+
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    var adapterError = new Error('adapter error');
+    var adapterThatFails = function () {
+      throw adapterError;
+    };
+
+    var finish = function () {
+      expect(resolveSpy).not.toHaveBeenCalled();
+      expect(rejectSpy).toHaveBeenCalled();
+      var reason = rejectSpy.calls.first().args[0];
+      expect(reason).toBe(adapterError);
+      expect(reason.config.method).toBe('get');
+      expect(reason.config.url).toBe('/foo');
+
+      done();
+    };
+
+    axios('/foo', {
+      adapter: adapterThatFails
+    }).then(resolveSpy, rejectSpy)
+      .then(finish, finish);
+  });
+
   it('should reject on network errors', function (done) {
     // disable jasmine.Ajax since we're hitting a non-existant server anyway
     jasmine.Ajax.uninstall();

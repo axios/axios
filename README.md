@@ -247,8 +247,8 @@ These are the available config options for making requests. Only the `url` is re
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
-  // Call `resolve` or `reject` and supply a valid response (see [response docs](#response-api)).
-  adapter: function (resolve, reject, config) {
+  // Return a promise and supply a valid response (see [response docs](#response-api)).
+  adapter: function (config) {
     /* ... */
   },
 

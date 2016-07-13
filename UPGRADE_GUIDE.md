@@ -1,5 +1,70 @@
 # Upgrade Guide
 
+### 0.12.x -> 0.13.0
+
+The `0.13.0` release contains several changes to custom adapters and error handling.
+
+#### Error Handling
+
+Previous to this release an error could either be a server response with bad status code or an actual `Error`. With this release Promise will always reject with an `Error`. In the case that a response was received, the `Error` will also include the response.
+
+```js
+axios.get('/user/12345')
+  .catch((error) => {
+    console.log(error.message);
+    console.log(error.code); // Not always specified
+    console.log(error.config); // The config that was used to make the request
+    console.log(error.response); // Only available if response was received from the server
+  });
+```
+
+#### Request Adapters
+
+This release changes a few things about how request adapters work. Please take note if you are using your own custom adapter.
+
+1. Response transformer is now called outside of adapter.
+2. Request adapter returns a `Promise`.
+
+This means that you no longer need to invoke `transformData` on response data. You will also no longer receive `resolve` and `reject` as arguments in your adapter.
+
+Previous code:
+
+```js
+function myAdapter(resolve, reject, config) {
+  var response = {
+    data: transformData(
+      responseData,
+      responseHeaders,
+      config.transformResponse
+    ),
+    status: request.status,
+    statusText: request.statusText,
+    headers: responseHeaders
+  };
+  settle(resolve, reject, response);
+}
+```
+
+New code:
+
+```js
+function myAdapter(config) {
+  return new Promise(function (resolve, reject) {
+    var response = {
+      data: responseData,
+      status: request.status,
+      statusText: request.statusText,
+      headers: responseHeaders
+    };
+    settle(resolve, reject, response);
+  });
+}
+```
+
+See the related commits for more details:
+- [Response transformers](https://github.com/mzabriskie/axios/commit/10eb23865101f9347570552c04e9d6211376e25e)
+- [Request adapter Promise](https://github.com/mzabriskie/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a)
+
 ### 0.5.x -> 0.6.0
 
 The `0.6.0` release contains mostly bug fixes, but there are a couple things to be aware of when upgrading.

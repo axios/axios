@@ -1,5 +1,15 @@
 # Changelog
 
+### 0.13.0 (Jul 13, 2016)
+
+- Improved error handling ([#345](https://github.com/mzabriskie/axios/pull/345))
+- Fixing issue with `withCredentials` not being overwritten ([#343](https://github.com/mzabriskie/axios/issues/343))
+- Fixing regression with request transformer being called before request interceptor ([#352](https://github.com/mzabriskie/axios/issues/352))
+- Fixing custom instance defaults ([#341](https://github.com/mzabriskie/axios/issues/341))
+- Fixing instances created from `axios.create` to have same API as default axios ([#217](https://github.com/mzabriskie/axios/issues/217))
+- Response transformer now invoked in dispatcher not adapter ([10eb238](https://github.com/mzabriskie/axios/commit/10eb23865101f9347570552c04e9d6211376e25e))
+- Request adapters now return a `Promise` ([157efd5](https://github.com/mzabriskie/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a))
+
 ### 0.12.0 (May 31, 2016)
 
 - Adding support for `URLSearchParams` ([#317](https://github.com/mzabriskie/axios/pull/317))

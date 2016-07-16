@@ -1,4 +1,4 @@
-/* axios v0.13.0 | (c) 2016 by Matt Zabriskie */
+/* axios v0.13.1 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -737,6 +737,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      );
 	
 	      return response;
+	    }, function onRejected(error) {
+	      // Transform response data
+	      if (error && error.response) {
+	        error.response.data = transformData(
+	          error.response.data,
+	          error.response.headers,
+	          config.transformResponse
+	        );
+	      }
+	
+	      return Promise.reject(error);
 	    });
 	};
 

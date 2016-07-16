@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.13.1 (Jul 16, 2016)
+
+- Fixing issue with response data not being transformed on error ([#378](https://github.com/mzabriskie/axios/issues/378))
+
 ### 0.13.0 (Jul 13, 2016)
 
 - Improved error handling ([#345](https://github.com/mzabriskie/axios/pull/345))

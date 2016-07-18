@@ -13,6 +13,11 @@ module.exports = {
       proxy.close()
       proxy = null;
     }
+
+    if (process.env.http_proxy) {
+      process.env.http_proxy = null;
+    }
+
     callback();
   },
 

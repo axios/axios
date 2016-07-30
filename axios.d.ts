@@ -19,7 +19,7 @@ declare module axios {
     (options: axios.RequestOptions): axios.Promise;
     create(defaultOptions?: axios.InstanceOptions): AxiosInstance;
     all(iterable: any): axios.Promise;
-    spread(callback: any): axios.Promise;
+    spread(callback: Function): (response: axios.Response) => void;
   }
 
   interface AxiosInstance extends AxiosRequestMethods  {

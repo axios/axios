@@ -28,6 +28,19 @@ describe('xsrf', function () {
     });
   });
 
+  it('should not set xsrf header if xsrfCookieName is null', function (done) {
+    document.cookie = axios.defaults.xsrfCookieName + '=12345';
+
+    axios('/foo', {
+      xsrfCookieName: null
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+      done();
+    });
+  });
+
   it('should not set xsrf header for cross origin', function (done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 

@@ -33,6 +33,7 @@
   "devDependencies": {
     "bluebird": "3.4.1",
     "coveralls": "^2.11.9",
+    "es6-promise": "^3.2.1",
     "grunt": "0.4.5",
     "grunt-banner": "0.6.0",
     "grunt-cli": "0.1.13",

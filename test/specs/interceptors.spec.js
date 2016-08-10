@@ -32,7 +32,8 @@ describe('interceptors', function () {
     axios.interceptors.request.use(function () {
       return {
         url: '/bar',
-        method: 'post'
+        method: 'post',
+        Promise: Promise
       };
     });
 
@@ -47,7 +48,7 @@ describe('interceptors', function () {
 
   it('should add a request interceptor that returns a promise', function (done) {
     axios.interceptors.request.use(function (config) {
-      return new Promise(function (resolve) {
+      return new config.Promise(function (resolve) {
         // do something async
         setTimeout(function () {
           config.headers.async = 'promise';
@@ -143,7 +144,7 @@ describe('interceptors', function () {
     var response;
 
     axios.interceptors.response.use(function (data) {
-      return new Promise(function (resolve) {
+      return new axios.defaults.Promise(function (resolve) {
         // do something async
         setTimeout(function () {
           data.data = 'you have been promised!';
@@ -167,7 +168,7 @@ describe('interceptors', function () {
         done();
       }, 100);
     });
-  });
+  }); 
 
   it('should add multiple response interceptors', function (done) {
     var response;

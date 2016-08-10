@@ -31,8 +31,8 @@
   },
   "homepage": "https://github.com/mzabriskie/axios",
   "devDependencies": {
+    "bluebird": "3.4.1",
     "coveralls": "^2.11.9",
-    "es6-promise": "^3.2.1",
     "grunt": "0.4.5",
     "grunt-banner": "0.6.0",
     "grunt-cli": "0.1.13",
@@ -62,9 +62,9 @@
     "minimist": "^1.2.0",
     "phantomjs-prebuilt": "^2.1.7",
     "sinon": "^1.17.4",
+    "url-search-params": "^0.5.0",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
-    "url-search-params": "^0.5.0"
+    "webpack-dev-server": "^1.14.1"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

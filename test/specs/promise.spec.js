@@ -1,3 +1,5 @@
+var Bluebird = require("bluebird");
+
 describe('promise', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -67,4 +69,22 @@ describe('promise', function () {
       done();
     }, 100);
   });
+
+  it('should allow for configuring Promise constructor', function(done) {
+    var defaultConfig = {
+      Promise: Bluebird
+    };
+    spyOn(defaultConfig, 'Promise');
+    var axiosWithBluebird = axios.create(defaultConfig);
+
+    jasmine.Ajax.stubRequest('/test').andReturn({
+      status: 200
+    });
+
+    axiosWithBluebird.get('/test')
+      .then(function() {
+        expect(defaultConfig.Promise).toHaveBeenCalled();      
+        done();
+      });    
+    });
 });

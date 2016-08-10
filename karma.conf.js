@@ -187,6 +187,7 @@ module.exports = function(config) {
       cache: true,
       devtool: 'inline-source-map',
       module: {
+        /*
         postLoaders: [
           {
             test: /\.js$/,
@@ -194,6 +195,7 @@ module.exports = function(config) {
             loader: 'istanbul-instrumenter'
           }
         ]
+        */
       },
       externals: [
         {

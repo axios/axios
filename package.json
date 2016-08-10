@@ -63,8 +63,7 @@
     "phantomjs-prebuilt": "^2.1.7",
     "sinon": "^1.17.4",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
-    "url-search-params": "^0.5.0"
+    "webpack-dev-server": "^1.14.1"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
@@ -73,6 +72,7 @@
     "definition": "./axios.d.ts"
   },
   "dependencies": {
-    "follow-redirects": "0.0.7"
+    "follow-redirects": "0.0.7",
+    "url-search-params": "^0.5.0"
   }
 }

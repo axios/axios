@@ -6,12 +6,12 @@ describe('instance', function () {
   afterEach(function () {
     jasmine.Ajax.uninstall();
   });
-  
+
   it('should have the same methods as default instance', function () {
     var instance = axios.create();
 
     for (var prop in axios) {
-      if (['Axios', 'create', 'all', 'spread'].indexOf(prop) > -1) {
+      if (['Axios', 'create', 'all', 'spread', 'default'].indexOf(prop) > -1) {
         continue;
       }
       expect(typeof instance[prop]).toBe(typeof axios[prop]);

@@ -1,3 +1,5 @@
+var cookies = require('../../lib/helpers/cookies');
+
 describe('xsrf', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -37,6 +39,19 @@ describe('xsrf', function () {
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+      done();
+    });
+  });
+
+  it('should not read cookies at all if xsrfCookieName is null', function (done) {
+    spyOn(cookies, "read");
+
+    axios('/foo', {
+      xsrfCookieName: null
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(cookies.read).not.toHaveBeenCalled();
       done();
     });
   });

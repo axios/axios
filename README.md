@@ -322,7 +322,7 @@ The response for a request contains the following information.
 }
 ```
 
-When using `then` or `catch`, you will receive the response as follows:
+When using `then`, you will receive the response as follows:
 
 ```js
 axios.get('/user/12345')
@@ -332,8 +332,10 @@ axios.get('/user/12345')
     console.log(response.statusText);
     console.log(response.headers);
     console.log(response.config);
-});
+  });
 ```
+
+When using `catch`, or passing a [rejection callback](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then) as second parameter of `then`, the response will be available through the `error` object as explained in the [Handling Errors](#handling-errors) section.
 
 ## Config Defaults
 

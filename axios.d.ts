@@ -20,9 +20,11 @@ declare module axios {
     create(defaultOptions?: axios.InstanceOptions): AxiosInstance;
     all(iterable: any): axios.Promise;
     spread(callback: any): axios.Promise;
+    interceptors: Interceptors;
   }
 
   interface AxiosInstance extends AxiosRequestMethods  {
+    interceptors: Interceptors;
     request(options: axios.RequestOptions): axios.Promise;
   }
 
@@ -50,6 +52,23 @@ declare module axios {
     xsrfHeaderName?: string;
     paramsSerializer?: (params: any) => string;
     baseURL?: string;
+  }
+
+  interface success {
+    (response: Response): void
+  }
+  interface error {
+    (response: axios.Response): void;
+  }
+
+  interface Interceptors {
+    response: Interceptor;
+    request: Interceptor;
+  }
+
+  interface Interceptor {
+    use(success :success, error?: error): void;
+    eject(interceptor: Interceptor): void;
   }
 
   interface RequestOptions extends InstanceOptions {

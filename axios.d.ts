@@ -34,9 +34,16 @@ declare module axios {
     config?: any;
   }
 
+  interface AxiosError {
+    message: string;
+    response: axios.Response;
+    config: any;
+    code?: any;
+  }
+
   interface Promise {
     then(onFulfilled:(response: axios.Response) => void): axios.Promise;
-    catch(onRejected:(response: axios.Response) => void): axios.Promise;
+    catch(onRejected:(response: axios.AxiosError) => void): axios.Promise;
   }
 
   interface InstanceOptions {

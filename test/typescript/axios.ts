@@ -1,4 +1,5 @@
-import axios from '../../';
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, AxiosInstance } from '../../';
+import { Promise } from 'es6-promise';
 
 axios.get('/user?ID=12345')
   .then(function (response) {
@@ -155,3 +156,33 @@ instance.get('/user', {
   .catch(function (response) {
     console.log(response);
   });
+
+const requestInterceptorId: number = axios.interceptors.request.use(
+  (config: AxiosRequestConfig) => config,
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.request.eject(requestInterceptorId);
+
+axios.interceptors.request.use(
+  (config: AxiosRequestConfig) => Promise.resolve(config),
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.request.use((config: AxiosRequestConfig) => config);
+axios.interceptors.request.use((config: AxiosRequestConfig) => Promise.resolve(config));
+
+const responseInterceptorId: number = axios.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.response.eject(responseInterceptorId);
+
+axios.interceptors.response.use(
+  (response: AxiosResponse) => Promise.resolve(response),
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.response.use((response: AxiosResponse) => response);
+axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));

@@ -1,9 +1,3 @@
-export interface Thenable<V> {
-  then<R>(onFulfilled?: (value: V) => R | Thenable<R>, onRejected?: (reason: any) => R | Thenable<R>): Thenable<R>;
-  then<R>(onFulfilled?: (value: V) => R | Thenable<R>, onRejected?: (reason: any) => void): Thenable<R>;
-  catch<R>(onRejected?: (reason: any) => R | Thenable<R>): Thenable<R>;
-}
-
 export interface AxiosDataTransformer {
   (data: any): any;
 }
@@ -41,23 +35,47 @@ export interface AxiosResponse {
   config: AxiosRequestConfig;
 }
 
+export interface AxiosError extends Error {
+  config: AxiosRequestConfig;
+  code?: string;
+  response?: AxiosResponse;
+}
+
+export interface Promise<V> {
+  then<R1, R2>(onFulfilled: (value: V) => R1 | Promise<R1>, onRejected: (error: any) => R2 | Promise<R2>): Promise<R1 | R2>;
+  then<R>(onFulfilled: (value: V) => R | Promise<R>): Promise<R>;
+  catch<R>(onRejected: (error: any) => R | Promise<R>): Promise<R>;
+}
+
+export interface AxiosPromise extends Promise<AxiosResponse> {
+}
+
+export interface InterceptorManager<V> {
+  use(onFulfilled: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
+  eject(id: number): void;
+}
+
 export interface AxiosInstance {
   defaults: AxiosRequestConfig;
-  request(config: AxiosRequestConfig): Thenable<AxiosResponse>;
-  get(url: string, config?: AxiosRequestConfig): Thenable<AxiosResponse>;
-  delete(url: string, config?: AxiosRequestConfig): Thenable<AxiosResponse>;
-  head(url: string, config?: AxiosRequestConfig): Thenable<AxiosResponse>;
-  post(url: string, data?: any, config?: AxiosRequestConfig): Thenable<AxiosResponse>;
-  put(url: string, data?: any, config?: AxiosRequestConfig): Thenable<AxiosResponse>;
-  patch(url: string, data?: any, config?: AxiosRequestConfig): Thenable<AxiosResponse>;
+  interceptors: {
+    request: InterceptorManager<AxiosRequestConfig>;
+    response: InterceptorManager<AxiosResponse>;
+  };
+  request(config: AxiosRequestConfig): AxiosPromise;
+  get(url: string, config?: AxiosRequestConfig): AxiosPromise;
+  delete(url: string, config?: AxiosRequestConfig): AxiosPromise;
+  head(url: string, config?: AxiosRequestConfig): AxiosPromise;
+  post(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise;
+  put(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise;
+  patch(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise;
 }
 
 export interface AxiosStatic extends AxiosInstance {
-  (config: AxiosRequestConfig): Thenable<AxiosResponse>;
-  (url: string, config?: AxiosRequestConfig): Thenable<AxiosResponse>;
+  (config: AxiosRequestConfig): AxiosPromise;
+  (url: string, config?: AxiosRequestConfig): AxiosPromise;
   create(config?: AxiosRequestConfig): AxiosInstance;
-  all(iterable: any): Thenable<any>;
-  spread(callback: any): Thenable<any>;
+  all(iterable: any): any;
+  spread(callback: any): any;
 }
 
 declare const Axios: AxiosStatic;

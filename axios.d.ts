@@ -1,21 +1,30 @@
-export interface AxiosDataTransformer {
+export interface AxiosTransformer {
   (data: any): any;
+}
+
+export interface AxiosAdapter {
+  (config: AxiosRequestConfig): AxiosPromise;
+}
+
+export interface AxiosBasicCredentials {
+  username: string;
+  password: string;
 }
 
 export interface AxiosRequestConfig {
   url?: string;
   method?: string;
   baseURL?: string;
-  transformRequest?: AxiosDataTransformer | AxiosDataTransformer[];
-  transformResponse?: AxiosDataTransformer | AxiosDataTransformer[];
+  transformRequest?: AxiosTransformer | AxiosTransformer[];
+  transformResponse?: AxiosTransformer | AxiosTransformer[];
   headers?: any;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: any;
   timeout?: number;
   withCredentials?: boolean;
-  adapter?: any;
-  auth?: any;
+  adapter?: AxiosAdapter;
+  auth?: AxiosBasicCredentials;
   responseType?: string;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
@@ -50,7 +59,7 @@ export interface Promise<V> {
 export interface AxiosPromise extends Promise<AxiosResponse> {
 }
 
-export interface InterceptorManager<V> {
+export interface AxiosInterceptorManager<V> {
   use(onFulfilled: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
   eject(id: number): void;
 }
@@ -58,8 +67,8 @@ export interface InterceptorManager<V> {
 export interface AxiosInstance {
   defaults: AxiosRequestConfig;
   interceptors: {
-    request: InterceptorManager<AxiosRequestConfig>;
-    response: InterceptorManager<AxiosResponse>;
+    request: AxiosInterceptorManager<AxiosRequestConfig>;
+    response: AxiosInterceptorManager<AxiosResponse>;
   };
   request(config: AxiosRequestConfig): AxiosPromise;
   get(url: string, config?: AxiosRequestConfig): AxiosPromise;

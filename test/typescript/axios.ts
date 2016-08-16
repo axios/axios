@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, AxiosInstance } from '../../';
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosInstance, AxiosAdapter } from '../../';
 import { Promise } from 'es6-promise';
 
 axios.get('/user?ID=12345')
@@ -157,6 +157,8 @@ instance.get('/user', {
     console.log(response);
   });
 
+// Interceptors
+
 const requestInterceptorId: number = axios.interceptors.request.use(
   (config: AxiosRequestConfig) => config,
   (error: any) => Promise.reject(error)
@@ -186,3 +188,18 @@ axios.interceptors.response.use(
 
 axios.interceptors.response.use((response: AxiosResponse) => response);
 axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
+
+// Adapters
+
+const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
+  const response: AxiosResponse = {
+    data: 'foo',
+    status: 200,
+    statusText: 'OK',
+    headers: { 'X-FOO': 'bar' },
+    config: config,
+  };
+  return Promise.resolve(response);
+};
+
+axios.defaults.adapter = adapter;

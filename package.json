@@ -42,6 +42,7 @@
     "grunt-eslint": "18.0.0",
     "grunt-karma": "0.12.1",
     "grunt-ts": "5.3.2",
+    "grunt-typings": "0.1.5",
     "grunt-webpack": "1.0.11",
     "istanbul-instrumenter-loader": "^0.2.0",
     "jasmine-core": "^2.4.1",
@@ -69,9 +70,7 @@
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   },
-  "typescript": {
-    "definition": "./axios.d.ts"
-  },
+  "typings": "./axios.d.ts",
   "dependencies": {
     "follow-redirects": "0.0.7"
   }

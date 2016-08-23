@@ -270,9 +270,13 @@ These are the available config options for making requests. Only the `url` is re
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
-  // `progress` allows handling of progress events for 'POST' and 'PUT uploads'
-  // as well as 'GET' downloads
-  progress: function (progressEvent) {
+  // `onUploadProgress` allows handling of progress events for uploads
+  onUploadProgress: function (progressEvent) {
+    // Do whatever you want with the native progress event
+  },
+
+  // `onDownloadProgress` allows handling of progress events for downloads
+  onDownloadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 

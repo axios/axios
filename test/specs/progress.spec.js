@@ -1,4 +1,4 @@
-describe('progress events', function () {
+fdescribe('progress events', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
   });
@@ -8,86 +8,104 @@ describe('progress events', function () {
   });
 
   it('should add a download progress handler', function (done) {
-    function progressHandler(event) {};
+    var progressSpy = jasmine.createSpy('progress');
 
-    axios('/foo', { progressDownload: progressHandler } );
+    axios('/foo', { onDownloadProgress: progressSpy } );
 
     getAjaxRequest().then(function (request) {
-      // Not sure of the best way to test this, so just test that the new listener is present
-      expect(request.eventBus.eventList.progress.length).toEqual(2);
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+      expect(progressSpy).toHaveBeenCalled();
       done();
     });
   });
 
   it('should add a upload progress handler', function (done) {
-    function progressHandler(event) {};
+    var progressSpy = jasmine.createSpy('progress');
 
-    axios('/foo', { progressUpload: progressHandler } );
+    axios('/foo', { onUploadProgress: progressSpy } );
 
     getAjaxRequest().then(function (request) {
-      // Jasmine-Ajax fake XHR upload events are broken, so for now just test that nothing breaks/crashes
-      // expect(request.upload.eventBus.eventList.progress.length).toEqual(2);
+      // Jasmine AJAX doesn't trigger upload events. Waiting for upstream fix
+      // expect(progressSpy).toHaveBeenCalled();
       done();
     });
   });
 
   it('should add both upload and download progress handlers', function (done) {
-    function progressHandler(event) {};
+    var downloadProgressSpy = jasmine.createSpy('downloadProgress');
+    var uploadProgressSpy = jasmine.createSpy('uploadProgress');
 
-    axios('/foo', { progressDownload: progressHandler, progressUpload: progressHandler });
+    axios('/foo', { onDownloadProgress: downloadProgressSpy, onUploadProgress: uploadProgressSpy });
 
     getAjaxRequest().then(function (request) {
-      expect(request.eventBus.eventList.progress.length).toEqual(2);
-      // Jasmine-Ajax fake XHR upload events are broken, so for now just test that nothing breaks/crashes
-      // expect(request.upload.eventBus.eventList.progress.length).toEqual(2);
+      // expect(uploadProgressSpy).toHaveBeenCalled();
+      expect(downloadProgressSpy).not.toHaveBeenCalled();
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+      expect(downloadProgressSpy).toHaveBeenCalled();
       done();
     });
   });
 
   it('should add a download progress handler from instance config', function (done) {
-    function progressHandler(event) {};
+    var progressSpy = jasmine.createSpy('progress');
 
     var instance = axios.create({
-      progressDownload: progressHandler,
+      onDownloadProgress: progressSpy,
     });
 
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.eventBus.eventList.progress.length).toEqual(2);
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+      expect(progressSpy).toHaveBeenCalled();
       done();
     });
   });
 
   it('should add a upload progress handler from instance config', function (done) {
-    function progressHandler(event) {};
+    var progressSpy = jasmine.createSpy('progress');
 
     var instance = axios.create({
-      progressUpload: progressHandler,
+      onUploadProgress: progressSpy,
     });
 
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      // Jasmine-Ajax fake XHR upload events are broken, so for now just test that nothing breaks/crashes
-      // expect(request.upload.eventBus.eventList.progress.length).toEqual(2);
+      // expect(progressSpy).toHaveBeenCalled();
       done();
     });
   });
 
   it('should add upload and download progress handlers from instance config', function (done) {
-    function progressHandler(event) {};
+    var downloadProgressSpy = jasmine.createSpy('downloadProgress');
+    var uploadProgressSpy = jasmine.createSpy('uploadProgress');
 
     var instance = axios.create({
-      progressDownload: progressHandler,
-      progressUpload: progressHandler,
+      onDownloadProgress: downloadProgressSpy,
+      onUploadProgress: uploadProgressSpy,
     });
 
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      // Jasmine-Ajax fake XHR upload events are broken, so for now just test that nothing breaks/crashes
-      // expect(request.upload.eventBus.eventList.progress.length).toEqual(2);
+      // expect(uploadProgressSpy).toHaveBeenCalled();
+      expect(downloadProgressSpy).not.toHaveBeenCalled();
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+      expect(downloadProgressSpy).toHaveBeenCalled();
+      done();
       done();
     });
   });

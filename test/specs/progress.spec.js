@@ -106,7 +106,6 @@ describe('progress events', function () {
       });
       expect(downloadProgressSpy).toHaveBeenCalled();
       done();
-      done();
     });
   });
 });

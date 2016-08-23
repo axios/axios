@@ -1,4 +1,4 @@
-fdescribe('progress events', function () {
+describe('progress events', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
   });

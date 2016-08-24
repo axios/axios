@@ -22,7 +22,8 @@ const config: AxiosRequestConfig = {
   responseType: 'json',
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
-  progress: (progressEvent: any) => {},
+  onUploadProgress: (progressEvent: any) => {},
+  onDownloadProgress: (progressEvent: any) => {},
   maxContentLength: 2000,
   validateStatus: (status: number) => status >= 200 && status < 300,
   maxRedirects: 5

@@ -28,7 +28,8 @@ export interface AxiosRequestConfig {
   responseType?: string;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  progress?: (progressEvent: any) => void;
+  onUploadProgress?: (progressEvent: any) => void;
+  onDownloadProgress?: (progressEvent: any) => void;
   maxContentLength?: number;
   validateStatus?: (status: number) => boolean;
   maxRedirects?: number;

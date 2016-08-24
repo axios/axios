@@ -299,7 +299,13 @@ These are the available config options for making requests. Only the `url` is re
   // and https requests, respectively, in node.js. This allows to configure options like
   // `keepAlive` that are not enabled by default.
   httpAgent: new http.Agent({ keepAlive: true }),
-  httpsAgent: new https.Agent({ keepAlive: true })
+  httpsAgent: new https.Agent({ keepAlive: true }),
+
+  // 'proxy' defines the hostname and port of the proxy server
+  proxy: {
+    host: '127.0.0.1',
+    port: 9000
+  }
 }
 ```
 

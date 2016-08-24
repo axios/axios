@@ -15,7 +15,7 @@ module.exports = {
     }
 
     if (process.env.http_proxy) {
-      process.env.http_proxy = null;
+      delete process.env.http_proxy;
     }
 
     callback();

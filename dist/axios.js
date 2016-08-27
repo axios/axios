@@ -1,4 +1,4 @@
-/* axios v0.13.1 | (c) 2016 by Matt Zabriskie */
+/* axios v0.14.0 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -87,7 +87,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// Create the default instance to be exported
-	var axios = module.exports = createInstance();
+	var axios = createInstance();
 	
 	// Expose Axios class to allow class inheritance
 	axios.Axios = Axios;
@@ -102,6 +102,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Promise.all(promises);
 	};
 	axios.spread = __webpack_require__(21);
+	
+	module.exports = axios;
+	
+	// Allow use of default import syntax in TypeScript
+	module.exports.default = axios;
 
 
 /***/ },
@@ -887,7 +892,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var cookies = __webpack_require__(18);
 	
 	      // Add xsrf header
-	      var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
+	      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
 	          cookies.read(config.xsrfCookieName) :
 	          undefined;
 	
@@ -926,13 +931,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // Handle progress if needed
-	    if (typeof config.progress === 'function') {
-	      if (config.method === 'post' || config.method === 'put') {
-	        request.upload.addEventListener('progress', config.progress);
-	      } else if (config.method === 'get') {
-	        request.addEventListener('progress', config.progress);
-	      }
+	    if (typeof config.onDownloadProgress === 'function') {
+	      request.addEventListener('progress', config.onDownloadProgress);
 	    }
+	
+	    // Not all browsers support upload events
+	    if (typeof config.onUploadProgress === 'function' && request.upload) {
+	      request.upload.addEventListener('progress', config.onUploadProgress);
+	    }
+	
 	
 	    if (requestData === undefined) {
 	      requestData = null;

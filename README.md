@@ -467,10 +467,9 @@ axios depends on a native ES6 Promise implementation to be [supported](http://ca
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
-axios includes a [TypeScript](http://typescriptlang.org) definition.
+axios includes [TypeScript](http://typescriptlang.org) definitions.
 ```typescript
-/// <reference path="axios.d.ts" />
-import * as axios from 'axios';
+import axios from 'axios';
 axios.get('/user?ID=12345');
 ```
 

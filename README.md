@@ -28,12 +28,6 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 
 ## Installing
 
-Using cdn:
-
-```html
-<script src="https://npmcdn.com/axios/dist/axios.min.js"></script>
-```
-
 Using npm:
 
 ```bash
@@ -44,6 +38,12 @@ Using bower:
 
 ```bash
 $ bower install axios
+```
+
+Using cdn:
+
+```html
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 ```
 
 ## Example

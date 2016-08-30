@@ -258,7 +258,7 @@ These are the available config options for making requests. Only the `url` is re
   auth: {
     username: 'janedoe',
     password: 's00pers3cret'
-  }
+  },
 
   // `responseType` indicates the type of data that the server will respond with
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'

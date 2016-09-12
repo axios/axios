@@ -2,10 +2,10 @@
 
 ### 0.14.0 (Aug 27, 2016)
 
-- Updating TypeScript definitions ([#419](https://github.com/mzabriskie/axios/pull/419))
+- **BREAKING** Updating TypeScript definitions ([#419](https://github.com/mzabriskie/axios/pull/419))
+- **BREAKING** Replacing `agent` option with `httpAgent` and `httpsAgent` ([#387](https://github.com/mzabriskie/axios/pull/387))
+- **BREAKING** Splitting `progress` event handlers into `onUploadProgress` and `onDownloadProgress` ([#423](https://github.com/mzabriskie/axios/pull/423))
 - Adding support for `http_proxy` and `https_proxy` environment variables ([#366](https://github.com/mzabriskie/axios/pull/366))
-- Replacing `agent` option with `httpAgent` and `httpsAgent` ([#387](https://github.com/mzabriskie/axios/pull/387))
-- Splitting `progress` event handlers into `onUploadProgress` and `onDownloadProgress` ([#423](https://github.com/mzabriskie/axios/pull/423))
 - Fixing issue with `auth` config option and `Authorization` header ([#397](https://github.com/mzabriskie/axios/pull/397))
 - Don't set XSRF header if `xsrfCookieName` is `null` ([#406](https://github.com/mzabriskie/axios/pull/406))
 

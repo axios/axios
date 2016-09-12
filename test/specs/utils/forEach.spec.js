@@ -48,4 +48,16 @@ describe('utils::forEach', function () {
 
     expect(count).toEqual(1);
   });
+
+  it('should handle non object prototype gracefully', function () {
+    var count = 0;
+    var data = Object.create(null);
+    data.foo = 'bar'
+
+    forEach(function () {}, function () {
+      count++;
+    });
+
+    expect(count).toEqual(1);
+  });
 });

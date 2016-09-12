@@ -54,7 +54,7 @@ describe('utils::forEach', function () {
     var data = Object.create(null);
     data.foo = 'bar'
 
-    forEach(function () {}, function () {
+    forEach(data, function () {
       count++;
     });
 

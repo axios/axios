@@ -28,12 +28,6 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 
 ## Installing
 
-Using cdn:
-
-```html
-<script src="https://npmcdn.com/axios/dist/axios.min.js"></script>
-```
-
 Using npm:
 
 ```bash
@@ -44,6 +38,12 @@ Using bower:
 
 ```bash
 $ bower install axios
+```
+
+Using cdn:
+
+```html
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 ```
 
 ## Example
@@ -258,7 +258,7 @@ These are the available config options for making requests. Only the `url` is re
   auth: {
     username: 'janedoe',
     password: 's00pers3cret'
-  }
+  },
 
   // `responseType` indicates the type of data that the server will respond with
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
@@ -270,9 +270,13 @@ These are the available config options for making requests. Only the `url` is re
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
-  // `progress` allows handling of progress events for 'POST' and 'PUT uploads'
-  // as well as 'GET' downloads
-  progress: function (progressEvent) {
+  // `onUploadProgress` allows handling of progress events for uploads
+  onUploadProgress: function (progressEvent) {
+    // Do whatever you want with the native progress event
+  },
+
+  // `onDownloadProgress` allows handling of progress events for downloads
+  onDownloadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 
@@ -295,7 +299,13 @@ These are the available config options for making requests. Only the `url` is re
   // and https requests, respectively, in node.js. This allows to configure options like
   // `keepAlive` that are not enabled by default.
   httpAgent: new http.Agent({ keepAlive: true }),
-  httpsAgent: new https.Agent({ keepAlive: true })
+  httpsAgent: new https.Agent({ keepAlive: true }),
+
+  // 'proxy' defines the hostname and port of the proxy server
+  proxy: {
+    host: '127.0.0.1',
+    port: 9000
+  }
 }
 ```
 
@@ -457,10 +467,9 @@ axios depends on a native ES6 Promise implementation to be [supported](http://ca
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
-axios includes a [TypeScript](http://typescriptlang.org) definition.
+axios includes [TypeScript](http://typescriptlang.org) definitions.
 ```typescript
-/// <reference path="axios.d.ts" />
-import * as axios from 'axios';
+import axios from 'axios';
 axios.get('/user?ID=12345');
 ```
 

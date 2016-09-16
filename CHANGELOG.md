@@ -1,18 +1,27 @@
 # Changelog
 
+### 0.14.0 (Aug 27, 2016)
+
+- **BREAKING** Updating TypeScript definitions ([#419](https://github.com/mzabriskie/axios/pull/419))
+- **BREAKING** Replacing `agent` option with `httpAgent` and `httpsAgent` ([#387](https://github.com/mzabriskie/axios/pull/387))
+- **BREAKING** Splitting `progress` event handlers into `onUploadProgress` and `onDownloadProgress` ([#423](https://github.com/mzabriskie/axios/pull/423))
+- Adding support for `http_proxy` and `https_proxy` environment variables ([#366](https://github.com/mzabriskie/axios/pull/366))
+- Fixing issue with `auth` config option and `Authorization` header ([#397](https://github.com/mzabriskie/axios/pull/397))
+- Don't set XSRF header if `xsrfCookieName` is `null` ([#406](https://github.com/mzabriskie/axios/pull/406))
+
 ### 0.13.1 (Jul 16, 2016)
 
 - Fixing issue with response data not being transformed on error ([#378](https://github.com/mzabriskie/axios/issues/378))
 
 ### 0.13.0 (Jul 13, 2016)
 
-- Improved error handling ([#345](https://github.com/mzabriskie/axios/pull/345))
+- **BREAKING** Improved error handling ([#345](https://github.com/mzabriskie/axios/pull/345))
+- **BREAKING** Response transformer now invoked in dispatcher not adapter ([10eb238](https://github.com/mzabriskie/axios/commit/10eb23865101f9347570552c04e9d6211376e25e))
+- **BREAKING** Request adapters now return a `Promise` ([157efd5](https://github.com/mzabriskie/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a))
 - Fixing issue with `withCredentials` not being overwritten ([#343](https://github.com/mzabriskie/axios/issues/343))
 - Fixing regression with request transformer being called before request interceptor ([#352](https://github.com/mzabriskie/axios/issues/352))
 - Fixing custom instance defaults ([#341](https://github.com/mzabriskie/axios/issues/341))
 - Fixing instances created from `axios.create` to have same API as default axios ([#217](https://github.com/mzabriskie/axios/issues/217))
-- Response transformer now invoked in dispatcher not adapter ([10eb238](https://github.com/mzabriskie/axios/commit/10eb23865101f9347570552c04e9d6211376e25e))
-- Request adapters now return a `Promise` ([157efd5](https://github.com/mzabriskie/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a))
 
 ### 0.12.0 (May 31, 2016)
 

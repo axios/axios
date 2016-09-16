@@ -11,6 +11,11 @@ export interface AxiosBasicCredentials {
   password: string;
 }
 
+export interface AxiosProxyConfig {
+  host: string;
+  port: number;
+}
+
 export interface AxiosRequestConfig {
   url?: string;
   method?: string;
@@ -28,12 +33,14 @@ export interface AxiosRequestConfig {
   responseType?: string;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  progress?: (progressEvent: any) => void;
+  onUploadProgress?: (progressEvent: any) => void;
+  onDownloadProgress?: (progressEvent: any) => void;
   maxContentLength?: number;
   validateStatus?: (status: number) => boolean;
   maxRedirects?: number;
   httpAgent?: any;
   httpsAgent?: any;
+  proxy?: AxiosProxyConfig;
 }
 
 export interface AxiosResponse {

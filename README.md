@@ -305,7 +305,12 @@ These are the available config options for making requests. Only the `url` is re
   proxy: {
     host: '127.0.0.1',
     port: 9000
-  }
+  },
+
+  // `cancelToken` specifies a cancel token that can be used to cancel the request
+  // (see Cancellation section below for details)
+  cancelToken: new CancelToken(function (cancel) {
+  })
 }
 ```
 
@@ -455,6 +460,51 @@ axios.get('/user/12345', {
     return status < 500; // Reject only if the status code is greater than or equal to 500
   }
 })
+```
+
+## Cancellation
+
+You can cancel a request using a *cancel token*.
+
+> The axios cancel token API is based on [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises), which is currently at Stage 1.
+
+You can create a cancel token by passing an executor function to the `CancelToken` constructor as shown below:
+
+```js
+var Cancel = axios.Cancel;
+var CancelToken = axios.CancelToken;
+
+var cancel;
+
+axios.get('/user/12345', {
+  cancelToken: new CancelToken(function executor(c) {
+    // An executor function receives a cancel function as a parameter
+    // You can use the cancel function to cancel the request later
+    cancel = c;
+  })
+}).catch(function(thrown) {
+  if (thrown instanceof Cancel) {
+    console.log('Request canceled', thrown.message);
+  } else {
+    // handle error
+  }
+});
+
+// cancel the request (the message parameter is optional)
+cancel('Operation canceled by the user.');
+```
+
+You can also create a cancel token using the `CancelToken.source` factory:
+
+```js
+var CancelToken = axios.CancelToken;
+var source = CancelToken.source();
+
+axios.get('/user/12345', {
+  cancelToken: source.token
+});
+
+source.cancel();
 ```
 
 ## Semver

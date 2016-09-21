@@ -466,22 +466,17 @@ axios.get('/user/12345', {
 
 You can cancel a request using a *cancel token*.
 
-> The axios cancel token API is based on [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises), which is currently at Stage 1.
+> The axios cancel token API is based on the [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises), which is currently at Stage 1.
 
-You can create a cancel token by passing an executor function to the `CancelToken` constructor as shown below:
+You can create a cancel token using the `CancelToken.source` factory as shown below:
 
 ```js
 var Cancel = axios.Cancel;
 var CancelToken = axios.CancelToken;
-
-var cancel;
+var source = CancelToken.source();
 
 axios.get('/user/12345', {
-  cancelToken: new CancelToken(function executor(c) {
-    // An executor function receives a cancel function as a parameter
-    // You can use the cancel function to cancel the request later
-    cancel = c;
-  })
+  cancelToken: source.token
 }).catch(function(thrown) {
   if (thrown instanceof Cancel) {
     console.log('Request canceled', thrown.message);
@@ -491,20 +486,24 @@ axios.get('/user/12345', {
 });
 
 // cancel the request (the message parameter is optional)
-cancel('Operation canceled by the user.');
+source.cancel('Operation canceled by the user.');
 ```
 
-You can also create a cancel token using the `CancelToken.source` factory:
+You can also create a cancel token by passing an executor function to the `CancelToken` constructor:
 
 ```js
 var CancelToken = axios.CancelToken;
-var source = CancelToken.source();
+var cancel;
 
 axios.get('/user/12345', {
-  cancelToken: source.token
+  cancelToken: new CancelToken(function executor(c) {
+    // An executor function receives a cancel function as a parameter
+    cancel = c;
+  })
 });
 
-source.cancel();
+// cancel the request
+cancel();
 ```
 
 ## Semver

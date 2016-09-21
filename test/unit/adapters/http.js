@@ -43,7 +43,7 @@ module.exports = {
         test.equal(success, false, 'request should not succeed');
         test.equal(failure, true, 'request should fail');
         test.equal(error.code, 'ECONNABORTED');
-        test.equal(error.message, 'timeout of 250ms exceeded');
+        test.equal(error.message, 'GET: http://localhost:4444/ exceeded timeout of 250ms');
         test.done();
       }, 300);
     });

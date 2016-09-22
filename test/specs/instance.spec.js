@@ -16,6 +16,7 @@ describe('instance', function () {
         'create',
         'Cancel',
         'CancelToken',
+        'isCancel',
         'all',
         'spread',
         'default'].indexOf(prop) > -1) {

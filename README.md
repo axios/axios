@@ -471,14 +471,13 @@ You can cancel a request using a *cancel token*.
 You can create a cancel token using the `CancelToken.source` factory as shown below:
 
 ```js
-var Cancel = axios.Cancel;
 var CancelToken = axios.CancelToken;
 var source = CancelToken.source();
 
 axios.get('/user/12345', {
   cancelToken: source.token
 }).catch(function(thrown) {
-  if (thrown instanceof Cancel) {
+  if (axios.isCancel(thrown)) {
     console.log('Request canceled', thrown.message);
   } else {
     // handle error

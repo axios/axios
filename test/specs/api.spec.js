@@ -34,6 +34,12 @@ describe('static api', function () {
   it('should have factory method', function () {
     expect(typeof axios.create).toEqual('function');
   });
+
+  it('should have Cancel, CancelToken, and isCancel properties', function () {
+    expect(typeof axios.Cancel).toEqual('function');
+    expect(typeof axios.CancelToken).toEqual('function');
+    expect(typeof axios.isCancel).toEqual('function');
+  });
 });
 
 describe('instance api', function () {

@@ -120,7 +120,8 @@ export interface AxiosStatic extends AxiosInstance {
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
-  CancelToken: CancelTokenStatic; 
+  CancelToken: CancelTokenStatic;
+  isCancel(value: any): boolean;
   all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
 }

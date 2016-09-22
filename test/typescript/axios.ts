@@ -230,7 +230,7 @@ const source: CancelTokenSource = axios.CancelToken.source();
 axios.get('/user', {
   cancelToken: source.token
 }).catch((thrown: AxiosError | Cancel) => {
-  if (thrown instanceof axios.Cancel) {
+  if (axios.isCancel(thrown)) {
     const cancel: Cancel = thrown;
     console.log(cancel.message);
   }

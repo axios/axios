@@ -31,7 +31,7 @@ $ npm install axios promise.prototype.finally --save
 
 ```js
 var axios = require('axios');
-require('promise.prototype.finally');
+require('promise.prototype.finally').shim();
 
 axios
   .get('http://www.example.com/user')

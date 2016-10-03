@@ -1,5 +1,3 @@
-var Bluebird = require("bluebird");
-
 describe('promise', function () {
   beforeEach(function () {
     jasmine.Ajax.install();

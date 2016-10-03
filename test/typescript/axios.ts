@@ -1,159 +1,212 @@
-/// <reference path="../../axios.d.ts" />
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, AxiosInstance, AxiosAdapter } from '../../';
+import { Promise } from 'es6-promise';
 
-import axios = require('axios');
-
-axios.get('/user?ID=12345')
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
-
-axios.get('/user', {
-    params: {
-      ID: 12345
-    }
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
-
-axios.head('/user', {
-    params: {
-      ID: 12345
-    }
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
-
-axios.delete('/user', {
-    params: {
-      ID: 12345
-    }
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
-
-axios.post('/user', {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
-
-axios.put('/user', {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
-
-axios.patch('/user', {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
-  })
-  .then(function (response) {
-    console.log(response.data);
-    console.log(response.status + 324);
-    console.log(response.headers);
-    console.log(response.config);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
-
-axios({
+const config: AxiosRequestConfig = {
+  url: '/user',
   method: 'get',
-  url: '/user/12345'
-});
-
-axios({
-  method: 'get',
-  url: '/user/12345',
-  transformRequest: (data) => {
-    return data.doSomething();
+  baseURL: 'https://api.example.com/',
+  transformRequest: (data: any) => '{"foo":"bar"}',
+  transformResponse: [
+    (data: any) => ({ baz: 'qux' })
+  ],
+  headers: { 'X-FOO': 'bar' },
+  params: { id: 12345 },
+  paramsSerializer: (params: any) => 'id=12345',
+  data: { foo: 'bar' },
+  timeout: 10000,
+  withCredentials: true,
+  auth: {
+    username: 'janedoe',
+    password: 's00pers3cret'
+  },
+  responseType: 'json',
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+  onUploadProgress: (progressEvent: any) => {},
+  onDownloadProgress: (progressEvent: any) => {},
+  maxContentLength: 2000,
+  validateStatus: (status: number) => status >= 200 && status < 300,
+  maxRedirects: 5,
+  proxy: {
+    host: '127.0.0.1',
+    port: 9000
   }
-});
+};
 
-axios({
-  url: "hi",
-  headers: {'X-Requested-With': 'XMLHttpRequest'},
-  params: {
-    ID: 12345
-  },
-  data: {
-    firstName: 'Fred'
-  },
-  withCredentials: false, // default
-  responseType: 'json', // default
-  xsrfCookieName: 'XSRF-TOKEN', // default
-  xsrfHeaderName: 'X-XSRF-TOKEN' // default
-});
+const handleResponse = (response: AxiosResponse) => {
+  console.log(response.data);
+  console.log(response.status);
+  console.log(response.statusText);
+  console.log(response.headers);
+  console.log(response.config);
+};
 
-var instance = axios.create();
+const handleError = (error: AxiosError) => {
+  if (error.response) {
+    console.log(error.response.data);
+    console.log(error.response.status);
+    console.log(error.response.headers);
+  } else {
+    console.log(error.message);
+  }
+};
 
-axios.create({
-  transformRequest: (data) => {
-    return data.doSomething();
-  },
-  transformResponse: (data) => {
-    return data.doSomethingElse();
-  },
-  headers: {'X-Requested-With': 'XMLHttpRequest'},
-  timeout: 1000,
-  withCredentials: false, // default
-  responseType: 'json', // default
-  xsrfCookieName: 'XSRF-TOKEN', // default
-  xsrfHeaderName: 'X-XSRF-TOKEN' // default
-});
+axios(config)
+  .then(handleResponse)
+  .catch(handleError);
 
-instance.request({
-    method: 'get',
-    url: '/user/12345'
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
+axios.get('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
 
-instance.get('/user?ID=12345')
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
+axios.get('/user', { params: { id: 12345 } })
+  .then(handleResponse)
+  .catch(handleError);
 
-instance.get('/user', {
-    params: {
-      ID: 12345
-    }
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (response) {
-    console.log(response);
-  });
+axios.head('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.delete('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.post('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.put('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.patch('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+// Instances
+
+const instance1: AxiosInstance = axios.create();
+const instance2: AxiosInstance = axios.create(config);
+
+instance1.request(config)
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.get('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.get('/user', { params: { id: 12345 } })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.post('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+  .then(handleResponse)
+  .catch(handleError);
+
+// Defaults
+
+axios.defaults.baseURL = 'https://api.example.com/';
+axios.defaults.headers.common['Authorization'] = 'token';
+axios.defaults.headers.post['X-FOO'] = 'bar';
+axios.defaults.timeout = 2500;
+
+instance1.defaults.baseURL = 'https://api.example.com/';
+instance1.defaults.headers.common['Authorization'] = 'token';
+instance1.defaults.headers.post['X-FOO'] = 'bar';
+instance1.defaults.timeout = 2500;
+
+// Interceptors
+
+const requestInterceptorId: number = axios.interceptors.request.use(
+  (config: AxiosRequestConfig) => config,
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.request.eject(requestInterceptorId);
+
+axios.interceptors.request.use(
+  (config: AxiosRequestConfig) => Promise.resolve(config),
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.request.use((config: AxiosRequestConfig) => config);
+axios.interceptors.request.use((config: AxiosRequestConfig) => Promise.resolve(config));
+
+const responseInterceptorId: number = axios.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.response.eject(responseInterceptorId);
+
+axios.interceptors.response.use(
+  (response: AxiosResponse) => Promise.resolve(response),
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.response.use((response: AxiosResponse) => response);
+axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
+
+// Adapters
+
+const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
+  const response: AxiosResponse = {
+    data: { foo: 'bar' },
+    status: 200,
+    statusText: 'OK',
+    headers: { 'X-FOO': 'bar' },
+    config
+  };
+  return Promise.resolve(response);
+};
+
+axios.defaults.adapter = adapter;
+
+// axios.all
+
+const promises = [
+  Promise.resolve(1),
+  Promise.resolve(2)
+];
+
+const promise: Promise<number[]> = axios.all(promises);
+
+// axios.spread
+
+const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
+const fn2: (arr: number[]) => string = axios.spread(fn1);
+
+// Promises
+
+axios.get('/user')
+  .then((response: AxiosResponse) => 'foo')
+  .then((value: string) => {});
+
+axios.get('/user')
+  .then((response: AxiosResponse) => Promise.resolve('foo'))
+  .then((value: string) => {});
+
+axios.get('/user')
+  .then((response: AxiosResponse) => 'foo', (error: any) => 'bar')
+  .then((value: string) => {});
+
+axios.get('/user')
+  .then((response: AxiosResponse) => 'foo', (error: any) => 123)
+  .then((value: string | number) => {});
+
+axios.get('/user')
+  .catch((error: any) => 'foo')
+  .then((value: string) => {});
+
+axios.get('/user')
+  .catch((error: any) => Promise.resolve('foo'))
+  .then((value: string) => {});

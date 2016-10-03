@@ -1,5 +1,52 @@
 # Upgrade Guide
 
+### 0.13.x -> 0.14.0
+
+#### TypeScript Definitions
+
+The axios TypeScript definitions have been updated to match the axios API and use the ES2015 module syntax.
+
+Please use the following `import` statement to import axios in TypeScript:
+
+```typescript
+import axios from 'axios';
+
+axios.get('/foo')
+  .then(response => console.log(response))
+  .catch(error => console.log(error));
+```
+
+#### `agent` Config Option
+
+The `agent` config option has been replaced with two new options: `httpAgent` and `httpsAgent`. Please use them instead.
+
+```js
+{
+  // Define a custom agent for HTTP
+  httpAgent: new http.Agent({ keepAlive: true }),
+  // Define a custom agent for HTTPS
+  httpsAgent: new https.Agent({ keepAlive: true })
+}
+```
+
+#### `progress` Config Option
+
+The `progress` config option has been replaced with the `onUploadProgress` and `onDownloadProgress` options.
+
+```js
+{
+  // Define a handler for upload progress events
+  onUploadProgress: function (progressEvent) {
+    // ...
+  },
+
+  // Define a handler for download progress events
+  onDownloadProgress: function (progressEvent) {
+    // ...
+  }
+}
+```
+
 ### 0.12.x -> 0.13.0
 
 The `0.13.0` release contains several changes to custom adapters and error handling.

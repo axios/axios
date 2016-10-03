@@ -28,12 +28,6 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 
 ## Installing
 
-Using cdn:
-
-```html
-<script src="https://npmcdn.com/axios/dist/axios.min.js"></script>
-```
-
 Using npm:
 
 ```bash
@@ -44,6 +38,12 @@ Using bower:
 
 ```bash
 $ bower install axios
+```
+
+Using cdn:
+
+```html
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 ```
 
 ## Example
@@ -258,7 +258,7 @@ These are the available config options for making requests. Only the `url` is re
   auth: {
     username: 'janedoe',
     password: 's00pers3cret'
-  }
+  },
 
   // `responseType` indicates the type of data that the server will respond with
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
@@ -270,9 +270,13 @@ These are the available config options for making requests. Only the `url` is re
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
-  // `progress` allows handling of progress events for 'POST' and 'PUT uploads'
-  // as well as 'GET' downloads
-  progress: function (progressEvent) {
+  // `onUploadProgress` allows handling of progress events for uploads
+  onUploadProgress: function (progressEvent) {
+    // Do whatever you want with the native progress event
+  },
+
+  // `onDownloadProgress` allows handling of progress events for downloads
+  onDownloadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 
@@ -295,7 +299,13 @@ These are the available config options for making requests. Only the `url` is re
   // and https requests, respectively, in node.js. This allows to configure options like
   // `keepAlive` that are not enabled by default.
   httpAgent: new http.Agent({ keepAlive: true }),
-  httpsAgent: new https.Agent({ keepAlive: true })
+  httpsAgent: new https.Agent({ keepAlive: true }),
+
+  // 'proxy' defines the hostname and port of the proxy server
+  proxy: {
+    host: '127.0.0.1',
+    port: 9000
+  }
 }
 ```
 
@@ -322,7 +332,7 @@ The response for a request contains the following information.
 }
 ```
 
-When using `then` or `catch`, you will receive the response as follows:
+When using `then`, you will receive the response as follows:
 
 ```js
 axios.get('/user/12345')
@@ -332,8 +342,10 @@ axios.get('/user/12345')
     console.log(response.statusText);
     console.log(response.headers);
     console.log(response.config);
-});
+  });
 ```
+
+When using `catch`, or passing a [rejection callback](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then) as second parameter of `then`, the response will be available through the `error` object as explained in the [Handling Errors](#handling-errors) section.
 
 ## Config Defaults
 
@@ -462,10 +474,9 @@ var axiosWithBluebird = axios.create({
 ```
 
 ## TypeScript
-axios includes a [TypeScript](http://typescriptlang.org) definition.
+axios includes [TypeScript](http://typescriptlang.org) definitions.
 ```typescript
-/// <reference path="axios.d.ts" />
-import * as axios from 'axios';
+import axios from 'axios';
 axios.get('/user?ID=12345');
 ```
 

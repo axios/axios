@@ -3,6 +3,7 @@
 coverage/
 examples/
 node_modules/
+typings/
 sandbox/
 test/
 bower.json

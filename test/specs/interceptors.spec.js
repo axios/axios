@@ -1,3 +1,5 @@
+var Promise = require('any-promise');
+
 describe('interceptors', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -48,7 +50,7 @@ describe('interceptors', function () {
 
   it('should add a request interceptor that returns a promise', function (done) {
     axios.interceptors.request.use(function (config) {
-      return new config.Promise(function (resolve) {
+      return new Promise(function (resolve) {
         // do something async
         setTimeout(function () {
           config.headers.async = 'promise';
@@ -144,7 +146,7 @@ describe('interceptors', function () {
     var response;
 
     axios.interceptors.response.use(function (data) {
-      return new axios.defaults.Promise(function (resolve) {
+      return new Promise(function (resolve) {
         // do something async
         setTimeout(function () {
           data.data = 'you have been promised!';

@@ -463,15 +463,7 @@ Until axios reaches a `1.0` release, breaking changes will be released with a ne
 
 ## Promises
 
-By default, axios uses native ES6 Promises. If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise). If you want to use another Promise implementation ([Bluebird](http://bluebirdjs.com/) or [RSVP](https://github.com/tildeio/rsvp.js/) for example), set the config property `Promise` to the promise constructor. For example,
-```javascript
-var Bluebird = require('bluebird');
-axios.defaults.Promise = Bluebird;
-// or create a separate instance
-var axiosWithBluebird = axios.create({
-  Promise: Bluebird
-});
-```
+Axios uses [any-promise](https://github.com/kevinbeaty/any-promise) to support any ES 2015 (ES6) compatible `Promise`. Without configuring, this utilizes the global `Promise` provided by Node.js or window `Promise` in the browser. See [any-promise](https://github.com/kevinbeaty/any-promise) for configuring your application with a different promise provider.
 
 ## TypeScript
 axios includes [TypeScript](http://typescriptlang.org) definitions.

@@ -33,6 +33,12 @@ Please update the docs accordingly so that there are no discrepencies between th
 
 Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
 
+#### Promises
+Ensure references to `Promise` are through [any-promise](https://github.com/kevinbeaty/any-promise),
+```javascript
+var Promise = require('any-promise');
+```
+
 ### Releasing
 
 Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md) requires being updated manually. Once this has been done run the commands below. Versions should follow [semantic versioning](http://semver.org/).

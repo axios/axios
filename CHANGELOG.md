@@ -1,5 +1,12 @@
 # Changelog
 
+### 0.15.0 (Oct 10, 2016)
+
+- Adding cancellation support ([#452](https://github.com/mzabriskie/axios/pull/452))
+- Moving default adapter to global defaults ([#437](https://github.com/mzabriskie/axios/pull/437))
+- Fixing issue with `file` URI scheme ([#440](https://github.com/mzabriskie/axios/pull/440))
+- Fixing issue with `params` objects that have no prototype ([#445](https://github.com/mzabriskie/axios/pull/445))
+
 ### 0.14.0 (Aug 27, 2016)
 
 - **BREAKING** Updating TypeScript definitions ([#419](https://github.com/mzabriskie/axios/pull/419))

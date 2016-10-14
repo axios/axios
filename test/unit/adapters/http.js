@@ -248,7 +248,7 @@ module.exports = {
     });
   },
 
-  testProxy: function(test) {
+  testHTTPProxy: function(test) {
     server = http.createServer(function(req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       res.end('12345');

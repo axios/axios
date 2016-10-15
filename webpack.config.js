@@ -15,11 +15,6 @@ function generateConfig(name) {
     node: {
       process: false
     },
-    externals: [
-      {
-        './adapters/http': 'var undefined'
-      }
-    ],
     devtool: 'source-map'
   };
 
@@ -28,7 +23,7 @@ function generateConfig(name) {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     })
   ];
- 
+
   if (uglify) {
     config.plugins.push(
       new webpack.optimize.UglifyJsPlugin({
@@ -47,4 +42,3 @@ function generateConfig(name) {
 });
 
 module.exports = config;
-

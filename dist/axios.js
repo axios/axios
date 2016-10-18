@@ -1,4 +1,4 @@
-/* axios v0.15.1 | (c) 2016 by Matt Zabriskie */
+/* axios v0.15.2 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -799,6 +799,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.cancelToken) {
 	      // Handle cancellation
 	      config.cancelToken.promise.then(function onCanceled(cancel) {
+	        if (!request) {
+	          return;
+	        }
+	
 	        request.abort();
 	        reject(cancel);
 	        // Clean up request

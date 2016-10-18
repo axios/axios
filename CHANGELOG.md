@@ -1,5 +1,13 @@
 # Changelog
 
+### 0.15.2 (Oct 17, 2016)
+
+- Fixing issue with calling `cancel` after response has been received ([#482](https://github.com/mzabriskie/axios/issues/482))
+
+### 0.15.1 (Oct 14, 2016)
+
+- Fixing issue with UMD ([#485](https://github.com/mzabriskie/axios/issues/485))
+
 ### 0.15.0 (Oct 10, 2016)
 
 - Adding cancellation support ([#452](https://github.com/mzabriskie/axios/pull/452))

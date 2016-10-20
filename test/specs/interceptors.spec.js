@@ -1,3 +1,5 @@
+var Promise = require('any-promise');
+
 describe('interceptors', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -32,7 +34,8 @@ describe('interceptors', function () {
     axios.interceptors.request.use(function () {
       return {
         url: '/bar',
-        method: 'post'
+        method: 'post',
+        Promise: Promise
       };
     });
 
@@ -167,7 +170,7 @@ describe('interceptors', function () {
         done();
       }, 100);
     });
-  });
+  }); 
 
   it('should add multiple response interceptors', function (done) {
     var response;

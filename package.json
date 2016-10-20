@@ -63,15 +63,16 @@
     "minimist": "^1.2.0",
     "phantomjs-prebuilt": "^2.1.7",
     "sinon": "^1.17.4",
+    "url-search-params": "^0.5.0",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
-    "url-search-params": "^0.5.0"
+    "webpack-dev-server": "^1.14.1"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   },
   "typings": "./axios.d.ts",
   "dependencies": {
+    "any-promise": "1.3.0",
     "follow-redirects": "0.0.7"
   }
 }

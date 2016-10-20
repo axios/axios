@@ -518,8 +518,7 @@ Until axios reaches a `1.0` release, breaking changes will be released with a ne
 
 ## Promises
 
-axios depends on a native ES6 Promise implementation to be [supported](http://caniuse.com/promises).
-If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
+Axios uses [any-promise](https://github.com/kevinbeaty/any-promise) to support any ES 2015 (ES6) compatible `Promise`. Without configuring, this utilizes the global `Promise` provided by Node.js or window `Promise` in the browser. See [any-promise](https://github.com/kevinbeaty/any-promise) for configuring your application with a different promise provider.
 
 ## TypeScript
 axios includes [TypeScript](http://typescriptlang.org) definitions.

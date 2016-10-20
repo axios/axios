@@ -1,5 +1,6 @@
 // Polyfill ES6 Promise
-require('es6-promise').polyfill();
+require('any-promise/register/es6-promise');
+var Promise = require('any-promise');
 
 // Polyfill URLSearchParams
 URLSearchParams = require('url-search-params');

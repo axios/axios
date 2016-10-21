@@ -52,10 +52,10 @@ export interface AxiosResponse<T> {
   config: AxiosRequestConfig;
 }
 
-export interface AxiosError extends Error {
+export interface AxiosError<T> extends Error {
   config: AxiosRequestConfig;
   code?: string;
-  response?: AxiosResponse;
+  response?: AxiosResponse<T>;
 }
 
 export interface Promise<V> {
@@ -64,7 +64,7 @@ export interface Promise<V> {
   catch<R>(onRejected: (error: any) => R | Promise<R>): Promise<R>;
 }
 
-export interface AxiosPromise extends Promise<AxiosResponse> {
+export interface AxiosPromise extends Promise<AxiosResponse<any>> {
 }
 
 export interface CancelStatic {

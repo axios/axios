@@ -17,11 +17,7 @@ module.exports = function(grunt) {
 
     ts: {
       test: {
-        src: ['typings/index.d.ts', 'test/typescript/*.ts'],
-        out: 'test/typescript/out.js',
-        options: {
-          module: 'commonjs',
-        }
+        src: ['typings/index.d.ts', 'test/typescript/*.ts']
       }
     },
 

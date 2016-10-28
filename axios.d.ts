@@ -55,7 +55,7 @@ export interface AxiosResponse<T> {
 export interface AxiosError<T> extends Error {
   config: AxiosRequestConfig;
   code?: string;
-  response: AxiosResponse<T>;
+  response?: AxiosResponse<T>;
 }
 
 export interface Promise<V> {

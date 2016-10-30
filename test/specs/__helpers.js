@@ -76,7 +76,7 @@ setupBasicAuthTest = function setupBasicAuthTest() {
 
       expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==');
       done();
-    }, 0);
+    }, 100);
   });
 
   it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters', function (done) {

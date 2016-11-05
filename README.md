@@ -512,6 +512,8 @@ axios.get('/user/12345', {
 cancel();
 ```
 
+Note : you can cancel several requests with the same cancel token.
+
 ## Semver
 
 Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.

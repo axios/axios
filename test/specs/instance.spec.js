@@ -68,6 +68,14 @@ describe('instance', function () {
     expect(typeof instance.defaults.headers.common, 'object');
   });
 
+  it('should not be affected by change to another instance defaults', function () {
+    var instance1 = axios.create();
+    var instance2 = axios.create();
+
+    instance1.defaults.headers.common['Authorization'] = 'askdjfaksdjf';
+    expect(instance2.defaults.headers.common['Authorization']).not.toContain('askdjfaksdjf');
+  });
+
   it('should have interceptors on the instance', function (done) {
     axios.interceptors.request.use(function (config) {
       config.foo = true;

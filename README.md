@@ -512,7 +512,42 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-Note : you can cancel several requests with the same cancel token.
+> Note: you can cancel several requests with the same cancel token.
+
+## Using application/x-www-form-urlencoded format
+
+By default, axios serializes JavaScript objects to `JSON`. To send data in the `application/x-www-form-urlencoded` format instead, you can use one of the following options.
+
+### Browser
+
+In a browser, you can use [`URLSearchParam`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) as follows:
+
+```js
+var params = new URLSearchParams();
+params.append('param1', 'value1');
+params.append('param2', 'value2');
+axios.post('/foo', params); 
+```
+
+> Note that `URLSearchParams` is not supported by all browsers, but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
+
+Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
+
+```js
+var qs = require('qs');
+axios.post('/foo', qs.stringify({ 'bar': 123 });
+```
+
+### Node.js
+
+In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
+
+```js
+var querystring = require('querystring');
+axios.post('http://something.com/', querystring.stringify({ foo: 'bar' });
+```
+
+You can also use the `qs` library.
 
 ## Semver
 

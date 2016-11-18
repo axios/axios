@@ -68,6 +68,19 @@ describe('instance', function () {
     expect(typeof instance.defaults.headers.common, 'object');
   });
 
+  it('should inherit defaults options', function (done) {
+    var oldBaseURL = axios.defaults.baseURL;
+    axios.defaults.baseURL = 'http://example.com/';
+    var instance = axios.create();
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.com/foo');
+      axios.defaults.baseURL = oldBaseURL;
+      done();
+    });
+  });
+
   it('should have interceptors on the instance', function (done) {
     axios.interceptors.request.use(function (config) {
       config.foo = true;

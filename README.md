@@ -520,7 +520,7 @@ By default, axios serializes JavaScript objects to `JSON`. To send data in the `
 
 ### Browser
 
-In a browser, you can use [`URLSearchParam`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) as follows:
+In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API as follows:
 
 ```js
 var params = new URLSearchParams();

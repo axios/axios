@@ -297,14 +297,16 @@ These are the available config options for making requests. Only the `url` is re
   maxRedirects: 5, // default
 
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
-  // and https requests, respectively, in node.js. This allows to configure options like
+  // and https requests, respectively, in node.js. This allows options to be added like
   // `keepAlive` that are not enabled by default.
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
   // 'proxy' defines the hostname and port of the proxy server
-  // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and supplies credentials.
-  // This will set an `Proxy-Authorization` header, overwriting any existing `Proxy-Authorization` custom headers you have set using `headers`.
+  // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
+  // supplies credentials.
+  // This will set an `Proxy-Authorization` header, overwriting any existing
+  // `Proxy-Authorization` custom headers you have set using `headers`.
   proxy: {
     host: '127.0.0.1',
     port: 9000,

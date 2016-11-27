@@ -136,4 +136,27 @@ describe('defaults', function () {
     });
   });
 
+  it('should be used by custom instance if set before instance created', function (done) {
+    axios.defaults.baseURL = 'http://example.org/';
+    var instance = axios.create();
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.org/foo');
+      done();
+    });
+  });
+
+  it('should be used by custom instance if set after instance created', function (done) {
+    var instance = axios.create();
+    axios.defaults.baseURL = 'http://example.org/';
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.org/foo');
+      done();
+    });
+  });
 });

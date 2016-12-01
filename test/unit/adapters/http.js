@@ -3,20 +3,26 @@ var http = require('http');
 var url = require('url');
 var zlib = require('zlib');
 var fs = require('fs');
+var adapter = require('../../../lib/adapters/http.js');
 var server, proxy;
 
 module.exports = {
   tearDown: function (callback) {
-    server.close();
-    server = null;
+    if (server) {
+      server.close();
+      server = null;
+    }
     if (proxy) {
-      proxy.close()
+      proxy.close();
       proxy = null;
     }
 
     if (process.env.http_proxy) {
       delete process.env.http_proxy;
     }
+
+    delete process.env.no_proxy;
+    delete process.env.NO_PROXY;
 
     callback();
   },
@@ -313,9 +319,77 @@ module.exports = {
       }).listen(4000, function() {
         // set the env variable
         process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = 'my.corp.com';
 
         axios.get('http://localhost:4444/').then(function(res) {
           test.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
+          test.done();
+        });
+      });
+    });
+  },
+
+  testIsANoProxyHost: function(test) {
+    [
+      {h: 'bliss.mit.edu', no_p: undefined, res: false},
+      {h: 'bliss.mit.edu', no_p: 'localhost', res: false},
+      {h: 'bliss.mit.edu', no_p: 'localhost, my.corp.com', res: false},
+      {h: 'bliss.mit.edu', no_p: 'mit.edu', res: true},
+      {h: 'bliss.mit.edu', no_p: 'mit.edu,localhost', res: true},
+      {h: 'bliss.mit.edu', no_p: ' mit.edu', res: true},
+      {h: 'bliss.mit.edu', no_p: 'mit.edu ', res: true},
+      {h: 'bliss.mit.edu', no_p: 'localhost, mit.edu', res: true},
+      {h: 'bliss.mit.edu', no_p: 'u', res: true},
+      {h: '127.0.0.1', no_p: '0.0.1', res: true},
+      {h: '127.0.0.1', no_p: 'localhost', res: false}
+    ].forEach(function(data) {
+      process.env.no_proxy = data.no_p;
+      test.equal(adapter._isANoProxyHost(data.h), data.res,
+        'When no_proxy="' + data.no_p + '", then host "' + data.h + '" must ' + (data.res ? 'not ' : '') + 'be proxied');
+      delete process.env.no_proxy;
+
+      process.env.NO_PROXY = data.no_p;
+      test.equal(adapter._isANoProxyHost(data.h), data.res,
+        'When NO_PROXY="' + data.no_p + '", then host "' + data.h + '" must ' + (data.res ? 'not ' : '') + 'be proxied');
+      delete process.env.NO_PROXY;
+    });
+
+    test.done();
+  },
+
+  testHTTPNoProxyEnv: function(test) {
+    server = http.createServer(function(req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function() {
+      proxy = http.createServer(function(request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function(res) {
+          var body = '';
+          res.on('data', function(data) {
+            body += data;
+          });
+          res.on('end', function() {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+      }).listen(4000, function() {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = 'localhost';
+
+        axios.get('http://localhost:4444/').then(function(res) {
+          test.equal(res.data, '4567', 'should not use proxy set by process.env.http_proxy as of process.env.no_proxy');
+          test.done();
+        }, function() {
+          test.ok(false, 'error occured during request with no_proxy');
           test.done();
         });
       });

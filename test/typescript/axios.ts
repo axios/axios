@@ -45,7 +45,7 @@ const config: AxiosRequestConfig = {
   cancelToken: new axios.CancelToken((cancel: Canceler) => {})
 };
 
-const handleResponse = (response: AxiosResponse) => {
+const handleResponse = (response: AxiosResponse<any>) => {
   console.log(response.data);
   console.log(response.status);
   console.log(response.statusText);
@@ -154,24 +154,24 @@ axios.interceptors.request.use((config: AxiosRequestConfig) => config);
 axios.interceptors.request.use((config: AxiosRequestConfig) => Promise.resolve(config));
 
 const responseInterceptorId: number = axios.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse<any>) => response,
   (error: any) => Promise.reject(error)
 );
 
 axios.interceptors.response.eject(responseInterceptorId);
 
 axios.interceptors.response.use(
-  (response: AxiosResponse) => Promise.resolve(response),
+  (response: AxiosResponse<any>) => Promise.resolve(response),
   (error: any) => Promise.reject(error)
 );
 
-axios.interceptors.response.use((response: AxiosResponse) => response);
-axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
+axios.interceptors.response.use((response: AxiosResponse<any>) => response);
+axios.interceptors.response.use((response: AxiosResponse<any>) => Promise.resolve(response));
 
 // Adapters
 
 const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
-  const response: AxiosResponse = {
+  const response: AxiosResponse<{foo: string}> = {
     data: { foo: 'bar' },
     status: 200,
     statusText: 'OK',
@@ -200,19 +200,19 @@ const fn2: (arr: number[]) => string = axios.spread(fn1);
 // Promises
 
 axios.get('/user')
-  .then((response: AxiosResponse) => 'foo')
+  .then((response: AxiosResponse<any>) => 'foo')
   .then((value: string) => {});
 
 axios.get('/user')
-  .then((response: AxiosResponse) => Promise.resolve('foo'))
+  .then((response: AxiosResponse<any>) => Promise.resolve('foo'))
   .then((value: string) => {});
 
 axios.get('/user')
-  .then((response: AxiosResponse) => 'foo', (error: any) => 'bar')
+  .then((response: AxiosResponse<any>) => 'foo', (error: any) => 'bar')
   .then((value: string) => {});
 
 axios.get('/user')
-  .then((response: AxiosResponse) => 'foo', (error: any) => 123)
+  .then((response: AxiosResponse<any>) => 'foo', (error: any) => 123)
   .then((value: string | number) => {});
 
 axios.get('/user')

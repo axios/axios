@@ -6,6 +6,22 @@ describe('helpers::buildURL', function () {
     expect(buildURL('/foo')).toEqual('/foo');
   });
 
+  it('should support RESTful URL', function () {
+    expect(buildURL('/blog/:user/:userOffset', {
+      user: 'boo',
+      userOffset: '12'
+    })).toEqual('/blog/boo/12');
+  });
+
+  it('should support RESTful URL and Query', function () {
+    expect(buildURL('/blog/:user/:userOffset', {
+      user: 'boo',
+      userOffset: '12'
+    }, {
+      foo: 'bar'
+    })).toEqual('/blog/boo/12?foo=bar');
+  });
+
   it('should support params', function () {
     expect(buildURL('/foo', null, {
       foo: 'bar'

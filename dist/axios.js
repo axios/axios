@@ -1,4 +1,3 @@
-/* axios v0.15.3 | (c) 2016 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -537,7 +536,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var utils = __webpack_require__(2);
 	var normalizeHeaderName = __webpack_require__(6);
 	
-	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
 	  'Content-Type': 'application/x-www-form-urlencoded'
 	};
@@ -590,7 +588,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  transformResponse: [function transformResponse(data) {
 	    /*eslint no-param-reassign:0*/
 	    if (typeof data === 'string') {
-	      data = data.replace(PROTECTION_PREFIX, '');
 	      try {
 	        data = JSON.parse(data);
 	      } catch (e) { /* Ignore */ }
@@ -675,7 +672,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // For IE 8/9 CORS support
 	    // Only supports POST and GET calls and doesn't returns the response headers.
 	    // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
-	    if (("production") !== 'test' &&
+	    if ((undefined) !== 'test' &&
 	        typeof window !== 'undefined' &&
 	        window.XDomainRequest && !('withCredentials' in request) &&
 	        !isURLSameOrigin(config.url)) {
@@ -693,7 +690,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
 	    }
 	
-	    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
+	    request.open(config.method.toUpperCase(), buildURL(config.url, config.resources, config.params, config.paramsSerializer), true);
 	
 	    // Set the request timeout in MS
 	    request.timeout = config.timeout;
@@ -927,14 +924,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	/**
-	 * Build a URL by appending params to the end
+	 * Build a URL by appending resources in url segments and params to the end
 	 *
 	 * @param {string} url The base of the url (e.g., http://www.google.com)
+	 * @param {object} [resources] The resources to be inserted
 	 * @param {object} [params] The params to be appended
 	 * @returns {string} The formatted url
 	 */
-	module.exports = function buildURL(url, params, paramsSerializer) {
+	module.exports = function buildURL(url, resources, params, paramsSerializer) {
 	  /*eslint no-param-reassign:0*/
+	  utils.forEach(resources, function assign(val, key) {
+	    url = url.replace(':' + val, key);
+	  });
+	
+	  var urlSegments = url.split('/');
+	  urlSegments.forEach(function findResource(value, idx) {
+	    if (value.charAt(0) === ':') {
+	      var resourceName = value.substring(1, value.length);
+	
+	      if (resources[resourceName]) {
+	        urlSegments[idx] = resources[resourceName];
+	      } else {
+	        throw new Error('Resource ' + resourceName + ' is specified but not given.');
+	      }
+	    }
+	  });
+	
+	  url = urlSegments.join('/');
+	
 	  if (!params) {
 	    return url;
 	  }
@@ -1413,7 +1430,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {string} The combined URL
 	 */
 	module.exports = function combineURLs(baseURL, relativeURL) {
-	  return baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '');
+	  return relativeURL
+	    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+	    : baseURL;
 	};
 
 

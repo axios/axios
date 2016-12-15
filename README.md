@@ -73,6 +73,19 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   });
+
+// Or if you are working with RESTful APIs (eg. /user/1234), the request could also be done as
+axios.get('/user/:userId', {
+    resources: {
+      userId: 1234,
+    }
+  })
+  .then(function (response) {
+    console.log(response);
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
 ```
 
 Performing a `POST` request
@@ -94,11 +107,19 @@ Performing multiple concurrent requests
 
 ```js
 function getUserAccount() {
-  return axios.get('/user/12345');
+  return axios.get('/user/:userId', {
+    resources: {
+      userId: 12345,
+    }
+  });
 }
 
 function getUserPermissions() {
-  return axios.get('/user/12345/permissions');
+  return axios.get('/user/12345/permissions', {
+    resources: {
+      userId: 12345,
+    }
+  });
 }
 
 axios.all([getUserAccount(), getUserPermissions()])
@@ -216,6 +237,12 @@ These are the available config options for making requests. Only the `url` is re
 
   // `headers` are custom headers to be sent
   headers: {'X-Requested-With': 'XMLHttpRequest'},
+
+  // `resources` are the REST resources specified in URL
+  // Must be a plain object
+  resources: {
+    contactId: 'foo'
+  }
 
   // `params` are the URL parameters to be sent with the request
   // Must be a plain object or a URLSearchParams object

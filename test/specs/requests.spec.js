@@ -51,6 +51,7 @@ describe('requests', function () {
       expect(reason.config.method).toBe('get');
       expect(reason.config.url).toBe('http://thisisnotaserver');
 
+      jasmine.Ajax.install(); // <-- as we have uninstalled it earlier, calling afterEach throws error
       done();
     };
 

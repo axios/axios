@@ -535,7 +535,7 @@ Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs
 
 ```js
 var qs = require('qs');
-axios.post('/foo', qs.stringify({ 'bar': 123 });
+axios.post('/foo', qs.stringify({ 'bar': 123 }));
 ```
 
 ### Node.js

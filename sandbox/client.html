@@ -36,6 +36,10 @@
         <label for="params">Params</label>
         <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
       </div>
+      <div class="form-group">
+        <label for="resources">Resources</label>
+        <textarea id="resources" class="form-control" placeholder='{"foo": "bar", "baz": 123}'></textarea>
+      </div>
       <div class="form-group" style="display: none;">
         <label for="data">Data</label>
         <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
@@ -76,6 +80,7 @@
       var url = document.getElementById('url');
       var method = document.getElementById('method');
       var params = document.getElementById('params');
+      var resources = document.getElementById('resources');
       var data = document.getElementById('data');
       var headers = document.getElementById('headers');
       var submit = document.getElementById('submit');
@@ -94,6 +99,10 @@
         return params.value.length === 0 ? null : JSON.parse(params.value);
       }
 
+      function getResources() {
+        return resources.value.length === 0 ? null : JSON.parse(resources.value);
+      }
+
       function getData() {
         return data.value.length === 0 ? null : JSON.parse(data.value);
       }
@@ -105,6 +114,7 @@
       function syncWithLocalStorage() {
         method.value = localStorage.getItem('method') || 'GET';
         params.value = localStorage.getItem('params') || '';
+        resources.value = localStorage.getItem('resources') || '';
         data.value = localStorage.getItem('data') || '';
         headers.value = localStorage.getItem('headers') || '';
       }
@@ -128,6 +138,7 @@
         var options = {
           url: getUrl(),
           params: !acceptsData(method.value) ? getParams() : undefined,
+          resources: getResources(),
           data: acceptsData(method.value) ? getData() : undefined,
           method: method.value,
           headers: getHeaders()

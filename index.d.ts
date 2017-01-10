@@ -23,6 +23,7 @@ export interface AxiosRequestConfig {
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
   headers?: any;
+  resources?: any;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: any;

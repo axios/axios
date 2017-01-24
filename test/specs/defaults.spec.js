@@ -11,6 +11,8 @@ describe('defaults', function () {
   afterEach(function () {
     jasmine.Ajax.uninstall();
     delete axios.defaults.baseURL;
+    delete axios.defaults.headers.get['X-CUSTOM-HEADER'];
+    delete axios.defaults.headers.post['X-CUSTOM-HEADER'];
     document.cookie = XSRF_COOKIE_NAME + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
   });
 
@@ -79,6 +81,26 @@ describe('defaults', function () {
     });
   });
 
+  it('should use GET headers', function (done) {
+    axios.defaults.headers.get['X-CUSTOM-HEADER'] = 'foo';
+    axios.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders['X-CUSTOM-HEADER']).toBe('foo');
+      done();
+    });
+  });
+
+  it('should use POST headers', function (done) {
+    axios.defaults.headers.post['X-CUSTOM-HEADER'] = 'foo';
+    axios.post('/foo', {});
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders['X-CUSTOM-HEADER']).toBe('foo');
+      done();
+    });
+  });
+
   it('should use header config', function (done) {
     var instance = axios.create({
       headers: {
@@ -103,7 +125,7 @@ describe('defaults', function () {
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders).toEqual(
-        utils.merge(defaults.headers.common, {
+        utils.merge(defaults.headers.common, defaults.headers.get, {
           'X-COMMON-HEADER': 'commonHeaderValue',
           'X-GET-HEADER': 'getHeaderValue',
           'X-FOO-HEADER': 'fooHeaderValue',
@@ -114,5 +136,27 @@ describe('defaults', function () {
     });
   });
 
-});
+  it('should be used by custom instance if set before instance created', function (done) {
+    axios.defaults.baseURL = 'http://example.org/';
+    var instance = axios.create();
 
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.org/foo');
+      done();
+    });
+  });
+
+  it('should be used by custom instance if set after instance created', function (done) {
+    var instance = axios.create();
+    axios.defaults.baseURL = 'http://example.org/';
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.org/foo');
+      done();
+    });
+  });
+});

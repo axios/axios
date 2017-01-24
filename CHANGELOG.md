@@ -1,5 +1,15 @@
 # Changelog
 
+### 0.15.3 (Nov 27, 2016)
+
+- Fixing issue with custom instances and global defaults ([#443](https://github.com/mzabriskie/axios/issues/443))
+- Renaming `axios.d.ts` to `index.d.ts` ([#519](https://github.com/mzabriskie/axios/issues/519))
+- Adding `get`, `head`, and `delete` to `defaults.headers` ([#509](https://github.com/mzabriskie/axios/issues/509))
+- Fixing issue with `btoa` and IE ([#507](https://github.com/mzabriskie/axios/issues/507))
+- Adding support for proxy authentication ([#483](https://github.com/mzabriskie/axios/pull/483))
+- Improving HTTP adapter to use `http` protocol by default ([#493](https://github.com/mzabriskie/axios/pull/493))
+- Fixing proxy issues ([#491](https://github.com/mzabriskie/axios/pull/491))
+
 ### 0.15.2 (Oct 17, 2016)
 
 - Fixing issue with calling `cancel` after response has been received ([#482](https://github.com/mzabriskie/axios/issues/482))

@@ -27,7 +27,7 @@ describe('promise', function () {
         expect(response.headers['content-type']).toEqual('application/json');
         expect(response.config.url).toEqual('/foo');
         done();
-      });
+      }, 100);
     });
   });
 

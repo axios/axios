@@ -52,7 +52,7 @@ describe('interceptors', function () {
         setTimeout(function () {
           config.headers.async = 'promise';
           resolve(config);
-        }, 10);
+        }, 100);
       });
     });
 
@@ -105,11 +105,11 @@ describe('interceptors', function () {
         status: 200,
         responseText: 'OK'
       });
-      
+
       setTimeout(function () {
         expect(response.data).toBe('OK - modified by interceptor');
         done();
-      });
+      }, 100);
     });
   });
 
@@ -135,7 +135,7 @@ describe('interceptors', function () {
       setTimeout(function () {
         expect(response.data).toBe('stuff');
         done();
-      });
+      }, 100);
     });
   });
 
@@ -194,11 +194,11 @@ describe('interceptors', function () {
         status: 200,
         responseText: 'OK'
       });
-      
+
       setTimeout(function () {
         expect(response.data).toBe('OK123');
         done();
-      });
+      }, 100);
     });
   });
 
@@ -233,10 +233,10 @@ describe('interceptors', function () {
       setTimeout(function () {
         expect(response.data).toBe('OK13');
         done();
-      });
+      }, 100);
     });
   });
-  
+
   it('should execute interceptors before transformers', function (done) {
     axios.interceptors.request.use(function (config) {
       config.data.baz = 'qux';

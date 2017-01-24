@@ -28,7 +28,7 @@
 
           var config = {
             onUploadProgress: function(progressEvent) {
-              var percentCompleted = progressEvent.loaded / progressEvent.total;
+              var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
             }
           };
 

@@ -5,7 +5,7 @@ describe('adapter', function () {
     var called = false;
 
     axios('/foo', {
-      adapter: function (resolve, reject, config) {
+      adapter: function (config) {
         called = true;
       }
     });

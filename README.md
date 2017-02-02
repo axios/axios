@@ -544,7 +544,7 @@ In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.h
 
 ```js
 var querystring = require('querystring');
-axios.post('http://something.com/', querystring.stringify({ foo: 'bar' });
+axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
 You can also use the `qs` library.

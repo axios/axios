@@ -199,7 +199,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // The last function in the array must return a string, an ArrayBuffer, or a Stream
+  // The last function in the array must return a string, an ArrayBuffer, FormData, or a Stream
   transformRequest: [function (data) {
     // Do whatever you want to transform the data
 

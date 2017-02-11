@@ -73,6 +73,6 @@
   },
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "1.0.0"
+    "follow-redirects": "0.0.7"
   }
 }

@@ -52,6 +52,10 @@ export interface AxiosResponse {
   config: AxiosRequestConfig;
 }
 
+export interface GenericAxiosResponse<R> extends AxiosResponse {
+  data: R;
+}
+
 export interface AxiosError extends Error {
   config: AxiosRequestConfig;
   code?: string;

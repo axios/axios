@@ -248,7 +248,7 @@ These are the available config options for making requests. Only the `url` is re
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
-  // Return a promise and supply a valid response (see [response docs](#response-api)).
+  // Return a promise and supply a valid response (see lib/adapters/README.md).
   adapter: function (config) {
     /* ... */
   },

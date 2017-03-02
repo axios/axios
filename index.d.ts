@@ -44,18 +44,18 @@ export interface AxiosRequestConfig {
   cancelToken?: CancelToken;
 }
 
-export interface AxiosResponse {
-  data: any;
+export interface AxiosResponse<T> {
+  data: T;
   status: number;
   statusText: string;
   headers: any;
   config: AxiosRequestConfig;
 }
 
-export interface AxiosError extends Error {
+export interface AxiosError<T> extends Error {
   config: AxiosRequestConfig;
   code?: string;
-  response?: AxiosResponse;
+  response?: AxiosResponse<T>;
 }
 
 export interface Promise<V> {
@@ -64,7 +64,7 @@ export interface Promise<V> {
   catch<R>(onRejected: (error: any) => R | Promise<R>): Promise<R>;
 }
 
-export interface AxiosPromise extends Promise<AxiosResponse> {
+export interface AxiosPromise extends Promise<AxiosResponse<any>> {
 }
 
 export interface CancelStatic {
@@ -104,7 +104,7 @@ export interface AxiosInstance {
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
-    response: AxiosInterceptorManager<AxiosResponse>;
+    response: AxiosInterceptorManager<AxiosResponse<any>>;
   };
   request(config: AxiosRequestConfig): AxiosPromise;
   get(url: string, config?: AxiosRequestConfig): AxiosPromise;

@@ -51,6 +51,9 @@ describe('requests', function () {
       expect(reason.config.method).toBe('get');
       expect(reason.config.url).toBe('http://thisisnotaserver');
 
+      // re-enable jasmine.Ajax
+      jasmine.Ajax.install();
+      
       done();
     };
 

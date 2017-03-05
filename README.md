@@ -125,6 +125,18 @@ axios({
 });
 ```
 
+```js
+// GET request for remote image
+axios({
+  method:'get',
+  url:'http://bit.ly/2mTM3nY',
+  responseType:'stream'
+})
+  .then(function(response) {
+  response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
+});
+```
+
 ##### axios(url[, config])
 
 ```js
@@ -526,7 +538,7 @@ In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/
 var params = new URLSearchParams();
 params.append('param1', 'value1');
 params.append('param2', 'value2');
-axios.post('/foo', params); 
+axios.post('/foo', params);
 ```
 
 > Note that `URLSearchParams` is not supported by all browsers, but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).

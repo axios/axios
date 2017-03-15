@@ -42,7 +42,6 @@
     "grunt-eslint": "^19.0.0",
     "grunt-karma": "^2.0.0",
     "grunt-ts": "^6.0.0-beta.3",
-    "grunt-typings": "^0.1.5",
     "grunt-webpack": "^1.0.18",
     "istanbul-instrumenter-loader": "^1.0.0",
     "jasmine-core": "^2.4.1",

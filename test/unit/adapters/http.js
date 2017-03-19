@@ -248,6 +248,30 @@ module.exports = {
     });
   },
 
+  testBuffer: function(test) {
+    var buf = new Buffer(1024); // Unsafe buffer < Buffer.poolSize (8192 bytes)
+    buf.fill('x');
+    server = http.createServer(function (req, res) {
+      test.equal(req.headers['content-length'], buf.length.toString());
+      req.pipe(res);
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/',
+        buf, {
+        responseType: 'stream'
+      }).then(function (res) {
+        var stream = res.data;
+        var string = '';
+        stream.on('data', function (chunk) {
+          string += chunk.toString('utf8');
+        });
+        stream.on('end', function () {
+          test.equal(string, buf.toString());
+          test.done();
+        });
+      });
+    });
+  },
+
   testHTTPProxy: function(test) {
     server = http.createServer(function(req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');

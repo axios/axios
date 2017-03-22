@@ -430,7 +430,7 @@ If you may need to remove an interceptor later you can.
 
 ```js
 var myInterceptor = axios.interceptors.request.use(function () {/*...*/});
-axios.interceptors.request.eject(myInterceptor);
+axios.interceptors.request.use(myInterceptor);
 ```
 
 You can add interceptors to a custom instance of axios.

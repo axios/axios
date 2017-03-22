@@ -308,7 +308,7 @@ These are the available config options for making requests. Only the `url` is re
   proxy: {
     host: '127.0.0.1',
     port: 9000,
-    auth: : {
+    auth: {
       username: 'mikeymike',
       password: 'rapunz3l'
     }

@@ -139,10 +139,10 @@ For convenience aliases have been provided for all supported request methods.
 ##### axios.get(url[, config])
 ##### axios.delete(url[, config])
 ##### axios.head(url[, config])
+##### axios.options(url[, config])
 ##### axios.post(url[, data[, config]])
 ##### axios.put(url[, data[, config]])
 ##### axios.patch(url[, data[, config]])
-##### axios.options(url[, data[, config]])
 
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
@@ -176,6 +176,7 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#get(url[, config])
 ##### axios#delete(url[, config])
 ##### axios#head(url[, config])
+##### axios#options(url[, config])
 ##### axios#post(url[, data[, config]])
 ##### axios#put(url[, data[, config]])
 ##### axios#patch(url[, data[, config]])

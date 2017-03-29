@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "0.15.3",
+  "version": "0.15.3-dw",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
@@ -72,6 +72,6 @@
   },
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "1.1.0"
+    "follow-redirects": "1.2.3"
   }
 }

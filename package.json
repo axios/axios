@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "0.15.3",
+  "version": "0.15.3-dw",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
@@ -62,16 +62,16 @@
     "minimist": "^1.2.0",
     "phantomjs-prebuilt": "^2.1.7",
     "sinon": "^1.17.4",
-    "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
+    "typescript": "^2.0.3",
     "url-search-params": "^0.6.1",
-    "typescript": "^2.0.3"
+    "webpack": "^1.13.1",
+    "webpack-dev-server": "^1.14.1"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   },
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "1.0.0"
+    "follow-redirects": "1.2.3"
   }
 }

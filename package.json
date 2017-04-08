@@ -72,6 +72,6 @@
   },
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "1.2.3"
+    "follow-redirects": "^1.2.3"
   }
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.16.1 (Apr 8, 2017)
+
+- Improving HTTP adapter to return last request in case of redirects ([#828](https://github.com/mzabriskie/axios/pull/828))
+- Updating `follow-redirects` dependency ([#829](https://github.com/mzabriskie/axios/pull/829))
+- Adding support for passing `Buffer` in node ([#773](https://github.com/mzabriskie/axios/pull/773))
+
 ### 0.16.0 (Mar 31, 2017)
 
 - **BREAKING** Removing `Promise` from axios typings in favor of built-in type declarations ([#480](https://github.com/mzabriskie/axios/issues/480))

@@ -213,7 +213,8 @@ These are the available config options for making requests. Only the `url` is re
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // The last function in the array must return a string, an ArrayBuffer, FormData, or a Stream
+  // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
+  // FormData or Stream
   transformRequest: [function (data) {
     // Do whatever you want to transform the data
 
@@ -248,7 +249,7 @@ These are the available config options for making requests. Only the `url` is re
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
-  // - Node only: Stream
+  // - Node only: Stream, Buffer
   data: {
     firstName: 'Fred'
   },

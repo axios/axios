@@ -311,11 +311,13 @@ These are the available config options for making requests. Only the `url` is re
   // If set to 0, no redirects will be followed.
   maxRedirects: 5, // default
 
-  // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
-  // and https requests, respectively, in node.js. This allows options to be added like
-  // `keepAlive` that are not enabled by default.
-  httpAgent: new http.Agent({ keepAlive: true }),
-  httpsAgent: new https.Agent({ keepAlive: true }),
+  // `agents` define custom agents to be used when performing http
+  // and https requests in node.js.
+  // This option allows features like keep alive requests.
+  agents: {
+    http: new http.Agent({ keepAlive: true }),
+    https: new https.Agent({ keepAlive: true })
+  },
 
   // 'proxy' defines the hostname and port of the proxy server
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and

@@ -16,6 +16,11 @@ export interface AxiosProxyConfig {
   port: number;
 }
 
+export interface AxiosAgentsConfig {
+  http?: any,
+  https?: any
+}
+
 export interface AxiosRequestConfig {
   url?: string;
   method?: string;
@@ -38,8 +43,7 @@ export interface AxiosRequestConfig {
   maxContentLength?: number;
   validateStatus?: (status: number) => boolean;
   maxRedirects?: number;
-  httpAgent?: any;
-  httpsAgent?: any;
+  agents?: AxiosAgentsConfig,
   proxy?: AxiosProxyConfig;
   cancelToken?: CancelToken;
 }

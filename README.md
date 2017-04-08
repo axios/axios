@@ -358,7 +358,12 @@ The response for a request contains the following information.
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request
-  config: {}
+  config: {},
+
+  // `request` is the request that generated this response
+  // It is the last ClientRequest instance in node.js (in redirects)
+  // and an XMLHttpRequest instance the browser
+  request: {}
 }
 ```
 

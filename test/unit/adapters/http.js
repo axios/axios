@@ -67,6 +67,29 @@ module.exports = {
     });
   },
 
+  testAgents: function (test) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      var httpAgent = new http.Agent();
+      axios.get('http://localhost:4444/', {
+        agents: {
+          http: httpAgent
+        }
+      }).then(function (res) {
+        test.equal(res.request.agent, httpAgent);
+        test.done();
+      });
+    });
+  },
+
   testRedirect: function (test) {
     var str = 'test response';
 
@@ -81,9 +104,15 @@ module.exports = {
         res.end(str);
       }
     }).listen(4444, function () {
-      axios.get('http://localhost:4444/one').then(function (res) {
+      var httpAgent = new http.Agent();
+      axios.get('http://localhost:4444/one', {
+        agents: {
+          http: httpAgent
+        }
+      }).then(function (res) {
         test.equal(res.data, str);
         test.equal(res.request.path, '/two');
+        test.equal(res.request.agent, httpAgent);
         test.done();
       });
     });

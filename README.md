@@ -216,7 +216,7 @@ These are the available config options for making requests. Only the `url` is re
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
   // FormData or Stream
   // You may modify the headers object.
-  transformRequest: [function (data, headers) {
+  transformRequest: [function (data, configOrResponse) {
     // Do whatever you want to transform the data
 
     return data;
@@ -224,7 +224,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `transformResponse` allows changes to the response data to be made before
   // it is passed to then/catch
-  transformResponse: [function (data) {
+  transformResponse: [function (data, headers, status) {
     // Do whatever you want to transform the data
 
     return data;

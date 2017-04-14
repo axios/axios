@@ -88,6 +88,7 @@ function myAdapter(resolve, reject, config) {
     data: transformData(
       responseData,
       responseHeaders,
+      responseStatus,
       config.transformResponse
     ),
     status: request.status,

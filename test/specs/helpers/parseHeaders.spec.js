@@ -33,7 +33,7 @@ describe('helpers::parseHeaders', function () {
 
   it('should handle duplicates', function() {
     var parsed = parseHeaders(
-      'Age: age-a\n' + // age is blacklisted to ignore duplicates
+      'Age: age-a\n' + // age is in ignore duplicates blacklist
       'Age: age-b\n' +
       'Foo: foo-a\n' +
       'Foo: foo-b\n'

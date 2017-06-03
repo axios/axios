@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.16.2 (Jun 3, 2017)
+
+- Fixing issue with including `buffer` in bundle ([#887](https://github.com/mzabriskie/axios/pull/887))
+- Including underlying request in errors ([#830](https://github.com/mzabriskie/axios/pull/830))
+- Convert `method` to lowercase ([#930](https://github.com/mzabriskie/axios/pull/930))
+
 ### 0.16.1 (Apr 8, 2017)
 
 - Improving HTTP adapter to return last request in case of redirects ([#828](https://github.com/mzabriskie/axios/pull/828))

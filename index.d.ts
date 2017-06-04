@@ -122,4 +122,4 @@ export interface AxiosStatic extends AxiosInstance {
 
 declare const Axios: AxiosStatic;
 
-export default Axios;
+export = Axios;

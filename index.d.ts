@@ -18,7 +18,7 @@ export interface AxiosProxyConfig {
 
 export interface AxiosRequestConfig {
   url?: string;
-  method?: string;
+  method?: 'get'|'delete'|'head'|'post'|'put'|'patch';
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];

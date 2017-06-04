@@ -427,7 +427,7 @@ instance.get('/longRequest', {
 
 ## Interceptors
 
-You can intercept requests or responses before they are handled by `then` or `catch`.
+You can intercept requests or responses before they are handled by `then` or `catch`. The example below uses `Promise`, which needs to be polyfilled in your environment if it's not supported natively. See the section on [ES6 Promise Polyfill](/UPGRADE_GUIDE.md#es6-promise-polyfill) in the [Upgrade guide](/UPGRADE_GUIDE.md).
 
 ```js
 // Add a request interceptor

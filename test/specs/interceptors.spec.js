@@ -252,4 +252,22 @@ describe('interceptors', function () {
       done();
     });
   });
+
+  it('should modify base URL in request interceptor', function (done) {
+    var instance = axios.create({
+      baseURL: 'http://test.com/'
+    });
+
+    instance.interceptors.request.use(function (config) {
+      config.baseURL = 'http://rebase.com/';
+      return config;
+    });
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://rebase.com/foo');
+      done();
+    });
+  });
 });

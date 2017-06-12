@@ -32,7 +32,7 @@
   "homepage": "https://github.com/mzabriskie/axios",
   "devDependencies": {
     "coveralls": "^2.11.9",
-    "es6-promise": "^4.0.5",
+    "es6-promise": "^4.1.0",
     "grunt": "^1.0.1",
     "grunt-banner": "^0.6.0",
     "grunt-cli": "^1.2.0",

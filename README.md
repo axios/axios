@@ -215,7 +215,8 @@ These are the available config options for making requests. Only the `url` is re
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
   // FormData or Stream
-  transformRequest: [function (data) {
+  // You may modify the headers object.
+  transformRequest: [function (data, headers) {
     // Do whatever you want to transform the data
 
     return data;

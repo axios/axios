@@ -30,6 +30,12 @@ $ npm install axios promise.prototype.finally --save
 ```
 
 ```js
+/*
+ES6:
+import { shim } from 'promise.prototype.finally';
+shim();
+*/
+
 var axios = require('axios');
 require('promise.prototype.finally').shim();
 

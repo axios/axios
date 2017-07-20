@@ -382,7 +382,7 @@ module.exports = {
         });
       }).listen(4000, function() {
         // set the env variable
-        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.http_proxy = 'http://127.0.0.1:4000/';
         process.env.no_proxy = 'localhost';
 
         axios.get('http://localhost:4444/').then(function(res) {

@@ -89,6 +89,7 @@ module.exports = {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/one').then(function (res) {
         test.equal(res.data, str);
+        test.equal(res.request.path, '/two');
         test.done();
       });
     });
@@ -248,6 +249,30 @@ module.exports = {
         });
         stream.on('end', function () {
           test.equal(string, fs.readFileSync(__filename, 'utf8'));
+          test.done();
+        });
+      });
+    });
+  },
+
+  testBuffer: function(test) {
+    var buf = new Buffer(1024); // Unsafe buffer < Buffer.poolSize (8192 bytes)
+    buf.fill('x');
+    server = http.createServer(function (req, res) {
+      test.equal(req.headers['content-length'], buf.length.toString());
+      req.pipe(res);
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/',
+        buf, {
+        responseType: 'stream'
+      }).then(function (res) {
+        var stream = res.data;
+        var string = '';
+        stream.on('data', function (chunk) {
+          string += chunk.toString('utf8');
+        });
+        stream.on('end', function () {
+          test.equal(string, buf.toString());
           test.done();
         });
       });

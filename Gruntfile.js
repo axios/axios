@@ -11,12 +11,15 @@ module.exports = function(grunt) {
       dist: 'dist/**'
     },
 
-    typings: {
-      install: {}
-    },
-
     ts: {
       test: {
+        options: {
+          lib: [
+            'es5',
+            'es2015.promise',
+            'dom'
+          ]
+        },
         src: ['typings/index.d.ts', 'test/typescript/*.ts']
       }
     },
@@ -93,7 +96,7 @@ module.exports = function(grunt) {
     grunt.file.write('bower.json', JSON.stringify(bower, null, 2));
   });
 
-  grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['eslint', 'nodeunit', 'karma:single', 'typings', 'ts']);
+  grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['eslint', 'nodeunit', 'karma:single', 'ts']);
   grunt.registerTask('build', 'Run webpack and bundle the source', ['clean', 'webpack']);
   grunt.registerTask('version', 'Sync version info for a release', ['usebanner', 'package2bower']);
 };

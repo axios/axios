@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+### 0.15.x -> 0.16.0
+
+#### `Promise` Type Declarations
+
+The `Promise` type declarations have been removed from the axios typings in favor of the built-in type declarations. If you use axios in a TypeScript project that targets `ES5`, please make sure to include the `es2015.promise` lib. Please see [this post](https://blog.mariusschulz.com/2016/11/25/typescript-2-0-built-in-type-declarations) for details.
+
 ### 0.13.x -> 0.14.0
 
 #### TypeScript Definitions

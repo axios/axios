@@ -10,8 +10,6 @@ import axios, {
   Canceler
 } from '../../';
 
-import { Promise } from 'es6-promise';
-
 const config: AxiosRequestConfig = {
   url: '/user',
   method: 'get',

@@ -1,5 +1,26 @@
 # Changelog
 
+### 0.16.2 (Jun 3, 2017)
+
+- Fixing issue with including `buffer` in bundle ([#887](https://github.com/mzabriskie/axios/pull/887))
+- Including underlying request in errors ([#830](https://github.com/mzabriskie/axios/pull/830))
+- Convert `method` to lowercase ([#930](https://github.com/mzabriskie/axios/pull/930))
+
+### 0.16.1 (Apr 8, 2017)
+
+- Improving HTTP adapter to return last request in case of redirects ([#828](https://github.com/mzabriskie/axios/pull/828))
+- Updating `follow-redirects` dependency ([#829](https://github.com/mzabriskie/axios/pull/829))
+- Adding support for passing `Buffer` in node ([#773](https://github.com/mzabriskie/axios/pull/773))
+
+### 0.16.0 (Mar 31, 2017)
+
+- **BREAKING** Removing `Promise` from axios typings in favor of built-in type declarations ([#480](https://github.com/mzabriskie/axios/issues/480))
+- Adding `options` shortcut method ([#461](https://github.com/mzabriskie/axios/pull/461))
+- Fixing issue with using `responseType: 'json'` in browsers incompatible with XHR Level 2 ([#654](https://github.com/mzabriskie/axios/pull/654))
+- Improving React Native detection ([#731](https://github.com/mzabriskie/axios/pull/731))
+- Fixing `combineURLs` to support empty `relativeURL` ([#581](https://github.com/mzabriskie/axios/pull/581))
+- Removing `PROTECTION_PREFIX` support ([#561](https://github.com/mzabriskie/axios/pull/561))
+
 ### 0.15.3 (Nov 27, 2016)
 
 - Fixing issue with custom instances and global defaults ([#443](https://github.com/mzabriskie/axios/issues/443))

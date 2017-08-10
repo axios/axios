@@ -73,6 +73,7 @@
   "typings": "./index.d.ts",
   "dependencies": {
     "follow-redirects": "^1.2.3",
-    "is-buffer": "^1.1.5"
+    "is-buffer": "^1.1.5",
+    "lodash.clonedeep": "^4.5.0"
   }
 }

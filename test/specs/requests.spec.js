@@ -79,6 +79,20 @@ describe('requests', function () {
       .then(finish, finish);
   });
 
+
+  it('should resolve status 0 when responseURL is set', function (done) {
+    axios('file://some/file.txt')
+      .then(done);
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('file://some/file.txt');
+      request.respondWith({
+        status: 0,
+        responseURL: 'file://some/file.txt'
+      });
+    });
+  });
+
   it('should reject when validateStatus returns false', function (done) {
     var resolveSpy = jasmine.createSpy('resolve');
     var rejectSpy = jasmine.createSpy('reject');

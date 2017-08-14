@@ -81,8 +81,8 @@ describe('transform', function () {
     var token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36);
 
     axios('/foo', {
-      transformRequest: function (data, headers) {
-        headers['X-Authorization'] = token;
+      transformRequest: function (data, request) {
+        request.headers['X-Authorization'] = token;
       }
     });
 

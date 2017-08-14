@@ -319,6 +319,7 @@ These are the available config options for making requests. Only the `url` is re
   httpsAgent: new https.Agent({ keepAlive: true }),
 
   // 'proxy' defines the hostname and port of the proxy server
+  // Use `false` to disable proxies, ignoring environment variables.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing

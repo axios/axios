@@ -91,6 +91,13 @@ module.exports = {
     test.done();
   },
 
+  proxyUnsetFromConfigOverridesProxyFromEnv: function(test) {
+    process.env.http_proxy = 'http://bob:secret@corpproxy.com:77/';
+    var proxy = getProxy(config({proxy: false}));
+    test.equal(proxy, undefined);
+    test.done();
+  },
+
   readProxyFromCorrectEnv: function(test) {
     process.env.https_proxy = 'http://corpproxy.com/';
     test.equal(getProxy(config()), undefined);

@@ -354,34 +354,6 @@ module.exports = {
     });
   },
 
-  testIsANoProxyHost: function(test) {
-    [
-      {h: 'bliss.mit.edu', no_p: undefined, res: false},
-      {h: 'bliss.mit.edu', no_p: 'localhost', res: false},
-      {h: 'bliss.mit.edu', no_p: 'localhost, my.corp.com', res: false},
-      {h: 'bliss.mit.edu', no_p: 'mit.edu', res: true},
-      {h: 'bliss.mit.edu', no_p: 'mit.edu,localhost', res: true},
-      {h: 'bliss.mit.edu', no_p: ' mit.edu', res: true},
-      {h: 'bliss.mit.edu', no_p: 'mit.edu ', res: true},
-      {h: 'bliss.mit.edu', no_p: 'localhost, mit.edu', res: true},
-      {h: 'bliss.mit.edu', no_p: 'u', res: true},
-      {h: '127.0.0.1', no_p: '0.0.1', res: true},
-      {h: '127.0.0.1', no_p: 'localhost', res: false}
-    ].forEach(function(data) {
-      process.env.no_proxy = data.no_p;
-      test.equal(adapter._isANoProxyHost(data.h), data.res,
-        'When no_proxy="' + data.no_p + '", then host "' + data.h + '" must ' + (data.res ? 'not ' : '') + 'be proxied');
-      delete process.env.no_proxy;
-
-      process.env.NO_PROXY = data.no_p;
-      test.equal(adapter._isANoProxyHost(data.h), data.res,
-        'When NO_PROXY="' + data.no_p + '", then host "' + data.h + '" must ' + (data.res ? 'not ' : '') + 'be proxied');
-      delete process.env.NO_PROXY;
-    });
-
-    test.done();
-  },
-
   testHTTPNoProxyEnv: function(test) {
     server = http.createServer(function(req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');

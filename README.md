@@ -215,7 +215,8 @@ These are the available config options for making requests. Only the `url` is re
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
   // FormData or Stream
-  transformRequest: [function (data) {
+  // You may modify the headers object.
+  transformRequest: [function (data, headers) {
     // Do whatever you want to transform the data
 
     return data;
@@ -318,6 +319,7 @@ These are the available config options for making requests. Only the `url` is re
   httpsAgent: new https.Agent({ keepAlive: true }),
 
   // 'proxy' defines the hostname and port of the proxy server
+  // Use `false` to disable proxies, ignoring environment variables.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
@@ -557,7 +559,7 @@ params.append('param2', 'value2');
 axios.post('/foo', params);
 ```
 
-> Note that `URLSearchParams` is not supported by all browsers, but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
+> Note that `URLSearchParams` is not supported by all browsers (see [caniuse.com](http://www.caniuse.com/#feat=urlsearchparams)), but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 

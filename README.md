@@ -577,7 +577,7 @@ var querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
-You can also use the `qs` library.
+You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ## Semver
 

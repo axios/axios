@@ -14,3 +14,4 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-method-override](https://github.com/jacobbuck/axios-method-override) - Axios http request method override plugin
 * [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlined integration testing with Mocha & Axios
 * [axiosist](https://github.com/Gerhut/axiosist) - Axios based supertest: convert node.js request handler to axios adapter, used for node.js server unit test.
+* [axios-cache-plugin](https://github.com/jin5354/axios-cache-plugin) - Help you cache GET request when using axios.

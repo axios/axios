@@ -312,6 +312,10 @@ These are the available config options for making requests. Only the `url` is re
   // If set to 0, no redirects will be followed.
   maxRedirects: 5, // default
 
+  // `socketPath` defines a UNIX Socket to be used in node.js.
+  // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
+  socketPath: null, // default
+
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
   // and https requests, respectively, in node.js. This allows options to be added like
   // `keepAlive` that are not enabled by default.

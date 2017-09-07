@@ -80,7 +80,7 @@ module.exports = function(grunt) {
       }
     },
 
-    webpack: require('./webpack.config.js')
+    rollup: require('./rollup.config.js')
   });
 
   grunt.registerMultiTask('package2bower', 'Sync package.json to bower.json', function () {
@@ -97,6 +97,6 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('test', 'Run the jasmine and nodeunit tests', ['eslint', 'nodeunit', 'karma:single', 'ts']);
-  grunt.registerTask('build', 'Run webpack and bundle the source', ['clean', 'webpack']);
+  grunt.registerTask('build', 'Run rollup and bundle the source', ['clean', 'rollup']);
   grunt.registerTask('version', 'Sync version info for a release', ['usebanner', 'package2bower']);
 };

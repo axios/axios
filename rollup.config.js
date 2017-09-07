@@ -12,6 +12,7 @@ function generateConfig(isMinify) {
 
   var options = {
     sourceMap: true,
+    sourceMapRelativePaths: true,
     format: 'umd',
     moduleName: 'axios',
     plugins: [

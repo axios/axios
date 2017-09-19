@@ -568,6 +568,20 @@ var qs = require('qs');
 axios.post('/foo', qs.stringify({ 'bar': 123 }));
 ```
 
+Or in another way (ES6),
+
+```js
+import qs from 'qs';
+const data = { 'bar': 123 };
+const options = {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  data: qs.stringify(data),
+  url,
+};
+axios(options);
+```
+
 ### Node.js
 
 In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:

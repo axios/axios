@@ -1,6 +1,7 @@
 var axios = require('../../../index');
 var http = require('http');
 var net = require('net');
+var https = require('https');
 var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
@@ -93,6 +94,37 @@ describe('supports http with nodejs', function () {
         done();
       });
     });
+  });
+
+  it('should redirect mixed protocols when both http and https agents are defined', function (done) {
+    function testRedirectRequest() {
+      axios.get('http://localhost:4444/test', {
+        httpAgent: new http.Agent({
+          keepAlive: true,
+          keepAliveMsecs: 1000,
+          maxSockets: 100,
+          maxFreeSockets: 50
+        }),
+        httpsAgent: new https.Agent({
+          keepAlive: true,
+          keepAliveMsecs: 2000,
+          maxSockets: 100,
+          maxFreeSockets: 60
+        })
+      }).then(function (res) {
+        assert.equal(res.request.path, '/');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    }
+
+    server = http.createServer(function(req, res) {
+      res.setHeader('Location', 'https://example.com/');
+      res.statusCode = 307;
+      res.end();
+    }).listen(4444, testRedirectRequest);
   });
 
   it('should not redirect', function (done) {

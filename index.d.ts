@@ -1,3 +1,5 @@
+declare namespace Axios {
+
 export interface AxiosTransformer {
   (data: any): any;
 }
@@ -121,6 +123,8 @@ export interface AxiosStatic extends AxiosInstance {
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
 }
 
-declare const Axios: AxiosStatic;
+}
 
-export default Axios;
+declare const Axios: Axios.AxiosStatic;
+
+export = Axios;

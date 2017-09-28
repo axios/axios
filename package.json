@@ -4,7 +4,7 @@
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test",
+    "test": "grunt test && bundlesize",
     "start": "node ./sandbox/server.js",
     "build": "NODE_ENV=production grunt build",
     "preversion": "npm test",
@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/mzabriskie/axios",
   "devDependencies": {
+    "bundlesize": "^0.5.7",
     "coveralls": "^2.11.9",
     "es6-promise": "^4.0.5",
     "grunt": "^1.0.1",
@@ -74,5 +75,11 @@
   "dependencies": {
     "follow-redirects": "^1.2.3",
     "is-buffer": "^1.1.5"
-  }
+  },
+  "bundlesize": [
+    {
+      "path": "./dist/axios.min.js",
+      "threshold": "5kB"
+    }
+  ]
 }

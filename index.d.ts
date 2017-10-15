@@ -50,6 +50,7 @@ export interface AxiosResponse {
   statusText: string;
   headers: any;
   config: AxiosRequestConfig;
+  request?: any;
 }
 
 export interface AxiosError extends Error {

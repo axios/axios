@@ -2,8 +2,8 @@ export interface AxiosTransformer {
   (data: any): any;
 }
 
-export interface AxiosAdapter {
-  (config: AxiosRequestConfig): AxiosPromise;
+export interface AxiosAdapter<ResponseShape = any> {
+  (config: AxiosRequestConfig): AxiosPromise<ResponseShape>;
 }
 
 export interface AxiosBasicCredentials {
@@ -16,7 +16,7 @@ export interface AxiosProxyConfig {
   port: number;
 }
 
-export interface AxiosRequestConfig {
+export interface AxiosRequestConfig<ResponseShape = any> {
   url?: string;
   method?: string;
   baseURL?: string;
@@ -28,7 +28,7 @@ export interface AxiosRequestConfig {
   data?: any;
   timeout?: number;
   withCredentials?: boolean;
-  adapter?: AxiosAdapter;
+  adapter?: AxiosAdapter<ResponseShape>;
   auth?: AxiosBasicCredentials;
   responseType?: string;
   xsrfCookieName?: string;
@@ -44,22 +44,21 @@ export interface AxiosRequestConfig {
   cancelToken?: CancelToken;
 }
 
-export interface AxiosResponse {
-  data: any;
+export interface AxiosResponse<ResponseShape = any> {
+  data: ResponseShape;
   status: number;
   statusText: string;
   headers: any;
-  config: AxiosRequestConfig;
+  config: AxiosRequestConfig<ResponseShape>;
 }
 
-export interface AxiosError extends Error {
-  config: AxiosRequestConfig;
+export interface AxiosError<ResponseShape = any> extends Error {
+  config: AxiosRequestConfig<ResponseShape>;
   code?: string;
-  request?: any;
-  response?: AxiosResponse;
+  response?: AxiosResponse<ResponseShape>;
 }
 
-export interface AxiosPromise extends Promise<AxiosResponse> {
+export interface AxiosPromise<ResponseShape = any> extends Promise<AxiosResponse<ResponseShape>> {
 }
 
 export interface CancelStatic {
@@ -96,18 +95,18 @@ export interface AxiosInterceptorManager<V> {
 }
 
 export interface AxiosInstance {
-  defaults: AxiosRequestConfig;
+  defaults: AxiosRequestConfig<any>;
   interceptors: {
-    request: AxiosInterceptorManager<AxiosRequestConfig>;
-    response: AxiosInterceptorManager<AxiosResponse>;
+    request: AxiosInterceptorManager<AxiosRequestConfig<any>>;
+    response: AxiosInterceptorManager<AxiosResponse<any>>;
   };
-  request(config: AxiosRequestConfig): AxiosPromise;
-  get(url: string, config?: AxiosRequestConfig): AxiosPromise;
-  delete(url: string, config?: AxiosRequestConfig): AxiosPromise;
-  head(url: string, config?: AxiosRequestConfig): AxiosPromise;
-  post(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise;
-  put(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise;
-  patch(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise;
+  request<ResponseShape = any>(config: AxiosRequestConfig<ResponseShape>): AxiosPromise<ResponseShape>;
+  get<ResponseShape = any>(url: string, config?: AxiosRequestConfig<ResponseShape>): AxiosPromise<ResponseShape>;
+  delete<ResponseShape = any>(url: string, config?: AxiosRequestConfig<ResponseShape>): AxiosPromise<ResponseShape>;
+  head<ResponseShape = any>(url: string, config?: AxiosRequestConfig<ResponseShape>): AxiosPromise<ResponseShape>;
+  post<ResponseShape = any>(url: string, data?: any, config?: AxiosRequestConfig<ResponseShape>): AxiosPromise<ResponseShape>;
+  put<ResponseShape = any>(url: string, data?: any, config?: AxiosRequestConfig<ResponseShape>): AxiosPromise<ResponseShape>;
+  patch<ResponseShape = any>(url: string, data?: any, config?: AxiosRequestConfig<ResponseShape>): AxiosPromise<ResponseShape>;
 }
 
 export interface AxiosStatic extends AxiosInstance {

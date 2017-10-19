@@ -221,6 +221,10 @@ axios.get('/user')
   .catch((error: any) => Promise.resolve('foo'))
   .then((value: string) => {});
 
+// Provided you know the format of the data in the response.
+axios.get<{ name: string }>('/user')
+  .then(({ data }) => data.name );
+
 // Cancellation
 
 const source: CancelTokenSource = axios.CancelToken.source();

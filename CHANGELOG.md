@@ -1,5 +1,12 @@
 # Changelog
 
+### 0.17.0 (Oct 21, 2017)
+
+- **BREAKING** Fixing issue with `baseURL` and interceptors ([#950](https://github.com/axios/axios/pull/950))
+- **BREAKING** Improving handing of duplicate headers ([#874](https://github.com/axios/axios/pull/874))
+- Adding support for disabling proxies ([#691](https://github.com/axios/axios/pull/691))
+- Updating TypeScript typings with generic type parameters ([#1061](https://github.com/axios/axios/pull/1061))
+
 ### 0.16.2 (Jun 3, 2017)
 
 - Fixing issue with including `buffer` in bundle ([#887](https://github.com/axios/axios/pull/887))

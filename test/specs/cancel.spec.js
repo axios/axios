@@ -65,7 +65,7 @@ describe('cancel', function() {
   });
 
   describe('when called after response has been received', function() {
-    // https://github.com/mzabriskie/axios/issues/482
+    // https://github.com/axios/axios/issues/482
     it('does not cause unhandled rejection', function (done) {
       var source = CancelToken.source();
       axios.get('/foo', {

@@ -1,10 +1,10 @@
 {
   "name": "axios",
-  "version": "0.16.2",
+  "version": "0.17.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test",
+    "test": "grunt test && bundlesize",
     "start": "node ./sandbox/server.js",
     "build": "NODE_ENV=production grunt build",
     "preversion": "npm test",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mzabriskie/axios.git"
+    "url": "https://github.com/axios/axios.git"
   },
   "keywords": [
     "xhr",
@@ -27,10 +27,11 @@
   "author": "Matt Zabriskie",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mzabriskie/axios/issues"
+    "url": "https://github.com/axios/axios/issues"
   },
-  "homepage": "https://github.com/mzabriskie/axios",
+  "homepage": "https://github.com/axios/axios",
   "devDependencies": {
+    "bundlesize": "^0.5.7",
     "coveralls": "^2.11.9",
     "es6-promise": "^4.0.5",
     "grunt": "^1.0.1",
@@ -75,5 +76,11 @@
     "follow-redirects": "^1.2.3",
     "is-buffer": "^1.1.5",
     "proxy-from-env": "^1.0.0"
-  }
+  },
+  "bundlesize": [
+    {
+      "path": "./dist/axios.min.js",
+      "threshold": "5kB"
+    }
+  ]
 }

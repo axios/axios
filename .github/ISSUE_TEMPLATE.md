@@ -4,11 +4,11 @@
 
 Please read and follow this instructions before submitting an issue:
 
-- Read all our documentation, specially the [README](https://github.com/mzabriskie/axios/blob/master/README.md). It may contain information that helps you solve your issue.
-- Ensure your issue isn't already [reported](https://github.com/mzabriskie/axios/issues?utf8=%E2%9C%93&q=is%3Aissue).
+- Read all our documentation, specially the [README](https://github.com/axios/axios/blob/master/README.md). It may contain information that helps you solve your issue.
+- Ensure your issue isn't already [reported](https://github.com/axios/axios/issues?utf8=%E2%9C%93&q=is%3Aissue).
 - If you aren't sure that the issue is caused by axios or you just need for help, please use [Stack Overflow](https://stackoverflow.com/questions/tagged/axios) or [our chat](https://gitter.im/mzabriskie/axios).
 - If you're reporting a bug, ensure it isn't already fixed in the latest axios version.
-- If you need a new feature there's a chance it's already implemented in a [library](https://github.com/mzabriskie/axios/blob/master/ECOSYSTEM.md) or you can implement it using [interceptors](https://github.com/mzabriskie/axios#interceptors).
+- If you need a new feature there's a chance it's already implemented in a [library](https://github.com/axios/axios/blob/master/ECOSYSTEM.md) or you can implement it using [interceptors](https://github.com/axios/axios#interceptors).
 
 *^^^ Delete the instructions before submitting the issue ^^^*
 

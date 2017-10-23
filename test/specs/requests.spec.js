@@ -132,7 +132,7 @@ describe('requests', function () {
     });
   });
 
-  // https://github.com/mzabriskie/axios/issues/378
+  // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;
 
@@ -220,7 +220,7 @@ describe('requests', function () {
     });
   });
 
-  // https://github.com/mzabriskie/axios/issues/201
+  // https://github.com/axios/axios/issues/201
   it('should fix IE no content error', function (done) {
     var response;
 

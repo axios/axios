@@ -115,8 +115,8 @@ function myAdapter(config) {
 ```
 
 See the related commits for more details:
-- [Response transformers](https://github.com/mzabriskie/axios/commit/10eb23865101f9347570552c04e9d6211376e25e)
-- [Request adapter Promise](https://github.com/mzabriskie/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a)
+- [Response transformers](https://github.com/axios/axios/commit/10eb23865101f9347570552c04e9d6211376e25e)
+- [Request adapter Promise](https://github.com/axios/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a)
 
 ### 0.5.x -> 0.6.0
 
@@ -135,7 +135,7 @@ This will polyfill the global environment, and only needs to be done once.
 
 #### `axios.success`/`axios.error`
 
-The `success`, and `error` aliases were deprectated in [0.4.0](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md#040-oct-03-2014). As of this release they have been removed entirely. Instead please use `axios.then`, and `axios.catch` respectively.
+The `success`, and `error` aliases were deprectated in [0.4.0](https://github.com/axios/axios/blob/master/CHANGELOG.md#040-oct-03-2014). As of this release they have been removed entirely. Instead please use `axios.then`, and `axios.catch` respectively.
 
 ```js
 axios.get('some/url')

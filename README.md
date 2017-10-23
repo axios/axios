@@ -1,7 +1,7 @@
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![build status](https://img.shields.io/travis/mzabriskie/axios.svg?style=flat-square)](https://travis-ci.org/mzabriskie/axios)
+[![build status](https://img.shields.io/travis/axios/axios.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
@@ -577,7 +577,7 @@ var querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
-You can also use the `qs` library.
+You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ## Semver
 
@@ -597,11 +597,11 @@ axios.get('/user?ID=12345');
 
 ## Resources
 
-* [Changelog](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/mzabriskie/axios/blob/master/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/mzabriskie/axios/blob/master/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/mzabriskie/axios/blob/master/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md)
+* [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
 
 ## Credits
 

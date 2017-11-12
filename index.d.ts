@@ -14,6 +14,10 @@ export interface AxiosBasicCredentials {
 export interface AxiosProxyConfig {
   host: string;
   port: number;
+  auth?: {
+    username: string;
+    password:string;
+  }
 }
 
 export interface AxiosRequestConfig {
@@ -40,7 +44,7 @@ export interface AxiosRequestConfig {
   maxRedirects?: number;
   httpAgent?: any;
   httpsAgent?: any;
-  proxy?: AxiosProxyConfig;
+  proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
 }
 

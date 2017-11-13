@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.17.1 (Nov 11, 2017)
+
+- Fixing issue with web workers ([#1160](https://github.com/axios/axios/pull/1160))
+- Allowing overriding transport ([#1080](https://github.com/axios/axios/pull/1080))
+- Updating TypeScript typings ([#1165](https://github.com/axios/axios/pull/1165), [#1125](https://github.com/axios/axios/pull/1125), [#1131](https://github.com/axios/axios/pull/1131))
+
 ### 0.17.0 (Oct 21, 2017)
 
 - **BREAKING** Fixing issue with `baseURL` and interceptors ([#950](https://github.com/axios/axios/pull/950))

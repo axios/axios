@@ -1,5 +1,5 @@
 export interface AxiosTransformer {
-  (data: any): any;
+  (data: any, headers?: any): any;
 }
 
 export interface AxiosAdapter {
@@ -14,6 +14,10 @@ export interface AxiosBasicCredentials {
 export interface AxiosProxyConfig {
   host: string;
   port: number;
+  auth?: {
+    username: string;
+    password:string;
+  }
 }
 
 export interface AxiosRequestConfig {
@@ -40,7 +44,7 @@ export interface AxiosRequestConfig {
   maxRedirects?: number;
   httpAgent?: any;
   httpsAgent?: any;
-  proxy?: AxiosProxyConfig;
+  proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
 }
 
@@ -50,6 +54,7 @@ export interface AxiosResponse<T = any>  {
   statusText: string;
   headers: any;
   config: AxiosRequestConfig;
+  request?: any;
 }
 
 export interface AxiosError extends Error {
@@ -91,7 +96,7 @@ export interface CancelTokenSource {
 }
 
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
+  use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
   eject(id: number): void;
 }
 

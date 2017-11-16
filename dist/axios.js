@@ -1,4 +1,4 @@
-/* axios v0.17.1 | (c) 2017 by Matt Zabriskie */
+/* @contentful/axios v0.18.0 | (c) 2017 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

@@ -18,4 +18,10 @@ describe('helpers::normalizeHeaderName', function () {
     expect(headers['content-type']).toBe('foo/bar');
     expect(headers['Content-Length']).toBeUndefined();
   });
+
+  it('should not fail on name.toUpperCase when headers value ain\'t object', function () {
+    var headers = 'NotAnObject'
+    var normalizer = function () { normalizeHeaderName(headers, 'Content-Length'); };
+    expect(normalizer).toThrow(new TypeError('expecting "headers" to be an object'));
+  });
 });

@@ -1,4 +1,5 @@
 var webpack = require('webpack');
+var path = require('path');
 var config = {};
 
 function generateConfig(name) {
@@ -6,7 +7,7 @@ function generateConfig(name) {
   var config = {
     entry: './index.js',
     output: {
-      path: 'dist/',
+      path: path.resolve(__dirname, 'dist/'),
       filename: name + '.js',
       sourceMapFilename: name + '.map',
       library: 'axios',
@@ -27,9 +28,7 @@ function generateConfig(name) {
   if (uglify) {
     config.plugins.push(
       new webpack.optimize.UglifyJsPlugin({
-        compressor: {
-          warnings: false
-        }
+        sourceMap: true
       })
     );
   }

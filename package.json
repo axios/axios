@@ -58,7 +58,7 @@
     "karma-sauce-launcher": "^1.1.0",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^1.7.0",
+    "karma-webpack": "^2.0.6",
     "load-grunt-tasks": "^3.5.2",
     "minimist": "^1.2.0",
     "phantomjs-prebuilt": "^2.1.7",

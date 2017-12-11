@@ -311,6 +311,37 @@ module.exports = {
     });
   },
 
+  testHTTPSProxy: function(test) {
+    // using the bing.com as the remote https server
+    server = {
+      close: function () {}
+    };
+    proxy = http.createServer().on('connect', function connect(cReq, cSock) {
+      var u = url.parse('http://' + cReq.url);
+
+      var pSock = require('net').connect(u.port, u.hostname, function () {
+        cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        pSock.pipe(cSock);
+      }).on('error', function (e) {
+        cSock.end();
+      });
+
+      cSock.pipe(pSock);
+    }).listen(4000, function () {
+      var success = false
+      axios.get('https://www.bing.com/', {
+        proxy: {
+          host: 'localhost',
+          port: 4000
+        }
+      }).then(function (res) {
+        success = true
+        test.equal(res.status, 200, 'should pass through proxy');
+        test.done();
+      })
+    });
+  },
+
   testHTTPProxyDisabled: function(test) {
     // set the env variable
     process.env.http_proxy = 'http://does-not-exists.example.com:4242/';

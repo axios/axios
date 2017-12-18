@@ -101,6 +101,8 @@ export interface AxiosInterceptorManager<V> {
 }
 
 export interface AxiosInstance {
+  (config: AxiosRequestConfig): AxiosPromise;
+  (url: string, config?: AxiosRequestConfig): AxiosPromise;
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
@@ -116,8 +118,6 @@ export interface AxiosInstance {
 }
 
 export interface AxiosStatic extends AxiosInstance {
-  (config: AxiosRequestConfig): AxiosPromise;
-  (url: string, config?: AxiosRequestConfig): AxiosPromise;
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;

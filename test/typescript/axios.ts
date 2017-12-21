@@ -141,6 +141,10 @@ axios.patch<User>('/user', { foo: 'bar' })
 const instance1: AxiosInstance = axios.create();
 const instance2: AxiosInstance = axios.create(config);
 
+instance1(config)
+  .then(handleResponse)
+  .catch(handleError);
+
 instance1.request(config)
   .then(handleResponse)
   .catch(handleError);

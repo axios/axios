@@ -74,7 +74,8 @@
   "typings": "./index.d.ts",
   "dependencies": {
     "follow-redirects": "^1.2.5",
-    "is-buffer": "^1.1.5"
+    "is-buffer": "^1.1.5",
+    "https-proxy-agent": "^2.1.1"
   },
   "bundlesize": [
     {

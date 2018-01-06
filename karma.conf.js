@@ -187,7 +187,7 @@ module.exports = function(config) {
             test: /\.js$/,
             exclude: /(node_modules|test)/,
             loader: 'istanbul-instrumenter-loader',
-            enforce: 'pre'
+            enforce: 'post'
           }
         ]
       },

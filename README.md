@@ -73,6 +73,14 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   });
+  
+  // Want to use async/await?
+  try {
+    const response = axios.get('/user?ID=12345');
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  }
 ```
 
 Performing a `POST` request

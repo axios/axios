@@ -356,7 +356,7 @@ The response for a request contains the following information.
   statusText: 'OK',
 
   // `headers` the headers that the server responded with
-  // All header names are lower cased
+  // Note: This may be empty due to CORS, see https://github.com/mzabriskie/axios/issues/467#issuecomment-252076410
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request

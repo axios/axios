@@ -17,6 +17,22 @@ describe('requests', function () {
     });
   });
 
+  it('should treat method value as lowercase string', function (done) {
+    axios({
+      url: '/foo',
+      method: 'POST'
+    }).then(function (response) {
+      expect(response.config.method).toBe('post');
+      done();
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200
+      });
+    });
+  });
+
   it('should allow string arg as url, and config arg', function (done) {
     axios.post('/foo');
 
@@ -49,12 +65,16 @@ describe('requests', function () {
       var reason = rejectSpy.calls.first().args[0];
       expect(reason instanceof Error).toBe(true);
       expect(reason.config.method).toBe('get');
-      expect(reason.config.url).toBe('http://thisisnotaserver');
+      expect(reason.config.url).toBe('http://thisisnotaserver/foo');
+      expect(reason.request).toEqual(jasmine.any(XMLHttpRequest));
+
+      // re-enable jasmine.Ajax
+      jasmine.Ajax.install();
 
       done();
     };
 
-    axios('http://thisisnotaserver')
+    axios('http://thisisnotaserver/foo')
       .then(resolveSpy, rejectSpy)
       .then(finish, finish);
   });
@@ -112,7 +132,7 @@ describe('requests', function () {
     });
   });
 
-  // https://github.com/mzabriskie/axios/issues/378
+  // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;
 
@@ -200,7 +220,7 @@ describe('requests', function () {
     });
   });
 
-  // https://github.com/mzabriskie/axios/issues/201
+  // https://github.com/axios/axios/issues/201
   it('should fix IE no content error', function (done) {
     var response;
 

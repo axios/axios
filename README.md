@@ -1,7 +1,7 @@
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![build status](https://img.shields.io/travis/mzabriskie/axios.svg?style=flat-square)](https://travis-ci.org/mzabriskie/axios)
+[![build status](https://img.shields.io/travis/axios/axios.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
@@ -21,7 +21,7 @@ Promise based HTTP client for the browser and node.js
 
 ## Browser Support
 
-![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Internet_Explorer_10_logo.svg/48px-Internet_Explorer_10_logo.svg.png) |
+![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
 --- | --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 
@@ -125,6 +125,18 @@ axios({
 });
 ```
 
+```js
+// GET request for remote image
+axios({
+  method:'get',
+  url:'http://bit.ly/2mTM3nY',
+  responseType:'stream'
+})
+  .then(function(response) {
+  response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
+});
+```
+
 ##### axios(url[, config])
 
 ```js
@@ -140,6 +152,7 @@ For convenience aliases have been provided for all supported request methods.
 ##### axios.get(url[, config])
 ##### axios.delete(url[, config])
 ##### axios.head(url[, config])
+##### axios.options(url[, config])
 ##### axios.post(url[, data[, config]])
 ##### axios.put(url[, data[, config]])
 ##### axios.patch(url[, data[, config]])
@@ -176,6 +189,7 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#get(url[, config])
 ##### axios#delete(url[, config])
 ##### axios#head(url[, config])
+##### axios#options(url[, config])
 ##### axios#post(url[, data[, config]])
 ##### axios#put(url[, data[, config]])
 ##### axios#patch(url[, data[, config]])
@@ -199,8 +213,10 @@ These are the available config options for making requests. Only the `url` is re
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
-  // The last function in the array must return a string, an ArrayBuffer, or a Stream
-  transformRequest: [function (data) {
+  // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
+  // FormData or Stream
+  // You may modify the headers object.
+  transformRequest: [function (data, headers) {
     // Do whatever you want to transform the data
 
     return data;
@@ -234,7 +250,7 @@ These are the available config options for making requests. Only the `url` is re
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
-  // - Node only: Stream
+  // - Node only: Stream, Buffer
   data: {
     firstName: 'Fred'
   },
@@ -248,7 +264,7 @@ These are the available config options for making requests. Only the `url` is re
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
-  // Return a promise and supply a valid response (see [response docs](#response-api)).
+  // Return a promise and supply a valid response (see lib/adapters/README.md).
   adapter: function (config) {
     /* ... */
   },
@@ -297,18 +313,21 @@ These are the available config options for making requests. Only the `url` is re
   maxRedirects: 5, // default
 
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
-  // and https requests, respectively, in node.js. This allows to configure options like
+  // and https requests, respectively, in node.js. This allows options to be added like
   // `keepAlive` that are not enabled by default.
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
   // 'proxy' defines the hostname and port of the proxy server
-  // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and supplies credentials.
-  // This will set an `Proxy-Authorization` header, overwriting any existing `Proxy-Authorization` custom headers you have set using `headers`.
+  // Use `false` to disable proxies, ignoring environment variables.
+  // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
+  // supplies credentials.
+  // This will set an `Proxy-Authorization` header, overwriting any existing
+  // `Proxy-Authorization` custom headers you have set using `headers`.
   proxy: {
     host: '127.0.0.1',
     port: 9000,
-    auth: : {
+    auth: {
       username: 'mikeymike',
       password: 'rapunz3l'
     }
@@ -337,10 +356,16 @@ The response for a request contains the following information.
   statusText: 'OK',
 
   // `headers` the headers that the server responded with
+  // All header names are lower cased
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request
-  config: {}
+  config: {},
+
+  // `request` is the request that generated this response
+  // It is the last ClientRequest instance in node.js (in redirects)
+  // and an XMLHttpRequest instance the browser
+  request: {}
 }
 ```
 
@@ -446,11 +471,16 @@ instance.interceptors.request.use(function () {/*...*/});
 axios.get('/user/12345')
   .catch(function (error) {
     if (error.response) {
-      // The request was made, but the server responded with a status code
+      // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       console.log(error.response.data);
       console.log(error.response.status);
       console.log(error.response.headers);
+    } else if (error.request) {
+      // The request was made but no response was received
+      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+      // http.ClientRequest in node.js
+      console.log(error.request);
     } else {
       // Something happened in setting up the request that triggered an Error
       console.log('Error', error.message);
@@ -473,7 +503,7 @@ axios.get('/user/12345', {
 
 You can cancel a request using a *cancel token*.
 
-> The axios cancel token API is based on the [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises), which is currently at Stage 1.
+> The axios cancel token API is based on the withdrawn [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
 
 You can create a cancel token using the `CancelToken.source` factory as shown below:
 
@@ -526,10 +556,10 @@ In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/
 var params = new URLSearchParams();
 params.append('param1', 'value1');
 params.append('param2', 'value2');
-axios.post('/foo', params); 
+axios.post('/foo', params);
 ```
 
-> Note that `URLSearchParams` is not supported by all browsers, but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
+> Note that `URLSearchParams` is not supported by all browsers (see [caniuse.com](http://www.caniuse.com/#feat=urlsearchparams)), but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 
@@ -544,10 +574,10 @@ In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.h
 
 ```js
 var querystring = require('querystring');
-axios.post('http://something.com/', querystring.stringify({ foo: 'bar' });
+axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
-You can also use the `qs` library.
+You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ## Semver
 
@@ -567,11 +597,11 @@ axios.get('/user?ID=12345');
 
 ## Resources
 
-* [Changelog](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/mzabriskie/axios/blob/master/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/mzabriskie/axios/blob/master/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/mzabriskie/axios/blob/master/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md)
+* [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
 
 ## Credits
 

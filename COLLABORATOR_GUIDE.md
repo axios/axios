@@ -2,7 +2,7 @@
 
 As a collaborator you will be involved with axios with some administrative responsibilities. This guide will help you understand your role and the responsibilities that come with being a collaborator.
 
-1. __Adhere to and help enforce the Code of Conduct.__ It is expected that you have read the [code of conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md) and that you agree to live by it. This community should be friendly and welcoming.
+1. __Adhere to and help enforce the Code of Conduct.__ It is expected that you have read the [code of conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md) and that you agree to live by it. This community should be friendly and welcoming.
 
 1. __Triage issues.__ As a collaborator you may help sort through the issues that are reported. Issues vary from bugs, regressions, feature requests, questions, etc. Apply the appropriate label(s) and respond as needed. If it is a legitimate request please address it, otherwise feel free to close the issue and include a comment with a suggestion on where to find support. If an issue has been inactive for more than a week (i.e, the owner of the issue hasn’t responded to you), close the issue with a note indicating stales issues are closed; it can always be reopened if needed. In the case of issues that require a code change encourage the owner to submit a PR. For less complex code changes, add a very simple and detailed checklist, apply the “first-timers-only” label, and encourage a newcomer to open source to get involved.
 

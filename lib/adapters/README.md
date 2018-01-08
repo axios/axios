@@ -7,7 +7,7 @@ The modules under `adapters/` are modules that handle dispatching a request and 
 ```js
 var settle = require('./../core/settle');
 
-module.exports myAdapter(config) {
+module.exports = function myAdapter(config) {
   // At this point:
   //  - config has been merged with defaults
   //  - request transformers have already run

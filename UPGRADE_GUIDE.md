@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+### 0.15.x -> 0.16.0
+
+#### `Promise` Type Declarations
+
+The `Promise` type declarations have been removed from the axios typings in favor of the built-in type declarations. If you use axios in a TypeScript project that targets `ES5`, please make sure to include the `es2015.promise` lib. Please see [this post](https://blog.mariusschulz.com/2016/11/25/typescript-2-0-built-in-type-declarations) for details.
+
 ### 0.13.x -> 0.14.0
 
 #### TypeScript Definitions
@@ -109,8 +115,8 @@ function myAdapter(config) {
 ```
 
 See the related commits for more details:
-- [Response transformers](https://github.com/mzabriskie/axios/commit/10eb23865101f9347570552c04e9d6211376e25e)
-- [Request adapter Promise](https://github.com/mzabriskie/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a)
+- [Response transformers](https://github.com/axios/axios/commit/10eb23865101f9347570552c04e9d6211376e25e)
+- [Request adapter Promise](https://github.com/axios/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a)
 
 ### 0.5.x -> 0.6.0
 
@@ -129,7 +135,7 @@ This will polyfill the global environment, and only needs to be done once.
 
 #### `axios.success`/`axios.error`
 
-The `success`, and `error` aliases were deprectated in [0.4.0](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md#040-oct-03-2014). As of this release they have been removed entirely. Instead please use `axios.then`, and `axios.catch` respectively.
+The `success`, and `error` aliases were deprectated in [0.4.0](https://github.com/axios/axios/blob/master/CHANGELOG.md#040-oct-03-2014). As of this release they have been removed entirely. Instead please use `axios.then`, and `axios.catch` respectively.
 
 ```js
 axios.get('some/url')

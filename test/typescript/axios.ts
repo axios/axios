@@ -10,8 +10,6 @@ import axios, {
   Canceler
 } from '../../';
 
-import { Promise } from 'es6-promise';
-
 const config: AxiosRequestConfig = {
   url: '/user',
   method: 'get',
@@ -99,10 +97,53 @@ axios.patch('/user', { foo: 'bar' })
   .then(handleResponse)
   .catch(handleError);
 
+// Typed methods
+interface User {
+  id: number;
+  name: string;
+}
+
+const handleUserResponse = (response: AxiosResponse<User>) => {
+	console.log(response.data.id);
+	console.log(response.data.name);
+	console.log(response.status);
+	console.log(response.statusText);
+	console.log(response.headers);
+	console.log(response.config);
+};
+
+axios.get<User>('/user?id=12345')
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.get<User>('/user', { params: { id: 12345 } })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.post<User>('/user', { foo: 'bar' })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.post<User>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.put<User>('/user', { foo: 'bar' })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.patch<User>('/user', { foo: 'bar' })
+	.then(handleUserResponse)
+	.catch(handleError);
+
 // Instances
 
 const instance1: AxiosInstance = axios.create();
 const instance2: AxiosInstance = axios.create(config);
+
+instance1(config)
+  .then(handleResponse)
+  .catch(handleError);
 
 instance1.request(config)
   .then(handleResponse)

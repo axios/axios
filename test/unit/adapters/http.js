@@ -125,6 +125,44 @@ module.exports = {
     });
   },
 
+  testMaxContentLengthError: function (test) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+    var len = JSON.stringify(data).length
+
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.put('http://localhost:4444/', data, {
+        maxContentLength: len - 1
+      }).catch(function (error) {
+        test.done();
+      });
+    });
+  },
+
+  testMaxContentLengthSuccess: function (test) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+    var len = JSON.stringify(data).length
+
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.put('http://localhost:4444/', data, {
+        maxContentLength: len
+      }).then(function (res) {
+        test.done();
+      });
+    });
+  },
+
   testTransparentGunzip: function (test) {
     var data = {
       firstName: 'Fred',

@@ -6,7 +6,7 @@ function generateConfig(name) {
   var config = {
     entry: './index.js',
     output: {
-      path: 'dist/',
+      path: __dirname + '/dist/',
       filename: name + '.js',
       sourceMapFilename: name + '.map',
       library: 'axios',
@@ -37,7 +37,7 @@ function generateConfig(name) {
   return config;
 }
 
-['axios', 'axios.min'].forEach(function (key) {
+['axios', 'axios.min'].forEach(function(key) {
   config[key] = generateConfig(key);
 });
 

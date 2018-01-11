@@ -31,7 +31,7 @@ module.exports = function(config) {
       'SAUCE_ANDROID'
     ];
 
-    options.forEach(function (opt) {
+    options.forEach(function(opt) {
       if (process.env[opt]) {
         runAll = false;
       }
@@ -120,7 +120,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'test/specs/__helpers.js',
-      'test/specs/**/*.spec.js',
+      'test/specs/**/*.spec.js'
     ],
 
 
@@ -182,11 +182,12 @@ module.exports = function(config) {
       cache: true,
       devtool: 'inline-source-map',
       module: {
-        postLoaders: [
+        loaders: [
           {
             test: /\.js$/,
             exclude: /(node_modules|test)/,
-            loader: 'istanbul-instrumenter'
+            loader: 'istanbul-instrumenter-loader',
+            enforce: 'post'
           }
         ]
       },

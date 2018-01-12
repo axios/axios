@@ -6,7 +6,11 @@
   "scripts": {
     "test": "grunt test && bundlesize",
     "start": "node ./sandbox/server.js",
-    "build": "NODE_ENV=production grunt build",
+    "clean": "rimraf dist",
+    "cjs": "babel lib --out-dir dist/commonjs",
+    "browser": "NODE_ENV=production webpack",
+    "browser:dev": "webpack",
+    "build": "npm run clean && npm run cjs && npm run browser",
     "preversion": "npm test",
     "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
     "postversion": "git push && git push --tags",
@@ -32,6 +36,12 @@
   },
   "homepage": "https://github.com/axios/axios",
   "devDependencies": {
+    "@babel/core": "^7.0.0-beta.39",
+    "@babel/preset-env": "^7.0.0-beta.39",
+    "@webpack-blocks/babel": "^1.0.0-rc",
+    "@webpack-blocks/uglify": "^1.1.0",
+    "@webpack-blocks/webpack": "^1.0.0-rc",
+    "babel-cli": "^7.0.0-beta.3",
     "bundlesize": "^0.17.0",
     "coveralls": "^3.0.0",
     "es6-promise": "^4.2.4",
@@ -61,11 +71,12 @@
     "karma-webpack": "^1.7.0",
     "load-grunt-tasks": "^3.5.2",
     "minimist": "^1.2.0",
+    "rimraf": "^2.6.2",
     "sinon": "^4.5.0",
-    "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
+    "typescript": "^2.8.1",
     "url-search-params": "^0.10.0",
-    "typescript": "^2.8.1"
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^1.16.5"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

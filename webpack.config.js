@@ -1,44 +1,56 @@
-var webpack = require('webpack');
-var config = {};
+const {
+  addPlugins,
+  createConfig,
+  defineConstants,
+  entryPoint,
+  env,
+  setOutput,
+  sourceMaps,
+  resolve
+} = require('@webpack-blocks/webpack')
+const babel = require('@webpack-blocks/babel')
+const uglify = require('@webpack-blocks/uglify')
 
-function generateConfig(name) {
-  var uglify = name.indexOf('min') > -1;
-  var config = {
-    entry: './index.js',
-    output: {
-      path: 'dist/',
-      filename: name + '.js',
-      sourceMapFilename: name + '.map',
-      library: 'axios',
-      libraryTarget: 'umd'
-    },
-    node: {
-      process: false
-    },
-    devtool: 'source-map'
-  };
+const path = require('path')
 
-  config.plugins = [
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+module.exports = createConfig([
+  entryPoint('./lib/axios.js'),
+  setOutput({
+    path: path.resolve(__dirname, 'dist/browser'),
+    filename: 'bundle.js',
+    library: 'axios',
+    libraryTarget: 'var'
+  }),
+  defineConstants({
+    'process.env.NODE_ENV': process.env.NODE_ENV || 'development',
+    'process.env.TARGET_ENV': 'browser'
+  }),
+  babel({
+    presets: [
+      ['@babel/env', { targets: 'last 2 versions, ie 11', modules: false }]
+    ]
+  }),
+  env('production', [
+    setOutput({
+      filename: 'bundle.min.js'
+    }),
+    uglify()
+  ]),
+  env('development', [
+    uglify({
+      uglifyOptions: {
+        output: {
+          beautify: false,
+          preserve_line: true
+        },
+        mangle: false
+      }
     })
-  ];
-
-  if (uglify) {
-    config.plugins.push(
-      new webpack.optimize.UglifyJsPlugin({
-        compressor: {
-          warnings: false
-        }
-      })
-    );
-  }
-
-  return config;
-}
-
-['axios', 'axios.min'].forEach(function (key) {
-  config[key] = generateConfig(key);
-});
-
-module.exports = config;
+  ]),
+  // TODO: tree shaking instead of explicit replace
+  resolve({
+    alias: {
+      './adapters/http': path.resolve(__dirname, 'lib/adapters/xhr')
+    }
+  })
+])

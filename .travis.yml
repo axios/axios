@@ -5,6 +5,7 @@ email:
   on_failure: change
   on_success: never
 before_script:
+  - npm run build
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start

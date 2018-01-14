@@ -5,12 +5,46 @@ var zlib = require('zlib');
 var fs = require('fs');
 var server, proxy;
 
+function transportMockFactory(test, callback) {
+  return {
+    request: function (options) {
+      // Headers can be set on client request, but currently this is not used
+      // If it will be used, separate test should be created and this stub removed
+      var clientRequest = http.request.apply(http, arguments);
+      clientRequest.setHeader = function () {
+        test.ifError(new Error('It is not expected that setHeader method will be called on ClientRequest'));
+      };
+
+      callback(options);
+
+      return clientRequest;
+    }
+  };
+}
+
+function testHeaderValue(test, headers, key, val) {
+  var found = 0;
+
+  for (var k in headers) {
+    if (k.toLowerCase() === key.toLowerCase()) {
+      found += 1;
+      test.equal(headers[k], val);
+    }
+  }
+
+  if (typeof val === 'undefined') {
+    test.equal(found, 0, 'header with name [' + key + '] must be absent');
+  } else {
+    test.equal(found, 1, 'header with name [' + key + '] must be present only once');
+  }
+}
+
 module.exports = {
   tearDown: function (callback) {
     server.close();
     server = null;
     if (proxy) {
-      proxy.close()
+      proxy.close();
       proxy = null;
     }
 
@@ -19,6 +53,54 @@ module.exports = {
     }
 
     callback();
+  },
+
+  testHeadersCaseSensitivitySetByAdapter: function (test) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/plain;charset=utf-8');
+      res.end('hello');
+    }).listen(4444, function () {
+      axios({
+        url: 'http://localhost:4444/',
+        headers: {
+          'USER-Agent': 'bond, james bond'
+        },
+        // Dummy transport wrapper to capture passed headers
+        transport: transportMockFactory(test, function (options) {
+          testHeaderValue(test, options.headers, 'User-Agent', 'bond, james bond');
+        })
+      }).then(function () {
+        test.expect(2);
+        test.done();
+      });
+    });
+  },
+
+  testHeadersCaseSensitivity: function (test) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/plain;charset=utf-8');
+      res.end('hello');
+    }).listen(4444, function () {
+      var axiosInstance = axios.create({
+        url: 'http://localhost:4444/',
+        headers: {
+          'test-Accept': 'text/plain, application/json'
+        },
+        // Dummy transport wrapper to capture passed headers
+        transport: transportMockFactory(test, function (options) {
+          testHeaderValue(test, options.headers, 'Test-Accept', '*/*');
+        })
+      });
+
+      axiosInstance({
+        headers: {
+          'Test-Accept': '*/*'
+        }
+      }).then(function () {
+        test.expect(2);
+        test.done();
+      });
+    });
   },
 
   testTimeout: function (test) {

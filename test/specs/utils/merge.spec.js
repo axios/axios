@@ -13,7 +13,7 @@ describe('utils::merge', function () {
     expect(typeof b.bar).toEqual('undefined');
     expect(typeof c.foo).toEqual('undefined');
   });
-  
+
   it('should merge properties', function () {
     var a = {foo: 123};
     var b = {bar: 456};
@@ -27,7 +27,7 @@ describe('utils::merge', function () {
   it('should merge recursively', function () {
     var a = {foo: {bar: 123}};
     var b = {foo: {baz: 456}, bar: {qux: 789}};
-    
+
     expect(merge(a, b)).toEqual({
       foo: {
         bar: 123,
@@ -38,5 +38,24 @@ describe('utils::merge', function () {
       }
     });
   });
-});
 
+  it('should merge object with inheritance without erasing protype', function() {
+
+    function A() {}
+    A.prototype.method = function method() {
+    };
+
+    function B(foo) {
+      this.foo = foo;
+    }
+    B.prototype = A.prototype;
+
+    var a = { bar: new B(123) };
+    var b = { bar: new B(255) };
+
+    var c = merge(a, b);
+
+    expect(c.bar.foo).toEqual(255);
+    expect(c.bar.method).toBeDefined();
+  });
+});

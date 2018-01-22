@@ -521,28 +521,11 @@ axios.get('/user/12345', {
   }
 });
 
-// cancel the request (the message parameter is optional)
-source.cancel('Operation canceled by the user.');
-```
-
-```js
-var CancelToken = axios.CancelToken;
-var source = CancelToken.source();
-
-axios(
-      method: 'POST',
-      url:    '/user/12345',
-      data: {
-        name: 'new name'
-      },
-      cancelToken: source.token
-}).catch(function(thrown) {
-  if (axios.isCancel(thrown)) {
-    console.log('Request canceled', thrown.message);
-  } else {
-    // handle error
-  }
-});
+axios.post('/user/12345', {
+  name: 'new name'
+}, {
+  cancelToken: source.token
+})
 
 // cancel the request (the message parameter is optional)
 source.cancel('Operation canceled by the user.');

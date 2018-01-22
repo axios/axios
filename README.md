@@ -521,6 +521,12 @@ axios.get('/user/12345', {
   }
 });
 
+axios.post('/user/12345', {
+  name: 'new name'
+}, {
+  cancelToken: source.token
+})
+
 // cancel the request (the message parameter is optional)
 source.cancel('Operation canceled by the user.');
 ```

@@ -525,6 +525,29 @@ axios.get('/user/12345', {
 source.cancel('Operation canceled by the user.');
 ```
 
+```js
+var CancelToken = axios.CancelToken;
+var source = CancelToken.source();
+
+axios(
+      method: 'POST',
+      url:    '/user/12345',
+      data: {
+        name: 'new name'
+      },
+      cancelToken: source.token
+}).catch(function(thrown) {
+  if (axios.isCancel(thrown)) {
+    console.log('Request canceled', thrown.message);
+  } else {
+    // handle error
+  }
+});
+
+// cancel the request (the message parameter is optional)
+source.cancel('Operation canceled by the user.');
+```
+
 You can also create a cancel token by passing an executor function to the `CancelToken` constructor:
 
 ```js

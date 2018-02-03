@@ -1,5 +1,6 @@
-const buildURL = require('../../../lib/helpers/buildURL')
-const URLSearchParams = require('url-search-params')
+/* global sinon */
+import buildURL from '../../../lib/helpers/buildURL'
+import * as URLSearchParams from 'url-search-params'
 
 describe('helpers::buildURL', function () {
   it('should support null params', function () {
@@ -55,8 +56,8 @@ describe('helpers::buildURL', function () {
   })
 
   it('should use serializer if provided', function () {
-    serializer = sinon.stub()
-    params = {foo: 'bar'}
+    const serializer = sinon.stub()
+    const params = {foo: 'bar'}
     serializer.returns('foo=bar')
     expect(buildURL('/foo', params, serializer)).toEqual('/foo?foo=bar')
     expect(serializer.calledOnce).toBe(true)

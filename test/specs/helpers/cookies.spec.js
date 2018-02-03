@@ -1,4 +1,4 @@
-const cookies = require('../../../lib/helpers/cookies')
+import cookies from '../../../lib/helpers/cookies'
 
 describe('helpers::cookies', function () {
   afterEach(function () {

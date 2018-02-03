@@ -1,4 +1,4 @@
-const settle = require('../../../lib/core/settle')
+import settle from '../../../lib/core/settle'
 
 describe('core::settle', function () {
   let resolve

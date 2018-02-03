@@ -1,4 +1,4 @@
-const transformData = require('../../../lib/core/transformData')
+import transformData from '../../../lib/core/transformData'
 
 describe('core::transformData', function () {
   it('should support a single transformer', function () {

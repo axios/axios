@@ -1,5 +1,5 @@
-const CancelToken = require('../../../lib/cancel/CancelToken')
-const Cancel = require('../../../lib/cancel/Cancel')
+import CancelToken from '../../../lib/cancel/CancelToken'
+import Cancel from '../../../lib/cancel/Cancel'
 
 describe('CancelToken', function () {
   describe('constructor', function () {

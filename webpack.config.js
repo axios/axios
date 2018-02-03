@@ -47,6 +47,9 @@ module.exports = createConfig([
       }
     })
   ]),
+  env('test', [
+    sourceMaps('inline-source-map')
+  ]),
   // TODO: tree shaking instead of explicit replace
   resolve({
     alias: {

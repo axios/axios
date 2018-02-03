@@ -1,5 +1,8 @@
-const defaults = require('../../lib/defaults')
-const utils = require('../../lib/utils')
+/* global getAjaxRequest */
+
+import axios from '../../lib/axios'
+import defaults from '../../lib/defaults'
+import utils from '../../lib/utils'
 
 describe('defaults', function () {
   const XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN'
@@ -36,7 +39,7 @@ describe('defaults', function () {
   })
 
   it('should use global defaults config', function (done) {
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo')
@@ -47,7 +50,7 @@ describe('defaults', function () {
   it('should use modified defaults config', function (done) {
     axios.defaults.baseURL = 'http://example.com/'
 
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.url).toBe('http://example.com/foo')
@@ -56,7 +59,7 @@ describe('defaults', function () {
   })
 
   it('should use request config', function (done) {
-    axios('/foo', {
+    axios.get('/foo', {
       baseURL: 'http://www.example.com'
     })
 

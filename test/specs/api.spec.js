@@ -1,3 +1,5 @@
+import axios from '../../index'
+
 describe('static api', function () {
   it('should have request method helpers', function () {
     expect(typeof axios.request).toEqual('function')
@@ -11,7 +13,7 @@ describe('static api', function () {
   })
 
   it('should have promise method helpers', function () {
-    const promise = axios()
+    const promise = axios.get()
 
     expect(typeof promise.then).toEqual('function')
     expect(typeof promise.catch).toEqual('function')

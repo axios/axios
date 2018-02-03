@@ -1,4 +1,6 @@
-const cookies = require('../../lib/helpers/cookies')
+/* global getAjaxRequest */
+import axios from '../../lib/axios'
+import cookies from '../../lib/helpers/cookies'
 
 describe('xsrf', function () {
   beforeEach(function () {
@@ -11,7 +13,7 @@ describe('xsrf', function () {
   })
 
   it('should not set xsrf header if cookie is null', function (done) {
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined)
@@ -22,7 +24,7 @@ describe('xsrf', function () {
   it('should set xsrf header if cookie is set', function (done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345'
 
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345')
@@ -33,7 +35,7 @@ describe('xsrf', function () {
   it('should not set xsrf header if xsrfCookieName is null', function (done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345'
 
-    axios('/foo', {
+    axios.get('/foo', {
       xsrfCookieName: null
     })
 
@@ -46,7 +48,7 @@ describe('xsrf', function () {
   it('should not read cookies at all if xsrfCookieName is null', function (done) {
     spyOn(cookies, 'read')
 
-    axios('/foo', {
+    axios.get('/foo', {
       xsrfCookieName: null
     })
 
@@ -59,7 +61,7 @@ describe('xsrf', function () {
   it('should not set xsrf header for cross origin', function (done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345'
 
-    axios('http://example.com/')
+    axios.get('http://example.com/')
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined)
@@ -70,7 +72,7 @@ describe('xsrf', function () {
   it('should set xsrf header for cross origin when using withCredentials', function (done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345'
 
-    axios('http://example.com/', {
+    axios.get('http://example.com/', {
       withCredentials: true
     })
 

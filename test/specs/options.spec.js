@@ -1,3 +1,7 @@
+/* global getAjaxRequest */
+
+import axios from '../../index'
+
 describe('options', function () {
   beforeEach(function () {
     jasmine.Ajax.install()
@@ -8,7 +12,7 @@ describe('options', function () {
   })
 
   it('should default method to get', function (done) {
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.method).toBe('GET')
@@ -17,7 +21,7 @@ describe('options', function () {
   })
 
   it('should accept headers', function (done) {
-    axios('/foo', {
+    axios.get('/foo', {
       headers: {
         'X-Requested-With': 'XMLHttpRequest'
       }
@@ -30,7 +34,7 @@ describe('options', function () {
   })
 
   it('should accept params', function (done) {
-    axios('/foo', {
+    axios.get('/foo', {
       params: {
         foo: 123,
         bar: 456
@@ -44,7 +48,7 @@ describe('options', function () {
   })
 
   it('should allow overriding default headers', function (done) {
-    axios('/foo', {
+    axios.get('/foo', {
       headers: {
         'Accept': 'foo/bar'
       }

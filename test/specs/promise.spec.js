@@ -1,3 +1,6 @@
+/* global getAjaxRequest */
+import axios from '../../lib/axios'
+
 describe('promise', function () {
   beforeEach(function () {
     jasmine.Ajax.install()
@@ -10,7 +13,7 @@ describe('promise', function () {
   it('should provide succinct object to then', function (done) {
     let response
 
-    axios('/foo').then(function (r) {
+    axios.get('/foo').then(function (r) {
       response = r
     })
 

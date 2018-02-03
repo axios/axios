@@ -1,10 +1,10 @@
-const axios = require('../../index')
+import axios from '../../index'
 
 describe('adapter', function () {
   it('should support custom adapter', function (done) {
     let called = false
 
-    axios('/foo', {
+    axios.get('/foo', {
       adapter: function (config) {
         called = true
       }

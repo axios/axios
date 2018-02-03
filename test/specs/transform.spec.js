@@ -1,3 +1,7 @@
+/* global getAjaxRequest */
+
+import axios from '../../index'
+
 describe('transform', function () {
   beforeEach(function () {
     jasmine.Ajax.install()
@@ -23,7 +27,7 @@ describe('transform', function () {
   it('should transform string to JSON', function (done) {
     let response
 
-    axios('/foo').then(function (data) {
+    axios.get('/foo').then(function (data) {
       response = data
     })
 
@@ -80,7 +84,7 @@ describe('transform', function () {
   it('should allowing mutating headers', function (done) {
     const token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36)
 
-    axios('/foo', {
+    axios.get('/foo', {
       transformRequest: function (data, headers) {
         headers['X-Authorization'] = token
       }

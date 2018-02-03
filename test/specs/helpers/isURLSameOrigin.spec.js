@@ -1,4 +1,4 @@
-const isURLSameOrigin = require('../../../lib/helpers/isURLSameOrigin')
+import isURLSameOrigin from '../../../lib/helpers/isURLSameOrigin'
 
 describe('helpers::isURLSameOrigin', function () {
   it('should detect same origin', function () {

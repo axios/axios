@@ -1,4 +1,4 @@
-const spread = require('../../../lib/helpers/spread')
+import spread from '../../../lib/helpers/spread'
 
 describe('helpers::spread', function () {
   it('should spread array to arguments', function () {

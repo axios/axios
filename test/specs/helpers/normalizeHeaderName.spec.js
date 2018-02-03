@@ -1,4 +1,4 @@
-const normalizeHeaderName = require('../../../lib/helpers/normalizeHeaderName')
+import normalizeHeaderName from '../../../lib/helpers/normalizeHeaderName'
 
 describe('helpers::normalizeHeaderName', function () {
   it('should normalize matching header name', function () {

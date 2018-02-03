@@ -1,4 +1,4 @@
-const bind = require('../../../lib/helpers/bind')
+import bind from '../../../lib/helpers/bind'
 
 describe('bind', function () {
   it('should bind an object to a function', function () {

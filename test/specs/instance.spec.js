@@ -1,16 +1,16 @@
 describe('instance', function () {
   beforeEach(function () {
-    jasmine.Ajax.install();
-  });
+    jasmine.Ajax.install()
+  })
 
   afterEach(function () {
-    jasmine.Ajax.uninstall();
-  });
+    jasmine.Ajax.uninstall()
+  })
 
   it('should have the same methods as default instance', function () {
-    var instance = axios.create();
+    const instance = axios.create()
 
-    for (var prop in axios) {
+    for (const prop in axios) {
       if ([
         'Axios',
         'create',
@@ -20,81 +20,81 @@ describe('instance', function () {
         'all',
         'spread',
         'default'].indexOf(prop) > -1) {
-        continue;
+        continue
       }
-      expect(typeof instance[prop]).toBe(typeof axios[prop]);
+      expect(typeof instance[prop]).toBe(typeof axios[prop])
     }
-  });
+  })
 
   it('should make an http request without verb helper', function (done) {
-    var instance = axios.create();
+    const instance = axios.create()
 
-    instance('/foo');
+    instance('/foo')
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo');
-      done();
-    });
-  });
+      expect(request.url).toBe('/foo')
+      done()
+    })
+  })
 
   it('should make an http request', function (done) {
-    var instance = axios.create();
+    const instance = axios.create()
 
-    instance.get('/foo');
+    instance.get('/foo')
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo');
-      done();
-    });
-  });
+      expect(request.url).toBe('/foo')
+      done()
+    })
+  })
 
   it('should use instance options', function (done) {
-    var instance = axios.create({ timeout: 1000 });
+    const instance = axios.create({ timeout: 1000 })
 
-    instance.get('/foo');
+    instance.get('/foo')
 
     getAjaxRequest().then(function (request) {
-      expect(request.timeout).toBe(1000);
-      done();
-    });
-  });
+      expect(request.timeout).toBe(1000)
+      done()
+    })
+  })
 
   it('should have defaults.headers', function () {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'https://api.example.com'
-    });
+    })
 
-    expect(typeof instance.defaults.headers, 'object');
-    expect(typeof instance.defaults.headers.common, 'object');
-  });
+    expect(typeof instance.defaults.headers, 'object')
+    expect(typeof instance.defaults.headers.common, 'object')
+  })
 
   it('should have interceptors on the instance', function (done) {
     axios.interceptors.request.use(function (config) {
-      config.foo = true;
-      return config;
-    });
+      config.foo = true
+      return config
+    })
 
-    var instance = axios.create();
+    const instance = axios.create()
     instance.interceptors.request.use(function (config) {
-      config.bar = true;
-      return config;
-    });
+      config.bar = true
+      return config
+    })
 
-    var response;
+    let response
     instance.get('/foo').then(function (res) {
-      response = res;
-    });
+      response = res
+    })
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200
-      });
+      })
 
       setTimeout(function () {
-        expect(response.config.foo).toEqual(undefined);
-        expect(response.config.bar).toEqual(true);
-        done();
-      }, 100);
-    });
-  });
-});
+        expect(response.config.foo).toEqual(undefined)
+        expect(response.config.bar).toEqual(true)
+        done()
+      }, 100)
+    })
+  })
+})

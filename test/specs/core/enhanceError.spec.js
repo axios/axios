@@ -1,4 +1,4 @@
-const enhanceError = require('../../../lib/core/enhanceError')
+import enhanceError from '../../../lib/core/enhanceError'
 
 describe('core::enhanceError', function () {
   it('should add config, config, request and response to error', function () {

@@ -1,3 +1,6 @@
+/* global getAjaxRequest */
+import axios from '../../lib/axios'
+
 describe('progress events', function () {
   beforeEach(function () {
     jasmine.Ajax.install()
@@ -10,7 +13,7 @@ describe('progress events', function () {
   it('should add a download progress handler', function (done) {
     const progressSpy = jasmine.createSpy('progress')
 
-    axios('/foo', { onDownloadProgress: progressSpy })
+    axios.get('/foo', { onDownloadProgress: progressSpy })
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
@@ -25,7 +28,7 @@ describe('progress events', function () {
   it('should add a upload progress handler', function (done) {
     const progressSpy = jasmine.createSpy('progress')
 
-    axios('/foo', { onUploadProgress: progressSpy })
+    axios.get('/foo', { onUploadProgress: progressSpy })
 
     getAjaxRequest().then(function (request) {
       // Jasmine AJAX doesn't trigger upload events. Waiting for upstream fix
@@ -38,7 +41,7 @@ describe('progress events', function () {
     const downloadProgressSpy = jasmine.createSpy('downloadProgress')
     const uploadProgressSpy = jasmine.createSpy('uploadProgress')
 
-    axios('/foo', { onDownloadProgress: downloadProgressSpy, onUploadProgress: uploadProgressSpy })
+    axios.get('/foo', { onDownloadProgress: downloadProgressSpy, onUploadProgress: uploadProgressSpy })
 
     getAjaxRequest().then(function (request) {
       // expect(uploadProgressSpy).toHaveBeenCalled();

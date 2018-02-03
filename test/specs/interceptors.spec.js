@@ -1,3 +1,7 @@
+/* global getAjaxRequest */
+
+import axios from '../../index'
+
 describe('interceptors', function () {
   beforeEach(function () {
     jasmine.Ajax.install()

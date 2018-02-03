@@ -1,3 +1,6 @@
+/* global getAjaxRequest */
+import axios from '../../lib/axios'
+
 function testHeaderValue (headers, key, val) {
   let found = false
 
@@ -30,7 +33,7 @@ describe('headers', function () {
   it('should default common headers', function (done) {
     const headers = axios.defaults.headers.common
 
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       for (const key in headers) {

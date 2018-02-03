@@ -15,7 +15,7 @@ const path = require('path')
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin')
 
 module.exports = createConfig([
-  entryPoint('./lib/axios.js'),
+  entryPoint('./lib/browser.js'),
   setOutput({
     path: path.resolve(__dirname, 'dist/browser'),
     filename: 'bundle.js',

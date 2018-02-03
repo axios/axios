@@ -1,3 +1,7 @@
+/* global getAjaxRequest, isOldIE */
+
+import axios from '../../index'
+
 describe('requests', function () {
   beforeEach(function () {
     jasmine.Ajax.install()

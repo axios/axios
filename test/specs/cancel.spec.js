@@ -1,5 +1,6 @@
-const Cancel = axios.Cancel
-const CancelToken = axios.CancelToken
+/* global getAjaxRequest */
+
+import axios, { Cancel, CancelToken } from '../../lib/axios'
 
 describe('cancel', function () {
   beforeEach(function () {

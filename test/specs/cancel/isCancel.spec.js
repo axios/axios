@@ -1,5 +1,5 @@
-const isCancel = require('../../../lib/cancel/isCancel')
-const Cancel = require('../../../lib/cancel/Cancel')
+import isCancel from '../../../lib/cancel/isCancel'
+import Cancel from '../../../lib/cancel/Cancel'
 
 describe('isCancel', function () {
   it('returns true if value is a Cancel', function () {

@@ -1,4 +1,4 @@
-const Cancel = require('../../../lib/cancel/Cancel')
+import Cancel from '../../../lib/cancel/Cancel'
 
 describe('Cancel', function () {
   describe('toString', function () {

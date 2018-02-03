@@ -1,4 +1,4 @@
-const parseHeaders = require('../../../lib/helpers/parseHeaders')
+import parseHeaders from '../../../lib/helpers/parseHeaders'
 
 describe('helpers::parseHeaders', function () {
   it('should parse headers', function () {

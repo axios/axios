@@ -1,4 +1,4 @@
-const __btoa = require('../../../lib/helpers/btoa')
+import __btoa from '../../../lib/helpers/btoa'
 
 describe('btoa polyfill', function () {
   it('should behave the same as native window.btoa', function () {

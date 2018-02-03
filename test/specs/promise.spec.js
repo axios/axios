@@ -1,70 +1,70 @@
 describe('promise', function () {
   beforeEach(function () {
-    jasmine.Ajax.install();
-  });
+    jasmine.Ajax.install()
+  })
 
   afterEach(function () {
-    jasmine.Ajax.uninstall();
-  });
+    jasmine.Ajax.uninstall()
+  })
 
   it('should provide succinct object to then', function (done) {
-    var response;
+    let response
 
     axios('/foo').then(function (r) {
-      response = r;
-    });
+      response = r
+    })
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
         responseText: '{"hello":"world"}'
-      });
+      })
 
       setTimeout(function () {
-        expect(typeof response).toEqual('object');
-        expect(response.data.hello).toEqual('world');
-        expect(response.status).toEqual(200);
-        expect(response.headers['content-type']).toEqual('application/json');
-        expect(response.config.url).toEqual('/foo');
-        done();
-      }, 100);
-    });
-  });
+        expect(typeof response).toEqual('object')
+        expect(response.data.hello).toEqual('world')
+        expect(response.status).toEqual(200)
+        expect(response.headers['content-type']).toEqual('application/json')
+        expect(response.config.url).toEqual('/foo')
+        done()
+      }, 100)
+    })
+  })
 
   it('should support all', function (done) {
-    var fulfilled = false;
+    let fulfilled = false
 
     axios.all([true, 123]).then(function () {
-      fulfilled = true;
-    });
+      fulfilled = true
+    })
 
     setTimeout(function () {
-      expect(fulfilled).toEqual(true);
-      done();
-    }, 100);
-  });
+      expect(fulfilled).toEqual(true)
+      done()
+    }, 100)
+  })
 
   it('should support spread', function (done) {
-    var sum = 0;
-    var fulfilled = false;
-    var result;
+    let sum = 0
+    let fulfilled = false
+    let result
 
     axios
       .all([123, 456])
       .then(axios.spread(function (a, b) {
-        sum = a + b;
-        fulfilled = true;
-        return 'hello world';
+        sum = a + b
+        fulfilled = true
+        return 'hello world'
       }))
       .then(function (res) {
-        result = res;
-      });
+        result = res
+      })
 
     setTimeout(function () {
-      expect(fulfilled).toEqual(true);
-      expect(sum).toEqual(123 + 456);
-      expect(result).toEqual('hello world');
-      done();
-    }, 100);
-  });
-});
+      expect(fulfilled).toEqual(true)
+      expect(sum).toEqual(123 + 456)
+      expect(result).toEqual('hello world')
+      done()
+    }, 100)
+  })
+})

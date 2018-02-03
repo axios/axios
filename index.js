@@ -1,1 +1,1 @@
-module.exports = require('./dist/commonjs/axios');
+module.exports = require('./lib/axios')

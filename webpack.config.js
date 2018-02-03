@@ -12,6 +12,7 @@ const babel = require('@webpack-blocks/babel')
 const uglify = require('@webpack-blocks/uglify')
 
 const path = require('path')
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin')
 
 module.exports = createConfig([
   entryPoint('./lib/axios.js'),
@@ -28,8 +29,14 @@ module.exports = createConfig([
   babel({
     presets: [
       ['@babel/env', { targets: 'last 2 versions, ie 11', modules: false }]
-    ]
+    ],
+    plugins: [
+      'lodash'
+    ],
   }),
+  addPlugins([
+    new LodashModuleReplacementPlugin()
+  ]),
   env('production', [
     setOutput({
       filename: 'bundle.min.js'

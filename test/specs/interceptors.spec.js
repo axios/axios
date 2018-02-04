@@ -19,7 +19,7 @@ describe('interceptors', function () {
       return config
     })
 
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
@@ -40,7 +40,7 @@ describe('interceptors', function () {
       }
     })
 
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.method).toBe('POST')
@@ -60,7 +60,7 @@ describe('interceptors', function () {
       })
     })
 
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders.async).toBe('promise')
@@ -82,7 +82,7 @@ describe('interceptors', function () {
       return config
     })
 
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders.test1).toBe('1')
@@ -100,7 +100,7 @@ describe('interceptors', function () {
       return data
     })
 
-    axios('/foo').then(function (data) {
+    axios.get('/foo').then(function (data) {
       response = data
     })
 
@@ -126,7 +126,7 @@ describe('interceptors', function () {
       }
     })
 
-    axios('/foo').then(function (data) {
+    axios.get('/foo').then(function (data) {
       response = data
     })
 
@@ -156,7 +156,7 @@ describe('interceptors', function () {
       })
     })
 
-    axios('/foo').then(function (data) {
+    axios.get('/foo').then(function (data) {
       response = data
     })
 
@@ -189,7 +189,7 @@ describe('interceptors', function () {
       return data
     })
 
-    axios('/foo').then(function (data) {
+    axios.get('/foo').then(function (data) {
       response = data
     })
 
@@ -224,7 +224,7 @@ describe('interceptors', function () {
 
     axios.interceptors.response.eject(intercept)
 
-    axios('/foo').then(function (data) {
+    axios.get('/foo').then(function (data) {
       response = data
     })
 

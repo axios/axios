@@ -10,8 +10,6 @@ describe('utils::isX', function a () {
       return
     }
 
-    console.log('dis is da utils', utils)
-
     expect(utils.isArrayBufferView(new DataView(new ArrayBuffer(2)))).toEqual(true)
   })
 

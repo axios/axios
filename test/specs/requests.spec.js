@@ -11,18 +11,8 @@ describe('requests', function () {
     jasmine.Ajax.uninstall()
   })
 
-  it('should treat single string arg as url', function (done) {
-    axios('/foo')
-
-    getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo')
-      expect(request.method).toBe('GET')
-      done()
-    })
-  })
-
   it('should treat method value as lowercase string', function (done) {
-    axios({
+    axios.request({
       url: '/foo',
       method: 'POST'
     }).then(function (response) {
@@ -48,7 +38,7 @@ describe('requests', function () {
   })
 
   it('should make an http request', function (done) {
-    axios('/foo')
+    axios.get('/foo')
 
     getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo')
@@ -78,7 +68,7 @@ describe('requests', function () {
       done()
     }
 
-    axios('http://thisisnotaserver/foo')
+    axios.get('http://thisisnotaserver/foo')
       .then(resolveSpy, rejectSpy)
       .then(finish, finish)
   })
@@ -87,7 +77,7 @@ describe('requests', function () {
     const resolveSpy = jasmine.createSpy('resolve')
     const rejectSpy = jasmine.createSpy('reject')
 
-    axios('/foo', {
+    axios.get('/foo', {
       validateStatus: function (status) {
         return status !== 500
       }
@@ -117,7 +107,7 @@ describe('requests', function () {
     const resolveSpy = jasmine.createSpy('resolve')
     const rejectSpy = jasmine.createSpy('reject')
 
-    axios('/foo', {
+    axios.get('/foo', {
       validateStatus: function (status) {
         return status === 500
       }
@@ -140,7 +130,7 @@ describe('requests', function () {
   it('should return JSON when rejecting', function (done) {
     let response
 
-    axios('/api/account/signup', {
+    axios.get('/api/account/signup', {
       username: null,
       password: null
     }, {
@@ -227,7 +217,7 @@ describe('requests', function () {
   it('should fix IE no content error', function (done) {
     let response
 
-    axios('/foo').then(function (res) {
+    axios.get('/foo').then(function (res) {
       response = res
     })
 
@@ -325,7 +315,7 @@ describe('requests', function () {
       return buff
     }
 
-    axios('/foo', {
+    axios.get('/foo', {
       responseType: 'arraybuffer'
     }).then(function (data) {
       response = data

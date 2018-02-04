@@ -2,7 +2,7 @@
 
 import axios from '../../lib/axios'
 import defaults from '../../lib/defaults'
-import utils from '../../lib/utils'
+import { merge } from 'lodash'
 
 describe('defaults', function () {
   const XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN'
@@ -128,7 +128,7 @@ describe('defaults', function () {
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders).toEqual(
-        utils.merge(defaults.headers.common, defaults.headers.get, {
+        merge({}, defaults.headers.common, defaults.headers.get, {
           'X-COMMON-HEADER': 'commonHeaderValue',
           'X-GET-HEADER': 'getHeaderValue',
           'X-FOO-HEADER': 'fooHeaderValue',

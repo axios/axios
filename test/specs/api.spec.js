@@ -29,11 +29,6 @@ describe('static api', function () {
     expect(typeof axios.interceptors.response).toEqual('object')
   })
 
-  it('should have all/spread helpers', function () {
-    expect(typeof axios.all).toEqual('function')
-    expect(typeof axios.spread).toEqual('function')
-  })
-
   it('should have factory method', function () {
     expect(typeof axios.create).toEqual('function')
   })

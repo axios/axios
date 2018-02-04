@@ -5,7 +5,7 @@
   "main": "dist/commonjs/axios.js",
   "scripts": {
     "pretest": "npm run build",
-    "test": "npm run test:karma && npm run test:unit && npm run lint & bundlesize",
+    "test": "npm run test:karma && npm run test:unit && npm run lint && bundlesize",
     "test:karma": "NODE_ENV=test karma start --single-run",
     "test:unit": "jasmine test/unit/**/*.js",
     "start": "node ./sandbox/server.js",

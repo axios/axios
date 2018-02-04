@@ -30,17 +30,6 @@ describe('instance', function () {
     }
   })
 
-  it('should make an http request without verb helper', function (done) {
-    const instance = axios.create()
-
-    instance('/foo')
-
-    getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo')
-      done()
-    })
-  })
-
   it('should make an http request', function (done) {
     const instance = axios.create()
 

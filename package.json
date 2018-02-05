@@ -84,7 +84,8 @@
   "typings": "./index.d.ts",
   "dependencies": {
     "follow-redirects": "^1.4.1",
-    "is-buffer": "^2.0.2"
+    "is-buffer": "^2.0.2",
+    "pkginfo": "^0.4.1"
   },
   "bundlesize": [
     {

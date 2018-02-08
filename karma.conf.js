@@ -182,11 +182,12 @@ module.exports = function(config) {
       cache: true,
       devtool: 'inline-source-map',
       module: {
-        postLoaders: [
+        rules: [
           {
+            enforce: 'post',
             test: /\.js$/,
             exclude: /(node_modules|test)/,
-            loader: 'istanbul-instrumenter'
+            loader: 'istanbul-instrumenter-loader'
           }
         ]
       },

@@ -28,33 +28,36 @@ describe('http adapter', () => {
     }
   })
 
-  it('does handle timeouts', async () => {
+  it('does handle timeouts', () => {
     nock(testUri)
       .get('/')
       .delayConnection(1000)
       .reply(200, '<html></html>')
 
-    try {
-      await axios.get(testUri, {
-        timeout: 250
+    return axios.get(testUri, {
+      timeout: 250
+    })
+      .then(() => {
+        fail('request should fail')
       })
-      fail('request should fail')
-    } catch (err) {
-      expect(err.code).toBe('ECONNABORTED')
-      expect(err.message).toBe('timeout of 250ms exceeded')
-    }
+      .catch ((err) => {
+        expect(err.code).toBe('ECONNABORTED')
+        expect(err.message).toBe('timeout of 250ms exceeded')
+      })
   })
 
-  it('does parse json', async () => {
+  it('does parse json', () => {
     nock(testUri)
       .get('/')
       .reply(200, testData)
 
-    const res = await axios.get(testUri)
-    expect(res.data).toEqual(testData)
+    return axios.get(testUri)
+      .then((res) => {
+        expect(res.data).toEqual(testData)
+      })
   })
 
-  it('does follow redirects by default', async () => {
+  it('does follow redirects by default', () => {
     const str = 'test response'
 
     nock(testUri)
@@ -65,29 +68,33 @@ describe('http adapter', () => {
       .get('/two')
       .reply(200, str)
 
-    const res = await axios.get(url.resolve(testUri, 'one'))
-    expect(res.data).toBe(str)
-    expect(res.request.path).toBe('/two')
+    return axios.get(url.resolve(testUri, 'one'))
+      .then((res) => {
+        expect(res.data).toBe(str)
+        expect(res.request.path).toBe('/two')
+      })
   })
 
-  it('does not follow redirects when disabled', async () => {
+  it('does not follow redirects when disabled', () => {
     nock(testUri)
       .get('/')
       .reply(302, undefined, {
         Location: url.resolve(testUri, 'two')
       })
 
-    const res = await axios.get(testUri, {
+    return axios.get(testUri, {
       maxRedirects: 0,
       validateStatus: function () {
         return true
       }
     })
-    expect(res.status).toBe(302)
-    expect(res.headers['location']).toBe(url.resolve(testUri, 'two'))
+      .then((res) => {
+        expect(res.status).toBe(302)
+        expect(res.headers['location']).toBe(url.resolve(testUri, 'two'))
+      })
   })
 
-  it('does follow redirects and respects maxRedirects', async () => {
+  it('does follow redirects and respects maxRedirects', () => {
     const testStr = 'it reached the goal'
 
     nock(testUri)
@@ -99,16 +106,18 @@ describe('http adapter', () => {
       .get('/')
       .reply(200, testStr)
 
-    const res = await axios.get(testUri, {
+    return axios.get(testUri, {
       maxRedirects: 3
     })
-    expect(res.status).toBe(200)
-    expect('location' in res.headers).toBe(false)
-    expect(res.data).toBe(testStr)
+      .then((res) => {
+        expect(res.status).toBe(200)
+        expect('location' in res.headers).toBe(false)
+        expect(res.data).toBe(testStr)
+      })
   })
 
-  it('does unzip gzipped data', async () => {
-    const dataGzipped = await new Promise((resolve, reject) => {
+  it('does unzip gzipped data', () => {
+    return new Promise((resolve, reject) => {
       zlib.gzip(JSON.stringify(testData), function (err, zipped) {
         if (err) {
           reject(err)
@@ -116,19 +125,22 @@ describe('http adapter', () => {
         resolve(zipped)
       })
     })
+      .then((dataGzipped) => {
+        nock(testUri)
+          .get('/')
+          .reply(200, dataGzipped, {
+            'Content-Type': 'application/json;charset=utf-8',
+            'Content-Encoding': 'gzip'
+          })
 
-    nock(testUri)
-      .get('/')
-      .reply(200, dataGzipped, {
-        'Content-Type': 'application/json;charset=utf-8',
-        'Content-Encoding': 'gzip'
+        return axios.get(testUri)
+          .then((res) => {
+            expect(res.data).toEqual(testData)
+          })
       })
-
-    const res = await axios.get(testUri)
-    expect(res.data).toEqual(testData)
   })
 
-  it('does handle invalid gzipped data', async () => {
+  it('does handle invalid gzipped data', () => {
     nock(testUri)
       .get('/')
       .reply(200, 'invalid gzip data', {
@@ -136,15 +148,16 @@ describe('http adapter', () => {
         'Content-Encoding': 'gzip'
       })
 
-    try {
-      await axios.get(testUri)
-      fail('should fail due to invalid gzip data')
-    } catch (err) {
-      expect(err.message).toEqual('unexpected end of file')
-    }
+    return axios.get(testUri)
+      .then(() => {
+        fail('should fail due to invalid gzip data')
+      })
+      .catch((err) => {
+        expect(err.message).toEqual('unexpected end of file')
+      })
   })
 
-  it('does work with utf-8', async () => {
+  it('does work with utf-8', () => {
     const utf8Str = 'ж🤡🚀äöüß¯\\_(ツ)_/¯'
 
     nock(testUri)
@@ -153,11 +166,13 @@ describe('http adapter', () => {
         'Content-Type': 'text/html; charset=UTF-8'
       })
 
-    const res = await axios.get(testUri)
-    expect(res.data).toEqual(utf8Str)
+    return axios.get(testUri)
+      .then((res) => {
+        expect(res.data).toEqual(utf8Str)
+      })
   })
 
-  it('does handle basic http auth', async () => {
+  it('does handle basic http auth', () => {
     const user = 'foo'
     const authUri = url.parse(testUri)
     authUri.auth = user
@@ -172,10 +187,10 @@ describe('http adapter', () => {
         expect(this.req.headers.authorization).toBe('Basic ' + base64)
       })
 
-    await axios.get(url.format(authUri))
+    return axios.get(url.format(authUri))
   })
 
-  it('does handle basic http auth with headers', async () => {
+  it('does handle basic http auth with headers', () => {
     const username = 'foo'
     const password = 'bar'
 
@@ -195,29 +210,30 @@ describe('http adapter', () => {
         expect(this.req.headers.authorization).toBe('Basic ' + base64)
       })
 
-    await axios.get(url.format(testUri), {
+    return axios.get(url.format(testUri), {
       auth
     })
   })
 
-  it('does throw when response body is to long', async () => {
+  it('does throw when response body is to long', () => {
     const longStr = Array(5000).join('a')
 
     nock(testUri)
       .get('/')
       .reply(200, longStr)
 
-    try {
-      await axios.get(url.format(testUri), {
-        maxContentLength: 2000
+    return axios.get(url.format(testUri), {
+      maxContentLength: 2000
+    })
+      .then(() => {
+        fail('should fail since content length is bigger as maxContentLength')
       })
-      fail('should fail since content length is bigger as maxContentLength')
-    } catch (error) {
-      expect(error.message).toBe('maxContentLength size of 2000 exceeded')
-    }
+      .catch((err) => {
+        expect(err.message).toBe('maxContentLength size of 2000 exceeded')
+      })
   })
 
-  it('does work with streams for request and response', async (done) => {
+  it('does work with streams for request and response', (done) => {
     const readStream = fs.createReadStream(__filename)
 
     nock(testUri)
@@ -226,24 +242,25 @@ describe('http adapter', () => {
         return requestBody
       })
 
-    const result = await axios.post(testUri, readStream, {
+    return axios.post(testUri, readStream, {
       responseType: 'stream'
     })
+      .then((result) => {
+        const responseStream = result.data
+        let string = ''
 
-    const responseStream = result.data
-    let string = ''
+        responseStream.on('data', function (chunk) {
+          string += chunk.toString('utf8')
+        })
 
-    responseStream.on('data', function (chunk) {
-      string += chunk.toString('utf8')
-    })
-
-    responseStream.on('end', function () {
-      expect(string).toBe(fs.readFileSync(__filename, 'utf8'))
-      done()
-    })
+        responseStream.on('end', function () {
+          expect(string).toBe(fs.readFileSync(__filename, 'utf8'))
+          done()
+        })
+      })
   })
 
-  it('does work with buffers for request and response', async (done) => {
+  it('does work with buffers for request and response', (done) => {
     const buf = Buffer.alloc(1024)
     buf.fill('x')
 
@@ -254,21 +271,22 @@ describe('http adapter', () => {
         return requestBody
       })
 
-    const result = await axios.post(testUri, buf, {
+    return axios.post(testUri, buf, {
       responseType: 'stream'
     })
+      .then((result) => {
+        const responseStream = result.data
+        let string = ''
 
-    const responseStream = result.data
-    let string = ''
+        responseStream.on('data', function (chunk) {
+          string += chunk.toString('utf8')
+        })
 
-    responseStream.on('data', function (chunk) {
-      string += chunk.toString('utf8')
-    })
-
-    responseStream.on('end', function () {
-      expect(string).toBe(buf.toString())
-      done()
-    })
+        responseStream.on('end', function () {
+          expect(string).toBe(buf.toString())
+          done()
+        })
+      })
   })
 
   it('does support proxies via proxy config', (done) => {
@@ -310,7 +328,7 @@ describe('http adapter', () => {
     })
   })
 
-  it('does respect proxy:false when env variable is preset', async () => {
+  it('does respect proxy:false when env variable is preset', () => {
     process.env.http_proxy = 'http://does-not-exists.example.com:4242/'
 
     nock(testUri)
@@ -319,14 +337,12 @@ describe('http adapter', () => {
         'Content-Type': 'text/html; charset=UTF-8'
       })
 
-    try {
-      const result = await axios.get(testUri, {
-        proxy: false
+    return axios.get(testUri, {
+      proxy: false
+    })
+      .then((result) => {
+        expect(result.data).toBe(12345, 'should not through proxy')
       })
-      expect(result.data).toBe(12345, 'should not through proxy')
-    } catch (err) {
-      fail(err.message)
-    }
   })
 
   it('does support proxies via environment variable', (done) => {
@@ -358,10 +374,10 @@ describe('http adapter', () => {
     }).listen(4000, () => {
       process.env.http_proxy = 'http://localhost:4000/'
       axios.get(testUri)
-      .then(function (res) {
-        expect(res.data).toBe(123456789, 'should pass through proxy')
-        done()
-      })
+        .then(function (res) {
+          expect(res.data).toBe(123456789, 'should pass through proxy')
+          done()
+        })
     })
   })
 
@@ -401,11 +417,12 @@ describe('http adapter', () => {
             password: 'pass'
           }
         }
-      }).then(function (res) {
-        var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
-        expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
-        done()
       })
+        .then(function (res) {
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
+          expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
+          done()
+        })
     })
   })
 
@@ -437,15 +454,16 @@ describe('http adapter', () => {
       })
     }).listen(4000, function () {
       process.env.http_proxy = 'http://user:pass@localhost:4000/'
-      axios.get(testUri).then(function (res) {
-        var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
-        expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
-        done()
-      })
+      axios.get(testUri)
+        .then(function (res) {
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
+          expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
+          done()
+        })
     })
   })
 
-  it('does cancel request when cancel request', async () => {
+  it('does cancel request when cancel request', () => {
     const source = axios.CancelToken.source()
 
     nock(testUri)
@@ -454,14 +472,15 @@ describe('http adapter', () => {
         source.cancel('Operation has been canceled.')
       })
 
-    try {
-      await axios.get(testUri, {
-        cancelToken: source.token
+    return axios.get(testUri, {
+      cancelToken: source.token
+    })
+      .then(() => {
+        fail('it should have canceled the request')
       })
-      fail('it should have canceled the request')
-    } catch (err) {
-      expect(err instanceof axios.Cancel).toBe(true, 'Promise must be rejected with a Cancel object')
-      expect(err.message).toBe('Operation has been canceled.')
-    }
+      .catch((err) => {
+        expect(err instanceof axios.Cancel).toBe(true, 'Promise must be rejected with a Cancel object')
+        expect(err.message).toBe('Operation has been canceled.')
+      })
   })
 })

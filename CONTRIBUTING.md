@@ -25,11 +25,9 @@ Please update the docs accordingly so that there are no discrepencies between th
 
 ### Developing
 
-- `grunt test` run the jasmine and nodeunit tests
-- `grunt build` run webpack and bundle the source
-- `grunt version` prepare the code for release
-- `grunt watch:test` watch for changes and run `test`
-- `grunt watch:build` watch for changes and run `build`
+- `npm run test` run the Karma / Jasmine tests (browser & unit)
+- `npm run build` run webpack and bundle the source
+- `npm run version` prepare the code for release
 
 Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
 

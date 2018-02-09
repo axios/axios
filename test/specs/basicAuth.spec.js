@@ -17,7 +17,7 @@ describe('basicAuth without btoa polyfill', function () {
   it('should accept HTTP Basic auth with username/password', function (done) {
     axios.get('/foo', {
       auth: {
-        username: 'Aladdin',
+        username: 'Alibaba',
         password: 'open sesame'
       }
     })
@@ -25,7 +25,10 @@ describe('basicAuth without btoa polyfill', function () {
     setTimeout(function () {
       const request = jasmine.Ajax.requests.mostRecent()
 
-      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==')
+      // Aladdin cannot open the sesame
+      expect(request.requestHeaders['Authorization']).not.toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==')
+      // Alibaba can open the sesame
+      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxpYmFiYTpvcGVuIHNlc2FtZQ==')
       done()
     }, 100)
   })

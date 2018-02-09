@@ -1,14 +1,23 @@
-const axios = require('../../../index')
-const http = require('http')
 const url = require('url')
+
+const nock = require('nock')
+
+const axios = require('../../../index')
+
+const http = require('http')
 const zlib = require('zlib')
 const fs = require('fs')
-let server, proxy
+let proxy
 
-module.exports = {
-  tearDown: function (callback) {
-    server.close()
-    server = null
+const testUri = 'http://localhost'
+const testData = {
+  firstName: 'Fred',
+  lastName: 'Flintstone',
+  emailAddr: 'fred@example.com'
+}
+
+describe('http adapter', () => {
+  afterEach(() => {
     if (proxy) {
       proxy.close()
       proxy = null
@@ -17,484 +26,461 @@ module.exports = {
     if (process.env.http_proxy) {
       delete process.env.http_proxy
     }
+  })
 
-    callback()
-  },
+  it('does handle timeouts', () => {
+    nock(testUri)
+      .get('/')
+      .delayConnection(1000)
+      .reply(200, '<html></html>')
 
-  testTimeout: function (test) {
-    server = http.createServer(function (req, res) {
-      setTimeout(function () {
-        res.end()
-      }, 1000)
-    }).listen(4444, function () {
-      let success = false, failure = false
-      let error
-
-      axios.get('http://localhost:4444/', {
-        timeout: 250
-      }).then(function (res) {
-        success = true
-      }).catch(function (err) {
-        error = err
-        failure = true
-      })
-
-      setTimeout(function () {
-        test.equal(success, false, 'request should not succeed')
-        test.equal(failure, true, 'request should fail')
-        test.equal(error.code, 'ECONNABORTED')
-        test.equal(error.message, 'timeout of 250ms exceeded')
-        test.done()
-      }, 300)
+    return axios.get(testUri, {
+      timeout: 250
     })
-  },
-
-  testJSON: function (test) {
-    const data = {
-      firstName: 'Fred',
-      lastName: 'Flintstone',
-      emailAddr: 'fred@example.com'
-    }
-
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json;charset=utf-8')
-      res.end(JSON.stringify(data))
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').then(function (res) {
-        test.deepEqual(res.data, data)
-        test.done()
+      .then(() => {
+        fail('request should fail')
       })
-    })
-  },
+      .catch ((err) => {
+        expect(err.code).toBe('ECONNABORTED')
+        expect(err.message).toBe('timeout of 250ms exceeded')
+      })
+  })
 
-  testRedirect: function (test) {
+  it('does parse json', () => {
+    nock(testUri)
+      .get('/')
+      .reply(200, testData)
+
+    return axios.get(testUri)
+      .then((res) => {
+        expect(res.data).toEqual(testData)
+      })
+  })
+
+  it('does follow redirects by default', () => {
     const str = 'test response'
 
-    server = http.createServer(function (req, res) {
-      const parsed = url.parse(req.url)
+    nock(testUri)
+      .get('/one')
+      .reply(302, undefined, {
+        Location: url.resolve(testUri, 'two')
+      })
+      .get('/two')
+      .reply(200, str)
 
-      if (parsed.pathname === '/one') {
-        res.setHeader('Location', '/two')
-        res.statusCode = 302
-        res.end()
-      } else {
-        res.end(str)
+    return axios.get(url.resolve(testUri, 'one'))
+      .then((res) => {
+        expect(res.data).toBe(str)
+        expect(res.request.path).toBe('/two')
+      })
+  })
+
+  it('does not follow redirects when disabled', () => {
+    nock(testUri)
+      .get('/')
+      .reply(302, undefined, {
+        Location: url.resolve(testUri, 'two')
+      })
+
+    return axios.get(testUri, {
+      maxRedirects: 0,
+      validateStatus: function () {
+        return true
       }
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/one').then(function (res) {
-        test.equal(res.data, str)
-        test.equal(res.request.path, '/two')
-        test.done()
-      })
     })
-  },
+      .then((res) => {
+        expect(res.status).toBe(302)
+        expect(res.headers['location']).toBe(url.resolve(testUri, 'two'))
+      })
+  })
 
-  testNoRedirect: function (test) {
-    server = http.createServer(function (req, res) {
-      res.setHeader('Location', '/foo')
-      res.statusCode = 302
-      res.end()
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        maxRedirects: 0,
-        validateStatus: function () {
-          return true
+  it('does follow redirects and respects maxRedirects', () => {
+    const testStr = 'it reached the goal'
+
+    nock(testUri)
+      .get('/')
+      .times(3)
+      .reply(302, undefined, {
+        Location: testUri
+      })
+      .get('/')
+      .reply(200, testStr)
+
+    return axios.get(testUri, {
+      maxRedirects: 3
+    })
+      .then((res) => {
+        expect(res.status).toBe(200)
+        expect('location' in res.headers).toBe(false)
+        expect(res.data).toBe(testStr)
+      })
+  })
+
+  it('does unzip gzipped data', () => {
+    return new Promise((resolve, reject) => {
+      zlib.gzip(JSON.stringify(testData), function (err, zipped) {
+        if (err) {
+          reject(err)
         }
-      }).then(function (res) {
-        test.equal(res.status, 302)
-        test.equal(res.headers['location'], '/foo')
-        test.done()
+        resolve(zipped)
       })
     })
-  },
+      .then((dataGzipped) => {
+        nock(testUri)
+          .get('/')
+          .reply(200, dataGzipped, {
+            'Content-Type': 'application/json;charset=utf-8',
+            'Content-Encoding': 'gzip'
+          })
 
-  testMaxRedirects: function (test) {
-    let i = 1
-    server = http.createServer(function (req, res) {
-      res.setHeader('Location', '/' + i)
-      res.statusCode = 302
-      res.end()
-      i++
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        maxRedirects: 3
-      }).catch(function (error) {
-        test.done()
+        return axios.get(testUri)
+          .then((res) => {
+            expect(res.data).toEqual(testData)
+          })
       })
-    })
-  },
+  })
 
-  testTransparentGunzip: function (test) {
-    const data = {
-      firstName: 'Fred',
-      lastName: 'Flintstone',
-      emailAddr: 'fred@example.com'
+  it('does handle invalid gzipped data', () => {
+    nock(testUri)
+      .get('/')
+      .reply(200, 'invalid gzip data', {
+        'Content-Type': 'application/json;charset=utf-8',
+        'Content-Encoding': 'gzip'
+      })
+
+    return axios.get(testUri)
+      .then(() => {
+        fail('should fail due to invalid gzip data')
+      })
+      .catch((err) => {
+        expect(err.message).toEqual('unexpected end of file')
+      })
+  })
+
+  it('does work with utf-8', () => {
+    const utf8Str = 'ж🤡🚀äöüß¯\\_(ツ)_/¯'
+
+    nock(testUri)
+      .get('/')
+      .reply(200, utf8Str, {
+        'Content-Type': 'text/html; charset=UTF-8'
+      })
+
+    return axios.get(testUri)
+      .then((res) => {
+        expect(res.data).toEqual(utf8Str)
+      })
+  })
+
+  it('does handle basic http auth', () => {
+    const user = 'foo'
+    const authUri = url.parse(testUri)
+    authUri.auth = user
+
+    nock(testUri)
+      .get('/')
+      .basicAuth({
+        user
+      })
+      .reply(200, function () {
+        const base64 = Buffer.from(`${user}:`, 'utf8').toString('base64')
+        expect(this.req.headers.authorization).toBe('Basic ' + base64)
+      })
+
+    return axios.get(url.format(authUri))
+  })
+
+  it('does handle basic http auth with headers', () => {
+    const username = 'foo'
+    const password = 'bar'
+
+    const auth = {
+      username,
+      password
     }
 
-    zlib.gzip(JSON.stringify(data), function (err, zipped) {
-      server = http.createServer(function (req, res) {
-        res.setHeader('Content-Type', 'application/json;charset=utf-8')
-        res.setHeader('Content-Encoding', 'gzip')
-        res.end(zipped)
-      }).listen(4444, function () {
-        axios.get('http://localhost:4444/').then(function (res) {
-          test.deepEqual(res.data, data)
-          test.done()
-        })
+    nock(testUri)
+      .get('/')
+      .basicAuth({
+        user: username,
+        pass: password
       })
-    })
-  },
-
-  testGunzipErrorHandling: function (test) {
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json;charset=utf-8')
-      res.setHeader('Content-Encoding', 'gzip')
-      res.end('invalid response')
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').catch(function (error) {
-        test.done()
-      })
-    })
-  },
-
-  testUTF8: function (test) {
-    const str = Array(100000).join('ж')
-
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
-      res.end(str)
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').then(function (res) {
-        test.equal(res.data, str)
-        test.done()
-      })
-    })
-  },
-
-  testBasicAuth: function (test) {
-    server = http.createServer(function (req, res) {
-      res.end(req.headers.authorization)
-    }).listen(4444, function () {
-      const user = 'foo'
-      const headers = { Authorization: 'Bearer 1234' }
-      axios.get('http://' + user + '@localhost:4444/', { headers: headers }).then(function (res) {
-        const base64 = new Buffer(user + ':', 'utf8').toString('base64')
-        test.equal(res.data, 'Basic ' + base64)
-        test.done()
-      })
-    })
-  },
-
-  testBasicAuthWithHeader: function (test) {
-    server = http.createServer(function (req, res) {
-      res.end(req.headers.authorization)
-    }).listen(4444, function () {
-      const auth = { username: 'foo', password: 'bar' }
-      const headers = { Authorization: 'Bearer 1234' }
-      axios.get('http://localhost:4444/', { auth: auth, headers: headers }).then(function (res) {
-        const base64 = new Buffer('foo:bar', 'utf8').toString('base64')
-        test.equal(res.data, 'Basic ' + base64)
-        test.done()
-      })
-    })
-  },
-
-  testMaxContentLength: function (test) {
-    const str = Array(100000).join('ж')
-
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
-      res.end(str)
-    }).listen(4444, function () {
-      let success = false, failure = false, error
-
-      axios.get('http://localhost:4444/', {
-        maxContentLength: 2000
-      }).then(function (res) {
-        success = true
-      }).catch(function (err) {
-        error = err
-        failure = true
+      .reply(200, function () {
+        const base64 = Buffer.from(`${username}:${password}`, 'utf8').toString('base64')
+        expect(this.req.headers.authorization).toBe('Basic ' + base64)
       })
 
-      setTimeout(function () {
-        test.equal(success, false, 'request should not succeed')
-        test.equal(failure, true, 'request should fail')
-        test.equal(error.message, 'maxContentLength size of 2000 exceeded')
-        test.done()
-      }, 100)
+    return axios.get(url.format(testUri), {
+      auth
     })
-  },
+  })
 
-  testStream: function (test) {
-    server = http.createServer(function (req, res) {
-      req.pipe(res)
-    }).listen(4444, function () {
-      axios.post('http://localhost:4444/',
-        fs.createReadStream(__filename), {
-          responseType: 'stream'
-        }).then(function (res) {
-        const stream = res.data
+  it('does throw when response body is to long', () => {
+    const longStr = Array(5000).join('a')
+
+    nock(testUri)
+      .get('/')
+      .reply(200, longStr)
+
+    return axios.get(url.format(testUri), {
+      maxContentLength: 2000
+    })
+      .then(() => {
+        fail('should fail since content length is bigger as maxContentLength')
+      })
+      .catch((err) => {
+        expect(err.message).toBe('maxContentLength size of 2000 exceeded')
+      })
+  })
+
+  it('does work with streams for request and response', (done) => {
+    const readStream = fs.createReadStream(__filename)
+
+    nock(testUri)
+      .post('/')
+      .reply(200, (uri, requestBody) => {
+        return requestBody
+      })
+
+    return axios.post(testUri, readStream, {
+      responseType: 'stream'
+    })
+      .then((result) => {
+        const responseStream = result.data
         let string = ''
-        stream.on('data', function (chunk) {
+
+        responseStream.on('data', function (chunk) {
           string += chunk.toString('utf8')
         })
-        stream.on('end', function () {
-          test.equal(string, fs.readFileSync(__filename, 'utf8'))
-          test.done()
+
+        responseStream.on('end', function () {
+          expect(string).toBe(fs.readFileSync(__filename, 'utf8'))
+          done()
         })
       })
-    })
-  },
+  })
 
-  testBuffer: function (test) {
-    const buf = new Buffer(1024) // Unsafe buffer < Buffer.poolSize (8192 bytes)
+  it('does work with buffers for request and response', (done) => {
+    const buf = Buffer.alloc(1024)
     buf.fill('x')
-    server = http.createServer(function (req, res) {
-      test.equal(req.headers['content-length'], buf.length.toString())
-      req.pipe(res)
-    }).listen(4444, function () {
-      axios.post('http://localhost:4444/',
-        buf, {
-          responseType: 'stream'
-        }).then(function (res) {
-        const stream = res.data
+
+    nock(testUri)
+      .post('/')
+      .reply(200, function (uri, requestBody) {
+        expect(this.req.headers['content-length']).toBe(buf.length)
+        return requestBody
+      })
+
+    return axios.post(testUri, buf, {
+      responseType: 'stream'
+    })
+      .then((result) => {
+        const responseStream = result.data
         let string = ''
-        stream.on('data', function (chunk) {
+
+        responseStream.on('data', function (chunk) {
           string += chunk.toString('utf8')
         })
-        stream.on('end', function () {
-          test.equal(string, buf.toString())
-          test.done()
+
+        responseStream.on('end', function () {
+          expect(string).toBe(buf.toString())
+          done()
         })
       })
-    })
-  },
+  })
 
-  testHTTPProxy: function (test) {
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
-      res.end('12345')
-    }).listen(4444, function () {
-      proxy = http.createServer(function (request, response) {
-        const parsed = url.parse(request.url)
-        const opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
+  it('does support proxies via proxy config', (done) => {
+    nock(testUri)
+      .get('/')
+      .reply(200, '12345', {
+        'Content-Type': 'text/html; charset=UTF-8'
+      })
+
+    proxy = http.createServer(function (request, response) {
+      var parsed = url.parse(request.url)
+      var opts = {
+        host: parsed.hostname,
+        port: parsed.port,
+        path: parsed.path
+      }
+
+      response.setHeader('Content-Type', 'text/html; charset=UTF-8')
+
+      http.get(opts, function (res) {
+        var body = ''
+        res.on('data', function (data) {
+          body += data
+        })
+        res.on('end', function () {
+          response.end(body + '6789')
+        })
+      })
+    }).listen(4000, () => {
+      axios.get(testUri, {
+        proxy: {
+          host: 'localhost',
+          port: 4000
         }
-
-        http.get(opts, function (res) {
-          let body = ''
-          res.on('data', function (data) {
-            body += data
-          })
-          res.on('end', function () {
-            response.setHeader('Content-Type', 'text/html; charset=UTF-8')
-            response.end(body + '6789')
-          })
-        })
-      }).listen(4000, function () {
-        axios.get('http://localhost:4444/', {
-          proxy: {
-            host: 'localhost',
-            port: 4000
-          }
-        }).then(function (res) {
-          test.equal(res.data, '123456789', 'should pass through proxy')
-          test.done()
-        })
+      }).then(function (res) {
+        expect(res.data).toBe(123456789, 'should pass through proxy')
+        done()
       })
     })
-  },
+  })
 
-  testHTTPProxyDisabled: function (test) {
-    // set the env variable
+  it('does respect proxy:false when env variable is preset', () => {
     process.env.http_proxy = 'http://does-not-exists.example.com:4242/'
 
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
-      res.end('123456789')
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        proxy: false
-      }).then(function (res) {
-        test.equal(res.data, '123456789', 'should not pass through proxy')
-        test.done()
+    nock(testUri)
+      .get('/')
+      .reply(200, '12345', {
+        'Content-Type': 'text/html; charset=UTF-8'
       })
+
+    return axios.get(testUri, {
+      proxy: false
     })
-  },
+      .then((result) => {
+        expect(result.data).toBe(12345, 'should not through proxy')
+      })
+  })
 
-  testHTTPProxyEnv: function (test) {
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
-      res.end('4567')
-    }).listen(4444, function () {
-      proxy = http.createServer(function (request, response) {
-        const parsed = url.parse(request.url)
-        const opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
-        }
+  it('does support proxies via environment variable', (done) => {
+    nock(testUri)
+      .get('/')
+      .reply(200, '12345', {
+        'Content-Type': 'text/html; charset=UTF-8'
+      })
 
-        http.get(opts, function (res) {
-          let body = ''
-          res.on('data', function (data) {
-            body += data
-          })
-          res.on('end', function () {
-            response.setHeader('Content-Type', 'text/html; charset=UTF-8')
-            response.end(body + '1234')
-          })
+    proxy = http.createServer(function (request, response) {
+      var parsed = url.parse(request.url)
+      var opts = {
+        host: parsed.hostname,
+        port: parsed.port,
+        path: parsed.path
+      }
+
+      response.setHeader('Content-Type', 'text/html; charset=UTF-8')
+
+      http.get(opts, function (res) {
+        var body = ''
+        res.on('data', function (data) {
+          body += data
         })
-      }).listen(4000, function () {
-        // set the env variable
-        process.env.http_proxy = 'http://localhost:4000/'
-
-        axios.get('http://localhost:4444/').then(function (res) {
-          test.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy')
-          test.done()
+        res.on('end', function () {
+          response.end(body + '6789')
         })
       })
-    })
-  },
-
-  testHTTPProxyAuth: function (test) {
-    server = http.createServer(function (req, res) {
-      res.end()
-    }).listen(4444, function () {
-      proxy = http.createServer(function (request, response) {
-        const parsed = url.parse(request.url)
-        const opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
-        }
-        const proxyAuth = request.headers['proxy-authorization']
-
-        http.get(opts, function (res) {
-          let body = ''
-          res.on('data', function (data) {
-            body += data
-          })
-          res.on('end', function () {
-            response.setHeader('Content-Type', 'text/html; charset=UTF-8')
-            response.end(proxyAuth)
-          })
+    }).listen(4000, () => {
+      process.env.http_proxy = 'http://localhost:4000/'
+      axios.get(testUri)
+        .then(function (res) {
+          expect(res.data).toBe(123456789, 'should pass through proxy')
+          done()
         })
-      }).listen(4000, function () {
-        axios.get('http://localhost:4444/', {
-          proxy: {
-            host: 'localhost',
-            port: 4000,
-            auth: {
-              username: 'user',
-              password: 'pass'
-            }
+    })
+  })
+
+  it('does support proxies with auth', (done) => {
+    nock(testUri)
+      .get('/')
+      .reply(200, '12345', {
+        'Content-Type': 'text/html; charset=UTF-8'
+      })
+
+    proxy = http.createServer(function (request, response) {
+      var parsed = url.parse(request.url)
+      var opts = {
+        host: parsed.hostname,
+        port: parsed.port,
+        path: parsed.path
+      }
+      var proxyAuth = request.headers['proxy-authorization']
+
+      http.get(opts, function (res) {
+        var body = ''
+        res.on('data', function (data) {
+          body += data
+        })
+        res.on('end', function () {
+          response.setHeader('Content-Type', 'text/html; charset=UTF-8')
+          response.end(JSON.stringify({proxyAuth, body}))
+        })
+      })
+    }).listen(4000, function () {
+      axios.get(testUri, {
+        proxy: {
+          host: 'localhost',
+          port: 4000,
+          auth: {
+            username: 'user',
+            password: 'pass'
           }
-        }).then(function (res) {
-          const base64 = new Buffer('user:pass', 'utf8').toString('base64')
-          test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy')
-          test.done()
-        })
-      })
-    })
-  },
-
-  testHTTPProxyAuthFromEnv: function (test) {
-    server = http.createServer(function (req, res) {
-      res.end()
-    }).listen(4444, function () {
-      proxy = http.createServer(function (request, response) {
-        const parsed = url.parse(request.url)
-        const opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
         }
-        const proxyAuth = request.headers['proxy-authorization']
-
-        http.get(opts, function (res) {
-          let body = ''
-          res.on('data', function (data) {
-            body += data
-          })
-          res.on('end', function () {
-            response.setHeader('Content-Type', 'text/html; charset=UTF-8')
-            response.end(proxyAuth)
-          })
+      })
+        .then(function (res) {
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
+          expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
+          done()
         })
-      }).listen(4000, function () {
-        process.env.http_proxy = 'http://user:pass@localhost:4000/'
+    })
+  })
 
-        axios.get('http://localhost:4444/').then(function (res) {
-          const base64 = new Buffer('user:pass', 'utf8').toString('base64')
-          test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy set by process.env.http_proxy')
-          test.done()
+  it('does support proxies with auth from env variables', (done) => {
+    nock(testUri)
+      .get('/')
+      .reply(200, '12345', {
+        'Content-Type': 'text/html; charset=UTF-8'
+      })
+
+    proxy = http.createServer(function (request, response) {
+      var parsed = url.parse(request.url)
+      var opts = {
+        host: parsed.hostname,
+        port: parsed.port,
+        path: parsed.path
+      }
+      var proxyAuth = request.headers['proxy-authorization']
+
+      http.get(opts, function (res) {
+        var body = ''
+        res.on('data', function (data) {
+          body += data
+        })
+        res.on('end', function () {
+          response.setHeader('Content-Type', 'text/html; charset=UTF-8')
+          response.end(JSON.stringify({proxyAuth, body}))
         })
       })
-    })
-  },
-
-  testHTTPProxyAuthWithHeader: function (test) {
-    server = http.createServer(function (req, res) {
-      res.end()
-    }).listen(4444, function () {
-      proxy = http.createServer(function (request, response) {
-        const parsed = url.parse(request.url)
-        const opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
-        }
-        const proxyAuth = request.headers['proxy-authorization']
-
-        http.get(opts, function (res) {
-          let body = ''
-          res.on('data', function (data) {
-            body += data
-          })
-          res.on('end', function () {
-            response.setHeader('Content-Type', 'text/html; charset=UTF-8')
-            response.end(proxyAuth)
-          })
+    }).listen(4000, function () {
+      process.env.http_proxy = 'http://user:pass@localhost:4000/'
+      axios.get(testUri)
+        .then(function (res) {
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
+          expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
+          done()
         })
-      }).listen(4000, function () {
-        axios.get('http://localhost:4444/', {
-          proxy: {
-            host: 'localhost',
-            port: 4000,
-            auth: {
-              username: 'user',
-              password: 'pass'
-            }
-          },
-          headers: {
-            'Proxy-Authorization': 'Basic abc123'
-          }
-        }).then(function (res) {
-          const base64 = new Buffer('user:pass', 'utf8').toString('base64')
-          test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy')
-          test.done()
-        })
-      })
     })
-  },
+  })
 
-  testCancel: function (test) {
+  it('does cancel request when cancel request', () => {
     const source = axios.CancelToken.source()
-    server = http.createServer(function (req, res) {
-      // call cancel() when the request has been sent, but a response has not been received
-      source.cancel('Operation has been canceled.')
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        cancelToken: source.token
-      }).catch(function (thrown) {
-        test.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel obejct')
-        test.equal(thrown.message, 'Operation has been canceled.')
-        test.done()
+
+    nock(testUri)
+      .get('/')
+      .reply(200, function () {
+        source.cancel('Operation has been canceled.')
       })
+
+    return axios.get(testUri, {
+      cancelToken: source.token
     })
-  }
-}
+      .then(() => {
+        fail('it should have canceled the request')
+      })
+      .catch((err) => {
+        expect(err instanceof axios.Cancel).toBe(true, 'Promise must be rejected with a Cancel object')
+        expect(err.message).toBe('Operation has been canceled.')
+      })
+  })
+})

@@ -315,6 +315,8 @@ These are the available config options for making requests. Only the `url` is re
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
+  // Only either `socketPath` or `proxy` can be specified.
+  // If both are specified, `socketPath` is used.
   socketPath: null, // default
 
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http

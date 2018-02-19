@@ -68,6 +68,28 @@ describe('instance', function () {
     expect(typeof instance.defaults.headers.common, 'object');
   });
 
+  // See issue https://github.com/mzabriskie/axios/issues/443
+  it('should inherit defaults options', function (done) {
+    var instance = axios.create();
+
+    axios.defaults.baseURL = 'http://example.com/';
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.com/foo');
+      done();
+    });
+  });
+
+  // See issue https://github.com/mzabriskie/axios/issues/385
+  it('should not be affected by change to another instance defaults', function() {
+    var instance1 = axios.create();
+    var instance2 = axios.create();
+
+    instance1.defaults.baseURL = 'http://instance1.example.com/';
+    expect(instance2.defaults.baseURL).not.toBe('http://instance1.example.com/');
+  });
+
   it('should have interceptors on the instance', function (done) {
     axios.interceptors.request.use(function (config) {
       config.foo = true;

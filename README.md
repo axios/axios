@@ -412,7 +412,7 @@ var instance = axios.create({
 });
 
 // Alter defaults after instance has been created
-instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+instance.defaults.headers['Authorization'] = AUTH_TOKEN;
 ```
 
 ### Config order of precedence

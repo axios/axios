@@ -1,5 +1,29 @@
 # Changelog
 
+### 0.18.0 (Feb 19, 2018)
+
+- Adding support for UNIX Sockets when running with Node.js ([#1070](https://github.com/axios/axios/pull/1070))
+- Fixing typings ([#1177](https://github.com/axios/axios/pull/1177)):
+    - AxiosRequestConfig.proxy: allows type false
+    - AxiosProxyConfig: added auth field
+- Adding function signature in AxiosInstance interface so AxiosInstance can be invoked ([#1192](https://github.com/axios/axios/pull/1192), [#1254](https://github.com/axios/axios/pull/1254))
+- Allowing maxContentLength to pass through to redirected calls as maxBodyLength in follow-redirects config ([#1287](https://github.com/axios/axios/pull/1287))
+- Fixing configuration when using an instance - method can now be set ([#1342](https://github.com/axios/axios/pull/1342))
+
+
+### 0.17.1 (Nov 11, 2017)
+
+- Fixing issue with web workers ([#1160](https://github.com/axios/axios/pull/1160))
+- Allowing overriding transport ([#1080](https://github.com/axios/axios/pull/1080))
+- Updating TypeScript typings ([#1165](https://github.com/axios/axios/pull/1165), [#1125](https://github.com/axios/axios/pull/1125), [#1131](https://github.com/axios/axios/pull/1131))
+
+### 0.17.0 (Oct 21, 2017)
+
+- **BREAKING** Fixing issue with `baseURL` and interceptors ([#950](https://github.com/axios/axios/pull/950))
+- **BREAKING** Improving handing of duplicate headers ([#874](https://github.com/axios/axios/pull/874))
+- Adding support for disabling proxies ([#691](https://github.com/axios/axios/pull/691))
+- Updating TypeScript typings with generic type parameters ([#1061](https://github.com/axios/axios/pull/1061))
+
 ### 0.16.2 (Jun 3, 2017)
 
 - Fixing issue with including `buffer` in bundle ([#887](https://github.com/axios/axios/pull/887))

@@ -74,14 +74,19 @@ axios.get('/user', {
     console.log(error);
   });
   
-  // Want to use async/await?
+// Want to use async/await? Add the `async` keyword to your outer function/method.
+async function getUser() {
   try {
-    const response = axios.get('/user?ID=12345');
+    const response = await axios.get('/user?ID=12345');
     console.log(response);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
+}
 ```
+
+> **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet 
+> Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
 

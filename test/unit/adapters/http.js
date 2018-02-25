@@ -148,6 +148,20 @@ module.exports = {
     });
   },
 
+  testTransparentGunzipSkipHead: function (test) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.setHeader('Content-Encoding', 'gzip');
+      res.end();
+    }).listen(4444, function () {
+      axios.head('http://localhost:4444/').then(function (res) {
+        test.done();
+      }).catch(function (err) {
+        test.done(err);
+      });
+    });
+  },
+
   testGunzipErrorHandling: function (test) {
     server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'application/json;charset=utf-8');

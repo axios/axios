@@ -17,3 +17,4 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-cache-plugin](https://github.com/jin5354/axios-cache-plugin) - Help you cache GET request when using axios.
 * [axios-extensions](https://github.com/kuitos/axios-extensions) - A collection of axios extensions, including throttle and cache GET request plugin.
 * [redux-saga-requests](https://github.com/klis87/redux-saga-requests) - Redux-Saga addon to simplify handling of AJAX requests.
+* [axios-fetch](https://github.com/lifeomic/axios-fetch) - A WebAPI Fetch implementation backed by an Axios client 

@@ -5,6 +5,7 @@
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
+[![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
 Promise based HTTP client for the browser and node.js
 
@@ -73,7 +74,20 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   });
+  
+// Want to use async/await? Add the `async` keyword to your outer function/method.
+async function getUser() {
+  try {
+    const response = await axios.get('/user?ID=12345');
+    console.log(response);
+  } catch (error) {
+    console.error(error);
+  }
+}
 ```
+
+> **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet 
+> Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
 
@@ -312,6 +326,12 @@ These are the available config options for making requests. Only the `url` is re
   // If set to 0, no redirects will be followed.
   maxRedirects: 5, // default
 
+  // `socketPath` defines a UNIX Socket to be used in node.js.
+  // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
+  // Only either `socketPath` or `proxy` can be specified.
+  // If both are specified, `socketPath` is used.
+  socketPath: null, // default
+
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
   // and https requests, respectively, in node.js. This allows options to be added like
   // `keepAlive` that are not enabled by default.
@@ -410,7 +430,7 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in `lib/defaults.js`, then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
 ```js
 // Create an instance using the config defaults provided by the library

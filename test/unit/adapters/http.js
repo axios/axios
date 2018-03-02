@@ -137,10 +137,12 @@ module.exports = {
       server = http.createServer(function (req, res) {
         res.setHeader('Content-Type', 'application/json;charset=utf-8');
         res.setHeader('Content-Encoding', 'gzip');
+        res.setHeader('Content-Length', Buffer.byteLength(zipped));
         res.end(zipped);
       }).listen(4444, function () {
         axios.get('http://localhost:4444/').then(function (res) {
           test.deepEqual(res.data, data);
+          test.equal('content-length' in res.headers, false);
           test.done();
         });
       });

@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.18.1 (Mar 5, 2018)
+
+- Fixing lack of differentiation between network errors ([#1296](https://github.com/axios/axios/issues/1296))
+    - Requests that fail after being successfully initiated now return an ECONNRESET error code
+    - Requests that fail before a network connection is made continue to return just a 'Network Error' string
+
 ### 0.18.0 (Feb 19, 2018)
 
 - Adding support for UNIX Sockets when running with Node.js ([#1070](https://github.com/axios/axios/pull/1070))

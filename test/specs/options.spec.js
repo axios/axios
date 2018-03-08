@@ -81,4 +81,32 @@ describe('options', function () {
       done();
     });
   });
+
+  it('should change only the baseURL of the specified instance', function() {
+    var instance1 = axios.create();
+    var instance2 = axios.create();
+
+    instance1.defaults.baseURL = 'http://instance1.example.com/';
+
+    expect(instance2.defaults.baseURL).not.toBe('http://instance1.example.com/');
+  });
+
+  it('should change only the headers of the specified instance', function() {
+    var instance1 = axios.create();
+    var instance2 = axios.create();
+
+    instance1.defaults.headers.common.Authorization = 'faketoken';
+    instance2.defaults.headers.common.Authorization = 'differentfaketoken';
+
+    instance1.defaults.headers.common['Content-Type'] = 'application/xml';
+    instance2.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded';
+
+    expect(axios.defaults.headers.common.Authorization).toBe(undefined);
+    expect(instance1.defaults.headers.common.Authorization).toBe('faketoken');
+    expect(instance2.defaults.headers.common.Authorization).toBe('differentfaketoken');
+
+    expect(axios.defaults.headers.common['Content-Type']).toBe(undefined);
+    expect(instance1.defaults.headers.common['Content-Type']).toBe('application/xml');
+    expect(instance2.defaults.headers.common['Content-Type']).toBe('application/x-www-form-urlencoded');
+  });
 });

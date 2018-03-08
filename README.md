@@ -172,8 +172,8 @@ For convenience aliases have been provided for all supported request methods.
 ##### axios.patch(url[, data[, config]])
 
 ###### NOTE
-When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
-
+When using the alias methods `url`, `method`, and `data` properties don't need to be specified in `config`.
+The `axios#post` `axios.put` `axios.patch` can take three parameters: `url`, `data` and `config`. Apparently, `data` and `config` is optional. But if you provide only two parameters, the second one will be considered as the `data`. For example, with `axios.post(url, config)`, the `config` will be considered as data and sent to the server. Moreover,  if you provide all three parameters, the `data` will be merged into `config.data`(something like `Object.assign(config.data, data)`), so like said above it's better not to specify `data` property in `config`.
 ### Concurrency
 
 Helper functions for dealing with concurrent requests.

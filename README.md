@@ -295,6 +295,10 @@ These are the available config options for making requests. Only the `url` is re
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
   responseType: 'json', // default
 
+  // `responseEncoding` indicates encoding to use for decoding responses
+  // Note: Ignored for `responseType` of 'stream' or client-side requests
+  responseEncoding: 'utf8', // default
+
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
   xsrfCookieName: 'XSRF-TOKEN', // default
 

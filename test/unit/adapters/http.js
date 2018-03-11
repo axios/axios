@@ -297,8 +297,8 @@ describe('http adapter', () => {
       })
 
     proxy = http.createServer(function (request, response) {
-      var parsed = url.parse(request.url)
-      var opts = {
+      const parsed = url.parse(request.url)
+      const opts = {
         host: parsed.hostname,
         port: parsed.port,
         path: parsed.path
@@ -307,7 +307,7 @@ describe('http adapter', () => {
       response.setHeader('Content-Type', 'text/html; charset=UTF-8')
 
       http.get(opts, function (res) {
-        var body = ''
+        let body = ''
         res.on('data', function (data) {
           body += data
         })
@@ -317,6 +317,7 @@ describe('http adapter', () => {
       })
     }).listen(4000, () => {
       axios.get(testUri, {
+        responseType: 'text',
         proxy: {
           host: 'localhost',
           port: 4000
@@ -353,8 +354,8 @@ describe('http adapter', () => {
       })
 
     proxy = http.createServer(function (request, response) {
-      var parsed = url.parse(request.url)
-      var opts = {
+      const parsed = url.parse(request.url)
+      const opts = {
         host: parsed.hostname,
         port: parsed.port,
         path: parsed.path
@@ -363,7 +364,7 @@ describe('http adapter', () => {
       response.setHeader('Content-Type', 'text/html; charset=UTF-8')
 
       http.get(opts, function (res) {
-        var body = ''
+        let body = ''
         res.on('data', function (data) {
           body += data
         })
@@ -389,16 +390,16 @@ describe('http adapter', () => {
       })
 
     proxy = http.createServer(function (request, response) {
-      var parsed = url.parse(request.url)
-      var opts = {
+      const parsed = url.parse(request.url)
+      const opts = {
         host: parsed.hostname,
         port: parsed.port,
         path: parsed.path
       }
-      var proxyAuth = request.headers['proxy-authorization']
+      const proxyAuth = request.headers['proxy-authorization']
 
       http.get(opts, function (res) {
-        var body = ''
+        let body = ''
         res.on('data', function (data) {
           body += data
         })
@@ -419,7 +420,7 @@ describe('http adapter', () => {
         }
       })
         .then(function (res) {
-          var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
+          const base64 = Buffer.from('user:pass', 'utf8').toString('base64')
           expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
           done()
         })

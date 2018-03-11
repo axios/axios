@@ -40,7 +40,7 @@ describe('http adapter', () => {
       .then(() => {
         fail('request should fail')
       })
-      .catch ((err) => {
+      .catch((err) => {
         expect(err.code).toBe('ECONNABORTED')
         expect(err.message).toBe('timeout of 250ms exceeded')
       })
@@ -435,16 +435,16 @@ describe('http adapter', () => {
       })
 
     proxy = http.createServer(function (request, response) {
-      var parsed = url.parse(request.url)
-      var opts = {
+      const parsed = url.parse(request.url)
+      const opts = {
         host: parsed.hostname,
         port: parsed.port,
         path: parsed.path
       }
-      var proxyAuth = request.headers['proxy-authorization']
+      const proxyAuth = request.headers['proxy-authorization']
 
       http.get(opts, function (res) {
-        var body = ''
+        let body = ''
         res.on('data', function (data) {
           body += data
         })
@@ -457,7 +457,7 @@ describe('http adapter', () => {
       process.env.http_proxy = 'http://user:pass@localhost:4000/'
       axios.get(testUri)
         .then(function (res) {
-          var base64 = Buffer.from('user:pass', 'utf8').toString('base64')
+          const base64 = Buffer.from('user:pass', 'utf8').toString('base64')
           expect(res.data.proxyAuth).toBe('Basic ' + base64, 'should authenticate to the proxy')
           done()
         })

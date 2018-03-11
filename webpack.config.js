@@ -32,7 +32,7 @@ module.exports = createConfig([
     ],
     plugins: [
       'lodash'
-    ],
+    ]
   }),
   addPlugins([
     new LodashModuleReplacementPlugin()

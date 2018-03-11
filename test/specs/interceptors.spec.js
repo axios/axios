@@ -209,13 +209,13 @@ describe('interceptors', function () {
   })
 
   it('should allow removing interceptors', function (done) {
-    let response, intercept
+    let response
 
     axios.interceptors.response.use(function (data) {
       data.data = data.data + '1'
       return data
     })
-    intercept = axios.interceptors.response.use(function (data) {
+    const intercept = axios.interceptors.response.use(function (data) {
       data.data = data.data + '2'
       return data
     })

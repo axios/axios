@@ -3,7 +3,7 @@ import __btoa from '../../../lib/helpers/btoa'
 describe('btoa polyfill', function () {
   it('should behave the same as native window.btoa', function () {
     // btoa doesn't exist in IE8/9
-    if (isOldIE && typeof Int8Array === 'undefined') {
+    if (window.isOldIE && typeof Int8Array === 'undefined') {
       return
     }
 

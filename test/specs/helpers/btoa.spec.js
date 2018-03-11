@@ -21,6 +21,6 @@ describe('btoa polyfill', function () {
       err = e
     }
 
-    validateInvalidCharacterError(err)
+    expect(/character/i.test(err.message)).toEqual(true)
   })
 })

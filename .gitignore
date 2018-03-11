@@ -9,3 +9,4 @@ test/typescript/axios.js*
 sauce_connect.log
 package-lock.json
 dist
+yarn-error.log

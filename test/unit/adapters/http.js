@@ -351,6 +351,7 @@ describe('http adapter', () => {
       })
     }).listen(4000, () => {
       axios.get(testUri, {
+        responseType: 'text',
         proxy: {
           host: 'localhost',
           port: 4000

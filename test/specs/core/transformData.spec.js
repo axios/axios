@@ -2,13 +2,11 @@ import transformData from '../../../lib/core/transformData'
 
 describe('core::transformData', function () {
   it('should support a single transformer', function () {
-    let data
-    data = transformData(data, null, function (data) {
-      data = 'foo'
-      return data
+    const result = transformData(undefined, null, function (data) {
+      return 'foo'
     })
 
-    expect(data).toEqual('foo')
+    expect(result).toEqual('foo')
   })
 
   it('should support an array of transformers', function () {

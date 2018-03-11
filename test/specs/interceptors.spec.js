@@ -33,7 +33,7 @@ describe('interceptors', function () {
   })
 
   it('should add a request interceptor that returns a new config object', function (done) {
-    axios.interceptors.request.use(function () {
+    axios.interceptors.request.use(function (config) {
       return {
         url: '/bar',
         method: 'post'
@@ -46,6 +46,8 @@ describe('interceptors', function () {
       expect(request.method).toBe('POST')
       expect(request.url).toBe('/bar')
       done()
+    }).catch(e => {
+      done.fail(e.message)
     })
   })
 

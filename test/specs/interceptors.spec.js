@@ -5,8 +5,8 @@ describe('interceptors', function () {
 
   afterEach(function () {
     jasmine.Ajax.uninstall();
-    axios.interceptors.request.handlers = [];
-    axios.interceptors.response.handlers = [];
+    axios.interceptors.request.handlers = {};
+    axios.interceptors.response.handlers = {};
   });
 
   it('should add a request interceptor', function (done) {

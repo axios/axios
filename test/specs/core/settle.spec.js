@@ -1,4 +1,5 @@
 import settle from '../../../lib/core/settle'
+import AxiosError from '../../../lib/core/AxiosError'
 
 describe('core::settle', function () {
   let resolve
@@ -65,6 +66,7 @@ describe('core::settle', function () {
     expect(reject).toHaveBeenCalled()
     const reason = reject.calls.first().args[0]
     expect(reason instanceof Error).toBe(true)
+    expect(reason instanceof AxiosError).toBe(true)
     expect(reason.message).toBe('Request failed with status code 500')
     expect(reason.config).toBe(response.config)
     expect(reason.request).toBe(req)

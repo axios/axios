@@ -62,6 +62,7 @@ export interface AxiosError extends Error {
   code?: string;
   request?: any;
   response?: AxiosResponse;
+  isAxiosError: boolean;
 }
 
 export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {

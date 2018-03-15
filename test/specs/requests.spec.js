@@ -1,7 +1,7 @@
 /* global getAjaxRequest, isOldIE */
 
 import axios from '../../index'
-import AxiosError from '../../../lib/core/AxiosError'
+import AxiosError from '../../lib/core/AxiosError'
 
 describe('requests', function () {
   beforeEach(function () {

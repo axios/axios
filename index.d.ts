@@ -101,6 +101,8 @@ export interface AxiosInterceptorManager<V> {
 }
 
 export interface AxiosInstance {
+  (config: AxiosRequestConfig): AxiosPromise;
+  (url: string, config?: AxiosRequestConfig): AxiosPromise;
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
@@ -108,16 +110,14 @@ export interface AxiosInstance {
   };
   request<T = any>(config: AxiosRequestConfig): AxiosPromise<T>;
   get<T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>;
-  delete(url: string, config?: AxiosRequestConfig): AxiosPromise;
-  head(url: string, config?: AxiosRequestConfig): AxiosPromise;
+  delete<T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>;
+  head<T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>;
   post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise<T>;
   put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise<T>;
   patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise<T>;
 }
 
 export interface AxiosStatic extends AxiosInstance {
-  (config: AxiosRequestConfig): AxiosPromise;
-  (url: string, config?: AxiosRequestConfig): AxiosPromise;
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;

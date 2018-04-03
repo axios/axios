@@ -120,6 +120,14 @@ axios.get<User>('/user', { params: { id: 12345 } })
 	.then(handleUserResponse)
 	.catch(handleError);
 
+axios.head<User>('/user')
+	.then(handleResponse)
+	.catch(handleError);
+
+axios.delete<User>('/user')
+	.then(handleResponse)
+	.catch(handleError);
+
 axios.post<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
 	.catch(handleError);
@@ -140,6 +148,10 @@ axios.patch<User>('/user', { foo: 'bar' })
 
 const instance1: AxiosInstance = axios.create();
 const instance2: AxiosInstance = axios.create(config);
+
+instance1(config)
+  .then(handleResponse)
+  .catch(handleError);
 
 instance1.request(config)
   .then(handleResponse)

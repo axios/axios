@@ -1,4 +1,4 @@
-/* axios v0.17.1 | (c) 2017 by Matt Zabriskie */
+/* axios v0.18.0 | (c) 2018 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -448,7 +448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/*!
 	 * Determine if an object is a Buffer
 	 *
-	 * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+	 * @author   Feross Aboukhadijeh <https://feross.org>
 	 * @license  MIT
 	 */
 	
@@ -506,7 +506,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, arguments[1]);
 	  }
 	
-	  config = utils.merge(defaults, this.defaults, { method: 'get' }, config);
+	  config = utils.merge(defaults, {method: 'get'}, this.defaults, config);
 	  config.method = config.method.toLowerCase();
 	
 	  // Hook up interceptors middleware
@@ -622,6 +622,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return data;
 	  }],
 	
+	  /**
+	   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+	   * timeout is not created.
+	   */
 	  timeout: 0,
 	
 	  xsrfCookieName: 'XSRF-TOKEN',
@@ -985,9 +989,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      if (utils.isArray(val)) {
 	        key = key + '[]';
-	      }
-	
-	      if (!utils.isArray(val)) {
+	      } else {
 	        val = [val];
 	      }
 	

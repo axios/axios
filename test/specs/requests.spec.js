@@ -79,6 +79,31 @@ describe('requests', function () {
       .then(finish, finish);
   });
 
+  it('should reject on abort', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    var finish = function () {
+      expect(resolveSpy).not.toHaveBeenCalled();
+      expect(rejectSpy).toHaveBeenCalled();
+      var reason = rejectSpy.calls.first().args[0];
+      expect(reason instanceof Error).toBe(true);
+      expect(reason.config.method).toBe('get');
+      expect(reason.config.url).toBe('/foo');
+      expect(reason.request).toEqual(jasmine.any(XMLHttpRequest));
+
+      done();
+    };
+
+    axios('/foo')
+      .then(resolveSpy, rejectSpy)
+      .then(finish, finish);
+
+    getAjaxRequest().then(function (request) {
+      request.abort();
+    });
+  });
+
   it('should reject when validateStatus returns false', function (done) {
     var resolveSpy = jasmine.createSpy('resolve');
     var rejectSpy = jasmine.createSpy('reject');

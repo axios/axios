@@ -74,7 +74,7 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   });
-  
+
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
   try {
@@ -86,7 +86,7 @@ async function getUser() {
 }
 ```
 
-> **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet 
+> **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
@@ -442,7 +442,7 @@ Config will be merged with an order of precedence. The order is library defaults
 var instance = axios.create();
 
 // Override timeout default for the library
-// Now all requests will wait 2.5 seconds before timing out
+// Now all requests using this instance will wait 2.5 seconds before timing out
 instance.defaults.timeout = 2500;
 
 // Override timeout for this request as it's known to take a long time

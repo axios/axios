@@ -268,6 +268,21 @@ module.exports = {
     });
   },
 
+  testFailedStream: function(test) {
+    server = http.createServer(function (req, res) {
+      req.pipe(res);
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/',
+        fs.createReadStream('/does/not/exist')
+      ).then(function (res) {
+        test.fail();
+      }).catch(function (err) {
+        test.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+        test.done();
+      });
+    });
+  },
+
   testBuffer: function(test) {
     var buf = new Buffer(1024); // Unsafe buffer < Buffer.poolSize (8192 bytes)
     buf.fill('x');

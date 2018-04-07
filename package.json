@@ -61,7 +61,7 @@
     "karma-webpack": "^1.7.0",
     "load-grunt-tasks": "^3.5.2",
     "minimist": "^1.2.0",
-    "sinon": "^1.17.4",
+    "sinon": "^4.5.0",
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1",
     "url-search-params": "^0.10.0",

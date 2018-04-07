@@ -11,12 +11,12 @@ $ npm install axios promise --save
 ```
 
 ```js
-var axios = require('axios');
+const axios = require('axios');
 require('promise/polyfill-done');
 
 axios
   .get('http://www.example.com/user')
-  .then(function (response) {
+  .then((response) => {
     console.log(response.data);
     return response;
   })
@@ -30,16 +30,16 @@ $ npm install axios promise.prototype.finally --save
 ```
 
 ```js
-var axios = require('axios');
+const axios = require('axios');
 require('promise.prototype.finally').shim();
 
 axios
   .get('http://www.example.com/user')
-  .then(function (response) {
+  .then((response) => {
     console.log(response.data);
     return response;
   })
-  .finally(function () {
+  .finally(() => {
     console.log('this will always be called');
   });
 ```
@@ -52,10 +52,10 @@ $ npm install axios pako --save
 
 ```js
 // client.js
-var axios = require('axios');
-var pako = require('pako');
+const axios = require('axios');
+const pako = require('pako');
 
-var user = {
+const user = {
   firstName: 'Fred',
   lastName: 'Flintstone'
 };
@@ -64,7 +64,7 @@ var data = pako.deflate(JSON.stringify(user), { to: 'string' });
 
 axios
   .post('http://127.0.0.1:3333/user', data)
-  .then(function (response) {
+  .then((response) => {
     response.data = JSON.parse(pako.inflate(response.data, { to: 'string' }));
     console.log(response.data);
     return response;
@@ -73,30 +73,27 @@ axios
 
 ```js
 // server.js
-var pako = require('pako');
-var http = require('http');
-var url = require('url');
-var server;
+const pako = require('pako');
+const http = require('http');
+const url = require('url');
 
-server = http.createServer(function (req, res) {
+const server = http.createServer((req, res) => {
   req.setEncoding('utf8');
 
-  var parsed = url.parse(req.url, true);
-  var pathname = parsed.pathname;
+  const parsed = url.parse(req.url, true);
+  const pathname = parsed.pathname;
 
   if (pathname === '/user') {
-    var data = '';
-    req.on('data', function (chunk) {
+    let data = '';
+    req.on('data', (chunk) => {
       data += chunk;
     });
 
-    req.on('end', function () {
-      var user = JSON.parse(pako.inflate(data, { to: 'string' }));
+    req.on('end', () => {
+      const user = JSON.parse(pako.inflate(data, { to: 'string' }));
       console.log(user);
 
-      res.writeHead(200, {
-        'Content-Type': 'application/json'
-      });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(pako.deflate(JSON.stringify({result: 'success'}), { to: 'string' }));
     });
   } else {
@@ -115,9 +112,9 @@ $ npm install jsonp --save
 ```
 
 ```js
-var jsonp = require('jsonp');
+const jsonp = require('jsonp');
 
-jsonp('http://www.example.com/foo', null, function (err, data) {
+jsonp('http://www.example.com/foo', null, (err, data) => {
   if (err) {
     console.error(err.message);
   } else {

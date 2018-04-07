@@ -42,6 +42,7 @@ export interface AxiosRequestConfig {
   maxContentLength?: number;
   validateStatus?: (status: number) => boolean;
   maxRedirects?: number;
+  socketPath?: string | null;
   httpAgent?: any;
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;

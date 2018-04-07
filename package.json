@@ -32,9 +32,9 @@
   },
   "homepage": "https://github.com/axios/axios",
   "devDependencies": {
-    "bundlesize": "^0.5.7",
-    "coveralls": "^2.11.9",
-    "es6-promise": "^4.0.5",
+    "bundlesize": "^0.17.0",
+    "coveralls": "^3.0.0",
+    "es6-promise": "^4.2.4",
     "grunt": "^1.0.1",
     "grunt-banner": "^0.6.0",
     "grunt-cli": "^1.2.0",
@@ -64,7 +64,7 @@
     "sinon": "^1.17.4",
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1",
-    "url-search-params": "^0.6.1",
+    "url-search-params": "^0.10.0",
     "typescript": "^2.0.3"
   },
   "browser": {

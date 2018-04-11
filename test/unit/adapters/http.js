@@ -243,6 +243,10 @@ module.exports = {
         test.equal(resp.status, 200);
         test.equal(resp.statusText, 'OK');
         test.done();
+      })
+      .catch(function (error) {
+        test.ifError(error);
+        test.done();
       });
     });
   },

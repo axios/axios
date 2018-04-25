@@ -92,7 +92,7 @@
   },
   "bundlesize": [
     {
-      "path": "./dist/axios.min.js",
+      "path": "./dist/browser/bundle.min.js",
       "threshold": "5kB"
     }
   ]

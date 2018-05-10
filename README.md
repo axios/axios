@@ -546,8 +546,7 @@ axios.get('/user/12345', {
 });
 
 axios.post('/user/12345', {
-  name: 'new name'
-}, {
+  name: 'new name',
   cancelToken: source.token
 })
 

@@ -1,4 +1,4 @@
-const axios = require('../../../index')
+const axios = require('../../..')
 const http = require('http')
 const net = require('net')
 const url = require('url')

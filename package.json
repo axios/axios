@@ -2,7 +2,7 @@
   "name": "axios",
   "version": "0.18.0",
   "description": "Promise based HTTP client for the browser and node.js",
-  "main": "dist/commonjs/axios.js",
+  "main": "index.js",
   "scripts": {
     "pretest": "npm run build",
     "test": "npm run test:karma && npm run test:unit && npm run lint && bundlesize",

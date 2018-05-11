@@ -1,4 +1,5 @@
-import axios from '../../index'
+import browserAxios from '../../lib/browser'
+import axios, { Cancel, CancelToken, isCancel } from '../../lib/axios'
 
 describe('static api', function () {
   it('should have request method helpers', function () {
@@ -34,9 +35,13 @@ describe('static api', function () {
   })
 
   it('should have Cancel, CancelToken, and isCancel properties', function () {
-    expect(typeof axios.Cancel).toEqual('function')
-    expect(typeof axios.CancelToken).toEqual('function')
-    expect(typeof axios.isCancel).toEqual('function')
+    expect(typeof browserAxios.Cancel).toEqual('function')
+    expect(typeof browserAxios.CancelToken).toEqual('function')
+    expect(typeof browserAxios.isCancel).toEqual('function')
+
+    expect(typeof Cancel).toEqual('function')
+    expect(typeof CancelToken).toEqual('function')
+    expect(typeof isCancel).toEqual('function')
   })
 })
 

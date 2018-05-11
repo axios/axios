@@ -4,9 +4,6 @@ require('es6-promise').polyfill()
 // Polyfill URLSearchParams
 window.URLSearchParams = require('url-search-params')
 
-// Import axios
-window.axios = require('../../index')
-
 // Jasmine config
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000
 jasmine.getEnv().defaultTimeoutInterval = 20000

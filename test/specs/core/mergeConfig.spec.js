@@ -1,5 +1,5 @@
-const defaults = require('../../../lib/defaults')
-const mergeConfig = require('../../../lib/core/mergeConfig')
+import defaults, { headers } from '../../../lib/defaults'
+import mergeConfig from '../../../lib/core/mergeConfig'
 
 describe('core::mergeConfig', function () {
   it('should accept undefined for second argument', function () {
@@ -13,7 +13,7 @@ describe('core::mergeConfig', function () {
   it('should not leave references', function () {
     const merged = mergeConfig(defaults, {})
     expect(merged).not.toBe(defaults)
-    expect(merged.headers).not.toBe(defaults.headers)
+    expect(merged.headers).not.toBe(headers)
   })
 
   it('should allow setting request options', function () {

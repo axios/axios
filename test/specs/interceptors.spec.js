@@ -1,6 +1,6 @@
 /* global getAjaxRequest */
 
-import axios from '../../index'
+import axios from '../../lib/axios'
 
 describe('interceptors', function () {
   beforeEach(function () {
@@ -40,15 +40,15 @@ describe('interceptors', function () {
       }
     })
 
-    axios.get('/foo')
+    const failTest = (e) => done.fail(e.message)
+
+    axios.get('/foo').catch(failTest)
 
     getAjaxRequest().then(function (request) {
       expect(request.method).toBe('POST')
       expect(request.url).toBe('/bar')
       done()
-    }).catch(e => {
-      done.fail(e.message)
-    })
+    }).catch(failTest)
   })
 
   it('should add a request interceptor that returns a promise', function (done) {

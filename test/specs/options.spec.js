@@ -1,6 +1,6 @@
 /* global getAjaxRequest */
 
-import axios from '../../index'
+import axios from '../../lib/axios'
 
 describe('options', function () {
   beforeEach(function () {

@@ -1,4 +1,4 @@
-import axios from '../../index'
+import axios from '../../lib/axios'
 
 describe('adapter', function () {
   it('should support custom adapter', function (done) {

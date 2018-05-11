@@ -1,6 +1,6 @@
 /* global getAjaxRequest, isOldIE */
 
-import axios from '../../index'
+import axios from '../../lib/axios'
 
 describe('requests', function () {
   beforeEach(function () {
@@ -89,7 +89,7 @@ describe('requests', function () {
       done()
     }
 
-    axios('/foo')
+    axios.get('/foo')
       .then(resolveSpy, rejectSpy)
       .then(finish, finish)
 

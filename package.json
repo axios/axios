@@ -1,6 +1,6 @@
 {
-  "name": "axios",
-  "version": "0.18.0",
+  "name": "aaxios",
+  "version": "0.18.1",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/axios/axios.git"
+    "url": "https://github.com/andrew-templeton/axios"
   },
   "keywords": [
     "xhr",
@@ -28,9 +28,9 @@
   "author": "Matt Zabriskie",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/axios/axios/issues"
+    "url": "https://github.com/andrew-templeton/axios/issues"
   },
-  "homepage": "https://github.com/axios/axios",
+  "homepage": "https://github.com/andrew-templeton/axios/axios",
   "devDependencies": {
     "bundlesize": "^0.17.0",
     "coveralls": "^3.0.0",

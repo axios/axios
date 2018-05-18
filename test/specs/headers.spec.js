@@ -69,15 +69,6 @@ describe('headers', function () {
     });
   });
 
-  it('should remove content-type if data is empty', function (done) {
-    axios.post('/foo');
-
-    getAjaxRequest().then(function (request) {
-      testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
-      done();
-    });
-  });
-
   it('should preserve content-type if data is false', function (done) {
     axios.post('/foo', false);
 

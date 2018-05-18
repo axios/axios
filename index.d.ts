@@ -20,9 +20,26 @@ export interface AxiosProxyConfig {
   }
 }
 
+export type Method = 
+  | 'get' 
+  | 'delete' 
+  | 'head' 
+  | 'options' 
+  | 'post' 
+  | 'put' 
+  | 'patch'
+
+export type ResponseType = 
+  | 'arraybuffer' 
+  | 'blob' 
+  | 'document' 
+  | 'json' 
+  | 'text' 
+  | 'stream'
+
 export interface AxiosRequestConfig {
   url?: string;
-  method?: 'get' | 'delete' | 'head' | 'options' | 'post' | 'put' | 'patch';
+  method?: Method;
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
@@ -34,7 +51,7 @@ export interface AxiosRequestConfig {
   withCredentials?: boolean;
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;
-  responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+  responseType?: ResponseType;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: any) => void;

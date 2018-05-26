@@ -17,7 +17,7 @@ describe('helpers::buildURL', function () {
       foo: {
         bar: 'baz'
       }
-    })).toEqual('/foo?foo=' + encodeURI('{"bar":"baz"}'));
+    })).toEqual('/foo?foo[bar]=baz');
   });
 
   it('should support date params', function () {

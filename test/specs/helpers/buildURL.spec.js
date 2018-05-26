@@ -34,6 +34,12 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo[0]=bar&foo[1]=baz');
   });
 
+  it('should support array of object params', function () {
+    expect(buildURL('/foo', {
+      foo: [{ bar: 123 }, { baz: 456 }]
+    })).toEqual('/foo?foo[0][bar]=123&foo[1][baz]=456');
+  });
+
   it('should support special char params', function () {
     expect(buildURL('/foo', {
       foo: '@:$, '

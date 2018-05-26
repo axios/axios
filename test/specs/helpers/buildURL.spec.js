@@ -31,7 +31,7 @@ describe('helpers::buildURL', function () {
   it('should support array params', function () {
     expect(buildURL('/foo', {
       foo: ['bar', 'baz']
-    })).toEqual('/foo?foo[]=bar&foo[]=baz');
+    })).toEqual('/foo?foo[0]=bar&foo[1]=baz');
   });
 
   it('should support special char params', function () {

@@ -12,6 +12,14 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=bar');
   });
 
+  it('should support object params - old style', function () {
+    expect(buildURL('/foo', {
+      foo: JSON.stringify({
+        bar: 'baz'
+      })
+    })).toEqual('/foo?foo=' + encodeURI('{"bar":"baz"}'));
+  });
+
   it('should support object params', function () {
     expect(buildURL('/foo', {
       foo: {

@@ -53,6 +53,13 @@ describe('helpers::buildURL', function () {
       .toEqual('/foo?foo[]=bar&foo[]=baz');
   });
 
+  it('should support array params with brackets style', function () {
+    expect(buildURL('/foo', {
+      foo: [{ bar: 123 }, { baz: 456 }]
+    }, 'brackets'))
+      .toEqual('/foo?foo[][bar]=123&foo[][baz]=456');
+  });
+
   it('should support special char params', function () {
     expect(buildURL('/foo', {
       foo: '@:$, '

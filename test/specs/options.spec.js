@@ -43,22 +43,6 @@ describe('options', function () {
     });
   });
 
-  it('should accept neested params', function (done) {
-    axios('/foo', {
-      params: {
-        foo: {
-          deep: 123
-        },
-        bar: 456
-      }
-    });
-
-    getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo?foo[deep]=123&bar=456');
-      done();
-    });
-  });
-
   it('should allow overriding default headers', function (done) {
     axios('/foo', {
       headers: {

@@ -60,6 +60,15 @@ describe('helpers::buildURL', function () {
       .toEqual('/foo?foo[][bar]=123&foo[][baz]=456');
   });
 
+  it('should support backward style', function () {
+    expect(buildURL('/foo', {
+      foo: { bar: 123 },
+      baz: [[4,5,6]],
+      dates: [new Date(1527420472955)]
+    }, 'simple'))
+      .toEqual('/foo?foo=' + encodeURI('{"bar":123}') + '&baz[]=[4,5,6]&dates[]=2018-05-27T11:27:52.955Z');
+  });
+
   it('should support special char params', function () {
     expect(buildURL('/foo', {
       foo: '@:$, '

@@ -48,6 +48,11 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo[0][bar]=123&foo[1][baz]=456');
   });
 
+  it('should support string params', function () {
+    expect(buildURL('/foo', 'foo[]=bar&foo[]=baz'))
+      .toEqual('/foo?foo[]=bar&foo[]=baz');
+  });
+
   it('should support special char params', function () {
     expect(buildURL('/foo', {
       foo: '@:$, '

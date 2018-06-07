@@ -14,3 +14,6 @@ env:
   global:
   - secure: LlXIBEaBLgJznkHWfTV6aftkGoBjH2vik4ZQhKq4k5pvoPLD+n5n28+0bjwlzDIHUdHb+n2YXtyM2PGvGzuqwltV+UY1gu0uG2RNR+5CBsp0pOr0FfGXK6YMXn0BYER6tGYIhaG7ElHBEO0SLcQeQV/xN/m3leyawbKEMBUGizU=
   - secure: XbXYzVddHJSVdbJRd/YtsdNu6Wlgx3pXvpuBpg9qBc3TytAF4LzhJNI8u1p4D1Gn8wANlxv1GNgEgkecxbzlTPST+mUrd6KlPLa1+Cmffgajr4oQjsh9ILKMe5Haqx8FOVrPK/leB1mi52liNLlkuo3/BK2r/tC2kMji+2zbses=
+cache:
+  directories:
+    - node_modules

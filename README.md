@@ -647,10 +647,6 @@ import axios from 'axios';
 axios.get('/user?ID=12345');
 ```
 
-## Plugins
-
-* [axios-curlirize](https://www.npmjs.com/package/axios-curlirize) : logs axios requests as curl commands
-
 ## Resources
 
 * [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)

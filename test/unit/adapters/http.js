@@ -181,7 +181,7 @@ module.exports = {
       var user = 'foo';
       var headers = { Authorization: 'Bearer 1234' };
       axios.get('http://' + user + '@localhost:4444/', { headers: headers }).then(function (res) {
-        var base64 = new Buffer(user + ':', 'utf8').toString('base64');
+        var base64 = Buffer.from(user + ':', 'utf8').toString('base64');
         test.equal(res.data, 'Basic ' + base64);
         test.done();
       });
@@ -195,7 +195,7 @@ module.exports = {
       var auth = { username: 'foo', password: 'bar' };
       var headers = { Authorization: 'Bearer 1234' };
       axios.get('http://localhost:4444/', { auth: auth, headers: headers }).then(function (res) {
-        var base64 = new Buffer('foo:bar', 'utf8').toString('base64');
+        var base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
         test.equal(res.data, 'Basic ' + base64);
         test.done();
       });
@@ -288,7 +288,7 @@ module.exports = {
   },
 
   testBuffer: function(test) {
-    var buf = new Buffer(1024); // Unsafe buffer < Buffer.poolSize (8192 bytes)
+    var buf = Buffer.from(1024); // Unsafe buffer < Buffer.poolSize (8192 bytes)
     buf.fill('x');
     server = http.createServer(function (req, res) {
       test.equal(req.headers['content-length'], buf.length.toString());
@@ -437,7 +437,7 @@ module.exports = {
             }
           }
         }).then(function(res) {
-          var base64 = new Buffer('user:pass', 'utf8').toString('base64');
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
           test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
           test.done();
         });
@@ -473,7 +473,7 @@ module.exports = {
         process.env.http_proxy = 'http://user:pass@localhost:4000/';
 
         axios.get('http://localhost:4444/').then(function(res) {
-          var base64 = new Buffer('user:pass', 'utf8').toString('base64');
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
           test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy set by process.env.http_proxy');
           test.done();
         });
@@ -519,7 +519,7 @@ module.exports = {
             'Proxy-Authorization': 'Basic abc123'
           }
         }).then(function(res) {
-          var base64 = new Buffer('user:pass', 'utf8').toString('base64');
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
           test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
           test.done();
         });

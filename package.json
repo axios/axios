@@ -39,10 +39,10 @@
     "grunt-banner": "^0.6.0",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-clean": "^1.1.0",
-    "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-eslint": "^20.1.0",
     "grunt-karma": "^2.0.0",
+    "grunt-mocha-test": "^0.13.3",
     "grunt-ts": "^6.0.0-beta.19",
     "grunt-webpack": "^1.0.18",
     "istanbul-instrumenter-loader": "^1.0.0",
@@ -61,11 +61,12 @@
     "karma-webpack": "^1.7.0",
     "load-grunt-tasks": "^3.5.2",
     "minimist": "^1.2.0",
+    "mocha": "^5.2.0",
     "sinon": "^4.5.0",
-    "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
+    "typescript": "^2.8.1",
     "url-search-params": "^0.10.0",
-    "typescript": "^2.8.1"
+    "webpack": "^1.13.1",
+    "webpack-dev-server": "^1.14.1"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

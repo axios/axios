@@ -36,8 +36,8 @@ describe('helpers::buildURL', function () {
 
   it('should support special char params', function () {
     expect(buildURL('/foo', {
-      foo: '@:$, '
-    })).toEqual('/foo?foo=@:$,+');
+      foo: ':$, '
+    })).toEqual('/foo?foo=:$,+');
   });
 
   it('should support existing params', function () {

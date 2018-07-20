@@ -1,25 +1,25 @@
 var CancelToken = require('../../../lib/cancel/CancelToken');
 var Cancel = require('../../../lib/cancel/Cancel');
 
-describe('CancelToken', function() {
-  describe('constructor', function() {
-    it('throws when executor is not specified', function() {
-      expect(function() {
+describe('CancelToken', () => {
+  describe('constructor', () => {
+    it('throws when executor is not specified', () => {
+      expect(() => {
         new CancelToken();
       }).toThrowError(TypeError, 'executor must be a function.');
     });
 
-    it('throws when executor is not a function', function() {
-      expect(function() {
+    it('throws when executor is not a function', () => {
+      expect(() => {
         new CancelToken(123);
       }).toThrowError(TypeError, 'executor must be a function.');
     });
   });
 
-  describe('reason', function() {
-    it('returns a Cancel if cancellation has been requested', function() {
+  describe('reason', () => {
+    it('returns a Cancel if cancellation has been requested', () => {
       var cancel;
-      var token = new CancelToken(function(c) {
+      var token = new CancelToken(c => {
         cancel = c;
       });
       cancel('Operation has been canceled.');
@@ -27,16 +27,16 @@ describe('CancelToken', function() {
       expect(token.reason.message).toBe('Operation has been canceled.');
     });
 
-    it('returns undefined if cancellation has not been requested', function() {
-      var token = new CancelToken(function() {});
+    it('returns undefined if cancellation has not been requested', () => {
+      var token = new CancelToken(() => {});
       expect(token.reason).toBeUndefined();
     });
   });
 
-  describe('promise', function() {
-    it('returns a Promise that resolves when cancellation is requested', function(done) {
+  describe('promise', () => {
+    it('returns a Promise that resolves when cancellation is requested', done => {
       var cancel;
-      var token = new CancelToken(function(c) {
+      var token = new CancelToken(c => {
         cancel = c;
       });
       token.promise.then(function onFulfilled(value) {
@@ -48,11 +48,11 @@ describe('CancelToken', function() {
     });
   });
 
-  describe('throwIfRequested', function() {
-    it('throws if cancellation has been requested', function() {
+  describe('throwIfRequested', () => {
+    it('throws if cancellation has been requested', () => {
       // Note: we cannot use expect.toThrowError here as Cancel does not inherit from Error
       var cancel;
-      var token = new CancelToken(function(c) {
+      var token = new CancelToken(c => {
         cancel = c;
       });
       cancel('Operation has been canceled.');
@@ -67,14 +67,14 @@ describe('CancelToken', function() {
       }
     });
 
-    it('does not throw if cancellation has not been requested', function() {
-      var token = new CancelToken(function() {});
+    it('does not throw if cancellation has not been requested', () => {
+      var token = new CancelToken(() => {});
       token.throwIfRequested();
     });
   });
 
-  describe('source', function() {
-    it('returns an object containing token and cancel function', function() {
+  describe('source', () => {
+    it('returns an object containing token and cancel function', () => {
       var source = CancelToken.source();
       expect(source.token).toEqual(jasmine.any(CancelToken));
       expect(source.cancel).toEqual(jasmine.any(Function));

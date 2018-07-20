@@ -1,7 +1,7 @@
 var deepMerge = require('../../../lib/utils').deepMerge;
 
-describe('utils::deepMerge', function () {
-  it('should be immutable', function () {
+describe('utils::deepMerge', () => {
+  it('should be immutable', () => {
     var a = {};
     var b = {foo: 123};
     var c = {bar: 456};
@@ -14,7 +14,7 @@ describe('utils::deepMerge', function () {
     expect(typeof c.foo).toEqual('undefined');
   });
 
-  it('should deepMerge properties', function () {
+  it('should deepMerge properties', () => {
     var a = {foo: 123};
     var b = {bar: 456};
     var c = {foo: 789};
@@ -24,7 +24,7 @@ describe('utils::deepMerge', function () {
     expect(d.bar).toEqual(456);
   });
 
-  it('should deepMerge recursively', function () {
+  it('should deepMerge recursively', () => {
     var a = {foo: {bar: 123}};
     var b = {foo: {baz: 456}, bar: {qux: 789}};
 
@@ -39,7 +39,7 @@ describe('utils::deepMerge', function () {
     });
   });
 
-  it('should remove all references from nested objects', function () {
+  it('should remove all references from nested objects', () => {
     var a = {foo: {bar: 123}};
     var b = {};
     var d = deepMerge(a, b);
@@ -53,7 +53,7 @@ describe('utils::deepMerge', function () {
     expect(d.foo).not.toBe(a.foo);
   });
 
-  it('handles null and undefined arguments', function () {
+  it('handles null and undefined arguments', () => {
     expect(deepMerge(undefined, undefined)).toEqual({});
     expect(deepMerge(undefined, {foo: 123})).toEqual({foo: 123});
     expect(deepMerge({foo: 123}, undefined)).toEqual({foo: 123});

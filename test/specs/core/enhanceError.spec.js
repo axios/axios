@@ -1,7 +1,7 @@
 var enhanceError = require('../../../lib/core/enhanceError');
 
-describe('core::enhanceError', function() {
-  it('should add config, config, request and response to error', function() {
+describe('core::enhanceError', () => {
+  it('should add config, config, request and response to error', () => {
     var error = new Error('Boom!');
     var request = { path: '/foo' };
     var response = { status: 200, data: { foo: 'bar' } };
@@ -14,7 +14,7 @@ describe('core::enhanceError', function() {
     expect(error.isAxiosError).toBe(true);
   });
 
-  it('should return error', function() {
+  it('should return error', () => {
     var error = new Error('Boom!');
     expect(enhanceError(error, { foo: 'bar' }, 'ESOMETHING')).toBe(error);
   });

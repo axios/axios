@@ -1,9 +1,9 @@
 var transformData = require('../../../lib/core/transformData');
 
-describe('core::transformData', function () {
-  it('should support a single transformer', function () {
+describe('core::transformData', () => {
+  it('should support a single transformer', () => {
     var data;
-    data = transformData(data, null, function (data) {
+    data = transformData(data, null, data => {
       data = 'foo';
       return data;
     });
@@ -11,15 +11,15 @@ describe('core::transformData', function () {
     expect(data).toEqual('foo');
   });
 
-  it('should support an array of transformers', function () {
+  it('should support an array of transformers', () => {
     var data = '';
-    data = transformData(data, null, [function (data) {
+    data = transformData(data, null, [data => {
       data += 'f';
       return data;
-    }, function (data) {
+    }, data => {
       data += 'o';
       return data;
-    }, function (data) {
+    }, data => {
       data += 'o';
       return data;
     }]);

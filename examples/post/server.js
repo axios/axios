@@ -1,11 +1,11 @@
-module.exports = function (req, res) {
+module.exports = (req, res) => {
   var data = '';
   
-  req.on('data', function (chunk) {
+  req.on('data', chunk => {
     data += chunk;
   });
 
-  req.on('end', function () {
+  req.on('end', () => {
     console.log('POST data received');
     res.writeHead(200, {
       'Content-Type': 'text/json'

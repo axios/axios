@@ -1,20 +1,18 @@
 var settle = require('../../../lib/core/settle');
 
-describe('core::settle', function() {
+describe('core::settle', () => {
   var resolve;
   var reject;
 
-  beforeEach(function() {
+  beforeEach(() => {
     resolve = jasmine.createSpy('resolve');
     reject = jasmine.createSpy('reject');
   });
 
-  it('should resolve promise if status is not set', function() {
+  it('should resolve promise if status is not set', () => {
     var response = {
       config: {
-        validateStatus: function() {
-          return true;
-        }
+        validateStatus: () => true
       }
     };
     settle(resolve, reject, response);
@@ -22,7 +20,7 @@ describe('core::settle', function() {
     expect(reject).not.toHaveBeenCalled();
   });
 
-  it('should resolve promise if validateStatus is not set', function() {
+  it('should resolve promise if validateStatus is not set', () => {
     var response = {
       status: 500,
       config: {
@@ -33,13 +31,11 @@ describe('core::settle', function() {
     expect(reject).not.toHaveBeenCalled();
   });
 
-  it('should resolve promise if validateStatus returns true', function() {
+  it('should resolve promise if validateStatus returns true', () => {
     var response = {
       status: 500,
       config: {
-        validateStatus: function() {
-          return true;
-        }
+        validateStatus: () => true
       }
     };
     settle(resolve, reject, response);
@@ -47,16 +43,14 @@ describe('core::settle', function() {
     expect(reject).not.toHaveBeenCalled();
   });
 
-  it('should reject promise if validateStatus returns false', function() {
+  it('should reject promise if validateStatus returns false', () => {
     var req = {
       path: '/foo'
     };
     var response = {
       status: 500,
       config: {
-        validateStatus: function() {
-          return false;
-        }
+        validateStatus: () => false
       },
       request: req
     };
@@ -71,7 +65,7 @@ describe('core::settle', function() {
     expect(reason.response).toBe(response);
   });
 
-  it('should pass status to validateStatus', function() {
+  it('should pass status to validateStatus', () => {
     var validateStatus = jasmine.createSpy('validateStatus');
     var response = {
       status: 500,

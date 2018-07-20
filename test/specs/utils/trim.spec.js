@@ -1,11 +1,11 @@
 var trim = require('../../../lib/utils').trim;
 
-describe('utils::trim', function () {
-  it('should trim spaces', function () {
+describe('utils::trim', () => {
+  it('should trim spaces', () => {
     expect(trim('  foo  ')).toEqual('foo');
   });
 
-  it('should trim tabs', function () {
+  it('should trim tabs', () => {
     expect(trim('\tfoo\t')).toEqual('foo');
   });
 });

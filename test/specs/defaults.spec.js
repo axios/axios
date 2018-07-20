@@ -1,14 +1,14 @@
 var defaults = require('../../lib/defaults');
 var utils = require('../../lib/utils');
 
-describe('defaults', function () {
+describe('defaults', () => {
   var XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
 
-  beforeEach(function () {
+  beforeEach(() => {
     jasmine.Ajax.install();
   });
 
-  afterEach(function () {
+  afterEach(() => {
     jasmine.Ajax.uninstall();
     delete axios.defaults.baseURL;
     delete axios.defaults.headers.get['X-CUSTOM-HEADER'];
@@ -16,57 +16,57 @@ describe('defaults', function () {
     document.cookie = XSRF_COOKIE_NAME + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
   });
 
-  it('should transform request json', function () {
+  it('should transform request json', () => {
     expect(defaults.transformRequest[0]({foo: 'bar'})).toEqual('{"foo":"bar"}');
   });
 
-  it('should do nothing to request string', function () {
+  it('should do nothing to request string', () => {
     expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');
   });
 
-  it('should transform response json', function () {
+  it('should transform response json', () => {
     var data = defaults.transformResponse[0]('{"foo":"bar"}');
 
     expect(typeof data).toEqual('object');
     expect(data.foo).toEqual('bar');
   });
 
-  it('should do nothing to response string', function () {
+  it('should do nothing to response string', () => {
     expect(defaults.transformResponse[0]('foo=bar')).toEqual('foo=bar');
   });
 
-  it('should use global defaults config', function (done) {
+  it('should use global defaults config', done => {
     axios('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('/foo');
       done();
     });
   });
 
-  it('should use modified defaults config', function (done) {
+  it('should use modified defaults config', done => {
     axios.defaults.baseURL = 'http://example.com/';
 
     axios('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('http://example.com/foo');
       done();
     });
   });
 
-  it('should use request config', function (done) {
+  it('should use request config', done => {
     axios('/foo', {
       baseURL: 'http://www.example.com'
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('http://www.example.com/foo');
       done();
     });
   });
 
-  it('should use default config for custom instance', function (done) {
+  it('should use default config for custom instance', done => {
     var instance = axios.create({
       xsrfCookieName: XSRF_COOKIE_NAME,
       xsrfHeaderName: 'X-CUSTOM-XSRF-TOKEN'
@@ -75,33 +75,33 @@ describe('defaults', function () {
 
     instance.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.requestHeaders[instance.defaults.xsrfHeaderName]).toEqual('foobarbaz');
       done();
     });
   });
 
-  it('should use GET headers', function (done) {
+  it('should use GET headers', done => {
     axios.defaults.headers.get['X-CUSTOM-HEADER'] = 'foo';
     axios.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.requestHeaders['X-CUSTOM-HEADER']).toBe('foo');
       done();
     });
   });
 
-  it('should use POST headers', function (done) {
+  it('should use POST headers', done => {
     axios.defaults.headers.post['X-CUSTOM-HEADER'] = 'foo';
     axios.post('/foo', {});
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.requestHeaders['X-CUSTOM-HEADER']).toBe('foo');
       done();
     });
   });
 
-  it('should use header config', function (done) {
+  it('should use header config', done => {
     var instance = axios.create({
       headers: {
         common: {
@@ -123,7 +123,7 @@ describe('defaults', function () {
       }
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.requestHeaders).toEqual(
         utils.merge(defaults.headers.common, defaults.headers.get, {
           'X-COMMON-HEADER': 'commonHeaderValue',
@@ -136,25 +136,25 @@ describe('defaults', function () {
     });
   });
 
-  it('should be used by custom instance if set before instance created', function (done) {
+  it('should be used by custom instance if set before instance created', done => {
     axios.defaults.baseURL = 'http://example.org/';
     var instance = axios.create();
 
     instance.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('http://example.org/foo');
       done();
     });
   });
 
-  it('should not be used by custom instance if set after instance created', function (done) {
+  it('should not be used by custom instance if set after instance created', done => {
     var instance = axios.create();
     axios.defaults.baseURL = 'http://example.org/';
 
     instance.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('/foo');
       done();
     });

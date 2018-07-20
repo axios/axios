@@ -1,7 +1,7 @@
 var parseHeaders = require('../../../lib/helpers/parseHeaders');
 
-describe('helpers::parseHeaders', function () {
-  it('should parse headers', function () {
+describe('helpers::parseHeaders', () =>{
+  it('should parse headers', () =>{
     var date = new Date();
     var parsed = parseHeaders(
       'Date: ' + date.toISOString() + '\n' +
@@ -16,7 +16,7 @@ describe('helpers::parseHeaders', function () {
     expect(parsed['transfer-encoding']).toEqual('chunked');
   });
 
-  it('should use array for set-cookie', function() {
+  it('should use array for set-cookie', () =>{
     var parsedZero = parseHeaders('');
     var parsedSingle = parseHeaders(
       'Set-Cookie: key=val;'
@@ -31,7 +31,7 @@ describe('helpers::parseHeaders', function () {
     expect(parsedMulti['set-cookie']).toEqual(['key=val;', 'key2=val2;']);
   });
 
-  it('should handle duplicates', function() {
+  it('should handle duplicates', () =>{
     var parsed = parseHeaders(
       'Age: age-a\n' + // age is in ignore duplicates blacklist
       'Age: age-b\n' +

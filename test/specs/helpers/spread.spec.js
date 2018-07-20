@@ -1,19 +1,17 @@
 var spread = require('../../../lib/helpers/spread');
 
-describe('helpers::spread', function () {
-  it('should spread array to arguments', function () {
+describe('helpers::spread', () => {
+  it('should spread array to arguments', () => {
     var value = 0;
-    spread(function (a, b) {
+    spread((a, b) => {
       value = a * b;
     })([5, 10]);
 
     expect(value).toEqual(50);
   });
 
-  it('should return callback result', function () {
-    var value = spread(function (a, b) {
-      return a * b;
-    })([5, 10]);
+  it('should return callback result', () => {
+    var value = spread((a, b) => a * b)([5, 10]);
 
     expect(value).toEqual(50);
   });

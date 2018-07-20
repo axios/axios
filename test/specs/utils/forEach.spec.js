@@ -1,17 +1,17 @@
 var forEach = require('../../../lib/utils').forEach;
 
-describe('utils::forEach', function () {
-  it('should loop over an array', function () {
+describe('utils::forEach', () => {
+  it('should loop over an array', () => {
     var sum = 0;
 
-    forEach([1, 2, 3, 4, 5], function (val) {
+    forEach([1, 2, 3, 4, 5], val => {
       sum += val;
     });
 
     expect(sum).toEqual(15);
   });
 
-  it('should loop over object keys', function () {
+  it('should loop over object keys', () => {
     var keys = '';
     var vals = 0;
     var obj = {
@@ -20,7 +20,7 @@ describe('utils::forEach', function () {
       r: 3
     };
 
-    forEach(obj, function (v, k) {
+    forEach(obj, (v, k) => {
       keys += k;
       vals += v;
     });
@@ -29,32 +29,32 @@ describe('utils::forEach', function () {
     expect(vals).toEqual(6);
   });
 
-  it('should handle undefined gracefully', function () {
+  it('should handle undefined gracefully', () => {
     var count = 0;
 
-    forEach(undefined, function () {
+    forEach(undefined, () => {
       count++;
     });
 
     expect(count).toEqual(0);
   });
 
-  it('should make an array out of non-array argument', function () {
+  it('should make an array out of non-array argument', () => {
     var count = 0;
 
-    forEach(function () {}, function () {
+    forEach(() => {}, () => {
       count++;
     });
 
     expect(count).toEqual(1);
   });
 
-  it('should handle non object prototype gracefully', function () {
+  it('should handle non object prototype gracefully', () => {
     var count = 0;
     var data = Object.create(null);
     data.foo = 'bar'
 
-    forEach(data, function () {
+    forEach(data, () => {
       count++;
     });
 

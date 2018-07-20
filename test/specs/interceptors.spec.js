@@ -1,23 +1,23 @@
-describe('interceptors', function () {
-  beforeEach(function () {
+describe('interceptors', () => {
+  beforeEach(() => {
     jasmine.Ajax.install();
   });
 
-  afterEach(function () {
+  afterEach(() => {
     jasmine.Ajax.uninstall();
     axios.interceptors.request.handlers = [];
     axios.interceptors.response.handlers = [];
   });
 
-  it('should add a request interceptor', function (done) {
-    axios.interceptors.request.use(function (config) {
+  it('should add a request interceptor', done => {
+    axios.interceptors.request.use(config => {
       config.headers.test = 'added by interceptor';
       return config;
     });
 
     axios('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200,
         responseText: 'OK'
@@ -28,59 +28,55 @@ describe('interceptors', function () {
     });
   });
 
-  it('should add a request interceptor that returns a new config object', function (done) {
-    axios.interceptors.request.use(function () {
-      return {
+  it('should add a request interceptor that returns a new config object', done => {
+    axios.interceptors.request.use(() => ({
         url: '/bar',
         method: 'post'
-      };
-    });
+      }));
 
     axios('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.method).toBe('POST');
       expect(request.url).toBe('/bar');
       done();
     });
   });
 
-  it('should add a request interceptor that returns a promise', function (done) {
-    axios.interceptors.request.use(function (config) {
-      return new Promise(function (resolve) {
+  it('should add a request interceptor that returns a promise', done => {
+    axios.interceptors.request.use(config => new Promise(resolve => {
         // do something async
-        setTimeout(function () {
+        setTimeout(() => {
           config.headers.async = 'promise';
           resolve(config);
         }, 100);
-      });
-    });
+      }));
 
     axios('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.requestHeaders.async).toBe('promise');
       done();
     });
   });
 
-  it('should add multiple request interceptors', function (done) {
-    axios.interceptors.request.use(function (config) {
+  it('should add multiple request interceptors', done => {
+    axios.interceptors.request.use(config => {
       config.headers.test1 = '1';
       return config;
     });
-    axios.interceptors.request.use(function (config) {
+    axios.interceptors.request.use(config => {
       config.headers.test2 = '2';
       return config;
     });
-    axios.interceptors.request.use(function (config) {
+    axios.interceptors.request.use(config => {
       config.headers.test3 = '3';
       return config;
     });
 
     axios('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.requestHeaders.test1).toBe('1');
       expect(request.requestHeaders.test2).toBe('2');
       expect(request.requestHeaders.test3).toBe('3');
@@ -88,157 +84,151 @@ describe('interceptors', function () {
     });
   });
 
-  it('should add a response interceptor', function (done) {
+  it('should add a response interceptor', done => {
     var response;
 
-    axios.interceptors.response.use(function (data) {
+    axios.interceptors.response.use(data => {
       data.data = data.data + ' - modified by interceptor';
       return data;
     });
 
-    axios('/foo').then(function (data) {
+    axios('/foo').then(data => {
       response = data;
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200,
         responseText: 'OK'
       });
 
-      setTimeout(function () {
+      setTimeout(() => {
         expect(response.data).toBe('OK - modified by interceptor');
         done();
       }, 100);
     });
   });
 
-  it('should add a response interceptor that returns a new data object', function (done) {
+  it('should add a response interceptor that returns a new data object', done => {
     var response;
 
-    axios.interceptors.response.use(function () {
-      return {
-        data: 'stuff'
-      };
-    });
+    axios.interceptors.response.use(() => ({data: 'stuff'}));
 
-    axios('/foo').then(function (data) {
+    axios('/foo').then(data => {
       response = data;
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200,
         responseText: 'OK'
       });
 
-      setTimeout(function () {
+      setTimeout(() => {
         expect(response.data).toBe('stuff');
         done();
       }, 100);
     });
   });
 
-  it('should add a response interceptor that returns a promise', function (done) {
+  it('should add a response interceptor that returns a promise', done => {
     var response;
 
-    axios.interceptors.response.use(function (data) {
-      return new Promise(function (resolve) {
+    axios.interceptors.response.use(data => new Promise(resolve => {
         // do something async
-        setTimeout(function () {
+        setTimeout(() => {
           data.data = 'you have been promised!';
           resolve(data);
         }, 10);
-      });
-    });
+      }));
 
-    axios('/foo').then(function (data) {
+    axios('/foo').then(data => {
       response = data;
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200,
         responseText: 'OK'
       });
 
-      setTimeout(function () {
+      setTimeout(() => {
         expect(response.data).toBe('you have been promised!');
         done();
       }, 100);
     });
   });
 
-  it('should add multiple response interceptors', function (done) {
+  it('should add multiple response interceptors', done => {
     var response;
 
-    axios.interceptors.response.use(function (data) {
+    axios.interceptors.response.use(data => {
       data.data = data.data + '1';
       return data;
     });
-    axios.interceptors.response.use(function (data) {
+    axios.interceptors.response.use(data => {
       data.data = data.data + '2';
       return data;
     });
-    axios.interceptors.response.use(function (data) {
+    axios.interceptors.response.use(data => {
       data.data = data.data + '3';
       return data;
     });
 
-    axios('/foo').then(function (data) {
+    axios('/foo').then(data => {
       response = data;
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200,
         responseText: 'OK'
       });
 
-      setTimeout(function () {
+      setTimeout(() => {
         expect(response.data).toBe('OK123');
         done();
       }, 100);
     });
   });
 
-  it('should allow removing interceptors', function (done) {
+  it('should allow removing interceptors', done => {
     var response, intercept;
 
-    axios.interceptors.response.use(function (data) {
+    axios.interceptors.response.use(data => {
       data.data = data.data + '1';
       return data;
     });
-    intercept = axios.interceptors.response.use(function (data) {
+    intercept = axios.interceptors.response.use(data => {
       data.data = data.data + '2';
       return data;
     });
-    axios.interceptors.response.use(function (data) {
+    axios.interceptors.response.use(data => {
       data.data = data.data + '3';
       return data;
     });
 
     axios.interceptors.response.eject(intercept);
 
-    axios('/foo').then(function (data) {
+    axios('/foo').then(data => {
       response = data;
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200,
         responseText: 'OK'
       });
 
-      setTimeout(function () {
+      setTimeout(() => {
         expect(response.data).toBe('OK13');
         done();
       }, 100);
     });
   });
 
-  it('should execute interceptors before transformers', function (done) {
-    axios.interceptors.request.use(function (config) {
+  it('should execute interceptors before transformers', done => {
+    axios.interceptors.request.use(config => {
       config.data.baz = 'qux';
       return config;
     });
@@ -247,25 +237,25 @@ describe('interceptors', function () {
       foo: 'bar'
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.params).toEqual('{"foo":"bar","baz":"qux"}');
       done();
     });
   });
 
-  it('should modify base URL in request interceptor', function (done) {
+  it('should modify base URL in request interceptor', done => {
     var instance = axios.create({
       baseURL: 'http://test.com/'
     });
 
-    instance.interceptors.request.use(function (config) {
+    instance.interceptors.request.use(config => {
       config.baseURL = 'http://rebase.com/';
       return config;
     });
 
     instance.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('http://rebase.com/foo');
       done();
     });

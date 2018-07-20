@@ -1,5 +1,5 @@
-describe('static api', function () {
-  it('should have request method helpers', function () {
+describe('static api', () => {
+  it('should have request method helpers', () => {
     expect(typeof axios.request).toEqual('function');
     expect(typeof axios.get).toEqual('function');
     expect(typeof axios.head).toEqual('function');
@@ -10,43 +10,43 @@ describe('static api', function () {
     expect(typeof axios.patch).toEqual('function');
   });
 
-  it('should have promise method helpers', function () {
+  it('should have promise method helpers', () => {
     var promise = axios();
 
     expect(typeof promise.then).toEqual('function');
     expect(typeof promise.catch).toEqual('function');
   });
 
-  it('should have defaults', function () {
+  it('should have defaults', () => {
     expect(typeof axios.defaults).toEqual('object');
     expect(typeof axios.defaults.headers).toEqual('object');
   });
 
-  it('should have interceptors', function () {
+  it('should have interceptors', () => {
     expect(typeof axios.interceptors.request).toEqual('object');
     expect(typeof axios.interceptors.response).toEqual('object');
   });
 
-  it('should have all/spread helpers', function () {
+  it('should have all/spread helpers', () => {
     expect(typeof axios.all).toEqual('function');
     expect(typeof axios.spread).toEqual('function');
   });
 
-  it('should have factory method', function () {
+  it('should have factory method', () => {
     expect(typeof axios.create).toEqual('function');
   });
 
-  it('should have Cancel, CancelToken, and isCancel properties', function () {
+  it('should have Cancel, CancelToken, and isCancel properties', () => {
     expect(typeof axios.Cancel).toEqual('function');
     expect(typeof axios.CancelToken).toEqual('function');
     expect(typeof axios.isCancel).toEqual('function');
   });
 });
 
-describe('instance api', function () {
+describe('instance api', () => {
   var instance = axios.create();
 
-  it('should have request methods', function () {
+  it('should have request methods', () => {
     expect(typeof instance.request).toEqual('function');
     expect(typeof instance.get).toEqual('function');
     expect(typeof instance.options).toEqual('function');
@@ -57,7 +57,7 @@ describe('instance api', function () {
     expect(typeof instance.patch).toEqual('function');
   });
 
-  it('should have interceptors', function () {
+  it('should have interceptors', () => {
     expect(typeof instance.interceptors.request).toEqual('object');
     expect(typeof instance.interceptors.response).toEqual('object');
   });

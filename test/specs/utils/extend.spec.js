@@ -1,7 +1,7 @@
 var extend = require('../../../lib/utils').extend;
 
-describe('utils::extend', function () {
-  it('should be mutable', function () {
+describe('utils::extend', () => {
+  it('should be mutable', () => {
     var a = {};
     var b = {foo: 123};
 
@@ -10,7 +10,7 @@ describe('utils::extend', function () {
     expect(a.foo).toEqual(b.foo);
   });
   
-  it('should extend properties', function () {
+  it('should extend properties', () => {
     var a = {foo: 123, bar: 456};
     var b = {bar: 789};
 
@@ -20,7 +20,7 @@ describe('utils::extend', function () {
     expect(a.bar).toEqual(789);
   });
 
-  it('should bind to thisArg', function () {
+  it('should bind to thisArg', () => {
     var a = {};
     var b = {getFoo: function getFoo() { return this.foo; }};
     var thisArg = { foo: 'barbaz' };

@@ -1,13 +1,13 @@
-describe('instance', function () {
-  beforeEach(function () {
+describe('instance', () => {
+  beforeEach(() => {
     jasmine.Ajax.install();
   });
 
-  afterEach(function () {
+  afterEach(() => {
     jasmine.Ajax.uninstall();
   });
 
-  it('should have the same methods as default instance', function () {
+  it('should have the same methods as default instance', () => {
     var instance = axios.create();
 
     for (var prop in axios) {
@@ -26,40 +26,40 @@ describe('instance', function () {
     }
   });
 
-  it('should make an http request without verb helper', function (done) {
+  it('should make an http request without verb helper', done => {
     var instance = axios.create();
 
     instance('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('/foo');
       done();
     });
   });
 
-  it('should make an http request', function (done) {
+  it('should make an http request', done => {
     var instance = axios.create();
 
     instance.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.url).toBe('/foo');
       done();
     });
   });
 
-  it('should use instance options', function (done) {
+  it('should use instance options', done => {
     var instance = axios.create({ timeout: 1000 });
 
     instance.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       expect(request.timeout).toBe(1000);
       done();
     });
   });
 
-  it('should have defaults.headers', function () {
+  it('should have defaults.headers', () => {
     var instance = axios.create({
       baseURL: 'https://api.example.com'
     });
@@ -68,29 +68,29 @@ describe('instance', function () {
     expect(typeof instance.defaults.headers.common, 'object');
   });
 
-  it('should have interceptors on the instance', function (done) {
-    axios.interceptors.request.use(function (config) {
+  it('should have interceptors on the instance', done => {
+    axios.interceptors.request.use(config => {
       config.foo = true;
       return config;
     });
 
     var instance = axios.create();
-    instance.interceptors.request.use(function (config) {
+    instance.interceptors.request.use(config => {
       config.bar = true;
       return config;
     });
 
     var response;
-    instance.get('/foo').then(function (res) {
+    instance.get('/foo').then(res => {
       response = res;
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200
       });
 
-      setTimeout(function () {
+      setTimeout(() => {
         expect(response.config.foo).toEqual(undefined);
         expect(response.config.bar).toEqual(true);
         done();

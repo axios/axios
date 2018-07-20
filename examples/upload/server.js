@@ -1,11 +1,11 @@
-module.exports = function (req, res) {
+module.exports = (req, res) => {
   var data = '';
 
-  req.on('data', function (chunk) {
+  req.on('data', chunk => {
     data += chunk;
   });
 
-  req.on('end', function () {
+  req.on('end', () => {
     console.log('File uploaded');
     res.writeHead(200);
     res.end();

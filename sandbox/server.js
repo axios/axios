@@ -14,7 +14,7 @@ function pipeFileToResponse(res, file, type) {
   fs.createReadStream(path.join(__dirname, file)).pipe(res);
 }
 
-server = http.createServer(function (req, res) {
+server = http.createServer((req, res) => {
   req.setEncoding('utf8');
 
   var parsed = url.parse(req.url, true);
@@ -37,11 +37,11 @@ server = http.createServer(function (req, res) {
     var result;
     var data = '';
 
-    req.on('data', function (chunk) {
+    req.on('data', chunk => {
       data += chunk;
     });
 
-    req.on('end', function () {
+    req.on('end', () => {
       try {
         status = 200;
         result = {

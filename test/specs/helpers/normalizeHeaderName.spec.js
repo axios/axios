@@ -1,7 +1,7 @@
 var normalizeHeaderName = require('../../../lib/helpers/normalizeHeaderName');
 
-describe('helpers::normalizeHeaderName', function () {
-  it('should normalize matching header name', function () {
+describe('helpers::normalizeHeaderName', () => {
+  it('should normalize matching header name', () => {
     var headers = {
       'conTenT-Type': 'foo/bar',
     };
@@ -10,7 +10,7 @@ describe('helpers::normalizeHeaderName', function () {
     expect(headers['conTenT-Type']).toBeUndefined();
   });
 
-  it('should not change non-matching header name', function () {
+  it('should not change non-matching header name', () => {
     var headers = {
       'content-type': 'foo/bar',
     };

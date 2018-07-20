@@ -1,16 +1,16 @@
 var axios = require('../../index');
 
-describe('adapter', function () {
-  it('should support custom adapter', function (done) {
+describe('adapter', () => {
+  it('should support custom adapter', done => {
     var called = false;
 
     axios('/foo', {
-      adapter: function (config) {
+      adapter: config => {
         called = true;
       }
     });
 
-    setTimeout(function () {
+    setTimeout(() => {
       expect(called).toBe(true);
       done();
     }, 100);

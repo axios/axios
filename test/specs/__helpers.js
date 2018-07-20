@@ -12,13 +12,13 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 jasmine.getEnv().defaultTimeoutInterval = 20000;
 
 // Get Ajax request using an increasing timeout to retry
-getAjaxRequest = (function () {
+getAjaxRequest = (() => {
 var attempts = 0;
 var MAX_ATTEMPTS = 5;
 var ATTEMPT_DELAY_FACTOR = 5;
 
 function getAjaxRequest() {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     attempts = 0;
     attemptGettingAjaxRequest(resolve, reject);
   });
@@ -32,7 +32,7 @@ function attemptGettingAjaxRequest(resolve, reject) {
     return;
   }
 
-  setTimeout(function () {
+  setTimeout(() => {
     var request = jasmine.Ajax.requests.mostRecent();
     if (request) {
       resolve(request);
@@ -52,15 +52,15 @@ validateInvalidCharacterError = function validateInvalidCharacterError(error) {
 
 // Setup basic auth tests
 setupBasicAuthTest = function setupBasicAuthTest() {
-  beforeEach(function () {
+  beforeEach(() => {
     jasmine.Ajax.install();
   });
 
-  afterEach(function () {
+  afterEach(() => {
     jasmine.Ajax.uninstall();
   });
 
-  it('should accept HTTP Basic auth with username/password', function (done) {
+  it('should accept HTTP Basic auth with username/password', done => {
     axios('/foo', {
       auth: {
         username: 'Aladdin',
@@ -68,7 +68,7 @@ setupBasicAuthTest = function setupBasicAuthTest() {
       }
     });
 
-    setTimeout(function () {
+    setTimeout(() => {
       var request = jasmine.Ajax.requests.mostRecent();
 
       expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==');
@@ -76,15 +76,15 @@ setupBasicAuthTest = function setupBasicAuthTest() {
     }, 100);
   });
 
-  it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters', function (done) {
+  it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters', done => {
     axios('/foo', {
       auth: {
         username: 'Aladßç£☃din',
         password: 'open sesame'
       }
-    }).then(function(response) {
+    }).then(response => {
       done(new Error('Should not succeed to make a HTTP Basic auth request with non-latin1 chars in credentials.'));
-    }).catch(function(error) {
+    }).catch(error => {
       validateInvalidCharacterError(error);
       done();
     });

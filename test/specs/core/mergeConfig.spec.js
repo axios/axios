@@ -1,22 +1,22 @@
 var defaults = require('../../../lib/defaults');
 var mergeConfig = require('../../../lib/core/mergeConfig');
 
-describe('core::mergeConfig', function() {
-  it('should accept undefined for second argument', function() {
+describe('core::mergeConfig', () => {
+  it('should accept undefined for second argument', () => {
     expect(mergeConfig(defaults, undefined)).toEqual(defaults);
   });
 
-  it('should accept an object for second argument', function() {
+  it('should accept an object for second argument', () => {
     expect(mergeConfig(defaults, {})).toEqual(defaults);
   });
 
-  it('should not leave references', function() {
+  it('should not leave references', () => {
     var merged = mergeConfig(defaults, {});
     expect(merged).not.toBe(defaults);
     expect(merged.headers).not.toBe(defaults.headers);
   });
 
-  it('should allow setting request options', function() {
+  it('should allow setting request options', () => {
     var config = {
       url: '__sample url__',
       method: '__sample method__',
@@ -30,7 +30,7 @@ describe('core::mergeConfig', function() {
     expect(merged.data).toEqual(config.data);
   });
 
-  it('should not inherit request options', function() {
+  it('should not inherit request options', () => {
     var localDefaults = {
       url: '__sample url__',
       method: '__sample method__',
@@ -44,7 +44,7 @@ describe('core::mergeConfig', function() {
     expect(merged.data).toEqual(undefined);
   });
 
-  it('should merge auth, headers, proxy with defaults', function() {
+  it('should merge auth, headers, proxy with defaults', () => {
     expect(mergeConfig({ auth: undefined }, { auth: { user: 'foo', pass: 'test' } })).toEqual({
       auth: { user: 'foo', pass: 'test' }
     });
@@ -53,7 +53,7 @@ describe('core::mergeConfig', function() {
     });
   });
 
-  it('should overwrite auth, headers, proxy with a non-object value', function() {
+  it('should overwrite auth, headers, proxy with a non-object value', () => {
     expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: false })).toEqual({
       auth: false
     });
@@ -62,7 +62,7 @@ describe('core::mergeConfig', function() {
     });
   });
 
-  it('should allow setting other options', function() {
+  it('should allow setting other options', () => {
     var merged = mergeConfig(defaults, { timeout: 123 });
     expect(merged.timeout).toEqual(123);
   });

@@ -1,26 +1,26 @@
-describe('promise', function () {
-  beforeEach(function () {
+describe('promise', () => {
+  beforeEach(() => {
     jasmine.Ajax.install();
   });
 
-  afterEach(function () {
+  afterEach(() => {
     jasmine.Ajax.uninstall();
   });
 
-  it('should provide succinct object to then', function (done) {
+  it('should provide succinct object to then', done => {
     var response;
 
-    axios('/foo').then(function (r) {
+    axios('/foo').then(r => {
       response = r;
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(request => {
       request.respondWith({
         status: 200,
         responseText: '{"hello":"world"}'
       });
 
-      setTimeout(function () {
+      setTimeout(() => {
         expect(typeof response).toEqual('object');
         expect(response.data.hello).toEqual('world');
         expect(response.status).toEqual(200);
@@ -31,36 +31,36 @@ describe('promise', function () {
     });
   });
 
-  it('should support all', function (done) {
+  it('should support all', done => {
     var fulfilled = false;
 
-    axios.all([true, 123]).then(function () {
+    axios.all([true, 123]).then(() => {
       fulfilled = true;
     });
 
-    setTimeout(function () {
+    setTimeout(() => {
       expect(fulfilled).toEqual(true);
       done();
     }, 100);
   });
 
-  it('should support spread', function (done) {
+  it('should support spread', done => {
     var sum = 0;
     var fulfilled = false;
     var result;
 
     axios
       .all([123, 456])
-      .then(axios.spread(function (a, b) {
+      .then(axios.spread((a, b) => {
         sum = a + b;
         fulfilled = true;
         return 'hello world';
       }))
-      .then(function (res) {
+      .then(res => {
         result = res;
       });
 
-    setTimeout(function () {
+    setTimeout(() => {
       expect(fulfilled).toEqual(true);
       expect(sum).toEqual(123 + 456);
       expect(result).toEqual('hello world');

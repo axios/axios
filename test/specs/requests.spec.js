@@ -264,12 +264,6 @@ describe('requests', function () {
   });
 
   it('should support binary data as array buffer', function (done) {
-    // Int8Array doesn't exist in IE8/9
-    if (isOldIE && typeof Int8Array === 'undefined') {
-      done();
-      return;
-    }
-
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
@@ -286,12 +280,6 @@ describe('requests', function () {
   });
 
   it('should support binary data as array buffer view', function (done) {
-    // Int8Array doesn't exist in IE8/9
-    if (isOldIE && typeof Int8Array === 'undefined') {
-      done();
-      return;
-    }
-
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
@@ -308,12 +296,6 @@ describe('requests', function () {
   });
 
   it('should support array buffer response', function (done) {
-    // ArrayBuffer doesn't exist in IE8/9
-    if (isOldIE && typeof ArrayBuffer === 'undefined') {
-      done();
-      return;
-    }
-
     var response;
 
     function str2ab(str) {

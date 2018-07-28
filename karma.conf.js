@@ -82,7 +82,6 @@ module.exports = function(config) {
 
     // IE
     if (runAll || process.env.SAUCE_IE) {
-      customLaunchers.SL_IE10 = createCustomLauncher('internet explorer', 10, 'Windows 2012');
       customLaunchers.SL_IE11 = createCustomLauncher('internet explorer', 11, 'Windows 8.1');
     }
 

@@ -543,6 +543,20 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should not hang on empty buffer', function(done) {
+    server = http.createServer(function (req, res) {
+      res.writeHead(200, {'Content-Type': 'text/plain'});
+      res.end('success');
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/', Buffer.from('')).then(function(res) {
+        assert.equal(res.config.data, Buffer.from('').toString());
+        assert.equal(res.config.headers['Content-Type'], 'application/x-www-form-urlencoded');
+        assert.equal(res.data, 'success');
+        done();
+      });
+    });
+  });
 });
 
 

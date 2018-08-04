@@ -157,8 +157,8 @@ axios({
   responseType:'stream'
 })
   .then(function(response) {
-  response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
-});
+    response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
+  });
 ```
 
 ##### axios(url[, config])

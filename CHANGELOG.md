@@ -1,15 +1,83 @@
 # Changelog
 
+### 0.19.0-beta.1 (Aug 9, 2018)
+
+**NOTE:** This is a beta version of this release. There may be functionality that is broken in
+certain browsers, though we suspect that builds are hanging and not erroring. See
+https://saucelabs.com/u/axios for the most up-to-date information.
+
+New Functionality:
+
+- Add getUri method ([#1712](https://github.com/axios/axios/issues/1712))
+- Add support for no_proxy env variable ([#1693](https://github.com/axios/axios/issues/1693))
+- Add toJSON to decorated Axios errors to faciliate serialization ([#1625](https://github.com/axios/axios/issues/1625))
+- Add second then on axios call ([#1623](https://github.com/axios/axios/issues/1623))
+- Typings: allow custom return types
+- Add option to specify character set in responses (with http adapter)
+
+Fixes:
+
+- Fix Keep defaults local to instance ([#385](https://github.com/axios/axios/issues/385))
+- Correctly catch exception in http test ([#1475](https://github.com/axios/axios/issues/1475))
+- Fix accept header normalization ([#1698](https://github.com/axios/axios/issues/1698))
+- Fix http adapter to allow HTTPS connections via HTTP ([#959](https://github.com/axios/axios/issues/959))
+- Fix Removes usage of deprecated Buffer constructor. ([#1555](https://github.com/axios/axios/issues/1555), [#1622](https://github.com/axios/axios/issues/1622))
+- Fix defaults to use httpAdapter if available ([#1285](https://github.com/axios/axios/issues/1285))
+  - Fixing defaults to use httpAdapter if available
+  - Use a safer, cross-platform method to detect the Node environment
+- Fix Reject promise if request is cancelled by the browser ([#537](https://github.com/axios/axios/issues/537))
+- [Typescript] Fix missing type parameters on delete/head methods
+- [NS]: Send `false` flag isStandardBrowserEnv for Nativescript
+- Fix missing type parameters on delete/head
+- Fix Default method for an instance always overwritten by get
+- Fix type error when socketPath option in AxiosRequestConfig
+- Capture errors on request data streams
+- Decorate resolve and reject to clear timeout in all cases
+
+Huge thanks to everyone who contributed to this release via code (authors listed
+below) or via reviews and triaging on GitHub:
+
+- Andrew Scott <ascott18@gmail.com>
+- Anthony Gauthier <antho325@hotmail.com>
+- arpit <arpit2438735@gmail.com>
+- ascott18
+- Benedikt Rötsch <axe312ger@users.noreply.github.com>
+- Chance Dickson <me@chancedickson.com>
+- Dave Stewart <info@davestewart.co.uk>
+- Deric Cain <deric.cain@gmail.com>
+- Guillaume Briday <guillaumebriday@gmail.com>
+- Jacob Wejendorp <jacob@wejendorp.dk>
+- Jim Lynch <mrdotjim@gmail.com>
+- johntron
+- Justin Beckwith <beckwith@google.com>
+- Justin Beckwith <justin.beckwith@gmail.com>
+- Khaled Garbaya <khaledgarbaya@gmail.com>
+- Lim Jing Rong <jjingrong@users.noreply.github.com>
+- Mark van den Broek <mvdnbrk@gmail.com>
+- Martti Laine <martti@codeclown.net>
+- mattridley
+- mattridley <matt.r@joinblink.com>
+- Nicolas Del Valle <nicolas.delvalle@gmail.com>
+- Nilegfx
+- pbarbiero
+- Rikki Gibson <rikkigibson@gmail.com>
+- Sako Hartounian <sakohartounian@yahoo.com>
+- Shane Fitzpatrick <fitzpasd@gmail.com>
+- Stephan Schneider <stephanschndr@gmail.com>
+- Steven <steven@ceriously.com>
+- Tim Garthwaite <tim.garthwaite@jibo.com>
+- Tim Johns <timjohns@yahoo.com>
+- Yutaro Miyazaki <yutaro@studio-rubbish.com>
+
 ### 0.18.0 (Feb 19, 2018)
 
 - Adding support for UNIX Sockets when running with Node.js ([#1070](https://github.com/axios/axios/pull/1070))
 - Fixing typings ([#1177](https://github.com/axios/axios/pull/1177)):
-    - AxiosRequestConfig.proxy: allows type false
-    - AxiosProxyConfig: added auth field
+  - AxiosRequestConfig.proxy: allows type false
+  - AxiosProxyConfig: added auth field
 - Adding function signature in AxiosInstance interface so AxiosInstance can be invoked ([#1192](https://github.com/axios/axios/pull/1192), [#1254](https://github.com/axios/axios/pull/1254))
 - Allowing maxContentLength to pass through to redirected calls as maxBodyLength in follow-redirects config ([#1287](https://github.com/axios/axios/pull/1287))
 - Fixing configuration when using an instance - method can now be set ([#1342](https://github.com/axios/axios/pull/1342))
-
 
 ### 0.17.1 (Nov 11, 2017)
 

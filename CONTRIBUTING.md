@@ -25,7 +25,7 @@ Please update the docs accordingly so that there are no discrepencies between th
 
 ### Developing
 
-- `grunt test` run the jasmine and nodeunit tests
+- `grunt test` run the jasmine and mocha tests
 - `grunt build` run webpack and bundle the source
 - `grunt version` prepare the code for release
 - `grunt watch:test` watch for changes and run `test`

@@ -76,11 +76,11 @@ export interface AxiosResponse<T = any>  {
   request?: any;
 }
 
-export interface AxiosError extends Error {
+export interface AxiosError<T = any> extends Error {
   config: AxiosRequestConfig;
   code?: string;
   request?: any;
-  response?: AxiosResponse;
+  response?: AxiosResponse<T>;
 }
 
 export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {

@@ -55,6 +55,37 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should cancel requests after connectTimeout if no server responds', function(done) {
+    var startTime = Date.now();
+    // 240.0.0.1 is "Reserved for future use" and nothing should respond there
+    axios.get('http://240.0.0.1', {
+      timeout: 2000,
+      connectTimeout: 250
+    }).then( function (res) {
+      assert.fail('request should not succeed');
+    }).catch(function (err) {
+      var endTime = Date.now();
+      assert.ok( endTime - startTime < 1000, 'request should timeout in less than a second' );
+      assert.equal(err.code, 'ECONNABORTED');
+      assert.equal(err.message, 'connectTimeout of 250ms exceeded');
+  }).then( function() {
+      done()
+    });
+  });
+
+  it('should not cancel requests with connectTimeout if the server responds slowly', function(done) {
+    server = http.createServer(function (req, res) {
+      setTimeout( function() { 
+        res.end('success');
+      }, 1000)
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {connectTimeout: 500}).then(function (res) {
+        assert.equal(res.data, 'success', 'shall wait for response');
+        done();
+      });
+    });
+  });
+
   it('should allow passing JSON', function (done) {
     var data = {
       firstName: 'Fred',

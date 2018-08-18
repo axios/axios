@@ -281,9 +281,17 @@ These are the available config options for making requests. Only the `url` is re
     firstName: 'Fred'
   },
 
-  // `timeout` specifies the number of milliseconds before the request times out.
-  // If the request takes longer than `timeout`, the request will be aborted.
+  // If the request takes longer than `timeout` milliseconds to complete,
+  // the request will be aborted. Default 0 means no timeout.
   timeout: 1000,
+
+  // If the server takes longer than `connectTimeout` milliseconds to accept the tcp socket,
+  // the request will be aborted. By setting a low `connectTimeout` but a high `timeout`,
+  // the requests will fail quickly if the server is not reachable or down, but
+  // if the server responds, the request is allowed to take a long time to complete.
+  // Default 0 means no timeout.
+  // connectTimeout is only available in node.js.
+  connectTimeout: 1000,
 
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials

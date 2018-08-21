@@ -127,7 +127,7 @@ export interface AxiosInstance {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
-  getUri(config: AxiosRequestConfig): string;
+  getUri(config?: AxiosRequestConfig): string;
   request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R>;
   get<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
   delete<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;

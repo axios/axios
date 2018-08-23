@@ -283,7 +283,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `timeout` specifies the number of milliseconds before the request times out.
   // If the request takes longer than `timeout`, the request will be aborted.
-  timeout: 1000,
+  timeout: 1000, // default is `0` (no timeout)
 
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials

@@ -84,7 +84,7 @@ axios.get('/user', {
   })
   .then(function () {
     // always executed
-  });  
+  });
 
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
@@ -341,6 +341,17 @@ These are the available config options for making requests. Only the `url` is re
   // `maxRedirects` defines the maximum number of redirects to follow in node.js.
   // If set to 0, no redirects will be followed.
   maxRedirects: 5, // default
+
+  // `trackRedirects` defines whether to accumulate details about each redirect
+  // throughout the request. If set to true, the response will include a `responseUrl`
+  // property that will be the final url in the redirect chain as well as a `redirects`
+  // array that will include basic details about each request in the redirect chain,
+  // including the first and last requests (i.e. the original request, any subsequent
+  // redirects, as well as the final request). Those details will include:
+  // `url`: requested url
+  // `headers`: response headers
+  // `statusCode`: response status code
+  trackRedirects: false, // default
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.

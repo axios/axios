@@ -147,16 +147,15 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/one', {
         trackRedirects: true
       }).then(function (res) {
-        assert.equal(res.responseUrl, 'http://localhost:4444/two')
-        const redirects = res.redirects
-        assert.equal(redirects.length, 2)
-        assert.equal(redirects[0].url, 'http://localhost:4444/one')
-        assert.equal(redirects[0].headers.location, '/two')
-        assert.equal(redirects[0].statusCode, 302)
+        assert.equal(res.responseUrl, 'http://localhost:4444/two');
+        assert.equal(res.redirects.length, 2);
+        assert.equal(res.redirects[0].url, 'http://localhost:4444/one');
+        assert.equal(res.redirects[0].headers.location, '/two');
+        assert.equal(res.redirects[0].statusCode, 302);
 
-        assert.equal(redirects[1].url, 'http://localhost:4444/two')
-        assert.equal(redirects[1].headers.location, undefined)
-        assert.equal(redirects[1].statusCode, 200)
+        assert.equal(res.redirects[1].url, 'http://localhost:4444/two');
+        assert.equal(res.redirects[1].headers.location, undefined);
+        assert.equal(res.redirects[1].statusCode, 200);
         done();
       });
     });

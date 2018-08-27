@@ -130,6 +130,62 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support trackRedirects == true', function (done) {
+    var str = 'test response';
+
+    server = http.createServer(function (req, res) {
+      var parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/one') {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        res.end(str);
+      }
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/one', {
+        trackRedirects: true
+      }).then(function (res) {
+        assert.equal(res.responseUrl, 'http://localhost:4444/two')
+        const redirects = res.redirects
+        assert.equal(redirects.length, 2)
+        assert.equal(redirects[0].url, 'http://localhost:4444/one')
+        assert.equal(redirects[0].headers.location, '/two')
+        assert.equal(redirects[0].statusCode, 302)
+
+        assert.equal(redirects[1].url, 'http://localhost:4444/two')
+        assert.equal(redirects[1].headers.location, undefined)
+        assert.equal(redirects[1].statusCode, 200)
+        done();
+      });
+    });
+  })
+
+  it('should support trackRedirects == false', function (done) {
+    var str = 'test response';
+
+    server = http.createServer(function (req, res) {
+      var parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/one') {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        res.end(str);
+      }
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/one', {
+        trackRedirects: false
+      }).then(function (res) {
+        assert.equal(res.responseUrl, undefined);
+        assert.equal(res.redirects, undefined);
+        done();
+      });
+    });
+  });
+
   it('should support transparent gunzip', function (done) {
     var data = {
       firstName: 'Fred',

@@ -130,6 +130,32 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should preserve the HTTP verb on redirect', function (done) {
+    server = http.createServer(function (req, res) {
+      if (req.method.toLowerCase() !== "head") {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      var parsed = url.parse(req.url);
+      if (parsed.pathname === '/one') {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        res.end();
+      }
+    }).listen(4444, function () {
+      axios.head('http://localhost:4444/one').then(function (res) {
+        assert.equal(res.status, 200);
+        done();
+      }).catch(function (err) {
+        done(err);
+      });
+    });
+  });
+
   it('should support transparent gunzip', function (done) {
     var data = {
       firstName: 'Fred',

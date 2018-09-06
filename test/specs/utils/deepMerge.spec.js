@@ -24,6 +24,25 @@ describe('utils::deepMerge', function () {
     expect(d.bar).toEqual(456);
   });
 
+  it('should deepMerge arrays correctly', function () {
+    var a = [1,2,3];
+    var b = [4,5,6,7];
+    var c = [8,9];
+    var d = deepMerge(a, b, c);
+
+    expect(d).toEqual([8,9,6,7]);
+  });
+
+  it('should deepMerge other types than object and arrays', function () {
+    var foo = function() {};
+
+    expect(deepMerge(1, 2)).toEqual(2);
+    expect(deepMerge(1, 'foo')).toEqual('foo');
+    expect(deepMerge(1, foo)).toEqual(foo);
+    expect(deepMerge(1, undefined)).toEqual(1);
+    expect(deepMerge(undefined, 2)).toEqual(2);
+  });
+
   it('should deepMerge recursively', function () {
     var a = {foo: {bar: 123}};
     var b = {foo: {baz: 456}, bar: {qux: 789}};
@@ -37,6 +56,13 @@ describe('utils::deepMerge', function () {
         qux: 789
       }
     });
+  });
+
+  it('should deepMerge recursively with arrays', function () {
+    var a = {foo: {bar: [{baz: [1, 2]}, 3, 4, 5]}};
+    var b = {foo: {bar: [{baz: [6, 7, 8]}, 9, 10]}};
+
+    expect(deepMerge(a, b)).toEqual({foo: {bar: [{baz: [6, 7, 8]}, 9, 10, 5]}});
   });
 
   it('should remove all references from nested objects', function () {

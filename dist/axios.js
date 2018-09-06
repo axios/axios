@@ -1,4 +1,3 @@
-/* axios v0.19.0-beta.1 | (c) 2018 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -371,16 +370,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {Object} Result of all merge properties
 	 */
 	function merge(/* obj1, obj2, obj3, ... */) {
-	  var result = {};
+	  // init
+	  var i;
+	  var l;
+	  var first;
+	  var last;
+	  // find fist and last not undefined argument
+	  for (i = 0, l = arguments.length; i < l; i++) {
+	    if (arguments[i] !== undefined) {
+	      if (first === undefined) first = arguments[i];
+	      last = arguments[i];
+	    }
+	  }
+	  // if all arguments are undefined, return {}
+	  if (first === undefined) return {};
+	  // if we merge other types than objects or arrays, return the last not undefined argument
+	  if (typeof first !== 'object') return last;
+	  // otherwize, initialize result with an array or an object
+	  var result = isArray(first) ? [] : {};
+	
 	  function assignValue(val, key) {
-	    if (typeof result[key] === 'object' && typeof val === 'object') {
+	    // check if we merge arrays
+	    if (isArray(result[key]) && isArray(val)) {
+	      var dest = result[key];
+	      result[key] = [];
+	      // console.log(key, dest, val);
+	      for (i = 0, l = Math.max(dest.length, val.length); i < l; i++) {
+	        result[key].push(merge(dest[i], val[i]));
+	      }
+	    } else if (typeof result[key] === 'object' && typeof val === 'object') {
 	      result[key] = merge(result[key], val);
 	    } else {
 	      result[key] = val;
 	    }
 	  }
 	
-	  for (var i = 0, l = arguments.length; i < l; i++) {
+	  for (i = 0, l = arguments.length; i < l; i++) {
 	    forEach(arguments[i], assignValue);
 	  }
 	  return result;
@@ -395,18 +420,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {Object} Result of all merge properties
 	 */
 	function deepMerge(/* obj1, obj2, obj3, ... */) {
-	  var result = {};
+	  // init
+	  var i;
+	  var l;
+	  var first;
+	  var last;
+	  // find fist and last not undefined argument
+	  for (i = 0, l = arguments.length; i < l; i++) {
+	    if (arguments[i] !== undefined) {
+	      if (first === undefined) first = arguments[i];
+	      last = arguments[i];
+	    }
+	  }
+	  // if all arguments are undefined, return {}
+	  if (first === undefined) return {};
+	  // if we merge other types than objects or arrays, return the last not undefined argument
+	  if (typeof first !== 'object') return last;
+	  // otherwize, initialize result with an array or an object
+	  var result = isArray(first) ? [] : {};
+	
 	  function assignValue(val, key) {
-	    if (typeof result[key] === 'object' && typeof val === 'object') {
+	    // check if we merge arrays
+	    if (isArray(result[key]) && isArray(val)) {
+	      var dest = result[key];
+	      result[key] = [];
+	      // console.log(key, dest, val);
+	      for (i = 0, l = Math.max(dest.length, val.length); i < l; i++) {
+	        result[key].push(deepMerge(dest[i], val[i]));
+	      }
+	    } else if (typeof result[key] === 'object' && typeof val === 'object') {
 	      result[key] = deepMerge(result[key], val);
 	    } else if (typeof val === 'object') {
-	      result[key] = deepMerge({}, val);
+	      result[key] = deepMerge(isArray(val) ? [] : {}, val);
 	    } else {
 	      result[key] = val;
 	    }
 	  }
 	
-	  for (var i = 0, l = arguments.length; i < l; i++) {
+	  for (i = 0, l = arguments.length; i < l; i++) {
 	    forEach(arguments[i], assignValue);
 	  }
 	  return result;
@@ -647,6 +698,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  if (serializedParams) {
+	    var hashmarkIndex = url.indexOf('#');
+	    if (hashmarkIndex !== -1) {
+	      url = url.slice(0, hashmarkIndex);
+	    }
+	
 	    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
 	  }
 	
@@ -1219,8 +1275,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (code) {
 	    error.code = code;
 	  }
+	
 	  error.request = request;
 	  error.response = response;
+	  error.isAxiosError = true;
+	
 	  error.toJSON = function() {
 	    return {
 	      // Standard

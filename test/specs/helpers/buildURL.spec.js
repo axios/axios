@@ -54,6 +54,12 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?query=bar&start=0&length=5');
   });
 
+  it('should correct discard url hash mark', function () {
+    expect(buildURL('/foo?foo=bar#hash', {
+      query: 'baz'
+    })).toEqual('/foo?foo=bar&query=baz');
+  });
+
   it('should use serializer if provided', function () {
     serializer = sinon.stub();
     params = {foo: 'bar'};

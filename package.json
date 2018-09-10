@@ -74,7 +74,8 @@
   "typings": "./index.d.ts",
   "dependencies": {
     "follow-redirects": "^1.4.1",
-    "is-buffer": "^2.0.2"
+    "is-buffer": "^2.0.2",
+    "symbol-observable": "^1.2.0"
   },
   "bundlesize": [
     {

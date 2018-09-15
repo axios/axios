@@ -73,6 +73,7 @@
   },
   "typings": "./index.d.ts",
   "dependencies": {
+    "@types/node": "^10.9.4",
     "follow-redirects": "^1.4.1",
     "is-buffer": "^2.0.2"
   },

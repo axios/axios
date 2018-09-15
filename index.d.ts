@@ -1,3 +1,5 @@
+import { ClientRequest } from "http";
+
 export interface AxiosTransformer {
   (data: any, headers?: any): any;
 }
@@ -73,13 +75,13 @@ export interface AxiosResponse<T = any>  {
   statusText: string;
   headers: any;
   config: AxiosRequestConfig;
-  request?: any;
+  request?: ClientRequest | XMLHttpRequest;
 }
 
 export interface AxiosError extends Error {
   config: AxiosRequestConfig;
   code?: string;
-  request?: any;
+  request?: ClientRequest | XMLHttpRequest;
   response?: AxiosResponse;
   isAxiosError: boolean;
 }

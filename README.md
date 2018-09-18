@@ -1,10 +1,12 @@
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![build status](https://img.shields.io/travis/mzabriskie/axios.svg?style=flat-square)](https://travis-ci.org/mzabriskie/axios)
+[![build status](https://img.shields.io/travis/axios/axios.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
+[![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
+[![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
 Promise based HTTP client for the browser and node.js
 
@@ -23,7 +25,7 @@ Promise based HTTP client for the browser and node.js
 
 ![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
 --- | --- | --- | --- | --- | --- |
-Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
+Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 
 [![Browser Matrix](https://saucelabs.com/open_sauce/build_matrix/axios.svg)](https://saucelabs.com/u/axios)
 
@@ -52,13 +54,20 @@ Using cdn:
 Performing a `GET` request
 
 ```js
+const axios = require('axios');
+
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
   .then(function (response) {
+    // handle success
     console.log(response);
   })
   .catch(function (error) {
+    // handle error
     console.log(error);
+  })
+  .then(function () {
+    // always executed
   });
 
 // Optionally the request above could also be done as
@@ -72,8 +81,24 @@ axios.get('/user', {
   })
   .catch(function (error) {
     console.log(error);
-  });
+  })
+  .then(function () {
+    // always executed
+  });  
+
+// Want to use async/await? Add the `async` keyword to your outer function/method.
+async function getUser() {
+  try {
+    const response = await axios.get('/user?ID=12345');
+    console.log(response);
+  } catch (error) {
+    console.error(error);
+  }
+}
 ```
+
+> **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet
+> Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
 
@@ -132,9 +157,9 @@ axios({
   url:'http://bit.ly/2mTM3nY',
   responseType:'stream'
 })
-  .then(function(response) {
-  response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
-});
+  .then(function (response) {
+    response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
+  });
 ```
 
 ##### axios(url[, config])
@@ -174,7 +199,7 @@ You can create a new instance of axios with a custom config.
 ##### axios.create([config])
 
 ```js
-var instance = axios.create({
+const instance = axios.create({
   baseURL: 'https://some-domain.com/api/',
   timeout: 1000,
   headers: {'X-Custom-Header': 'foobar'}
@@ -193,6 +218,7 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#post(url[, data[, config]])
 ##### axios#put(url[, data[, config]])
 ##### axios#patch(url[, data[, config]])
+##### axios#getUri([config])
 
 ## Request Config
 
@@ -241,7 +267,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional function in charge of serializing `params`
   // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
-  paramsSerializer: function(params) {
+  paramsSerializer: function (params) {
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
 
@@ -257,7 +283,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `timeout` specifies the number of milliseconds before the request times out.
   // If the request takes longer than `timeout`, the request will be aborted.
-  timeout: 1000,
+  timeout: 1000, // default is `0` (no timeout)
 
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials
@@ -281,6 +307,10 @@ These are the available config options for making requests. Only the `url` is re
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
   responseType: 'json', // default
 
+  // `responseEncoding` indicates encoding to use for decoding responses
+  // Note: Ignored for `responseType` of 'stream' or client-side requests
+  responseEncoding: 'utf8', // default
+
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
   xsrfCookieName: 'XSRF-TOKEN', // default
 
@@ -297,7 +327,7 @@ These are the available config options for making requests. Only the `url` is re
     // Do whatever you want with the native progress event
   },
 
-  // `maxContentLength` defines the max size of the http response content allowed
+  // `maxContentLength` defines the max size of the http response content in bytes allowed
   maxContentLength: 2000,
 
   // `validateStatus` defines whether to resolve or reject the promise for a given
@@ -312,13 +342,23 @@ These are the available config options for making requests. Only the `url` is re
   // If set to 0, no redirects will be followed.
   maxRedirects: 5, // default
 
+  // `socketPath` defines a UNIX Socket to be used in node.js.
+  // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
+  // Only either `socketPath` or `proxy` can be specified.
+  // If both are specified, `socketPath` is used.
+  socketPath: null, // default
+
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
   // and https requests, respectively, in node.js. This allows options to be added like
   // `keepAlive` that are not enabled by default.
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // 'proxy' defines the hostname and port of the proxy server
+  // 'proxy' defines the hostname and port of the proxy server.
+  // You can also define your proxy using the conventional `http_proxy` and
+  // `https_proxy` environment variables. If you are using environment variables
+  // for your proxy configuration, you can also define a `no_proxy` environment
+  // variable as a comma-separated list of domains that should not be proxied.
   // Use `false` to disable proxies, ignoring environment variables.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
@@ -373,7 +413,7 @@ When using `then`, you will receive the response as follows:
 
 ```js
 axios.get('/user/12345')
-  .then(function(response) {
+  .then(function (response) {
     console.log(response.data);
     console.log(response.status);
     console.log(response.statusText);
@@ -400,7 +440,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 
 ```js
 // Set config defaults when creating the instance
-var instance = axios.create({
+const instance = axios.create({
   baseURL: 'https://api.example.com'
 });
 
@@ -410,15 +450,15 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in `lib/defaults.js`, then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
 ```js
 // Create an instance using the config defaults provided by the library
 // At this point the timeout config value is `0` as is the default for the library
-var instance = axios.create();
+const instance = axios.create();
 
 // Override timeout default for the library
-// Now all requests will wait 2.5 seconds before timing out
+// Now all requests using this instance will wait 2.5 seconds before timing out
 instance.defaults.timeout = 2500;
 
 // Override timeout for this request as it's known to take a long time
@@ -454,14 +494,14 @@ axios.interceptors.response.use(function (response) {
 If you may need to remove an interceptor later you can.
 
 ```js
-var myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
 axios.interceptors.request.eject(myInterceptor);
 ```
 
 You can add interceptors to a custom instance of axios.
 
 ```js
-var instance = axios.create();
+const instance = axios.create();
 instance.interceptors.request.use(function () {/*...*/});
 ```
 
@@ -508,18 +548,24 @@ You can cancel a request using a *cancel token*.
 You can create a cancel token using the `CancelToken.source` factory as shown below:
 
 ```js
-var CancelToken = axios.CancelToken;
-var source = CancelToken.source();
+const CancelToken = axios.CancelToken;
+const source = CancelToken.source();
 
 axios.get('/user/12345', {
   cancelToken: source.token
-}).catch(function(thrown) {
+}).catch(function (thrown) {
   if (axios.isCancel(thrown)) {
     console.log('Request canceled', thrown.message);
   } else {
     // handle error
   }
 });
+
+axios.post('/user/12345', {
+  name: 'new name'
+}, {
+  cancelToken: source.token
+})
 
 // cancel the request (the message parameter is optional)
 source.cancel('Operation canceled by the user.');
@@ -528,8 +574,8 @@ source.cancel('Operation canceled by the user.');
 You can also create a cancel token by passing an executor function to the `CancelToken` constructor:
 
 ```js
-var CancelToken = axios.CancelToken;
-var cancel;
+const CancelToken = axios.CancelToken;
+let cancel;
 
 axios.get('/user/12345', {
   cancelToken: new CancelToken(function executor(c) {
@@ -553,7 +599,7 @@ By default, axios serializes JavaScript objects to `JSON`. To send data in the `
 In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API as follows:
 
 ```js
-var params = new URLSearchParams();
+const params = new URLSearchParams();
 params.append('param1', 'value1');
 params.append('param2', 'value2');
 axios.post('/foo', params);
@@ -564,8 +610,22 @@ axios.post('/foo', params);
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 
 ```js
-var qs = require('qs');
+const qs = require('qs');
 axios.post('/foo', qs.stringify({ 'bar': 123 }));
+```
+
+Or in another way (ES6),
+
+```js
+import qs from 'qs';
+const data = { 'bar': 123 };
+const options = {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  data: qs.stringify(data),
+  url,
+};
+axios(options);
 ```
 
 ### Node.js
@@ -573,7 +633,7 @@ axios.post('/foo', qs.stringify({ 'bar': 123 }));
 In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
-var querystring = require('querystring');
+const querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 

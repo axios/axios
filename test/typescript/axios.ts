@@ -7,7 +7,12 @@ import axios, {
   Cancel,
   CancelToken,
   CancelTokenSource,
-  Canceler
+  Canceler,
+  Axios,
+  create as axiosCreate,
+  isCancel,
+  all as axiosAll,
+  spread as axiosSpread
 } from '../../';
 
 const config: AxiosRequestConfig = {
@@ -40,7 +45,7 @@ const config: AxiosRequestConfig = {
     host: '127.0.0.1',
     port: 9000
   },
-  cancelToken: new axios.CancelToken((cancel: Canceler) => {})
+  cancelToken: new CancelToken((cancel: Canceler) => {})
 };
 
 const handleResponse = (response: AxiosResponse) => {
@@ -193,8 +198,8 @@ axios.request<User, string>({
 
 // Instances
 
-const instance1: AxiosInstance = axios.create();
-const instance2: AxiosInstance = axios.create(config);
+const instance1: AxiosInstance = axiosCreate();
+const instance2: AxiosInstance = axiosCreate(config);
 
 instance1(config)
   .then(handleResponse)
@@ -279,19 +284,12 @@ const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
 
 axios.defaults.adapter = adapter;
 
-// axios.all
+// axios.all/axios.spread
 
-const promises = [
+const promise: Promise<string> = axiosAll([
   Promise.resolve(1),
   Promise.resolve(2)
-];
-
-const promise: Promise<number[]> = axios.all(promises);
-
-// axios.spread
-
-const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
-const fn2: (arr: number[]) => string = axios.spread(fn1);
+]).then(axiosSpread((a, b, c) => `${a}-${b}-${c}`));
 
 // Promises
 
@@ -321,15 +319,36 @@ axios.get('/user')
 
 // Cancellation
 
-const source: CancelTokenSource = axios.CancelToken.source();
+const source: CancelTokenSource = CancelToken.source();
 
 axios.get('/user', {
   cancelToken: source.token
 }).catch((thrown: AxiosError | Cancel) => {
-  if (axios.isCancel(thrown)) {
+  if (isCancel(thrown)) {
     const cancel: Cancel = thrown;
     console.log(cancel.message);
   }
 });
 
 source.cancel('Operation has been canceled.');
+
+// Axios class
+
+class CustomAxios extends Axios {
+  constructor(config: AxiosRequestConfig) {
+    super(config);
+    this.defaults.baseURL = 'http://example.com/';
+    this.interceptors.request.use(
+      (cfg) => Promise.resolve(cfg),
+      (err) => err
+    );
+  }
+
+  sendGet() {
+    return super.get('some-url', { params: { a: 1 } });
+  }
+}
+
+const custom = new CustomAxios({});
+const response: Promise<AxiosResponse> = custom.sendGet();
+const parentResponse: Promise<AxiosResponse<number>> = custom.get<number>('url');

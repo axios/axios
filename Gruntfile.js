@@ -15,8 +15,7 @@ module.exports = function(grunt) {
       test: {
         options: {
           lib: [
-            'es5',
-            'es2015.promise',
+            'es2015',
             'dom'
           ]
         },

@@ -1,3 +1,4 @@
+// Mock the list of users.
 var people = [
   {
     "name": "Matt Zabriskie",
@@ -26,9 +27,11 @@ var people = [
 ];
 
 module.exports = function (req, res) {
+  // We're going to respond using JSON format.
   res.writeHead(200, {
     'Content-Type': 'text/json'
   });
+  // Convert 'people' object into string before sending the response.
   res.write(JSON.stringify(people));
   res.end();
 };

@@ -6,7 +6,7 @@
   </head>
   <body class="container">
     <h1>AMD</h1>
-    
+
     <div>
       <h3>User</h3>
       <div class="row">
@@ -19,13 +19,17 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.16/require.min.js"></script>
     <script>
+      // Configure RequireJS.
       requirejs.config({
         paths: {
           axios: '/axios.min'
         }
       });
 
+      // Require axios.
       requirejs(['axios'], function (axios) {
+        // Perform GET request and fetch user information from GitHub.
+        // axios.get() will return a promise.
         axios.get('https://api.github.com/users/mzabriskie')
           .then(function (user) {
             document.getElementById('useravatar').src = user.data.avatar_url;

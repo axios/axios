@@ -10,6 +10,8 @@
 
     <script src="/axios.min.js"></script>
     <script>
+      // Get the list of users from the server.
+      // axios.get() will return a promise.
       axios.get('/get/server')
         .then(function (response) {
           document.getElementById('people').innerHTML = response.data.map(function (person) {
@@ -21,7 +23,8 @@
                   '<div>Github: <a href="https://github.com/' + person.github + '" target="_blank">' + person.github + '</a></div>' +
                   '<div>Twitter: <a href="https://twitter.com/' + person.twitter + '" target="_blank">' + person.twitter + '</a></div>' +
                 '</div>' +
-              '</li><br/>'
+              '</li>' +
+              '<br/>'
             );
           }).join('');
         })

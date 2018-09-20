@@ -22,12 +22,18 @@
 
     <script src="/axios.min.js"></script>
     <script>
+      // Launch two GET requests concurrently.
       axios.all([
         axios.get('https://api.github.com/users/mzabriskie'),
         axios.get('https://api.github.com/users/mzabriskie/orgs')
       ]).then(axios.spread(function (user, orgs) {
+        // Both requests are now complete.
+
+        // Extract avatar URL and user name from user related response.
         document.getElementById('useravatar').src = user.data.avatar_url;
         document.getElementById('username').innerHTML = user.data.name;
+
+        // Extract organizations list from organisations related response.
         document.getElementById('orgs').innerHTML = orgs.data.map(function (org) {
           return (
             '<li class="row">' +

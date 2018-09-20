@@ -24,6 +24,7 @@
         document.getElementById('post').onclick = function () {
           var data = document.getElementById('data').value;
 
+          // Perform POST request to the local server.
           axios.post('/post/server', JSON.parse(data))
             .then(function (res) {
               output.className = 'container';

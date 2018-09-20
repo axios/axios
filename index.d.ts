@@ -397,7 +397,7 @@ export interface AxiosInterceptorManager<V> {
   /**
    * Call a function for each registered interceptor.
    */
-  forEach(fn: (interceptor: AxiosInterceptor<V>) => void);
+  forEach(fn: (interceptor: AxiosInterceptor<V>) => void): void;
 }
 
 /**

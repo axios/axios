@@ -13,7 +13,7 @@ Promise based HTTP client for the browser and node.js
 ## Features
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
-- Make [http](http://nodejs.org/api/http.html) requests from node.js
+- Make [HTTP](http://nodejs.org/api/http.html) requests from node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
 - Intercept request and response
 - Transform request and response data
@@ -36,6 +36,11 @@ Using npm:
 ```bash
 $ npm install axios
 ```
+Using yarn:
+
+```bash
+$ yarn add axios
+```
 
 Using bower:
 
@@ -49,9 +54,9 @@ Using cdn:
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 ```
 
-## Example
+## Examples
 
-Performing a `GET` request
+#### Performing a `GET` request
 
 ```js
 const axios = require('axios');
@@ -100,7 +105,7 @@ async function getUser() {
 > **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
 
-Performing a `POST` request
+#### Performing a `POST` request
 
 ```js
 axios.post('/user', {
@@ -115,7 +120,7 @@ axios.post('/user', {
   });
 ```
 
-Performing multiple concurrent requests
+#### Performing multiple concurrent requests
 
 ```js
 function getUserAccount() {
@@ -171,7 +176,7 @@ axios('/user/12345');
 
 ### Request method aliases
 
-For convenience aliases have been provided for all supported request methods.
+For convenience, aliases have been provided for all supported request methods.
 
 ##### axios.request(config)
 ##### axios.get(url[, config])
@@ -222,7 +227,7 @@ The available instance methods are listed below. The specified config will be me
 
 ## Request Config
 
-These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
+These are the available config options for making requests. Only the `url` is required. Default requests will be `GET`, if the `method` is not specified.
 
 ```js
 {
@@ -409,7 +414,7 @@ The response for a request contains the following information.
 }
 ```
 
-When using `then`, you will receive the response as follows:
+When using `then`, you will receive the responses as follows:
 
 ```js
 axios.get('/user/12345')
@@ -426,7 +431,7 @@ When using `catch`, or passing a [rejection callback](https://developer.mozilla.
 
 ## Config Defaults
 
-You can specify config defaults that will be applied to every request.
+You can specify config defaults that will be applied to each request.
 
 ### Global axios defaults
 

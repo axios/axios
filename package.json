@@ -32,7 +32,6 @@
   },
   "homepage": "https://github.com/axios/axios",
   "devDependencies": {
-    "@types/node": "^10.10.1",
     "bundlesize": "^0.17.0",
     "coveralls": "^3.0.0",
     "es6-promise": "^4.2.4",

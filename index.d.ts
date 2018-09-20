@@ -1,6 +1,3 @@
-import * as http from 'http';
-import * as https from 'https';
-
 /**
  * Transform function that receives the body and headers from a
  * request or response, and returns a transformed body to be placed
@@ -234,13 +231,17 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    */
   socketPath?: string | null;
   /**
-   * On Node, this will set the agent passed to requests for HTTP requests
+   * On Node, this will set the agent passed to HTTP requests.
+   * This should be an instance of http.Agent (not explicit so that users
+   * do not have to include @types/node)
    */
-  httpAgent?: http.Agent;
+  httpAgent?: any;
   /**
-   * On Node, this will set the agent passed to requests for HTTPS requests
+   * On Node, this will set the agent passed to HTTPS requests.
+   * This should be an instance of https.Agent (not explicit so that users
+   * do not have to include @types/node)
    */
-  httpsAgent?: https.Agent;
+  httpsAgent?: any;
   /**
    * On Node, this will configure an HTTP proxy to send requests to instead of going
    * straight to the specified URL. If undefined, Axios will attempt to read

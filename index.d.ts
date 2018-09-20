@@ -4,7 +4,7 @@
  * back onto the request or response.
  * The headers may be modified.
  */
-export type AxiosTransformer = (data: any, headers?: Headers) => any
+export type AxiosTransformer = (data: any, headers?: StringKeyedObject) => any
 
 /**
  * Custom adapter that receives a request config, sends a request,

@@ -157,7 +157,7 @@ axios({
   url:'http://bit.ly/2mTM3nY',
   responseType:'stream'
 })
-  .then(function(response) {
+  .then(function (response) {
     response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
   });
 ```
@@ -267,7 +267,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional function in charge of serializing `params`
   // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
-  paramsSerializer: function(params) {
+  paramsSerializer: function (params) {
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
 
@@ -413,7 +413,7 @@ When using `then`, you will receive the response as follows:
 
 ```js
 axios.get('/user/12345')
-  .then(function(response) {
+  .then(function (response) {
     console.log(response.data);
     console.log(response.status);
     console.log(response.statusText);
@@ -553,7 +553,7 @@ const source = CancelToken.source();
 
 axios.get('/user/12345', {
   cancelToken: source.token
-}).catch(function(thrown) {
+}).catch(function (thrown) {
   if (axios.isCancel(thrown)) {
     console.log('Request canceled', thrown.message);
   } else {

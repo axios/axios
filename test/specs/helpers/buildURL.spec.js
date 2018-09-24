@@ -40,6 +40,12 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=@:$,+');
   });
 
+  it('should support newly added special char params', function () {
+    expect(buildURL('/foo', {
+      foo: '@:$, /?#&;='
+    })).toEqual('/foo?foo=@:$,+/?#&;=');
+  });
+
   it('should support existing params', function () {
     expect(buildURL('/foo?foo=bar', {
       bar: 'baz'

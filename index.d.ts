@@ -21,14 +21,14 @@ export interface AxiosProxyConfig {
   protocol?: string;
 }
 
-export type Method = 
-  | 'get' 
-  | 'delete' 
-  | 'head' 
-  | 'options' 
-  | 'post' 
-  | 'put' 
-  | 'patch'
+export type Method =
+  | 'get' | 'GET'
+  | 'delete' | 'DELETE'
+  | 'head' | 'HEAD'
+  | 'options' | 'OPTIONS'
+  | 'post' | 'POST'
+  | 'put' | 'PUT'
+  | 'patch' | 'PATCH'
 
 export type ResponseType = 
   | 'arraybuffer' 

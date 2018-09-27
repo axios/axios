@@ -1446,17 +1446,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 /* 20 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
+	var buildURL = __webpack_require__(6);
 	
 	module.exports = function wxAdapter(config) {
 	  return new Promise(function dispatchWxRequest(resolve, reject) {
 	    const data = config.data;
 	    const headers = config.headers;
 	    const request = wx.request;
+	    const url = buildURL(config.url, config.params, config.paramsSerializer);
+	
 	    request({
-	      url: config.url,
+	      url: url,
+	      method: config.method.toUpperCase(),
 	      data: data,
 	      headers: headers,
 	      success: function(res) {
@@ -1465,9 +1469,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      fail: function() {
 	        reject();
 	      }
-	    })
+	    });
 	  });
-	}
+	};
 
 
 /***/ }),

@@ -1,0 +1,11 @@
+<!--index.wxml-->
+<view class="container">
+  <view class="userinfo">
+    <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
+    <text class="userinfo-nickname">{{sendName}}</text>
+  </view>
+  <view class="usermotto">
+    <button bindtap="testPostMethod">POST</button>
+    <text class="user-motto">tap the button above to test post function</text>
+  </view>
+</view>

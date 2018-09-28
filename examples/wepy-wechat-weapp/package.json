@@ -1,0 +1,36 @@
+{
+  "name": "wepy-wechat-weapp",
+  "version": "0.0.2",
+  "description": "test axios in wepy",
+  "main": "dist/app.js",
+  "scripts": {
+    "dev": "wepy build --watch",
+    "build": "cross-env NODE_ENV=production wepy build --no-cache",
+    "dev:web": "wepy build --output web",
+    "clean": "find ./dist -maxdepth 1 -not -name 'project.config.json' -not -name 'dist' | xargs rm -rf",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "wepy": {
+    "module-a": false,
+    "./src/components/list": "./src/components/wepy-list.wpy"
+  },
+  "author": "Bosspwn",
+  "license": "MIT",
+  "dependencies": {
+    "wepy": "^1.6.0",
+    "wepy-async-function": "^1.4.4",
+    "wepy-com-toast": "^1.0.2",
+    "wx-axios": "0.0.2"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-export-extensions": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "cross-env": "^5.1.3",
+    "wepy-compiler-babel": "^1.5.1",
+    "wepy-compiler-less": "^1.3.10"
+  }
+}

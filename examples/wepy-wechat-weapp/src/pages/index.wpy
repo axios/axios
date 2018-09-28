@@ -1,0 +1,79 @@
+<style lang="less">
+.userinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.userinfo-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+}
+
+.userinfo-nickname {
+  color: #aaa;
+}
+</style>
+<template>
+  <view class="container">
+    {{sendName}}
+    <button @tap="testPostMethod()">post</button>
+    <text>tap button above to test post function</text>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+
+export default class Index extends wepy.page {
+  config = {
+    navigationBarTitleText: 'test'
+  };
+  data = {
+    sendName: 'none'
+  };
+
+  methods = {
+    testPostMethod() {
+      this.$parent
+        .axios({
+          url: 'https://httpbin.org/post',
+          method: 'post',
+          data: {
+            testname: 'soloJiang'
+          }
+        })
+        .then(res => {
+          this.sendName = JSON.parse(res.data.data).testname;
+          this.$apply();
+        })
+        .catch(err => {
+          console.log(err);
+        })
+        .then(() => {
+          console.log('post request complete');
+        });
+    }
+  };
+
+  onLoad() {
+    this.$parent.axios
+      .get('https://httpbin.org/get', {
+        params: {
+          name: 'Bosspwn'
+        }
+      })
+      .then(res => {
+        this.sendName = res.data.args.name;
+        this.$apply();
+      })
+      .catch(err => {
+        console.log(err);
+      })
+      .then(() => {
+        console.log('get request complete');
+      });
+  }
+}
+</script>

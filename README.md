@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![build status](https://img.shields.io/travis/axios/axios.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
+[![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
@@ -24,7 +25,7 @@ Promise based HTTP client for the browser and node.js
 
 ![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
 --- | --- | --- | --- | --- | --- |
-Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
+Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 
 [![Browser Matrix](https://saucelabs.com/open_sauce/build_matrix/axios.svg)](https://saucelabs.com/u/axios)
 
@@ -53,13 +54,20 @@ Using cdn:
 Performing a `GET` request
 
 ```js
+const axios = require('axios');
+
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
   .then(function (response) {
+    // handle success
     console.log(response);
   })
   .catch(function (error) {
+    // handle error
     console.log(error);
+  })
+  .then(function () {
+    // always executed
   });
 
 // Optionally the request above could also be done as
@@ -73,7 +81,10 @@ axios.get('/user', {
   })
   .catch(function (error) {
     console.log(error);
-  });
+  })
+  .then(function () {
+    // always executed
+  });  
 
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
@@ -146,9 +157,9 @@ axios({
   url:'http://bit.ly/2mTM3nY',
   responseType:'stream'
 })
-  .then(function(response) {
-  response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
-});
+  .then(function (response) {
+    response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
+  });
 ```
 
 ##### axios(url[, config])
@@ -207,6 +218,7 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#post(url[, data[, config]])
 ##### axios#put(url[, data[, config]])
 ##### axios#patch(url[, data[, config]])
+##### axios#getUri([config])
 
 ## Request Config
 
@@ -255,7 +267,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional function in charge of serializing `params`
   // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
-  paramsSerializer: function(params) {
+  paramsSerializer: function (params) {
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
 
@@ -271,7 +283,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `timeout` specifies the number of milliseconds before the request times out.
   // If the request takes longer than `timeout`, the request will be aborted.
-  timeout: 1000,
+  timeout: 1000, // default is `0` (no timeout)
 
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials
@@ -342,7 +354,11 @@ These are the available config options for making requests. Only the `url` is re
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // 'proxy' defines the hostname and port of the proxy server
+  // 'proxy' defines the hostname and port of the proxy server.
+  // You can also define your proxy using the conventional `http_proxy` and
+  // `https_proxy` environment variables. If you are using environment variables
+  // for your proxy configuration, you can also define a `no_proxy` environment
+  // variable as a comma-separated list of domains that should not be proxied.
   // Use `false` to disable proxies, ignoring environment variables.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
@@ -397,7 +413,7 @@ When using `then`, you will receive the response as follows:
 
 ```js
 axios.get('/user/12345')
-  .then(function(response) {
+  .then(function (response) {
     console.log(response.data);
     console.log(response.status);
     console.log(response.statusText);
@@ -537,7 +553,7 @@ const source = CancelToken.source();
 
 axios.get('/user/12345', {
   cancelToken: source.token
-}).catch(function(thrown) {
+}).catch(function (thrown) {
   if (axios.isCancel(thrown)) {
     console.log('Request canceled', thrown.message);
   } else {

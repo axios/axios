@@ -376,7 +376,11 @@ These are the available config options for making requests. Only the `url` is re
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {
-  })
+  }),
+  // `customConfig` defines an object to be used to add any generic configuration
+  // This allows options to be added like a custom logger function or some client specific configuration
+  // to make easily identifiable in your code
+  customConfig: {}
 }
 ```
 
@@ -466,7 +470,30 @@ instance.get('/longRequest', {
   timeout: 5000
 });
 ```
+You can use `customConfig` add more generic configuration for example to distinguish between instances.
 
+```js
+const instance = axios.create({customConfig: {retryOnError: true}})
+ instance.interceptors.response.use(function (response) {
+    // we don't need to do anything here
+    return response
+  }, function (error) {
+    let { response, config } = error
+    // Do not retry if it is disabled or no request config exists (not an axios error)
+    if (!config || !instance.defaults.retryOnError) {
+      return Promise.reject(error)
+    }
+
+    const delay = ms => new Promise((resolve) => {
+      setTimeout(resolve, ms)
+    })
+    if (response.status === 429){
+      return delay(2000).then(() => instance(config))
+    }
+    return Promise.reject()
+  }
+ratelimit(instance)
+```
 ## Interceptors
 
 You can intercept requests or responses before they are handled by `then` or `catch`.

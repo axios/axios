@@ -193,7 +193,6 @@ axios.request<User, string>({
 // Instances
 
 const instance1: AxiosInstance = axios.create();
-const instance2: AxiosInstance = axios.create(config);
 
 instance1(config)
   .then(handleResponse)
@@ -279,20 +278,6 @@ const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
 axios.defaults.adapter = adapter;
 
 // axios.all
-
-const promises = [
-  Promise.resolve(1),
-  Promise.resolve(2)
-];
-
-const promise: Promise<number[]> = axios.all(promises);
-
-// axios.spread
-
-const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
-const fn2: (arr: number[]) => string = axios.spread(fn1);
-
-// Promises
 
 axios.get('/user')
   .then((response: AxiosResponse) => 'foo')

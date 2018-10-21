@@ -5,7 +5,6 @@ import axios, {
   AxiosInstance,
   AxiosAdapter,
   Cancel,
-  CancelToken,
   CancelTokenSource,
   Canceler
 } from '../../';

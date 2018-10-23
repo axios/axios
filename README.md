@@ -480,7 +480,7 @@ const instance = axios.create({customConfig: {retryOnError: true}})
   }, function (error) {
     let { response, config } = error
     // Do not retry if it is disabled or no request config exists (not an axios error)
-    if (!config || !instance.defaults.retryOnError) {
+    if (!config || !instance.customConfig.retryOnError) {
       return Promise.reject(error)
     }
 

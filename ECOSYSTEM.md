@@ -20,3 +20,4 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-fetch](https://github.com/lifeomic/axios-fetch) - A WebAPI Fetch implementation backed by an Axios client 
 * [axios-curlirize](https://www.npmjs.com/package/axios-curlirize) - Logs axios requests as curl commands, also adds a property to the response object with the curl command as value.
 * [axios-actions](https://github.com/davestewart/axios-actions) - Bundle endpoints as callable, reusable services
+* [axios-authorized](https://github.com/zaguiini/axios-authorized) - axios wrapper for REST APIs that needs authentication

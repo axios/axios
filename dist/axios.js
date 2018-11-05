@@ -989,8 +989,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // HTTP basic authentication
 	    if (config.auth) {
-	      var username = config.auth.username || '';
-	      var password = config.auth.password || '';
+				var username = escape(encodeURIComponent(config.auth.username || ''));
+				var password = escape(encodeURIComponent(config.auth.password || ''));
+
+	      // var username = config.auth.username || '';
+	      // var password = config.auth.password || '';
 	      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
 	    }
 	

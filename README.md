@@ -49,6 +49,19 @@ Using cdn:
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 ```
 
+## usage
+
+> modularization
+
+```js
+// ES6 Modules
+import axios from "axios";
+
+// CMD
+const axios = require("axios");
+
+```
+
 ## Example
 
 Performing a `GET` request

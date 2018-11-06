@@ -430,10 +430,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return a;
 	}
 	
-	function getBase64(str) {
+	function encodeStr(str) {
 	  var encoder = new TextEncoder();
-	  return btoa(String.fromCharCode.apply(null, new Uint8Array(encoder.encode(str))));
+	  return String.fromCharCode.apply(null, new Uint8Array(encoder.encode(str)));
 	}
+	
 	
 	module.exports = {
 	  isArray: isArray,
@@ -457,7 +458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  deepMerge: deepMerge,
 	  extend: extend,
 	  trim: trim,
-	  getBase64: getBase64
+	  encodeStr: encodeStr
 	};
 
 
@@ -1001,7 +1002,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.auth) {
 	      var username = config.auth.username || '';
 	      var password = config.auth.password || '';
-	      requestHeaders.Authorization = 'Basic ' + utils.getBase64(username + ':' + password);
+	      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + utils.encodeStr(password));
 	    }
 	
 	    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);

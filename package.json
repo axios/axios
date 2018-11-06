@@ -6,7 +6,7 @@
   "scripts": {
     "test": "grunt test && bundlesize",
     "start": "node ./sandbox/server.js",
-    "build": "SET NODE_ENV=production & grunt build",
+    "build": "NODE_ENV=production grunt build",
     "preversion": "npm test",
     "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
     "postversion": "git push && git push --tags",

@@ -76,6 +76,22 @@ setupBasicAuthTest = function setupBasicAuthTest() {
     }, 100);
   });
 
+  it('should accept password with non latin characters', function (done) {
+    axios('/foo', {
+      auth: {
+        username: 'Aladdin',
+        password: 'Aladßç£☃din'
+      }
+    });
+
+    setTimeout(function () {
+      var request = jasmine.Ajax.requests.mostRecent();
+
+      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpBbGFkw5/Dp8Kj4piDZGlu');
+      done();
+    }, 100);
+  });
+
   it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters', function (done) {
     axios('/foo', {
       auth: {

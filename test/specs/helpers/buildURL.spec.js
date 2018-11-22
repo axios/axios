@@ -72,4 +72,8 @@ describe('helpers::buildURL', function () {
   it('should support URLSearchParams', function () {
     expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
   });
+
+  it('should return serialized/unserialized params if url is null', function () {
+    expect(buildURL(null, new URLSearchParams('foo=bar'))).toEqual('foo=bar');
+  });
 });

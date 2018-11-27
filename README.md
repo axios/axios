@@ -639,6 +639,9 @@ axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
+###### NOTE
+stringify method in [`querystring`](https://nodejs.org/api/querystring.html) and [`qs`](https://github.com/ljharb/qs) work different. For exapmple, if you have nested objects then [`querystring`](https://nodejs.org/api/querystring.html) will not stringify it, see https://github.com/nodejs/node-v0.x-archive/issues/1665. In this case use [`qs`](https://github.com/ljharb/qs) module.
+
 ## Semver
 
 Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.

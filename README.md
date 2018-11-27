@@ -637,6 +637,14 @@ const querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
+or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
+
+```js
+const url = require('url');
+const params = new url.URLSearchParams({foo:'bar'});
+axios.get('http://something.com/', {params});
+```
+
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ## Semver

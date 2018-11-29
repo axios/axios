@@ -397,6 +397,7 @@ The response for a request contains the following information.
 
   // `headers` the headers that the server responded with
   // All header names are lower cased
+  // Accessing values can be done like `response.headers['my-header-name']`
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request

@@ -113,6 +113,23 @@ axios.post('/user', {
   .catch(function (error) {
     console.log(error);
   });
+
+// a request with headers 
+axios.post('user', {
+    firstName: 'Fred',
+    lastName: 'Flintstone'
+  }), { 
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CUSTOM-HEADER': 'xxxxxxxx'
+    }
+  })
+  .then(function (response) {
+    console.log(response);
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
 ```
 
 Performing multiple concurrent requests

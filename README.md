@@ -174,13 +174,13 @@ axios('/user/12345');
 For convenience aliases have been provided for all supported request methods.
 
 ##### axios.request(config)
-##### axios.get(url[, config])
-##### axios.delete(url[, config])
-##### axios.head(url[, config])
-##### axios.options(url[, config])
-##### axios.post(url[, data[, config]])
-##### axios.put(url[, data[, config]])
-##### axios.patch(url[, data[, config]])
+##### axios.get(url,config)
+##### axios.delete(url,config)
+##### axios.head(url,config)
+##### axios.options(url,config)
+##### axios.post(url,data,config)
+##### axios.put(url,data,config)
+##### axios.patch(url,data,config)
 
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
@@ -211,13 +211,13 @@ const instance = axios.create({
 The available instance methods are listed below. The specified config will be merged with the instance config.
 
 ##### axios#request(config)
-##### axios#get(url[, config])
-##### axios#delete(url[, config])
-##### axios#head(url[, config])
-##### axios#options(url[, config])
-##### axios#post(url[, data[, config]])
-##### axios#put(url[, data[, config]])
-##### axios#patch(url[, data[, config]])
+##### axios#get(url,config)
+##### axios#delete(url,config)
+##### axios#head(url,config)
+##### axios#options(url,config)
+##### axios#post(url,data,config)
+##### axios#put(url,data,config)
+##### axios#patch(url,data,config)
 ##### axios#getUri([config])
 
 ## Request Config

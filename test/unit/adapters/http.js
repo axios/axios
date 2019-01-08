@@ -646,6 +646,43 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should correctly handle empty userData in config', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      // var userData = { key: 'value' };
+      axios.get('http://localhost:4444').then(function (res) {
+        assert.equal(res.config.userData !== undefined, true);
+        done();
+      });
+    });
+  });
+
+  it('should correctly handle userData in config on response', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      var userData = { key: 'value' };
+      axios.get('http://localhost:4444', { userData: userData }).then(function (res) {
+        assert.equal(res.config.userData.key, 'value');
+        done();
+      });
+    });
+  });
+
+  it('should correctly handle userData in config on error', function (done) {
+    server = http.createServer(function (req, res) {
+      res.statusCode = 400;
+      res.end();
+    }).listen(4444, function () {
+      var userData = { key: 'value' };
+      axios.get('http://localhost:4444', { userData: userData }).catch(function (err) {
+        assert.equal(err.config.userData.key, 'value');
+        done();
+      });
+    });
+  });
 });
 
 

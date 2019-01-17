@@ -13,7 +13,7 @@ Promise based HTTP client for the browser and node.js
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
 - Make [http](http://nodejs.org/api/http.html) requests from node.js
-- Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
+- [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API support
 - Intercept request and response
 - Transform request and response data
 - Cancel requests
@@ -36,7 +36,7 @@ Using npm:
 $ npm install axios
 ```
 
-Using cdn:
+Using CDN:
 
 ```html
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -592,10 +592,11 @@ const qs = require('qs');
 axios.post('/foo', qs.stringify({ 'bar': 123 }));
 ```
 
-Or in another way (ES6),
+Or in another way (ES6):
 
 ```js
 import qs from 'qs';
+
 const data = { 'bar': 123 };
 const options = {
   method: 'POST',
@@ -603,6 +604,7 @@ const options = {
   data: qs.stringify(data),
   url,
 };
+
 axios(options);
 ```
 

@@ -250,11 +250,11 @@ These are the available config options for making requests. Only the `url` is re
 
   // `transformResponse` allows changes to the response data to be made before
   // it is passed to then/catch
-  transformResponse: [function (data) {
+  transformResponse: axios.defaults.transformResponse.concat((data) => {
     // Do whatever you want to transform the data
 
     return data;
-  }],
+  }),
 
   // `headers` are custom headers to be sent
   headers: {'X-Requested-With': 'XMLHttpRequest'},

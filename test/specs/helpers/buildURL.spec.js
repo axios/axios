@@ -56,8 +56,13 @@ describe('helpers::buildURL', function () {
   it('should support array params with brackets style', function () {
     expect(buildURL('/foo', {
       foo: [{ bar: 123 }, { baz: 456 }]
-    }, 'brackets'))
+    }, { arrayFormat: 'brackets' }))
       .toEqual('/foo?foo[][bar]=123&foo[][baz]=456');
+  });
+
+  it('should support array params with repeat style', function () {
+    expect(buildURL('/foo', { a: ['b', 'c'] }, { arrayFormat: 'repeat' }))
+      .toEqual('/foo?a=b&a=c');
   });
 
   it('should support backward style', function () {

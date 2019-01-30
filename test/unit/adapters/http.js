@@ -156,6 +156,45 @@ describe('supports http with nodejs', function () {
     });
   });
 
+
+  it('should throw error when maxContentLength too small', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+    var len = JSON.stringify(data).length;
+
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.put('http://localhost:4444/', data, {
+        maxContentLength: len - 1
+      }).catch(function (error) {
+        done()
+      });
+    });
+  });
+
+  it('should allow request when maxContentLength is sufficuent', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+    var len = JSON.stringify(data).length;
+
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.put('http://localhost:4444/', data, {
+        maxContentLength: len
+      }).then(function (res) {
+        done();
+      });
+    });
+  });
+
   it('should support transparent gunzip', function (done) {
     var data = {
       firstName: 'Fred',

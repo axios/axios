@@ -77,6 +77,10 @@ axios.head('/user')
   .then(handleResponse)
   .catch(handleError);
 
+axios.options('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
 axios.delete('/user')
   .then(handleResponse)
   .catch(handleError);
@@ -124,6 +128,10 @@ axios.get<User>('/user', { params: { id: 12345 } })
 
 axios.head<User>('/user')
 	.then(handleUserResponse)
+    .catch(handleError);
+    
+axios.options<User>('/user')
+	.then(handleUserResponse)
 	.catch(handleError);
 
 axios.delete<User>('/user')
@@ -161,6 +169,10 @@ axios.get<User, string>('/user', { params: { id: 12345 } })
   .catch(handleError);
 
 axios.head<User, string>('/user')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.options<User, string>('/user')
   .then(handleStringResponse)
   .catch(handleError);
 
@@ -205,6 +217,10 @@ instance1.request(config)
   .catch(handleError);
 
 instance1.get('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.options('/user')
   .then(handleResponse)
   .catch(handleError);
 

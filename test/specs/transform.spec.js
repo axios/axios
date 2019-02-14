@@ -91,4 +91,22 @@ describe('transform', function () {
       done();
     });
   });
+
+  it('should pass entire config object', function (done) {
+    var config = {
+      transformRequest: function(data, headers, configArg) {
+        expect(configArg.transformRequest).toEqual(config.transformRequest)
+      },
+
+      transformResponse: function(data, headers, configArg) {
+        expect(configArg.transformResponse).toEqual(config.transformResponse)
+      },
+    }
+
+    axios('/foo', config)
+
+    getAjaxRequest().then(function() {
+      done()
+    })
+  })
 });

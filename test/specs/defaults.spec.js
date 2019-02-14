@@ -25,15 +25,23 @@ describe('defaults', function () {
   });
 
   it('should transform response json', function () {
-    var data = defaults.transformResponse[0]('{"foo":"bar"}');
+    var data = defaults.transformResponse[0]('{"foo":"bar"}', {}, {});
 
     expect(typeof data).toEqual('object');
     expect(data.foo).toEqual('bar');
   });
 
   it('should do nothing to response string', function () {
-    expect(defaults.transformResponse[0]('foo=bar')).toEqual('foo=bar');
+    expect(defaults.transformResponse[0]('foo=bar', {}, {})).toEqual('foo=bar');
   });
+
+  it('should not call JSON.parse if responseType is not json', function() {
+    spyOn(JSON, 'parse')
+
+    expect(defaults.transformResponse[0]('foo', {}, { responseType: 'text'})).toEqual('foo')
+
+    expect(JSON.parse.calls.count()).toEqual(0)
+  })
 
   it('should use global defaults config', function (done) {
     axios('/foo');

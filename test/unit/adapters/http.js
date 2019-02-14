@@ -5,6 +5,7 @@ var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path')
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -312,7 +313,9 @@ describe('supports http with nodejs', function () {
       ).then(function (res) {
         assert.fail();
       }).catch(function (err) {
-        assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+        // use path.resolve to make tests cross-platform
+        var errorMessage = 'ENOENT: no such file or directory, open \'' + path.resolve('/does/not/exist') + '\''
+        assert.equal(err.message, errorMessage);
         done();
       });
     });

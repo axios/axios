@@ -66,4 +66,9 @@ describe('core::mergeConfig', function() {
     var merged = mergeConfig(defaults, { timeout: 123 });
     expect(merged.timeout).toEqual(123);
   });
+
+  it('should allow setting custom options', function() {
+      var merged = mergeConfig(defaults, { foo: 'bar' });
+      expect(merged.foo).toEqual('bar');
+  });
 });

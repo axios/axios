@@ -4,6 +4,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 
 ## Libraries
 
+* [react-hooks-axios](https://github.com/use-hooks/react-hooks-axios) - Custom React Hooks for Axios.js
 * [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
 * [axios-response-logger](https://github.com/srph/axios-response-logger) - Axios interceptor which logs responses
 * [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) — Axios adapter that allows to easily mock requests

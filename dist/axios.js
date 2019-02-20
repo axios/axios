@@ -1501,7 +1501,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = function mergeConfig(config1, config2) {
 	  // eslint-disable-next-line no-param-reassign
 	  config2 = config2 || {};
-	  var config = config1 || {};
+	  var config = {};
 	
 	  var valueFromConfig2Keys = ['url', 'method', 'params', 'data'];
 	  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {

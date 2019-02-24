@@ -1,7 +1,7 @@
 import axios, {
   AxiosRequestConfig,
   AxiosResponse,
-  AxiosError,
+  AxiosException,
   AxiosInstance,
   AxiosAdapter,
   Cancel,
@@ -51,7 +51,7 @@ const handleResponse = (response: AxiosResponse) => {
   console.log(response.config);
 };
 
-const handleError = (error: AxiosError) => {
+const handleError = (error: AxiosException) => {
   if (error.response) {
     console.log(error.response.data);
     console.log(error.response.status);
@@ -325,7 +325,7 @@ const source: CancelTokenSource = axios.CancelToken.source();
 
 axios.get('/user', {
   cancelToken: source.token
-}).catch((thrown: AxiosError | Cancel) => {
+}).catch((thrown: AxiosException | Cancel) => {
   if (axios.isCancel(thrown)) {
     const cancel: Cancel = thrown;
     console.log(cancel.message);

@@ -13,6 +13,7 @@ describe('instance', function () {
     for (var prop in axios) {
       if ([
         'Axios',
+        'AxiosException',
         'create',
         'Cancel',
         'CancelToken',

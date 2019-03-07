@@ -1,7 +1,7 @@
 var createError = require('../../../lib/core/createError');
 
-describe('core::createError', function() {
-  it('should create an Error with message, config, code, request, response and isAxiosError', function() {
+describe('core::createError', () => {
+  it('should create an Error with message, config, code, request, response and isAxiosError', () => {
     var request = { path: '/foo' };
     var response = { status: 200, data: { foo: 'bar' } };
     var error = createError('Boom!', { foo: 'bar' }, 'ESOMETHING', request, response);
@@ -13,7 +13,7 @@ describe('core::createError', function() {
     expect(error.response).toBe(response);
     expect(error.isAxiosError).toBe(true);
   });
-  it('should create an Error that can be serialized to JSON', function() {
+  it('should create an Error that can be serialized to JSON', () => {
     // Attempting to serialize request and response results in
     //    TypeError: Converting circular structure to JSON
     var request = { path: '/foo' };

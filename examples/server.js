@@ -24,7 +24,7 @@ function listDirs(root) {
 }
 
 function getIndexTemplate() {
-  var links = dirs.map(function (dir) {
+  var links = dirs.map(dir => {
     var url = '/' + dir;
     return '<li onclick="document.location=\'' + url + '\'"><a href="' + url + '">' + url + '</a></li>';
   });
@@ -74,7 +74,7 @@ function pipeFileToResponse(res, file, type) {
 
 dirs = listDirs(__dirname);
 
-server = http.createServer(function (req, res) {
+server = http.createServer((req, res) => {
   var url = req.url;
 
   // Process axios itself

@@ -12,7 +12,7 @@ function createCustomLauncher(browser, version, platform) {
   };
 }
 
-module.exports = function(config) {
+module.exports = config => {
   var customLaunchers = {};
   var browsers = [];
 
@@ -31,7 +31,7 @@ module.exports = function(config) {
       'SAUCE_ANDROID'
     ];
 
-    options.forEach(function (opt) {
+    options.forEach(opt => {
       if (process.env[opt]) {
         runAll = false;
       }

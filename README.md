@@ -43,6 +43,12 @@ Using bower:
 $ bower install axios
 ```
 
+Using yarn:
+
+```bash
+$ yarn add axios
+```
+
 Using cdn:
 
 ```html

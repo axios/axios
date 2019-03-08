@@ -4,6 +4,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 
 ## Libraries
 
+* [react-hooks-axios](https://github.com/use-hooks/react-hooks-axios) - Custom React Hooks for Axios.js
 * [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
 * [axios-response-logger](https://github.com/srph/axios-response-logger) - Axios interceptor which logs responses
 * [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) — Axios adapter that allows to easily mock requests
@@ -20,3 +21,4 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-fetch](https://github.com/lifeomic/axios-fetch) - A WebAPI Fetch implementation backed by an Axios client 
 * [axios-curlirize](https://www.npmjs.com/package/axios-curlirize) - Logs axios requests as curl commands, also adds a property to the response object with the curl command as value.
 * [axios-actions](https://github.com/davestewart/axios-actions) - Bundle endpoints as callable, reusable services
+* [axios-api-versioning](https://weffe.github.io/axios-api-versioning) - Add easy to manage api versioning to axios

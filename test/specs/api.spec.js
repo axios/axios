@@ -61,4 +61,8 @@ describe('instance api', function () {
     expect(typeof instance.interceptors.request).toEqual('object');
     expect(typeof instance.interceptors.response).toEqual('object');
   });
+
+  it('should have factory method', function () {
+    expect(typeof instance.create).toEqual('function');
+  });
 });

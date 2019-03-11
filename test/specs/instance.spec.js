@@ -13,7 +13,6 @@ describe('instance', function () {
     for (var prop in axios) {
       if ([
         'Axios',
-        'create',
         'Cancel',
         'CancelToken',
         'isCancel',
@@ -96,5 +95,34 @@ describe('instance', function () {
         done();
       }, 100);
     });
+  });
+
+  it('should support nested instances', function () {
+    var url1 = 'https://api.example1.com';
+    var url2 = 'https://api.example2.com';
+    var url3 = 'https://api.example3.com';
+
+    var instance = axios.create({
+      baseURL: url1,
+      timeout: 500
+    });
+    var instanceNested1 = instance.create({
+      timeout: 1000
+    });
+    var instanceNested2 = instance.create({
+      baseURL: url2
+    });
+    var instanceNestedNested = instanceNested2.create({
+      baseURL: url3
+    });
+
+    expect(instance.defaults.baseURL).toEqual(url1);
+    expect(instance.defaults.timeout).toEqual(500);
+    expect(instanceNested1.defaults.baseURL).toEqual(url1);
+    expect(instanceNested1.defaults.timeout).toEqual(1000);
+    expect(instanceNested2.defaults.baseURL).toEqual(url2);
+    expect(instanceNested2.defaults.timeout).toEqual(500);
+    expect(instanceNestedNested.defaults.baseURL).toEqual(url3);
+    expect(instanceNestedNested.defaults.timeout).toEqual(500);
   });
 });

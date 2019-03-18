@@ -1,4 +1,4 @@
-# axios
+# Axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![build status](https://img.shields.io/travis/axios/axios.svg?style=flat-square)](https://travis-ci.org/axios/axios)
@@ -132,11 +132,11 @@ axios.all([getUserAccount(), getUserPermissions()])
   }));
 ```
 
-## axios API
+## Axios API
 
 Requests can be made by passing the relevant config to `axios`.
 
-##### axios(config)
+##### Axios(config)
 
 ```js
 // Send a POST request
@@ -169,7 +169,7 @@ axios({
 axios('/user/12345');
 ```
 
-### Request method aliases
+### Request Method Aliases
 
 For convenience aliases have been provided for all supported request methods.
 
@@ -192,7 +192,7 @@ Helper functions for dealing with concurrent requests.
 ##### axios.all(iterable)
 ##### axios.spread(callback)
 
-### Creating an instance
+### Creating an Instance
 
 You can create a new instance of axios with a custom config.
 
@@ -206,7 +206,7 @@ const instance = axios.create({
 });
 ```
 
-### Instance methods
+### Instance Methods
 
 The available instance methods are listed below. The specified config will be merged with the instance config.
 
@@ -428,7 +428,7 @@ When using `catch`, or passing a [rejection callback](https://developer.mozilla.
 
 You can specify config defaults that will be applied to every request.
 
-### Global axios defaults
+### Global Axios Defaults
 
 ```js
 axios.defaults.baseURL = 'https://api.example.com';
@@ -436,7 +436,7 @@ axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 ```
 
-### Custom instance defaults
+### Custom Instance Defaults
 
 ```js
 // Set config defaults when creating the instance
@@ -448,7 +448,7 @@ const instance = axios.create({
 instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ```
 
-### Config order of precedence
+### Config Order of Precedence
 
 Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
@@ -590,7 +590,7 @@ cancel();
 
 > Note: you can cancel several requests with the same cancel token.
 
-## Using application/x-www-form-urlencoded format
+## Using application/x-www-form-urlencoded Format
 
 By default, axios serializes JavaScript objects to `JSON`. To send data in the `application/x-www-form-urlencoded` format instead, you can use one of the following options.
 

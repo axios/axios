@@ -495,7 +495,7 @@ If you may need to remove an interceptor later you can.
 
 ```js
 const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
-axios.interceptors.request.eject(myInterceptor);
+axios.interceptors.request.reject(myInterceptor);
 ```
 
 You can add interceptors to a custom instance of axios.

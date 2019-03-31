@@ -179,10 +179,45 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support transparent brotli', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    zlib.brotliCompress(JSON.stringify(data), function (err, compressed) {
+
+      server = http.createServer(function (req, res) {
+        res.setHeader('Content-Type', 'application/json;charset=utf-8');
+        res.setHeader('Content-Encoding', 'br');
+        res.end(compressed);
+      }).listen(4444, function () {
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.deepEqual(res.data, data);
+          done();
+        });
+      });
+
+    });
+  });
+
   it('should support gunzip error handling', function (done) {
     server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'application/json;charset=utf-8');
       res.setHeader('Content-Encoding', 'gzip');
+      res.end('invalid response');
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/').catch(function (error) {
+        done();
+      });
+    });
+  });
+
+  it('should support brotli error handling', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.setHeader('Content-Encoding', 'br');
       res.end('invalid response');
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').catch(function (error) {

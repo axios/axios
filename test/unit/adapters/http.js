@@ -186,20 +186,32 @@ describe('supports http with nodejs', function () {
       emailAddr: 'fred@example.com'
     };
 
-    zlib.brotliCompress(JSON.stringify(data), function (err, compressed) {
-
+    // for old node version
+    if (typeof zlib.brotliCompress !== 'function'){
       server = http.createServer(function (req, res) {
         res.setHeader('Content-Type', 'application/json;charset=utf-8');
         res.setHeader('Content-Encoding', 'br');
-        res.end(compressed);
+        res.end(JSON.stringify(data));
       }).listen(4444, function () {
         axios.get('http://localhost:4444/').then(function (res) {
           assert.deepEqual(res.data, data);
           done();
         });
       });
-
-    });
+    }else{
+      zlib.brotliCompress(JSON.stringify(data), function (err, compressed) {
+        server = http.createServer(function (req, res) {
+          res.setHeader('Content-Type', 'application/json;charset=utf-8');
+          res.setHeader('Content-Encoding', 'br');
+          res.end(compressed);
+        }).listen(4444, function () {
+          axios.get('http://localhost:4444/').then(function (res) {
+            assert.deepEqual(res.data, data);
+            done();
+          });
+        });
+      });
+    }
   });
 
   it('should support gunzip error handling', function (done) {
@@ -215,15 +227,19 @@ describe('supports http with nodejs', function () {
   });
 
   it('should support brotli error handling', function (done) {
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json;charset=utf-8');
-      res.setHeader('Content-Encoding', 'br');
-      res.end('invalid response');
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').catch(function (error) {
-        done();
+    if(typeof zlib.brotliCompress === 'function'){
+      server = http.createServer(function (req, res) {
+        res.setHeader('Content-Type', 'application/json;charset=utf-8');
+        res.setHeader('Content-Encoding', 'br');
+        res.end('invalid response');
+      }).listen(4444, function () {
+        axios.get('http://localhost:4444/').catch(function (error) {
+          done();
+        });
       });
-    });
+    }else{
+      done();
+    }
   });
 
   it('should support UTF8', function (done) {

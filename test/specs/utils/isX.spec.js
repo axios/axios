@@ -8,39 +8,19 @@ describe('utils::isX', function () {
   });
 
   it('should validate ArrayBuffer', function () {
-    // ArrayBuffer doesn't exist in IE8/9
-    if (isOldIE && typeof ArrayBuffer === 'undefined') {
-      return;
-    }
-
     expect(utils.isArrayBuffer(new ArrayBuffer(2))).toEqual(true);
     expect(utils.isArrayBuffer({})).toEqual(false);
   });
 
   it('should validate ArrayBufferView', function () {
-    // ArrayBuffer doesn't exist in IE8/9
-    if (isOldIE && typeof ArrayBuffer === 'undefined') {
-      return;
-    }
-
     expect(utils.isArrayBufferView(new DataView(new ArrayBuffer(2)))).toEqual(true);
   });
 
   it('should validate FormData', function () {
-    // FormData doesn't exist in IE8/9
-    if (isOldIE && typeof FormData === 'undefined') {
-      return;
-    }
-
     expect(utils.isFormData(new FormData())).toEqual(true);
   });
 
   it('should validate Blob', function () {
-    // Blob doesn't exist in IE8/9
-    if (isOldIE && typeof Blob === 'undefined') {
-      return;
-    }
-
     expect(utils.isBlob(new Blob())).toEqual(true);
   });
 

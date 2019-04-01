@@ -103,6 +103,8 @@ interface User {
   name: string;
 }
 
+// with default AxiosResponse<T> result
+
 const handleUserResponse = (response: AxiosResponse<User>) => {
 	console.log(response.data.id);
 	console.log(response.data.name);
@@ -120,6 +122,14 @@ axios.get<User>('/user', { params: { id: 12345 } })
 	.then(handleUserResponse)
 	.catch(handleError);
 
+axios.head<User>('/user')
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.delete<User>('/user')
+	.then(handleUserResponse)
+	.catch(handleError);
+
 axios.post<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
 	.catch(handleError);
@@ -134,12 +144,61 @@ axios.put<User>('/user', { foo: 'bar' })
 
 axios.patch<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
-	.catch(handleError);
+  .catch(handleError);
+
+// (Typed methods) with custom response type
+
+const handleStringResponse = (response: string) => {
+  console.log(response)
+}
+
+axios.get<User, string>('/user?id=12345')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.get<User, string>('/user', { params: { id: 12345 } })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.head<User, string>('/user')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.delete<User, string>('/user')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.post<User, string>('/user', { foo: 'bar' })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.post<User, string>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.put<User, string>('/user', { foo: 'bar' })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.patch<User, string>('/user', { foo: 'bar' })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.request<User, string>({
+  method: 'get',
+  url: '/user?id=12345'
+})
+  .then(handleStringResponse)
+  .catch(handleError);
 
 // Instances
 
 const instance1: AxiosInstance = axios.create();
 const instance2: AxiosInstance = axios.create(config);
+
+instance1(config)
+  .then(handleResponse)
+  .catch(handleError);
 
 instance1.request(config)
   .then(handleResponse)

@@ -22,3 +22,4 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-curlirize](https://www.npmjs.com/package/axios-curlirize) - Logs axios requests as curl commands, also adds a property to the response object with the curl command as value.
 * [axios-actions](https://github.com/davestewart/axios-actions) - Bundle endpoints as callable, reusable services
 * [axios-api-versioning](https://weffe.github.io/axios-api-versioning) - Add easy to manage api versioning to axios
+* [axios-data-unpacker](https://github.com/anubhavsrivastava/axios-data-unpacker) - Axios interceptor that unpacks HTTP responses so that you can focus on actual server data.

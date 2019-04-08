@@ -219,6 +219,7 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#put(url[, data[, config]])
 ##### axios#patch(url[, data[, config]])
 ##### axios#getUri([config])
+##### axios#reverseInterceptorsOrder()
 
 ## Request Config
 

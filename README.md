@@ -307,7 +307,7 @@ These are the available config options for making requests. Only the `url` is re
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
   responseType: 'json', // default
 
-  // `responseEncoding` indicates encoding to use for decoding responses
+  // `responseEncoding` indicates encoding to use for decoding responses in node.js
   // Note: Ignored for `responseType` of 'stream' or client-side requests
   responseEncoding: 'utf8', // default
 
@@ -327,7 +327,7 @@ These are the available config options for making requests. Only the `url` is re
     // Do whatever you want with the native progress event
   },
 
-  // `maxContentLength` defines the max size of the http response content in bytes allowed
+  // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
   maxContentLength: 2000,
 
   // `validateStatus` defines whether to resolve or reject the promise for a given

@@ -97,4 +97,26 @@ describe('instance', function () {
       }, 100);
     });
   });
+
+  describe('getUri', () => {
+    it('should return the url that would be used for a request', function (done) {
+      var requestConfig = {
+        url: '/foo',
+        params: {
+          p1: 'p1',
+          p2: 'p2'
+        }
+      };
+      var instance = axios.create({
+        baseURL: 'https://api.example.com'
+      });
+
+      instance(requestConfig);
+
+      getAjaxRequest().then(function (request) {
+        expect(instance.getUri(requestConfig)).toBe(request.url);
+        done();
+      });
+    });
+  });
 });

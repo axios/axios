@@ -304,7 +304,8 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `responseType` indicates the type of data that the server will respond with
-  // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
+  // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+  //   browser only: 'blob'
   responseType: 'json', // default
 
   // `responseEncoding` indicates encoding to use for decoding responses

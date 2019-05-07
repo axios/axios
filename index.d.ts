@@ -30,12 +30,12 @@ export type Method =
   | 'put' | 'PUT'
   | 'patch' | 'PATCH'
 
-export type ResponseType = 
-  | 'arraybuffer' 
-  | 'blob' 
-  | 'document' 
-  | 'json' 
-  | 'text' 
+export type ResponseType =
+  | 'arraybuffer'
+  | 'blob'
+  | 'document'
+  | 'json'
+  | 'text'
   | 'stream'
 
 export interface AxiosRequestConfig {
@@ -81,7 +81,7 @@ export interface AxiosError<T = any> extends Error {
   code?: string;
   request?: any;
   response?: AxiosResponse<T>;
-  isAxiosError: boolean;
+  isAxiosError: true;
 }
 
 export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {

@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - node
+  - "11"
 email:
   on_failure: change
   on_success: never

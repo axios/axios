@@ -43,6 +43,12 @@ Using bower:
 $ bower install axios
 ```
 
+Using yarn:
+
+```bash
+$ yarn add axios
+```
+
 Using cdn:
 
 ```html
@@ -66,7 +72,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });
 
@@ -153,9 +159,9 @@ axios({
 ```js
 // GET request for remote image
 axios({
-  method:'get',
-  url:'http://bit.ly/2mTM3nY',
-  responseType:'stream'
+  method: 'get',
+  url: 'http://bit.ly/2mTM3nY',
+  responseType: 'stream'
 })
   .then(function (response) {
     response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
@@ -304,7 +310,8 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `responseType` indicates the type of data that the server will respond with
-  // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
+  // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+  //   browser only: 'blob'
   responseType: 'json', // default
 
   // `responseEncoding` indicates encoding to use for decoding responses

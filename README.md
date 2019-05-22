@@ -304,6 +304,8 @@ These are the available config options for making requests. Only the `url` is re
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing
   // `Authorization` custom headers you have set using `headers`.
+  // Please note that only HTTP Basic auth is configurable through this parameter.
+  // For Bearer tokens and such, use `Authorization` custom headers instead.
   auth: {
     username: 'janedoe',
     password: 's00pers3cret'

@@ -244,7 +244,7 @@ These are the available config options for making requests. Only the `url` is re
   baseURL: 'https://some-domain.com/api/',
 
   // `transformRequest` allows changes to the request data before it is sent to the server
-  // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
+  // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
   // FormData or Stream
   // You may modify the headers object.

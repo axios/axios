@@ -81,6 +81,7 @@ export interface AxiosResponse<T = any>  {
   config: AxiosRequestConfig;
   request?: any;
   redirects?: AxiosRedirect[]
+  responseUrl?: string
 }
 
 export interface AxiosError<T = any> extends Error {

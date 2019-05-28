@@ -1,3 +1,5 @@
+import { Redirect } from 'follow-redirects'
+
 export interface AxiosTransformer {
   (data: any, headers?: any): any;
 }
@@ -68,6 +70,9 @@ export interface AxiosRequestConfig {
   trackRedirects?: boolean
 }
 
+export interface AxiosRedirect extends Redirect {
+}
+
 export interface AxiosResponse<T = any>  {
   data: T;
   status: number;
@@ -75,6 +80,7 @@ export interface AxiosResponse<T = any>  {
   headers: any;
   config: AxiosRequestConfig;
   request?: any;
+  redirects?: AxiosRedirect[]
 }
 
 export interface AxiosError<T = any> extends Error {

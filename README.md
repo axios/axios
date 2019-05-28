@@ -43,6 +43,12 @@ Using bower:
 $ bower install axios
 ```
 
+Using yarn:
+
+```bash
+$ yarn add axios
+```
+
 Using cdn:
 
 ```html
@@ -66,7 +72,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });
 
@@ -153,11 +159,11 @@ axios({
 ```js
 // GET request for remote image
 axios({
-  method:'get',
-  url:'http://bit.ly/2mTM3nY',
-  responseType:'stream'
+  method: 'get',
+  url: 'http://bit.ly/2mTM3nY',
+  responseType: 'stream'
 })
-  .then(function(response) {
+  .then(function (response) {
     response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
   });
 ```
@@ -267,7 +273,7 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional function in charge of serializing `params`
   // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
-  paramsSerializer: function(params) {
+  paramsSerializer: function (params) {
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
 
@@ -304,7 +310,8 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `responseType` indicates the type of data that the server will respond with
-  // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
+  // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+  //   browser only: 'blob'
   responseType: 'json', // default
 
   // `responseEncoding` indicates encoding to use for decoding responses
@@ -424,7 +431,7 @@ When using `then`, you will receive the response as follows:
 
 ```js
 axios.get('/user/12345')
-  .then(function(response) {
+  .then(function (response) {
     console.log(response.data);
     console.log(response.status);
     console.log(response.statusText);
@@ -564,7 +571,7 @@ const source = CancelToken.source();
 
 axios.get('/user/12345', {
   cancelToken: source.token
-}).catch(function(thrown) {
+}).catch(function (thrown) {
   if (axios.isCancel(thrown)) {
     console.log('Request canceled', thrown.message);
   } else {
@@ -649,6 +656,9 @@ axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
+
+###### NOTE
+The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has known issues with that use case (https://github.com/nodejs/node-v0.x-archive/issues/1665).
 
 ## Semver
 

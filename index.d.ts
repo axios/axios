@@ -22,13 +22,13 @@ export interface AxiosProxyConfig {
 }
 
 export type Method =
-  | 'get'
-  | 'delete'
-  | 'head'
-  | 'options'
-  | 'post'
-  | 'put'
-  | 'patch'
+  | 'get' | 'GET'
+  | 'delete' | 'DELETE'
+  | 'head' | 'HEAD'
+  | 'options' | 'OPTIONS'
+  | 'post' | 'POST'
+  | 'put' | 'PUT'
+  | 'patch' | 'PATCH'
 
 export type ResponseType =
   | 'arraybuffer'
@@ -77,11 +77,11 @@ export interface AxiosResponse<T = any>  {
   request?: any;
 }
 
-export interface AxiosError extends Error {
+export interface AxiosError<T = any> extends Error {
   config: AxiosRequestConfig;
   code?: string;
   request?: any;
-  response?: AxiosResponse;
+  response?: AxiosResponse<T>;
   isAxiosError: boolean;
 }
 

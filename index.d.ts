@@ -1,4 +1,4 @@
-import { Redirect } from 'follow-redirects'
+import { Redirect } from 'follow-redirects';
 
 export interface AxiosTransformer {
   (data: any, headers?: any): any;
@@ -67,7 +67,7 @@ export interface AxiosRequestConfig {
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
-  trackRedirects?: boolean
+  trackRedirects?: boolean;
 }
 
 export interface AxiosRedirect extends Redirect {

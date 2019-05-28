@@ -21,21 +21,21 @@ export interface AxiosProxyConfig {
   protocol?: string;
 }
 
-export type Method = 
-  | 'get' 
-  | 'delete' 
-  | 'head' 
-  | 'options' 
-  | 'post' 
-  | 'put' 
+export type Method =
+  | 'get'
+  | 'delete'
+  | 'head'
+  | 'options'
+  | 'post'
+  | 'put'
   | 'patch'
 
-export type ResponseType = 
-  | 'arraybuffer' 
-  | 'blob' 
-  | 'document' 
-  | 'json' 
-  | 'text' 
+export type ResponseType =
+  | 'arraybuffer'
+  | 'blob'
+  | 'document'
+  | 'json'
+  | 'text'
   | 'stream'
 
 export interface AxiosRequestConfig {
@@ -65,6 +65,7 @@ export interface AxiosRequestConfig {
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
+  trackRedirects?: boolean
 }
 
 export interface AxiosResponse<T = any>  {

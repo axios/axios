@@ -115,8 +115,8 @@ export interface CancelTokenSource {
   cancel: Canceler;
 }
 
-export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: (value: V) => any | Promise<any>, onRejected?: (error: any) => any): number;
+export interface AxiosInterceptorManager<V, T = any> {
+  use(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any): number;
   eject(id: number): void;
 }
 
@@ -124,9 +124,9 @@ export interface AxiosInstance {
   (config: AxiosRequestConfig): AxiosPromise;
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
   defaults: AxiosRequestConfig;
-  interceptors: {
-    request: AxiosInterceptorManager<AxiosRequestConfig>;
-    response: AxiosInterceptorManager<AxiosResponse>;
+  interceptors<P = any, Q = any>: {
+    request: AxiosInterceptorManager<AxiosRequestConfig, Q>;
+    response: AxiosInterceptorManager<AxiosResponse, S>;
   };
   getUri(config?: AxiosRequestConfig): string;
   request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R>;

@@ -124,9 +124,9 @@ export interface AxiosInstance {
   (config: AxiosRequestConfig): AxiosPromise;
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
   defaults: AxiosRequestConfig;
-  interceptors<P = any, Q = any>: {
-    request: AxiosInterceptorManager<AxiosRequestConfig, Q>;
-    response: AxiosInterceptorManager<AxiosResponse, S>;
+  interceptors: {
+    request: AxiosInterceptorManager<AxiosRequestConfig>;
+    response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
   request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R>;

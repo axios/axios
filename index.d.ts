@@ -116,7 +116,7 @@ export interface CancelTokenSource {
 }
 
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
+  use(onFulfilled?: (value: V) => any | Promise<any>, onRejected?: (error: any) => any): number;
   eject(id: number): void;
 }
 

@@ -29,6 +29,7 @@ export type Method =
   | 'post' | 'POST'
   | 'put' | 'PUT'
   | 'patch' | 'PATCH'
+  | 'purge' | 'PURGE'
 
 export type ResponseType = 
   | 'arraybuffer' 

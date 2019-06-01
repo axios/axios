@@ -1,15 +1,20 @@
 # Changelog
 
+### 0.18.1 (May 31, 2019)
+
+Security Fix:
+
+- Destroy stream on exceeding maxContentLength (fixes [#1098](https://github.com/axios/axios/issues/1098)) ([#1485](https://github.com/axios/axios/pull/1485)) - Gadzhi Gadzhiev
+
 ### 0.18.0 (Feb 19, 2018)
 
 - Adding support for UNIX Sockets when running with Node.js ([#1070](https://github.com/axios/axios/pull/1070))
 - Fixing typings ([#1177](https://github.com/axios/axios/pull/1177)):
-    - AxiosRequestConfig.proxy: allows type false
-    - AxiosProxyConfig: added auth field
+  - AxiosRequestConfig.proxy: allows type false
+  - AxiosProxyConfig: added auth field
 - Adding function signature in AxiosInstance interface so AxiosInstance can be invoked ([#1192](https://github.com/axios/axios/pull/1192), [#1254](https://github.com/axios/axios/pull/1254))
 - Allowing maxContentLength to pass through to redirected calls as maxBodyLength in follow-redirects config ([#1287](https://github.com/axios/axios/pull/1287))
 - Fixing configuration when using an instance - method can now be set ([#1342](https://github.com/axios/axios/pull/1342))
-
 
 ### 0.17.1 (Nov 11, 2017)
 

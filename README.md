@@ -538,7 +538,7 @@ axios.get('/user/12345')
   });
 ```
 
-You can define a custom HTTP status code error range using the `validateStatus` config option.
+Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
 
 ```js
 axios.get('/user/12345', {

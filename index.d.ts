@@ -44,7 +44,7 @@ export interface AxiosRequestConfig {
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: any;
+  headers?: AxiosRequestConfigHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: any;
@@ -65,6 +65,21 @@ export interface AxiosRequestConfig {
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
+}
+
+export interface AxiosRequestConfigHeaders {
+  [k: string]: any
+}
+
+export interface AxiosRequestConfigDefaults extends Omit<AxiosRequestConfig, "headers"> {
+  headers?: {
+    common?: AxiosRequestConfigHeaders;
+    delete?: AxiosRequestConfigHeaders;
+    get?: AxiosRequestConfigHeaders;
+    post?: AxiosRequestConfigHeaders;
+    put?: AxiosRequestConfigHeaders;
+    patch?: AxiosRequestConfigHeaders;
+  };
 }
 
 export interface AxiosResponse<T = any>  {
@@ -123,7 +138,7 @@ export interface AxiosInterceptorManager<V> {
 export interface AxiosInstance {
   (config: AxiosRequestConfig): AxiosPromise;
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
-  defaults: AxiosRequestConfig;
+  defaults: AxiosRequestConfigDefaults;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;

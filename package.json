@@ -59,6 +59,7 @@
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^1.7.0",
+    "lazy-url": "^1.0.5",
     "load-grunt-tasks": "^3.5.2",
     "minimist": "^1.2.0",
     "mocha": "^5.2.0",

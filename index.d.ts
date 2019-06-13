@@ -63,7 +63,7 @@ export interface AxiosRequestConfig {
   socketPath?: string | null;
   httpAgent?: any;
   httpsAgent?: any;
-  proxy?: AxiosProxyConfig | false;
+  proxy?: AxiosProxyConfig | boolean;
   cancelToken?: CancelToken;
 }
 

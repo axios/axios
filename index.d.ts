@@ -65,6 +65,7 @@ export interface AxiosRequestConfig {
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
+  localAddress?: string;
 }
 
 export interface AxiosResponse<T = any>  {

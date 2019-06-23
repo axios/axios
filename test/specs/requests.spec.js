@@ -33,6 +33,19 @@ describe('requests', function () {
     });
   });
 
+  it('should throw an error if given headers are not an object', function(done) {
+    axios({
+      url: '/foo',
+      // This should works with any method
+      method: 'GET',
+      headers: 'bar'
+    }).catch(function(err) {
+      expect(err.message).toBe('Headers must be an object');
+    }).finally(function() {
+      done();
+    });
+  });
+
   it('should allow string arg as url, and config arg', function (done) {
     axios.post('/foo');
 

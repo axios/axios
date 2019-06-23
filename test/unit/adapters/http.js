@@ -313,6 +313,7 @@ describe('supports http with nodejs', function () {
         assert.fail();
       }).catch(function (err) {
         assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+      }).finally(function() {
         done();
       });
     });

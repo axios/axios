@@ -41,7 +41,6 @@ describe('requests', function () {
       headers: 'bar'
     }).catch(function(err) {
       expect(err.message).toBe('Headers must be an object');
-    }).finally(function() {
       done();
     });
   });

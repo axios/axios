@@ -76,12 +76,29 @@ export interface AxiosResponse<T = any>  {
   request?: any;
 }
 
+type AxiosErrorToJSON = () => {
+  message: string;
+  name: string;
+  // Microsoft
+  description?: string;
+  number?: number;
+  // Mozilla
+  fileName?: string;
+  lineNumber?: number;
+  columnNumber?: number;
+  stack?: string;
+  // Axios
+  config: AxiosRequestConfig;
+  code?: string;  
+}
+
 export interface AxiosError<T = any> extends Error {
   config: AxiosRequestConfig;
   code?: string;
   request?: any;
   response?: AxiosResponse<T>;
   isAxiosError: boolean;
+  toJSON: AxiosErrorToJSON;
 }
 
 export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {

@@ -7,11 +7,13 @@ typings/
 sandbox/
 test/
 bower.json
+CHANGELOG.md
 CODE_OF_CONDUCT.md
 COLLABORATOR_GUIDE.md
 CONTRIBUTING.md
 COOKBOOK.md
 ECOSYSTEM.md
+UPGRADE_GUIDE.md
 Gruntfile.js
 karma.conf.js
 webpack.*.js

@@ -1,4 +1,3 @@
-/* axios v0.19.0 | (c) 2019 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -65,9 +64,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var utils = __webpack_require__(2);
 	var bind = __webpack_require__(3);
-	var Axios = __webpack_require__(5);
-	var mergeConfig = __webpack_require__(22);
-	var defaults = __webpack_require__(11);
+	var Axios = __webpack_require__(4);
+	var mergeConfig = __webpack_require__(21);
+	var defaults = __webpack_require__(10);
 	
 	/**
 	 * Create an instance of Axios
@@ -100,15 +99,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	// Expose Cancel & CancelToken
-	axios.Cancel = __webpack_require__(23);
-	axios.CancelToken = __webpack_require__(24);
-	axios.isCancel = __webpack_require__(10);
+	axios.Cancel = __webpack_require__(22);
+	axios.CancelToken = __webpack_require__(23);
+	axios.isCancel = __webpack_require__(9);
 	
 	// Expose all/spread
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(25);
+	axios.spread = __webpack_require__(24);
 	
 	module.exports = axios;
 	
@@ -123,23 +122,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	var bind = __webpack_require__(3);
-	var isBuffer = __webpack_require__(4);
 	
 	/*global toString:true*/
 	
 	// utils is a library of generic helper functions non-specific to axios
 	
 	var toString = Object.prototype.toString;
-	
-	/**
-	 * Determine if a value is an Array
-	 *
-	 * @param {Object} val The value to test
-	 * @returns {boolean} True if value is an Array, otherwise false
-	 */
-	function isArray(val) {
-	  return toString.call(val) === '[object Array]';
-	}
 	
 	/**
 	 * Determine if a value is an ArrayBuffer
@@ -149,6 +137,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function isArrayBuffer(val) {
 	  return toString.call(val) === '[object ArrayBuffer]';
+	}
+	
+	/**
+	 * Determine if a value is a Buffer
+	 * @param {Object} val The value to test
+	 * @returns {boolean} true if value is a Buffer, otherwise false
+	 */
+	function isBuffer(val) {
+	  return val && val.constructor && typeof val.constructor.isBuffer === 'function' && val.constructor.isBuffer(val);
 	}
 	
 	/**
@@ -338,7 +335,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    obj = [obj];
 	  }
 	
-	  if (isArray(obj)) {
+	  if (Array.isArray(obj)) {
 	    // Iterate over array values
 	    for (var i = 0, l = obj.length; i < l; i++) {
 	      fn.call(null, obj[i], i, obj);
@@ -432,7 +429,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	module.exports = {
-	  isArray: isArray,
+	  isArray: Array.isArray,
 	  isArrayBuffer: isArrayBuffer,
 	  isBuffer: isBuffer,
 	  isFormData: isFormData,
@@ -475,32 +472,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports) {
-
-	/*!
-	 * Determine if an object is a Buffer
-	 *
-	 * @author   Feross Aboukhadijeh <https://feross.org>
-	 * @license  MIT
-	 */
-	
-	module.exports = function isBuffer (obj) {
-	  return obj != null && obj.constructor != null &&
-	    typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-	}
-
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var buildURL = __webpack_require__(6);
-	var InterceptorManager = __webpack_require__(7);
-	var dispatchRequest = __webpack_require__(8);
-	var mergeConfig = __webpack_require__(22);
+	var buildURL = __webpack_require__(5);
+	var InterceptorManager = __webpack_require__(6);
+	var dispatchRequest = __webpack_require__(7);
+	var mergeConfig = __webpack_require__(21);
 	
 	/**
 	 * Create a new instance of Axios
@@ -583,7 +563,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -660,7 +640,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -718,17 +698,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var transformData = __webpack_require__(9);
-	var isCancel = __webpack_require__(10);
-	var defaults = __webpack_require__(11);
-	var isAbsoluteURL = __webpack_require__(20);
-	var combineURLs = __webpack_require__(21);
+	var transformData = __webpack_require__(8);
+	var isCancel = __webpack_require__(9);
+	var defaults = __webpack_require__(10);
+	var isAbsoluteURL = __webpack_require__(19);
+	var combineURLs = __webpack_require__(20);
 	
 	/**
 	 * Throws a `Cancel` if cancellation has been requested.
@@ -810,7 +790,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -836,7 +816,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -847,13 +827,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var normalizeHeaderName = __webpack_require__(12);
+	var normalizeHeaderName = __webpack_require__(11);
 	
 	var DEFAULT_CONTENT_TYPE = {
 	  'Content-Type': 'application/x-www-form-urlencoded'
@@ -870,10 +850,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Only Node.JS has a process variable that is of [[Class]] process
 	  if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
 	    // For node use HTTP adapter
-	    adapter = __webpack_require__(13);
+	    adapter = __webpack_require__(12);
 	  } else if (typeof XMLHttpRequest !== 'undefined') {
 	    // For browsers use XHR adapter
-	    adapter = __webpack_require__(13);
+	    adapter = __webpack_require__(12);
 	  }
 	  return adapter;
 	}
@@ -951,7 +931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -969,17 +949,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var settle = __webpack_require__(14);
-	var buildURL = __webpack_require__(6);
-	var parseHeaders = __webpack_require__(17);
-	var isURLSameOrigin = __webpack_require__(18);
-	var createError = __webpack_require__(15);
+	var settle = __webpack_require__(13);
+	var buildURL = __webpack_require__(5);
+	var parseHeaders = __webpack_require__(16);
+	var isURLSameOrigin = __webpack_require__(17);
+	var createError = __webpack_require__(14);
 	
 	module.exports = function xhrAdapter(config) {
 	  return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -1071,7 +1051,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // This is only done if running in a standard browser environment.
 	    // Specifically not if we're in a web worker, or react-native.
 	    if (utils.isStandardBrowserEnv()) {
-	      var cookies = __webpack_require__(19);
+	      var cookies = __webpack_require__(18);
 	
 	      // Add xsrf header
 	      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -1149,12 +1129,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var createError = __webpack_require__(15);
+	var createError = __webpack_require__(14);
 	
 	/**
 	 * Resolve or reject a Promise based on response status.
@@ -1180,12 +1160,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var enhanceError = __webpack_require__(16);
+	var enhanceError = __webpack_require__(15);
 	
 	/**
 	 * Create an Error with the specified message, config, error code, request and response.
@@ -1204,7 +1184,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1252,7 +1232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1311,7 +1291,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1385,7 +1365,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1444,7 +1424,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1464,7 +1444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1484,7 +1464,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1541,7 +1521,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1566,12 +1546,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Cancel = __webpack_require__(23);
+	var Cancel = __webpack_require__(22);
 	
 	/**
 	 * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -1629,7 +1609,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports) {
 
 	'use strict';

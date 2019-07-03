@@ -1,0 +1,1 @@
+test\typescript\axios.ts --sourcemap --removeComments --lib es5,es2015.promise,dom --target ES5

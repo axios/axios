@@ -44,7 +44,7 @@ export interface AxiosRequestConfig {
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: object;
+  headers?: object | undefined;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: any;

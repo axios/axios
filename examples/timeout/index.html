@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>axios - timeout example</title>
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+  </head>
+  <body class="container">
+    <h1>axios custom timeout text</h1>
+
+    <script src="/axios.min.js"></script>
+    <script>
+      const axiosInst = axios.create({
+        timeout: 5000,
+        timeoutErrorMessage: 'custom timeout.'
+      });
+      axiosInst.get('/api/not/exist');
+    </script>
+  </body>
+</html>

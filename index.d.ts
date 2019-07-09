@@ -49,6 +49,7 @@ export interface AxiosRequestConfig {
   paramsSerializer?: (params: any) => string;
   data?: any;
   timeout?: number;
+  timeoutErrorMessage?: string;
   withCredentials?: boolean;
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;

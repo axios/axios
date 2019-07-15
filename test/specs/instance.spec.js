@@ -19,7 +19,8 @@ describe('instance', function () {
         'isCancel',
         'all',
         'spread',
-        'default'].indexOf(prop) > -1) {
+        'default',
+        'axiosGlobal'].indexOf(prop) > -1) {
         continue;
       }
       expect(typeof instance[prop]).toBe(typeof axios[prop]);

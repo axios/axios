@@ -40,7 +40,8 @@ const config: AxiosRequestConfig = {
     host: '127.0.0.1',
     port: 9000
   },
-  cancelToken: new axios.CancelToken((cancel: Canceler) => {})
+  cancelToken: new axios.CancelToken((cancel: Canceler) => {}),
+  useGlobalInterceptors: false,
 };
 
 const handleResponse = (response: AxiosResponse) => {
@@ -231,6 +232,7 @@ instance1.defaults.baseURL = 'https://api.example.com/';
 instance1.defaults.headers.common['Authorization'] = 'token';
 instance1.defaults.headers.post['X-FOO'] = 'bar';
 instance1.defaults.timeout = 2500;
+instance1.defaults.useGlobalInterceptors = false;
 
 // Interceptors
 

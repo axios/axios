@@ -646,6 +646,26 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should support useGlobalInterceptors option', function(done) {
+    server = http.createServer(function(req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.end(JSON.stringify({}));
+    }).listen(4444, function() {
+      var isCall = false
+      var interceptId = axios.interceptors.request.use(function (config) {
+        isCall = true
+        return config;
+      });
+      var axiosInstance = axios.create({ useGlobalInterceptors: true })
+
+      axiosInstance.get('http://localhost:4444/').then(function(res) {
+        axios.interceptors.request.eject(interceptId)
+        assert.ok(isCall, 'interceptors is not work');
+        done();
+      });
+    });
+  });
 });
 
 

@@ -65,6 +65,7 @@ export interface AxiosRequestConfig {
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
+  useGlobalInterceptors?: boolean,
 }
 
 export interface AxiosResponse<T = any>  {

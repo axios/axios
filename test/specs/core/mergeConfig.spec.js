@@ -32,13 +32,11 @@ describe('core::mergeConfig', function() {
 
   it('should not inherit request options', function() {
     var localDefaults = {
-      url: '__sample url__',
       method: '__sample method__',
       params: '__sample params__',
       data: { foo: true }
     };
     var merged = mergeConfig(localDefaults, {});
-    expect(merged.url).toEqual(undefined);
     expect(merged.method).toEqual(undefined);
     expect(merged.params).toEqual(undefined);
     expect(merged.data).toEqual(undefined);

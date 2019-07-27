@@ -543,7 +543,7 @@ You can define a custom HTTP status code error range using the `validateStatus` 
 ```js
 axios.get('/user/12345', {
   validateStatus: function (status) {
-    return status < 500; // Reject only if the status code is greater than or equal to 500
+    return status < 500; // Reject only if the status code is less than 500
   }
 })
 ```

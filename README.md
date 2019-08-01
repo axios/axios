@@ -43,6 +43,12 @@ Using bower:
 $ bower install axios
 ```
 
+Using yarn:
+
+```bash
+$ yarn add axios
+```
+
 Using cdn:
 
 ```html
@@ -66,7 +72,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });
 
@@ -153,9 +159,9 @@ axios({
 ```js
 // GET request for remote image
 axios({
-  method:'get',
-  url:'http://bit.ly/2mTM3nY',
-  responseType:'stream'
+  method: 'get',
+  url: 'http://bit.ly/2mTM3nY',
+  responseType: 'stream'
 })
   .then(function (response) {
     response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
@@ -238,7 +244,7 @@ These are the available config options for making requests. Only the `url` is re
   baseURL: 'https://some-domain.com/api/',
 
   // `transformRequest` allows changes to the request data before it is sent to the server
-  // This is only applicable for request methods 'PUT', 'POST', and 'PATCH'
+  // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
   // FormData or Stream
   // You may modify the headers object.
@@ -298,13 +304,16 @@ These are the available config options for making requests. Only the `url` is re
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing
   // `Authorization` custom headers you have set using `headers`.
+  // Please note that only HTTP Basic auth is configurable through this parameter.
+  // For Bearer tokens and such, use `Authorization` custom headers instead.
   auth: {
     username: 'janedoe',
     password: 's00pers3cret'
   },
 
   // `responseType` indicates the type of data that the server will respond with
-  // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
+  // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+  //   browser only: 'blob'
   responseType: 'json', // default
 
   // `responseEncoding` indicates encoding to use for decoding responses
@@ -639,6 +648,9 @@ axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
+
+###### NOTE
+The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has known issues with that use case (https://github.com/nodejs/node-v0.x-archive/issues/1665).
 
 ## Semver
 

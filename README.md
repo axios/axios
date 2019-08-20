@@ -286,6 +286,11 @@ These are the available config options for making requests. Only the `url` is re
   data: {
     firstName: 'Fred'
   },
+  
+  // `custom`, add cutom config for special case, such as interceptor and etc
+  custom: {
+    foo: 'bar'
+  },
 
   // `timeout` specifies the number of milliseconds before the request times out.
   // If the request takes longer than `timeout`, the request will be aborted.

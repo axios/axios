@@ -21,13 +21,15 @@ describe('core::mergeConfig', function() {
       url: '__sample url__',
       method: '__sample method__',
       params: '__sample params__',
-      data: { foo: true }
+      data: { foo: true },
+	  custom: { showProgress: true, showError: true }
     };
     var merged = mergeConfig(defaults, config);
     expect(merged.url).toEqual(config.url);
     expect(merged.method).toEqual(config.method);
     expect(merged.params).toEqual(config.params);
     expect(merged.data).toEqual(config.data);
+	expect(merged.custom).toEqual(config.custom);
   });
 
   it('should not inherit request options', function() {
@@ -35,13 +37,15 @@ describe('core::mergeConfig', function() {
       url: '__sample url__',
       method: '__sample method__',
       params: '__sample params__',
-      data: { foo: true }
+      data: { foo: true },
+	  custom: { showProgress: true, showError: true }
     };
     var merged = mergeConfig(localDefaults, {});
     expect(merged.url).toEqual(undefined);
     expect(merged.method).toEqual(undefined);
     expect(merged.params).toEqual(undefined);
     expect(merged.data).toEqual(undefined);
+	expect(merged.custom).toEqual(undefined);
   });
 
   it('should merge auth, headers, proxy with defaults', function() {

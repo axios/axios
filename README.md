@@ -500,7 +500,7 @@ axios.interceptors.response.use(function (response) {
   });
 ```
 
-If you may need to remove an interceptor later you can.
+If you need to remove an interceptor later you can.
 
 ```js
 const myInterceptor = axios.interceptors.request.use(function () {/*...*/});

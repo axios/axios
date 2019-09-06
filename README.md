@@ -413,7 +413,7 @@ The response for a request contains the following information.
 
   // `request` is the request that generated this response
   // It is the last ClientRequest instance in node.js (in redirects)
-  // and an XMLHttpRequest instance the browser
+  // and an XMLHttpRequest instance in the browser
   request: {}
 }
 ```

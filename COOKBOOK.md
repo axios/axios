@@ -1,8 +1,8 @@
 # Cookbook
 
-In an effort to keep axios as light weight as possible, and to avoid a rats nest of code for supporting every possible integration, it is often necessary to say no to feature requests. This doesn't mean that those use cases aren't legitimate, but rather that they are easily supported by augmenting axios with other libraries.
+This cookbook contains recipes for some commonly requested features.
 
-The following are the recipes for some of the commonly requested features.
+In order to keep axios as lightweight as possible, it is often necessary to say no to feature requests. Many of these use cases can be supported by augmenting axios with other libraries.
 
 ### Promise.prototype.done
 

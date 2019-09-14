@@ -21,7 +21,6 @@
   "license": "MIT",
   "ignore": [
     "**/.*",
-    "*.iml",
     "examples",
     "lib",
     "node_modules",

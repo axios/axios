@@ -1,12 +1,13 @@
-var webpack = require('webpack');
-var config = {};
+const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
+const config = {};
 
 function generateConfig(name) {
-  var uglify = name.indexOf('min') > -1;
-  var config = {
+  return {
+    mode: 'production',
     entry: './index.js',
     output: {
-      path: 'dist/',
+      path: `${__dirname}/dist`,
       filename: name + '.js',
       sourceMapFilename: name + '.map',
       library: 'axios',
@@ -15,30 +16,21 @@ function generateConfig(name) {
     node: {
       process: false
     },
-    devtool: 'source-map'
+    devtool: 'source-map',
+    optimization: {
+      minimize: name.includes('min'),
+      minimizer: [
+        // config options documented at https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+        new TerserPlugin({
+          sourceMap: true,
+        }),
+      ],
+    },
   };
-
-  config.plugins = [
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-    })
-  ];
-
-  if (uglify) {
-    config.plugins.push(
-      new webpack.optimize.UglifyJsPlugin({
-        compressor: {
-          warnings: false
-        }
-      })
-    );
-  }
-
-  return config;
 }
 
-['axios', 'axios.min'].forEach(function (key) {
-  config[key] = generateConfig(key);
+['axios', 'axios.min'].forEach(outputScript => {
+  config[outputScript] = generateConfig(outputScript);
 });
 
 module.exports = config;

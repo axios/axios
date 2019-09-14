@@ -34,7 +34,6 @@
   "devDependencies": {
     "bundlesize": "^0.17.0",
     "coveralls": "^3.0.0",
-    "es6-promise": "^4.2.4",
     "grunt": "^1.0.2",
     "grunt-banner": "^0.6.0",
     "grunt-cli": "^1.2.0",

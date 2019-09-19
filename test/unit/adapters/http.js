@@ -73,6 +73,26 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should allow passing JSON with BOM', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      var bomBuffer = Buffer.from([0xEF, 0xBB, 0xBF])
+      var jsonBuffer = Buffer.from(JSON.stringify(data));
+      res.end(Buffer.concat([bomBuffer, jsonBuffer]));
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      });
+    });
+  });
+
   it('should redirect', function (done) {
     var str = 'test response';
 

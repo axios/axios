@@ -35,3 +35,4 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) — Axios adapter that allows to easily mock requests
 * [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
 * [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlined integration testing with Mocha & Axios
+* [axios-mocker](https://github.com/eshengsky/axios-mocker) - The most convenient tool to mock requests for axios, with built-in Chrome extension support.

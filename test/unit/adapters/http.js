@@ -282,7 +282,7 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support streams', function (done) {
+  it('should support response type stream', function (done) {
     server = http.createServer(function (req, res) {
       req.pipe(res);
     }).listen(4444, function () {
@@ -300,6 +300,64 @@ describe('supports http with nodejs', function () {
             done();
           });
         });
+    });
+  });
+
+  it('should support response type text', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/',{
+         responseType: 'text'
+      }).then(function (res) {
+        assert.equal(typeof res.data, 'string');
+        done();
+      });
+    });
+  });
+
+  it('should support response type empty', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/',{
+         responseType: ''
+      }).then(function (res) {
+        assert.equal(typeof res.data, 'string');
+        done();
+      });
+    });
+  });
+
+  it('should support response type arraybuffer', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/',{
+         responseType: 'arraybuffer'
+      }).then(function (res) {
+        assert.equal(typeof res.data, 'object');
+        assert.equal(Object.prototype.toString.call(res.data), '[object Uint8Array]');
+        done();
+      });
     });
   });
 

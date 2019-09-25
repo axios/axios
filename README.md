@@ -296,7 +296,7 @@ These are the available config options for making requests. Only the `url` is re
     firstName: 'Fred'
   },
   
-  // sintaxe alternative to send data into the body
+  // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
   data: 'Country=Brasil&City=Belo Horizonte',

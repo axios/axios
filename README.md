@@ -57,6 +57,15 @@ Using cdn:
 
 ## Example
 
+### note: CommonJS usage
+In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
+
+```js
+const axios = require('axios').default;
+
+// axios.<method> will now provide autocomplete and parameter typings
+```
+
 Performing a `GET` request
 
 ```js
@@ -88,7 +97,7 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });  
 
@@ -286,6 +295,11 @@ These are the available config options for making requests. Only the `url` is re
   data: {
     firstName: 'Fred'
   },
+  
+  // syntax alternative to send data into the body
+  // method post
+  // only the value is sent, not the key
+  data: 'Country=Brasil&City=Belo Horizonte',
 
   // `timeout` specifies the number of milliseconds before the request times out.
   // If the request takes longer than `timeout`, the request will be aborted.
@@ -414,7 +428,7 @@ The response for a request contains the following information.
 
   // `request` is the request that generated this response
   // It is the last ClientRequest instance in node.js (in redirects)
-  // and an XMLHttpRequest instance the browser
+  // and an XMLHttpRequest instance in the browser
   request: {}
 }
 ```
@@ -493,15 +507,17 @@ axios.interceptors.request.use(function (config) {
 
 // Add a response interceptor
 axios.interceptors.response.use(function (response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
     return response;
   }, function (error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
     return Promise.reject(error);
   });
 ```
 
-If you may need to remove an interceptor later you can.
+If you need to remove an interceptor later you can.
 
 ```js
 const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
@@ -539,7 +555,7 @@ axios.get('/user/12345')
   });
 ```
 
-You can define a custom HTTP status code error range using the `validateStatus` config option.
+Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
 
 ```js
 axios.get('/user/12345', {
@@ -682,4 +698,4 @@ axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/
 
 ## License
 
-MIT
+[MIT](LICENSE)

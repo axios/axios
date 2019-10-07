@@ -8,4 +8,8 @@ describe('helpers::isURLSameOrigin', function () {
   it('should detect different origin', function () {
     expect(isURLSameOrigin('https://github.com/axios/axios')).toEqual(false);
   });
+
+  it('should detect xss', function () {
+    expect(isURLSameOrigin('https://github.com/axios/axios?<script>alert("hello")</script>')).toEqual(false)
+  })
 });

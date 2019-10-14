@@ -11,6 +11,6 @@ describe('helpers::isURLSameOrigin', function () {
 
   it('should detect XSS scripts on a same origin request', function () {
     expect(() => { isURLSameOrigin('https://github.com/axios/axios?<script>alert("hello")</script>'); })
-      .toThrowError(Error, 'URL contains XSS script injection attempt')
+      .toThrowError(Error, 'URL contains XSS injection attempt')
   })
 });

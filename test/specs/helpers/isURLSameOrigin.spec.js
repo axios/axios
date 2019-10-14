@@ -9,7 +9,8 @@ describe('helpers::isURLSameOrigin', function () {
     expect(isURLSameOrigin('https://github.com/axios/axios')).toEqual(false);
   });
 
-  it('should detect xss', function () {
-    expect(isURLSameOrigin('https://github.com/axios/axios?<script>alert("hello")</script>')).toEqual(false)
+  it('should detect XSS scripts on a same origin request', function () {
+    expect(() => { isURLSameOrigin('https://github.com/axios/axios?<script>alert("hello")</script>'); })
+      .toThrowError(Error, 'URL contains XSS script injection attempt')
   })
 });

@@ -42,6 +42,7 @@ Using bower:
 
 ```bash
 $ bower install axios
+$ bower install axios
 ```
 
 Using yarn:

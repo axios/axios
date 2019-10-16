@@ -257,6 +257,30 @@ describe('requests', function () {
     });
   });
 
+  it('should not modify the config url with relative baseURL', function (done) {
+    var config;
+
+    axios.get('/foo', {
+        baseURL: '/api'
+    }).catch(function (error) {
+        config = error.config;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 404,
+        statusText: 'NOT FOUND',
+        responseText: 'Resource not found'
+      });
+
+      setTimeout(function () {
+        expect(config.baseURL).toEqual('/api');
+        expect(config.url).toEqual('/foo');
+        done();
+      }, 100);
+    });
+  });
+
   it('should allow overriding Content-Type header case-insensitive', function (done) {
     var response;
     var contentType = 'application/vnd.myapp.type+json';

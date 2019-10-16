@@ -565,6 +565,15 @@ axios.get('/user/12345', {
 })
 ```
 
+Using `toJSON` you get an object with more information about the HTTP error.
+
+```js
+axios.get('/user/12345')
+  .catch(function (error) {
+    console.log(error.toJSON());
+  });
+```
+
 ## Cancellation
 
 You can cancel a request using a *cancel token*.

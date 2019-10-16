@@ -1,13 +1,11 @@
+services:
+  - xvfb
 language: node_js
 node_js:
   - node
 email:
   on_failure: change
   on_success: never
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
 after_success:
 - npm run coveralls
 env:

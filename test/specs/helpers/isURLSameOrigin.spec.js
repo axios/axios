@@ -13,5 +13,5 @@ describe('helpers::isURLSameOrigin', function () {
     expect(function() {
       isURLSameOrigin('https://github.com/axios/axios?<script>alert("hello")</script>');
     }).toThrowError(Error, 'URL contains XSS injection attempt')
-  })
+  });  
 });

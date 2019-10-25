@@ -333,3 +333,13 @@ axios.get('/user', {
 });
 
 source.cancel('Operation has been canceled.');
+
+// Timeout
+
+axios.get('/user', {
+  timeout: 5000
+}).catch((thrown: AxiosError | Cancel) => {
+  if (axios.isTimeout(thrown)) {
+    console.log('request timed out', thrown.message);
+  }
+});

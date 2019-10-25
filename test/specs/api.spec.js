@@ -41,6 +41,10 @@ describe('static api', function () {
     expect(typeof axios.CancelToken).toEqual('function');
     expect(typeof axios.isCancel).toEqual('function');
   });
+
+  it('should have isTimeout property', function () {
+    expect(typeof axios.isTimeout).toEqual('function');
+  });
 });
 
 describe('instance api', function () {

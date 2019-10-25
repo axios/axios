@@ -488,6 +488,12 @@ instance.defaults.timeout = 2500;
 // Override timeout for this request as it's known to take a long time
 instance.get('/longRequest', {
   timeout: 5000
+}).catch(function (thrown) {
+  if (axios.isTimeout(thrown)) {
+    console.log('Request timed out', thrown.message);
+  } else {
+    // handle error
+  }
 });
 ```
 

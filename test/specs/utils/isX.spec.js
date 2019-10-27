@@ -2,6 +2,11 @@ var utils = require('../../../lib/utils');
 var Stream = require('stream');
 
 describe('utils::isX', function () {
+  it('should validate Array', function () {
+    expect(utils.isArray([])).toEqual(true);
+    expect(utils.isArray({length: 5})).toEqual(false);
+  });
+
   it('should validate ArrayBuffer', function () {
     expect(utils.isArrayBuffer(new ArrayBuffer(2))).toEqual(true);
     expect(utils.isArrayBuffer({})).toEqual(false);

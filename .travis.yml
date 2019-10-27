@@ -2,7 +2,7 @@ services:
   - xvfb
 language: node_js
 node_js:
-  - node
+  - 10
 email:
   on_failure: change
   on_success: never

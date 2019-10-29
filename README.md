@@ -397,6 +397,17 @@ These are the available config options for making requests. Only the `url` is re
     }
   },
 
+  // `checkServerIdentity` defines a hook to check the server's SSL certificate properties (NodeJS only)
+  checkServerIdentity: function (host, cert) {
+    // Pin the exact certificate fingerprint
+    if (cert.fingerprint !== 'E7:EA:A9:74:E1:A1:FF:FD:A8:FB:59:45:1A:AE:92:32:6B:94:23:3E') {
+      const msg = 'Certificate verification error: ' +
+        `The certificate of '${cert.subject.CN}' ` +
+        'does not match our pinned fingerprint';
+      return new Error(msg);
+    }
+  }
+
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {

@@ -682,8 +682,33 @@ describe('supports http with nodejs', function () {
         baseURL: 'https://localhost:4343/',
         checkServerIdentity: function (host, cert) {
           assert.equal(cert.fingerprint, 'E7:EA:A9:74:E1:A1:FF:FD:A8:FB:59:45:1A:AE:92:32:6B:94:23:3E');
-          done();
         }
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'https://localhost:4343/');
+        assert.equal(res.config.url, '/');
+        done();
+      });
+    });
+  });
+
+  it('should check server identity and reject', function (done) {
+    server2 = https.createServer({
+        key: fs.readFileSync(path.join(__dirname, 'certs', 'privkey.pem')),
+        cert: fs.readFileSync(path.join(__dirname, 'certs', 'fullchain.pem'))
+      },
+      function (req, res) {
+        res.end();
+      }).listen(4343, function () {
+      axios.get('/', {
+        baseURL: 'https://localhost:4343/',
+        checkServerIdentity: function (host, cert) {
+          return new Error('You shall not pass (host: ' + host + ', fingerprint: ' + cert.fingerprint + ')');
+        }
+      }).catch(function (err) {
+        assert.equal(
+          err.message, 'You shall not pass' +
+          ' (host: localhost, fingerprint: E7:EA:A9:74:E1:A1:FF:FD:A8:FB:59:45:1A:AE:92:32:6B:94:23:3E)');
+        done();
       });
     });
   });

@@ -1,11 +1,16 @@
 var axios = require('../../../index');
 var http = require('http');
+var https = require('https');
 var net = require('net');
 var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
-var server, proxy;
+var path = require('path');
+require('ssl-root-cas')
+  .inject()
+  .addFile(path.join(__dirname, 'certs', 'private-root-ca.cert.pem'));
+var server, server2, proxy;
 
 describe('supports http with nodejs', function () {
 
@@ -13,6 +18,10 @@ describe('supports http with nodejs', function () {
     if (server) {
       server.close();
       server = null;
+    }
+    if (server2) {
+      server2.close();
+      server2 = null;
     }
     if (proxy) {
       proxy.close()
@@ -657,6 +666,24 @@ describe('supports http with nodejs', function () {
         assert.equal(res.config.baseURL, 'http://localhost:4444/');
         assert.equal(res.config.url, '/foo');
         done();
+      });
+    });
+  });
+
+  it('should check server identity', function (done) {
+    server2 = https.createServer({
+        key: fs.readFileSync(path.join(__dirname, 'certs', 'privkey.pem')),
+        cert: fs.readFileSync(path.join(__dirname, 'certs', 'fullchain.pem'))
+      },
+      function (req, res) {
+        res.end();
+      }).listen(4343, function () {
+      axios.get('/', {
+        baseURL: 'https://localhost:4343/',
+        checkServerIdentity: function (host, cert) {
+          assert.equal(cert.fingerprint, 'E7:EA:A9:74:E1:A1:FF:FD:A8:FB:59:45:1A:AE:92:32:6B:94:23:3E');
+          done();
+        }
       });
     });
   });

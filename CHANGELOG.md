@@ -4,6 +4,7 @@
 
 Fixes and Functionality:
 
+- Added support for no_proxy env variable ([#434](https://github.com/axios/axios/pull/1693/files)) - Chance Dickson
 - Unzip response body only for statuses != 204 ([#1129](https://github.com/axios/axios/pull/1129)) - drawski
 - Destroy stream on exceeding maxContentLength (fixes [#1098](https://github.com/axios/axios/issues/1098)) ([#1485](https://github.com/axios/axios/pull/1485)) - Gadzhi Gadzhiev
 - Makes Axios error generic to use AxiosResponse ([#1738](https://github.com/axios/axios/pull/1738)) - Suman Lama

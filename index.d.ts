@@ -29,6 +29,8 @@ export type Method =
   | 'post' | 'POST'
   | 'put' | 'PUT'
   | 'patch' | 'PATCH'
+  | 'link' | 'LINK'
+  | 'unlink' | 'UNLINK'
 
 export type ResponseType = 
   | 'arraybuffer' 

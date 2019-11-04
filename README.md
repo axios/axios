@@ -97,7 +97,7 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });  
 
@@ -296,7 +296,7 @@ These are the available config options for making requests. Only the `url` is re
     firstName: 'Fred'
   },
   
-  // sintaxe alternative to send data into the body
+  // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
   data: 'Country=Brasil&City=Belo Horizonte',
@@ -562,6 +562,15 @@ axios.get('/user/12345', {
     return status < 500; // Reject only if the status code is greater than or equal to 500
   }
 })
+```
+
+Using `toJSON` you get an object with more information about the HTTP error.
+
+```js
+axios.get('/user/12345')
+  .catch(function (error) {
+    console.log(error.toJSON());
+  });
 ```
 
 ## Cancellation

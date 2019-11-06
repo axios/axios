@@ -1,25 +1,36 @@
 # Changelog
 
+### Next version (TBD)
+
+Fixes and Functionallity:
+
+- Add typescript HTTP method definition for LINK and UNLINK ([#2440](https://github.com/axios/axios/pull/2444)) - Marlon Barcarol
+
 ### 0.19.0 (May 30, 2019)
 
 Fixes and Functionality:
 
+- Added support for no_proxy env variable ([#434](https://github.com/axios/axios/pull/1693/files)) - Chance Dickson
 - Unzip response body only for statuses != 204 ([#1129](https://github.com/axios/axios/pull/1129)) - drawski
-- Destroy stream on exceeding maxContentLength (fixes [#1098](https://github.com/axios/axios/issue/1098)) ([#1485](https://github.com/axios/axios/pull/1485)) - Gadzhi Gadzhiev
+- Destroy stream on exceeding maxContentLength (fixes [#1098](https://github.com/axios/axios/issues/1098)) ([#1485](https://github.com/axios/axios/pull/1485)) - Gadzhi Gadzhiev
 - Makes Axios error generic to use AxiosResponse ([#1738](https://github.com/axios/axios/pull/1738)) - Suman Lama
 - Fixing Mocha tests by locking follow-redirects version to 1.5.10 ([#1993](https://github.com/axios/axios/pull/1993)) - grumblerchester
 - Allow uppercase methods in typings. ([#1781](https://github.com/axios/axios/pull/1781)) - Ken Powers
-- Fixing .eslintrc without extension ([#1789](https://github.com/axios/axios/pull/1789)) - Manoel
-- Consistent coding style ([#1787](https://github.com/axios/axios/pull/1787)) - Ali Servet Donmez
 - Fixing building url with hash mark ([#1771](https://github.com/axios/axios/pull/1771)) - Anatoly Ryabov
 - This commit fix building url with hash map (fragment identifier) when parameters are present: they must not be added after `#`, because client cut everything after `#`
 - Preserve HTTP method when following redirect ([#1758](https://github.com/axios/axios/pull/1758)) - Rikki Gibson
 - Add `getUri` signature to TypeScript definition. ([#1736](https://github.com/axios/axios/pull/1736)) - Alexander Trauzzi
 - Adding isAxiosError flag to errors thrown by axios ([#1419](https://github.com/axios/axios/pull/1419)) - Ayush Gupta
+
+Internal:
+
+- Fixing .eslintrc without extension ([#1789](https://github.com/axios/axios/pull/1789)) - Manoel
 - Fix failing SauceLabs tests by updating configuration - Emily Morehouse
+- Add issue templates - Emily Morehouse
 
 Documentation:
 
+- Consistent coding style in README ([#1787](https://github.com/axios/axios/pull/1787)) - Ali Servet Donmez
 - Add information about auth parameter to README ([#2166](https://github.com/axios/axios/pull/2166)) - xlaguna
 - Add DELETE to list of methods that allow data as a config option ([#2169](https://github.com/axios/axios/pull/2169)) - Daniela Borges Matos de Carvalho
 - Update ECOSYSTEM.md - Add Axios Endpoints ([#2176](https://github.com/axios/axios/pull/2176)) - Renan
@@ -30,7 +41,6 @@ Documentation:
 - Clarify what values responseType can have in Node ([#2121](https://github.com/axios/axios/pull/2121)) - Tyler Breisacher
 - docs(ECOSYSTEM): add axios-api-versioning ([#2020](https://github.com/axios/axios/pull/2020)) - Weffe
 - It seems that `responseType: 'blob'` doesn't actually work in Node (when I tried using it, response.data was a string, not a Blob, since Node doesn't have Blobs), so this clarifies that this option should only be used in the browser
-- Add issue templates - Emily Morehouse
 - Update README.md. - Add Querystring library note ([#1896](https://github.com/axios/axios/pull/1896)) - Dmitriy Eroshenko
 - Add react-hooks-axios to Libraries section of ECOSYSTEM.md ([#1925](https://github.com/axios/axios/pull/1925)) - Cody Chan
 - Clarify in README that default timeout is 0 (no timeout) ([#1750](https://github.com/axios/axios/pull/1750)) - Ben Standefer

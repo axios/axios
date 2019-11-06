@@ -1,6 +1,6 @@
 # Changelog
 
-### Next version (TBD)
+### 0.19.1 (Nov 5, 2019)
 
 Fixes and Functionallity:
 - Adding options typings (#2341)[https://github.com/axios/axios/pull/2341]

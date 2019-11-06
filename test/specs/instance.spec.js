@@ -81,6 +81,12 @@ describe('instance', function () {
     expect(typeof instance.defaults.headers.common, 'object');
   });
 
+  it('should have version', function () {
+    var instance = axios.create();
+
+    expect(typeof instance.version, 'string');
+  });
+
   it('should have interceptors on the instance', function (done) {
     axios.interceptors.request.use(function (config) {
       config.foo = true;

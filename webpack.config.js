@@ -12,6 +12,12 @@ function generateConfig(name) {
       library: 'axios',
       libraryTarget: 'umd'
     },
+    module: {
+      loaders: [{
+        test: /\.json$/,
+        loaders: ['json-loader']
+      }]
+    },
     node: {
       process: false
     },

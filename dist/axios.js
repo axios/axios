@@ -1,4 +1,3 @@
-/* axios v0.19.0 | (c) 2019 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -66,7 +65,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var utils = __webpack_require__(2);
 	var bind = __webpack_require__(3);
 	var Axios = __webpack_require__(5);
-	var mergeConfig = __webpack_require__(22);
+	var mergeConfig = __webpack_require__(24);
 	var defaults = __webpack_require__(11);
 	
 	/**
@@ -100,15 +99,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	// Expose Cancel & CancelToken
-	axios.Cancel = __webpack_require__(23);
-	axios.CancelToken = __webpack_require__(24);
+	axios.Cancel = __webpack_require__(25);
+	axios.CancelToken = __webpack_require__(26);
 	axios.isCancel = __webpack_require__(10);
 	
 	// Expose all/spread
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(25);
+	axios.spread = __webpack_require__(27);
 	
 	module.exports = axios;
 	
@@ -500,7 +499,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var buildURL = __webpack_require__(6);
 	var InterceptorManager = __webpack_require__(7);
 	var dispatchRequest = __webpack_require__(8);
-	var mergeConfig = __webpack_require__(22);
+	var mergeConfig = __webpack_require__(24);
 	
 	/**
 	 * Create a new instance of Axios
@@ -531,7 +530,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  config = mergeConfig(this.defaults, config);
-	  config.method = config.method ? config.method.toLowerCase() : 'get';
+	
+	  // Set config.method
+	  if (config.method) {
+	    config.method = config.method.toLowerCase();
+	  } else if (this.defaults.method) {
+	    config.method = this.defaults.method.toLowerCase();
+	  } else {
+	    config.method = 'get';
+	  }
 	
 	  // Hook up interceptors middleware
 	  var chain = [dispatchRequest, undefined];
@@ -727,8 +734,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var transformData = __webpack_require__(9);
 	var isCancel = __webpack_require__(10);
 	var defaults = __webpack_require__(11);
-	var isAbsoluteURL = __webpack_require__(20);
-	var combineURLs = __webpack_require__(21);
 	
 	/**
 	 * Throws a `Cancel` if cancellation has been requested.
@@ -747,11 +752,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	module.exports = function dispatchRequest(config) {
 	  throwIfCancellationRequested(config);
-	
-	  // Support baseURL config
-	  if (config.baseURL && !isAbsoluteURL(config.url)) {
-	    config.url = combineURLs(config.baseURL, config.url);
-	  }
 	
 	  // Ensure headers exist
 	  config.headers = config.headers || {};
@@ -855,6 +855,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var utils = __webpack_require__(2);
 	var normalizeHeaderName = __webpack_require__(12);
 	
+	var defaults = {};
+	
 	var DEFAULT_CONTENT_TYPE = {
 	  'Content-Type': 'application/x-www-form-urlencoded'
 	};
@@ -865,20 +867,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 	
+	/*
+	 * Returns a different adapter based on the environment the app is running
+	 * On browsers uses an XHR adapter
+	 * On a node app uses HTTP adapter
+	 */
 	function getDefaultAdapter() {
 	  var adapter;
-	  // Only Node.JS has a process variable that is of [[Class]] process
-	  if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
-	    // For node use HTTP adapter
+	  if (typeof XMLHttpRequest !== 'undefined') {
 	    adapter = __webpack_require__(13);
-	  } else if (typeof XMLHttpRequest !== 'undefined') {
-	    // For browsers use XHR adapter
-	    adapter = __webpack_require__(13);
+	  } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
+	    adapter = getNodeAdapter();
 	  }
 	  return adapter;
 	}
 	
-	var defaults = {
+	function getNodeAdapter() {
+	  if (defaults.experimental_http2) {
+	    adapter = __webpack_require__(13);
+	  } else {
+	    adapter = __webpack_require__(13);
+	  }
+	}
+	
+	defaults = utils.merge(defaults, {
 	  adapter: getDefaultAdapter(),
 	
 	  transformRequest: [function transformRequest(data, headers) {
@@ -931,7 +943,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  validateStatus: function validateStatus(status) {
 	    return status >= 200 && status < 300;
 	  }
-	};
+	});
 	
 	defaults.headers = {
 	  common: {
@@ -977,8 +989,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var utils = __webpack_require__(2);
 	var settle = __webpack_require__(14);
 	var buildURL = __webpack_require__(6);
-	var parseHeaders = __webpack_require__(17);
-	var isURLSameOrigin = __webpack_require__(18);
+	var buildFullPath = __webpack_require__(17);
+	var parseHeaders = __webpack_require__(20);
+	var isURLSameOrigin = __webpack_require__(21);
 	var createError = __webpack_require__(15);
 	
 	module.exports = function xhrAdapter(config) {
@@ -999,7 +1012,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
 	    }
 	
-	    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
+	    var fullPath = buildFullPath(config.baseURL, config.url);
+	    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
 	
 	    // Set the request timeout in MS
 	    request.timeout = config.timeout;
@@ -1060,7 +1074,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Handle timeout
 	    request.ontimeout = function handleTimeout() {
-	      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED',
+	      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+	      if (config.timeoutErrorMessage) {
+	        timeoutErrorMessage = config.timeoutErrorMessage;
+	      }
+	      reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
 	        request));
 	
 	      // Clean up request
@@ -1071,10 +1089,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // This is only done if running in a standard browser environment.
 	    // Specifically not if we're in a web worker, or react-native.
 	    if (utils.isStandardBrowserEnv()) {
-	      var cookies = __webpack_require__(19);
+	      var cookies = __webpack_require__(23);
 	
 	      // Add xsrf header
-	      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
+	      var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
 	        cookies.read(config.xsrfCookieName) :
 	        undefined;
 	
@@ -1257,6 +1275,72 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
+	var isAbsoluteURL = __webpack_require__(18);
+	var combineURLs = __webpack_require__(19);
+	
+	/**
+	 * Creates a new URL by combining the baseURL with the requestedURL,
+	 * only when the requestedURL is not already an absolute URL.
+	 * If the requestURL is absolute, this function returns the requestedURL untouched.
+	 *
+	 * @param {string} baseURL The base URL
+	 * @param {string} requestedURL Absolute or relative URL to combine
+	 * @returns {string} The combined full path
+	 */
+	module.exports = function buildFullPath(baseURL, requestedURL) {
+	  if (baseURL && !isAbsoluteURL(requestedURL)) {
+	    return combineURLs(baseURL, requestedURL);
+	  }
+	  return requestedURL;
+	};
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Determines whether the specified URL is absolute
+	 *
+	 * @param {string} url The URL to test
+	 * @returns {boolean} True if the specified URL is absolute, otherwise false
+	 */
+	module.exports = function isAbsoluteURL(url) {
+	  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+	  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+	  // by any combination of letters, digits, plus, period, or hyphen.
+	  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
+	};
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Creates a new URL by combining the specified URLs
+	 *
+	 * @param {string} baseURL The base URL
+	 * @param {string} relativeURL The relative URL
+	 * @returns {string} The combined URL
+	 */
+	module.exports = function combineURLs(baseURL, relativeURL) {
+	  return relativeURL
+	    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+	    : baseURL;
+	};
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	var utils = __webpack_require__(2);
 	
 	// Headers whose duplicates are ignored by node
@@ -1311,12 +1395,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
+	var isValidXss = __webpack_require__(22);
 	
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -1336,6 +1421,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    */
 	      function resolveURL(url) {
 	        var href = url;
+	
+	        if (isValidXss(url)) {
+	          throw new Error('URL contains XSS injection attempt');
+	        }
 	
 	        if (msie) {
 	        // IE needs attribute set twice to normalize properties
@@ -1385,7 +1474,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 19 */
+/* 22 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function isValidXss(requestURL) {
+	  var xssRegex = /(\b)(on\S+)(\s*)=|javascript|(<\s*)(\/*)script/gi;
+	  return xssRegex.test(requestURL);
+	};
+
+
+/***/ }),
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1444,47 +1545,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 20 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	/**
-	 * Determines whether the specified URL is absolute
-	 *
-	 * @param {string} url The URL to test
-	 * @returns {boolean} True if the specified URL is absolute, otherwise false
-	 */
-	module.exports = function isAbsoluteURL(url) {
-	  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
-	  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
-	  // by any combination of letters, digits, plus, period, or hyphen.
-	  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
-	};
-
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	/**
-	 * Creates a new URL by combining the specified URLs
-	 *
-	 * @param {string} baseURL The base URL
-	 * @param {string} relativeURL The relative URL
-	 * @returns {string} The combined URL
-	 */
-	module.exports = function combineURLs(baseURL, relativeURL) {
-	  return relativeURL
-	    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
-	    : baseURL;
-	};
-
-
-/***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1504,13 +1565,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  config2 = config2 || {};
 	  var config = {};
 	
-	  utils.forEach(['url', 'method', 'params', 'data'], function valueFromConfig2(prop) {
+	  var valueFromConfig2Keys = ['url', 'method', 'params', 'data'];
+	  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy'];
+	  var defaultToConfig2Keys = [
+	    'baseURL', 'url', 'transformRequest', 'transformResponse', 'paramsSerializer',
+	    'timeout', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
+	    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress',
+	    'maxContentLength', 'validateStatus', 'maxRedirects', 'httpAgent',
+	    'httpsAgent', 'cancelToken', 'socketPath'
+	  ];
+	
+	  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {
 	    if (typeof config2[prop] !== 'undefined') {
 	      config[prop] = config2[prop];
 	    }
 	  });
 	
-	  utils.forEach(['headers', 'auth', 'proxy'], function mergeDeepProperties(prop) {
+	  utils.forEach(mergeDeepPropertiesKeys, function mergeDeepProperties(prop) {
 	    if (utils.isObject(config2[prop])) {
 	      config[prop] = utils.deepMerge(config1[prop], config2[prop]);
 	    } else if (typeof config2[prop] !== 'undefined') {
@@ -1522,13 +1593,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  });
 	
-	  utils.forEach([
-	    'baseURL', 'transformRequest', 'transformResponse', 'paramsSerializer',
-	    'timeout', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
-	    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'maxContentLength',
-	    'validateStatus', 'maxRedirects', 'httpAgent', 'httpsAgent', 'cancelToken',
-	    'socketPath'
-	  ], function defaultToConfig2(prop) {
+	  utils.forEach(defaultToConfig2Keys, function defaultToConfig2(prop) {
+	    if (typeof config2[prop] !== 'undefined') {
+	      config[prop] = config2[prop];
+	    } else if (typeof config1[prop] !== 'undefined') {
+	      config[prop] = config1[prop];
+	    }
+	  });
+	
+	  var axiosKeys = valueFromConfig2Keys
+	    .concat(mergeDeepPropertiesKeys)
+	    .concat(defaultToConfig2Keys);
+	
+	  var otherKeys = Object
+	    .keys(config2)
+	    .filter(function filterAxiosKeys(key) {
+	      return axiosKeys.indexOf(key) === -1;
+	    });
+	
+	  utils.forEach(otherKeys, function otherKeysDefaultToConfig2(prop) {
 	    if (typeof config2[prop] !== 'undefined') {
 	      config[prop] = config2[prop];
 	    } else if (typeof config1[prop] !== 'undefined') {
@@ -1541,7 +1624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1566,12 +1649,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Cancel = __webpack_require__(23);
+	var Cancel = __webpack_require__(25);
 	
 	/**
 	 * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -1629,7 +1712,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports) {
 
 	'use strict';

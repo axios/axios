@@ -8,6 +8,18 @@ const server = http2.createSecureServer({
 server.on('error', (err) => console.error(err));
 
 server.on('stream', (stream, headers) => {
+  console.log(headers);
+
+  let body = ''
+  stream.on('data', (chunk) => {
+    console.log('CHUNK');
+    body += chunk;
+  })
+
+  stream.on('end', () => {
+    console.log('body', JSON.parse(body));
+  })
+
   // stream is a Duplex
   stream.respond({
     'content-type': 'text/html',

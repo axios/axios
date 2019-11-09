@@ -5,6 +5,7 @@
 Fixes and Functionallity:
 
 - Add typescript HTTP method definition for LINK and UNLINK ([#2440](https://github.com/axios/axios/pull/2444)) - Marlon Barcarol
+- Add CheckServerIdentity to request config options ([#2498](https://github.com/axios/axios/pull/2498)) - Annihil
 
 ### 0.19.0 (May 30, 2019)
 

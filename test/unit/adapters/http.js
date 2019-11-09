@@ -7,12 +7,15 @@ var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
-require('ssl-root-cas')
-  .inject()
-  .addFile(path.join(__dirname, 'certs', 'private-root-ca.cert.pem'));
 var server, server2, proxy;
 
 describe('supports http with nodejs', function () {
+
+  beforeEach(function () {
+    var caPath = path.join(__dirname, 'certs', 'private-root-ca.cert.pem');
+    var caBuf = fs.readFileSync(caPath);
+    https.globalAgent.options.ca = [caBuf];
+  });
 
   afterEach(function () {
     if (server) {

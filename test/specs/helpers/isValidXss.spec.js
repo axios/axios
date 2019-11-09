@@ -12,6 +12,7 @@ describe('helpers::isValidXss', function () {
   });
 
   it('should not detect non script tags', function() {
+    expect(isValidXss("/one/?foo=bar")).toBe(false);
     expect(isValidXss("<safe> tags")).toBe(false);
     expect(isValidXss("<safetag>")).toBe(false);
     expect(isValidXss(">>> safe <<<")).toBe(false);

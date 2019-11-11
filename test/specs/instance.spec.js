@@ -19,7 +19,8 @@ describe('instance', function () {
         'isCancel',
         'all',
         'spread',
-        'default'].indexOf(prop) > -1) {
+        'default',
+        'version'].indexOf(prop) > -1) {
         continue;
       }
       expect(typeof instance[prop]).toBe(typeof axios[prop]);
@@ -79,12 +80,6 @@ describe('instance', function () {
 
     expect(typeof instance.defaults.headers, 'object');
     expect(typeof instance.defaults.headers.common, 'object');
-  });
-
-  it('should have version', function () {
-    var instance = axios.create();
-
-    expect(typeof instance.version, 'string');
   });
 
   it('should have interceptors on the instance', function (done) {

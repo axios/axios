@@ -194,16 +194,6 @@ module.exports = function(config) {
     webpack: {
       cache: true,
       devtool: 'inline-source-map',
-      // Disable code coverage, as it's breaking CI
-      // module: {
-      //   postLoaders: [
-      //     {
-      //       test: /\.js$/,
-      //       exclude: /(node_modules|test)/,
-      //       loader: 'istanbul-instrumenter'
-      //     }
-      //   ]
-      // },
       module: {
         loaders: [{
           test: /\.json$/,

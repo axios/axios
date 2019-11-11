@@ -90,3 +90,6 @@ setupBasicAuthTest = function setupBasicAuthTest() {
     });
   });
 };
+
+// Is this an old version of IE that lacks standard objects like DataView, ArrayBuffer, FormData, etc.
+isOldIE = /MSIE (8|9)\.0/.test(navigator.userAgent);

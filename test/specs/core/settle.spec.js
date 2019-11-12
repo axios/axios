@@ -22,15 +22,39 @@ describe('core::settle', function() {
     expect(reject).not.toHaveBeenCalled();
   });
 
-  it('should resolve promise if validateStatus is not set', function() {
+  it('should resolve promise if validateStatus set null', function() {
     var response = {
       status: 500,
       config: {
+        validateStatus: null
       }
     };
     settle(resolve, reject, response);
     expect(resolve).toHaveBeenCalledWith(response);
     expect(reject).not.toHaveBeenCalled();
+  });
+
+  it('should reject promise if validateStatus is not set', function() {
+    var req = {
+      path: '/foo'
+    };
+    var response = {
+      status: 500,
+      config: {
+      },
+      request: req
+    };
+    settle(resolve, reject, response);
+    expect(resolve).not.toHaveBeenCalled();
+    expect(reject).toHaveBeenCalled();
+    var reason = reject.calls.first().args[0];
+    expect(reason instanceof Error).toBe(true);
+    expect(reason.config).toBe(response.config);
+    expect(reason.request).toBe(req);
+    expect(reason.response).toBe(response);
+    expect(reason.isAxiosError).toBe(true);
+    expect(typeof reason.toJSON).toEqual('function');
+    expect(reason.toJSON().message).toBe('Request failed with status code 500');
   });
 
   it('should resolve promise if validateStatus returns true', function() {
@@ -65,10 +89,12 @@ describe('core::settle', function() {
     expect(reject).toHaveBeenCalled();
     var reason = reject.calls.first().args[0];
     expect(reason instanceof Error).toBe(true);
-    expect(reason.message).toBe('Request failed with status code 500');
     expect(reason.config).toBe(response.config);
     expect(reason.request).toBe(req);
     expect(reason.response).toBe(response);
+    expect(reason.isAxiosError).toBe(true);
+    expect(typeof reason.toJSON).toEqual('function');
+    expect(reason.toJSON().message).toBe('Request failed with status code 500');
   });
 
   it('should pass status to validateStatus', function() {

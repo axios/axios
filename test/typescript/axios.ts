@@ -191,7 +191,7 @@ axios.request<User, string>({
   .then(handleStringResponse)
   .catch(handleError);
 
-// Instances
+// Instances   
 
 const instance1: AxiosInstance = axios.create();
 const instance2: AxiosInstance = axios.create(config);

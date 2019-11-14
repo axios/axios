@@ -140,6 +140,7 @@ export interface AxiosInstance {
 
 export interface AxiosStatic extends AxiosInstance {
   create(config?: AxiosRequestConfig): AxiosInstance;
+  extend<T extends Object = {}>(config?: T): void;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   isCancel(value: any): boolean;

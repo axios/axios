@@ -31,7 +31,7 @@ Internal:
 - Fix cancellation error on build master. #2290 #2207 (#2407)[https://github.com/axios/axios/pull/2407]
 
 Documentation:
-
+- Fix badge, use master branch (#2538)[https://github.com/axios/axios/pull/2538]
 - Fix typo in changelog [#2193](https://github.com/axios/axios/pull/2193)
 - Document fix (#2514)[https://github.com/axios/axios/pull/2514]
 - Update docs with no_proxy change, issue #2484 (#2513)[https://github.com/axios/axios/pull/2513]

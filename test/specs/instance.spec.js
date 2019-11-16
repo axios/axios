@@ -19,6 +19,7 @@ describe('instance', function () {
         'isCancel',
         'all',
         'spread',
+        'getUri',
         'default'].indexOf(prop) > -1) {
         continue;
       }
@@ -110,4 +111,30 @@ describe('instance', function () {
       }, 100);
     });
   });
+
+  it('should have getUri on the instance', function() {
+    var instance = axios.create({
+      baseURL: 'https://api.example.com'
+    });
+    var options = {
+      url: 'foo/bar',
+      params: {
+        name: 'axios'
+      }
+    };
+    expect(instance.getUri(options)).toBe('https://api.example.com/foo/bar?name=axios');
+  });
+
+  it('should correct discard url hash mark', function () {
+    var instance = axios.create();
+    var options = {
+      baseURL: 'https://api.example.com',
+      url: 'foo/bar?foo=bar#hash',
+      params: {
+        name: 'axios'
+      }
+    };
+    expect(instance.getUri(options)).toBe('https://api.example.com/foo/bar?foo=bar&name=axios');
+  });
+
 });

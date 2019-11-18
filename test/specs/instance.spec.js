@@ -36,6 +36,19 @@ describe('instance', function () {
     });
   });
 
+  it('should make an http request with url instead of baseURL', function (done) {
+    var instance = axios.create({
+      url: 'https://api.example.com'
+    });
+
+    instance('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo');
+      done();
+    });
+  });
+
   it('should make an http request', function (done) {
     var instance = axios.create();
 

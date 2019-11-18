@@ -3,6 +3,7 @@
 ### 0.19.1 (Nov 5, 2019)
 
 Fixes and Functionallity:
+- Remove dependency on is-buffer from package.json (#1816)[https://github.com/axios/axios/pull/1816]
 - Adding options typings (#2341)[https://github.com/axios/axios/pull/2341]
 - Adding Typescript HTTP method definition for LINK and UNLINK. (#2444)[https://github.com/axios/axios/pull/2444]
 - Update dist with newest changes, fixes Custom Attributes issue

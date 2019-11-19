@@ -678,6 +678,20 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should combine baseURL and url', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'http://localhost:4444/');
+        assert.equal(res.config.url, '/foo');
+        done();
+      });
+    });
+  });
 });
 
 

@@ -361,6 +361,25 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support response type json', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/',{
+         responseType: 'json'
+      }).then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      });
+    });
+  });
+
   it('should pass errors for a failed stream', function (done) {
     server = http.createServer(function (req, res) {
       req.pipe(res);

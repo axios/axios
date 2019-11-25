@@ -6,7 +6,7 @@ describe('utils::deepMerge', function () {
     var b = {foo: 123};
     var c = {bar: 456};
 
-    deepMerge(a, b, c);
+    deepMerge({}, a, b, c);
 
     expect(typeof a.foo).toEqual('undefined');
     expect(typeof a.bar).toEqual('undefined');
@@ -18,7 +18,7 @@ describe('utils::deepMerge', function () {
     var a = {foo: 123};
     var b = {bar: 456};
     var c = {foo: 789};
-    var d = deepMerge(a, b, c);
+    var d = deepMerge({}, a, b, c);
 
     expect(d.foo).toEqual(789);
     expect(d.bar).toEqual(456);
@@ -28,7 +28,7 @@ describe('utils::deepMerge', function () {
     var a = {foo: {bar: 123}};
     var b = {foo: {baz: 456}, bar: {qux: 789}};
 
-    expect(deepMerge(a, b)).toEqual({
+    expect(deepMerge({}, a, b)).toEqual({
       foo: {
         bar: 123,
         baz: 456
@@ -42,7 +42,7 @@ describe('utils::deepMerge', function () {
   it('should remove all references from nested objects', function () {
     var a = {foo: {bar: 123}};
     var b = {};
-    var d = deepMerge(a, b);
+    var d = deepMerge({}, a, b);
 
     expect(d).toEqual({
       foo: {
@@ -53,14 +53,26 @@ describe('utils::deepMerge', function () {
     expect(d.foo).not.toBe(a.foo);
   });
 
+  it('Should not change the data type', function() {
+    var a = {foo: {bar:123}, hnd: [444, 555, 666]};
+    var b = {foo: {baz: 456}, hnd: [222]};
+    var d = deepMerge({}, a, b);
+    expect(d).toEqual({
+      foo: {bar: 123, baz: 456},
+      hnd: [222, 555, 666]
+    });
+    expect(d.foo).not.toBe(a.foo);
+    expect(d.hnd).not.toBe(a.hnd);
+  });
+
   it('handles null and undefined arguments', function () {
     expect(deepMerge(undefined, undefined)).toEqual({});
     expect(deepMerge(undefined, {foo: 123})).toEqual({foo: 123});
-    expect(deepMerge({foo: 123}, undefined)).toEqual({foo: 123});
+    expect(deepMerge({}, {foo: 123}, undefined)).toEqual({foo: 123});
 
     expect(deepMerge(null, null)).toEqual({});
     expect(deepMerge(null, {foo: 123})).toEqual({foo: 123});
-    expect(deepMerge({foo: 123}, null)).toEqual({foo: 123});
+    expect(deepMerge({}, {foo: 123}, null)).toEqual({foo: 123});
   });
 });
 

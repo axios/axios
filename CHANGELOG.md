@@ -3,6 +3,7 @@
 ### 0.19.1 (Nov 5, 2019)
 
 Fixes and Functionallity:
+- Fix CI build failure (#2570)[https://github.com/axios/axios/pull/2570]
 - Remove dependency on is-buffer from package.json (#1816)[https://github.com/axios/axios/pull/1816]
 - Adding options typings (#2341)[https://github.com/axios/axios/pull/2341]
 - Adding Typescript HTTP method definition for LINK and UNLINK. (#2444)[https://github.com/axios/axios/pull/2444]

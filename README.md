@@ -291,7 +291,7 @@ These are the available config options for making requests. Only the `url` is re
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
-  // - Node only: Stream, Buffer
+  // - Node only: Stream, Buffer, form-data (https://www.npmjs.com/package/form-data)
   data: {
     firstName: 'Fred'
   },

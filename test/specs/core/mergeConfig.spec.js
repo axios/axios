@@ -69,4 +69,10 @@ describe('core::mergeConfig', function() {
     var merged = mergeConfig(defaults, { foo: 'bar' });
     expect(merged.foo).toEqual('bar');
   });
+
+  it('should allow setting custom default options', function() {
+    defaults.foo = 'bar';
+    var merged = mergeConfig(defaults, {});
+    expect(merged.foo).toEqual('bar');
+  });
 });

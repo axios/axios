@@ -130,6 +130,32 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should preserve the HTTP verb on redirect', function (done) {
+    server = http.createServer(function (req, res) {
+      if (req.method.toLowerCase() !== "head") {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      var parsed = url.parse(req.url);
+      if (parsed.pathname === '/one') {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        res.end();
+      }
+    }).listen(4444, function () {
+      axios.head('http://localhost:4444/one').then(function (res) {
+        assert.equal(res.status, 200);
+        done();
+      }).catch(function (err) {
+        done(err);
+      });
+    });
+  });
+
   it('should support transparent gunzip', function (done) {
     var data = {
       firstName: 'Fred',
@@ -616,6 +642,20 @@ describe('supports http with nodejs', function () {
       }).catch(function (thrown) {
         assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel obejct');
         assert.equal(thrown.message, 'Operation has been canceled.');
+        done();
+      });
+    });
+  });
+
+  it('should combine baseURL and url', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'http://localhost:4444/');
+        assert.equal(res.config.url, '/foo');
         done();
       });
     });

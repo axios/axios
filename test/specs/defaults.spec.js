@@ -24,10 +24,6 @@ describe('defaults', function () {
     expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');
   });
 
-  it('should do nothing to response string', function () {
-    expect(defaults.transformResponse[0]('foo=bar')).toEqual('foo=bar');
-  });
-
   it('should use global defaults config', function (done) {
     axios('/foo');
 

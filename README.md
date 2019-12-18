@@ -1,7 +1,7 @@
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![build status](https://img.shields.io/travis/axios/axios.svg?style=flat-square)](https://travis-ci.org/axios/axios)
+[![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
@@ -296,7 +296,7 @@ These are the available config options for making requests. Only the `url` is re
     firstName: 'Fred'
   },
   
-  // sintaxe alternative to send data into the body
+  // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
   data: 'Country=Brasil&City=Belo Horizonte',
@@ -562,6 +562,15 @@ axios.get('/user/12345', {
     return status < 500; // Reject only if the status code is greater than or equal to 500
   }
 })
+```
+
+Using `toJSON` you get an object with more information about the HTTP error.
+
+```js
+axios.get('/user/12345')
+  .catch(function (error) {
+    console.log(error.toJSON());
+  });
 ```
 
 ## Cancellation

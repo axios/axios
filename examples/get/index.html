@@ -1,33 +1,32 @@
 <!doctype html>
 <html>
   <head>
-    <title>axios - get example</title>
+    <title>Get comparison</title>
     <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
   </head>
   <body class="container">
-    <h1>axios.get</h1>
-    <ul id="people" class="list-unstyled"></ul>
+    <h1>Get comparison</h1>
 
-    <script src="/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
     <script>
-      axios.get('/get/server')
-        .then(function (response) {
-          document.getElementById('people').innerHTML = response.data.map(function (person) {
-            return (
-              '<li class="row">' +
-                '<img src="https://avatars.githubusercontent.com/u/' + person.avatar + '?s=50" class="col-md-1"/>' +
-                '<div class="col-md-3">' +
-                  '<strong>' + person.name + '</strong>' +
-                  '<div>Github: <a href="https://github.com/' + person.github + '" target="_blank">' + person.github + '</a></div>' +
-                  '<div>Twitter: <a href="https://twitter.com/' + person.twitter + '" target="_blank">' + person.twitter + '</a></div>' +
-                '</div>' +
-              '</li><br/>'
-            );
-          }).join('');
-        })
-        .catch(function (err) {
-          document.getElementById('people').innerHTML = '<li class="text-danger">' + err.message + '</li>';
-        });
+
+      // axios
+      axios.get('https://jsonplaceholder.typicode.com/posts')
+
+      // XMLHttpRequest
+      var request = new XMLHttpRequest;
+      request.open('GET', 'https://jsonplaceholder.typicode.com/posts');
+      request.send()
+
+      // fetch
+      fetch('https://jsonplaceholder.typicode.com/posts');
+
+      // Javascript execution
+      let x = 100000000
+      while (x > 0) {
+        x--
+      }
+
     </script>
   </body>
 </html>

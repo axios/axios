@@ -7,7 +7,7 @@ describe('transform', function () {
     jasmine.Ajax.uninstall();
   });
 
-  describe('transform request', function(){
+  describe('transform request', function () {
     it('should transform JSON to string', function (done) {
       var data = {
         foo: 'bar'
@@ -94,7 +94,7 @@ describe('transform', function () {
     });
   })
 
-  describe('transform response', function(){
+  describe('transform response', function () {
     it('should transform data', function (done) {
       var response;
 

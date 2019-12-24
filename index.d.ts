@@ -40,7 +40,17 @@ export type ResponseType =
   | 'text' 
   | 'stream'
 
-export interface AxiosRequestConfig {
+export type ResponseEncoding =
+  | 'ascii'
+  | 'utf8'
+  | 'utf16le'
+  | 'ucs2'
+  | 'base64'
+  | 'latin1'
+  | 'binary'
+  | 'hex'
+
+interface BaseAxiosRequestConfig {
   url?: string;
   method?: Method;
   baseURL?: string;
@@ -55,7 +65,6 @@ export interface AxiosRequestConfig {
   withCredentials?: boolean;
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;
-  responseType?: ResponseType;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: any) => void;
@@ -69,6 +78,13 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
 }
+
+export type AxiosRequestConfig = BaseAxiosRequestConfig & ({
+  responseType?: Exclude<ResponseType, 'arraybuffer' | 'blob' | 'stream'>;
+  responseEncoding?: ResponseEncoding;
+} | {
+  responseType?: 'arraybuffer' | 'blob' | 'stream';
+})
 
 export interface AxiosResponse<T = any>  {
   data: T;

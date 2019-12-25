@@ -3,6 +3,7 @@
 ### 0.19.1 (Nov 5, 2019)
 
 Fixes and Functionallity:
+- Delete useless default to hash (#2458)[https://github.com/axios/axios/pull/2458]
 - Fix HTTP/HTTPs agents passing to follow-redirect (#1904)[https://github.com/axios/axios/pull/1904]
 - Fix ignore set withCredentials false (#2582)[https://github.com/axios/axios/pull/2582]
 - Fix CI build failure (#2570)[https://github.com/axios/axios/pull/2570]

@@ -3,6 +3,7 @@
 ### 0.19.1 (Nov 5, 2019)
 
 Fixes and Functionallity:
+- Fix HTTP/HTTPs agents passing to follow-redirect (#1904)[https://github.com/axios/axios/pull/1904]
 - Fix ignore set withCredentials false (#2582)[https://github.com/axios/axios/pull/2582]
 - Fix CI build failure (#2570)[https://github.com/axios/axios/pull/2570]
 - Remove dependency on is-buffer from package.json (#1816)[https://github.com/axios/axios/pull/1816]

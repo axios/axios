@@ -1,4 +1,4 @@
-/* axios v0.19.0-beta.1 | (c) 2018 by Matt Zabriskie */
+/* axios v0.19.0 | (c) 2019 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -647,6 +647,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  if (serializedParams) {
+	    var hashmarkIndex = url.indexOf('#');
+	    if (hashmarkIndex !== -1) {
+	      url = url.slice(0, hashmarkIndex);
+	    }
+	
 	    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
 	  }
 	
@@ -1219,8 +1224,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (code) {
 	    error.code = code;
 	  }
+	
 	  error.request = request;
 	  error.response = response;
+	  error.isAxiosError = true;
+	
 	  error.toJSON = function() {
 	    return {
 	      // Standard

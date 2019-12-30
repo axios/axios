@@ -449,7 +449,7 @@ When using `catch`, or passing a [rejection callback](https://developer.mozilla.
 
 ## Config Defaults
 
-You can specify config defaults that will be applied to every request.
+You can specify config defaults that will be applied to every request, although there are some fields which will override your defaults if passed at the time of the request.  See [Config order of precedence](#config-order-of-precedence)
 
 ### Global axios defaults
 
@@ -473,7 +473,14 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+The config will be merged with an order of precedence. The order is:
+1. Library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28)
+2. The `defaults` property of the instance
+3. The `config` argument for the request.
+
+Passing the `config` argument will completely **override** what is specified in the `defaults` property for some values. These are currently `url`, `method`, `params`, and `data`.
+
+Examples:
 
 ```js
 // Create an instance using the config defaults provided by the library
@@ -488,6 +495,22 @@ instance.defaults.timeout = 2500;
 instance.get('/longRequest', {
   timeout: 5000
 });
+```
+
+```js
+// Create an instance using the config defaults provided by the library
+// At this point the params config value is undefined as is the default for the library
+const instance = axios.create();
+
+// Override the params default for the library
+// Now all requests using this instance will pass the param defined below
+instance.defaults.params = { q: 'some-value' }
+
+// The `params` object will be entirely overridden, and the
+// previously defined key `q` will no longer exist
+instance.get('/testRequest', {
+  params: { a: 'a-new-value' }
+})
 ```
 
 ## Interceptors

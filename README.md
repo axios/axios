@@ -473,7 +473,7 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-The config will be merged with an order of precedence. The order is:
+The config will be merged with the following order of precedence:
 1. Library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28)
 2. The `defaults` property of the instance
 3. The `config` argument for the request.

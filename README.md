@@ -478,7 +478,7 @@ The config will be merged with the following order of precedence:
 2. The `defaults` property of the instance
 3. The `config` argument for the request.
 
-Passing the `config` argument will completely **override** what is specified in the `defaults` property for some values. These are currently `url`, `method`, `params`, and `data`.
+Passing the `config` argument will completely **override** what is specified in the `defaults` property for some keys. These are currently `url`, `method`, `params`, and `data`.
 
 Examples:
 

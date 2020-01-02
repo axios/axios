@@ -1,5 +1,13 @@
 # Upgrade Guide
 
+### 0.x.x -> 1.0.0
+
+No breaking changes are introduced in v1.0.0.  This milestone indicates that the public API is now considered stable.
+
+#### Semantic Versioning
+
+You may want to update your `package.json` to use a `~` or `^` version selector when declaring Axios as a dependency, as it will let you take advantage of bugfixes as they are released.
+
 ### 0.15.x -> 0.16.0
 
 #### `Promise` Type Declarations

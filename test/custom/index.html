@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试wrap</title>
+</head>
+<body>
+<script>
+    function bind (fn, thisArg) {
+        return function wrap () {
+            var args = new Array(arguments.length);
+            for (var i = 0; i < args.length; i++) {
+                args[i] = arguments[i];
+            }
+            return fn.apply(thisArg, args);
+        };
+    }
+    
+    function add (a, b) {
+        console.log(a + b)
+    }
+    
+    var test = bind(add, null)
+    
+    test(1, 2)
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 ### Next version (TBD)
 
-Fixes and Functionallity:
+Fixes and Functionality:
 
 - Add typescript HTTP method definition for LINK and UNLINK ([#2440](https://github.com/axios/axios/pull/2444)) - Marlon Barcarol
 

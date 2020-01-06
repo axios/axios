@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试Utils中的方法</title>
+</head>
+<body>
+<script>
+    function isArray (val) {
+        return toString.call(val) === '[object Array]';
+    }
+    
+    function bind (fn, thisArg) {
+        return function wrap () {
+            var args = new Array(arguments.length);
+            for (var i = 0; i < args.length; i++) {
+                args[i] = arguments[i];
+            }
+            // apply方法调用一个具有给定this值的函数，以及作为一个数组（或类似数组对象）提供的参数。返回调用有指定this值和参数的函数的结果
+            return fn.apply(thisArg, args);
+        }
+    }
+    
+    function forEach (obj, fn) {
+        if (obj === null || typeof obj === 'undefined') {
+            return;
+        }
+        
+        // Force an array if not already something iterable
+        // 如果不是对象强制转化成数组
+        if (typeof obj !== 'object') {
+            /*eslint no-param-reassign:0*/
+            obj = [obj];
+        }
+        
+        if (isArray(obj)) {
+            // Iterate over array values
+            for (var i = 0, l = obj.length; i < l; i++) {
+                fn.call(null, obj[i], i, obj);
+            }
+        } else {
+            // Iterate over object keys
+            for (var key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    fn.call(null, obj[key], key, obj);
+                }
+            }
+        }
+    }
+    
+    function merge (/* obj1, obj2, obj3, ... */) {
+        var result = {};
+        
+        function assignValue (val, key) {
+            if (typeof result[key] === 'object' && typeof val === 'object') {
+                result[key] = merge(result[key], val);
+            } else {
+                result[key] = val;
+            }
+        }
+        
+        for (var i = 0, l = arguments.length; i < l; i++) {
+            forEach(arguments[i], assignValue);
+        }
+        return result;
+    }
+    
+    function deepMerge () {
+        var result = {};
+        
+        function assignValue (val, key) {
+            if (typeof result[key] === 'object' && typeof val === 'object') {
+                result[key] = deepMerge(result[key], val);
+            } else if (typeof val === 'object') {
+                result[key] = deepMerge({}, val);
+            } else {
+                result[key] = val;
+            }
+        }
+        
+        for (var i = 0, l = arguments.length; i < l; i++) {
+            forEach(arguments[i], assignValue);
+        }
+        return result;
+    }
+    
+    function extend (a, b, thisArg) {
+        forEach(b, function assignValue (val, key) {
+            if (thisArg && typeof val === 'function') {
+                a[key] = bind(val, thisArg);
+            } else {
+                a[key] = val;
+            }
+        });
+        return a;
+    }
+    
+    
+    function add (a, b, c) {
+        console.log(a + b)
+        console.log(c)
+    }
+    
+    
+    console.log(merge({ name: 'Tom', age: 12 }, {
+        name: 'Wang', age: 18, parent: {
+            farther: {
+                name: 'Wang',
+                age: 50
+            },
+            mother: {
+                name: 'Wang',
+                age: 50,
+                parent: {
+                    farther: {
+                        name: 'Wang',
+                        age: 50
+                    },
+                    mother: {
+                        name: 'Wang',
+                        age: 50,
+                        arr: [1, 2, 3]
+                    }
+                }
+            }
+        }
+    }))
+    
+    console.log(deepMerge({ name: 'Tom', age: 12 }, {
+        name: 'Wang', age: 18, parent: {
+            farther: {
+                name: 'Wang',
+                age: 50
+            },
+            mother: {
+                name: 'Wang',
+                age: 50,
+                parent: {
+                    farther: {
+                        name: 'Wang',
+                        age: 50
+                    },
+                    mother: {
+                        name: 'Wang',
+                        age: 50,
+                        arr: [1, 2, 3]
+                    }
+                }
+            }
+        }
+    }))
+    // forEach({ name: 'tom', age: 12 }, add)
+</script>
+</body>
+</html>

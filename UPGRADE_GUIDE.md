@@ -2,7 +2,7 @@
 
 ### 0.x.x -> 1.0.0
 
-No breaking changes are introduced in v1.0.0.  This milestone indicates that the public API is now considered stable.
+No breaking changes are introduced in v1.0.0. This milestone indicates that the public API is now considered stable.
 
 #### Semantic Versioning
 

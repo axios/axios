@@ -2,7 +2,7 @@
 
 ### 1.0.0
 
-**NOTE**: Axios follows [Semantic Versioning](https://semver.org/).  Version 1.0.0 does not contain any breaking changes, but indicates that the public API is now considered stable.  From this point onwards, breaking changes will only be introduced in a MAJOR release (eg. 2.0.0).
+**NOTE**: Axios follows [Semantic Versioning](https://semver.org/). Version 1.0.0 does not contain any breaking changes, but indicates that the public API is now considered stable. From this point onwards, breaking changes will only be introduced in a MAJOR release (eg. 2.0.0).
 
 Fixes and Functionallity:
 

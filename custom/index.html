@@ -126,30 +126,36 @@
         }
     }))
     
-    console.log(deepMerge({ name: 'Tom', age: 12 }, {
-        name: 'Wang', age: 18, parent: {
-            farther: {
-                name: 'Wang',
-                age: 50
-            },
-            mother: {
-                name: 'Wang',
-                age: 50,
-                parent: {
-                    farther: {
-                        name: 'Wang',
-                        age: 50
-                    },
-                    mother: {
-                        name: 'Wang',
-                        age: 50,
-                        arr: [1, 2, 3]
+    console.log(deepMerge(
+        {
+            name: 'Tom',
+            age: 12
+        },
+        {
+            name: 'Wang', age: 18, parent: {
+                farther: {
+                    name: 'Wang',
+                    age: 50,
+                    arr: [1, 2, 3]
+                },
+                mother: {
+                    name: 'Wang',
+                    age: 50,
+                    parent: {
+                        farther: {
+                            name: 'Wang',
+                            age: 50
+                        },
+                        mother: {
+                            name: 'Wang',
+                            age: 50,
+                            arr: [1, 2, 3]
+                        }
                     }
                 }
             }
-        }
-    }))
-    // forEach({ name: 'tom', age: 12 }, add)
+        })
+    )
 </script>
 </body>
 </html>

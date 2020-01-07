@@ -36,6 +36,7 @@ Internal:
 - Fix cancellation error on build master. #2290 #2207 (#2407)[https://github.com/axios/axios/pull/2407]
 
 Documentation:
+- Fixing typo in CHANGELOG.md (#2639)(https://github.com/axios/axios/pull/2639)
 - Fix badge, use master branch (#2538)[https://github.com/axios/axios/pull/2538]
 - Fix typo in changelog [#2193](https://github.com/axios/axios/pull/2193)
 - Document fix (#2514)[https://github.com/axios/axios/pull/2514]

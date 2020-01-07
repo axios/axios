@@ -760,7 +760,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  config.headers = utils.merge(
 	    config.headers.common || {},
 	    config.headers[config.method] || {},
-	    config.headers || {}
+	    config.headers
 	  );
 	
 	  utils.forEach(

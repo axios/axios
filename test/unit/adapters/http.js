@@ -73,6 +73,41 @@ describe('supports http with nodejs', function () {
         });
     });
     
+    it('use interceptor', function (done) {
+        var data = {
+            firstName: 'Fred',
+            lastName: 'Flintstone',
+            emailAddr: 'fred@example.com'
+        };
+    
+        server = http.createServer(function (req, res) {
+            res.setHeader('Content-Type', 'application/json;charset=utf-8');
+            res.end(JSON.stringify(data));
+        }).listen(4444, function () {
+            var http = axios.create({
+                timeout: 1000 * 30,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            http.interceptors.request.use(config => {
+                return config
+            }, error => {
+                return Promise.reject(error)
+            })
+    
+            http.interceptors.response.use(response => {
+                return Promise.resolve(response.data)
+            }, error => {
+                return Promise.reject(error)
+            })
+            http.get('http://localhost:4444/').then(function (data) {
+                assert.deepEqual(data, data);
+                done();
+            });
+        });
+    })
+    
     it('should redirect', function (done) {
         var str = 'test response';
         

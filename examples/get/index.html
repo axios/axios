@@ -1,33 +1,111 @@
 <!doctype html>
 <html>
   <head>
-    <title>axios - get example</title>
-    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <title>Get comparison</title>
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
   </head>
   <body class="container">
-    <h1>axios.get</h1>
-    <ul id="people" class="list-unstyled"></ul>
+    <h1>Get comparison</h1>
 
     <script src="/axios.min.js"></script>
     <script>
-      axios.get('/get/server')
-        .then(function (response) {
-          document.getElementById('people').innerHTML = response.data.map(function (person) {
-            return (
-              '<li class="row">' +
-                '<img src="https://avatars.githubusercontent.com/u/' + person.avatar + '?s=50" class="col-md-1"/>' +
-                '<div class="col-md-3">' +
-                  '<strong>' + person.name + '</strong>' +
-                  '<div>Github: <a href="https://github.com/' + person.github + '" target="_blank">' + person.github + '</a></div>' +
-                  '<div>Twitter: <a href="https://twitter.com/' + person.twitter + '" target="_blank">' + person.twitter + '</a></div>' +
-                '</div>' +
-              '</li><br/>'
-            );
-          }).join('');
-        })
-        .catch(function (err) {
-          document.getElementById('people').innerHTML = '<li class="text-danger">' + err.message + '</li>';
-        });
+
+      // var oldTime = Date.now()
+      //
+      // function sync(config) {
+      //   var newTime = Date.now()
+      //   var delta = newTime - oldTime
+      //
+      //   console.log('delta', delta)
+      //
+      //   if (delta < 1000 * 7) {
+      //     console.log('sync it!')
+      //     return true
+      //   } else {
+      //     console.warn('async!!')
+      //     return false
+      //   }
+      //
+      // }
+      // run sync if less than 20 seconds elapsed, otherwise do async
+
+
+      const defaultError = err => Promise.reject(err)
+
+      var oldTime = Date.now()
+
+      function sessionExpired(foo) {
+        console.log('foo', foo)
+        var newTime = Date.now()
+        var delta = newTime - oldTime
+
+        console.log('delta', delta)
+
+        if (delta > 1000 * 7) {
+          console.warn('async it!')
+          return true
+        } else {
+          console.log('synchronous')
+          return false
+        }
+      }
+
+      function sessionNotExpired(foo) {
+        return !sessionExpired(foo)
+      }
+
+      // axios.interceptors.request.use(function (config) {
+      //   config.url = "https://jsonplaceholder.typicode.com/comments"
+      //   return config;
+      // }, null, { synchronous: sync });
+
+      let bar = 'hello world'
+
+      let boundSessionNot = sessionNotExpired.bind(null, bar);
+      let boundSessionExpired = sessionExpired.bind(null, bar);
+
+      axios.interceptors.request.use(async function (config) {
+        await Promise.resolve()
+        config.url = "https://jsonplaceholder.typicode.com/comments"
+        return config;
+      }, defaultError, { runWhen: boundSessionExpired, synchronous: false });
+
+      axios.interceptors.request.use(function (config) {
+        config.url = "https://jsonplaceholder.typicode.com/users"
+        return config;
+      }, defaultError, { runWhen: boundSessionNot, synchronous: true });
+
+      // axios.interceptors.request.use(function (config) {
+      //   return new Promise(function (resolve) {
+      //     // do something async
+      //     setTimeout(function () {
+      //       config.foo = 'promise';
+      //       resolve(config);
+      //     }, 100);
+      //   });
+      // }, null, { synchronous: false });
+
+      function callAll() {
+        // axios request
+        axios.get('https://jsonplaceholder.typicode.com/posts')
+
+        // XMLHttpRequest
+        var request = new XMLHttpRequest;
+        request.open('GET', 'https://jsonplaceholder.typicode.com/posts');
+        request.send()
+
+        // fetch
+        fetch('https://jsonplaceholder.typicode.com/posts');
+
+        // Javascript execution
+        let x = 1000000000
+        while (x > 0) {
+          x--
+        }
+      }
+
     </script>
+
+    <button onclick="callAll()">send them!</button>
   </body>
 </html>

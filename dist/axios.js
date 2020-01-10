@@ -1,4 +1,3 @@
-/* axios v0.19.0 | (c) 2019 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -530,23 +529,72 @@ return /******/ (function(modules) { // webpackBootstrap
 	    config = config || {};
 	  }
 	
+	  var customAdapter = config.adapter;
+	
 	  config = mergeConfig(this.defaults, config);
 	  config.method = config.method ? config.method.toLowerCase() : 'get';
 	
-	  // Hook up interceptors middleware
-	  var chain = [dispatchRequest, undefined];
-	  var promise = Promise.resolve(config);
+	  var requestCancelled = config.cancelToken && config.cancelToken.reason;
 	
+	  // need to filter out skipped interceptors first
+	  // then see if the remaining ones are synchronous
+	
+	  // filter out skipped
+	  var requestInterceptorChain = [];
+	  var synchronousChain = [];
 	  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-	    chain.unshift(interceptor.fulfilled, interceptor.rejected);
+	    if (typeof interceptor.runWhen === 'function' && interceptor.runWhen(config) === false) {
+	      return;
+	    }
+	
+	    synchronousChain.push(interceptor.synchronous);
+	
+	    requestInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
 	  });
 	
+	  // check for synchronicity
+	  var synchronousRequestInterceptors = synchronousChain.every(function(interceptor) {
+	    return interceptor === true;
+	  });
+	
+	  var responseInterceptorChain = [];
 	  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-	    chain.push(interceptor.fulfilled, interceptor.rejected);
+	    responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
 	  });
 	
-	  while (chain.length) {
-	    promise = promise.then(chain.shift(), chain.shift());
+	  var promise;
+	
+	  if (customAdapter || requestCancelled || !synchronousRequestInterceptors) {
+	    var chain = [dispatchRequest, undefined];
+	
+	    Array.prototype.unshift.apply(chain, requestInterceptorChain);
+	    chain.concat(responseInterceptorChain);
+	
+	    promise = Promise.resolve(config);
+	    while (chain.length) {
+	      promise = promise.then(chain.shift(), chain.shift());
+	    }
+	
+	    return promise;
+	  }
+	
+	
+	  var newConfig = config;
+	  for (var i = 0; i < requestInterceptorChain.length - 1; i += 2) {
+	    var onFulfilled = i;
+	    var onRejected = i + 1;
+	    if (typeof requestInterceptorChain[onFulfilled] === 'function') {
+	      try {
+	        newConfig = requestInterceptorChain[onFulfilled](newConfig);
+	      } catch (error) {
+	        requestInterceptorChain[onRejected](error);
+	      }
+	    }
+	  }
+	
+	  promise = dispatchRequest(newConfig);
+	  while (responseInterceptorChain.length) {
+	    promise = promise.then(responseInterceptorChain.shift(), responseInterceptorChain.shift());
 	  }
 	
 	  return promise;
@@ -679,10 +727,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @return {Number} An ID used to remove interceptor later
 	 */
-	InterceptorManager.prototype.use = function use(fulfilled, rejected) {
+	InterceptorManager.prototype.use = function use(fulfilled, rejected, options) {
 	  this.handlers.push({
 	    fulfilled: fulfilled,
-	    rejected: rejected
+	    rejected: rejected,
+	    synchronous: options ? options.synchronous : false,
+	    runWhen: options ? options.runWhen : null
 	  });
 	  return this.handlers.length - 1;
 	};

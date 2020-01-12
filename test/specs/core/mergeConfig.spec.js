@@ -33,30 +33,40 @@ describe('core::mergeConfig', function() {
   it('should not inherit request options', function() {
     var localDefaults = {
       method: '__sample method__',
-      params: '__sample params__',
       data: { foo: true }
     };
     var merged = mergeConfig(localDefaults, {});
     expect(merged.method).toEqual(undefined);
-    expect(merged.params).toEqual(undefined);
     expect(merged.data).toEqual(undefined);
   });
 
-  it('should merge auth, headers, proxy with defaults', function() {
-    expect(mergeConfig({ auth: undefined }, { auth: { user: 'foo', pass: 'test' } })).toEqual({
+  it('should merge auth, headers, params, proxy with defaults', function() {
+    expect(mergeConfig({ auth: { user: 'foo' } }, { auth: { pass: 'test' } })).toEqual({
       auth: { user: 'foo', pass: 'test' }
     });
-    expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: { pass: 'foobar' } })).toEqual({
-      auth: { user: 'foo', pass: 'foobar' }
+    expect(mergeConfig({ headers: { user: 'foo' } }, { headers: { pass: 'test' } })).toEqual({
+      headers: { user: 'foo', pass: 'test' }
+    });
+    expect(mergeConfig({ params: { user: 'foo' } }, { params: { pass: 'test' } })).toEqual({
+      params: { user: 'foo', pass: 'test' }
+    });
+    expect(mergeConfig({ proxy: { user: 'foo' } }, { proxy: { pass: 'test' } })).toEqual({
+      proxy: { user: 'foo', pass: 'test' }
     });
   });
 
-  it('should overwrite auth, headers, proxy with a non-object value', function() {
+  it('should overwrite auth, headers, params, proxy with a non-object value', function() {
     expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: false })).toEqual({
       auth: false
     });
-    expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: null })).toEqual({
-      auth: null
+    expect(mergeConfig({ headers: { user: 'foo', pass: 'test' } }, { headers: null })).toEqual({
+      headers: null
+    });
+    expect(mergeConfig({ params: { user: 'foo', pass: 'test' } }, { params: null })).toEqual({
+      params: null
+    });
+    expect(mergeConfig({ proxy: { user: 'foo', pass: 'test' } }, { proxy: null })).toEqual({
+      proxy: null
     });
   });
 

@@ -1,4 +1,5 @@
 'use strict';
+
 var axios = require('../../../index');
 var http = require('http');
 var net = require('net');
@@ -178,6 +179,27 @@ describe('supports http with nodejs', function() {
     });
   });
 
+  it('should support disabling automatic decompression of response data', function(done) {
+    var data = 'Test data';
+
+    zlib.gzip(data, function(err, zipped) {
+      server = http.createServer(function(req, res) {
+        res.setHeader('Content-Type', 'text/html;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      }).listen(4444, function() {
+        axios.get('http://localhost:4444/', {
+          decompress: false,
+          responseType: 'arraybuffer'
+
+        }).then(function(res) {
+          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+          done();
+        });
+      });
+    });
+  });
+
   it('should support gunzip error handling', function(done) {
     server = http.createServer(function(req, res) {
       res.setHeader('Content-Type', 'application/json;charset=utf-8');
@@ -262,11 +284,15 @@ describe('supports http with nodejs', function() {
   });
 
   it.skip('should support sockets', function(done) {
+    console.log(1);
     server = net.createServer(function(socket) {
+      console.log(2);
       socket.on('data', function() {
+        console.log(3);
         socket.end('HTTP/1.1 200 OK\r\n\r\n');
       });
     }).listen('./test.sock', function() {
+      console.log(4);
       axios({
         socketPath: './test.sock',
         url: '/'

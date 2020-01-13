@@ -399,7 +399,12 @@ These are the available config options for making requests. Only the `url` is re
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {
-  })
+  }),
+
+  // `decompress` indicates whether or not the response should be decompressed
+  // - Node only (XHR cannot turn off decompression)
+  decompress: true // default
+
 }
 ```
 

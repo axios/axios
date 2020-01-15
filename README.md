@@ -10,6 +10,31 @@
 
 Promise based HTTP client for the browser and node.js
 
+## Table of Contents
+
+- [Features](#features)
+- [Browser Support](#browser-support)
+- [Installing](#installing)
+- [Example](#example)
+- [axios API](#axios-api)
+  - [Request method aliases](#request-method-aliases)
+  - [Concurrency](#concurrency)
+  - [Creating an instance](#creating-an-instance)
+  - [Instance methods](#instance-methods)
+- [Request Config](#request-config)
+- [Response Schema](#response-schema)
+- [Config Defaults](#config-defaults)
+- [Interceptors](#interceptors)
+- [Handling Errors](#handling-errors)
+- [Cancellation](#cancellation)
+- [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
+- [Semver](#semver)
+- [Promises](#promises)
+- [TypeScript](#typescript)
+- [Resources](#resources)
+- [Credits](#credits)
+- [License](#license)
+
 ## Features
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser

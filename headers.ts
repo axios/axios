@@ -1,5 +1,5 @@
 type LooseObject = object & {
-  [key: string]: string;
+  [key: string]: string | number | boolean;
 };
 
 type AxiosHeaders = LooseObject & {

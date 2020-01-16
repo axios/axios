@@ -1,5 +1,101 @@
 # Changelog
 
+### 0.19.1 (Jan 7, 2020)
+
+Fixes and Functionality:
+
+- Fixing invalid agent issue ([#1904](https://github.com/axios/axios/pull/1904))
+- Fix ignore set withCredentials false ([#2582](https://github.com/axios/axios/pull/2582))
+- Delete useless default to hash ([#2458](https://github.com/axios/axios/pull/2458))
+- Fix HTTP/HTTPs agents passing to follow-redirect ([#1904](https://github.com/axios/axios/pull/1904))
+- Fix ignore set withCredentials false ([#2582](https://github.com/axios/axios/pull/2582))
+- Fix CI build failure ([#2570](https://github.com/axios/axios/pull/2570))
+- Remove dependency on is-buffer from package.json ([#1816](https://github.com/axios/axios/pull/1816))
+- Adding options typings ([#2341](https://github.com/axios/axios/pull/2341))
+- Adding Typescript HTTP method definition for LINK and UNLINK. ([#2444](https://github.com/axios/axios/pull/2444))
+- Update dist with newest changes, fixes Custom Attributes issue
+- Change syntax to see if build passes ([#2488](https://github.com/axios/axios/pull/2488))
+- Update Webpack + deps, remove now unnecessary polyfills ([#2410](https://github.com/axios/axios/pull/2410))
+- Fix to prevent XSS, throw an error when the URL contains a JS script ([#2464](https://github.com/axios/axios/pull/2464))
+- Add custom timeout error copy in config ([#2275](https://github.com/axios/axios/pull/2275))
+- Add error toJSON example ([#2466](https://github.com/axios/axios/pull/2466))
+- Fixing Vulnerability A Fortify Scan finds a critical Cross-Site Scrip… ([#2451](https://github.com/axios/axios/pull/2451))
+- Fixing subdomain handling on no_proxy ([#2442](https://github.com/axios/axios/pull/2442))
+- Make redirection from HTTP to HTTPS work ([#2426](https://github.com/axios/axios/pull/2426] and ([#2547](https://github.com/axios/axios/pull/2547))
+- Add toJSON property to AxiosError type ([#2427](https://github.com/axios/axios/pull/2427))
+- Fixing socket hang up error on node side for slow response. ([#1752](https://github.com/axios/axios/pull/1752))
+- Alternative syntax to send data into the body ([#2317](https://github.com/axios/axios/pull/2317))
+- Fixing custom config options ([#2207](https://github.com/axios/axios/pull/2207))
+- Fixing set `config.method` after mergeConfig for Axios.prototype.request ([#2383](https://github.com/axios/axios/pull/2383))
+- Axios create url bug ([#2290](https://github.com/axios/axios/pull/2290))
+- Do not modify config.url when using a relative baseURL (resolves [#1628](https://github.com/axios/axios/issues/1098)) ([#2391](https://github.com/axios/axios/pull/2391))
+- Add typescript HTTP method definition for LINK and UNLINK ([#2444](https://github.com/axios/axios/pull/2444))
+
+Internal:
+
+- Revert "Update Webpack + deps, remove now unnecessary polyfills" ([#2479](https://github.com/axios/axios/pull/2479))
+- Order of if/else blocks is causing unit tests mocking XHR. ([#2201](https://github.com/axios/axios/pull/2201))
+- Add license badge ([#2446](https://github.com/axios/axios/pull/2446))
+- Fix travis CI build [#2386](https://github.com/axios/axios/pull/2386)
+- Fix cancellation error on build master. #2290 #2207 ([#2407](https://github.com/axios/axios/pull/2407))
+
+Documentation:
+
+- Fixing typo in CHANGELOG.md: s/Functionallity/Functionality ([#2639](https://github.com/axios/axios/pull/2639))
+- Fix badge, use master branch ([#2538](https://github.com/axios/axios/pull/2538))
+- Fix typo in changelog [#2193](https://github.com/axios/axios/pull/2193)
+- Document fix ([#2514](https://github.com/axios/axios/pull/2514))
+- Update docs with no_proxy change, issue #2484 ([#2513](https://github.com/axios/axios/pull/2513))
+- Fixing missing words in docs template ([#2259](https://github.com/axios/axios/pull/2259))
+- 🐛Fix request finally documentation in README ([#2189](https://github.com/axios/axios/pull/2189))
+- updating spelling and adding link to docs ([#2212](https://github.com/axios/axios/pull/2212))
+- docs: minor tweak ([#2404](https://github.com/axios/axios/pull/2404))
+- Update response interceptor docs ([#2399](https://github.com/axios/axios/pull/2399))
+- Update README.md ([#2504](https://github.com/axios/axios/pull/2504))
+- Fix word 'sintaxe' to 'syntax' in README.md ([#2432](https://github.com/axios/axios/pull/2432))
+- upadating README: notes on CommonJS autocomplete ([#2256](https://github.com/axios/axios/pull/2256))
+- Fix grammar in README.md ([#2271](https://github.com/axios/axios/pull/2271))
+- Doc fixes, minor examples cleanup ([#2198](https://github.com/axios/axios/pull/2198))
+
+### 0.19.0 (May 30, 2019)
+
+Fixes and Functionality:
+
+- Added support for no_proxy env variable ([#1693](https://github.com/axios/axios/pull/1693/files)) - Chance Dickson
+- Unzip response body only for statuses != 204 ([#1129](https://github.com/axios/axios/pull/1129)) - drawski
+- Destroy stream on exceeding maxContentLength (fixes [#1098](https://github.com/axios/axios/issues/1098)) ([#1485](https://github.com/axios/axios/pull/1485)) - Gadzhi Gadzhiev
+- Makes Axios error generic to use AxiosResponse ([#1738](https://github.com/axios/axios/pull/1738)) - Suman Lama
+- Fixing Mocha tests by locking follow-redirects version to 1.5.10 ([#1993](https://github.com/axios/axios/pull/1993)) - grumblerchester
+- Allow uppercase methods in typings. ([#1781](https://github.com/axios/axios/pull/1781)) - Ken Powers
+- Fixing building url with hash mark ([#1771](https://github.com/axios/axios/pull/1771)) - Anatoly Ryabov
+- This commit fix building url with hash map (fragment identifier) when parameters are present: they must not be added after `#`, because client cut everything after `#`
+- Preserve HTTP method when following redirect ([#1758](https://github.com/axios/axios/pull/1758)) - Rikki Gibson
+- Add `getUri` signature to TypeScript definition. ([#1736](https://github.com/axios/axios/pull/1736)) - Alexander Trauzzi
+- Adding isAxiosError flag to errors thrown by axios ([#1419](https://github.com/axios/axios/pull/1419)) - Ayush Gupta
+
+Internal:
+
+- Fixing .eslintrc without extension ([#1789](https://github.com/axios/axios/pull/1789)) - Manoel
+- Fix failing SauceLabs tests by updating configuration - Emily Morehouse
+- Add issue templates - Emily Morehouse
+
+Documentation:
+
+- Consistent coding style in README ([#1787](https://github.com/axios/axios/pull/1787)) - Ali Servet Donmez
+- Add information about auth parameter to README ([#2166](https://github.com/axios/axios/pull/2166)) - xlaguna
+- Add DELETE to list of methods that allow data as a config option ([#2169](https://github.com/axios/axios/pull/2169)) - Daniela Borges Matos de Carvalho
+- Update ECOSYSTEM.md - Add Axios Endpoints ([#2176](https://github.com/axios/axios/pull/2176)) - Renan
+- Add r2curl in ECOSYSTEM ([#2141](https://github.com/axios/axios/pull/2141)) - 유용우 / CX
+- Update README.md - Add instructions for installing with yarn ([#2036](https://github.com/axios/axios/pull/2036)) - Victor Hermes
+- Fixing spacing for README.md ([#2066](https://github.com/axios/axios/pull/2066)) - Josh McCarty
+- Update README.md. - Change `.then` to `.finally` in example code ([#2090](https://github.com/axios/axios/pull/2090)) - Omar Cai
+- Clarify what values responseType can have in Node ([#2121](https://github.com/axios/axios/pull/2121)) - Tyler Breisacher
+- docs(ECOSYSTEM): add axios-api-versioning ([#2020](https://github.com/axios/axios/pull/2020)) - Weffe
+- It seems that `responseType: 'blob'` doesn't actually work in Node (when I tried using it, response.data was a string, not a Blob, since Node doesn't have Blobs), so this clarifies that this option should only be used in the browser
+- Update README.md. - Add Querystring library note ([#1896](https://github.com/axios/axios/pull/1896)) - Dmitriy Eroshenko
+- Add react-hooks-axios to Libraries section of ECOSYSTEM.md ([#1925](https://github.com/axios/axios/pull/1925)) - Cody Chan
+- Clarify in README that default timeout is 0 (no timeout) ([#1750](https://github.com/axios/axios/pull/1750)) - Ben Standefer
+
 ### 0.19.0-beta.1 (Aug 9, 2018)
 
 **NOTE:** This is a beta version of this release. There may be functionality that is broken in

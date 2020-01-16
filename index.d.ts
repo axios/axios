@@ -29,6 +29,8 @@ export type Method =
   | 'post' | 'POST'
   | 'put' | 'PUT'
   | 'patch' | 'PATCH'
+  | 'link' | 'LINK'
+  | 'unlink' | 'UNLINK'
 
 export type ResponseType = 
   | 'arraybuffer' 
@@ -49,6 +51,7 @@ export interface AxiosRequestConfig {
   paramsSerializer?: (params: any) => string;
   data?: any;
   timeout?: number;
+  timeoutErrorMessage?: string;
   withCredentials?: boolean;
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;
@@ -82,6 +85,7 @@ export interface AxiosError<T = any> extends Error {
   request?: any;
   response?: AxiosResponse<T>;
   isAxiosError: boolean;
+  toJSON: () => object;
 }
 
 export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
@@ -128,11 +132,13 @@ export interface AxiosInstance<C extends AxiosRequestConfig=AxiosRequestConfig> 
     request: AxiosInterceptorManager<C>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
+
   getUri(config?: C): string;
   request<T = any, R = AxiosResponse<T>> (config: C): Promise<R>;
   get<T = any, R = AxiosResponse<T>>(url: string, config?: C): Promise<R>;
   delete<T = any, R = AxiosResponse<T>>(url: string, config?: C): Promise<R>;
   head<T = any, R = AxiosResponse<T>>(url: string, config?: C): Promise<R>;
+  options<T = any, R = AxiosResponse<T>>(url: string, config?: C): Promise<R>;
   post<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: C): Promise<R>;
   put<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: C): Promise<R>;
   patch<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: C): Promise<R>;

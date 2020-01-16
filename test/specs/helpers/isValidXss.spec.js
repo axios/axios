@@ -14,6 +14,9 @@ describe('helpers::isValidXss', function () {
   });
 
   it('should not detect non script tags', function() {
+    expect(isValidXss("javascript.com")).toBe(false);
+    expect(isValidXss("abc.com/javascript/path")).toBe(false);
+    expect(isValidXss("abc.com?tag=javascript")).toBe(false);
     expect(isValidXss("only=true")).toBe(false);
     expect(isValidXss("/one/?foo=bar")).toBe(false);
     expect(isValidXss("<safe> tags")).toBe(false);

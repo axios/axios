@@ -8,7 +8,7 @@ var fs = require('fs');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
-    
+
     afterEach(function () {
         if (server) {
             server.close();
@@ -25,9 +25,9 @@ describe('supports http with nodejs', function () {
             delete process.env.no_proxy;
         }
     });
-    
+
     it('should respect the timeout property', function (done) {
-        
+
         server = http.createServer(function (req, res) {
             setTimeout(function () {
                 res.end();
@@ -35,7 +35,7 @@ describe('supports http with nodejs', function () {
         }).listen(4444, function () {
             var success = false, failure = false;
             var error;
-            
+
             axios.get('http://localhost:4444/', {
                 timeout: 250
             }).then(function (res) {
@@ -44,7 +44,7 @@ describe('supports http with nodejs', function () {
                 error = err;
                 failure = true;
             });
-            
+
             setTimeout(function () {
                 assert.equal(success, false, 'request should not succeed');
                 assert.equal(failure, true, 'request should fail');
@@ -54,14 +54,14 @@ describe('supports http with nodejs', function () {
             }, 300);
         });
     });
-    
+
     it('should allow passing JSON', function (done) {
         var data = {
             firstName: 'Fred',
             lastName: 'Flintstone',
             emailAddr: 'fred@example.com'
         };
-        
+
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'application/json;charset=utf-8');
             res.end(JSON.stringify(data));
@@ -72,14 +72,14 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('use interceptor', function (done) {
         var data = {
             firstName: 'Fred',
             lastName: 'Flintstone',
             emailAddr: 'fred@example.com'
         };
-    
+
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'application/json;charset=utf-8');
             res.end(JSON.stringify(data));
@@ -95,7 +95,7 @@ describe('supports http with nodejs', function () {
             }, error => {
                 return Promise.reject(error)
             })
-    
+
             http.interceptors.response.use(response => {
                 return Promise.resolve(response.data)
             }, error => {
@@ -107,13 +107,13 @@ describe('supports http with nodejs', function () {
             });
         });
     })
-    
+
     it('should redirect', function (done) {
         var str = 'test response';
-        
+
         server = http.createServer(function (req, res) {
             var parsed = url.parse(req.url);
-            
+
             if (parsed.pathname === '/one') {
                 res.setHeader('Location', '/two');
                 res.statusCode = 302;
@@ -129,7 +129,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should not redirect', function (done) {
         server = http.createServer(function (req, res) {
             res.setHeader('Location', '/foo');
@@ -148,7 +148,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support max redirects', function (done) {
         var i = 1;
         server = http.createServer(function (req, res) {
@@ -164,7 +164,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should preserve the HTTP verb on redirect', function (done) {
         server = http.createServer(function (req, res) {
             if (req.method.toLowerCase() !== "head") {
@@ -172,7 +172,7 @@ describe('supports http with nodejs', function () {
                 res.end();
                 return;
             }
-            
+
             var parsed = url.parse(req.url);
             if (parsed.pathname === '/one') {
                 res.setHeader('Location', '/two');
@@ -190,16 +190,16 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support transparent gunzip', function (done) {
         var data = {
             firstName: 'Fred',
             lastName: 'Flintstone',
             emailAddr: 'fred@example.com'
         };
-        
+
         zlib.gzip(JSON.stringify(data), function (err, zipped) {
-            
+
             server = http.createServer(function (req, res) {
                 res.setHeader('Content-Type', 'application/json;charset=utf-8');
                 res.setHeader('Content-Encoding', 'gzip');
@@ -210,10 +210,10 @@ describe('supports http with nodejs', function () {
                     done();
                 });
             });
-            
+
         });
     });
-    
+
     it('should support gunzip error handling', function (done) {
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'application/json;charset=utf-8');
@@ -225,10 +225,10 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support UTF8', function (done) {
         var str = Array(100000).join('ж');
-        
+
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
             res.end(str);
@@ -239,7 +239,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support basic auth', function (done) {
         server = http.createServer(function (req, res) {
             res.end(req.headers.authorization);
@@ -253,7 +253,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support basic auth with a header', function (done) {
         server = http.createServer(function (req, res) {
             res.end(req.headers.authorization);
@@ -267,16 +267,16 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support max content length', function (done) {
         var str = Array(100000).join('ж');
-        
+
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
             res.end(str);
         }).listen(4444, function () {
             var success = false, failure = false, error;
-            
+
             axios.get('http://localhost:4444/', {
                 maxContentLength: 2000
             }).then(function (res) {
@@ -285,7 +285,7 @@ describe('supports http with nodejs', function () {
                 error = err;
                 failure = true;
             });
-            
+
             setTimeout(function () {
                 assert.equal(success, false, 'request should not succeed');
                 assert.equal(failure, true, 'request should fail');
@@ -294,7 +294,7 @@ describe('supports http with nodejs', function () {
             }, 100);
         });
     });
-    
+
     // it.skip('should support sockets', function (done) {
     //     server = net.createServer(function (socket) {
     //         socket.on('data', function () {
@@ -316,7 +316,7 @@ describe('supports http with nodejs', function () {
     //             });
     //     });
     // });
-    
+
     it('should support streams', function (done) {
         server = http.createServer(function (req, res) {
             req.pipe(res);
@@ -337,7 +337,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     // it('should pass errors for a failed stream', function (done) {
     //     server = http.createServer(function (req, res) {
     //         req.pipe(res);
@@ -352,7 +352,7 @@ describe('supports http with nodejs', function () {
     //         });
     //     });
     // });
-    
+
     it('should support buffers', function (done) {
         var buf = Buffer.alloc(1024, 'x'); // Unsafe buffer < Buffer.poolSize (8192 bytes)
         server = http.createServer(function (req, res) {
@@ -375,7 +375,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support HTTP proxies', function (done) {
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -388,7 +388,7 @@ describe('supports http with nodejs', function () {
                     port: parsed.port,
                     path: parsed.path
                 };
-                
+
                 http.get(opts, function (res) {
                     var body = '';
                     res.on('data', function (data) {
@@ -399,7 +399,7 @@ describe('supports http with nodejs', function () {
                         response.end(body + '6789');
                     });
                 });
-                
+
             }).listen(4000, function () {
                 axios.get('http://localhost:4444/', {
                     proxy: {
@@ -413,11 +413,11 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should not pass through disabled proxy', function (done) {
         // set the env variable
         process.env.http_proxy = 'http://does-not-exists.example.com:4242/';
-        
+
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
             res.end('123456789');
@@ -430,7 +430,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support proxy set via env var', function (done) {
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -443,7 +443,7 @@ describe('supports http with nodejs', function () {
                     port: parsed.port,
                     path: parsed.path
                 };
-                
+
                 http.get(opts, function (res) {
                     var body = '';
                     res.on('data', function (data) {
@@ -454,11 +454,11 @@ describe('supports http with nodejs', function () {
                         response.end(body + '1234');
                     });
                 });
-                
+
             }).listen(4000, function () {
                 // set the env variable
                 process.env.http_proxy = 'http://localhost:4000/';
-                
+
                 axios.get('http://localhost:4444/').then(function (res) {
                     assert.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
                     done();
@@ -466,7 +466,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should not use proxy for domains in no_proxy', function (done) {
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -479,7 +479,7 @@ describe('supports http with nodejs', function () {
                     port: parsed.port,
                     path: parsed.path
                 };
-                
+
                 http.get(opts, function (res) {
                     var body = '';
                     res.on('data', function (data) {
@@ -490,12 +490,12 @@ describe('supports http with nodejs', function () {
                         response.end(body + '1234');
                     });
                 });
-                
+
             }).listen(4000, function () {
                 // set the env variable
                 process.env.http_proxy = 'http://localhost:4000/';
                 process.env.no_proxy = 'foo.com, localhost,bar.net , , quix.co';
-                
+
                 axios.get('http://localhost:4444/').then(function (res) {
                     assert.equal(res.data, '4567', 'should not use proxy for domains in no_proxy');
                     done();
@@ -503,7 +503,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should use proxy for domains not in no_proxy', function (done) {
         server = http.createServer(function (req, res) {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -516,7 +516,7 @@ describe('supports http with nodejs', function () {
                     port: parsed.port,
                     path: parsed.path
                 };
-                
+
                 http.get(opts, function (res) {
                     var body = '';
                     res.on('data', function (data) {
@@ -527,12 +527,12 @@ describe('supports http with nodejs', function () {
                         response.end(body + '1234');
                     });
                 });
-                
+
             }).listen(4000, function () {
                 // set the env variable
                 process.env.http_proxy = 'http://localhost:4000/';
                 process.env.no_proxy = 'foo.com, ,bar.net , quix.co';
-                
+
                 axios.get('http://localhost:4444/').then(function (res) {
                     assert.equal(res.data, '45671234', 'should use proxy for domains not in no_proxy');
                     done();
@@ -540,7 +540,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support HTTP proxy auth', function (done) {
         server = http.createServer(function (req, res) {
             res.end();
@@ -553,7 +553,7 @@ describe('supports http with nodejs', function () {
                     path: parsed.path
                 };
                 var proxyAuth = request.headers['proxy-authorization'];
-                
+
                 http.get(opts, function (res) {
                     var body = '';
                     res.on('data', function (data) {
@@ -564,7 +564,7 @@ describe('supports http with nodejs', function () {
                         response.end(proxyAuth);
                     });
                 });
-                
+
             }).listen(4000, function () {
                 axios.get('http://localhost:4444/', {
                     proxy: {
@@ -583,7 +583,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support proxy auth from env', function (done) {
         server = http.createServer(function (req, res) {
             res.end();
@@ -596,7 +596,7 @@ describe('supports http with nodejs', function () {
                     path: parsed.path
                 };
                 var proxyAuth = request.headers['proxy-authorization'];
-                
+
                 http.get(opts, function (res) {
                     var body = '';
                     res.on('data', function (data) {
@@ -607,10 +607,10 @@ describe('supports http with nodejs', function () {
                         response.end(proxyAuth);
                     });
                 });
-                
+
             }).listen(4000, function () {
                 process.env.http_proxy = 'http://user:pass@localhost:4000/';
-                
+
                 axios.get('http://localhost:4444/').then(function (res) {
                     var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
                     assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy set by process.env.http_proxy');
@@ -619,7 +619,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support proxy auth with header', function (done) {
         server = http.createServer(function (req, res) {
             res.end();
@@ -632,7 +632,7 @@ describe('supports http with nodejs', function () {
                     path: parsed.path
                 };
                 var proxyAuth = request.headers['proxy-authorization'];
-                
+
                 http.get(opts, function (res) {
                     var body = '';
                     res.on('data', function (data) {
@@ -643,7 +643,7 @@ describe('supports http with nodejs', function () {
                         response.end(proxyAuth);
                     });
                 });
-                
+
             }).listen(4000, function () {
                 axios.get('http://localhost:4444/', {
                     proxy: {
@@ -665,7 +665,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should support cancel', function (done) {
         var source = axios.CancelToken.source();
         server = http.createServer(function (req, res) {
@@ -681,7 +681,7 @@ describe('supports http with nodejs', function () {
             });
         });
     });
-    
+
     it('should combine baseURL and url', function (done) {
         server = http.createServer(function (req, res) {
             res.end();

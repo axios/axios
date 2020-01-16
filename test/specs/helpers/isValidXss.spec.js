@@ -8,7 +8,7 @@ describe('helpers::isValidXss', function () {
     expect(isValidXss("<img src='/' onerror='javascript:alert('xss')'>xss</script>")).toBe(true);
     expect(isValidXss("<script>console.log('XSS')</script>")).toBe(true);
     expect(isValidXss("onerror=alert('XSS')")).toBe(true);
-    expect(isValidXss("onmouseover=alert('XSS')")).toBe(true);
+    expect(isValidXss("onMouseOver=alert('XSS')")).toBe(true);
     expect(isValidXss("onkeyup=alert('XSS')")).toBe(true);
     expect(isValidXss("<a onclick='alert('XSS')'>Click Me</a>")).toBe(true);
   });

@@ -115,6 +115,22 @@ async function getUser() {
 > **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
 
+Performing a `GET` request with content in the headers and/or body
+
+```js
+async function getUserViaBody() {
+    try {
+        const response = await axios.get('/user', {
+            data: {id: 12345}, // body
+            headers: {Authorization: `Bearer ${process.env.API_TOKEN}`} // headers
+        });
+        console.log(response.data);
+    } catch (error) {
+        console.error(error);
+    }
+}
+```
+
 Performing a `POST` request
 
 ```js

@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.19.2 (Jan 20, 2020)
+
+- Remove unnecessary XSS check ([#2679](https://github.com/axios/axios/pull/2679)) (see ([#2646](https://github.com/axios/axios/issues/2646)) for discussion)
+
 ### 0.19.1 (Jan 7, 2020)
 
 Fixes and Functionality:

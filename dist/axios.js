@@ -1,4 +1,4 @@
-/* axios v0.19.1 | (c) 2020 by Matt Zabriskie */
+/* axios v0.19.2 | (c) 2020 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -66,7 +66,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var utils = __webpack_require__(2);
 	var bind = __webpack_require__(3);
 	var Axios = __webpack_require__(4);
-	var mergeConfig = __webpack_require__(23);
+	var mergeConfig = __webpack_require__(22);
 	var defaults = __webpack_require__(10);
 	
 	/**
@@ -100,15 +100,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	// Expose Cancel & CancelToken
-	axios.Cancel = __webpack_require__(24);
-	axios.CancelToken = __webpack_require__(25);
+	axios.Cancel = __webpack_require__(23);
+	axios.CancelToken = __webpack_require__(24);
 	axios.isCancel = __webpack_require__(9);
 	
 	// Expose all/spread
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(26);
+	axios.spread = __webpack_require__(25);
 	
 	module.exports = axios;
 	
@@ -493,7 +493,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var buildURL = __webpack_require__(5);
 	var InterceptorManager = __webpack_require__(6);
 	var dispatchRequest = __webpack_require__(7);
-	var mergeConfig = __webpack_require__(23);
+	var mergeConfig = __webpack_require__(22);
 	
 	/**
 	 * Create a new instance of Axios
@@ -1070,7 +1070,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // This is only done if running in a standard browser environment.
 	    // Specifically not if we're in a web worker, or react-native.
 	    if (utils.isStandardBrowserEnv()) {
-	      var cookies = __webpack_require__(22);
+	      var cookies = __webpack_require__(21);
 	
 	      // Add xsrf header
 	      var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
@@ -1382,7 +1382,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var isValidXss = __webpack_require__(21);
 	
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -1402,10 +1401,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    */
 	      function resolveURL(url) {
 	        var href = url;
-	
-	        if (isValidXss(url)) {
-	          throw new Error('URL contains XSS injection attempt');
-	        }
 	
 	        if (msie) {
 	        // IE needs attribute set twice to normalize properties
@@ -1456,19 +1451,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 /* 21 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	module.exports = function isValidXss(requestURL) {
-	  var xssRegex = /(\b)(on\w+)=|javascript|(<\s*)(\/*)script/gi;
-	  return xssRegex.test(requestURL);
-	};
-	
-
-
-/***/ }),
-/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1527,7 +1509,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1606,7 +1588,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1631,12 +1613,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Cancel = __webpack_require__(24);
+	var Cancel = __webpack_require__(23);
 	
 	/**
 	 * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -1694,7 +1676,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports) {
 
 	'use strict';

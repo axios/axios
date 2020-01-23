@@ -1,4 +1,4 @@
-type LooseObject = object & {
+type LooseObject = {
   [key: string]: string | number | boolean;
 };
 

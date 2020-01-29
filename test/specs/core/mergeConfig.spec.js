@@ -56,17 +56,12 @@ describe('core::mergeConfig', function() {
   });
 
   it('should overwrite auth, headers, params, proxy with a non-object value', function() {
-    expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: false })).toEqual({
-      auth: false
-    });
-    expect(mergeConfig({ headers: { user: 'foo', pass: 'test' } }, { headers: null })).toEqual({
-      headers: null
-    });
-    expect(mergeConfig({ params: { user: 'foo', pass: 'test' } }, { params: null })).toEqual({
-      params: null
-    });
-    expect(mergeConfig({ proxy: { user: 'foo', pass: 'test' } }, { proxy: null })).toEqual({
-      proxy: null
+    ['auth', 'headers', 'params', 'proxy'].forEach(key => {
+      [false, null].forEach(value => {
+        expect(mergeConfig({ [key]: { user: 'foo', pass: 'test' } }, { [key]: value })).toEqual({
+          [key]: value
+        });
+      });
     });
   });
 

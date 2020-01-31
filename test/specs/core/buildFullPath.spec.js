@@ -17,4 +17,12 @@ describe('helpers::buildFullPath', function () {
     expect(buildFullPath('/api', '/users')).toBe('/api/users');
   });
 
+  it('should combine the query parameters when baseURL ends with &', function () {
+    expect(buildFullPath('/api&key=12345', '&user=me')).toBe('/api&key=12345&user=me');
+  });
+
+  it('should combine the query parameters when requestedURL starts with &', function () {
+    expect(buildFullPath('/api&key=12345&', 'user=me')).toBe('/api&key=12345&user=me');
+  });
+
 });

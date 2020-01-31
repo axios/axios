@@ -18,11 +18,11 @@ describe('helpers::buildFullPath', function () {
   });
 
   it('should combine the query parameters when baseURL ends with &', function () {
-    expect(buildFullPath('/api&key=12345', '&user=me')).toBe('/api&key=12345&user=me');
+    expect(buildFullPath('/api?key=12345', '&user=me')).toBe('/api?key=12345&user=me');
   });
 
   it('should combine the query parameters when requestedURL starts with &', function () {
-    expect(buildFullPath('/api&key=12345&', 'user=me')).toBe('/api&key=12345&user=me');
+    expect(buildFullPath('/api?key=12345&', 'user=me')).toBe('/api?key=12345&user=me');
   });
 
 });

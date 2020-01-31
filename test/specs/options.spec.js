@@ -43,6 +43,21 @@ describe('options', function () {
     });
   });
 
+  it('should accept params and combine them with params in baseURL', function (done) {
+    axios('user=me', {
+      baseURL: 'http://host/api?key=1234&',
+      params: {
+        foo: 123,
+        bar: 456
+      }
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://host/api?key=1234&user=me&foo=123&bar=456');
+      done();
+    });
+  });
+
   it('should allow overriding default headers', function (done) {
     axios('/foo', {
       headers: {

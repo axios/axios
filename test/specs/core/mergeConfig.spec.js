@@ -54,7 +54,7 @@ describe('core::mergeConfig', function() {
     });
 
     it(`should overwrite default ${key} with a non-object value`, function() {
-      [false, null].forEach(value => {
+      [false, null, 123].forEach(value => {
         expect(mergeConfig({ [key]: { user: 'foo', pass: 'test' } }, { [key]: value })).toEqual({
           [key]: value
         });

@@ -40,23 +40,20 @@ describe('core::mergeConfig', function() {
     expect(merged.data).toEqual(undefined);
   });
 
-  it('should merge auth, headers, params, proxy with defaults', function() {
-    expect(mergeConfig({ auth: { user: 'foo' } }, { auth: { pass: 'test' } })).toEqual({
-      auth: { user: 'foo', pass: 'test' }
+  ['auth', 'headers', 'params', 'proxy'].forEach(key => {
+    it(`should set new config for ${key} without default`, function() {
+      expect(mergeConfig({ [key]: undefined }, { [key]: { user: 'foo', pass: 'test' } })).toEqual({
+        [key]: { user: 'foo', pass: 'test' }
+      });
     });
-    expect(mergeConfig({ headers: { user: 'foo' } }, { headers: { pass: 'test' } })).toEqual({
-      headers: { user: 'foo', pass: 'test' }
-    });
-    expect(mergeConfig({ params: { user: 'foo' } }, { params: { pass: 'test' } })).toEqual({
-      params: { user: 'foo', pass: 'test' }
-    });
-    expect(mergeConfig({ proxy: { user: 'foo' } }, { proxy: { pass: 'test' } })).toEqual({
-      proxy: { user: 'foo', pass: 'test' }
-    });
-  });
 
-  it('should overwrite auth, headers, params, proxy with a non-object value', function() {
-    ['auth', 'headers', 'params', 'proxy'].forEach(key => {
+    it(`should merge ${key} with defaults`, function() {
+      expect(mergeConfig({ [key]: { user: 'foo', pass: 'bar' } }, { [key]: { pass: 'test' } })).toEqual({
+        [key]: { user: 'foo', pass: 'test' }
+      });
+    });
+
+    it(`should overwrite default ${key} with a non-object value`, function() {
       [false, null].forEach(value => {
         expect(mergeConfig({ [key]: { user: 'foo', pass: 'test' } }, { [key]: value })).toEqual({
           [key]: value

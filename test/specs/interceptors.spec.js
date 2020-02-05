@@ -9,7 +9,8 @@ describe('interceptors', function () {
     axios.interceptors.response.handlers = [];
   });
 
-  it('should add a request interceptor', function (done) {
+  it('should add a request interceptor (asynchronous by default)', function (done) {
+    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
       return config;
@@ -18,12 +19,144 @@ describe('interceptors', function () {
     axios('/foo');
 
     getAjaxRequest().then(function (request) {
-      request.respondWith({
-        status: 200,
-        responseText: 'OK'
-      });
-
+      expect(promiseResolveSpy).toHaveBeenCalled();
       expect(request.requestHeaders.test).toBe('added by interceptor');
+      done();
+    });
+  });
+
+  it('should add a request interceptor (explicitly flagged as asynchronous)', function (done) {
+    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by interceptor';
+      return config;
+    }, null, { synchronous: false });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(promiseResolveSpy).toHaveBeenCalled();
+      expect(request.requestHeaders.test).toBe('added by interceptor');
+      done();
+    });
+  });
+
+  it('should add a request interceptor that is executed synchronously when flag is provided', function (done) {
+    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by synchronous interceptor';
+      return config;
+    }, null, { synchronous: true });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(promiseResolveSpy).not.toHaveBeenCalled();
+      expect(request.requestHeaders.test).toBe('added by synchronous interceptor');
+      done();
+    });
+  });
+
+  it('should execute asynchronously when not all interceptors are explicitly flagged as synchronous', function (done) {
+    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    axios.interceptors.request.use(function (config) {
+      config.headers.foo = 'uh oh, async';
+      return config;
+    });
+
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by synchronous interceptor';
+      return config;
+    }, null, { synchronous: true });
+
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'uh oh, async also';
+      return config;
+    });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(promiseResolveSpy).toHaveBeenCalled();
+      expect(request.requestHeaders.foo).toBe('uh oh, async');
+      expect(request.requestHeaders.test).toBe('uh oh, async also');
+      done();
+    });
+  });
+
+  it('runs the interceptor if runWhen function is provided and resolves to true', function (done) {
+    function onGetCall(config) {
+      return config.method === 'get';
+    }
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'special get headers';
+      return config;
+    }, null, { runWhen: onGetCall });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders.test).toBe('special get headers');
+      done();
+    });
+  });
+
+  it('does not run the interceptor if runWhen function is provided and resolves to false', function (done) {
+    function onPostCall(config) {
+      return config.method === 'post';
+    }
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'special get headers';
+      return config;
+    }, null, { runWhen: onPostCall });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders.test).toBeUndefined()
+      done();
+    });
+  });
+
+  it('does not run async interceptor if runWhen function is provided and resolves to false (and run synchronously)', function (done) {
+    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+
+    function onPostCall(config) {
+      return config.method === 'post';
+    }
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'special get headers';
+      return config;
+    }, null, { synchronous: false, runWhen: onPostCall });
+
+    axios.interceptors.request.use(function (config) {
+      config.headers.sync = 'hello world';
+      return config;
+    }, null, { synchronous: true });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(promiseResolveSpy).not.toHaveBeenCalled()
+      expect(request.requestHeaders.test).toBeUndefined()
+      expect(request.requestHeaders.sync).toBe('hello world')
+      done();
+    });
+  });
+
+  it('should add a request interceptor with an onRejected block that is called if interceptor code fails', function (done) {
+    var rejectedSpy = jasmine.createSpy('rejectedSpy');
+    var error = new Error('deadly error');
+    axios.interceptors.request.use(function () {
+      throw error;
+    }, function() {
+      rejectedSpy(error);
+    }, { synchronous: true });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function () {
+      expect(rejectedSpy).toHaveBeenCalledWith(error);
       done();
     });
   });
@@ -234,6 +367,31 @@ describe('interceptors', function () {
         expect(response.data).toBe('OK13');
         done();
       }, 100);
+    });
+  });
+
+  it('should remove async interceptor before making request and execute synchronously', function (done) {
+    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    var asyncIntercept = axios.interceptors.request.use(function (config) {
+      config.headers.async = 'async it!';
+      return config;
+    }, null, { synchronous: false });
+
+    var syncIntercept = axios.interceptors.request.use(function (config) {
+      config.headers.sync = 'hello world';
+      return config;
+    }, null, { synchronous: true });
+
+
+    axios.interceptors.request.eject(asyncIntercept);
+
+    axios('/foo')
+
+    getAjaxRequest().then(function (request) {
+      expect(promiseResolveSpy).not.toHaveBeenCalled();
+      expect(request.requestHeaders.async).toBeUndefined();
+      expect(request.requestHeaders.sync).toBe('hello world');
+      done()
     });
   });
 

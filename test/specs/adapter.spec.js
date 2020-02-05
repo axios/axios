@@ -2,18 +2,19 @@ var axios = require('../../index');
 
 describe('adapter', function () {
   it('should support custom adapter', function (done) {
-    var called = false;
-
     axios('/foo', {
-      adapter: function (config) {
-        called = true;
+      adapter: function(config) {
+        return new Promise(function (resolve) {
+          setTimeout(function () {
+            config.headers.async = 'promise';
+            resolve(config);
+          }, 100);
+        });
       }
-    });
+    }).catch(console.log);
 
     setTimeout(function () {
-      expect(called).toBe(true);
       done();
     }, 100);
   });
 });
-

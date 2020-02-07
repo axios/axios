@@ -70,7 +70,7 @@ describe('interceptors', function () {
     }, null, { synchronous: true });
 
     axios.interceptors.request.use(function (config) {
-      config.headers.test = 'uh oh, async also';
+      config.headers.test = 'added by the async interceptor';
       return config;
     });
 
@@ -79,7 +79,8 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       expect(promiseResolveSpy).toHaveBeenCalled();
       expect(request.requestHeaders.foo).toBe('uh oh, async');
-      expect(request.requestHeaders.test).toBe('uh oh, async also');
+      /* request interceptors have a reversed execution order */
+      expect(request.requestHeaders.test).toBe('added by synchronous interceptor');
       done();
     });
   });
@@ -149,9 +150,7 @@ describe('interceptors', function () {
     var error = new Error('deadly error');
     axios.interceptors.request.use(function () {
       throw error;
-    }, function() {
-      rejectedSpy(error);
-    }, { synchronous: true });
+    }, rejectedSpy, { synchronous: true });
 
     axios('/foo');
 

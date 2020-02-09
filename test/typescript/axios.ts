@@ -97,6 +97,10 @@ axios.patch('/user', { foo: 'bar' })
   .then(handleResponse)
   .catch(handleError);
 
+axios.options('/user')
+    .then(handleResponse)
+    .catch(handleError);
+
 // Typed methods
 interface User {
   id: number;
@@ -144,10 +148,13 @@ axios.put<User>('/user', { foo: 'bar' })
 
 axios.patch<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
-  .catch(handleError);
+    .catch(handleError);
+
+axios.options<User>('/user')
+    .then(handleUserResponse)
+    .catch(handleError);
 
 // (Typed methods) with custom response type
-
 const handleStringResponse = (response: string) => {
   console.log(response)
 }
@@ -183,6 +190,10 @@ axios.put<User, string>('/user', { foo: 'bar' })
 axios.patch<User, string>('/user', { foo: 'bar' })
   .then(handleStringResponse)
   .catch(handleError);
+
+axios.options<User, string>('/user')
+    .then(handleStringResponse)
+    .catch(handleError);
 
 axios.request<User, string>({
   method: 'get',

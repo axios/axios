@@ -660,6 +660,24 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should allow methods', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Allow', ['GET', 'POST']);
+      res.end();
+    }).listen(4444, function () {
+      axios.options('/foo', {
+        baseURL: 'http://localhost:4444/',
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'http://localhost:4444/');
+        assert.equal(res.config.url, '/foo');
+        assert.equal(res.headers.allow, 'GET, POST');
+        done();
+      }).catch(function (err) {
+        done(err);
+      });
+    });
+  });
 });
 
 

@@ -140,6 +140,11 @@ function getUserAccount() {
 function getUserPermissions() {
   return axios.get('/user/12345/permissions');
 }
+
+Promise.all([getUserAccount(), getUserPermissions()])
+  .then(function (acct, perms) {
+    // Both requests are now complete
+  });
 ```
 
 ## axios API
@@ -194,6 +199,13 @@ For convenience aliases have been provided for all supported request methods.
 
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
+
+~~Concurrency~~
+
+~~Helper functions for dealing with concurrent requests.~~
+
+~~axios.all(iterable)~~
+~~axios.spread(callback)~~
 
 ### Creating an instance
 

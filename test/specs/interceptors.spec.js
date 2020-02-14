@@ -10,74 +10,80 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor (asynchronous by default)', function (done) {
-    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    var asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
+      expect(asyncFlag).toBe(true);
       return config;
     });
 
     axios('/foo');
+    asyncFlag = true;
 
     getAjaxRequest().then(function (request) {
-      expect(promiseResolveSpy).toHaveBeenCalled();
       expect(request.requestHeaders.test).toBe('added by interceptor');
       done();
     });
   });
 
   it('should add a request interceptor (explicitly flagged as asynchronous)', function (done) {
-    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    var asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
+      expect(asyncFlag).toBe(true);
       return config;
     }, null, { synchronous: false });
 
     axios('/foo');
+    asyncFlag = true;
 
     getAjaxRequest().then(function (request) {
-      expect(promiseResolveSpy).toHaveBeenCalled();
       expect(request.requestHeaders.test).toBe('added by interceptor');
       done();
     });
   });
 
   it('should add a request interceptor that is executed synchronously when flag is provided', function (done) {
-    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    var asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by synchronous interceptor';
+      expect(asyncFlag).toBe(false);
       return config;
     }, null, { synchronous: true });
 
     axios('/foo');
+    asyncFlag = true;
 
     getAjaxRequest().then(function (request) {
-      expect(promiseResolveSpy).not.toHaveBeenCalled();
       expect(request.requestHeaders.test).toBe('added by synchronous interceptor');
       done();
     });
   });
 
   it('should execute asynchronously when not all interceptors are explicitly flagged as synchronous', function (done) {
-    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    var asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.foo = 'uh oh, async';
+      expect(asyncFlag).toBe(true);
       return config;
     });
 
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by synchronous interceptor';
+      expect(asyncFlag).toBe(true);
       return config;
     }, null, { synchronous: true });
 
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by the async interceptor';
+      expect(asyncFlag).toBe(true);
       return config;
     });
 
     axios('/foo');
+    asyncFlag = true;
 
     getAjaxRequest().then(function (request) {
-      expect(promiseResolveSpy).toHaveBeenCalled();
       expect(request.requestHeaders.foo).toBe('uh oh, async');
       /* request interceptors have a reversed execution order */
       expect(request.requestHeaders.test).toBe('added by synchronous interceptor');
@@ -120,7 +126,7 @@ describe('interceptors', function () {
   });
 
   it('does not run async interceptor if runWhen function is provided and resolves to false (and run synchronously)', function (done) {
-    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    var asyncFlag = false;
 
     function onPostCall(config) {
       return config.method === 'post';
@@ -132,13 +138,14 @@ describe('interceptors', function () {
 
     axios.interceptors.request.use(function (config) {
       config.headers.sync = 'hello world';
+      expect(asyncFlag).toBe(false);
       return config;
     }, null, { synchronous: true });
 
     axios('/foo');
+    asyncFlag = true
 
     getAjaxRequest().then(function (request) {
-      expect(promiseResolveSpy).not.toHaveBeenCalled()
       expect(request.requestHeaders.test).toBeUndefined()
       expect(request.requestHeaders.sync).toBe('hello world')
       done();
@@ -370,7 +377,7 @@ describe('interceptors', function () {
   });
 
   it('should remove async interceptor before making request and execute synchronously', function (done) {
-    var promiseResolveSpy = spyOn(window.Promise, 'resolve').and.callThrough();
+    var asyncFlag = false;
     var asyncIntercept = axios.interceptors.request.use(function (config) {
       config.headers.async = 'async it!';
       return config;
@@ -378,6 +385,7 @@ describe('interceptors', function () {
 
     var syncIntercept = axios.interceptors.request.use(function (config) {
       config.headers.sync = 'hello world';
+      expect(asyncFlag).toBe(false);
       return config;
     }, null, { synchronous: true });
 
@@ -385,9 +393,9 @@ describe('interceptors', function () {
     axios.interceptors.request.eject(asyncIntercept);
 
     axios('/foo')
+    asyncFlag = true
 
     getAjaxRequest().then(function (request) {
-      expect(promiseResolveSpy).not.toHaveBeenCalled();
       expect(request.requestHeaders.async).toBeUndefined();
       expect(request.requestHeaders.sync).toBe('hello world');
       done()

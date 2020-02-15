@@ -33,30 +33,32 @@ describe('core::mergeConfig', function() {
   it('should not inherit request options', function() {
     var localDefaults = {
       method: '__sample method__',
-      params: '__sample params__',
       data: { foo: true }
     };
     var merged = mergeConfig(localDefaults, {});
     expect(merged.method).toEqual(undefined);
-    expect(merged.params).toEqual(undefined);
     expect(merged.data).toEqual(undefined);
   });
 
-  it('should merge auth, headers, proxy with defaults', function() {
-    expect(mergeConfig({ auth: undefined }, { auth: { user: 'foo', pass: 'test' } })).toEqual({
-      auth: { user: 'foo', pass: 'test' }
+  ['auth', 'headers', 'params', 'proxy'].forEach(key => {
+    it(`should set new config for ${key} without default`, function() {
+      expect(mergeConfig({ [key]: undefined }, { [key]: { user: 'foo', pass: 'test' } })).toEqual({
+        [key]: { user: 'foo', pass: 'test' }
+      });
     });
-    expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: { pass: 'foobar' } })).toEqual({
-      auth: { user: 'foo', pass: 'foobar' }
-    });
-  });
 
-  it('should overwrite auth, headers, proxy with a non-object value', function() {
-    expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: false })).toEqual({
-      auth: false
+    it(`should merge ${key} with defaults`, function() {
+      expect(mergeConfig({ [key]: { user: 'foo', pass: 'bar' } }, { [key]: { pass: 'test' } })).toEqual({
+        [key]: { user: 'foo', pass: 'test' }
+      });
     });
-    expect(mergeConfig({ auth: { user: 'foo', pass: 'test' } }, { auth: null })).toEqual({
-      auth: null
+
+    it(`should overwrite default ${key} with a non-object value`, function() {
+      [false, null, 123].forEach(value => {
+        expect(mergeConfig({ [key]: { user: 'foo', pass: 'test' } }, { [key]: value })).toEqual({
+          [key]: value
+        });
+      });
     });
   });
 

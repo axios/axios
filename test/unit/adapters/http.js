@@ -5,6 +5,7 @@ var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -304,15 +305,17 @@ describe('supports http with nodejs', function () {
   });
 
   it('should pass errors for a failed stream', function (done) {
+    var notExitPath = path.join(__dirname, 'does_not_exist');
+
     server = http.createServer(function (req, res) {
       req.pipe(res);
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
-        fs.createReadStream('/does/not/exist')
+        fs.createReadStream(notExitPath)
       ).then(function (res) {
         assert.fail();
       }).catch(function (err) {
-        assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
         done();
       });
     });

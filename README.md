@@ -49,7 +49,13 @@ Using yarn:
 $ yarn add axios
 ```
 
-Using cdn:
+Using jsDelivr CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+```
+
+Using unpkg CDN:
 
 ```html
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -81,7 +87,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .finally(function () {
+  .then(function () {
     // always executed
   });
 
@@ -97,7 +103,7 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   })
-  .finally(function () {
+  .then(function () {
     // always executed
   });  
 

@@ -71,9 +71,11 @@
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   },
+  "jsdelivr": "dist/axios.min.js",
+  "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "1.5.10"
+    "follow-redirects": "^1.10.0"
   },
   "bundlesize": [
     {

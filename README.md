@@ -49,7 +49,13 @@ Using yarn:
 $ yarn add axios
 ```
 
-Using cdn:
+Using jsDelivr CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+```
+
+Using unpkg CDN:
 
 ```html
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>

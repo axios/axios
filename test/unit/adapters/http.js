@@ -1,5 +1,3 @@
-'use strict';
-
 var axios = require('../../../index');
 var http = require('http');
 var net = require('net');
@@ -7,8 +5,7 @@ var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
-var server;
-var proxy;
+var server, proxy;
 
 describe('supports http with nodejs', function() {
   afterEach(function() {
@@ -34,13 +31,12 @@ describe('supports http with nodejs', function() {
         res.end();
       }, 1000);
     }).listen(4444, function() {
-      var success = false;
-      var failure = false;
+      var success = false, failure = false;
       var error;
 
       axios.get('http://localhost:4444/', {
         timeout: 250
-      }).then(function() {
+      }).then(function(res) {
         success = true;
       }).catch(function(err) {
         error = err;
@@ -126,7 +122,7 @@ describe('supports http with nodejs', function() {
     }).listen(4444, function() {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3
-      }).catch(function() {
+      }).catch(function(error) {
         done();
       });
     });
@@ -179,6 +175,18 @@ describe('supports http with nodejs', function() {
     });
   });
 
+  it('should support gunzip error handling', function(done) {
+    server = http.createServer(function(req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.setHeader('Content-Encoding', 'gzip');
+      res.end('invalid response');
+    }).listen(4444, function() {
+      axios.get('http://localhost:4444/').catch(function(error) {
+        done();
+      });
+    });
+  });
+
   it('should support disabling automatic decompression of response data', function(done) {
     var data = 'Test data';
 
@@ -200,17 +208,6 @@ describe('supports http with nodejs', function() {
     });
   });
 
-  it('should support gunzip error handling', function(done) {
-    server = http.createServer(function(req, res) {
-      res.setHeader('Content-Type', 'application/json;charset=utf-8');
-      res.setHeader('Content-Encoding', 'gzip');
-      res.end('invalid response');
-    }).listen(4444, function() {
-      axios.get('http://localhost:4444/').catch(function() {
-        done();
-      });
-    });
-  });
 
   it('should support UTF8', function(done) {
     var str = Array(100000).join('ж');
@@ -261,13 +258,11 @@ describe('supports http with nodejs', function() {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       res.end(str);
     }).listen(4444, function() {
-      var success = false;
-      var failure = false;
-      var error;
+      var success = false, failure = false, error;
 
       axios.get('http://localhost:4444/', {
         maxContentLength: 2000
-      }).then(function() {
+      }).then(function(res) {
         success = true;
       }).catch(function(err) {
         error = err;
@@ -284,15 +279,11 @@ describe('supports http with nodejs', function() {
   });
 
   it.skip('should support sockets', function(done) {
-    console.log(1);
     server = net.createServer(function(socket) {
-      console.log(2);
       socket.on('data', function() {
-        console.log(3);
         socket.end('HTTP/1.1 200 OK\r\n\r\n');
       });
     }).listen('./test.sock', function() {
-      console.log(4);
       axios({
         socketPath: './test.sock',
         url: '/'
@@ -336,7 +327,7 @@ describe('supports http with nodejs', function() {
     }).listen(4444, function() {
       axios.post('http://localhost:4444/',
         fs.createReadStream('/does/not/exist')
-      ).then(function() {
+      ).then(function(res) {
         assert.fail();
       }).catch(function(err) {
         assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
@@ -543,6 +534,7 @@ describe('supports http with nodejs', function() {
         var proxyAuth = request.headers['proxy-authorization'];
 
         http.get(opts, function(res) {
+          var body = '';
           res.on('data', function(data) {
             body += data;
           });
@@ -584,6 +576,7 @@ describe('supports http with nodejs', function() {
         var proxyAuth = request.headers['proxy-authorization'];
 
         http.get(opts, function(res) {
+          var body = '';
           res.on('data', function(data) {
             body += data;
           });
@@ -618,6 +611,7 @@ describe('supports http with nodejs', function() {
         var proxyAuth = request.headers['proxy-authorization'];
 
         http.get(opts, function(res) {
+          var body = '';
           res.on('data', function(data) {
             body += data;
           });
@@ -650,7 +644,7 @@ describe('supports http with nodejs', function() {
 
   it('should support cancel', function(done) {
     var source = axios.CancelToken.source();
-    server = http.createServer(function() {
+    server = http.createServer(function(req, res) {
       // call cancel() when the request has been sent, but a response has not been received
       source.cancel('Operation has been canceled.');
     }).listen(4444, function() {
@@ -678,5 +672,4 @@ describe('supports http with nodejs', function() {
     });
   });
 });
-
 

@@ -7,6 +7,12 @@ describe('utils::isX', function () {
     expect(utils.isArray({length: 5})).toEqual(false);
   });
 
+  it('should validate Buffer', function () {
+    expect(utils.isBuffer(Buffer.from('a'))).toEqual(true);
+    expect(utils.isBuffer(null)).toEqual(false);
+    expect(utils.isBuffer(undefined)).toEqual(false);
+  });
+
   it('should validate ArrayBuffer', function () {
     expect(utils.isArrayBuffer(new ArrayBuffer(2))).toEqual(true);
     expect(utils.isArrayBuffer({})).toEqual(false);

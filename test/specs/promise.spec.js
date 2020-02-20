@@ -1,3 +1,6 @@
+
+var utils = require('../../lib/utils');
+
 describe('promise', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -66,5 +69,85 @@ describe('promise', function () {
       expect(result).toEqual('hello world');
       done();
     }, 100);
+  });
+
+  it('should validate custom Promise', function () {
+
+    var thenable = Promise.resolve();
+
+    expect(function() {
+      axios.usePromise(null);
+    }).toThrowError(TypeError, 'Promise should be a Function.');
+
+    expect(function() {
+      axios.usePromise('string');
+    }).toThrowError(TypeError, 'Promise should be a Function.');
+
+    expect(function() {
+      function P () {}
+
+      axios.usePromise(function P () {});
+    }).toThrowError(TypeError, 'Promise should return a thenable.');
+
+    expect(function() {
+      function P () { return thenable; }
+
+      axios.usePromise(P);
+    }).toThrowError(TypeError, 'Promise should have static method: resolve');
+
+    expect(function() {
+      function P () { return thenable; }
+      P.resolve = function resolve () {};
+
+      axios.usePromise(P);
+    }).toThrowError(TypeError, 'Promise.resolve method should return a thenable.');
+
+    expect(function() {
+      function P () { return thenable; }
+      P.resolve = function resolve () { return thenable; };
+
+      axios.usePromise(P);
+    }).toThrowError(TypeError, 'Promise should have static method: reject');
+
+    expect(function() {
+      function P () { return thenable; }
+      P.resolve = function resolve () { return thenable; };
+      P.reject = function reject () {};
+
+      axios.usePromise(P);
+    }).toThrowError(TypeError, 'Promise.reject method should return a thenable.');
+
+    expect(function() {
+      function P () { return thenable; }
+      P.resolve = function resolve () { return thenable; }
+      P.reject = function reject () { return thenable; }
+
+      axios.usePromise(P);
+    }).toThrowError(TypeError, 'Promise should have static method: all');
+
+    expect(function() {
+      function P () { return thenable; }
+      P.resolve = function resolve () { return thenable; };
+      P.reject = function reject () { return thenable; };
+      P.all = function all () {};
+
+      axios.usePromise(P);
+    }).toThrowError(TypeError, 'Promise.all method should return a thenable.');
+
+    function ValidPromise () { return thenable; }
+    ValidPromise.resolve = function resolve () { return thenable; };
+    ValidPromise.reject = function reject () { return thenable; };
+    ValidPromise.all = function all () { return thenable; };
+
+    var OriginalPromise = axios.usePromise();
+
+    axios.usePromise(ValidPromise);
+    
+    expect(axios.usePromise()).toBe(ValidPromise);
+
+    axios.usePromise(OriginalPromise);
+
+    expect(axios.usePromise()).toBe(OriginalPromise);
+
   });
 });

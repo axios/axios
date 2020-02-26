@@ -418,9 +418,9 @@ The response for a request contains the following information.
   // `statusText` is the HTTP status message from the server response
   statusText: 'OK',
 
-  // `headers` the headers that the server responded with
-  // All header names are lower cased
-  // Accessing values can be done like `response.headers['my-header-name']`
+  // `headers` the HTTP headers that the server responded with
+  // All header names are lower cased and can be accessed using the bracket notation.
+  // Example: `response.headers['content-type']`
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request

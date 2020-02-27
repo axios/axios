@@ -319,7 +319,6 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.message, 'maxBodyLength size of 2000 exceeded');
         done();
       }, 100);
     });

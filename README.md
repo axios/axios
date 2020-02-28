@@ -8,12 +8,12 @@
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
-Promise based HTTP client for the browser and node.js
+Promise based HTTP client for the browser and Node.js
 
 ## Features
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
-- Make [http](http://nodejs.org/api/http.html) requests from node.js
+- Make [http](http://nodejs.org/api/http.html) requests from Node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
 - Intercept request and response
 - Transform request and response data
@@ -37,7 +37,7 @@ Using npm:
 $ npm install axios
 ```
 
-Using bower:
+Using Bower:
 
 ```bash
 $ bower install axios
@@ -63,8 +63,8 @@ Using unpkg CDN:
 
 ## Example
 
-### note: CommonJS usage
-In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
+### Note: CommonJS usage
+In order to gain the TypeScript typings (for intellisense / autocomplete), while using CommonJS imports with `require()`, use the following approach:
 
 ```js
 const axios = require('axios').default;
@@ -215,7 +215,7 @@ Helper functions for dealing with concurrent requests.
 
 ### Creating an instance
 
-You can create a new instance of axios with a custom config.
+You can create a new instance of axios with a custom configuration.
 
 ##### axios.create([config])
 
@@ -229,7 +229,7 @@ const instance = axios.create({
 
 ### Instance methods
 
-The available instance methods are listed below. The specified config will be merged with the instance config.
+The available instance methods are listed below. The specified configuration will be merged with the instance configuration.
 
 ##### axios#request(config)
 ##### axios#get(url[, config])
@@ -243,7 +243,7 @@ The available instance methods are listed below. The specified config will be me
 
 ## Request Config
 
-These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
+These are the available configuration options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 
 ```js
 {
@@ -456,9 +456,9 @@ axios.get('/user/12345')
 
 When using `catch`, or passing a [rejection callback](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then) as second parameter of `then`, the response will be available through the `error` object as explained in the [Handling Errors](#handling-errors) section.
 
-## Config Defaults
+## Configuration Defaults
 
-You can specify config defaults that will be applied to every request.
+You can specify configuration defaults that will be applied to every request.
 
 ### Global axios defaults
 
@@ -480,9 +480,9 @@ const instance = axios.create({
 instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ```
 
-### Config order of precedence
+### Configuration order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+A configuration will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
 ```js
 // Create an instance using the config defaults provided by the library
@@ -563,7 +563,7 @@ axios.get('/user/12345')
   });
 ```
 
-Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
+Using the `validateStatus` configuration option, you can define HTTP code(s) that should throw an error.
 
 ```js
 axios.get('/user/12345', {
@@ -657,7 +657,7 @@ const qs = require('qs');
 axios.post('/foo', qs.stringify({ 'bar': 123 }));
 ```
 
-Or in another way (ES6),
+Or in another way (ECMAScript 6),
 
 ```js
 import qs from 'qs';
@@ -673,7 +673,7 @@ axios(options);
 
 ### Node.js
 
-In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
+In Node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
 const querystring = require('querystring');
@@ -691,8 +691,8 @@ Until axios reaches a `1.0` release, breaking changes will be released with a ne
 
 ## Promises
 
-axios depends on a native ES6 Promise implementation to be [supported](http://caniuse.com/promises).
-If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
+axios depends on a native ECMAScript 6  Promise implementation to be [supported](http://caniuse.com/promises).
+If your environment doesn't support ECMAScript 6  Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
 axios includes [TypeScript](http://typescriptlang.org) definitions.

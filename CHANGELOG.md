@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.19.2 (Jan 20, 2020)
+
+- Remove unnecessary XSS check ([#2679](https://github.com/axios/axios/pull/2679)) (see ([#2646](https://github.com/axios/axios/issues/2646)) for discussion)
+
 ### 0.19.1 (Jan 7, 2020)
 
 Fixes and Functionality:
@@ -21,7 +25,7 @@ Fixes and Functionality:
 - Add error toJSON example ([#2466](https://github.com/axios/axios/pull/2466))
 - Fixing Vulnerability A Fortify Scan finds a critical Cross-Site Scrip… ([#2451](https://github.com/axios/axios/pull/2451))
 - Fixing subdomain handling on no_proxy ([#2442](https://github.com/axios/axios/pull/2442))
-- Make redirection from HTTP to HTTPS work ([#2426](https://github.com/axios/axios/pull/2426] and ([#2547](https://github.com/axios/axios/pull/2547))
+- Make redirection from HTTP to HTTPS work ([#2426](https://github.com/axios/axios/pull/2426)) and ([#2547](https://github.com/axios/axios/pull/2547))
 - Add toJSON property to AxiosError type ([#2427](https://github.com/axios/axios/pull/2427))
 - Fixing socket hang up error on node side for slow response. ([#1752](https://github.com/axios/axios/pull/1752))
 - Alternative syntax to send data into the body ([#2317](https://github.com/axios/axios/pull/2317))

@@ -307,7 +307,7 @@ These are the available config options for making requests. Only the `url` is re
   // options are 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
   responseType: 'json', // default
 
-  // `responseEncoding` indicates encoding to use for decoding responses in node.js
+  // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
   responseEncoding: 'utf8', // default
 

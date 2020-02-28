@@ -1,7 +1,7 @@
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![build status](https://img.shields.io/travis/axios/axios.svg?style=flat-square)](https://travis-ci.org/axios/axios)
+[![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
@@ -49,13 +49,28 @@ Using yarn:
 $ yarn add axios
 ```
 
-Using cdn:
+Using jsDelivr CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+```
+
+Using unpkg CDN:
 
 ```html
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 ```
 
 ## Example
+
+### note: CommonJS usage
+In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
+
+```js
+const axios = require('axios').default;
+
+// axios.<method> will now provide autocomplete and parameter typings
+```
 
 Performing a `GET` request
 
@@ -72,7 +87,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .finally(function () {
+  .then(function () {
     // always executed
   });
 
@@ -286,6 +301,11 @@ These are the available config options for making requests. Only the `url` is re
   data: {
     firstName: 'Fred'
   },
+  
+  // syntax alternative to send data into the body
+  // method post
+  // only the value is sent, not the key
+  data: 'Country=Brasil&City=Belo Horizonte',
 
   // `timeout` specifies the number of milliseconds before the request times out.
   // If the request takes longer than `timeout`, the request will be aborted.
@@ -327,11 +347,13 @@ These are the available config options for making requests. Only the `url` is re
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
   // `onUploadProgress` allows handling of progress events for uploads
+  // browser only
   onUploadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 
   // `onDownloadProgress` allows handling of progress events for downloads
+  // browser only
   onDownloadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
@@ -363,7 +385,7 @@ These are the available config options for making requests. Only the `url` is re
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // 'proxy' defines the hostname and port of the proxy server.
+  // `proxy` defines the hostname and port of the proxy server.
   // You can also define your proxy using the conventional `http_proxy` and
   // `https_proxy` environment variables. If you are using environment variables
   // for your proxy configuration, you can also define a `no_proxy` environment
@@ -404,8 +426,9 @@ The response for a request contains the following information.
   // `statusText` is the HTTP status message from the server response
   statusText: 'OK',
 
-  // `headers` the headers that the server responded with
-  // All header names are lower cased
+  // `headers` the HTTP headers that the server responded with
+  // All header names are lower cased and can be accessed using the bracket notation.
+  // Example: `response.headers['content-type']`
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request
@@ -413,7 +436,7 @@ The response for a request contains the following information.
 
   // `request` is the request that generated this response
   // It is the last ClientRequest instance in node.js (in redirects)
-  // and an XMLHttpRequest instance the browser
+  // and an XMLHttpRequest instance in the browser
   request: {}
 }
 ```
@@ -492,15 +515,17 @@ axios.interceptors.request.use(function (config) {
 
 // Add a response interceptor
 axios.interceptors.response.use(function (response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
     return response;
   }, function (error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
     return Promise.reject(error);
   });
 ```
 
-If you may need to remove an interceptor later you can.
+If you need to remove an interceptor later you can.
 
 ```js
 const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
@@ -538,7 +563,7 @@ axios.get('/user/12345')
   });
 ```
 
-You can define a custom HTTP status code error range using the `validateStatus` config option.
+Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
 
 ```js
 axios.get('/user/12345', {
@@ -546,6 +571,15 @@ axios.get('/user/12345', {
     return status < 500; // Reject only if the status code is greater than or equal to 500
   }
 })
+```
+
+Using `toJSON` you get an object with more information about the HTTP error.
+
+```js
+axios.get('/user/12345')
+  .catch(function (error) {
+    console.log(error.toJSON());
+  });
 ```
 
 ## Cancellation
@@ -681,4 +715,4 @@ axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/
 
 ## License
 
-MIT
+[MIT](LICENSE)

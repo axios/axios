@@ -5,6 +5,7 @@ var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -304,15 +305,17 @@ describe('supports http with nodejs', function () {
   });
 
   it('should pass errors for a failed stream', function (done) {
+    var notExitPath = path.join(__dirname, 'does_not_exist');
+
     server = http.createServer(function (req, res) {
       req.pipe(res);
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
-        fs.createReadStream('/does/not/exist')
+        fs.createReadStream(notExitPath)
       ).then(function (res) {
         assert.fail();
       }).catch(function (err) {
-        assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
         done();
       });
     });
@@ -642,6 +645,20 @@ describe('supports http with nodejs', function () {
       }).catch(function (thrown) {
         assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel obejct');
         assert.equal(thrown.message, 'Operation has been canceled.');
+        done();
+      });
+    });
+  });
+
+  it('should combine baseURL and url', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'http://localhost:4444/');
+        assert.equal(res.config.url, '/foo');
         done();
       });
     });

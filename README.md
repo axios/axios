@@ -347,11 +347,13 @@ These are the available config options for making requests. Only the `url` is re
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
   // `onUploadProgress` allows handling of progress events for uploads
+  // browser only
   onUploadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 
   // `onDownloadProgress` allows handling of progress events for downloads
+  // browser only
   onDownloadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
@@ -383,7 +385,7 @@ These are the available config options for making requests. Only the `url` is re
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // 'proxy' defines the hostname and port of the proxy server.
+  // `proxy` defines the hostname and port of the proxy server.
   // You can also define your proxy using the conventional `http_proxy` and
   // `https_proxy` environment variables. If you are using environment variables
   // for your proxy configuration, you can also define a `no_proxy` environment
@@ -431,8 +433,9 @@ The response for a request contains the following information.
   // `statusText` is the HTTP status message from the server response
   statusText: 'OK',
 
-  // `headers` the headers that the server responded with
-  // All header names are lower cased
+  // `headers` the HTTP headers that the server responded with
+  // All header names are lower cased and can be accessed using the bracket notation.
+  // Example: `response.headers['content-type']`
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request

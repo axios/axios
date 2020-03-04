@@ -245,13 +245,14 @@ describe('requests', function () {
     });
   });
 
-  it('should not modify the config url with relative baseURL', function (done) {
-    var config;
+  it('should set rawConfig in the error', function (done) {
+    var e;
 
-    axios.get('/foo', {
-        baseURL: '/api'
+    axios.request('/foo', {
+      baseURL: '/api',
+      method: 'GET',
     }).catch(function (error) {
-        config = error.config;
+        e = error;
     });
 
     getAjaxRequest().then(function (request) {
@@ -262,8 +263,16 @@ describe('requests', function () {
       });
 
       setTimeout(function () {
-        expect(config.baseURL).toEqual('/api');
-        expect(config.url).toEqual('/foo');
+        expect(e.config.baseURL).toBe('/api');
+        // FIXME: this should be /api/foo (#2650)
+        expect(e.config.url).toBe('/foo');
+        expect(e.config.method).toBe('get');
+
+        expect(e.rawConfig).toEqual({
+          baseURL: '/api',
+          url: '/foo',
+          method: 'GET',
+        });
         done();
       }, 100);
     });

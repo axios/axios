@@ -4,10 +4,11 @@ describe('core::createError', function() {
   it('should create an Error with message, config, code, request, response and isAxiosError', function() {
     var request = { path: '/foo' };
     var response = { status: 200, data: { foo: 'bar' } };
-    var error = createError('Boom!', { foo: 'bar' }, 'ESOMETHING', request, response);
+    var error = createError('Boom!', { foo: 'bar' }, { foo: 'bar2' }, 'ESOMETHING', request, response);
     expect(error instanceof Error).toBe(true);
     expect(error.message).toBe('Boom!');
     expect(error.config).toEqual({ foo: 'bar' });
+    expect(error.rawConfig).toEqual({ foo: 'bar2' });
     expect(error.code).toBe('ESOMETHING');
     expect(error.request).toBe(request);
     expect(error.response).toBe(response);
@@ -18,10 +19,11 @@ describe('core::createError', function() {
     //    TypeError: Converting circular structure to JSON
     var request = { path: '/foo' };
     var response = { status: 200, data: { foo: 'bar' } };
-    var error = createError('Boom!', { foo: 'bar' }, 'ESOMETHING', request, response);
+    var error = createError('Boom!', { foo: 'bar' }, { foo: 'bar2' }, 'ESOMETHING', request, response);
     var json = error.toJSON();
     expect(json.message).toBe('Boom!');
     expect(json.config).toEqual({ foo: 'bar' });
+    expect(json.rawConfig).toEqual({ foo: 'bar2' });
     expect(json.code).toBe('ESOMETHING');
     expect(json.request).toBe(undefined);
     expect(json.response).toBe(undefined);

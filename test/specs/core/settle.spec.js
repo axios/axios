@@ -58,6 +58,9 @@ describe('core::settle', function() {
           return false;
         }
       },
+      rawConfig: {
+        url: req.path,
+      },
       request: req
     };
     settle(resolve, reject, response);
@@ -67,6 +70,7 @@ describe('core::settle', function() {
     expect(reason instanceof Error).toBe(true);
     expect(reason.message).toBe('Request failed with status code 500');
     expect(reason.config).toBe(response.config);
+    expect(reason.rawConfig).toBe(response.rawConfig);
     expect(reason.request).toBe(req);
     expect(reason.response).toBe(response);
   });

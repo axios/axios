@@ -264,8 +264,7 @@ describe('requests', function () {
 
       setTimeout(function () {
         expect(e.config.baseURL).toBe('/api');
-        // FIXME: this should be /api/foo (#2650)
-        expect(e.config.url).toBe('/foo');
+        expect(e.config.url).toBe('/api/foo');
         expect(e.config.method).toBe('get');
 
         expect(e.rawConfig).toEqual({

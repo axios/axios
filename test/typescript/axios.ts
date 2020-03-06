@@ -34,6 +34,7 @@ const config: AxiosRequestConfig = {
   onUploadProgress: (progressEvent: any) => {},
   onDownloadProgress: (progressEvent: any) => {},
   maxContentLength: 2000,
+  maxBodyLength: 2000,
   validateStatus: (status: number) => status >= 200 && status < 300,
   maxRedirects: 5,
   proxy: {

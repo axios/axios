@@ -532,6 +532,12 @@ const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
 axios.interceptors.request.eject(myInterceptor);
 ```
 
+If you need to clear all interceptors later you can.
+```js
+const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+axios.interceptors.request.clear();
+```
+
 You can add interceptors to a custom instance of axios.
 
 ```js

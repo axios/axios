@@ -317,6 +317,37 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support max body length', function (done) {
+    var data = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end();
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.post('http://localhost:4444/', {
+        data: data
+      }, {
+        maxBodyLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED');
+        assert.equal(error.message, 'Request body larger than maxBodyLength limit');
+        done();
+      }, 100);
+    });
+  });
+
   it.skip('should support sockets', function (done) {
     server = net.createServer(function (socket) {
       socket.on('data', function () {

@@ -32,12 +32,12 @@ export type Method =
   | 'link' | 'LINK'
   | 'unlink' | 'UNLINK'
 
-export type ResponseType = 
-  | 'arraybuffer' 
-  | 'blob' 
-  | 'document' 
-  | 'json' 
-  | 'text' 
+export type ResponseType =
+  | 'arraybuffer'
+  | 'blob'
+  | 'document'
+  | 'json'
+  | 'text'
   | 'stream'
 
 export interface AxiosRequestConfig {
@@ -61,6 +61,7 @@ export interface AxiosRequestConfig {
   onUploadProgress?: (progressEvent: any) => void;
   onDownloadProgress?: (progressEvent: any) => void;
   maxContentLength?: number;
+  maxBodyLength?: number;
   validateStatus?: (status: number) => boolean;
   maxRedirects?: number;
   socketPath?: string | null;
@@ -68,6 +69,7 @@ export interface AxiosRequestConfig {
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
+  decompress?: boolean;
 }
 
 export interface AxiosResponse<T = any>  {

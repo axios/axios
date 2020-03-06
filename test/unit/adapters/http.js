@@ -192,6 +192,27 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support disabling automatic decompression of response data', function(done) {
+    var data = 'Test data';
+
+    zlib.gzip(data, function(err, zipped) {
+      server = http.createServer(function(req, res) {
+        res.setHeader('Content-Type', 'text/html;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      }).listen(4444, function() {
+        axios.get('http://localhost:4444/', {
+          decompress: false,
+          responseType: 'arraybuffer'
+
+        }).then(function(res) {
+          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+          done();
+        });
+      });
+    });
+  });
+
   it('should support UTF8', function (done) {
     var str = Array(100000).join('ж');
 
@@ -730,5 +751,4 @@ describe('supports http with nodejs', function () {
     });
   });
 });
-
 

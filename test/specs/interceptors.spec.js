@@ -237,6 +237,37 @@ describe('interceptors', function () {
     });
   });
 
+  it('should allow clearing all interceptors', function (done) {
+    var response, intercept; 
+
+    axios.interceptors.response.use(function (data) {
+      data.data = data.data + '1';
+      return data;
+    });
+    axios.interceptors.response.use(function (data) {
+      data.data = data.data + '2';
+      return data;
+    });
+
+    axios.interceptors.response.clear();
+
+    axios('/foo').then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: 'OK'
+      });
+
+      setTimeout(function () {
+        expect(response.data).toBe('OK');
+        done();
+      }, 100);
+    });
+  });
+
   it('should execute interceptors before transformers', function (done) {
     axios.interceptors.request.use(function (config) {
       config.data.baz = 'qux';

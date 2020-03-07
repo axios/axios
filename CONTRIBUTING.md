@@ -17,11 +17,11 @@ Commit messages should be verb based, using the following pattern:
 
 ### Testing
 
-Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on [Travis CI](https://travis-ci.org/mzabriskie/axios).
+Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on [Travis CI](https://travis-ci.org/axios/axios).
 
 ### Documentation
 
-Please update the docs accordingly so that there are no discrepencies between the API and the documentation.
+Please update the [docs](README.md) accordingly so that there are no discrepancies between the API and the documentation.
 
 ### Developing
 

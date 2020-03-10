@@ -361,6 +361,9 @@ These are the available config options for making requests. Only the `url` is re
   // `maxContentLength` defines the max size of the http response content in bytes allowed
   maxContentLength: 2000,
 
+  // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
+  maxBodyLength: 2000,
+
   // `validateStatus` defines whether to resolve or reject the promise for a given
   // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
   // or `undefined`), the promise will be resolved; otherwise, the promise will be
@@ -407,7 +410,14 @@ These are the available config options for making requests. Only the `url` is re
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {
-  })
+  }),
+
+  // `decompress` indicates whether or not the response body should be decompressed 
+  // automatically. If set to `true` will also remove the 'content-encoding' header 
+  // from the responses objects of all decompressed responses
+  // - Node only (XHR cannot turn off decompression)
+  decompress: true // default
+
 }
 ```
 

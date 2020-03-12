@@ -157,7 +157,7 @@ describe('requests', function () {
     });
   });
 
-  it('When the file protocol is initiated, it should reolve when response.status is equal to 0', function (done) {
+  it('should resolve when the response status is 0 (i.e. requesting with file protocol)', function (done) {
     var resolveSpy = jasmine.createSpy('resolve');
     var rejectSpy = jasmine.createSpy('reject');
 
@@ -172,7 +172,7 @@ describe('requests', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 0,
-        responseURL: 'file:///c://project//test.txt',
+        responseURL: 'file:///xxx',
       });
     });
   });

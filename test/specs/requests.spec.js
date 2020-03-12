@@ -161,7 +161,7 @@ describe('requests', function () {
     var resolveSpy = jasmine.createSpy('resolve');
     var rejectSpy = jasmine.createSpy('reject');
 
-    axios('./foo').then(resolveSpy)
+    axios('file:///xxx').then(resolveSpy)
       .catch(rejectSpy)
       .then(function () {
         expect(resolveSpy).toHaveBeenCalled();

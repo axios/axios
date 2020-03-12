@@ -157,6 +157,26 @@ describe('requests', function () {
     });
   });
 
+  it('When the file protocol is initiated, it should reolve when response.status is equal to 0', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('./foo').then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 0,
+        responseURL: 'file:///c://project//test.txt',
+      });
+    });
+  });
+
   // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;

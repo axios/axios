@@ -38,5 +38,29 @@ describe('utils::merge', function () {
       }
     });
   });
+
+  it('should remove all references from nested objects', function () {
+    var a = {foo: {bar: 123}};
+    var b = {};
+    var d = merge(a, b);
+
+    expect(d).toEqual({
+      foo: {
+        bar: 123
+      }
+    });
+
+    expect(d.foo).not.toBe(a.foo);
+  });
+
+  it('handles null and undefined arguments', function () {
+    expect(merge(undefined, undefined)).toEqual({});
+    expect(merge(undefined, {foo: 123})).toEqual({foo: 123});
+    expect(merge({foo: 123}, undefined)).toEqual({foo: 123});
+
+    expect(merge(null, null)).toEqual({});
+    expect(merge(null, {foo: 123})).toEqual({foo: 123});
+    expect(merge({foo: 123}, null)).toEqual({foo: 123});
+  });
 });
 

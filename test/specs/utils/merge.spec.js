@@ -62,5 +62,23 @@ describe('utils::merge', function () {
     expect(merge(null, {foo: 123})).toEqual({foo: 123});
     expect(merge({foo: 123}, null)).toEqual({foo: 123});
   });
-});
 
+  it('should replace properties with null', function () {
+    expect(merge({}, {a: null})).toEqual({a: null});
+    expect(merge({a: null}, {})).toEqual({a: null});
+  });
+
+  it('should replace properties with arrays', function () {
+    expect(merge({}, {a: [1, 2, 3]})).toEqual({a: [1, 2, 3]});
+    expect(merge({a: 2}, {a: [1, 2, 3]})).toEqual({a: [1, 2, 3]});
+    expect(merge({a: {b: 2}}, {a: [1, 2, 3]})).toEqual({a: [1, 2, 3]});
+  });
+
+  it('should replace properties with cloned arrays', function () {
+    var a = [1, 2, 3];
+    var d = merge({}, {a: a});
+
+    expect(d).toEqual({a: [1, 2, 3]});
+    expect(d.a).not.toBe(a);
+  });
+});

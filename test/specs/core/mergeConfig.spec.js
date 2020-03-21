@@ -80,4 +80,23 @@ describe('core::mergeConfig', function() {
     var merged = mergeConfig(defaults, { foo: 'bar' });
     expect(merged.foo).toEqual('bar');
   });
+
+  it('should allow setting custom default options', function() {
+    var merged = mergeConfig({ foo: 'bar' }, {});
+    expect(merged.foo).toEqual('bar');
+  });
+
+  it('should allow merging custom objects in the config', function() {
+    var merged = mergeConfig({
+      nestedConfig: {
+        propertyOnDefaultConfig: true
+      }
+    }, {
+      nestedConfig: {
+        propertyOnRequestConfig: true
+      }
+    });
+    expect(merged.nestedConfig.propertyOnDefaultConfig).toEqual(true);
+    expect(merged.nestedConfig.propertyOnRequestConfig).toEqual(true);
+  });
 });

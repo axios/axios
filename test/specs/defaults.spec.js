@@ -101,6 +101,21 @@ describe('defaults', function () {
     });
   });
 
+  it('should use POST data', function (done) {
+    axios.create({
+      data: 'a=b'
+    }).post('/foo').then(function (response) {
+      expect(response.config.data).toEqual('a=b');
+      done();
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200
+      });
+    });
+  });
+
   it('should use header config', function (done) {
     var instance = axios.create({
       headers: {

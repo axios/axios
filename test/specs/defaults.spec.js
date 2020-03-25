@@ -35,6 +35,14 @@ describe('defaults', function () {
     expect(defaults.transformResponse[0]('foo=bar')).toEqual('foo=bar');
   });
 
+  it('should throw error for invalid JSON if response content-type is json', function () {
+    expect(function() {
+      defaults.transformResponse[0]('foo=bar', {
+        'content-type': 'application/json'
+      });
+    }).toThrow();
+  });
+
   it('should use global defaults config', function (done) {
     axios('/foo');
 

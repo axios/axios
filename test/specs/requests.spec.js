@@ -265,6 +265,38 @@ describe('requests', function () {
     });
   });
 
+  it('should reject when response is invalid JSON and content-type is JSON', function (done) {
+    var reason;
+    var badJSON = '{"foo": "bar \\s broken"}'
+
+    axios.post('/foo').catch(function (res) {
+      reason = res;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        statusText: 'OK',
+        responseText: badJSON,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      setTimeout(function () {
+        expect(reason instanceof Error).toBe(true);
+        expect(reason.message).toMatch('SyntaxError');
+
+        expect(reason.config.method).toBe('post');
+        expect(reason.config.url).toBe('/foo');
+        expect(reason.request).toEqual(jasmine.any(XMLHttpRequest));
+        expect(reason.response.status).toBe(200);
+        expect(reason.response.data).toBe(badJSON);
+        done();
+      }, 100);
+    });
+  });
+
   it('should not modify the config url with relative baseURL', function (done) {
     var config;
 
@@ -278,7 +310,8 @@ describe('requests', function () {
       request.respondWith({
         status: 404,
         statusText: 'NOT FOUND',
-        responseText: 'Resource not found'
+        responseText: 'Resource not found',
+        contentType: 'text/plain; charset=utf-8'
       });
 
       setTimeout(function () {

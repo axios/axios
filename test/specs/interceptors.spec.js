@@ -20,7 +20,8 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
+        contentType: 'text/plain'
       });
 
       expect(request.requestHeaders.test).toBe('added by interceptor');
@@ -103,7 +104,8 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
+        contentType: 'text/plain'
       });
 
       setTimeout(function () {
@@ -129,7 +131,8 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
+        contentType: 'text/plain'
       });
 
       setTimeout(function () {
@@ -159,7 +162,8 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
+        contentType: 'text/plain'
       });
 
       setTimeout(function () {
@@ -192,7 +196,8 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
+        contentType: 'text/plain'
       });
 
       setTimeout(function () {
@@ -227,7 +232,8 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
+        contentType: 'text/plain'
       });
 
       setTimeout(function () {

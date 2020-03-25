@@ -40,7 +40,8 @@ describe('cancel', function() {
         source.cancel('Operation has been canceled.');
         request.respondWith({
           status: 200,
-          responseText: 'OK'
+          responseText: 'OK',
+          contentType: 'text/plain'
         });
       });
     });
@@ -81,7 +82,8 @@ describe('cancel', function() {
       getAjaxRequest().then(function (request) {
         request.respondWith({
           status: 200,
-          responseText: 'OK'
+          responseText: 'OK',
+          contentType: 'text/plain'
         });
       });
     });

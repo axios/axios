@@ -77,6 +77,7 @@ export interface AxiosResponse<T = any>  {
   data: T;
   status: number;
   statusText: string;
+  statusCode: number;
   headers: any;
   config: AxiosRequestConfig;
   request?: any;

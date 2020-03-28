@@ -64,6 +64,33 @@ describe('transform', function () {
     });
   });
 
+  it('should reject if failed to transform string to JSON', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('/foo')
+      .then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).not.toHaveBeenCalled();
+        expect(rejectSpy).toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: 'invalid json'
+      });
+
+      setTimeout(function () {
+        expect(typeof response.data).toEqual('object');
+        expect(response.data.foo).toEqual('bar');
+        done();
+      }, 100);
+    });
+  });
+
   it('should override default transform', function (done) {
     var data = {
       foo: 'bar'

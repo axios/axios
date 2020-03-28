@@ -1,5 +1,5 @@
 export interface AxiosTransformer {
-  (data: any, headers?: any): any;
+  (data: any, headers?: any, config?: AxiosRequestConfig): any;
 }
 
 export interface AxiosAdapter {

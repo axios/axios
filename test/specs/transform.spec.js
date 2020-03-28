@@ -41,6 +41,29 @@ describe('transform', function () {
     });
   });
 
+  it('should not transform string to JSON if responseType is text', function (done) {
+    var response;
+
+    axios('/foo', {
+      responseType: 'text'
+    }).then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+
+      setTimeout(function () {
+        expect(typeof response.data).toEqual('string');
+        expect(response.data).toEqual('{"foo": "bar"}');
+        done();
+      }, 100);
+    });
+  });
+
   it('should override default transform', function (done) {
     var data = {
       foo: 'bar'

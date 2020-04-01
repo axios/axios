@@ -517,6 +517,7 @@ You can intercept requests or responses before they are handled by `then` or `ca
 // Add a request interceptor
 axios.interceptors.request.use(function (config) {
     // Do something before request is sent
+    config.headers.example = 'example';
     return config;
   }, function (error) {
     // Do something with request error

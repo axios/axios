@@ -29,6 +29,7 @@ export type Method =
   | 'post' | 'POST'
   | 'put' | 'PUT'
   | 'patch' | 'PATCH'
+  | 'purge' | 'PURGE'
   | 'link' | 'LINK'
   | 'unlink' | 'UNLINK'
 
@@ -58,16 +59,18 @@ export interface AxiosRequestConfig {
   responseType?: ResponseType;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  onUploadProgress?: (progressEvent: any) => void;
-  onDownloadProgress?: (progressEvent: any) => void;
+  onUploadProgress?: (progressEvent: ProgressEvent) => void;
+  onDownloadProgress?: (progressEvent: ProgressEvent) => void;
   maxContentLength?: number;
   validateStatus?: ((status: number) => boolean | null);
+  maxBodyLength?: number;
   maxRedirects?: number;
   socketPath?: string | null;
   httpAgent?: any;
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
+  decompress?: boolean;
 }
 
 export interface AxiosResponse<T = any>  {

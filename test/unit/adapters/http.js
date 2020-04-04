@@ -27,8 +27,40 @@ describe('supports http with nodejs', function () {
     }
   });
 
-  it('should respect the timeout property', function (done) {
+  it('should detect connect timeout', function (done) {
+    var success = false, failure = false;
+    var error;
 
+    // The IP address `10.255.255.1` is a one of well-known private address,
+    // which can be used for non-routable address.
+    //
+    // In general, Dropping TCP SYN packet is common way to simulate connect timeout artificially.
+    // Using http://google.com:81 as request URL will result same effect because Google's Firewall drops TCP SYN packet,
+    // but using Google's URL is not reliable because Google can change their firewall policy in someday,
+    // which is unpredictable.
+    //
+    // So that's why we use non-routable address as request url.
+    //
+    // @see https://stackoverflow.com/questions/100841/artificially-create-a-connection-timeout-error
+    axios.get('http://10.255.255.1/', {
+      timeout: 250
+    }).then(function (res) {
+      success = true;
+    }).catch(function (err) {
+      error = err;
+      failure = true;
+    });
+
+    setTimeout(function () {
+      assert.equal(success, false, 'request should not succeed');
+      assert.equal(failure, true, 'request should fail');
+      assert.equal(error.code, 'ETIMEDOUT');
+      assert.equal(error.message, 'timeout of 250ms exceeded');
+      done();
+    }, 300);
+  });
+
+  it('should detect read timeout', function (done) {
     server = http.createServer(function (req, res) {
       setTimeout(function () {
         res.end();
@@ -49,7 +81,56 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.code, 'ECONNABORTED');
+        assert.equal(error.code, 'ETIMEDOUT');
+        assert.equal(error.message, 'timeout of 250ms exceeded');
+        done();
+      }, 300);
+    });
+  });
+
+  it('should detect call timeout', function (done) {
+    server = http.createServer(function (req, res) {
+      // send single bytes per each 100ms (response will be took 400ms total)
+      var chunks = 'TEST'.split('');
+      var delay = 100;
+
+      // write response head immediately
+      res.writeHead(200, {
+        'Content-Length': chunks.length.toString(),
+        'Content-Type': 'text/plain; charset=UTF-8',
+      });
+
+      send();
+
+      function send() {
+        var chunk = chunks.shift();
+        if (chunk) {
+          res.write(Buffer.from(chunk, 'utf8'), function (e) {
+            if (!e) {
+              setTimeout(send, delay);
+            }
+          });
+        } else {
+          res.end();
+        }
+      }
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+        timeout: 250
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ETIMEDOUT');
         assert.equal(error.message, 'timeout of 250ms exceeded');
         done();
       }, 300);

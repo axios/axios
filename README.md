@@ -684,6 +684,8 @@ axios(options);
 
 ### Node.js
 
+#### Query string
+
 In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
@@ -695,6 +697,32 @@ You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ###### NOTE
 The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has known issues with that use case (https://github.com/nodejs/node-v0.x-archive/issues/1665).
+
+#### Form data
+
+In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
+
+```js
+const FormData = require('form-data');
+ 
+const form = new FormData();
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+
+axios.post('https://example.com', form, { headers: form.getHeaders() })
+```
+
+Alternatively, use an interceptor:
+
+```js
+axios.interceptors.request.use(config => {
+  if (config.data instanceof FormData) {
+    Object.assign(config.headers, config.data.getHeaders());
+  }
+  return config;
+});
+```
 
 ## Semver
 

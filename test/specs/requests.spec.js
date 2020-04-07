@@ -157,6 +157,26 @@ describe('requests', function () {
     });
   });
 
+  it('should resolve when the response status is 0 (i.e. requesting with file protocol)', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('file:///xxx').then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 0,
+        responseURL: 'file:///xxx',
+      });
+    });
+  });
+
   // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;

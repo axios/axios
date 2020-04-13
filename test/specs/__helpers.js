@@ -61,19 +61,19 @@ setupBasicAuthTest = function setupBasicAuthTest() {
   });
 
   it('should accept HTTP Basic auth with username/password', function (done) {
-    axios('/foo', {
+    var response = axios('/foo', {
       auth: {
         username: 'Aladdin',
         password: 'open sesame'
       }
     });
 
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
-      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==');
+    response.then(function handleResponse(response) {
+      expect(response.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==');
       done();
-    }, 100);
+    }, function handleError(err) {
+      done(err);
+    });
   });
 
   it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters', function (done) {

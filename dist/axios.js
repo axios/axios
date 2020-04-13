@@ -979,7 +979,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = function fetchAdapter(config) {
 	  return new Promise(function dispatchFetchRequest(resolve, reject) {
 	    var requestData = config.data || null;
-	    var requestHeaders = config.headers;
+	    var requestHeaders = config.headers || {};
 	
 	    // HTTP basic authentication
 	    if (config.auth) {
@@ -1008,16 +1008,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // setup timeout listener
 	    function listenForTimeout() {
 	      if (!!config.timeout) {
+	        var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+	        if (config.timeoutErrorMessage) {
+	          timeoutErrorMessage = config.timeoutErrorMessage;
+	        }
+	
 	        setTimeout(function popTimeout() {
 	          aborter.abort();
-	          reject(createError(timeoutErrorMessage, config, 'ECONNABORTED', config));
+	          reject(createError(timeoutErrorMessage, config, 'ECONNABORTED', config, null));
 	        }, config.timeout);
 	      }
 	    }
 	
 	    // copy headers in
 	    var headers = new Headers();
-	    for (key in requestHeaders) {
+	    for (var key in requestHeaders) {
 	      if (requestHeaders.hasOwnProperty(key)) {
 	        headers.append(key, requestHeaders[key]);
 	      }
@@ -1053,7 +1058,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    listenForTimeout();
 	    operation.then(function fetchFollowup(response) {
 	      // protocol-level error
-	      if (!response.ok) {
+	      if (!!response.ok) {
 	        if (utils.isFormData(requestData)) {
 	          delete requestHeaders['Content-Type']; // Let the browser set it
 	        }
@@ -1061,38 +1066,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Prepare the response
 	        var responseHeaders = response.headers;
 	        var responseData = null;
-	        if (!!config.responseType) {
-	          switch (config.responseType) {
-	          case 'text': responseData = response.text(); break;
-	          case 'json': responseData = response.json(); break;
-	          case 'blob': responseData = response.blob(); break;
-	          default: response.text(); break;
-	          }
+	        switch (config.responseType) {
+	        case 'text': responseData = response.text(); break;
+	        case 'json': responseData = response.json(); break;
+	        case 'blob': responseData = response.blob(); break;
+	        default: responseData = response.text(); break;
 	        }
 	
-	        var axiosResponse = {
-	          data: responseData,
-	          status: request.status,
-	          statusText: request.statusText,
-	          headers: responseHeaders,
-	          config: config,
-	          request: request
-	        };
+	        // consume response
+	        if (!responseData) {
+	          reject(createError(
+	            'Failed to resolve response stream.', config, 'STREAM_FAILED', request, response));
+	        } else {
+	          responseData.then(function handleResponseData(data) {
+	            var axiosResponse = {
+	              data: data,
+	              status: response.status,
+	              statusText: response.statusText,
+	              headers: responseHeaders,
+	              config: config,
+	              request: request,
+	              requestHeaders: requestHeaders
+	            };
 	
-	        // we're good to go
-	        settle(resolve, reject, axiosResponse);
+	            // we're good to go
+	            settle(resolve, reject, axiosResponse);
+	          }, function handleDataError(dataErr) {
+	            reject(dataErr || createError('Stream decode error',
+	              config, response.statusText, request, response));
+	          });
+	        }
 	      } else {
 	        if (response.status >= 500) {
-	          reject(createError('Server error', config, response.statusText, response));
+	          reject(createError('Server error', config, response.statusText, request, response));
 	        } else if (response.status >= 400) {
-	          reject(createError('Client-side error', config, response.statusText, response));
+	          reject(createError('Client-side error', config, response.statusText, request, response));
 	        } else {
-	          reject(createError('Unknown error', config, response.statusText, response));
+	          reject(createError('Unknown error', config, response.statusText, request, response));
 	        }
 	      }
 	    }, function handleFetchError(err) {
-	      // outright send/transport error
-	      reject(createError('Network Error', config, null, err));
+	      if (err instanceof Error) {
+	        reject(err);
+	      } else {
+	        reject(createError('Network Error', config, null, request, err));
+	      }
 	    });
 	  });
 	};
@@ -1461,7 +1479,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        statusText: request.statusText,
 	        headers: responseHeaders,
 	        config: config,
-	        request: request
+	        request: request,
+	        requestHeaders: requestHeaders
 	      };
 	
 	      settle(resolve, reject, response);

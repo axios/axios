@@ -1100,9 +1100,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      } else {
 	        if (response.status >= 500) {
-	          reject(createError('Server error', config, response.statusText, request, response));
+	          reject(createError('Server-side error: ' + response.status + ' / ' + response.statusText,
+	          config, response.statusText, request, response));
 	        } else if (response.status >= 400) {
-	          reject(createError('Client-side error', config, response.statusText, request, response));
+	          reject(createError('Client-side error: ' + response.status + ' / ' + response.statusText,
+	          config, response.statusText, request, response));
 	        } else {
 	          reject(createError('Unknown error', config, response.statusText, request, response));
 	        }

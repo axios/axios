@@ -1051,11 +1051,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // kick off the fetch
 	    var request = new Request(buildURL(fullPath, config.params, config.paramsSerializer));
-	    var operation = fetch(request, Object.assign({}, init, {
+	    var operation = fetch(request, Object.assign({}, init, Object.assign({}, {
 	      method: config.method.toUpperCase(),
 	      body: requestData,
 	      headers: headers
-	    }));
+	    }, config.fetchOptions || {})));
 	
 	    listenForTimeout();
 	    operation.then(function fetchFollowup(response) {

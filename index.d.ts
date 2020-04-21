@@ -128,22 +128,38 @@ export interface AxiosInterceptorManager<V> {
 }
 
 export interface AxiosInstance {
+  (config: AxiosRequestConfig & {responseType: 'arraybuffer'}): AxiosPromise<Buffer>;
+  (config: AxiosRequestConfig & {responseType: 'stream'}): AxiosPromise<NodeJS.ReadableStream>;
   (config: AxiosRequestConfig): AxiosPromise;
+
+  (url: string, config: AxiosRequestConfig & {responseType: 'arraybuffer'}): AxiosPromise<Buffer>;
+  (url: string, config: AxiosRequestConfig & {responseType: 'stream'}): AxiosPromise<NodeJS.ReadableStream>;
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
+
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
+
   request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R>;
+  request (config: AxiosRequestConfig & {responseType: 'arraybuffer'}): Promise<Buffer>;
+
+  get(url: string, config: AxiosRequestConfig & {responseType: 'arraybuffer'}): AxiosResponse<Buffer>;
+  get(url: string, config: AxiosRequestConfig & {responseType: 'stream'}): AxiosResponse<NodeJS.ReadableStream>;
   get<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  delete<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  head<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  options<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
+
+  delete: AxiosInstance['get'];
+  head: AxiosInstance['get'];
+  options: AxiosInstance['get'];
+
+  post(url: string, data: any, config: AxiosRequestConfig & {responseType: 'arraybuffer'}): AxiosResponse<Buffer>;
+  post(url: string, data: any, config: AxiosRequestConfig & {responseType: 'stream'}): AxiosResponse<NodeJS.ReadableStream>;
   post<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
-  put<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
-  patch<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
+
+  put: AxiosInstance['post'];
+  patch: AxiosInstance['post'];
 }
 
 export interface AxiosStatic extends AxiosInstance {

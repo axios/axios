@@ -79,7 +79,7 @@ export interface AxiosRequestConfig {
   cancelToken?: CancelToken;
   decompress?: boolean;
   allowDuplicate?: boolean;
-  setting(kv: Record<string, any>): void
+  setting(kv: AxiosRequestConfig&Record<string, any>): void
 }
 
 export interface AxiosResponse<T = any> {

@@ -1,3 +1,0 @@
-describe('basicAuth', function () {
-  setupBasicAuthTest();
-});

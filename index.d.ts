@@ -170,5 +170,5 @@ export interface AxiosStatic extends AxiosInstance {
 declare const Axios: AxiosStatic;
 
 export default Axios;
-export function abort(f:Function)
-export function removeAll(f:Function)
+export function abort(f: Function)
+export function removeAll(f?: (item: any)=> boolean)

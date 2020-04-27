@@ -105,7 +105,7 @@ axios.get('/user', {
   })
   .then(function () {
     // always executed
-  });  
+  });
 
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
@@ -257,7 +257,21 @@ These are the available config options for making requests. Only the `url` is re
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
-
+  //max retry times
+  retry: 0,
+  retried: 0,
+  //how long time retry after time out
+  retryDelay: 0,
+  //omit key by value in data.
+  omitBy:["",undefined,null],
+  //if allow duplicate request or not . false means same last request which one unfinished will cancelled
+  allowDuplicate: false,
+  //setting or extend default properties .
+  setting: function (keys) {
+    keys = keys || {}
+    Object.assign(this, keys)
+    mergeConfig.defaultToConfig2Keys = mergeConfig.defaultToConfig2Keys.concat(Object.keys(keys))
+  },
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
@@ -301,7 +315,7 @@ These are the available config options for making requests. Only the `url` is re
   data: {
     firstName: 'Fred'
   },
-  
+
   // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
@@ -412,8 +426,8 @@ These are the available config options for making requests. Only the `url` is re
   cancelToken: new CancelToken(function (cancel) {
   }),
 
-  // `decompress` indicates whether or not the response body should be decompressed 
-  // automatically. If set to `true` will also remove the 'content-encoding' header 
+  // `decompress` indicates whether or not the response body should be decompressed
+  // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
   decompress: true // default
@@ -703,7 +717,7 @@ In node.js, you can use the [`form-data`](https://github.com/form-data/form-data
 
 ```js
 const FormData = require('form-data');
- 
+
 const form = new FormData();
 form.append('my_field', 'my value');
 form.append('my_buffer', new Buffer(10));
@@ -722,7 +736,14 @@ axios.interceptors.request.use(config => {
   return config;
 });
 ```
-
+## abort request
+```
+import {removeAll,abort} from 'axios'
+//abort someone request . the request must be have key property with value of request.url+"&"+request.method
+abort(item:requsetFunction)
+//abort batches requset .it will abort all pending request without params,and all pending request will iterate use to the function params,it wil be abort which one return true
+removeAll([function(item:requsetFunction):boolean])
+```
 ## Semver
 
 Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.

@@ -1,3 +1,5 @@
+# Configuration for Stale Threads - https://github.com/marketplace/stale
+
 # Limit to only `issues` or `pulls`
 only: issues
 

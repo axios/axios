@@ -1,5 +1,8 @@
 # Configuration for Lock Threads - https://github.com/apps/lock
 
+# Limit to only `issues` or `pulls`
+only: issues
+
 # Number of days of inactivity before a closed issue or pull request is locked
 daysUntilLock: 21
 
@@ -8,7 +11,9 @@ daysUntilLock: 21
 skipCreatedBefore: false
 
 # Issues and pull requests with these labels will be ignored. Set to `[]` to disable
-exemptLabels: []
+exemptLabels: [
+  - in-progress
+]
 
 # Label to add before locking, such as `outdated`. Set to `false` to disable
 lockLabel: false
@@ -21,6 +26,3 @@ lockComment: >
 
 # Assign `resolved` as the reason for locking. Set to `false` to disable
 setLockReason: true
-
-# Limit to only `issues` or `pulls`
-only: issues

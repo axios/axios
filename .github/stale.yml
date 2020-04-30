@@ -23,15 +23,17 @@ exemptProjects: true
 exemptMilestones: true
 
 # Set to true to ignore issues with an assignee (defaults to false)
-exemptAssignees: true
+exemptAssignees: false
 
 # Comment to post when marking an issue as stale. Set to `false` to disable
 markComment: >
-  This issue has been marked as stale because it has not had recent activity.
+  This thread has been automatically marked stale since there has not been
+  any recent activity.
 
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: true
 
 # Comment to post when closing a stale Issue or Pull Request.
 closeComment: >
-  This issue has been marked as closed because it has not had recent activity.
+  This thread has been automatically closed since there has not been
+  any recent activity.

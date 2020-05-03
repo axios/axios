@@ -116,6 +116,15 @@ async function getUser() {
     console.error(error);
   }
 }
+
+// Optionally can also use paramsValidator to validate the params. If paramsValidator fails, will not request
+function myParamsValidator(params) {
+  const { name } = params;
+  return name && typeof name === 'string';
+}
+const params = { nae: 'sam' };
+axios.get('/users', { params, paramsValidator: myParamsValidator });
+
 ```
 
 > **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet

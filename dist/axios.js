@@ -1,3 +1,4 @@
+/* axios v0.19.2 | (c) 2020 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -561,27 +562,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
 	  /*eslint func-names:0*/
 	  Axios.prototype[method] = function(url, config) {
-		if(config && config["paramsValidator"]){
-			if(utils.isFunction(config["paramsValidator"])){
-				var validator = config["paramsValidator"]
-				if(validator.call(this,config["params"])){
-					return this.request(utils.merge(config, {
-						method: method,
-						url: url
-					}));
-				}else{
-					console.error("You have made a mistake in your params")
-					return new Promise((resolve,reject) => {
-						resolve("You have given wrong params")
-					})
-				}
-			}
-		}else{
-			return this.request(utils.merge(config || {}, {
-				method: method,
-				url: url
-			}));
-		}
+	    if (config && config.paramsValidator) {
+	      if (utils.isFunction(config.paramsValidator)) {
+	        var validator = config.paramsValidator;
+	        if (validator.call(this, config.params)) {
+	          return this.request(utils.merge(config, {
+	            method: method,
+	            url: url
+	          }));
+	        }
+	        return new Promise(function(resolve, reject) {
+	          reject('you have entered wrong params.');
+	        });
+	      }
+	      return new Promise(function(resolve, reject) {
+	        reject('function should be passed in paramsValidator');
+	      });
+	    }
+	    return this.request(utils.merge(config || {}, {
+	      method: method,
+	      url: url
+	    }));
 	  };
 	});
 	
@@ -936,6 +937,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  xsrfHeaderName: 'X-XSRF-TOKEN',
 	
 	  maxContentLength: -1,
+	  maxBodyLength: -1,
 	
 	  validateStatus: function validateStatus(status) {
 	    return status >= 200 && status < 300;
@@ -1180,7 +1182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	module.exports = function settle(resolve, reject, response) {
 	  var validateStatus = response.config.validateStatus;
-	  if (!validateStatus || validateStatus(response.status)) {
+	  if (!response.status || !validateStatus || validateStatus(response.status)) {
 	    resolve(response);
 	  } else {
 	    reject(createError(
@@ -1244,7 +1246,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  error.response = response;
 	  error.isAxiosError = true;
 	
-	  error.toJSON = function() {
+	  error.toJSON = function toJSON() {
 	    return {
 	      // Standard
 	      message: this.message,
@@ -1545,14 +1547,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  config2 = config2 || {};
 	  var config = {};
 	
-	  var valueFromConfig2Keys = ['url', 'method', 'params', 'data'];
-	  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy'];
+	  var valueFromConfig2Keys = ['url', 'method', 'data'];
+	  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy', 'params'];
 	  var defaultToConfig2Keys = [
 	    'baseURL', 'url', 'transformRequest', 'transformResponse', 'paramsSerializer',
 	    'timeout', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
 	    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress',
-	    'maxContentLength', 'validateStatus', 'maxRedirects', 'httpAgent',
-	    'httpsAgent', 'cancelToken', 'socketPath'
+	    'maxContentLength', 'maxBodyLength', 'validateStatus', 'maxRedirects', 'httpAgent',
+	    'httpsAgent', 'cancelToken', 'socketPath', 'responseEncoding'
 	  ];
 	
 	  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {

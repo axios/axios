@@ -750,5 +750,82 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should support invalid params', function(done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      function myParamsValidator(params) {
+        const { name } = params;
+        return name && typeof name === 'string';
+      }
+      const params = { nae: 'sam' };
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+        params,
+        paramsValidator: myParamsValidator
+      }).catch(function(err){
+        assert.equal(err,'you have entered wrong params.');
+        done();
+      })
+    });
+  });
+
+  it('should validate params', function(done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      function myParamsValidator(params) {
+        const { name } = params;
+        return name && typeof name === 'string';
+      }
+      const params = { name: 'sam' };
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+        params,
+        paramsValidator: myParamsValidator
+      }).then(function(res){
+        assert.equal(res.status,200);
+        done();
+      })
+    });
+  });
+
+  it('should pass function for paramsValidator', function(done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      function myParamsValidator(params) {
+        const { name } = params;
+        return name && typeof name === 'string';
+      }
+      const params = { name: 'sam' };
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+        params,
+        paramsValidator: myParamsValidator
+      }).then(function(res){
+        assert.equal(res.status,200);
+        done();
+      })
+    });
+  });
+
+  it('should give error when function is not passed for paramsValidator', function(done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      const params = { name: 'sam' };
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+        params,
+        paramsValidator: ' '
+      }).catch(function(err){
+        assert.equal(err,'function should be passed in paramsValidator');
+        done();
+      })
+    });
+  });
+
 });
 

@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.19.3 (May 03, 2020)
+
+- Adding support for paramsValidator ([#2940](https://github.com/axios/axios/issues/2940))
+
 ### 0.19.2 (Jan 20, 2020)
 
 - Remove unnecessary XSS check ([#2679](https://github.com/axios/axios/pull/2679)) (see ([#2646](https://github.com/axios/axios/issues/2646)) for discussion)

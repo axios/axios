@@ -1,3 +1,5 @@
+'use strict';
+/*eslint func-names:0*/
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
@@ -70,8 +72,8 @@ module.exports = function(grunt) {
         src: ['test/unit/**/*.js']
       },
       options: {
-        timeout: 30000,
-      },
+        timeout: 30000
+      }
     },
 
     watch: {
@@ -88,12 +90,12 @@ module.exports = function(grunt) {
     webpack: require('./webpack.config.js')
   });
 
-  grunt.registerMultiTask('package2bower', 'Sync package.json to bower.json', function () {
+  grunt.registerMultiTask('package2bower', 'Sync package.json to bower.json', function() {
     var npm = grunt.file.readJSON('package.json');
     var bower = grunt.file.readJSON('bower.json');
     var fields = this.data.fields || [];
 
-    for (var i=0, l=fields.length; i<l; i++) {
+    for (var i = 0, l = fields.length; i < l; i++) {
       var field = fields[i];
       bower[field] = npm[field];
     }

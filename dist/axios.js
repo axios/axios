@@ -561,10 +561,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
 	  /*eslint func-names:0*/
 	  Axios.prototype[method] = function(url, config) {
-	    return this.request(utils.merge(config || {}, {
-	      method: method,
-	      url: url
-	    }));
+		if(config && config["paramsValidator"]){
+			if(utils.isFunction(config["paramsValidator"])){
+				var validator = config["paramsValidator"]
+				if(validator.call(this,config["params"])){
+					return this.request(utils.merge(config, {
+						method: method,
+						url: url
+					}));
+				}else{
+					console.error("You have made a mistake in your params")
+					return new Promise((resolve,reject) => {
+						resolve("You have given wrong params")
+					})
+				}
+			}
+		}else{
+			return this.request(utils.merge(config || {}, {
+				method: method,
+				url: url
+			}));
+		}
 	  };
 	});
 	

@@ -1,0 +1,39 @@
+# Configuration for Stale Threads - https://github.com/marketplace/stale
+
+# Limit to only `issues` or `pulls`
+only: issues
+
+# Number of days of inactivity before an issue becomes stale
+daysUntilStale: 7
+
+# Number of days of inactivity before a stale issue is closed
+daysUntilClose: 7
+
+# Issues with these labels will never be considered stale
+exemptLabels:
+  - status:in-progress
+
+# Label to use when marking an issue as stale
+staleLabel: stale
+
+# Set to true to ignore issues in a project (defaults to false)
+exemptProjects: true
+
+# Set to true to ignore issues in a milestone (defaults to false)
+exemptMilestones: true
+
+# Set to true to ignore issues with an assignee (defaults to false)
+exemptAssignees: false
+
+# Comment to post when marking an issue as stale. Set to `false` to disable
+markComment: >
+  This thread has been automatically marked stale since there has not been
+  any recent activity.
+
+# Comment to post when closing a stale issue. Set to `false` to disable
+closeComment: true
+
+# Comment to post when closing a stale Issue or Pull Request.
+closeComment: >
+  This thread has been automatically closed since there has not been
+  any recent activity.

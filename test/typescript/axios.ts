@@ -350,3 +350,12 @@ axios.get('/user', {
 });
 
 source.cancel('Operation has been canceled.');
+
+// AxiosError
+
+axios.get('/user')
+  .catch((error) => {
+    if (axios.isAxiosError(error)) {
+      const axiosError: AxiosError = error;
+    }
+  });

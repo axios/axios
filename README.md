@@ -181,7 +181,7 @@ axios({
 ```
 
 ```js
-// GET request for remote image
+// GET request for remote image in node.js
 axios({
   method: 'get',
   url: 'http://bit.ly/2mTM3nY',

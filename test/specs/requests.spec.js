@@ -157,6 +157,26 @@ describe('requests', function () {
     });
   });
 
+  it('should resolve when the response status is 0 (i.e. requesting with file protocol)', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('file:///xxx').then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 0,
+        responseURL: 'file:///xxx',
+      });
+    });
+  });
+
   // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;
@@ -245,23 +265,25 @@ describe('requests', function () {
     });
   });
 
-  // https://github.com/axios/axios/issues/201
-  it('should fix IE no content error', function (done) {
-    var response;
+  it('should not modify the config url with relative baseURL', function (done) {
+    var config;
 
-    axios('/foo').then(function (res) {
-      response = res
+    axios.get('/foo', {
+        baseURL: '/api'
+    }).catch(function (error) {
+        config = error.config;
     });
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
-        status: 1223,
-        statusText: 'Unknown'
+        status: 404,
+        statusText: 'NOT FOUND',
+        responseText: 'Resource not found'
       });
 
       setTimeout(function () {
-        expect(response.status).toEqual(204);
-        expect(response.statusText).toEqual('No Content');
+        expect(config.baseURL).toEqual('/api');
+        expect(config.url).toEqual('/foo');
         done();
       }, 100);
     });
@@ -286,12 +308,6 @@ describe('requests', function () {
   });
 
   it('should support binary data as array buffer', function (done) {
-    // Int8Array doesn't exist in IE8/9
-    if (isOldIE && typeof Int8Array === 'undefined') {
-      done();
-      return;
-    }
-
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
@@ -308,12 +324,6 @@ describe('requests', function () {
   });
 
   it('should support binary data as array buffer view', function (done) {
-    // Int8Array doesn't exist in IE8/9
-    if (isOldIE && typeof Int8Array === 'undefined') {
-      done();
-      return;
-    }
-
     var input = new Int8Array(2);
     input[0] = 1;
     input[1] = 2;
@@ -330,12 +340,6 @@ describe('requests', function () {
   });
 
   it('should support array buffer response', function (done) {
-    // ArrayBuffer doesn't exist in IE8/9
-    if (isOldIE && typeof ArrayBuffer === 'undefined') {
-      done();
-      return;
-    }
-
     var response;
 
     function str2ab(str) {

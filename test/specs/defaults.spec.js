@@ -148,14 +148,14 @@ describe('defaults', function () {
     });
   });
 
-  it('should be used by custom instance if set after instance created', function (done) {
+  it('should not be used by custom instance if set after instance created', function (done) {
     var instance = axios.create();
     axios.defaults.baseURL = 'http://example.org/';
 
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('http://example.org/foo');
+      expect(request.url).toBe('/foo');
       done();
     });
   });

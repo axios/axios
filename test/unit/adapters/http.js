@@ -1,27 +1,34 @@
 var axios = require('../../../index');
 var http = require('http');
+var net = require('net');
 var url = require('url');
 var zlib = require('zlib');
+var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var server, proxy;
 
-module.exports = {
-  tearDown: function (callback) {
-    server.close();
-    server = null;
+describe('supports http with nodejs', function () {
+
+  afterEach(function () {
+    if (server) {
+      server.close();
+      server = null;
+    }
     if (proxy) {
       proxy.close()
       proxy = null;
     }
-
     if (process.env.http_proxy) {
       delete process.env.http_proxy;
     }
+    if (process.env.no_proxy) {
+      delete process.env.no_proxy;
+    }
+  });
 
-    callback();
-  },
+  it('should respect the timeout property', function (done) {
 
-  testTimeout: function (test) {
     server = http.createServer(function (req, res) {
       setTimeout(function () {
         res.end();
@@ -40,16 +47,16 @@ module.exports = {
       });
 
       setTimeout(function () {
-        test.equal(success, false, 'request should not succeed');
-        test.equal(failure, true, 'request should fail');
-        test.equal(error.code, 'ECONNABORTED');
-        test.equal(error.message, 'timeout of 250ms exceeded');
-        test.done();
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ECONNABORTED');
+        assert.equal(error.message, 'timeout of 250ms exceeded');
+        done();
       }, 300);
     });
-  },
+  });
 
-  testJSON: function (test) {
+  it('should allow passing JSON', function (done) {
     var data = {
       firstName: 'Fred',
       lastName: 'Flintstone',
@@ -61,13 +68,13 @@ module.exports = {
       res.end(JSON.stringify(data));
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').then(function (res) {
-        test.deepEqual(res.data, data);
-        test.done();
+        assert.deepEqual(res.data, data);
+        done();
       });
     });
-  },
+  });
 
-  testRedirect: function (test) {
+  it('should redirect', function (done) {
     var str = 'test response';
 
     server = http.createServer(function (req, res) {
@@ -82,14 +89,14 @@ module.exports = {
       }
     }).listen(4444, function () {
       axios.get('http://localhost:4444/one').then(function (res) {
-        test.equal(res.data, str);
-        test.equal(res.request.path, '/two');
-        test.done();
+        assert.equal(res.data, str);
+        assert.equal(res.request.path, '/two');
+        done();
       });
     });
-  },
+  });
 
-  testNoRedirect: function (test) {
+  it('should not redirect', function (done) {
     server = http.createServer(function (req, res) {
       res.setHeader('Location', '/foo');
       res.statusCode = 302;
@@ -101,14 +108,14 @@ module.exports = {
           return true;
         }
       }).then(function (res) {
-        test.equal(res.status, 302);
-        test.equal(res.headers['location'], '/foo');
-        test.done();
+        assert.equal(res.status, 302);
+        assert.equal(res.headers['location'], '/foo');
+        done();
       });
     });
-  },
+  });
 
-  testMaxRedirects: function (test) {
+  it('should support max redirects', function (done) {
     var i = 1;
     server = http.createServer(function (req, res) {
       res.setHeader('Location', '/' + i);
@@ -119,19 +126,45 @@ module.exports = {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3
       }).catch(function (error) {
-        test.done();
+        done();
       });
     });
-  },
+  });
 
-  testTransparentGunzip: function (test) {
+  it('should preserve the HTTP verb on redirect', function (done) {
+    server = http.createServer(function (req, res) {
+      if (req.method.toLowerCase() !== "head") {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      var parsed = url.parse(req.url);
+      if (parsed.pathname === '/one') {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        res.end();
+      }
+    }).listen(4444, function () {
+      axios.head('http://localhost:4444/one').then(function (res) {
+        assert.equal(res.status, 200);
+        done();
+      }).catch(function (err) {
+        done(err);
+      });
+    });
+  });
+
+  it('should support transparent gunzip', function (done) {
     var data = {
       firstName: 'Fred',
       lastName: 'Flintstone',
       emailAddr: 'fred@example.com'
     };
 
-    zlib.gzip(JSON.stringify(data), function(err, zipped) {
+    zlib.gzip(JSON.stringify(data), function (err, zipped) {
 
       server = http.createServer(function (req, res) {
         res.setHeader('Content-Type', 'application/json;charset=utf-8');
@@ -139,27 +172,48 @@ module.exports = {
         res.end(zipped);
       }).listen(4444, function () {
         axios.get('http://localhost:4444/').then(function (res) {
-          test.deepEqual(res.data, data);
-          test.done();
+          assert.deepEqual(res.data, data);
+          done();
         });
       });
 
     });
-  },
+  });
 
-  testGunzipErrorHandling: function (test) {
+  it('should support gunzip error handling', function (done) {
     server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'application/json;charset=utf-8');
       res.setHeader('Content-Encoding', 'gzip');
       res.end('invalid response');
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').catch(function (error) {
-        test.done();
+        done();
       });
     });
-  },
+  });
 
-  testUTF8: function (test) {
+  it('should support disabling automatic decompression of response data', function(done) {
+    var data = 'Test data';
+
+    zlib.gzip(data, function(err, zipped) {
+      server = http.createServer(function(req, res) {
+        res.setHeader('Content-Type', 'text/html;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      }).listen(4444, function() {
+        axios.get('http://localhost:4444/', {
+          decompress: false,
+          responseType: 'arraybuffer'
+
+        }).then(function(res) {
+          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+          done();
+        });
+      });
+    });
+  });
+
+  it('should support UTF8', function (done) {
     var str = Array(100000).join('ж');
 
     server = http.createServer(function (req, res) {
@@ -167,41 +221,41 @@ module.exports = {
       res.end(str);
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').then(function (res) {
-        test.equal(res.data, str);
-        test.done();
+        assert.equal(res.data, str);
+        done();
       });
     });
-  },
+  });
 
-  testBasicAuth: function (test) {
+  it('should support basic auth', function (done) {
     server = http.createServer(function (req, res) {
       res.end(req.headers.authorization);
     }).listen(4444, function () {
       var user = 'foo';
       var headers = { Authorization: 'Bearer 1234' };
       axios.get('http://' + user + '@localhost:4444/', { headers: headers }).then(function (res) {
-        var base64 = new Buffer(user + ':', 'utf8').toString('base64');
-        test.equal(res.data, 'Basic ' + base64);
-        test.done();
+        var base64 = Buffer.from(user + ':', 'utf8').toString('base64');
+        assert.equal(res.data, 'Basic ' + base64);
+        done();
       });
     });
-  },
+  });
 
-  testBasicAuthWithHeader: function (test) {
+  it('should support basic auth with a header', function (done) {
     server = http.createServer(function (req, res) {
       res.end(req.headers.authorization);
     }).listen(4444, function () {
       var auth = { username: 'foo', password: 'bar' };
       var headers = { Authorization: 'Bearer 1234' };
       axios.get('http://localhost:4444/', { auth: auth, headers: headers }).then(function (res) {
-        var base64 = new Buffer('foo:bar', 'utf8').toString('base64');
-        test.equal(res.data, 'Basic ' + base64);
-        test.done();
+        var base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+        assert.equal(res.data, 'Basic ' + base64);
+        done();
       });
     });
-  },
+  });
 
-  testMaxContentLength: function(test) {
+  it('should support max content length', function (done) {
     var str = Array(100000).join('ж');
 
     server = http.createServer(function (req, res) {
@@ -220,65 +274,169 @@ module.exports = {
       });
 
       setTimeout(function () {
-        test.equal(success, false, 'request should not succeed');
-        test.equal(failure, true, 'request should fail');
-        test.equal(error.message, 'maxContentLength size of 2000 exceeded');
-        test.done();
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
+        done();
       }, 100);
     });
-  },
+  });
 
-  testStream: function(test) {
+  it('should support max content length for redirected', function (done) {
+    var str = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      var parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/two') {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end(str);
+      } else {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      }
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.get('http://localhost:4444/one', {
+        maxContentLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should support max body length', function (done) {
+    var data = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end();
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.post('http://localhost:4444/', {
+        data: data
+      }, {
+        maxBodyLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED');
+        assert.equal(error.message, 'Request body larger than maxBodyLength limit');
+        done();
+      }, 100);
+    });
+  });
+
+  it.skip('should support sockets', function (done) {
+    server = net.createServer(function (socket) {
+      socket.on('data', function () {
+        socket.end('HTTP/1.1 200 OK\r\n\r\n');
+      });
+    }).listen('./test.sock', function () {
+      axios({
+        socketPath: './test.sock',
+        url: '/'
+      })
+        .then(function (resp) {
+          assert.equal(resp.status, 200);
+          assert.equal(resp.statusText, 'OK');
+          done();
+        })
+        .catch(function (error) {
+          assert.ifError(error);
+          done();
+        });
+    });
+  });
+
+  it('should support streams', function (done) {
     server = http.createServer(function (req, res) {
       req.pipe(res);
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
         fs.createReadStream(__filename), {
-        responseType: 'stream'
-      }).then(function (res) {
-        var stream = res.data;
-        var string = '';
-        stream.on('data', function (chunk) {
-          string += chunk.toString('utf8');
+          responseType: 'stream'
+        }).then(function (res) {
+          var stream = res.data;
+          var string = '';
+          stream.on('data', function (chunk) {
+            string += chunk.toString('utf8');
+          });
+          stream.on('end', function () {
+            assert.equal(string, fs.readFileSync(__filename, 'utf8'));
+            done();
+          });
         });
-        stream.on('end', function () {
-          test.equal(string, fs.readFileSync(__filename, 'utf8'));
-          test.done();
-        });
+    });
+  });
+
+  it('should pass errors for a failed stream', function (done) {
+    var notExitPath = path.join(__dirname, 'does_not_exist');
+
+    server = http.createServer(function (req, res) {
+      req.pipe(res);
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/',
+        fs.createReadStream(notExitPath)
+      ).then(function (res) {
+        assert.fail();
+      }).catch(function (err) {
+        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
+        done();
       });
     });
-  },
+  });
 
-  testBuffer: function(test) {
-    var buf = new Buffer(1024); // Unsafe buffer < Buffer.poolSize (8192 bytes)
-    buf.fill('x');
+  it('should support buffers', function (done) {
+    var buf = Buffer.alloc(1024, 'x'); // Unsafe buffer < Buffer.poolSize (8192 bytes)
     server = http.createServer(function (req, res) {
-      test.equal(req.headers['content-length'], buf.length.toString());
+      assert.equal(req.headers['content-length'], buf.length.toString());
       req.pipe(res);
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
         buf, {
-        responseType: 'stream'
-      }).then(function (res) {
-        var stream = res.data;
-        var string = '';
-        stream.on('data', function (chunk) {
-          string += chunk.toString('utf8');
+          responseType: 'stream'
+        }).then(function (res) {
+          var stream = res.data;
+          var string = '';
+          stream.on('data', function (chunk) {
+            string += chunk.toString('utf8');
+          });
+          stream.on('end', function () {
+            assert.equal(string, buf.toString());
+            done();
+          });
         });
-        stream.on('end', function () {
-          test.equal(string, buf.toString());
-          test.done();
-        });
-      });
     });
-  },
+  });
 
-  testHTTPProxy: function(test) {
-    server = http.createServer(function(req, res) {
+  it('should support HTTP proxies', function (done) {
+    server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       res.end('12345');
-    }).listen(4444, function() {
-      proxy = http.createServer(function(request, response) {
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
         var parsed = url.parse(request.url);
         var opts = {
           host: parsed.hostname,
@@ -286,54 +444,54 @@ module.exports = {
           path: parsed.path
         };
 
-        http.get(opts, function(res) {
+        http.get(opts, function (res) {
           var body = '';
-          res.on('data', function(data) {
+          res.on('data', function (data) {
             body += data;
           });
-          res.on('end', function() {
+          res.on('end', function () {
             response.setHeader('Content-Type', 'text/html; charset=UTF-8');
             response.end(body + '6789');
           });
         });
 
-      }).listen(4000, function() {
+      }).listen(4000, function () {
         axios.get('http://localhost:4444/', {
           proxy: {
             host: 'localhost',
             port: 4000
           }
-        }).then(function(res) {
-          test.equal(res.data, '123456789', 'should pass through proxy');
-          test.done();
+        }).then(function (res) {
+          assert.equal(res.data, '123456789', 'should pass through proxy');
+          done();
         });
       });
     });
-  },
+  });
 
-  testHTTPProxyDisabled: function(test) {
+  it('should not pass through disabled proxy', function (done) {
     // set the env variable
     process.env.http_proxy = 'http://does-not-exists.example.com:4242/';
 
-    server = http.createServer(function(req, res) {
+    server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       res.end('123456789');
-    }).listen(4444, function() {
+    }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
-          proxy: false
-        }).then(function(res) {
-          test.equal(res.data, '123456789', 'should not pass through proxy');
-          test.done();
-        });
+        proxy: false
+      }).then(function (res) {
+        assert.equal(res.data, '123456789', 'should not pass through proxy');
+        done();
+      });
     });
-  },
+  });
 
-  testHTTPProxyEnv: function(test) {
-    server = http.createServer(function(req, res) {
+  it('should support proxy set via env var', function (done) {
+    server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       res.end('4567');
-    }).listen(4444, function() {
-      proxy = http.createServer(function(request, response) {
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
         var parsed = url.parse(request.url);
         var opts = {
           host: parsed.hostname,
@@ -341,34 +499,108 @@ module.exports = {
           path: parsed.path
         };
 
-        http.get(opts, function(res) {
+        http.get(opts, function (res) {
           var body = '';
-          res.on('data', function(data) {
+          res.on('data', function (data) {
             body += data;
           });
-          res.on('end', function() {
+          res.on('end', function () {
             response.setHeader('Content-Type', 'text/html; charset=UTF-8');
             response.end(body + '1234');
           });
         });
 
-      }).listen(4000, function() {
+      }).listen(4000, function () {
         // set the env variable
         process.env.http_proxy = 'http://localhost:4000/';
 
-        axios.get('http://localhost:4444/').then(function(res) {
-          test.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
-          test.done();
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
+          done();
         });
       });
     });
-  },
+  });
 
-  testHTTPProxyAuth: function(test) {
-    server = http.createServer(function(req, res) {
+  it('should not use proxy for domains in no_proxy', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+
+      }).listen(4000, function () {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = 'foo.com, localhost,bar.net , , quix.co';
+
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.equal(res.data, '4567', 'should not use proxy for domains in no_proxy');
+          done();
+        });
+      });
+    });
+  });
+
+  it('should use proxy for domains not in no_proxy', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+
+      }).listen(4000, function () {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = 'foo.com, ,bar.net , quix.co';
+
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.equal(res.data, '45671234', 'should use proxy for domains not in no_proxy');
+          done();
+        });
+      });
+    });
+  });
+
+  it('should support HTTP proxy auth', function (done) {
+    server = http.createServer(function (req, res) {
       res.end();
-    }).listen(4444, function() {
-      proxy = http.createServer(function(request, response) {
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
         var parsed = url.parse(request.url);
         var opts = {
           host: parsed.hostname,
@@ -377,18 +609,18 @@ module.exports = {
         };
         var proxyAuth = request.headers['proxy-authorization'];
 
-        http.get(opts, function(res) {
+        http.get(opts, function (res) {
           var body = '';
-          res.on('data', function(data) {
+          res.on('data', function (data) {
             body += data;
           });
-          res.on('end', function() {
+          res.on('end', function () {
             response.setHeader('Content-Type', 'text/html; charset=UTF-8');
             response.end(proxyAuth);
           });
         });
 
-      }).listen(4000, function() {
+      }).listen(4000, function () {
         axios.get('http://localhost:4444/', {
           proxy: {
             host: 'localhost',
@@ -398,20 +630,20 @@ module.exports = {
               password: 'pass'
             }
           }
-        }).then(function(res) {
-          var base64 = new Buffer('user:pass', 'utf8').toString('base64');
-          test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
-          test.done();
+        }).then(function (res) {
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
+          assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
+          done();
         });
       });
     });
-  },
+  });
 
-  testHTTPProxyAuthFromEnv: function(test) {
-    server = http.createServer(function(req, res) {
+  it('should support proxy auth from env', function (done) {
+    server = http.createServer(function (req, res) {
       res.end();
-    }).listen(4444, function() {
-      proxy = http.createServer(function(request, response) {
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
         var parsed = url.parse(request.url);
         var opts = {
           host: parsed.hostname,
@@ -420,34 +652,34 @@ module.exports = {
         };
         var proxyAuth = request.headers['proxy-authorization'];
 
-        http.get(opts, function(res) {
+        http.get(opts, function (res) {
           var body = '';
-          res.on('data', function(data) {
+          res.on('data', function (data) {
             body += data;
           });
-          res.on('end', function() {
+          res.on('end', function () {
             response.setHeader('Content-Type', 'text/html; charset=UTF-8');
             response.end(proxyAuth);
           });
         });
 
-      }).listen(4000, function() {
+      }).listen(4000, function () {
         process.env.http_proxy = 'http://user:pass@localhost:4000/';
 
-        axios.get('http://localhost:4444/').then(function(res) {
-          var base64 = new Buffer('user:pass', 'utf8').toString('base64');
-          test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy set by process.env.http_proxy');
-          test.done();
+        axios.get('http://localhost:4444/').then(function (res) {
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
+          assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy set by process.env.http_proxy');
+          done();
         });
       });
     });
-  },
+  });
 
-  testHTTPProxyAuthWithHeader: function (test) {
-    server = http.createServer(function(req, res) {
+  it('should support proxy auth with header', function (done) {
+    server = http.createServer(function (req, res) {
       res.end();
-    }).listen(4444, function() {
-      proxy = http.createServer(function(request, response) {
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
         var parsed = url.parse(request.url);
         var opts = {
           host: parsed.hostname,
@@ -456,18 +688,18 @@ module.exports = {
         };
         var proxyAuth = request.headers['proxy-authorization'];
 
-        http.get(opts, function(res) {
+        http.get(opts, function (res) {
           var body = '';
-          res.on('data', function(data) {
+          res.on('data', function (data) {
             body += data;
           });
-          res.on('end', function() {
+          res.on('end', function () {
             response.setHeader('Content-Type', 'text/html; charset=UTF-8');
             response.end(proxyAuth);
           });
         });
 
-      }).listen(4000, function() {
+      }).listen(4000, function () {
         axios.get('http://localhost:4444/', {
           proxy: {
             host: 'localhost',
@@ -480,28 +712,43 @@ module.exports = {
           headers: {
             'Proxy-Authorization': 'Basic abc123'
           }
-        }).then(function(res) {
-          var base64 = new Buffer('user:pass', 'utf8').toString('base64');
-          test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
-          test.done();
+        }).then(function (res) {
+          var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
+          assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
+          done();
         });
       });
     });
-  },
+  });
 
-  testCancel: function(test) {
+  it('should support cancel', function (done) {
     var source = axios.CancelToken.source();
     server = http.createServer(function (req, res) {
       // call cancel() when the request has been sent, but a response has not been received
       source.cancel('Operation has been canceled.');
-    }).listen(4444, function() {
+    }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         cancelToken: source.token
       }).catch(function (thrown) {
-        test.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel obejct');
-        test.equal(thrown.message, 'Operation has been canceled.');
-        test.done();
+        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel obejct');
+        assert.equal(thrown.message, 'Operation has been canceled.');
+        done();
       });
     });
-  }
-};
+  });
+
+  it('should combine baseURL and url', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'http://localhost:4444/');
+        assert.equal(res.config.url, '/foo');
+        done();
+      });
+    });
+  });
+});
+

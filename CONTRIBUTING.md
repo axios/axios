@@ -1,6 +1,6 @@
 # Contributing
 
-We are open to, and grateful for, any contributions made by the community. By contributing to axios, you agree to abide by the [code of conduct](https://github.com/mzabriskie/axios/blob/master/CODE_OF_CONDUCT.md).
+We are open to, and grateful for, any contributions made by the community. By contributing to axios, you agree to abide by the [code of conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md).
 
 ### Code Style
 
@@ -17,15 +17,15 @@ Commit messages should be verb based, using the following pattern:
 
 ### Testing
 
-Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on [Travis CI](https://travis-ci.org/mzabriskie/axios).
+Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on [Travis CI](https://travis-ci.org/axios/axios).
 
 ### Documentation
 
-Please update the docs accordingly so that there are no discrepencies between the API and the documentation.
+Please update the [docs](README.md) accordingly so that there are no discrepancies between the API and the documentation.
 
 ### Developing
 
-- `grunt test` run the jasmine and nodeunit tests
+- `grunt test` run the jasmine and mocha tests
 - `grunt build` run webpack and bundle the source
 - `grunt version` prepare the code for release
 - `grunt watch:test` watch for changes and run `test`
@@ -35,7 +35,7 @@ Please don't include changes to `dist/` in your pull request. This should only b
 
 ### Releasing
 
-Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/mzabriskie/axios/blob/master/CHANGELOG.md) requires being updated manually. Once this has been done run the commands below. Versions should follow [semantic versioning](http://semver.org/).
+Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/axios/axios/blob/master/CHANGELOG.md) requires being updated manually. Once this has been done run the commands below. Versions should follow [semantic versioning](http://semver.org/).
 
 - `npm version <newversion> -m "Releasing %s"`
 - `npm publish`

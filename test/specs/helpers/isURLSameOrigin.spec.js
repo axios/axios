@@ -6,6 +6,6 @@ describe('helpers::isURLSameOrigin', function () {
   });
 
   it('should detect different origin', function () {
-    expect(isURLSameOrigin('https://github.com/mzabriskie/axios')).toEqual(false);
+    expect(isURLSameOrigin('https://github.com/axios/axios')).toEqual(false);
   });
 });

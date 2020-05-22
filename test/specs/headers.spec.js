@@ -86,4 +86,17 @@ describe('headers', function () {
       done();
     });
   });
+
+  describe('when a header key matches an HTTP verb', function() {
+    it('preserves the header value', function(done) {
+      axios.post('/foo', null, { 'headers': { 'delete': 'test' } });
+
+      getAjaxRequest().then(function (request) {
+        var headerValue = request.requestHeaders['delete'];
+
+        expect(headerValue).toEqual('test');
+        done();
+      });
+    });
+  });
 });

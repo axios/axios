@@ -31,9 +31,10 @@ const config: AxiosRequestConfig = {
   responseType: 'json',
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
-  onUploadProgress: (progressEvent: any) => {},
-  onDownloadProgress: (progressEvent: any) => {},
+  onUploadProgress: (progressEvent: ProgressEvent) => {},
+  onDownloadProgress: (progressEvent: ProgressEvent) => {},
   maxContentLength: 2000,
+  maxBodyLength: 2000,
   validateStatus: (status: number) => status >= 200 && status < 300,
   maxRedirects: 5,
   proxy: {
@@ -77,6 +78,10 @@ axios.head('/user')
   .then(handleResponse)
   .catch(handleError);
 
+axios.options('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
 axios.delete('/user')
   .then(handleResponse)
   .catch(handleError);
@@ -103,6 +108,8 @@ interface User {
   name: string;
 }
 
+// with default AxiosResponse<T> result
+
 const handleUserResponse = (response: AxiosResponse<User>) => {
 	console.log(response.data.id);
 	console.log(response.data.name);
@@ -121,11 +128,15 @@ axios.get<User>('/user', { params: { id: 12345 } })
 	.catch(handleError);
 
 axios.head<User>('/user')
-	.then(handleResponse)
+	.then(handleUserResponse)
+    .catch(handleError);
+    
+axios.options<User>('/user')
+	.then(handleUserResponse)
 	.catch(handleError);
 
 axios.delete<User>('/user')
-	.then(handleResponse)
+	.then(handleUserResponse)
 	.catch(handleError);
 
 axios.post<User>('/user', { foo: 'bar' })
@@ -142,7 +153,56 @@ axios.put<User>('/user', { foo: 'bar' })
 
 axios.patch<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
-	.catch(handleError);
+  .catch(handleError);
+
+// (Typed methods) with custom response type
+
+const handleStringResponse = (response: string) => {
+  console.log(response)
+}
+
+axios.get<User, string>('/user?id=12345')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.get<User, string>('/user', { params: { id: 12345 } })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.head<User, string>('/user')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.options<User, string>('/user')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.delete<User, string>('/user')
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.post<User, string>('/user', { foo: 'bar' })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.post<User, string>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.put<User, string>('/user', { foo: 'bar' })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.patch<User, string>('/user', { foo: 'bar' })
+  .then(handleStringResponse)
+  .catch(handleError);
+
+axios.request<User, string>({
+  method: 'get',
+  url: '/user?id=12345'
+})
+  .then(handleStringResponse)
+  .catch(handleError);
 
 // Instances
 
@@ -158,6 +218,10 @@ instance1.request(config)
   .catch(handleError);
 
 instance1.get('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.options('/user')
   .then(handleResponse)
   .catch(handleError);
 

@@ -56,7 +56,21 @@ module.exports = function(config) {
       // customLaunchers.SL_Safari7 = createCustomLauncher('safari', 7);
       // customLaunchers.SL_Safari8 = createCustomLauncher('safari', 8);
 
-      customLaunchers.SL_Safari9 = createCustomLauncher('safari', 9);
+      customLaunchers.SL_Safari9 = createCustomLauncher(
+        "safari",
+        9.0,
+        "OS X 10.11"
+      );
+      customLaunchers.SL_Safari10 = createCustomLauncher(
+        "safari",
+        "10.1",
+        "macOS 10.12"
+      );
+      customLaunchers.SL_Safari11 = createCustomLauncher(
+        "safari",
+        "11.1",
+        "macOS 10.13"
+      );
     }
 
     // Opera
@@ -68,9 +82,6 @@ module.exports = function(config) {
 
     // IE
     if (runAll || process.env.SAUCE_IE) {
-      // customLaunchers.SL_IE8 = createCustomLauncher('internet explorer', 8, 'Windows 7');
-      customLaunchers.SL_IE9 = createCustomLauncher('internet explorer', 9, 'Windows 2008');
-      customLaunchers.SL_IE10 = createCustomLauncher('internet explorer', 10, 'Windows 2012');
       customLaunchers.SL_IE11 = createCustomLauncher('internet explorer', 11, 'Windows 8.1');
     }
 
@@ -141,7 +152,9 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['dots', 'coverage', 'saucelabs'],
+    // Disable code coverage, as it's breaking CI:
+    // reporters: ['dots', 'coverage', 'saucelabs'],
+    reporters: ['dots', 'saucelabs'],
 
 
     // web server port
@@ -181,15 +194,16 @@ module.exports = function(config) {
     webpack: {
       cache: true,
       devtool: 'inline-source-map',
-      module: {
-        postLoaders: [
-          {
-            test: /\.js$/,
-            exclude: /(node_modules|test)/,
-            loader: 'istanbul-instrumenter'
-          }
-        ]
-      },
+      // Disable code coverage, as it's breaking CI
+      // module: {
+      //   postLoaders: [
+      //     {
+      //       test: /\.js$/,
+      //       exclude: /(node_modules|test)/,
+      //       loader: 'istanbul-instrumenter'
+      //     }
+      //   ]
+      // },
       externals: [
         {
           './adapters/http': 'var undefined'

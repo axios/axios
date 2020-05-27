@@ -24,12 +24,6 @@ describe('defaults', function () {
     expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');
   });
 
-  it('should transform TypedArrays without including buffer pool', function () {
-    if (typeof Uint8Array === 'undefined') return this.skip();
-    const buffered = new Uint8Array(256).subarray(10, 26);
-    expect(defaults.transformRequest[0](buffered).byteLength).toEqual(16);
-  });
-
   it('should transform response json', function () {
     var data = defaults.transformResponse[0]('{"foo":"bar"}');
 

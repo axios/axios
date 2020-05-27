@@ -294,7 +294,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `data` is the data to be sent as the request body
-  // Only applicable for request methods 'PUT', 'POST', and 'PATCH'
+  // Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH'
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob

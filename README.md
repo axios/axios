@@ -142,8 +142,9 @@ function getUserPermissions() {
 }
 
 Promise.all([getUserAccount(), getUserPermissions()])
-  .then(function (acct, perms) {
-    // Both requests are now complete
+  .then(function (results) {
+    const acct = results[0];
+    const perm = results[1];
   });
 ```
 
@@ -200,12 +201,13 @@ For convenience aliases have been provided for all supported request methods.
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
-~~Concurrency~~
+### Concurrency (Deprecated)
+Please use `Promise.all` to replace the below functions.
 
-~~Helper functions for dealing with concurrent requests.~~
+Helper functions for dealing with concurrent requests.
 
-~~axios.all(iterable)~~
-~~axios.spread(callback)~~
+axios.all(iterable)
+axios.spread(callback)
 
 ### Creating an instance
 

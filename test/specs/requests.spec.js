@@ -157,6 +157,26 @@ describe('requests', function () {
     });
   });
 
+  it('should resolve when the response status is 0 (i.e. requesting with file protocol)', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('file:///xxx').then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 0,
+        responseURL: 'file:///xxx',
+      });
+    });
+  });
+
   // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;
@@ -240,6 +260,30 @@ describe('requests', function () {
         expect(response.status).toEqual(200);
         expect(response.statusText).toEqual('OK');
         expect(response.headers['content-type']).toEqual('application/json');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should not modify the config url with relative baseURL', function (done) {
+    var config;
+
+    axios.get('/foo', {
+        baseURL: '/api'
+    }).catch(function (error) {
+        config = error.config;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 404,
+        statusText: 'NOT FOUND',
+        responseText: 'Resource not found'
+      });
+
+      setTimeout(function () {
+        expect(config.baseURL).toEqual('/api');
+        expect(config.url).toEqual('/foo');
         done();
       }, 100);
     });

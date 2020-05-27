@@ -5,6 +5,7 @@ var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -20,6 +21,9 @@ describe('supports http with nodejs', function () {
     }
     if (process.env.http_proxy) {
       delete process.env.http_proxy;
+    }
+    if (process.env.no_proxy) {
+      delete process.env.no_proxy;
     }
   });
 
@@ -127,6 +131,32 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should preserve the HTTP verb on redirect', function (done) {
+    server = http.createServer(function (req, res) {
+      if (req.method.toLowerCase() !== "head") {
+        res.statusCode = 400;
+        res.end();
+        return;
+      }
+
+      var parsed = url.parse(req.url);
+      if (parsed.pathname === '/one') {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        res.end();
+      }
+    }).listen(4444, function () {
+      axios.head('http://localhost:4444/one').then(function (res) {
+        assert.equal(res.status, 200);
+        done();
+      }).catch(function (err) {
+        done(err);
+      });
+    });
+  });
+
   it('should support transparent gunzip', function (done) {
     var data = {
       firstName: 'Fred',
@@ -158,6 +188,27 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').catch(function (error) {
         done();
+      });
+    });
+  });
+
+  it('should support disabling automatic decompression of response data', function(done) {
+    var data = 'Test data';
+
+    zlib.gzip(data, function(err, zipped) {
+      server = http.createServer(function(req, res) {
+        res.setHeader('Content-Type', 'text/html;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      }).listen(4444, function() {
+        axios.get('http://localhost:4444/', {
+          decompress: false,
+          responseType: 'arraybuffer'
+
+        }).then(function(res) {
+          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+          done();
+        });
       });
     });
   });
@@ -231,6 +282,72 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support max content length for redirected', function (done) {
+    var str = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      var parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/two') {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end(str);
+      } else {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      }
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.get('http://localhost:4444/one', {
+        maxContentLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should support max body length', function (done) {
+    var data = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end();
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.post('http://localhost:4444/', {
+        data: data
+      }, {
+        maxBodyLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED');
+        assert.equal(error.message, 'Request body larger than maxBodyLength limit');
+        done();
+      }, 100);
+    });
+  });
+
   it.skip('should support sockets', function (done) {
     server = net.createServer(function (socket) {
       socket.on('data', function () {
@@ -275,15 +392,17 @@ describe('supports http with nodejs', function () {
   });
 
   it('should pass errors for a failed stream', function (done) {
+    var notExitPath = path.join(__dirname, 'does_not_exist');
+
     server = http.createServer(function (req, res) {
       req.pipe(res);
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
-        fs.createReadStream('/does/not/exist')
+        fs.createReadStream(notExitPath)
       ).then(function (res) {
         assert.fail();
       }).catch(function (err) {
-        assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
         done();
       });
     });
@@ -397,6 +516,80 @@ describe('supports http with nodejs', function () {
 
         axios.get('http://localhost:4444/').then(function (res) {
           assert.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
+          done();
+        });
+      });
+    });
+  });
+
+  it('should not use proxy for domains in no_proxy', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+
+      }).listen(4000, function () {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = 'foo.com, localhost,bar.net , , quix.co';
+
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.equal(res.data, '4567', 'should not use proxy for domains in no_proxy');
+          done();
+        });
+      });
+    });
+  });
+
+  it('should use proxy for domains not in no_proxy', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+
+      }).listen(4000, function () {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = 'foo.com, ,bar.net , quix.co';
+
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.equal(res.data, '45671234', 'should use proxy for domains not in no_proxy');
           done();
         });
       });
@@ -543,6 +736,19 @@ describe('supports http with nodejs', function () {
       });
     });
   });
-});
 
+  it('should combine baseURL and url', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'http://localhost:4444/');
+        assert.equal(res.config.url, '/foo');
+        done();
+      });
+    });
+  });
+});
 

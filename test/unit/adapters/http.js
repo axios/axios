@@ -5,6 +5,7 @@ var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -191,6 +192,27 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support disabling automatic decompression of response data', function(done) {
+    var data = 'Test data';
+
+    zlib.gzip(data, function(err, zipped) {
+      server = http.createServer(function(req, res) {
+        res.setHeader('Content-Type', 'text/html;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      }).listen(4444, function() {
+        axios.get('http://localhost:4444/', {
+          decompress: false,
+          responseType: 'arraybuffer'
+
+        }).then(function(res) {
+          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+          done();
+        });
+      });
+    });
+  });
+
   it('should support UTF8', function (done) {
     var str = Array(100000).join('ж');
 
@@ -260,6 +282,72 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support max content length for redirected', function (done) {
+    var str = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      var parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/two') {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end(str);
+      } else {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      }
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.get('http://localhost:4444/one', {
+        maxContentLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should support max body length', function (done) {
+    var data = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end();
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.post('http://localhost:4444/', {
+        data: data
+      }, {
+        maxBodyLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED');
+        assert.equal(error.message, 'Request body larger than maxBodyLength limit');
+        done();
+      }, 100);
+    });
+  });
+
   it.skip('should support sockets', function (done) {
     server = net.createServer(function (socket) {
       socket.on('data', function () {
@@ -304,15 +392,17 @@ describe('supports http with nodejs', function () {
   });
 
   it('should pass errors for a failed stream', function (done) {
+    var notExitPath = path.join(__dirname, 'does_not_exist');
+
     server = http.createServer(function (req, res) {
       req.pipe(res);
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
-        fs.createReadStream('/does/not/exist')
+        fs.createReadStream(notExitPath)
       ).then(function (res) {
         assert.fail();
       }).catch(function (err) {
-        assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
         done();
       });
     });
@@ -661,5 +751,4 @@ describe('supports http with nodejs', function () {
     });
   });
 });
-
 

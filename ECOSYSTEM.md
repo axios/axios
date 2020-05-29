@@ -16,6 +16,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-api-versioning](https://weffe.github.io/axios-api-versioning) - Add easy to manage api versioning to axios
 * [axios-data-unpacker](https://github.com/anubhavsrivastava/axios-data-unpacker) - Axios interceptor that unpacks HTTP responses so that you can focus on actual server data.
 * [r2curl](https://github.com/uyu423/r2curl) - Extracts the cURL command string from the Axios object. (AxiosResponse, AxiosRequestConfig)
+* [swagger-taxos-codegen](https://github.com/michalzaq12/swagger-taxos-codegen) - Axios based Swagger Codegen (tailored for typescript)
 * [axios-endpoints](https://github.com/renancaraujo/axios-endpoints) - Axios endpoints helps you to create a more concise endpoint mapping with axios. 
 
 ### Logging and debugging
@@ -37,4 +38,3 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) — Axios adapter that allows to easily mock requests
 * [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
 * [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlined integration testing with Mocha & Axios
-

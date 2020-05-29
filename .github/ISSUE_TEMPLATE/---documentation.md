@@ -11,7 +11,7 @@ assignees: ''
 
 If you found an area that needs clarification, feel free to open a PR or list the section/content that could be improved below
 
-⚠️👆 Feel free to these instructions before submitting the issue 👆⚠️
+⚠️👆 Feel free to refer to these instructions before submitting the issue 👆⚠️
 -->
 
 **Section/Content To Improve**

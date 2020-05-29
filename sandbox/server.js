@@ -72,3 +72,12 @@ server = http.createServer(function (req, res) {
 const PORT = 3000;
 
 server.listen(PORT, console.log(`Listening on localhost:${PORT}...`));
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Address localhost:${PORT} in use, retrying...`);
+    setTimeout(() => {
+      server.close();
+      server.listen(PORT);
+    }, 1000);
+  }
+});

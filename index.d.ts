@@ -62,8 +62,8 @@ export interface AxiosRequestConfig {
   onUploadProgress?: (progressEvent: ProgressEvent) => void;
   onDownloadProgress?: (progressEvent: ProgressEvent) => void;
   maxContentLength?: number;
+  validateStatus?: ((status: number) => boolean | null);
   maxBodyLength?: number;
-  validateStatus?: (status: number) => boolean;
   maxRedirects?: number;
   socketPath?: string | null;
   httpAgent?: any;

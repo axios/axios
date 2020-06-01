@@ -24,6 +24,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-response-logger](https://github.com/srph/axios-response-logger) - Axios interceptor which logs responses
 * [axios-debug-log](https://github.com/Gerhut/axios-debug-log) - Axios interceptor of logging requests & responses by debug.
 * [axios-curlirize](https://www.npmjs.com/package/axios-curlirize) - Logs axios requests as curl commands, also adds a property to the response object with the curl command as value.
+* [axios-api-profiler](https://github.com/anubhavsrivastava/axios-api-profiler) - profiles for time each axios based call takes including network time + axios handling time (including middleware time)
 
 ### React and redux
 

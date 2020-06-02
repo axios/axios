@@ -41,7 +41,7 @@ export type ResponseType =
   | 'text'
   | 'stream'
 
-export interface AxiosRequestConfig {
+export interface AxiosRequestConfig<T = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
@@ -50,7 +50,7 @@ export interface AxiosRequestConfig {
   headers?: any;
   params?: any;
   paramsSerializer?: (params: any) => string;
-  data?: any;
+  data?: T;
   timeout?: number;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
@@ -78,7 +78,7 @@ export interface AxiosResponse<T = any>  {
   status: number;
   statusText: string;
   headers: any;
-  config: AxiosRequestConfig;
+  config: AxiosRequestConfig<T>;
   request?: any;
 }
 
@@ -136,14 +136,14 @@ export interface AxiosInstance {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R>;
-  get<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  delete<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  head<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  options<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  post<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
-  put<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
-  patch<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
+  request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig<T>): Promise<R>;
+  get<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
+  delete<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
+  head<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
+  options<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
+  post<T = any, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
+  put<T = any, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
+  patch<T = any, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
 }
 
 export interface AxiosStatic extends AxiosInstance {

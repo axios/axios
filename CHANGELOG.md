@@ -1,9 +1,71 @@
 # Changelog
 
+### 0.19.2 (Jan 20, 2020)
+
+- Remove unnecessary XSS check ([#2679](https://github.com/axios/axios/pull/2679)) (see ([#2646](https://github.com/axios/axios/issues/2646)) for discussion)
+
+### 0.19.1 (Jan 7, 2020)
+
+Fixes and Functionality:
+
+- Fixing invalid agent issue ([#1904](https://github.com/axios/axios/pull/1904))
+- Fix ignore set withCredentials false ([#2582](https://github.com/axios/axios/pull/2582))
+- Delete useless default to hash ([#2458](https://github.com/axios/axios/pull/2458))
+- Fix HTTP/HTTPs agents passing to follow-redirect ([#1904](https://github.com/axios/axios/pull/1904))
+- Fix ignore set withCredentials false ([#2582](https://github.com/axios/axios/pull/2582))
+- Fix CI build failure ([#2570](https://github.com/axios/axios/pull/2570))
+- Remove dependency on is-buffer from package.json ([#1816](https://github.com/axios/axios/pull/1816))
+- Adding options typings ([#2341](https://github.com/axios/axios/pull/2341))
+- Adding Typescript HTTP method definition for LINK and UNLINK. ([#2444](https://github.com/axios/axios/pull/2444))
+- Update dist with newest changes, fixes Custom Attributes issue
+- Change syntax to see if build passes ([#2488](https://github.com/axios/axios/pull/2488))
+- Update Webpack + deps, remove now unnecessary polyfills ([#2410](https://github.com/axios/axios/pull/2410))
+- Fix to prevent XSS, throw an error when the URL contains a JS script ([#2464](https://github.com/axios/axios/pull/2464))
+- Add custom timeout error copy in config ([#2275](https://github.com/axios/axios/pull/2275))
+- Add error toJSON example ([#2466](https://github.com/axios/axios/pull/2466))
+- Fixing Vulnerability A Fortify Scan finds a critical Cross-Site Scrip… ([#2451](https://github.com/axios/axios/pull/2451))
+- Fixing subdomain handling on no_proxy ([#2442](https://github.com/axios/axios/pull/2442))
+- Make redirection from HTTP to HTTPS work ([#2426](https://github.com/axios/axios/pull/2426)) and ([#2547](https://github.com/axios/axios/pull/2547))
+- Add toJSON property to AxiosError type ([#2427](https://github.com/axios/axios/pull/2427))
+- Fixing socket hang up error on node side for slow response. ([#1752](https://github.com/axios/axios/pull/1752))
+- Alternative syntax to send data into the body ([#2317](https://github.com/axios/axios/pull/2317))
+- Fixing custom config options ([#2207](https://github.com/axios/axios/pull/2207))
+- Fixing set `config.method` after mergeConfig for Axios.prototype.request ([#2383](https://github.com/axios/axios/pull/2383))
+- Axios create url bug ([#2290](https://github.com/axios/axios/pull/2290))
+- Do not modify config.url when using a relative baseURL (resolves [#1628](https://github.com/axios/axios/issues/1098)) ([#2391](https://github.com/axios/axios/pull/2391))
+- Add typescript HTTP method definition for LINK and UNLINK ([#2444](https://github.com/axios/axios/pull/2444))
+
+Internal:
+
+- Revert "Update Webpack + deps, remove now unnecessary polyfills" ([#2479](https://github.com/axios/axios/pull/2479))
+- Order of if/else blocks is causing unit tests mocking XHR. ([#2201](https://github.com/axios/axios/pull/2201))
+- Add license badge ([#2446](https://github.com/axios/axios/pull/2446))
+- Fix travis CI build [#2386](https://github.com/axios/axios/pull/2386)
+- Fix cancellation error on build master. #2290 #2207 ([#2407](https://github.com/axios/axios/pull/2407))
+
+Documentation:
+
+- Fixing typo in CHANGELOG.md: s/Functionallity/Functionality ([#2639](https://github.com/axios/axios/pull/2639))
+- Fix badge, use master branch ([#2538](https://github.com/axios/axios/pull/2538))
+- Fix typo in changelog [#2193](https://github.com/axios/axios/pull/2193)
+- Document fix ([#2514](https://github.com/axios/axios/pull/2514))
+- Update docs with no_proxy change, issue #2484 ([#2513](https://github.com/axios/axios/pull/2513))
+- Fixing missing words in docs template ([#2259](https://github.com/axios/axios/pull/2259))
+- 🐛Fix request finally documentation in README ([#2189](https://github.com/axios/axios/pull/2189))
+- updating spelling and adding link to docs ([#2212](https://github.com/axios/axios/pull/2212))
+- docs: minor tweak ([#2404](https://github.com/axios/axios/pull/2404))
+- Update response interceptor docs ([#2399](https://github.com/axios/axios/pull/2399))
+- Update README.md ([#2504](https://github.com/axios/axios/pull/2504))
+- Fix word 'sintaxe' to 'syntax' in README.md ([#2432](https://github.com/axios/axios/pull/2432))
+- upadating README: notes on CommonJS autocomplete ([#2256](https://github.com/axios/axios/pull/2256))
+- Fix grammar in README.md ([#2271](https://github.com/axios/axios/pull/2271))
+- Doc fixes, minor examples cleanup ([#2198](https://github.com/axios/axios/pull/2198))
+
 ### 0.19.0 (May 30, 2019)
 
 Fixes and Functionality:
 
+- Added support for no_proxy env variable ([#1693](https://github.com/axios/axios/pull/1693/files)) - Chance Dickson
 - Unzip response body only for statuses != 204 ([#1129](https://github.com/axios/axios/pull/1129)) - drawski
 - Destroy stream on exceeding maxContentLength (fixes [#1098](https://github.com/axios/axios/issues/1098)) ([#1485](https://github.com/axios/axios/pull/1485)) - Gadzhi Gadzhiev
 - Makes Axios error generic to use AxiosResponse ([#1738](https://github.com/axios/axios/pull/1738)) - Suman Lama

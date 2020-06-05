@@ -1,3 +1,6 @@
+// Polyfill ES6 Promise
+require('es6-promise').polyfill();
+
 // Polyfill URLSearchParams
 URLSearchParams = require('url-search-params');
 
@@ -73,7 +76,24 @@ setupBasicAuthTest = function setupBasicAuthTest() {
     }, 100);
   });
 
-  it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters', function (done) {
+  it('should accept HTTP Basic auth credentials with non-Latin1 characters in password', function (done) {
+    axios('/foo', {
+      auth: {
+        username: 'Aladdin',
+        password: 'open ßç£☃sesame'
+      }
+    });
+
+    setTimeout(function () {
+      var request = jasmine.Ajax.requests.mostRecent();
+      console.log(request.requestHeaders['Authorization'], '\n\n\n');
+
+      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIMOfw6fCo+KYg3Nlc2FtZQ==');
+      done();
+    }, 100);
+  });
+
+  it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters in username', function (done) {
     axios('/foo', {
       auth: {
         username: 'Aladßç£☃din',

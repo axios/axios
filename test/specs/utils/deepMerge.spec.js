@@ -26,7 +26,7 @@ describe('utils::deepMerge', function () {
 
   it('should deepMerge recursively', function () {
     var a = {foo: {bar: 123}};
-    var b = {foo: {baz: 456}, bar: {qux: 789}};
+    var b = {foo: {baz: 456}, bar: {qux: null}};
 
     expect(deepMerge(a, b)).toEqual({
       foo: {
@@ -34,7 +34,7 @@ describe('utils::deepMerge', function () {
         baz: 456
       },
       bar: {
-        qux: 789
+        qux: null
       }
     });
   });
@@ -54,13 +54,13 @@ describe('utils::deepMerge', function () {
   });
 
   it('handles null and undefined arguments', function () {
-    expect(deepMerge(undefined, undefined)).toEqual({});
+    expect(deepMerge(undefined, undefined)).toEqual(undefined);
     expect(deepMerge(undefined, {foo: 123})).toEqual({foo: 123});
-    expect(deepMerge({foo: 123}, undefined)).toEqual({foo: 123});
+    expect(deepMerge({foo: 123}, undefined)).toEqual(undefined);
 
-    expect(deepMerge(null, null)).toEqual({});
+    expect(deepMerge(null, null)).toEqual(null);
     expect(deepMerge(null, {foo: 123})).toEqual({foo: 123});
-    expect(deepMerge({foo: 123}, null)).toEqual({foo: 123});
+    expect(deepMerge({foo: 123}, null)).toEqual(null);
   });
 });
 

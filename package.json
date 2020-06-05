@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "0.19.0",
+  "version": "0.19.2",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "scripts": {
@@ -71,10 +71,11 @@
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   },
+  "jsdelivr": "dist/axios.min.js",
+  "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "1.5.10",
-    "is-buffer": "^2.0.2"
+    "follow-redirects": "^1.10.0"
   },
   "bundlesize": [
     {

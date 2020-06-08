@@ -339,7 +339,7 @@ These are the available config options for making requests. Only the `url` is re
   //   browser only: 'blob'
   responseType: 'json', // default
 
-  // `responseEncoding` indicates encoding to use for decoding responses
+  // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
   responseEncoding: 'utf8', // default
 
@@ -361,7 +361,7 @@ These are the available config options for making requests. Only the `url` is re
     // Do whatever you want with the native progress event
   },
 
-  // `maxContentLength` defines the max size of the http response content in bytes allowed
+  // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
   maxContentLength: 2000,
 
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed

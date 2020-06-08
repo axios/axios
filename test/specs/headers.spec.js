@@ -42,6 +42,21 @@ describe('headers', function () {
     });
   });
 
+  it('should not set header if value is null', function (done) {
+    expect(axios.defaults.headers.common['Accept']).toEqual('application/json, text/plain, */*');
+
+    axios('/foo', {
+      headers: {
+        Accept: null
+      }
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(typeof request.requestHeaders['Accept']).toEqual('undefined');
+      done();
+    });
+  });
+
   it('should add extra headers for post', function (done) {
     var headers = axios.defaults.headers.common;
 

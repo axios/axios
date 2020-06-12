@@ -1,0 +1,15 @@
+name: 'Close Invalid Issues'
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto_close_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Automatically close issues that don't follow the issue template
+        uses: lucasbento/auto-close-issues@v1.0.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-close-message: "Closed by the issue bot. Make sure you have followed the issue template. Thanks."

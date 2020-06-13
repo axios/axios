@@ -1,0 +1,19 @@
+name: 'Close Stale'
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+
+jobs:
+  auto_close_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Automatically close stale issues/prs
+        uses: actions/stale@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: 'Seems like this issue/pr has been stale. If no new comments or updates, it will be closed in a few of days.'
+          stale-pr-message: 'Seems like this issue/pr has been stale. If no new comments or updates, it will be closed in a few of days.'
+          stale-issue-label: 'status:stale'
+          stale-pr-label: 'status:stale'
+          only-labels: 'status:more info needed'

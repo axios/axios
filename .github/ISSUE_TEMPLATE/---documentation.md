@@ -2,7 +2,7 @@
 name: "\U0001F4DA Documentation"
 about: Report an error or area that needs clarification
 title: ''
-labels: documentation
+labels: 'type:documentation'
 assignees: ''
 
 ---
@@ -14,10 +14,11 @@ If you found an area that needs clarification, feel free to open a PR or list th
 ⚠️👆 Feel free to refer to these instructions before submitting the issue 👆⚠️
 -->
 
-**Section/Content To Improve**
+#### Section/Content To Improve
 Quote or link to section
 
-**Suggested Improvement**
+#### Suggested Improvement
 Identify what is confusing or incorrect and what could make it better
 
-**Relevant File(s)**: [e.g. README.md]
+#### Relevant File(s)
+[e.g. README.md]

@@ -1,6 +1,4 @@
-<!-- Click "Preview" for a more readable version -->
-
-#### Instructions
+<!-- Click "Preview" for a more readable version --
 
 Please read and follow the instructions before submitting an issue:
 
@@ -12,6 +10,8 @@ Please read and follow the instructions before submitting an issue:
 
 **⚠️👆 Delete the instructions before submitting the issue 👆⚠️**
 
+-->
+
 #### Summary
 
 Describe your issue here, including as much detail as necessary.
@@ -20,7 +20,11 @@ If you're reporting a bug, include the relevant code and stack traces to debug i
 
 If you're requesting a feature, include some context and examples of code using it.
 
-#### Context
-
-- axios version: *e.g.: v0.16.0*
-- Environment: *e.g.: node v6.9.4, chrome 54, windows 7*
+#### Environment
+ - Axios Version [e.g. 0.18.0]
+ - Adapter [e.g. XHR/HTTP]
+ - Browser [e.g. Chrome, Safari]
+ - Browser Version [e.g. 22]
+ - Node.js Version [e.g. 13.0.1]
+ - OS: [e.g. iOS 12.1.0, OSX 10.13.4]
+ - Additional Library Versions [e.g. React 16.7, React Native 0.58.0]

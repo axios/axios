@@ -1,5 +1,5 @@
 export interface AxiosTransformer {
-  (data: any, headers?: any): any;
+  (data: any, headers?: Record<string, string>): any;
 }
 
 export interface AxiosAdapter {
@@ -47,7 +47,7 @@ export interface AxiosRequestConfig {
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: any;
+  headers?: Record<string, string>;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: any;
@@ -77,7 +77,7 @@ export interface AxiosResponse<T = any>  {
   data: T;
   status: number;
   statusText: string;
-  headers: any;
+  headers: Record<string, string>;
   config: AxiosRequestConfig;
   request?: any;
 }

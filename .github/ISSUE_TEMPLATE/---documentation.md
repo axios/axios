@@ -11,6 +11,8 @@ assignees: ''
 
 If you found an area that needs clarification, feel free to open a PR or list the section/content that could be improved below
 
+Don't remove any title of the issue template, or it will be treated as invalid by the bot.
+
 ⚠️👆 Feel free to refer to these instructions before submitting the issue 👆⚠️
 -->
 

@@ -12,8 +12,8 @@ jobs:
         uses: actions/stale@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          stale-issue-message: 'Seems like this issue/pr has been stale. If no new comments or updates, it will be closed in a few of days.'
-          stale-pr-message: 'Seems like this issue/pr has been stale. If no new comments or updates, it will be closed in a few of days.'
+          stale-issue-message: 'Seems like this issue has been stale. Please confirm whether the problem is still there and reproducible. **Clarify what axios can help is better.** If no new comments or updates, it will be closed in a few of days.'
+          stale-pr-message: 'Seems like this pr has been stale. Please confirm whether it is still in processing. If no new comments or updates, it will be closed in a few of days.'
           stale-issue-label: 'status:stale'
           stale-pr-label: 'status:stale'
           only-labels: 'status:more info needed'

@@ -14,4 +14,4 @@ jobs:
         uses: lucasbento/auto-close-issues@v1.0.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-close-message: "Closed by the issue bot. Make sure you have followed the issue template will all required sections/titles. Thanks."
+          issue-close-message: 'Hello! :wave: \n\nThis issue is being automatically closed because it does not follow the issue template. Please read the issue template carefully and follow all of the instructions when opening a new issue. \n\nThanks'

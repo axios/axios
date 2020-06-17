@@ -12,8 +12,9 @@ jobs:
         uses: actions/stale@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          stale-issue-message: 'Seems like this issue has been stale. Please confirm whether the problem is still there and reproducible. **Clarify what axios can help is better.** If no new comments or updates, it will be closed in a few of days.'
-          stale-pr-message: 'Seems like this pr has been stale. Please confirm whether it is still in processing. If no new comments or updates, it will be closed in a few of days.'
+          stale-issue-message: 'Hello! :wave: \n\nThis issue is being automatically marked as stale because it has not been updated in a while. Please confirm that the issue is still present and reproducible. If no updates or new comments are received the issue will be closed in a few days. \n\nThanks'
+          stale-pr-message: 'Hello! :wave: \n\nThis pull request is being automatically marked as stale because it has not been updated in a while. Please confirm that the issue is still present and reproducible. If no updates or new comments are received the pull request will be closed in a few days. \n\nThanks'
           stale-issue-label: 'status:stale'
           stale-pr-label: 'status:stale'
-          only-labels: 'status:more info needed'
+          exempt-issue-labels: 'beginner friendly,component:adapter,component:cookies,component:encoding,component:exceptions,component:headers,component:progress events,component:proxy,component:timeout,component:typescript,priority:high,priority:low,status:more info needed,status:possible bug,status:review,status:wont fix,status:work in progress,type:confirmed bug,type:documentation,type:enhancement,type:feature,type:future proposal,type:question,type:regression'
+          exempt-pr-labels: 'beginner friendly,component:adapter,component:cookies,component:encoding,component:exceptions,component:headers,component:progress events,component:proxy,component:timeout,component:typescript,priority:high,priority:low,status:more info needed,status:possible bug,status:review,status:wont fix,status:work in progress,type:confirmed bug,type:documentation,type:enhancement,type:feature,type:future proposal,type:question,type:regression'

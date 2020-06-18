@@ -5,10 +5,10 @@ on:
     - cron: '0 0 * * 1'
 
 jobs:
-  auto_close_issues:
+  stale:
     runs-on: ubuntu-latest
     steps:
-      - name: Automatically close stale issues/prs
+      - name: Close Stale Issues
         uses: actions/stale@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -18,3 +18,5 @@ jobs:
           stale-pr-label: 'status:stale'
           exempt-issue-labels: 'beginner friendly,component:adapter,component:cookies,component:encoding,component:exceptions,component:headers,component:progress events,component:proxy,component:timeout,component:typescript,priority:high,priority:low,status:more info needed,status:possible bug,status:review,status:wont fix,status:work in progress,type:confirmed bug,type:documentation,type:enhancement,type:feature,type:future proposal,type:question,type:regression'
           exempt-pr-labels: 'beginner friendly,component:adapter,component:cookies,component:encoding,component:exceptions,component:headers,component:progress events,component:proxy,component:timeout,component:typescript,priority:high,priority:low,status:more info needed,status:possible bug,status:review,status:wont fix,status:work in progress,type:confirmed bug,type:documentation,type:enhancement,type:feature,type:future proposal,type:question,type:regression'
+          days-before-stale: 30
+          days-before-close: 14 

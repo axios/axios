@@ -1,8 +1,8 @@
 ---
-name: "\U0001F914 Support or Usage Question"
-about: Get help using Axios
+name: "✨ Feature Request"
+about: Suggest an idea or feature
 title: ''
-labels: 'type:question'
+labels: 'type:feature'
 assignees: ''
 
 ---
@@ -20,27 +20,14 @@ Please read and follow the instructions before submitting an issue:
 ⚠️👆 Feel free to these instructions before submitting the issue 👆⚠️
 -->
 
-#### Describe the issue
-A clear and concise description of what the issue is.
+#### Is your feature request related to a problem? Please describe.
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-#### Example Code
-Code snippet to illustrate your question
+#### Describe the solution you'd like
+A clear and concise description of what you want to happen.
 
-```js
-// Example code here
-```
+#### Describe alternatives you've considered
+A clear and concise description of any alternative solutions or features you've considered.
 
-#### Expected behavior, if applicable
-A clear and concise description of what you expected to happen.
-
-#### Environment
- - Axios Version [e.g. 0.18.0]
- - Adapter [e.g. XHR/HTTP]
- - Browser [e.g. Chrome, Safari]
- - Browser Version [e.g. 22]
- - Node.js Version [e.g. 13.0.1]
- - OS: [e.g. iOS 12.1.0, OSX 10.13.4]
- - Additional Library Versions [e.g. React 16.7, React Native 0.58.0]
-
-#### Additional context/Screenshots
-Add any other context about the problem here. If applicable, add screenshots to help explain.
+#### Additional context
+Add any other context or screenshots about the feature request here.

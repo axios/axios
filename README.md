@@ -1,6 +1,7 @@
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
+[![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 [![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
@@ -147,10 +148,11 @@ function getUserPermissions() {
   return axios.get('/user/12345/permissions');
 }
 
-axios.all([getUserAccount(), getUserPermissions()])
-  .then(axios.spread(function (acct, perms) {
-    // Both requests are now complete
-  }));
+Promise.all([getUserAccount(), getUserPermissions()])
+  .then(function (results) {
+    const acct = results[0];
+    const perm = results[1];
+  });
 ```
 
 ## axios API
@@ -206,12 +208,13 @@ For convenience aliases have been provided for all supported request methods.
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
-### Concurrency
+### Concurrency (Deprecated)
+Please use `Promise.all` to replace the below functions.
 
 Helper functions for dealing with concurrent requests.
 
-##### axios.all(iterable)
-##### axios.spread(callback)
+axios.all(iterable)
+axios.spread(callback)
 
 ### Creating an instance
 
@@ -293,7 +296,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `data` is the data to be sent as the request body
-  // Only applicable for request methods 'PUT', 'POST', and 'PATCH'
+  // Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH'
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
@@ -336,7 +339,7 @@ These are the available config options for making requests. Only the `url` is re
   //   browser only: 'blob'
   responseType: 'json', // default
 
-  // `responseEncoding` indicates encoding to use for decoding responses
+  // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
   responseEncoding: 'utf8', // default
 
@@ -358,7 +361,7 @@ These are the available config options for making requests. Only the `url` is re
     // Do whatever you want with the native progress event
   },
 
-  // `maxContentLength` defines the max size of the http response content in bytes allowed
+  // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
   maxContentLength: 2000,
 
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed

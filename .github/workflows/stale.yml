@@ -12,11 +12,20 @@ jobs:
         uses: actions/stale@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          stale-issue-message: 'Hello! :wave: \n\nThis issue is being automatically marked as stale because it has not been updated in a while. Please confirm that the issue is still present and reproducible. If no updates or new comments are received the issue will be closed in a few days. \n\nThanks'
-          stale-pr-message: 'Hello! :wave: \n\nThis pull request is being automatically marked as stale because it has not been updated in a while. Please confirm that the issue is still present and reproducible. If no updates or new comments are received the pull request will be closed in a few days. \n\nThanks'
+          stale-issue-message: |
+            Hello! :wave:
+
+            This issue is being automatically marked as stale because it has not been updated in a while. Please confirm that the issue is still present and reproducible. If no updates or new comments are received the issue will be closed in a few days.
+
+            Thanks.
+          stale-pr-message: |
+            Hello! :wave:
+
+            This pull request is being automatically marked as stale because it has not been updated in a while. Please confirm that the issue is still present and reproducible. If no updates or new comments are received the pull request will be closed in a few days.
+
+            Thanks.
           stale-issue-label: 'status:stale'
           stale-pr-label: 'status:stale'
-          exempt-issue-labels: 'beginner friendly,component:adapter,component:cookies,component:encoding,component:exceptions,component:headers,component:progress events,component:proxy,component:timeout,component:typescript,priority:high,priority:low,status:more info needed,status:possible bug,status:review,status:wont fix,status:work in progress,type:confirmed bug,type:documentation,type:enhancement,type:feature,type:future proposal,type:question,type:regression'
-          exempt-pr-labels: 'beginner friendly,component:adapter,component:cookies,component:encoding,component:exceptions,component:headers,component:progress events,component:proxy,component:timeout,component:typescript,priority:high,priority:low,status:more info needed,status:possible bug,status:review,status:wont fix,status:work in progress,type:confirmed bug,type:documentation,type:enhancement,type:feature,type:future proposal,type:question,type:regression'
+          only-labels: 'status:more info needed'
           days-before-stale: 30
           days-before-close: 14 

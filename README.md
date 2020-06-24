@@ -12,12 +12,12 @@
 Promise based HTTP client for the browser and node.js
 ## Table of Contents
 
-- [axios](#axios)
+- [Axios](#axios)
   - [Features](#features)
   - [Browser Support](#browser-support)
   - [Installing](#installing)
   - [Example](#example)
-  - [axios API](#axios-api)
+  - [Axios API](#axios-api)
   - [Request method aliases](#request-method-aliases)
   - [Concurrency (Deprecated)](#concurrency-deprecated)
   - [Creating an instance](#creating-an-instance)
@@ -34,8 +34,8 @@ Promise based HTTP client for the browser and node.js
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
     - [Browser](#browser)
     - [Node.js](#nodejs)
-    - [Query string](#query-string)
-    - [Form data](#form-data)
+      - [Query string](#query-string)
+      - [Form data](#form-data)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)

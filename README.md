@@ -12,7 +12,6 @@
 Promise based HTTP client for the browser and node.js
 ## Table of Contents
 
-- [Axios](#axios)
   - [Features](#features)
   - [Browser Support](#browser-support)
   - [Installing](#installing)

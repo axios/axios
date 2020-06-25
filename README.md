@@ -730,8 +730,8 @@ or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams
 
 ```js
 const url = require('url');
-const params = new url.URLSearchParams({foo:'bar'});
-axios.get('http://something.com/', {params});
+const params = new url.URLSearchParams({ foo: 'bar' });
+axios.post('http://something.com/', params.toString());
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.

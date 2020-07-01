@@ -82,13 +82,30 @@ export interface AxiosResponse<T = any>  {
   request?: any;
 }
 
-export interface AxiosError<T = any> extends Error {
+
+export type AxiosErrorToJSON = () => {
+    message: string;
+    name: string;
+    stack: string;
+    config: AxiosRequestConfig;
+    code?: string;
+};
+
+export interface AxiosError extends Error {
   config: AxiosRequestConfig;
   code?: string;
   request?: any;
-  response?: AxiosResponse<T>;
+  response?: AxiosResponse;
   isAxiosError: boolean;
-  toJSON: () => object;
+}
+
+export class AxiosException extends Error implements AxiosError {
+    config: AxiosRequestConfig;
+    code?: string;
+    request?: any;
+    response?: AxiosResponse;
+    isAxiosError: boolean;
+    toJSON: AxiosErrorToJSON;
 }
 
 export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {

@@ -1,3 +1,4 @@
+var AxiosException = require('../../../lib/exception/AxiosException');
 var enhanceError = require('../../../lib/core/enhanceError');
 
 describe('core::enhanceError', function() {
@@ -12,6 +13,7 @@ describe('core::enhanceError', function() {
     expect(error.request).toBe(request);
     expect(error.response).toBe(response);
     expect(error.isAxiosError).toBe(true);
+    expect(error instanceof Error).toBe(true);
   });
 
   it('should return error', function() {

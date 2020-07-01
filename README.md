@@ -1,6 +1,7 @@
 # axios
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
+[![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 [![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
@@ -9,6 +10,37 @@
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
 Promise based HTTP client for the browser and node.js
+## Table of Contents
+
+  - [Features](#features)
+  - [Browser Support](#browser-support)
+  - [Installing](#installing)
+  - [Example](#example)
+  - [Axios API](#axios-api)
+  - [Request method aliases](#request-method-aliases)
+  - [Concurrency (Deprecated)](#concurrency-deprecated)
+  - [Creating an instance](#creating-an-instance)
+  - [Instance methods](#instance-methods)
+  - [Request Config](#request-config)
+  - [Response Schema](#response-schema)
+  - [Config Defaults](#config-defaults)
+    - [Global axios defaults](#global-axios-defaults)
+    - [Custom instance defaults](#custom-instance-defaults)
+    - [Config order of precedence](#config-order-of-precedence)
+  - [Interceptors](#interceptors)
+  - [Handling Errors](#handling-errors)
+  - [Cancellation](#cancellation)
+  - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
+    - [Browser](#browser)
+    - [Node.js](#nodejs)
+      - [Query string](#query-string)
+      - [Form data](#form-data)
+  - [Semver](#semver)
+  - [Promises](#promises)
+  - [TypeScript](#typescript)
+  - [Resources](#resources)
+  - [Credits](#credits)
+  - [License](#license)
 
 ## Features
 
@@ -49,7 +81,13 @@ Using yarn:
 $ yarn add axios
 ```
 
-Using cdn:
+Using jsDelivr CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+```
+
+Using unpkg CDN:
 
 ```html
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -81,7 +119,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .finally(function () {
+  .then(function () {
     // always executed
   });
 
@@ -97,7 +135,7 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   })
-  .finally(function () {
+  .then(function () {
     // always executed
   });  
 
@@ -141,10 +179,11 @@ function getUserPermissions() {
   return axios.get('/user/12345/permissions');
 }
 
-axios.all([getUserAccount(), getUserPermissions()])
-  .then(axios.spread(function (acct, perms) {
-    // Both requests are now complete
-  }));
+Promise.all([getUserAccount(), getUserPermissions()])
+  .then(function (results) {
+    const acct = results[0];
+    const perm = results[1];
+  });
 ```
 
 ## axios API
@@ -166,7 +205,7 @@ axios({
 ```
 
 ```js
-// GET request for remote image
+// GET request for remote image in node.js
 axios({
   method: 'get',
   url: 'http://bit.ly/2mTM3nY',
@@ -200,12 +239,13 @@ For convenience aliases have been provided for all supported request methods.
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
-### Concurrency
+### Concurrency (Deprecated)
+Please use `Promise.all` to replace the below functions.
 
 Helper functions for dealing with concurrent requests.
 
-##### axios.all(iterable)
-##### axios.spread(callback)
+axios.all(iterable)
+axios.spread(callback)
 
 ### Creating an instance
 
@@ -287,7 +327,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `data` is the data to be sent as the request body
-  // Only applicable for request methods 'PUT', 'POST', and 'PATCH'
+  // Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH'
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
@@ -330,7 +370,7 @@ These are the available config options for making requests. Only the `url` is re
   //   browser only: 'blob'
   responseType: 'json', // default
 
-  // `responseEncoding` indicates encoding to use for decoding responses
+  // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
   responseEncoding: 'utf8', // default
 
@@ -341,17 +381,22 @@ These are the available config options for making requests. Only the `url` is re
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
   // `onUploadProgress` allows handling of progress events for uploads
+  // browser only
   onUploadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 
   // `onDownloadProgress` allows handling of progress events for downloads
+  // browser only
   onDownloadProgress: function (progressEvent) {
     // Do whatever you want with the native progress event
   },
 
-  // `maxContentLength` defines the max size of the http response content in bytes allowed
+  // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
   maxContentLength: 2000,
+
+  // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
+  maxBodyLength: 2000,
 
   // `validateStatus` defines whether to resolve or reject the promise for a given
   // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
@@ -377,7 +422,7 @@ These are the available config options for making requests. Only the `url` is re
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // 'proxy' defines the hostname and port of the proxy server.
+  // `proxy` defines the hostname and port of the proxy server.
   // You can also define your proxy using the conventional `http_proxy` and
   // `https_proxy` environment variables. If you are using environment variables
   // for your proxy configuration, you can also define a `no_proxy` environment
@@ -399,7 +444,14 @@ These are the available config options for making requests. Only the `url` is re
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {
-  })
+  }),
+
+  // `decompress` indicates whether or not the response body should be decompressed 
+  // automatically. If set to `true` will also remove the 'content-encoding' header 
+  // from the responses objects of all decompressed responses
+  // - Node only (XHR cannot turn off decompression)
+  decompress: true // default
+
 }
 ```
 
@@ -418,8 +470,9 @@ The response for a request contains the following information.
   // `statusText` is the HTTP status message from the server response
   statusText: 'OK',
 
-  // `headers` the headers that the server responded with
-  // All header names are lower cased
+  // `headers` the HTTP headers that the server responded with
+  // All header names are lower cased and can be accessed using the bracket notation.
+  // Example: `response.headers['content-type']`
   headers: {},
 
   // `config` is the config that was provided to `axios` for the request
@@ -559,7 +612,7 @@ Using the `validateStatus` config option, you can define HTTP code(s) that shoul
 ```js
 axios.get('/user/12345', {
   validateStatus: function (status) {
-    return status < 500; // Reject only if the status code is greater than or equal to 500
+    return status < 500; // Resolve only if the status code is less than 500
   }
 })
 ```
@@ -664,6 +717,8 @@ axios(options);
 
 ### Node.js
 
+#### Query string
+
 In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
@@ -671,10 +726,44 @@ const querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
+or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
+
+```js
+const url = require('url');
+const params = new url.URLSearchParams({ foo: 'bar' });
+axios.post('http://something.com/', params.toString());
+```
+
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ###### NOTE
 The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has known issues with that use case (https://github.com/nodejs/node-v0.x-archive/issues/1665).
+
+#### Form data
+
+In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
+
+```js
+const FormData = require('form-data');
+ 
+const form = new FormData();
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+
+axios.post('https://example.com', form, { headers: form.getHeaders() })
+```
+
+Alternatively, use an interceptor:
+
+```js
+axios.interceptors.request.use(config => {
+  if (config.data instanceof FormData) {
+    Object.assign(config.headers, config.data.getHeaders());
+  }
+  return config;
+});
+```
 
 ## Semver
 

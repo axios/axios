@@ -29,8 +29,10 @@ export interface AxiosBasicCredentials {
 export interface AxiosProxyConfig {
   /** Hostname of the proxy server */
   host: string;
+  
   /** Port of the proxy server */
   port: number;
+  
   /**
    * Optional authentication, if required by the server.
    * If specified, these are placed under the Proxy-Authorization header.
@@ -39,6 +41,7 @@ export interface AxiosProxyConfig {
     username: string;
     password: string;
   };
+  
   /** Optional protocol to use to connet to the proxy (http/https) */
   protocol?: string;
 }
@@ -54,6 +57,9 @@ export type Method =
   | 'post' | 'POST'
   | 'put' | 'PUT'
   | 'patch' | 'PATCH'
+  | 'purge' | 'PURGE'
+  | 'link' | 'LINK'
+  | 'unlink' | 'UNLINK'
 
 /**
  * Expected response type, used by Axios to process/parse the response data.
@@ -88,16 +94,19 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * appended to the baseURL.
    */
   url?: string;
+  
   /**
    * The method to use for the request (defaults to GET).
    */
   method?: Method;
+  
   /**
    * When specified, all relative urls will be appended to it.
    * This is typically set only for the instance so that any
    * subsequent requests can use it implicitly.
    */
   baseURL?: string;
+  
   /**
    * Optional request data transformer(s).
    * If multiple are specified, they are applied in order.
@@ -107,6 +116,7 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * When this is set, this default behavior is overridden.
    */
   transformRequest?: AxiosTransformer | AxiosTransformer[];
+  
   /**
    * Optional response data transformer(s).
    * If multiple are specified, they are applied in order.
@@ -115,12 +125,14 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * When this is set, this default behavior is overridden.
    */
   transformResponse?: AxiosTransformer | AxiosTransformer[];
+  
   /**
    * Headers to pass in the request.
    * Axios may override some of these depending on the 
    * underlying implementation.
    */
   headers?: StringKeyedObject;
+  
   /**
    * Parameters to be serialized into the URL query string.
    * By default, this is expected to be a plain object
@@ -131,12 +143,14 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * the P type parameter of the request config.
    */
   params?: P;
+  
   /**
    * Use this to override the serializer used to convert the URL params
    * into a query string. If this expects an object that is not a string-keyed
    * object or URLSearchParams, override the P type parameter of the request config.
    */
   paramsSerializer?: (params: P) => string;
+  
   /**
    * The body to pass along with the request.
    * This can be any type, but some types are handled specially:
@@ -147,11 +161,13 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * Note that the underlying implementation may reject invalid types.
    */
   data?: any;
+  
   /**
    * Timeout (in ms) after which to reject the request with a timeout error.
    * By default this is 0, indicating no timeout.
    */
   timeout?: number;
+  
   /**
    * This is forwarded to the underlying XMLHttpRequest.withCredentials
    * property when used in the browser, and has no effect when used in Node.
@@ -159,6 +175,7 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials
    */
   withCredentials?: boolean;
+  
   /**
    * A custom HTTP adapter to use instead of the default built-in Axios adapters.
    * This must implement the entire pipeline for processing a request config, sending
@@ -171,12 +188,14 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    *   XMLHttpRequest API.
    */
   adapter?: AxiosAdapter;
+  
   /**
    * Basic credentials to pass in the Authorization header.
    * If more complex authorization is required, set the Authorization header
    * manually.
    */
   auth?: AxiosBasicCredentials;
+  
   /**
    * The expected type of the response body.
    * In the browser, this is set directly on the request object.
@@ -186,30 +205,36 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * read into a Buffer. Otherwise, the stream is read into a string.
    */
   responseType?: ResponseType;
+  
   /**
    * The name of the cookie containing the XSRF token set by the server,
    * defaulting to 'XSRF-TOKEN'. This has no effect in Node.
    */
   xsrfCookieName?: string;
+  
   /**
    * The name of the request header to set with the XSRF token,
    * defaulting to 'X-XSRF-TOKEN'. This has no effect in Node.
    */
   xsrfHeaderName?: string;
+  
   /**
    * An event handler for progress events while the request is being sent.
    * This has no effect in Node.
    */
   onUploadProgress?: (progressEvent: ProgressEvent) => void;
+  
   /**
    * An event handler for progress events while the response is being downloaded.
    * This has no effect in Node.
    */
   onDownloadProgress?: (progressEvent: ProgressEvent) => void;
+  
   /**
    * The max response size allowed, in bytes. This has no effect in the browser.
    */
   maxContentLength?: number;
+  
   /**
    * A function to determine how to handle response status codes.
    * If this function returns true for a response, the response
@@ -219,6 +244,7 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * If this is set to undefined, all responses will resolve.
    */
   validateStatus?: (status: number) => boolean;
+  
   /**
    * The maximum number of redirect responses to follow before rejecting.
    * The browser will always follow redirects to an internal stopping point,
@@ -226,22 +252,26 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * redirects.
    */
   maxRedirects?: number;
+  
   /**
    * On Node, this will specify the Unix socket path to use to create sockets.
    */
   socketPath?: string | null;
+  
   /**
    * On Node, this will set the agent passed to HTTP requests.
    * This should be an instance of http.Agent (not explicit so that users
    * do not have to include @types/node)
    */
   httpAgent?: any;
+  
   /**
    * On Node, this will set the agent passed to HTTPS requests.
    * This should be an instance of https.Agent (not explicit so that users
    * do not have to include @types/node)
    */
   httpsAgent?: any;
+  
   /**
    * On Node, this will configure an HTTP proxy to send requests to instead of going
    * straight to the specified URL. If undefined, Axios will attempt to read
@@ -249,12 +279,14 @@ export interface AxiosRequestConfig<P = StringKeyedObject | URLSearchParams> {
    * environment variables.
    */
   proxy?: AxiosProxyConfig | false;
+  
   /**
    * Cancel token to use to detect cancellation requests.
    * This should be done per-request because each cancel token
    * manages only one promise, and thus can only be used once.
    */
   cancelToken?: CancelToken;
+  decompress?: boolean;
 }
 
 /**
@@ -265,14 +297,19 @@ export interface AxiosResponse<T = any>  {
    * The decoded (and parsed if the response was valid JSON) response body.
    */
   data: T;
+  
   /** The HTTP status code */
   status: number;
+  
   /** The corresponding HTTP status text */
   statusText: string;
+  
   /** The parsed headers from the response */
   headers: StringKeyedObject;
+  
   /** The config used to send the request */
   config: AxiosRequestConfig;
+  
   /**
    * The underlying implementation's request object, if it exists.
    * This will be an XMLHttpRequest in the browser,
@@ -288,20 +325,24 @@ export interface AxiosResponse<T = any>  {
 export interface AxiosError extends Error {
   /** The config used to send the request */
   config: AxiosRequestConfig;
+  
   /** An optional code provided by the underlying implementation */
   code?: string;
+  
   /**
    * The underlying implementation's request object, if it exists.
    * This will be an XMLHttpRequest in the browser,
    * and a http.OutgoingMessage or https.OutgoingMessage in Node.
    */
   request?: any;
+
   /**
    * When there was a valid response and this error was created
    * as a result of an invalid status code, the response will be
    * available here.
    */
   response?: AxiosResponse;
+  
   /**
    * Flag set on all AxiosErrors. This can be used to discriminate
    * between AxiosErrors and other errors that may be thrown.
@@ -315,6 +356,7 @@ export interface AxiosError extends Error {
  */
 export class Cancel {
   constructor(message?: string);
+  
   /** Optional message specifying the reason for the cancellation */
   message?: string;
 }
@@ -340,21 +382,25 @@ export class CancelToken {
    * to issue a cancellation request to the listening request.
    */
   constructor(executor: (cancel: Canceler) => void);
+  
   /**
    * An alternative way to create a cancel token, returning
    * a token and a cancel function linked to that token.
    */
   static source(): CancelTokenSource;
+  
   /**
    * The promise that will be resolved when the cancel function is called.
    * The resolved value is the Cancel instance containing the reason
    * for the cancellation.
    */
   promise: Promise<Cancel>;
+  
   /**
    * Once the cancel function is called, the reason will be set here.
    */
   reason?: Cancel;
+  
   /**
    * This will throw the Cancel instance if this token has been cancelled.
    */
@@ -365,6 +411,7 @@ export class CancelToken {
 export interface CancelTokenSource {
   /** A normal CancelToken instance */
   token: CancelToken;
+  
   /** A cancel function that will cancel the above token */
   cancel: Canceler;
 }
@@ -389,11 +436,13 @@ export interface AxiosInterceptorManager<V> {
    * @param onRejected A function to execute when the previous interceptor(s) (or this onFullfilled) fails
    */
   use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
+  
   /**
    * Removes an interceptor from this manager.
    * @param id An id returned from `use()`
    */
   eject(id: number): void;
+  
   /**
    * Call a function for each registered interceptor.
    */
@@ -409,12 +458,14 @@ export interface AxiosUriConfig<P = StringKeyedObject | URLSearchParams> {
    * (not including the baseURL)
    */
   url?: string;
+  
   /**
    * The query parameters to include in the URL, as an object.
    * By default, this expects either an object representing the
    * query parameters or a URLSearchParams object.
    */
   params?: P;
+  
   /**
    * A function to override the default query parameter serializer,
    * allowing the type of the parameter object to be overridden.
@@ -446,6 +497,7 @@ export class Axios {
      * Each interceptor is called with the request config.
      */
     request: AxiosInterceptorManager<AxiosRequestConfig>;
+    
     /**
      * The set of response interceptors for this instance.
      * Each interceptor is called with the response object.
@@ -487,6 +539,11 @@ export class Axios {
    * Send a POST request to the specified URL using the specified data, with an optional request config
    */
   post<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
+  
+  /**
+   * Send a OPTION request to the specified URL, with an optional request config
+   */
+  options<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
 
   /**
    * Send a PUT request to the specified URL using the specified data, with an optional request config
@@ -507,6 +564,7 @@ export class Axios {
 export interface AxiosInstance extends Axios {
   /** Alias for the `request` method */
   <T = any, R = AxiosResponse<T>>(config: AxiosRequestConfig): Promise<R>;
+  
   /** Alias for the `request` method */
   <T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
 }
@@ -538,4 +596,5 @@ export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 export function spread<T extends any[], R>(callback: (...args: T) => R): (array: T) => R;
 
 declare const axios: AxiosInstance;
+
 export default axios;

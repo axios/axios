@@ -1,19 +1,30 @@
 var axios = require('../../../index');
 var http = require('http');
+var https = require('https');
 var net = require('net');
 var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
-var server, proxy;
+var server, server2, proxy;
 
 describe('supports http with nodejs', function () {
+
+  beforeEach(function () {
+    var caPath = path.join(__dirname, 'certs', 'private-root-ca.cert.pem');
+    var caBuf = fs.readFileSync(caPath);
+    https.globalAgent.options.ca = [caBuf];
+  });
 
   afterEach(function () {
     if (server) {
       server.close();
       server = null;
+    }
+    if (server2) {
+      server2.close();
+      server2 = null;
     }
     if (proxy) {
       proxy.close()
@@ -66,6 +77,26 @@ describe('supports http with nodejs', function () {
     server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'application/json;charset=utf-8');
       res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      });
+    });
+  });
+
+  it('should allow passing JSON with BOM', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      var bomBuffer = Buffer.from([0xEF, 0xBB, 0xBF])
+      var jsonBuffer = Buffer.from(JSON.stringify(data));
+      res.end(Buffer.concat([bomBuffer, jsonBuffer]));
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').then(function (res) {
         assert.deepEqual(res.data, data);
@@ -801,6 +832,49 @@ describe('supports http with nodejs', function () {
       }).then(function (res) {
         assert.equal(res.config.baseURL, 'http://localhost:4444/');
         assert.equal(res.config.url, '/foo');
+        done();
+      });
+    });
+  });
+
+  it('should check server identity', function (done) {
+    server2 = https.createServer({
+        key: fs.readFileSync(path.join(__dirname, 'certs', 'privkey.pem')),
+        cert: fs.readFileSync(path.join(__dirname, 'certs', 'fullchain.pem'))
+      },
+      function (req, res) {
+        res.end();
+      }).listen(4343, function () {
+      axios.get('/', {
+        baseURL: 'https://localhost:4343/',
+        checkServerIdentity: function (host, cert) {
+          assert.equal(cert.fingerprint, 'E7:EA:A9:74:E1:A1:FF:FD:A8:FB:59:45:1A:AE:92:32:6B:94:23:3E');
+        }
+      }).then(function (res) {
+        assert.equal(res.config.baseURL, 'https://localhost:4343/');
+        assert.equal(res.config.url, '/');
+        done();
+      });
+    });
+  });
+
+  it('should check server identity and reject', function (done) {
+    server2 = https.createServer({
+        key: fs.readFileSync(path.join(__dirname, 'certs', 'privkey.pem')),
+        cert: fs.readFileSync(path.join(__dirname, 'certs', 'fullchain.pem'))
+      },
+      function (req, res) {
+        res.end();
+      }).listen(4343, function () {
+      axios.get('/', {
+        baseURL: 'https://localhost:4343/',
+        checkServerIdentity: function (host, cert) {
+          return new Error('You shall not pass (host: ' + host + ', fingerprint: ' + cert.fingerprint + ')');
+        }
+      }).catch(function (err) {
+        assert.equal(
+          err.message, 'You shall not pass' +
+          ' (host: localhost, fingerprint: E7:EA:A9:74:E1:A1:FF:FD:A8:FB:59:45:1A:AE:92:32:6B:94:23:3E)');
         done();
       });
     });

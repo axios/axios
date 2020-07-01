@@ -2,6 +2,8 @@ services:
   - xvfb
 language: node_js
 node_js:
+  - 10
+  - 12
   - node
 email:
   on_failure: change

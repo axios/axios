@@ -1,4 +1,5 @@
 var settle = require('../../../lib/core/settle');
+var AxiosException = require('../../../lib/exception/AxiosException');
 
 describe('core::settle', function() {
   var resolve;
@@ -64,7 +65,7 @@ describe('core::settle', function() {
     expect(resolve).not.toHaveBeenCalled();
     expect(reject).toHaveBeenCalled();
     var reason = reject.calls.first().args[0];
-    expect(reason instanceof Error).toBe(true);
+    expect(reason instanceof AxiosException).toBe(true);
     expect(reason.message).toBe('Request failed with status code 500');
     expect(reason.config).toBe(response.config);
     expect(reason.request).toBe(req);

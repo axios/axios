@@ -137,7 +137,7 @@ axios.get('/user', {
   })
   .then(function () {
     // always executed
-  });  
+  });
 
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
@@ -410,6 +410,17 @@ These are the available config options for making requests. Only the `url` is re
   // If set to 0, no redirects will be followed.
   maxRedirects: 5, // default
 
+  // `trackRedirects` defines whether to accumulate details about each redirect
+  // throughout the request. If set to true, the response will include a `responseUrl`
+  // property that will be the final url in the redirect chain as well as a `redirects`
+  // array that will include basic details about each request in the redirect chain,
+  // including the first and last requests (i.e. the original request, any subsequent
+  // redirects, as well as the final request). Those details will include:
+  // `url`: requested url
+  // `headers`: response headers
+  // `statusCode`: response status code
+  trackRedirects: false, // default
+
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
   // Only either `socketPath` or `proxy` can be specified.
@@ -440,6 +451,17 @@ These are the available config options for making requests. Only the `url` is re
       password: 'rapunz3l'
     }
   },
+
+  // `checkServerIdentity` defines a hook to check the server's SSL certificate properties (NodeJS only)
+  checkServerIdentity: function (host, cert) {
+    // Pin the exact certificate fingerprint
+    if (cert.fingerprint !== 'E7:EA:A9:74:E1:A1:FF:FD:A8:FB:59:45:1A:AE:92:32:6B:94:23:3E') {
+      const msg = 'Certificate verification error: ' +
+        `The certificate of '${cert.subject.CN}' ` +
+        'does not match our pinned fingerprint';
+      return new Error(msg);
+    }
+  }
 
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)

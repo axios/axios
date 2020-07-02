@@ -148,10 +148,4 @@ describe('defaults', function () {
       done();
     });
   });
-
-  it('should be XHR in browsers', function (done) {
-    expect(typeof defaults.adapter).toBe('function');
-    expect(defaults.adapter.name).toBe('xhrAdapter');
-    done();
-  });
 });

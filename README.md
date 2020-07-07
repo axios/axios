@@ -512,6 +512,10 @@ axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 ```
 
+Note, if you assign data to the request, `Content-Type` wouldn't adjust to default header setting. This is because `Content-Type` must be `application/json` when transmitting data.
+
+And, This way is case sensitive.
+
 ### Custom instance defaults
 
 ```js
@@ -542,6 +546,9 @@ instance.get('/longRequest', {
   timeout: 5000
 });
 ```
+
+Also, the default headers have the following order of precedence
+`common < delete < get < head < post < put < patch`
 
 ## Interceptors
 

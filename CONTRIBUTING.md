@@ -17,7 +17,7 @@ Commit messages should be verb based, using the following pattern:
 
 ### Testing
 
-Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on [Travis CI](https://travis-ci.org/mzabriskie/axios).
+Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on [Travis CI](https://travis-ci.org/axios/axios).
 
 ### Documentation
 

@@ -512,7 +512,8 @@ axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 ```
 
-Note, if you assign data to the request, `Content-Type` wouldn't adjust to default header setting. This is because `Content-Type` must be `application/json` when transmitting data.
+Note, if you set `config.data` as `FormData or undefined` to the request, `Content-Type` wouldn't adjust to default header setting.
+For more details, please [refer](https://github.com/chinesedfan/You-Dont-Know-Axios#more-stories-about-headers) to the following.
 
 And, This way is case sensitive.
 

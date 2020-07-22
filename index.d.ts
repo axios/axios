@@ -71,7 +71,7 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
-  lookup?: (host: string, options: object, callback: (err: NodeJS.ErrnoException, addr: string, family: 4 | 6) => void) => void
+  lookup?: (hostname: string, options: any, callback: (err: NodeJS.ErrnoException, addr: string, family: 4 | 6) => void) => void
 }
 
 export interface AxiosResponse<T = any> {

@@ -770,5 +770,32 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it("should support custom DNS lookup function", function (done) {
+    let lookupHit = false;
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.get('/foo', {
+        baseURL: 'http://localhost:4444/',
+        lookup: (hostname, options, cb) => {
+          lookupHit = true;
+
+          if (hostname === "localhost") {
+            cb(null, "127.0.0.1", 4);
+          } else if (hostname === "[::1]") {
+            cb(null, "127.0.0.1", 6);
+          } else {
+            dns.resolve(hostname, (err, addr) => {
+                cb(err, addr[0], options["family"] || 4);
+            });
+          }
+      }
+      }).then(function (res) {
+        assert.equal(lookupHit, true);
+        done();
+      });
+    });
+  })
 });
 

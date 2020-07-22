@@ -16,7 +16,7 @@ export interface AxiosProxyConfig {
   port: number;
   auth?: {
     username: string;
-    password:string;
+    password: string;
   };
   protocol?: string;
 }
@@ -71,9 +71,10 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
+  lookup?: (host: string, options: object, callback: (err: NodeJS.ErrnoException, addr: string, family: 4 | 6) => void) => void
 }
 
-export interface AxiosResponse<T = any>  {
+export interface AxiosResponse<T = any> {
   data: T;
   status: number;
   statusText: string;
@@ -95,7 +96,7 @@ export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
 }
 
 export interface CancelStatic {
-  new (message?: string): Cancel;
+  new(message?: string): Cancel;
 }
 
 export interface Cancel {
@@ -107,7 +108,7 @@ export interface Canceler {
 }
 
 export interface CancelTokenStatic {
-  new (executor: (cancel: Canceler) => void): CancelToken;
+  new(executor: (cancel: Canceler) => void): CancelToken;
   source(): CancelTokenSource;
 }
 
@@ -136,7 +137,7 @@ export interface AxiosInstance {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R>;
+  request<T = any, R = AxiosResponse<T>>(config: AxiosRequestConfig): Promise<R>;
   get<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
   delete<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
   head<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;

@@ -244,8 +244,8 @@ Please use `Promise.all` to replace the below functions.
 
 Helper functions for dealing with concurrent requests.
 
-axios.all(iterable)
-axios.spread(callback)
+##### axios.all(iterable)
+##### axios.spread(callback)
 
 ### Creating an instance
 

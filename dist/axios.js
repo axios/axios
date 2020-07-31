@@ -1,4 +1,3 @@
-/* axios v0.20.0-0 | (c) 2020 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

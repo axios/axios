@@ -74,6 +74,8 @@ export interface AxiosRequestConfig {
 }
 
 export interface AxiosResponse<T = any>  {
+  ok: boolean;
+  error: boolean;
   data: T;
   status: number;
   statusText: string;
@@ -83,6 +85,8 @@ export interface AxiosResponse<T = any>  {
 }
 
 export interface AxiosError<T = any> extends Error {
+  ok: boolean;
+  error: boolean;
   config: AxiosRequestConfig;
   code?: string;
   request?: any;

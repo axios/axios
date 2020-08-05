@@ -34,6 +34,7 @@
   "devDependencies": {
     "bundlesize": "^0.18.0",
     "coveralls": "^3.1.0",
+    "cross-env": "^7.0.2",
     "es6-promise": "^4.2.8",
     "grunt": "^1.2.1",
     "grunt-banner": "^0.6.0",
@@ -63,6 +64,7 @@
     "minimist": "^1.2.5",
     "mocha": "^8.1.1",
     "sinon": "^9.0.2",
+    "terser-webpack-plugin": "^4.0.0",
     "typescript": "^3.9.7",
     "url-search-params": "^1.1.0",
     "webpack": "^4.44.1",
@@ -75,7 +77,6 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "cross-env": "^7.0.2",
     "follow-redirects": "^1.12.1"
   },
   "bundlesize": [

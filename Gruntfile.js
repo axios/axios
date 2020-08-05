@@ -2,11 +2,6 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   grunt.initConfig({
-    pkg: grunt.file.readJSON('package.json'),
-    meta: {
-      banner: '/* <%= pkg.name %> v<%= pkg.version %> | (c) <%= grunt.template.today("yyyy") %> by Matt Zabriskie */\n'
-    },
-
     clean: {
       dist: 'dist/**'
     },
@@ -34,18 +29,6 @@ module.exports = function(grunt) {
           'license',
           'keywords'
         ]
-      }
-    },
-
-    usebanner: {
-      all: {
-        options: {
-          banner: '<%= meta.banner %>',
-          linebreak: false
-        },
-        files: {
-          src: ['dist/*.js']
-        }
       }
     },
 
@@ -103,5 +86,4 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', 'Run the jasmine and mocha tests', ['eslint', 'mochaTest', 'karma:single', 'ts']);
   grunt.registerTask('build', 'Run webpack and bundle the source', ['clean', 'webpack']);
-  grunt.registerTask('version', 'Sync version info for a release', ['usebanner', 'package2bower']);
 };

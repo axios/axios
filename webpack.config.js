@@ -1,12 +1,26 @@
+'use strict';
+
+var path = require('path');
 var webpack = require('webpack');
-var config = {};
+var TerserPlugin = require('terser-webpack-plugin');
+
+var configs = {};
 
 function generateConfig(name) {
-  var uglify = name.indexOf('min') > -1;
+  var uglify = name.includes('.min');
+  var mode = JSON.stringify(process.env.NODE_ENV);
+  var banner = 'axios v' + require(path.resolve(__dirname, './package.json')).version + ' | (c) ' + new Date().getFullYear() + ' by Matt Zabriskie';
+  var terserOptions = {
+    cache: true,
+    parallel: true,
+    sourceMap: true,
+    extractComments: false
+  };
+
   var config = {
     entry: './index.js',
     output: {
-      path: 'dist/',
+      path: path.resolve(__dirname, './dist/'),
       filename: name + '.js',
       sourceMapFilename: name + '.map',
       library: 'axios',
@@ -15,30 +29,40 @@ function generateConfig(name) {
     node: {
       process: false
     },
-    devtool: 'source-map'
+    devtool: 'source-map',
+    mode: 'production'
   };
 
   config.plugins = [
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: mode
+    }),
+    new webpack.BannerPlugin({
+      banner: banner
     })
   ];
 
-  if (uglify) {
-    config.plugins.push(
-      new webpack.optimize.UglifyJsPlugin({
-        compressor: {
-          warnings: false
-        }
-      })
-    );
+  if (mode === 'production') {
+    config.mode = 'production';
+  } else if (mode === 'development') {
+    config.mode = 'development';
   }
+
+  config.optimization = {
+    minimizer: []
+  };
+
+  if (!uglify) {
+    config.optimization.minimize = false;
+  }
+
+  config.optimization.minimizer.push(new TerserPlugin(terserOptions));
 
   return config;
 }
 
-['axios', 'axios.min'].forEach(function (key) {
-  config[key] = generateConfig(key);
+['axios', 'axios.min'].forEach(function(key) {
+  configs[key] = generateConfig(key);
 });
 
-module.exports = config;
+module.exports = configs;

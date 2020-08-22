@@ -1,3 +1,5 @@
+/// <reference lib="DOM" />
+
 export interface AxiosTransformer {
   (data: any, headers?: any): any;
 }

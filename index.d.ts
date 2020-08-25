@@ -128,8 +128,8 @@ export interface AxiosInterceptorManager<V> {
 }
 
 export interface AxiosInstance {
-  (config: AxiosRequestConfig): AxiosPromise;
-  (url: string, config?: AxiosRequestConfig): AxiosPromise;
+  <T>(config: AxiosRequestConfig): AxiosPromise<T>;
+  <T>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>;
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;

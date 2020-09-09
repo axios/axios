@@ -119,6 +119,10 @@ const handleUserResponse = (response: AxiosResponse<User>) => {
 	console.log(response.config);
 };
 
+axios<User>({url: '/user?id=12345'})
+  .then(handleUserResponse)
+  .catch(handleError)
+
 axios.get<User>('/user?id=12345')
 	.then(handleUserResponse)
 	.catch(handleError);

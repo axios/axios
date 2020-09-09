@@ -41,6 +41,22 @@ export type ResponseType =
   | 'text'
   | 'stream'
 
+/**
+ * The ProgressEvent interface represents events measuring progress of an underlying process,
+ * like an HTTP request (for an XMLHttpRequest, or the loading of the underlying resource of
+ * an <img>, <audio>, <video>, <style> or <link>).
+ *
+ * The reason for introducing a custom AxiosProgressEvent instead of using the ProgressEvent
+ * itself is so that Axios does not have to rely on lib dom when used in pure Node.js environment.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent
+ */
+export interface AxiosProgressEvent {
+  lengthComputable?: boolean;
+  loaded?: number;
+  total?: number;
+}
+
 export interface AxiosRequestConfig {
   url?: string;
   method?: Method;
@@ -59,8 +75,8 @@ export interface AxiosRequestConfig {
   responseType?: ResponseType;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  onUploadProgress?: (progressEvent: { lengthComputable?: boolean; loaded?: number; total?: number }) => void;
-  onDownloadProgress?: (progressEvent: { lengthComputable?: boolean; loaded?: number; total?: number }) => void;
+  onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
+  onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void;
   maxContentLength?: number;
   validateStatus?: ((status: number) => boolean | null);
   maxBodyLength?: number;

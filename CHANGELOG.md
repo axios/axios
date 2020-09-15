@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.20.0 (August 20, 2020)
+
+Release of 0.20.0-pre as a full release with no other changes.
+
 ### 0.20.0-pre (July 15, 2020)
 
 Fixes and Functionality:

@@ -446,6 +446,11 @@ These are the available config options for making requests. Only the `url` is re
   cancelToken: new CancelToken(function (cancel) {
   }),
 
+  // `cancelable` option activates ability to cancel the request by calling promise.cancel()
+  // can not be used if `cancelToken` is set
+
+  cancelable: true,  
+
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 
   // from the responses objects of all decompressed responses
@@ -676,6 +681,18 @@ cancel();
 ```
 
 > Note: you can cancel several requests with the same cancel token.
+
+To cancel a single request, you can use the `.cancel` (reason) method defined in
+the promise returned by the request method. To use this API you must set cancelable
+option in the request config.
+
+````javascript
+const promise= axios.get('/user/12345', {cancelable: true});
+promise.then(response=> {...})
+
+// cancel the request
+promise.cancel();
+````
 
 ## Using application/x-www-form-urlencoded format
 

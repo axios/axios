@@ -252,7 +252,7 @@ describe('requests', function () {
     });
   });
 
-  it('should make cross domian http request', function (done) {
+  it('should make cross domain http request', function (done) {
     var response;
 
     axios.post('www.someurl.com/foo').then(function(res){

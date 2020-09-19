@@ -67,10 +67,4 @@ describe('promise', function () {
       done();
     }, 100);
   });
-
-  it('should support .cancel method if the cancelable option was set', function() {
-    var promise = axios('/foo', {cancelable: true});
-
-    expect(typeof promise.cancel).toBe('function');
-  });
 });

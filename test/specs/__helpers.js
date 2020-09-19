@@ -85,7 +85,6 @@ setupBasicAuthTest = function setupBasicAuthTest() {
 
     setTimeout(function () {
       var request = jasmine.Ajax.requests.mostRecent();
-      console.log(request.requestHeaders['Authorization'], '\n\n\n');
 
       expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjo=');
       done();
@@ -102,7 +101,6 @@ setupBasicAuthTest = function setupBasicAuthTest() {
 
     setTimeout(function () {
       var request = jasmine.Ajax.requests.mostRecent();
-      console.log(request.requestHeaders['Authorization'], '\n\n\n');
 
       expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIMOfw6fCo+KYg3Nlc2FtZQ==');
       done();

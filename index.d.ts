@@ -128,7 +128,7 @@ export interface AxiosInterceptorManager<V> {
   eject(id: number): void;
 }
 
-export interface AxiosRequestPromise<T = any> extends Promise<AxiosResponse<T>> {
+export interface AxiosRequestPromise<T = any> extends Promise<T> {
   cancel: Canceler
 }
 

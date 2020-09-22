@@ -35,7 +35,7 @@ Please don't include changes to `dist/` in your pull request. This should only b
 
 ### Releasing
 
-Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/axios/axios/blob/master/CHANGELOG.md) requires being updated manually. Once this has been done run the commands below. Versions should follow [semantic versioning](http://semver.org/).
+Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/axios/axios/blob/master/CHANGELOG.md) requires being updated manually. Once this has been done run the commands below. Versions should follow [semantic versioning](http://semver.org/) with [exception](https://github.com/axios/axios#semver) for releases prior to 1.0.0
 
 - `npm version <newversion> -m "Releasing %s"`
 - `npm publish`

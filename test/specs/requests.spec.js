@@ -53,7 +53,7 @@ describe('requests', function () {
   });
 
   it('should reject on network errors', function (done) {
-    // disable jasmine.Ajax since we're hitting a non-existant server anyway
+    // disable jasmine.Ajax since we're hitting a non-existent server anyway
     jasmine.Ajax.uninstall();
 
     var resolveSpy = jasmine.createSpy('resolve');

@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/axios/axios",
   "devDependencies": {
+    "abortcontroller-polyfill": "^1.5.0",
     "bundlesize": "^0.17.0",
     "coveralls": "^3.0.0",
     "es6-promise": "^4.2.4",

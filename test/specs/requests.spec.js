@@ -43,6 +43,17 @@ describe('requests', function () {
     });
   });
 
+  it('should allow data', function (done) {
+    axios.delete('/foo', {
+      data: { foo: 'bar' }
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.params).toBe(JSON.stringify({ foo: 'bar' }));
+      done();
+    });
+  });
+
   it('should make an http request', function (done) {
     axios('/foo');
 

@@ -18,8 +18,8 @@ Please use the following `import` statement to import axios in TypeScript:
 import axios from 'axios';
 
 axios.get('/foo')
-  .then(response => console.log(response))
-  .catch(error => console.log(error));
+  .catch(error => console.log(error))
+  .then(response => console.log(response));
 ```
 
 #### `agent` Config Option
@@ -139,10 +139,10 @@ The `success`, and `error` aliases were deprecated in [0.4.0](https://github.com
 
 ```js
 axios.get('some/url')
-  .then(function (res) {
+  .catch(function (err) {
     /* ... */
   })
-  .catch(function (err) {
+  .then(function (res) {
     /* ... */
   });
 ```

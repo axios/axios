@@ -111,13 +111,13 @@ const axios = require('axios');
 
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
-  .then(function (response) {
-    // handle success
-    console.log(response);
-  })
   .catch(function (error) {
     // handle error
     console.log(error);
+  })
+  .then(function (response) {
+    // handle success
+    console.log(response);
   })
   .then(function () {
     // always executed
@@ -129,11 +129,11 @@ axios.get('/user', {
       ID: 12345
     }
   })
-  .then(function (response) {
-    console.log(response);
-  })
   .catch(function (error) {
     console.log(error);
+  })
+  .then(function (response) {
+    console.log(response);
   })
   .then(function () {
     // always executed
@@ -160,12 +160,12 @@ axios.post('/user', {
     firstName: 'Fred',
     lastName: 'Flintstone'
   })
-  .then(function (response) {
-    console.log(response);
-  })
   .catch(function (error) {
     console.log(error);
   });
+  .then(function (response) {
+    console.log(response);
+  })
 ```
 
 Performing multiple concurrent requests

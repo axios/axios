@@ -155,6 +155,6 @@ export interface AxiosStatic extends AxiosInstance {
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
 }
 
-declare const Axios: AxiosStatic;
+declare const axios: AxiosStatic;
 
-export default Axios;
+export default axios;

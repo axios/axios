@@ -368,7 +368,7 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it.skip('should support sockets', function (done) {
+  it('should support sockets', function (done) {
     server = net.createServer(function (socket) {
       socket.on('data', function () {
         socket.end('HTTP/1.1 200 OK\r\n\r\n');

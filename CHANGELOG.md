@@ -1,5 +1,35 @@
 # Changelog
 
+### 0.21.0 (October 23, 2020)
+
+Fixes and Functionality:
+
+- Fixing requestHeaders.Authorization ([#3287](https://github.com/axios/axios/pull/3287))
+- Fixing node types ([#3237](https://github.com/axios/axios/pull/3237))
+- Fixing axios.delete ignores config.data ([#3282](https://github.com/axios/axios/pull/3282))
+- Revert "Fixing overwrite Blob/File type as Content-Type in browser. (#1773)" ([#3289](https://github.com/axios/axios/pull/3289))
+- Fixing an issue that type 'null' and 'undefined' is not assignable to validateStatus when typescript strict option is enabled ([#3200](https://github.com/axios/axios/pull/3200))
+
+Internal and Tests:
+
+- Lock travis to not use node v15 ([#3361](https://github.com/axios/axios/pull/3361))
+
+Documentation:
+
+- Fixing simple typo, existant -> existent ([#3252](https://github.com/axios/axios/pull/3252))
+- Fixing typos ([#3309](https://github.com/axios/axios/pull/3309))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- Allan Cruz <57270969+Allanbcruz@users.noreply.github.com>
+- George Cheng <Gerhut@GMail.com>
+- Jay <jasonsaayman@gmail.com>
+- Kevin Kirsche <Kev.Kirsche+GitHub@gmail.com>
+- Remco Haszing <remcohaszing@gmail.com>
+- Taemin Shin <cprayer13@gmail.com>
+- Tim Gates <tim.gates@iress.com>
+- Xianming Zhong <chinesedfan@qq.com>
+
 ### 0.20.0 (August 20, 2020)
 
 Release of 0.20.0-pre as a full release with no other changes.
@@ -58,7 +88,7 @@ Fixes and Functionality:
   - Fixing test\unit\adapters\http.js lint errors
   - Adding test for disabling auto decompression
   - Removing changes that fixed lint errors in tests
-  - Removing formating change to unit test
+  - Removing formatting change to unit test
 - Add independent `maxBodyLength` option ([#2781](https://github.com/axios/axios/pull/2781))
   - Add independent option to set the maximum size of the request body
   - Remove maxBodyLength check
@@ -104,14 +134,14 @@ Internal and Tests:
 - Adding console log on sandbox server startup ([#2210](https://github.com/axios/axios/pull/2210))
   - Adding console log on sandbox server startup
   - Update server.js
-    Add server error handeling
+    Add server error handling
   - Update server.js
     Better error message, remove retry.
 - Adding tests for method `options` type definitions ([#1996](https://github.com/axios/axios/pull/1996))
   Update tests.
 - Add test for redirecting with too large response ([#2695](https://github.com/axios/axios/pull/2695))
 - Fixing unit test failure in Windows OS ([#2601](https://github.com/axios/axios/pull/2601))
-- Fixing issue for HEAD method and gziped repsonse ([#2666](https://github.com/axios/axios/pull/2666))
+- Fixing issue for HEAD method and gzipped response ([#2666](https://github.com/axios/axios/pull/2666))
 - Fix tests in browsers ([#2748](https://github.com/axios/axios/pull/2748))
 - chore: add `jsdelivr` and `unpkg` support ([#2443](https://github.com/axios/axios/pull/2443))
 
@@ -149,7 +179,7 @@ Documentation:
 - Add CDNJS version badge in README.md ([#878](https://github.com/axios/axios/pull/878))
   This badge will show the version on CDNJS!
 - Documentation update to clear up ambiguity in code examples ([#2928](https://github.com/axios/axios/pull/2928))
-  - Made a adjustment to the documenation to clear up any ambiguity around the use of "fs". This should help clear up that the code examples with "fs" cannot be used on the client side.
+  - Made an adjustment to the documentation to clear up any ambiguity around the use of "fs". This should help clear up that the code examples with "fs" cannot be used on the client side.
 - Update README.md about validateStatus ([#2912](https://github.com/axios/axios/pull/2912))
   Rewrote the comment from "Reject only if the status code is greater than or equal to 500" to "Resolve only if the status code is less than 500"
 - Updating documentation for usage form-data ([#2805](https://github.com/axios/axios/pull/2805))
@@ -276,7 +306,7 @@ Documentation:
 - Update response interceptor docs ([#2399](https://github.com/axios/axios/pull/2399))
 - Update README.md ([#2504](https://github.com/axios/axios/pull/2504))
 - Fix word 'sintaxe' to 'syntax' in README.md ([#2432](https://github.com/axios/axios/pull/2432))
-- upadating README: notes on CommonJS autocomplete ([#2256](https://github.com/axios/axios/pull/2256))
+- updating README: notes on CommonJS autocomplete ([#2256](https://github.com/axios/axios/pull/2256))
 - Fix grammar in README.md ([#2271](https://github.com/axios/axios/pull/2271))
 - Doc fixes, minor examples cleanup ([#2198](https://github.com/axios/axios/pull/2198))
 
@@ -329,7 +359,7 @@ New Functionality:
 
 - Add getUri method ([#1712](https://github.com/axios/axios/issues/1712))
 - Add support for no_proxy env variable ([#1693](https://github.com/axios/axios/issues/1693))
-- Add toJSON to decorated Axios errors to faciliate serialization ([#1625](https://github.com/axios/axios/issues/1625))
+- Add toJSON to decorated Axios errors to facilitate serialization ([#1625](https://github.com/axios/axios/issues/1625))
 - Add second then on axios call ([#1623](https://github.com/axios/axios/issues/1623))
 - Typings: allow custom return types
 - Add option to specify character set in responses (with http adapter)

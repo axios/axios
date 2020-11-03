@@ -59,10 +59,10 @@ export interface AxiosRequestConfig {
   responseType?: ResponseType;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  onUploadProgress?: (progressEvent: ProgressEvent) => void;
-  onDownloadProgress?: (progressEvent: ProgressEvent) => void;
+  onUploadProgress?: (progressEvent: any) => void;
+  onDownloadProgress?: (progressEvent: any) => void;
   maxContentLength?: number;
-  validateStatus?: ((status: number) => boolean | null);
+  validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
   maxRedirects?: number;
   socketPath?: string | null;
@@ -156,6 +156,6 @@ export interface AxiosStatic extends AxiosInstance {
   isAxiosError(payload: any): payload is AxiosError;
 }
 
-declare const Axios: AxiosStatic;
+declare const axios: AxiosStatic;
 
-export default Axios;
+export default axios;

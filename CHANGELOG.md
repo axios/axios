@@ -1,5 +1,35 @@
 # Changelog
 
+### 0.21.0 (October 23, 2020)
+
+Fixes and Functionality:
+
+- Fixing requestHeaders.Authorization ([#3287](https://github.com/axios/axios/pull/3287))
+- Fixing node types ([#3237](https://github.com/axios/axios/pull/3237))
+- Fixing axios.delete ignores config.data ([#3282](https://github.com/axios/axios/pull/3282))
+- Revert "Fixing overwrite Blob/File type as Content-Type in browser. (#1773)" ([#3289](https://github.com/axios/axios/pull/3289))
+- Fixing an issue that type 'null' and 'undefined' is not assignable to validateStatus when typescript strict option is enabled ([#3200](https://github.com/axios/axios/pull/3200))
+
+Internal and Tests:
+
+- Lock travis to not use node v15 ([#3361](https://github.com/axios/axios/pull/3361))
+
+Documentation:
+
+- Fixing simple typo, existant -> existent ([#3252](https://github.com/axios/axios/pull/3252))
+- Fixing typos ([#3309](https://github.com/axios/axios/pull/3309))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- Allan Cruz <57270969+Allanbcruz@users.noreply.github.com>
+- George Cheng <Gerhut@GMail.com>
+- Jay <jasonsaayman@gmail.com>
+- Kevin Kirsche <Kev.Kirsche+GitHub@gmail.com>
+- Remco Haszing <remcohaszing@gmail.com>
+- Taemin Shin <cprayer13@gmail.com>
+- Tim Gates <tim.gates@iress.com>
+- Xianming Zhong <chinesedfan@qq.com>
+
 ### 0.20.0 (August 20, 2020)
 
 Release of 0.20.0-pre as a full release with no other changes.

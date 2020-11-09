@@ -1,0 +1,322 @@
+{
+  "iPhone8iOS11iPhone": {
+    "name": "iPhone8iOS11iPhone",
+    "device": "iPhone 8",
+    "os": "iOS",
+    "os_version": "11",
+    "browser": "iPhone",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "iPhoneXRiOS12iPhone": {
+    "name": "iPhoneXRiOS12iPhone",
+    "device": "iPhone XR",
+    "os": "iOS",
+    "os_version": "12",
+    "browser": "iPhone",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "GooglePixel3Android9_0Android": {
+    "name": "GooglePixel3Android9_0Android",
+    "device": "Google Pixel 3",
+    "os": "Android",
+    "os_version": "9.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "SamsungGalaxyS9PlusAndroid8_0Android": {
+    "name": "SamsungGalaxyS9PlusAndroid8_0Android",
+    "device": "Samsung Galaxy S9 Plus",
+    "os": "Android",
+    "os_version": "8.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "SamsungGalaxyS8Android7_0Android": {
+    "name": "SamsungGalaxyS8Android7_0Android",
+    "device": "Samsung Galaxy S8",
+    "os": "Android",
+    "os_version": "7.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "iPad6thiOS11iPad": {
+    "name": "iPad6thiOS11iPad",
+    "device": "iPad 6th",
+    "os": "iOS",
+    "os_version": "11",
+    "browser": "iPad",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "iPhone8iOS12iPhone": {
+    "name": "iPhone8iOS12iPhone",
+    "device": "iPhone 8",
+    "os": "iOS",
+    "os_version": "12",
+    "browser": "iPhone",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "iPhone6SiOS12iPhone": {
+    "name": "iPhone6SiOS12iPhone",
+    "device": "iPhone 6S",
+    "os": "iOS",
+    "os_version": "12",
+    "browser": "iPhone",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "GooglePixel4Android10_0Android": {
+    "name": "GooglePixel4Android10_0Android",
+    "device": "Google Pixel 4",
+    "os": "Android",
+    "os_version": "10.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": "1"
+  },
+  "SamsungGalaxyA8Android7_1Android": {
+    "name": "SamsungGalaxyA8Android7_1Android",
+    "device": "Samsung Galaxy A8",
+    "os": "Android",
+    "os_version": "7.1",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": "1"
+  },
+  "SamsungGalaxyTabS4Android8_0Android": {
+    "name": "SamsungGalaxyTabS4Android8_0Android",
+    "device": "Samsung Galaxy Tab S4",
+    "os": "Android",
+    "os_version": "8.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "iPhone11ProiOS13Android": {
+    "name": "iPhone11ProiOS13Android",
+    "device": "iPhone 11 Pro",
+    "os": "iOS",
+    "os_version": "13",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": "1"
+  },
+  "iPhoneXSiOS13Android": {
+    "name": "iPhoneXSiOS13Android",
+    "device": "iPhone XS",
+    "os": "iOS",
+    "os_version": "13",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "iPhoneSEiOS11Android": {
+    "name": "iPhoneSEiOS11Android",
+    "device": "iPhone SE",
+    "os": "iOS",
+    "os_version": "11",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "OnePlus6TAndroid9_0Android": {
+    "name": "OnePlus6TAndroid9_0Android",
+    "device": "OnePlus 6T",
+    "os": "Android",
+    "os_version": "9.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "SamsungGalaxyA10Android9_0Android": {
+    "name": "SamsungGalaxyA10Android9_0Android",
+    "device": "Samsung Galaxy A10",
+    "os": "Android",
+    "os_version": "9.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "XiaomiRedmiNote7Android9_0Android": {
+    "name": "XiaomiRedmiNote7Android9_0Android",
+    "device": "Xiaomi Redmi Note 7",
+    "os": "Android",
+    "os_version": "9.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "SamsungGalaxyS6Android5_0Android": {
+    "name": "SamsungGalaxyS6Android5_0Android",
+    "device": "Samsung Galaxy S6",
+    "os": "Android",
+    "os_version": "5.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "iPadAir2019iOS13Android": {
+    "name": "iPadAir2019iOS13Android",
+    "device": "iPad Air 2019",
+    "os": "iOS",
+    "os_version": "13",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "VivoY50Android10_0Android": {
+    "name": "VivoY50Android10_0Android",
+    "device": "Vivo Y50",
+    "os": "Android",
+    "os_version": "10.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "MotorolaMotoX2ndGenAndroid5_0Android": {
+    "name": "MotorolaMotoX2ndGenAndroid5_0Android",
+    "device": "Motorola Moto X 2nd Gen",
+    "os": "Android",
+    "os_version": "5.0",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": ""
+  },
+  "SamsungGalaxyNote4Android4_4Android": {
+    "name": "SamsungGalaxyNote4Android4_4Android",
+    "device": "Samsung Galaxy Note 4",
+    "os": "Android",
+    "os_version": "4.4",
+    "browser": "Android",
+    "browser_version": "",
+    "real_mobile": "true",
+    "sanity": "1"
+  },
+  "Windows10IE11_0": {
+    "name": "Windows10IE11_0",
+    "device": "",
+    "os": "Windows",
+    "os_version": "10",
+    "browser": "IE",
+    "browser_version": "11.0",
+    "real_mobile": "",
+    "sanity": "1"
+  },
+  "Windows10Edgelatest-beta": {
+    "name": "Windows10Edgelatest-beta",
+    "device": "",
+    "os": "Windows",
+    "os_version": "10",
+    "browser": "Edge",
+    "browser_version": "latest-beta",
+    "real_mobile": "",
+    "sanity": "1"
+  },
+  "Windows10Edgelatest": {
+    "name": "Windows10Edgelatest",
+    "device": "",
+    "os": "Windows",
+    "os_version": "10",
+    "browser": "Edge",
+    "browser_version": "latest",
+    "real_mobile": "",
+    "sanity": ""
+  },
+  "Windows10Chromelatest-beta": {
+    "name": "Windows10Chromelatest-beta",
+    "device": "",
+    "os": "Windows",
+    "os_version": "10",
+    "browser": "Chrome",
+    "browser_version": "latest-beta",
+    "real_mobile": "",
+    "sanity": "1"
+  },
+  "Windows10Chromelatest": {
+    "name": "Windows10Chromelatest",
+    "device": "",
+    "os": "Windows",
+    "os_version": "10",
+    "browser": "Chrome",
+    "browser_version": "latest",
+    "real_mobile": "",
+    "sanity": ""
+  },
+  "Windows10Firefoxlatest-beta": {
+    "name": "Windows10Firefoxlatest-beta",
+    "device": "",
+    "os": "Windows",
+    "os_version": "10",
+    "browser": "Firefox",
+    "browser_version": "latest-beta",
+    "real_mobile": "",
+    "sanity": "1"
+  },
+  "Windows10Firefoxlatest": {
+    "name": "Windows10Firefoxlatest",
+    "device": "",
+    "os": "Windows",
+    "os_version": "10",
+    "browser": "Firefox",
+    "browser_version": "latest",
+    "real_mobile": "",
+    "sanity": ""
+  },
+  "Windows7IE11_0": {
+    "name": "Windows7IE11_0",
+    "device": "",
+    "os": "Windows",
+    "os_version": "7",
+    "browser": "IE",
+    "browser_version": "11.0",
+    "real_mobile": "",
+    "sanity": "1"
+  },
+  "OS_XCatalinaSafari13_0": {
+    "name": "OS_XCatalinaSafari13_0",
+    "device": "",
+    "os": "OS X",
+    "os_version": "Catalina",
+    "browser": "Safari",
+    "browser_version": "13.0",
+    "real_mobile": "",
+    "sanity": "1"
+  },
+  "OS_XMojaveSafari12_0": {
+    "name": "OS_XMojaveSafari12_0",
+    "device": "",
+    "os": "OS X",
+    "os_version": "Mojave",
+    "browser": "Safari",
+    "browser_version": "12.0",
+    "real_mobile": "",
+    "sanity": ""
+  }
+}

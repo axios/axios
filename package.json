@@ -26,6 +26,11 @@
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"
   },
   "typings": "./index.d.ts",
+  "files": [
+    "lib",
+    "dist",
+    "UPGRADE_GUIDE.md"
+  ],
   "scripts": {
     "build": "NODE_ENV=production grunt build",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",

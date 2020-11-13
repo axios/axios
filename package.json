@@ -2,22 +2,6 @@
   "name": "axios",
   "version": "0.21.0",
   "description": "Promise based HTTP client for the browser and node.js",
-  "main": "index.js",
-  "scripts": {
-    "test": "grunt test && bundlesize",
-    "start": "node ./sandbox/server.js",
-    "build": "NODE_ENV=production grunt build",
-    "preversion": "npm test",
-    "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
-    "postversion": "git push && git push --tags",
-    "examples": "node ./examples/server.js",
-    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "fix": "eslint --fix lib/**/*.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/axios/axios.git"
-  },
   "keywords": [
     "xhr",
     "http",
@@ -25,12 +9,37 @@
     "promise",
     "node"
   ],
-  "author": "Matt Zabriskie",
-  "license": "MIT",
+  "homepage": "https://github.com/axios/axios",
   "bugs": {
     "url": "https://github.com/axios/axios/issues"
   },
-  "homepage": "https://github.com/axios/axios",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axios/axios.git"
+  },
+  "license": "MIT",
+  "author": "Matt Zabriskie",
+  "main": "index.js",
+  "jsdelivr": "dist/axios.min.js",
+  "unpkg": "dist/axios.min.js",
+  "browser": {
+    "./lib/adapters/http.js": "./lib/adapters/xhr.js"
+  },
+  "typings": "./index.d.ts",
+  "scripts": {
+    "build": "NODE_ENV=production grunt build",
+    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "examples": "node ./examples/server.js",
+    "fix": "eslint --fix lib/**/*.js",
+    "start": "node ./sandbox/server.js",
+    "test": "grunt test && bundlesize",
+    "preversion": "npm test",
+    "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
+    "postversion": "git push && git push --tags"
+  },
+  "dependencies": {
+    "follow-redirects": "^1.10.0"
+  },
   "devDependencies": {
     "bundlesize": "^0.17.0",
     "coveralls": "^3.0.0",
@@ -67,15 +76,6 @@
     "url-search-params": "^0.10.0",
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1"
-  },
-  "browser": {
-    "./lib/adapters/http.js": "./lib/adapters/xhr.js"
-  },
-  "jsdelivr": "dist/axios.min.js",
-  "unpkg": "dist/axios.min.js",
-  "typings": "./index.d.ts",
-  "dependencies": {
-    "follow-redirects": "^1.10.0"
   },
   "bundlesize": [
     {

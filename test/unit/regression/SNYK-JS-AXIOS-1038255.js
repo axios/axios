@@ -20,8 +20,8 @@ describe('Server-Side Request Forgery (SSRF)', () => {
             res.end('rm -rf /');
         }).listen(EVIL_PORT);
         proxy = http.createServer(function (req, res) {
-            if (req.host === 'www.google.com') {
-              res.end('Googling');
+            if (req.url === 'http://localhost:' + EVIL_PORT + '/') {
+              return res.end('Protected');
             }
             res.writeHead(302, {location: 'http://localhost:' + EVIL_PORT})
             res.end()
@@ -42,7 +42,7 @@ describe('Server-Side Request Forgery (SSRF)', () => {
         });
 
         assert.strictEqual(fail, false);
-        assert.strictEqual(response.data, 'Googling');
+        assert.strictEqual(response.data, 'Protected');
         return response;
     
     });

@@ -500,6 +500,21 @@ axios.get('/user/12345')
 
 When using `catch`, or passing a [rejection callback](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then) as second parameter of `then`, the response will be available through the `error` object as explained in the [Handling Errors](#handling-errors) section.
 
+## Switch status
+```js
+axios.get('/user/12345')
+  .then(function ({status,data}) {
+    switch(status) {
+      case 200:
+          console.log(data);
+          break;
+      case 404:
+          console.log(data);
+          break;
+    }
+  });
+```
+
 ## Config Defaults
 
 You can specify config defaults that will be applied to every request.

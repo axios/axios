@@ -637,6 +637,8 @@ describe('supports http with nodejs', function () {
         }).catch(function (err) {
           assert.fail(err);
           done()
+        }).finally(function () {
+          process.env.https_proxy = ''
         });
       });
     });

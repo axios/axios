@@ -1,5 +1,6 @@
 var axios = require('../../../index');
 var http = require('http');
+var https = require('https');
 var net = require('net');
 var url = require('url');
 var zlib = require('zlib');
@@ -496,6 +497,57 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support HTTPS proxies', function (done) {
+    var options = {
+      key: fs.readFileSync(path.join(__dirname, 'key.pem')),
+      cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
+    };
+
+    server = https.createServer(options, function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('12345');
+    }).listen(4444, function () {
+      proxy = https.createServer(options, function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path,
+          protocol: parsed.protocol,
+          rejectUnauthorized: false
+        };
+
+        https.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '6789');
+          });
+        });
+      }).listen(4000, function () {
+        axios.get('https://localhost:4444/', {
+          proxy: {
+            host: 'localhost',
+            port: 4000,
+            protocol: 'https'
+          },
+          httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+          })
+        }).then(function (res) {
+          assert.equal(res.data, '123456789', 'should pass through proxy');
+          done();
+        }).catch(function (err) {
+          assert.fail(err);
+          done()
+        });
+      });
+    });
+  });
+
   it('should not pass through disabled proxy', function (done) {
     // set the env variable
     process.env.http_proxy = 'http://does-not-exists.example.com:4242/';
@@ -544,6 +596,56 @@ describe('supports http with nodejs', function () {
         axios.get('http://localhost:4444/').then(function (res) {
           assert.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
           done();
+        });
+      });
+    });
+  });
+
+  it('should support HTTPS proxy set via env var', function (done) {
+    var options = {
+      key: fs.readFileSync(path.join(__dirname, 'key.pem')),
+      cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
+    };
+
+    server = https.createServer(options, function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('12345');
+    }).listen(4444, function () {
+      proxy = https.createServer(options, function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path,
+          protocol: parsed.protocol,
+          rejectUnauthorized: false
+        };
+
+        https.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '6789');
+          });
+        });
+      }).listen(4000, function () {
+        process.env.https_proxy = 'https://localhost:4000/';
+
+        axios.get('https://localhost:4444/', {
+          httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+          })
+        }).then(function (res) {
+          assert.equal(res.data, '123456789', 'should pass through proxy');
+          done();
+        }).catch(function (err) {
+          assert.fail(err);
+          done()
+        }).finally(function () {
+          process.env.https_proxy = ''
         });
       });
     });

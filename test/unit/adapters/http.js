@@ -370,13 +370,20 @@ describe('supports http with nodejs', function () {
   });
 
   it('should support sockets', function (done) {
+    // Different sockets for win32 vs darwin/linux
+    var socketName = './test.sock';
+
+    if (process.platform === 'win32') {
+      socketName = '\\\\.\\pipe\\libuv-test';
+    }
+
     server = net.createServer(function (socket) {
       socket.on('data', function () {
         socket.end('HTTP/1.1 200 OK\r\n\r\n');
       });
-    }).listen('./test.sock', function () {
+    }).listen(socketName, function () {
       axios({
-        socketPath: './test.sock',
+        socketPath: socketName,
         url: '/'
       })
         .then(function (resp) {

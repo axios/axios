@@ -510,7 +510,7 @@ You can specify config defaults that will be applied to every request.
 
 ```js
 axios.defaults.baseURL = 'https://api.example.com';
-axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+axios.defaults.headers.common['User-Agent'] = /* eg. 'AppName/1.0.0' */;
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 ```
 
@@ -518,12 +518,12 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 
 ```js
 // Set config defaults when creating the instance
-const instance = axios.create({
+const api = axios.create({
   baseURL: 'https://api.example.com'
 });
 
-// Alter defaults after instance has been created
-instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+// Alter defaults after api instance has been created
+api.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ```
 
 ### Config order of precedence

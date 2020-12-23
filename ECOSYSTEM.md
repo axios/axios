@@ -36,5 +36,6 @@ This is a list of axios related libraries and resources. If you have a suggestio
 
 * [axiosist](https://github.com/Gerhut/axiosist) - Axios based supertest: convert node.js request handler to axios adapter, used for node.js server unit test.
 * [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) — Axios adapter that allows to easily mock requests
+* [axios-test-instance](https://github.com/remcohaszing/axios-test-instance) — Test NodeJS backends using Axios
 * [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
 * [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlined integration testing with Mocha & Axios

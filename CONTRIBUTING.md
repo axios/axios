@@ -8,7 +8,7 @@ Please follow the [node style guide](https://github.com/felixge/node-style-guide
 
 ### Commit Messages
 
-Commit messages should be verb based, using the following pattern:
+Commit messages should be verb based, using the following patterns:
 
 - `Fixing ...`
 - `Adding ...`

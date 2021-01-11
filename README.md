@@ -518,12 +518,12 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 
 ```js
 // Set config defaults when creating the instance
-const api = axios.create({
+const instance = axios.create({
   baseURL: 'https://api.example.com'
 });
 
-// Alter defaults after api instance has been created
-api.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+// Alter defaults after instance has been created
+instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ```
 
 ### Config order of precedence

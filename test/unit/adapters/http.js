@@ -879,5 +879,85 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should support HTTP protocol', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444')
+        .then(function (res) {
+          assert.equal(res.request.agent.protocol, 'http:');
+          done();
+        })
+    })
+  });
+
+  it('should support HTTPS protocol', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('https://www.google.com')
+        .then(function (res) {
+          assert.equal(res.request.agent.protocol, 'https:');
+          done();
+        })
+    })
+  });
+
+  it('should return malformed URL', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('tel:484-695-3408')
+        .then(function (res) {
+          success = true;
+        }).catch(function (err) {
+          error = err;
+          failure = true;
+        })
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'Malformed URL tel:484-695-3408');
+        done();
+      }, 300);
+    })
+  });
+
+  it('should return unsupported protocol', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('ftp:google.com')
+        .then(function (res) {
+          success = true;
+        }).catch(function (err) {
+          error = err;
+          failure = true;
+        })
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'Unsupported protocol ftp:');
+        done();
+      }, 300);
+    })
+  });
 });
 

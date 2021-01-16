@@ -169,7 +169,8 @@ describe('interceptors', function () {
     });
   });
 
-  it('should add multiple response interceptors', function (done) {
+  describe('when adding multiple interceptors', function () {
+    it('they are all executed', function () {
     var response;
 
     axios.interceptors.response.use(function (data) {
@@ -199,6 +200,7 @@ describe('interceptors', function () {
         expect(response.data).toBe('OK123');
         done();
       }, 100);
+    });
     });
   });
 

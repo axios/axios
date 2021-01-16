@@ -43,6 +43,7 @@ export type ResponseType =
 
 export interface AxiosRequestConfig {
   url?: string;
+  port?: number;
   method?: Method;
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];

@@ -171,24 +171,27 @@ describe('interceptors', function () {
 
   describe('when adding multiple interceptors', function () {
     describe('when the response was fulfilled', function () {
-      it('they are all executed', function (done) {
-        var interceptor1 = jasmine.createSpy('interceptor1');
-        var interceptor2 = jasmine.createSpy('interceptor2');
-        axios.interceptors.response.use(interceptor1);
-        axios.interceptors.response.use(interceptor2);
+      function fireRequestAndExpect(expectation) {
         axios('/foo');
-
         getAjaxRequest().then(function (request) {
           request.respondWith({
             status: 200,
             responseText: 'OK'
           });
 
-          setTimeout(function () {
-            expect(interceptor1).toHaveBeenCalled();
-            expect(interceptor2).toHaveBeenCalled();
-            done();
-          }, 100);
+          setTimeout(expectation, 100);
+        });
+      }
+      it('they are all executed', function (done) {
+        var interceptor1 = jasmine.createSpy('interceptor1');
+        var interceptor2 = jasmine.createSpy('interceptor2');
+        axios.interceptors.response.use(interceptor1);
+        axios.interceptors.response.use(interceptor2);
+
+        fireRequestAndExpect(function () {
+          expect(interceptor1).toHaveBeenCalled();
+          expect(interceptor2).toHaveBeenCalled();
+          done();
         });
       });
       it('they are executed in the order they were added', function (done) {
@@ -196,18 +199,10 @@ describe('interceptors', function () {
         var interceptor2 = jasmine.createSpy('interceptor2');
         axios.interceptors.response.use(interceptor1);
         axios.interceptors.response.use(interceptor2);
-        axios('/foo');
 
-        getAjaxRequest().then(function (request) {
-          request.respondWith({
-            status: 200,
-            responseText: 'OK'
-          });
-
-          setTimeout(function () {
-            expect(interceptor1).toHaveBeenCalledBefore(interceptor2);
-            done();
-          }, 100);
+        fireRequestAndExpect(function () {
+          expect(interceptor1).toHaveBeenCalledBefore(interceptor2);
+          done();
         });
       });
     });

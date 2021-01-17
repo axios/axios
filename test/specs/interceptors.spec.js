@@ -223,6 +223,19 @@ describe('interceptors', function () {
           done();
         });
       });
+      it('every interceptor receives the result of it`s predecessor', function (done) {
+        axios.interceptors.response.use(function() {
+          return 'response 1';
+        });
+        axios.interceptors.response.use(function(response) {
+          return [response, 'response 2'];
+        });
+
+        fireRequestAndExpect(function (response) {
+          expect(response).toEqual(['response 1', 'response 2']);
+          done();
+        });
+      });
     });
   });
 

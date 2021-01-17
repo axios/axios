@@ -169,8 +169,8 @@ describe('interceptors', function () {
     });
   });
 
-  describe('when adding multiple interceptors', function () {
-    describe('when the response was fulfilled', function () {
+  describe('given you add multiple interceptors', function () {
+    describe('and when the response was fulfilled', function () {
       function fireRequestAndExpect(expectation) {
         var response;
         axios('/foo').then(function(data) {
@@ -187,7 +187,7 @@ describe('interceptors', function () {
           }, 100);
         });
       }
-      it('they are all executed', function (done) {
+      it('then each interceptor is executed', function (done) {
         var interceptor1 = jasmine.createSpy('interceptor1');
         var interceptor2 = jasmine.createSpy('interceptor2');
         axios.interceptors.response.use(interceptor1);
@@ -199,7 +199,7 @@ describe('interceptors', function () {
           done();
         });
       });
-      it('they are executed in the order they were added', function (done) {
+      it('then they are executed in the order they were added', function (done) {
         var interceptor1 = jasmine.createSpy('interceptor1');
         var interceptor2 = jasmine.createSpy('interceptor2');
         axios.interceptors.response.use(interceptor1);
@@ -210,7 +210,7 @@ describe('interceptors', function () {
           done();
         });
       });
-      it('only the last interceptor`s result is returned', function (done) {
+      it('then only the last interceptor\'s result is returned', function (done) {
         axios.interceptors.response.use(function() {
           return 'response 1';
         });
@@ -223,7 +223,7 @@ describe('interceptors', function () {
           done();
         });
       });
-      it('every interceptor receives the result of it`s predecessor', function (done) {
+      it('then every interceptor receives the result of it\'s predecessor', function (done) {
         axios.interceptors.response.use(function() {
           return 'response 1';
         });
@@ -236,7 +236,7 @@ describe('interceptors', function () {
           done();
         });
       });
-      describe('when the fulfillment-interceptor throws', function () {
+      describe('and when the fulfillment-interceptor throws', function () {
         function fireRequestCatchAndExpect(expectation) {
           axios('/foo').catch(function(data) {
             // dont handle result

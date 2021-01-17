@@ -170,7 +170,9 @@ describe('interceptors', function () {
   });
 
   describe('given you add multiple response interceptors', function () {
+
     describe('and when the response was fulfilled', function () {
+
       function fireRequestAndExpect(expectation) {
         var response;
         axios('/foo').then(function(data) {
@@ -187,6 +189,7 @@ describe('interceptors', function () {
           }, 100);
         });
       }
+
       it('then each interceptor is executed', function (done) {
         var interceptor1 = jasmine.createSpy('interceptor1');
         var interceptor2 = jasmine.createSpy('interceptor2');
@@ -199,6 +202,7 @@ describe('interceptors', function () {
           done();
         });
       });
+
       it('then they are executed in the order they were added', function (done) {
         var interceptor1 = jasmine.createSpy('interceptor1');
         var interceptor2 = jasmine.createSpy('interceptor2');
@@ -210,6 +214,7 @@ describe('interceptors', function () {
           done();
         });
       });
+
       it('then only the last interceptor\'s result is returned', function (done) {
         axios.interceptors.response.use(function() {
           return 'response 1';
@@ -223,6 +228,7 @@ describe('interceptors', function () {
           done();
         });
       });
+
       it('then every interceptor receives the result of it\'s predecessor', function (done) {
         axios.interceptors.response.use(function() {
           return 'response 1';
@@ -236,7 +242,9 @@ describe('interceptors', function () {
           done();
         });
       });
+
       describe('and when the fulfillment-interceptor throws', function () {
+
         function fireRequestCatchAndExpect(expectation) {
           axios('/foo').catch(function(data) {
             // dont handle result
@@ -252,6 +260,7 @@ describe('interceptors', function () {
             }, 100);
           });
         }
+
         it('then the following fulfillment-interceptor is not called', function (done) {
           axios.interceptors.response.use(function() {
             throw Error('throwing interceptor');
@@ -264,6 +273,7 @@ describe('interceptors', function () {
             done();
           });
         });
+
         it('then the following rejection-interceptor is called', function (done) {
           axios.interceptors.response.use(function() {
             throw Error('throwing interceptor');
@@ -277,6 +287,7 @@ describe('interceptors', function () {
             done();
           });
         });
+        
         it('once caught, another following fulfill-interceptor is called again (just like in a promise chain)', function (done) {
           axios.interceptors.response.use(function() {
             throw Error('throwing interceptor');

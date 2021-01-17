@@ -277,6 +277,23 @@ describe('interceptors', function () {
             done();
           });
         });
+        it('once caught, another following fulfill-interceptor is called again (just like in a promise chain)', function (done) {
+          axios.interceptors.response.use(function() {
+            throw Error('throwing interceptor');
+          });
+
+          var unusedFulfillInterceptor = function() {};
+          var catchingThrowingInterceptor = function() {};
+          axios.interceptors.response.use(unusedFulfillInterceptor, catchingThrowingInterceptor);
+
+          var interceptor3 = jasmine.createSpy('interceptor3');
+          axios.interceptors.response.use(interceptor3);
+
+          fireRequestCatchAndExpect(function () {
+            expect(interceptor3).toHaveBeenCalled();
+            done();
+          });
+        });
       });
     });
   });

@@ -172,9 +172,11 @@ describe('interceptors', function () {
   describe('when adding multiple interceptors', function () {
     describe('when the response was fulfilled', function () {
       function fireRequestAndExpect(expectation) {
-        var response;
+        var result = {fulfilled: null, rejected: null};
         axios('/foo').then(function(data) {
-          response = data;
+          result.fulfilled = data;
+        }).catch(function(data) {
+          result.rejected = data;
         });
         getAjaxRequest().then(function (request) {
           request.respondWith({
@@ -183,7 +185,7 @@ describe('interceptors', function () {
           });
 
           setTimeout(function() {
-            expectation(response)
+            expectation(result)
           }, 100);
         });
       }
@@ -218,8 +220,8 @@ describe('interceptors', function () {
           return 'response 2';
         });
 
-        fireRequestAndExpect(function (response) {
-          expect(response).toBe('response 2');
+        fireRequestAndExpect(function (result) {
+          expect(result.fulfilled).toBe('response 2');
           done();
         });
       });
@@ -231,8 +233,20 @@ describe('interceptors', function () {
           return [response, 'response 2'];
         });
 
-        fireRequestAndExpect(function (response) {
-          expect(response).toEqual(['response 1', 'response 2']);
+        fireRequestAndExpect(function (result) {
+          expect(result.fulfilled).toEqual(['response 1', 'response 2']);
+          done();
+        });
+      });
+      it('when the fulfillment-interceptor throws then the following fulfillment-interceptor is not called', function (done) {
+        axios.interceptors.response.use(function() {
+          throw Error('throwing interceptor');
+        });
+        var interceptor2 = jasmine.createSpy('interceptor2');
+        axios.interceptors.response.use(interceptor2);
+
+        fireRequestAndExpect(function () {
+          expect(interceptor2).not.toHaveBeenCalled();
           done();
         });
       });

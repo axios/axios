@@ -172,24 +172,11 @@ describe('interceptors', function () {
   describe('when adding multiple interceptors', function () {
     describe('when the response was fulfilled', function () {
       it('they are all executed', function (done) {
-        var response;
-
-        axios.interceptors.response.use(function (data) {
-          data.data = data.data + '1';
-          return data;
-        });
-        axios.interceptors.response.use(function (data) {
-          data.data = data.data + '2';
-          return data;
-        });
-        axios.interceptors.response.use(function (data) {
-          data.data = data.data + '3';
-          return data;
-        });
-
-        axios('/foo').then(function (data) {
-          response = data;
-        });
+        var interceptor1 = jasmine.createSpy('interceptor1');
+        var interceptor2 = jasmine.createSpy('interceptor2');
+        axios.interceptors.response.use(interceptor1);
+        axios.interceptors.response.use(interceptor2);
+        axios('/foo');
 
         getAjaxRequest().then(function (request) {
           request.respondWith({
@@ -198,7 +185,8 @@ describe('interceptors', function () {
           });
 
           setTimeout(function () {
-            expect(response.data).toBe('OK123');
+            expect(interceptor1).toHaveBeenCalled();
+            expect(interceptor2).toHaveBeenCalled();
             done();
           }, 100);
         });

@@ -264,6 +264,19 @@ describe('interceptors', function () {
             done();
           });
         });
+        it('then the following rejection-interceptor is called', function (done) {
+          axios.interceptors.response.use(function() {
+            throw Error('throwing interceptor');
+          });
+          var unusedFulfillInterceptor = function() {};
+          var rejectIntercept = jasmine.createSpy('rejectIntercept');
+          axios.interceptors.response.use(unusedFulfillInterceptor, rejectIntercept);
+
+          fireRequestCatchAndExpect(function () {
+            expect(rejectIntercept).toHaveBeenCalled();
+            done();
+          });
+        });
       });
     });
   });

@@ -169,7 +169,7 @@ describe('interceptors', function () {
     });
   });
 
-  describe('given you add multiple interceptors', function () {
+  describe('given you add multiple response interceptors', function () {
     describe('and when the response was fulfilled', function () {
       function fireRequestAndExpect(expectation) {
         var response;

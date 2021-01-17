@@ -592,7 +592,7 @@ instance.interceptors.request.use(function () {/*...*/});
 
 ### Multiple Interceptors
 
-Given you add multiple interceptors
+Given you add multiple response interceptors
 and when the response was fulfilled
 - then each interceptor is executed
 - then they are executed in the order they were added

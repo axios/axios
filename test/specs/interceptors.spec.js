@@ -172,14 +172,19 @@ describe('interceptors', function () {
   describe('when adding multiple interceptors', function () {
     describe('when the response was fulfilled', function () {
       function fireRequestAndExpect(expectation) {
-        axios('/foo');
+        var response;
+        axios('/foo').then(function(data) {
+          response = data;
+        });
         getAjaxRequest().then(function (request) {
           request.respondWith({
             status: 200,
             responseText: 'OK'
           });
 
-          setTimeout(expectation, 100);
+          setTimeout(function() {
+            expectation(response)
+          }, 100);
         });
       }
       it('they are all executed', function (done) {
@@ -202,6 +207,19 @@ describe('interceptors', function () {
 
         fireRequestAndExpect(function () {
           expect(interceptor1).toHaveBeenCalledBefore(interceptor2);
+          done();
+        });
+      });
+      it('only the last interceptor`s result is returned', function (done) {
+        axios.interceptors.response.use(function() {
+          return 'response 1';
+        });
+        axios.interceptors.response.use(function() {
+          return 'response 2';
+        });
+
+        fireRequestAndExpect(function (response) {
+          expect(response).toBe('response 2');
           done();
         });
       });

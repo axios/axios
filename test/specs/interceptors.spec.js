@@ -191,6 +191,25 @@ describe('interceptors', function () {
           }, 100);
         });
       });
+      it('they are executed in the order they were added', function (done) {
+        var interceptor1 = jasmine.createSpy('interceptor1');
+        var interceptor2 = jasmine.createSpy('interceptor2');
+        axios.interceptors.response.use(interceptor1);
+        axios.interceptors.response.use(interceptor2);
+        axios('/foo');
+
+        getAjaxRequest().then(function (request) {
+          request.respondWith({
+            status: 200,
+            responseText: 'OK'
+          });
+
+          setTimeout(function () {
+            expect(interceptor1).toHaveBeenCalledBefore(interceptor2);
+            done();
+          }, 100);
+        });
+      });
     });
   });
 

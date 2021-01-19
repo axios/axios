@@ -15,10 +15,11 @@ function createCustomLauncher(browser, version, platform) {
 module.exports = function(config) {
   var customLaunchers = {};
   var browsers = [];
+  var sauceLabs;
 
   if (process.env.SAUCE_USERNAME || process.env.SAUCE_ACCESS_KEY) {
     customLaunchers = {};
-
+  
     var runAll = true;
     var options = [
       'SAUCE_CHROME',
@@ -107,6 +108,15 @@ module.exports = function(config) {
     }
 
     browsers = Object.keys(customLaunchers);
+
+    sauceLabs = {
+      recordScreenshots: false,
+      connectOptions: {
+        // port: 5757,
+        logfile: 'sauce_connect.log'
+      },
+      public: 'public'
+    };
   } else if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
     console.log(
       'Cannot run on Sauce Labs as encrypted environment variables are not available to PRs. ' +
@@ -115,9 +125,9 @@ module.exports = function(config) {
     browsers = ['Firefox'];
   } else {
     console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.');
-    browsers = ['Firefox', 'Chrome', 'Safari', 'Opera'];
+    browsers = ['Firefox', 'Chrome'];
   }
-
+  
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
@@ -154,7 +164,7 @@ module.exports = function(config) {
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     // Disable code coverage, as it's breaking CI:
     // reporters: ['dots', 'coverage', 'saucelabs'],
-    reporters: ['dots', 'saucelabs'],
+    reporters: ['progress'],
 
 
     // web server port
@@ -192,28 +202,14 @@ module.exports = function(config) {
 
     // Webpack config
     webpack: {
+      mode: 'development',
       cache: true,
       devtool: 'inline-source-map',
-      // Disable code coverage, as it's breaking CI
-      // module: {
-      //   postLoaders: [
-      //     {
-      //       test: /\.js$/,
-      //       exclude: /(node_modules|test)/,
-      //       loader: 'istanbul-instrumenter'
-      //     }
-      //   ]
-      // },
       externals: [
         {
           './adapters/http': 'var undefined'
         }
       ],
-      plugins: [
-        new webpack.DefinePlugin({
-          'process.env.NODE_ENV': JSON.stringify('test')
-        })
-      ]
     },
 
     webpackServer: {
@@ -230,17 +226,7 @@ module.exports = function(config) {
       subdir: '.'
     },
 
-
-    // SauceLabs config
-    sauceLabs: {
-      recordScreenshots: false,
-      connectOptions: {
-        // port: 5757,
-        logfile: 'sauce_connect.log'
-      },
-      public: 'public'
-    },
-
+    sauceLabs: sauceLabs,
     customLaunchers: customLaunchers
   });
 };

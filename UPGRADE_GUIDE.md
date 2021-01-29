@@ -135,7 +135,7 @@ This will polyfill the global environment, and only needs to be done once.
 
 #### `axios.success`/`axios.error`
 
-The `success`, and `error` aliases were deprectated in [0.4.0](https://github.com/axios/axios/blob/master/CHANGELOG.md#040-oct-03-2014). As of this release they have been removed entirely. Instead please use `axios.then`, and `axios.catch` respectively.
+The `success`, and `error` aliases were deprecated in [0.4.0](https://github.com/axios/axios/blob/master/CHANGELOG.md#040-oct-03-2014). As of this release they have been removed entirely. Instead please use `axios.then`, and `axios.catch` respectively.
 
 ```js
 axios.get('some/url')

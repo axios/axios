@@ -42,21 +42,6 @@ describe('headers', function () {
     });
   });
 
-  it('should not set header if value is null', function (done) {
-    expect(axios.defaults.headers.common['Accept']).toEqual('application/json, text/plain, */*');
-
-    axios('/foo', {
-      headers: {
-        Accept: null
-      }
-    });
-
-    getAjaxRequest().then(function (request) {
-      expect(typeof request.requestHeaders['Accept']).toEqual('undefined');
-      done();
-    });
-  });
-
   it('should add extra headers for post', function (done) {
     var headers = axios.defaults.headers.common;
 
@@ -68,6 +53,32 @@ describe('headers', function () {
           expect(request.requestHeaders[key]).toEqual(headers[key]);
         }
       }
+      done();
+    });
+  });
+
+  it('should reset headers by null or explicit undefined', function (done) {
+    axios.create({
+      headers: {
+        common: {
+          'x-header-a': 'a',
+          'x-header-b': 'b',
+          'x-header-c': 'c'
+        }
+      }
+    }).post('/foo', {fizz: 'buzz'}, {
+      headers: {
+        'Content-Type': null,
+        'x-header-a': null,
+        'x-header-b': undefined
+      }
+    });
+
+    getAjaxRequest().then(function (request) {
+      testHeaderValue(request.requestHeaders, 'Content-Type', null);
+      testHeaderValue(request.requestHeaders, 'x-header-a', null);
+      testHeaderValue(request.requestHeaders, 'x-header-b', undefined);
+      testHeaderValue(request.requestHeaders, 'x-header-c', 'c');
       done();
     });
   });

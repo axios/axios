@@ -10,6 +10,37 @@
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
 Promise based HTTP client for the browser and node.js
+## Table of Contents
+
+  - [Features](#features)
+  - [Browser Support](#browser-support)
+  - [Installing](#installing)
+  - [Example](#example)
+  - [Axios API](#axios-api)
+  - [Request method aliases](#request-method-aliases)
+  - [Concurrency (Deprecated)](#concurrency-deprecated)
+  - [Creating an instance](#creating-an-instance)
+  - [Instance methods](#instance-methods)
+  - [Request Config](#request-config)
+  - [Response Schema](#response-schema)
+  - [Config Defaults](#config-defaults)
+    - [Global axios defaults](#global-axios-defaults)
+    - [Custom instance defaults](#custom-instance-defaults)
+    - [Config order of precedence](#config-order-of-precedence)
+  - [Interceptors](#interceptors)
+  - [Handling Errors](#handling-errors)
+  - [Cancellation](#cancellation)
+  - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
+    - [Browser](#browser)
+    - [Node.js](#nodejs)
+      - [Query string](#query-string)
+      - [Form data](#form-data)
+  - [Semver](#semver)
+  - [Promises](#promises)
+  - [TypeScript](#typescript)
+  - [Resources](#resources)
+  - [Credits](#credits)
+  - [License](#license)
 
 ## Features
 
@@ -391,7 +422,7 @@ These are the available config options for making requests. Only the `url` is re
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // `proxy` defines the hostname and port of the proxy server.
+  // `proxy` defines the hostname, port, and protocol of the proxy server.
   // You can also define your proxy using the conventional `http_proxy` and
   // `https_proxy` environment variables. If you are using environment variables
   // for your proxy configuration, you can also define a `no_proxy` environment
@@ -401,7 +432,9 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
+  // If the proxy server uses HTTPS, then you must set the protocol to `https`. 
   proxy: {
+    protocol: 'https',
     host: '127.0.0.1',
     port: 9000,
     auth: {
@@ -477,7 +510,11 @@ You can specify config defaults that will be applied to every request.
 
 ```js
 axios.defaults.baseURL = 'https://api.example.com';
+
+// Important: If axios is used with multiple domains, the AUTH_TOKEN will be sent to all of them.
+// See below for an example using Custom instance defaults instead.
 axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 ```
 
@@ -693,6 +730,14 @@ In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.h
 ```js
 const querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
+```
+
+or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
+
+```js
+const url = require('url');
+const params = new url.URLSearchParams({ foo: 'bar' });
+axios.post('http://something.com/', params.toString());
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.

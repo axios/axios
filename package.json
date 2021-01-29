@@ -52,6 +52,7 @@
     "karma-jasmine": "^1.1.1",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-safari-launcher": "^1.0.0",
+    "karma-sauce-launcher": "^1.2.0",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.8",
     "karma-webpack": "^4.0.2",

@@ -154,6 +154,7 @@ export interface AxiosStatic extends AxiosInstance {
   all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError(payload: any): payload is AxiosError;
+  Axios: new (config: AxiosRequestConfig) => AxiosInstance;
 }
 
 declare const axios: AxiosStatic;

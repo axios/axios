@@ -1,5 +1,28 @@
 # Changelog
 
+### 0.21.1 (December 21, 2020)
+
+Fixes and Functionality:
+
+- Hotfix: Prevent SSRF (#3410)
+- Protocol not parsed when setting proxy config from env vars (#3070)
+- Updating axios in types to be lower case (#2797)
+- Adding a type guard for `AxiosError` (#2949)
+
+Internal and Tests:
+
+- Remove the skipping of the `socket` http test (#3364)
+- Use different socket for Win32 test (#3375)
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- Daniel Lopretto <timemachine3030@users.noreply.github.com>
+- Jason Kwok <JasonHK@users.noreply.github.com>
+- Jay <jasonsaayman@gmail.com>
+- Jonathan Foster <jonathan@jonathanfoster.io>
+- Remco Haszing <remcohaszing@gmail.com>
+- Xianming Zhong <chinesedfan@qq.com>
+
 ### 0.21.0 (October 23, 2020)
 
 Fixes and Functionality:

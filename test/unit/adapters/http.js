@@ -1,10 +1,12 @@
 var axios = require('../../../index');
 var http = require('http');
+var https = require('https');
 var net = require('net');
 var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -65,6 +67,26 @@ describe('supports http with nodejs', function () {
     server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'application/json;charset=utf-8');
       res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      });
+    });
+  });
+
+  it('should allow passing JSON with BOM', function (done) {
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      var bomBuffer = Buffer.from([0xEF, 0xBB, 0xBF])
+      var jsonBuffer = Buffer.from(JSON.stringify(data));
+      res.end(Buffer.concat([bomBuffer, jsonBuffer]));
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').then(function (res) {
         assert.deepEqual(res.data, data);
@@ -191,6 +213,27 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support disabling automatic decompression of response data', function(done) {
+    var data = 'Test data';
+
+    zlib.gzip(data, function(err, zipped) {
+      server = http.createServer(function(req, res) {
+        res.setHeader('Content-Type', 'text/html;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      }).listen(4444, function() {
+        axios.get('http://localhost:4444/', {
+          decompress: false,
+          responseType: 'arraybuffer'
+
+        }).then(function(res) {
+          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+          done();
+        });
+      });
+    });
+  });
+
   it('should support UTF8', function (done) {
     var str = Array(100000).join('ж');
 
@@ -260,14 +303,87 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it.skip('should support sockets', function (done) {
+  it('should support max content length for redirected', function (done) {
+    var str = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      var parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/two') {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end(str);
+      } else {
+        res.setHeader('Location', '/two');
+        res.statusCode = 302;
+        res.end();
+      }
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.get('http://localhost:4444/one', {
+        maxContentLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should support max body length', function (done) {
+    var data = Array(100000).join('ж');
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end();
+    }).listen(4444, function () {
+      var success = false, failure = false, error;
+
+      axios.post('http://localhost:4444/', {
+        data: data
+      }, {
+        maxBodyLength: 2000
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED');
+        assert.equal(error.message, 'Request body larger than maxBodyLength limit');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should support sockets', function (done) {
+    // Different sockets for win32 vs darwin/linux
+    var socketName = './test.sock';
+
+    if (process.platform === 'win32') {
+      socketName = '\\\\.\\pipe\\libuv-test';
+    }
+
     server = net.createServer(function (socket) {
       socket.on('data', function () {
         socket.end('HTTP/1.1 200 OK\r\n\r\n');
       });
-    }).listen('./test.sock', function () {
+    }).listen(socketName, function () {
       axios({
-        socketPath: './test.sock',
+        socketPath: socketName,
         url: '/'
       })
         .then(function (resp) {
@@ -304,15 +420,17 @@ describe('supports http with nodejs', function () {
   });
 
   it('should pass errors for a failed stream', function (done) {
+    var notExitPath = path.join(__dirname, 'does_not_exist');
+
     server = http.createServer(function (req, res) {
       req.pipe(res);
     }).listen(4444, function () {
       axios.post('http://localhost:4444/',
-        fs.createReadStream('/does/not/exist')
+        fs.createReadStream(notExitPath)
       ).then(function (res) {
         assert.fail();
       }).catch(function (err) {
-        assert.equal(err.message, 'ENOENT: no such file or directory, open \'/does/not/exist\'');
+        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
         done();
       });
     });
@@ -379,6 +497,57 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support HTTPS proxies', function (done) {
+    var options = {
+      key: fs.readFileSync(path.join(__dirname, 'key.pem')),
+      cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
+    };
+
+    server = https.createServer(options, function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('12345');
+    }).listen(4444, function () {
+      proxy = https.createServer(options, function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path,
+          protocol: parsed.protocol,
+          rejectUnauthorized: false
+        };
+
+        https.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '6789');
+          });
+        });
+      }).listen(4000, function () {
+        axios.get('https://localhost:4444/', {
+          proxy: {
+            host: 'localhost',
+            port: 4000,
+            protocol: 'https'
+          },
+          httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+          })
+        }).then(function (res) {
+          assert.equal(res.data, '123456789', 'should pass through proxy');
+          done();
+        }).catch(function (err) {
+          assert.fail(err);
+          done()
+        });
+      });
+    });
+  });
+
   it('should not pass through disabled proxy', function (done) {
     // set the env variable
     process.env.http_proxy = 'http://does-not-exists.example.com:4242/';
@@ -427,6 +596,56 @@ describe('supports http with nodejs', function () {
         axios.get('http://localhost:4444/').then(function (res) {
           assert.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
           done();
+        });
+      });
+    });
+  });
+
+  it('should support HTTPS proxy set via env var', function (done) {
+    var options = {
+      key: fs.readFileSync(path.join(__dirname, 'key.pem')),
+      cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
+    };
+
+    server = https.createServer(options, function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('12345');
+    }).listen(4444, function () {
+      proxy = https.createServer(options, function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path,
+          protocol: parsed.protocol,
+          rejectUnauthorized: false
+        };
+
+        https.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '6789');
+          });
+        });
+      }).listen(4000, function () {
+        process.env.https_proxy = 'https://localhost:4000/';
+
+        axios.get('https://localhost:4444/', {
+          httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+          })
+        }).then(function (res) {
+          assert.equal(res.data, '123456789', 'should pass through proxy');
+          done();
+        }).catch(function (err) {
+          assert.fail(err);
+          done()
+        }).finally(function () {
+          process.env.https_proxy = ''
         });
       });
     });
@@ -661,5 +880,4 @@ describe('supports http with nodejs', function () {
     });
   });
 });
-
 

@@ -305,7 +305,6 @@ Fixes and Functionality:
 - Fixing set `config.method` after mergeConfig for Axios.prototype.request ([#2383](https://github.com/axios/axios/pull/2383))
 - Axios create url bug ([#2290](https://github.com/axios/axios/pull/2290))
 - Do not modify config.url when using a relative baseURL (resolves [#1628](https://github.com/axios/axios/issues/1098)) ([#2391](https://github.com/axios/axios/pull/2391))
-- Add typescript HTTP method definition for LINK and UNLINK ([#2444](https://github.com/axios/axios/pull/2444))
 
 Internal:
 

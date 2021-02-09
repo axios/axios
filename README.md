@@ -422,7 +422,7 @@ These are the available config options for making requests. Only the `url` is re
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // `proxy` defines the hostname and port of the proxy server.
+  // `proxy` defines the hostname, port, and protocol of the proxy server.
   // You can also define your proxy using the conventional `http_proxy` and
   // `https_proxy` environment variables. If you are using environment variables
   // for your proxy configuration, you can also define a `no_proxy` environment
@@ -432,7 +432,9 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
+  // If the proxy server uses HTTPS, then you must set the protocol to `https`. 
   proxy: {
+    protocol: 'https',
     host: '127.0.0.1',
     port: 9000,
     auth: {

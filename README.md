@@ -439,12 +439,15 @@ These are the available config options for making requests. Only the `url` is re
       username: 'mikeymike',
       password: 'rapunz3l'
     }
-  },
+  },````
 
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {
   }),
+
+  // an alternative way to cancel Axios requests using AbortController
+  signal: new AbortController().signal,
 
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 
@@ -675,7 +678,20 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-> Note: you can cancel several requests with the same cancel token.
+Axios supports AbortController to abort requests in [`fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#aborting_a_fetch) way:
+```js
+const controller = new AbortController();
+
+axios.get('/foo/bar', {
+   signal: controller.signal
+}).then(function(response) {
+   //...
+});
+// cancel the request
+controller.abort()
+```
+
+> Note: you can cancel several requests with the same cancel token/abort controller.
 
 ## Using application/x-www-form-urlencoded format
 

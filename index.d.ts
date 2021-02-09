@@ -71,7 +71,7 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
-  signal?: AbortController;
+  signal?: AbortSignal;
 }
 
 export interface AxiosResponse<T = any>  {

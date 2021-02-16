@@ -47,7 +47,15 @@ describe('utils::isX', function () {
 
   it('should validate Object', function () {
     expect(utils.isObject({})).toEqual(true);
+    expect(utils.isObject([])).toEqual(true);
     expect(utils.isObject(null)).toEqual(false);
+  });
+
+  it('should validate plain Object', function () {
+    expect(utils.isPlainObject({})).toEqual(true);
+    expect(utils.isPlainObject([])).toEqual(false);
+    expect(utils.isPlainObject(null)).toEqual(false);
+    expect(utils.isPlainObject(Object.create({}))).toEqual(false);
   });
 
   it('should validate Date', function () {

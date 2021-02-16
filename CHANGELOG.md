@@ -1,5 +1,28 @@
 # Changelog
 
+### 0.21.1 (December 21, 2020)
+
+Fixes and Functionality:
+
+- Hotfix: Prevent SSRF (#3410)
+- Protocol not parsed when setting proxy config from env vars (#3070)
+- Updating axios in types to be lower case (#2797)
+- Adding a type guard for `AxiosError` (#2949)
+
+Internal and Tests:
+
+- Remove the skipping of the `socket` http test (#3364)
+- Use different socket for Win32 test (#3375)
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- Daniel Lopretto <timemachine3030@users.noreply.github.com>
+- Jason Kwok <JasonHK@users.noreply.github.com>
+- Jay <jasonsaayman@gmail.com>
+- Jonathan Foster <jonathan@jonathanfoster.io>
+- Remco Haszing <remcohaszing@gmail.com>
+- Xianming Zhong <chinesedfan@qq.com>
+
 ### 0.21.0 (October 23, 2020)
 
 Fixes and Functionality:
@@ -70,7 +93,7 @@ Fixes and Functionality:
   - Adding test to check if password with non-Latin1 characters pass
 - Fixing 'Network Error' in react native android ([#1487](https://github.com/axios/axios/pull/1487))
   There is a bug in react native Android platform when using get method. It will trigger a 'Network Error' when passing the requestData which is an empty string to request.send function. So if the requestData is an empty string we can set it to null as well to fix the bug.
-- Fixing Cookie Helper with Asyc Components ([#1105](https://github.com/axios/axios/pull/1105)) ([#1107](https://github.com/axios/axios/pull/1107))
+- Fixing Cookie Helper with Async Components ([#1105](https://github.com/axios/axios/pull/1105)) ([#1107](https://github.com/axios/axios/pull/1107))
 - Fixing 'progressEvent' type ([#2851](https://github.com/axios/axios/pull/2851))
   - Fix 'progressEvent' type
   - Update axios.ts
@@ -282,7 +305,6 @@ Fixes and Functionality:
 - Fixing set `config.method` after mergeConfig for Axios.prototype.request ([#2383](https://github.com/axios/axios/pull/2383))
 - Axios create url bug ([#2290](https://github.com/axios/axios/pull/2290))
 - Do not modify config.url when using a relative baseURL (resolves [#1628](https://github.com/axios/axios/issues/1098)) ([#2391](https://github.com/axios/axios/pull/2391))
-- Add typescript HTTP method definition for LINK and UNLINK ([#2444](https://github.com/axios/axios/pull/2444))
 
 Internal:
 

@@ -1,4 +1,4 @@
-/* axios v0.19.0 | (c) 2019 by Matt Zabriskie */
+/* axios v0.21.1 | (c) 2020 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -65,9 +65,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var utils = __webpack_require__(2);
 	var bind = __webpack_require__(3);
-	var Axios = __webpack_require__(5);
+	var Axios = __webpack_require__(4);
 	var mergeConfig = __webpack_require__(22);
-	var defaults = __webpack_require__(11);
+	var defaults = __webpack_require__(10);
 	
 	/**
 	 * Create an instance of Axios
@@ -102,13 +102,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Expose Cancel & CancelToken
 	axios.Cancel = __webpack_require__(23);
 	axios.CancelToken = __webpack_require__(24);
-	axios.isCancel = __webpack_require__(10);
+	axios.isCancel = __webpack_require__(9);
 	
 	// Expose all/spread
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
 	axios.spread = __webpack_require__(25);
+	
+	// Expose isAxiosError
+	axios.isAxiosError = __webpack_require__(26);
 	
 	module.exports = axios;
 	
@@ -123,7 +126,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	var bind = __webpack_require__(3);
-	var isBuffer = __webpack_require__(4);
 	
 	/*global toString:true*/
 	
@@ -139,6 +141,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function isArray(val) {
 	  return toString.call(val) === '[object Array]';
+	}
+	
+	/**
+	 * Determine if a value is undefined
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if the value is undefined, otherwise false
+	 */
+	function isUndefined(val) {
+	  return typeof val === 'undefined';
+	}
+	
+	/**
+	 * Determine if a value is a Buffer
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a Buffer, otherwise false
+	 */
+	function isBuffer(val) {
+	  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor)
+	    && typeof val.constructor.isBuffer === 'function' && val.constructor.isBuffer(val);
 	}
 	
 	/**
@@ -198,16 +221,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	/**
-	 * Determine if a value is undefined
-	 *
-	 * @param {Object} val The value to test
-	 * @returns {boolean} True if the value is undefined, otherwise false
-	 */
-	function isUndefined(val) {
-	  return typeof val === 'undefined';
-	}
-	
-	/**
 	 * Determine if a value is an Object
 	 *
 	 * @param {Object} val The value to test
@@ -215,6 +228,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function isObject(val) {
 	  return val !== null && typeof val === 'object';
+	}
+	
+	/**
+	 * Determine if a value is a plain Object
+	 *
+	 * @param {Object} val The value to test
+	 * @return {boolean} True if value is a plain Object, otherwise false
+	 */
+	function isPlainObject(val) {
+	  if (toString.call(val) !== '[object Object]') {
+	    return false;
+	  }
+	
+	  var prototype = Object.getPrototypeOf(val);
+	  return prototype === null || prototype === Object.prototype;
 	}
 	
 	/**
@@ -373,34 +401,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	function merge(/* obj1, obj2, obj3, ... */) {
 	  var result = {};
 	  function assignValue(val, key) {
-	    if (typeof result[key] === 'object' && typeof val === 'object') {
+	    if (isPlainObject(result[key]) && isPlainObject(val)) {
 	      result[key] = merge(result[key], val);
-	    } else {
-	      result[key] = val;
-	    }
-	  }
-	
-	  for (var i = 0, l = arguments.length; i < l; i++) {
-	    forEach(arguments[i], assignValue);
-	  }
-	  return result;
-	}
-	
-	/**
-	 * Function equal to merge with the difference being that no reference
-	 * to original objects is kept.
-	 *
-	 * @see merge
-	 * @param {Object} obj1 Object to merge
-	 * @returns {Object} Result of all merge properties
-	 */
-	function deepMerge(/* obj1, obj2, obj3, ... */) {
-	  var result = {};
-	  function assignValue(val, key) {
-	    if (typeof result[key] === 'object' && typeof val === 'object') {
-	      result[key] = deepMerge(result[key], val);
-	    } else if (typeof val === 'object') {
-	      result[key] = deepMerge({}, val);
+	    } else if (isPlainObject(val)) {
+	      result[key] = merge({}, val);
+	    } else if (isArray(val)) {
+	      result[key] = val.slice();
 	    } else {
 	      result[key] = val;
 	    }
@@ -431,6 +437,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return a;
 	}
 	
+	/**
+	 * Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
+	 *
+	 * @param {string} content with BOM
+	 * @return {string} content value without BOM
+	 */
+	function stripBOM(content) {
+	  if (content.charCodeAt(0) === 0xFEFF) {
+	    content = content.slice(1);
+	  }
+	  return content;
+	}
+	
 	module.exports = {
 	  isArray: isArray,
 	  isArrayBuffer: isArrayBuffer,
@@ -440,6 +459,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  isString: isString,
 	  isNumber: isNumber,
 	  isObject: isObject,
+	  isPlainObject: isPlainObject,
 	  isUndefined: isUndefined,
 	  isDate: isDate,
 	  isFile: isFile,
@@ -450,9 +470,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  isStandardBrowserEnv: isStandardBrowserEnv,
 	  forEach: forEach,
 	  merge: merge,
-	  deepMerge: deepMerge,
 	  extend: extend,
-	  trim: trim
+	  trim: trim,
+	  stripBOM: stripBOM
 	};
 
 
@@ -475,31 +495,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports) {
-
-	/*!
-	 * Determine if an object is a Buffer
-	 *
-	 * @author   Feross Aboukhadijeh <https://feross.org>
-	 * @license  MIT
-	 */
-	
-	module.exports = function isBuffer (obj) {
-	  return obj != null && obj.constructor != null &&
-	    typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-	}
-
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var buildURL = __webpack_require__(6);
-	var InterceptorManager = __webpack_require__(7);
-	var dispatchRequest = __webpack_require__(8);
+	var buildURL = __webpack_require__(5);
+	var InterceptorManager = __webpack_require__(6);
+	var dispatchRequest = __webpack_require__(7);
 	var mergeConfig = __webpack_require__(22);
 	
 	/**
@@ -531,7 +534,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  config = mergeConfig(this.defaults, config);
-	  config.method = config.method ? config.method.toLowerCase() : 'get';
+	
+	  // Set config.method
+	  if (config.method) {
+	    config.method = config.method.toLowerCase();
+	  } else if (this.defaults.method) {
+	    config.method = this.defaults.method.toLowerCase();
+	  } else {
+	    config.method = 'get';
+	  }
 	
 	  // Hook up interceptors middleware
 	  var chain = [dispatchRequest, undefined];
@@ -561,9 +572,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
 	  /*eslint func-names:0*/
 	  Axios.prototype[method] = function(url, config) {
-	    return this.request(utils.merge(config || {}, {
+	    return this.request(mergeConfig(config || {}, {
 	      method: method,
-	      url: url
+	      url: url,
+	      data: (config || {}).data
 	    }));
 	  };
 	});
@@ -571,7 +583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 	  /*eslint func-names:0*/
 	  Axios.prototype[method] = function(url, data, config) {
-	    return this.request(utils.merge(config || {}, {
+	    return this.request(mergeConfig(config || {}, {
 	      method: method,
 	      url: url,
 	      data: data
@@ -583,7 +595,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -592,7 +604,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
-	    replace(/%40/gi, '@').
 	    replace(/%3A/gi, ':').
 	    replace(/%24/g, '$').
 	    replace(/%2C/gi, ',').
@@ -660,7 +671,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -718,17 +729,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var transformData = __webpack_require__(9);
-	var isCancel = __webpack_require__(10);
-	var defaults = __webpack_require__(11);
-	var isAbsoluteURL = __webpack_require__(20);
-	var combineURLs = __webpack_require__(21);
+	var transformData = __webpack_require__(8);
+	var isCancel = __webpack_require__(9);
+	var defaults = __webpack_require__(10);
 	
 	/**
 	 * Throws a `Cancel` if cancellation has been requested.
@@ -748,11 +757,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = function dispatchRequest(config) {
 	  throwIfCancellationRequested(config);
 	
-	  // Support baseURL config
-	  if (config.baseURL && !isAbsoluteURL(config.url)) {
-	    config.url = combineURLs(config.baseURL, config.url);
-	  }
-	
 	  // Ensure headers exist
 	  config.headers = config.headers || {};
 	
@@ -767,7 +771,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  config.headers = utils.merge(
 	    config.headers.common || {},
 	    config.headers[config.method] || {},
-	    config.headers || {}
+	    config.headers
 	  );
 	
 	  utils.forEach(
@@ -810,7 +814,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -836,7 +840,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -847,13 +851,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var normalizeHeaderName = __webpack_require__(12);
+	var normalizeHeaderName = __webpack_require__(11);
 	
 	var DEFAULT_CONTENT_TYPE = {
 	  'Content-Type': 'application/x-www-form-urlencoded'
@@ -867,13 +871,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function getDefaultAdapter() {
 	  var adapter;
-	  // Only Node.JS has a process variable that is of [[Class]] process
-	  if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
-	    // For node use HTTP adapter
-	    adapter = __webpack_require__(13);
-	  } else if (typeof XMLHttpRequest !== 'undefined') {
+	  if (typeof XMLHttpRequest !== 'undefined') {
 	    // For browsers use XHR adapter
-	    adapter = __webpack_require__(13);
+	    adapter = __webpack_require__(12);
+	  } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
+	    // For node use HTTP adapter
+	    adapter = __webpack_require__(12);
 	  }
 	  return adapter;
 	}
@@ -927,6 +930,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  xsrfHeaderName: 'X-XSRF-TOKEN',
 	
 	  maxContentLength: -1,
+	  maxBodyLength: -1,
 	
 	  validateStatus: function validateStatus(status) {
 	    return status >= 200 && status < 300;
@@ -951,7 +955,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -969,17 +973,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var utils = __webpack_require__(2);
-	var settle = __webpack_require__(14);
-	var buildURL = __webpack_require__(6);
-	var parseHeaders = __webpack_require__(17);
-	var isURLSameOrigin = __webpack_require__(18);
-	var createError = __webpack_require__(15);
+	var settle = __webpack_require__(13);
+	var cookies = __webpack_require__(16);
+	var buildURL = __webpack_require__(5);
+	var buildFullPath = __webpack_require__(17);
+	var parseHeaders = __webpack_require__(20);
+	var isURLSameOrigin = __webpack_require__(21);
+	var createError = __webpack_require__(14);
 	
 	module.exports = function xhrAdapter(config) {
 	  return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -995,11 +1001,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // HTTP basic authentication
 	    if (config.auth) {
 	      var username = config.auth.username || '';
-	      var password = config.auth.password || '';
+	      var password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : '';
 	      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
 	    }
 	
-	    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
+	    var fullPath = buildFullPath(config.baseURL, config.url);
+	    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
 	
 	    // Set the request timeout in MS
 	    request.timeout = config.timeout;
@@ -1060,7 +1067,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Handle timeout
 	    request.ontimeout = function handleTimeout() {
-	      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED',
+	      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+	      if (config.timeoutErrorMessage) {
+	        timeoutErrorMessage = config.timeoutErrorMessage;
+	      }
+	      reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
 	        request));
 	
 	      // Clean up request
@@ -1071,10 +1082,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // This is only done if running in a standard browser environment.
 	    // Specifically not if we're in a web worker, or react-native.
 	    if (utils.isStandardBrowserEnv()) {
-	      var cookies = __webpack_require__(19);
-	
 	      // Add xsrf header
-	      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
+	      var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
 	        cookies.read(config.xsrfCookieName) :
 	        undefined;
 	
@@ -1097,8 +1106,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // Add withCredentials to request if needed
-	    if (config.withCredentials) {
-	      request.withCredentials = true;
+	    if (!utils.isUndefined(config.withCredentials)) {
+	      request.withCredentials = !!config.withCredentials;
 	    }
 	
 	    // Add responseType to request if needed
@@ -1138,7 +1147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	    }
 	
-	    if (requestData === undefined) {
+	    if (!requestData) {
 	      requestData = null;
 	    }
 	
@@ -1149,12 +1158,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var createError = __webpack_require__(15);
+	var createError = __webpack_require__(14);
 	
 	/**
 	 * Resolve or reject a Promise based on response status.
@@ -1165,7 +1174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	module.exports = function settle(resolve, reject, response) {
 	  var validateStatus = response.config.validateStatus;
-	  if (!validateStatus || validateStatus(response.status)) {
+	  if (!response.status || !validateStatus || validateStatus(response.status)) {
 	    resolve(response);
 	  } else {
 	    reject(createError(
@@ -1180,12 +1189,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var enhanceError = __webpack_require__(16);
+	var enhanceError = __webpack_require__(15);
 	
 	/**
 	 * Create an Error with the specified message, config, error code, request and response.
@@ -1204,7 +1213,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1229,7 +1238,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  error.response = response;
 	  error.isAxiosError = true;
 	
-	  error.toJSON = function() {
+	  error.toJSON = function toJSON() {
 	    return {
 	      // Standard
 	      message: this.message,
@@ -1252,7 +1261,132 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(2);
+	
+	module.exports = (
+	  utils.isStandardBrowserEnv() ?
+	
+	  // Standard browser envs support document.cookie
+	    (function standardBrowserEnv() {
+	      return {
+	        write: function write(name, value, expires, path, domain, secure) {
+	          var cookie = [];
+	          cookie.push(name + '=' + encodeURIComponent(value));
+	
+	          if (utils.isNumber(expires)) {
+	            cookie.push('expires=' + new Date(expires).toGMTString());
+	          }
+	
+	          if (utils.isString(path)) {
+	            cookie.push('path=' + path);
+	          }
+	
+	          if (utils.isString(domain)) {
+	            cookie.push('domain=' + domain);
+	          }
+	
+	          if (secure === true) {
+	            cookie.push('secure');
+	          }
+	
+	          document.cookie = cookie.join('; ');
+	        },
+	
+	        read: function read(name) {
+	          var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+	          return (match ? decodeURIComponent(match[3]) : null);
+	        },
+	
+	        remove: function remove(name) {
+	          this.write(name, '', Date.now() - 86400000);
+	        }
+	      };
+	    })() :
+	
+	  // Non standard browser env (web workers, react-native) lack needed support.
+	    (function nonStandardBrowserEnv() {
+	      return {
+	        write: function write() {},
+	        read: function read() { return null; },
+	        remove: function remove() {}
+	      };
+	    })()
+	);
+
+
+/***/ }),
 /* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var isAbsoluteURL = __webpack_require__(18);
+	var combineURLs = __webpack_require__(19);
+	
+	/**
+	 * Creates a new URL by combining the baseURL with the requestedURL,
+	 * only when the requestedURL is not already an absolute URL.
+	 * If the requestURL is absolute, this function returns the requestedURL untouched.
+	 *
+	 * @param {string} baseURL The base URL
+	 * @param {string} requestedURL Absolute or relative URL to combine
+	 * @returns {string} The combined full path
+	 */
+	module.exports = function buildFullPath(baseURL, requestedURL) {
+	  if (baseURL && !isAbsoluteURL(requestedURL)) {
+	    return combineURLs(baseURL, requestedURL);
+	  }
+	  return requestedURL;
+	};
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Determines whether the specified URL is absolute
+	 *
+	 * @param {string} url The URL to test
+	 * @returns {boolean} True if the specified URL is absolute, otherwise false
+	 */
+	module.exports = function isAbsoluteURL(url) {
+	  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+	  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+	  // by any combination of letters, digits, plus, period, or hyphen.
+	  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
+	};
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Creates a new URL by combining the specified URLs
+	 *
+	 * @param {string} baseURL The base URL
+	 * @param {string} relativeURL The relative URL
+	 * @returns {string} The combined URL
+	 */
+	module.exports = function combineURLs(baseURL, relativeURL) {
+	  return relativeURL
+	    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+	    : baseURL;
+	};
+
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1311,7 +1445,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1385,105 +1519,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var utils = __webpack_require__(2);
-	
-	module.exports = (
-	  utils.isStandardBrowserEnv() ?
-	
-	  // Standard browser envs support document.cookie
-	    (function standardBrowserEnv() {
-	      return {
-	        write: function write(name, value, expires, path, domain, secure) {
-	          var cookie = [];
-	          cookie.push(name + '=' + encodeURIComponent(value));
-	
-	          if (utils.isNumber(expires)) {
-	            cookie.push('expires=' + new Date(expires).toGMTString());
-	          }
-	
-	          if (utils.isString(path)) {
-	            cookie.push('path=' + path);
-	          }
-	
-	          if (utils.isString(domain)) {
-	            cookie.push('domain=' + domain);
-	          }
-	
-	          if (secure === true) {
-	            cookie.push('secure');
-	          }
-	
-	          document.cookie = cookie.join('; ');
-	        },
-	
-	        read: function read(name) {
-	          var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-	          return (match ? decodeURIComponent(match[3]) : null);
-	        },
-	
-	        remove: function remove(name) {
-	          this.write(name, '', Date.now() - 86400000);
-	        }
-	      };
-	    })() :
-	
-	  // Non standard browser env (web workers, react-native) lack needed support.
-	    (function nonStandardBrowserEnv() {
-	      return {
-	        write: function write() {},
-	        read: function read() { return null; },
-	        remove: function remove() {}
-	      };
-	    })()
-	);
-
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	/**
-	 * Determines whether the specified URL is absolute
-	 *
-	 * @param {string} url The URL to test
-	 * @returns {boolean} True if the specified URL is absolute, otherwise false
-	 */
-	module.exports = function isAbsoluteURL(url) {
-	  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
-	  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
-	  // by any combination of letters, digits, plus, period, or hyphen.
-	  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
-	};
-
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	/**
-	 * Creates a new URL by combining the specified URLs
-	 *
-	 * @param {string} baseURL The base URL
-	 * @param {string} relativeURL The relative URL
-	 * @returns {string} The combined URL
-	 */
-	module.exports = function combineURLs(baseURL, relativeURL) {
-	  return relativeURL
-	    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
-	    : baseURL;
-	};
-
-
-/***/ }),
 /* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1504,37 +1539,73 @@ return /******/ (function(modules) { // webpackBootstrap
 	  config2 = config2 || {};
 	  var config = {};
 	
-	  utils.forEach(['url', 'method', 'params', 'data'], function valueFromConfig2(prop) {
-	    if (typeof config2[prop] !== 'undefined') {
-	      config[prop] = config2[prop];
-	    }
-	  });
-	
-	  utils.forEach(['headers', 'auth', 'proxy'], function mergeDeepProperties(prop) {
-	    if (utils.isObject(config2[prop])) {
-	      config[prop] = utils.deepMerge(config1[prop], config2[prop]);
-	    } else if (typeof config2[prop] !== 'undefined') {
-	      config[prop] = config2[prop];
-	    } else if (utils.isObject(config1[prop])) {
-	      config[prop] = utils.deepMerge(config1[prop]);
-	    } else if (typeof config1[prop] !== 'undefined') {
-	      config[prop] = config1[prop];
-	    }
-	  });
-	
-	  utils.forEach([
+	  var valueFromConfig2Keys = ['url', 'method', 'data'];
+	  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy', 'params'];
+	  var defaultToConfig2Keys = [
 	    'baseURL', 'transformRequest', 'transformResponse', 'paramsSerializer',
-	    'timeout', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
-	    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'maxContentLength',
-	    'validateStatus', 'maxRedirects', 'httpAgent', 'httpsAgent', 'cancelToken',
-	    'socketPath'
-	  ], function defaultToConfig2(prop) {
-	    if (typeof config2[prop] !== 'undefined') {
-	      config[prop] = config2[prop];
-	    } else if (typeof config1[prop] !== 'undefined') {
-	      config[prop] = config1[prop];
+	    'timeout', 'timeoutMessage', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
+	    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'decompress',
+	    'maxContentLength', 'maxBodyLength', 'maxRedirects', 'transport', 'httpAgent',
+	    'httpsAgent', 'cancelToken', 'socketPath', 'responseEncoding'
+	  ];
+	  var directMergeKeys = ['validateStatus'];
+	
+	  function getMergedValue(target, source) {
+	    if (utils.isPlainObject(target) && utils.isPlainObject(source)) {
+	      return utils.merge(target, source);
+	    } else if (utils.isPlainObject(source)) {
+	      return utils.merge({}, source);
+	    } else if (utils.isArray(source)) {
+	      return source.slice();
+	    }
+	    return source;
+	  }
+	
+	  function mergeDeepProperties(prop) {
+	    if (!utils.isUndefined(config2[prop])) {
+	      config[prop] = getMergedValue(config1[prop], config2[prop]);
+	    } else if (!utils.isUndefined(config1[prop])) {
+	      config[prop] = getMergedValue(undefined, config1[prop]);
+	    }
+	  }
+	
+	  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {
+	    if (!utils.isUndefined(config2[prop])) {
+	      config[prop] = getMergedValue(undefined, config2[prop]);
 	    }
 	  });
+	
+	  utils.forEach(mergeDeepPropertiesKeys, mergeDeepProperties);
+	
+	  utils.forEach(defaultToConfig2Keys, function defaultToConfig2(prop) {
+	    if (!utils.isUndefined(config2[prop])) {
+	      config[prop] = getMergedValue(undefined, config2[prop]);
+	    } else if (!utils.isUndefined(config1[prop])) {
+	      config[prop] = getMergedValue(undefined, config1[prop]);
+	    }
+	  });
+	
+	  utils.forEach(directMergeKeys, function merge(prop) {
+	    if (prop in config2) {
+	      config[prop] = getMergedValue(config1[prop], config2[prop]);
+	    } else if (prop in config1) {
+	      config[prop] = getMergedValue(undefined, config1[prop]);
+	    }
+	  });
+	
+	  var axiosKeys = valueFromConfig2Keys
+	    .concat(mergeDeepPropertiesKeys)
+	    .concat(defaultToConfig2Keys)
+	    .concat(directMergeKeys);
+	
+	  var otherKeys = Object
+	    .keys(config1)
+	    .concat(Object.keys(config2))
+	    .filter(function filterAxiosKeys(key) {
+	      return axiosKeys.indexOf(key) === -1;
+	    });
+	
+	  utils.forEach(otherKeys, mergeDeepProperties);
 	
 	  return config;
 	};
@@ -1658,6 +1729,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return function wrap(arr) {
 	    return callback.apply(null, arr);
 	  };
+	};
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Determines whether the payload is an error thrown by Axios
+	 *
+	 * @param {*} payload The value to test
+	 * @returns {boolean} True if the payload is an error thrown by Axios, otherwise false
+	 */
+	module.exports = function isAxiosError(payload) {
+	  return (typeof payload === 'object') && (payload.isAxiosError === true);
 	};
 
 

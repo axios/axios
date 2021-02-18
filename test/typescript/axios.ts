@@ -367,3 +367,50 @@ axios.get('/user')
       const axiosError: AxiosError = error;
     }
   });
+
+// Axios Class Instance
+
+const instance3 = new axios.Axios(config)
+
+// Defaults
+
+instance3.defaults.baseURL = 'https://api.example.com/';
+instance3.defaults.headers.common['Authorization'] = 'token';
+instance3.defaults.headers.post['X-FOO'] = 'bar';
+instance3.defaults.timeout = 2500;
+
+instance3.get<User>('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.get<User>('/user', { params: { id: 12345 } })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.head<User>('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.options<User>('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.delete<User>('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.post<User>('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.post<User>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.put<User>('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance3.patch<User>('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);

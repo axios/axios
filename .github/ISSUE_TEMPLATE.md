@@ -1,6 +1,4 @@
-<!-- Click "Preview" for a more readable version -->
-
-#### Instructions
+<!-- Click "Preview" for a more readable version --
 
 Please read and follow the instructions before submitting an issue:
 
@@ -9,8 +7,11 @@ Please read and follow the instructions before submitting an issue:
 - If you aren't sure that the issue is caused by axios or you just need help, please use [Stack Overflow](https://stackoverflow.com/questions/tagged/axios) or [our chat](https://gitter.im/mzabriskie/axios).
 - If you're reporting a bug, ensure it isn't already fixed in the latest axios version.
 - If you need a new feature there's a chance it's already implemented in a [library](https://github.com/axios/axios/blob/master/ECOSYSTEM.md) or you can implement it using [interceptors](https://github.com/axios/axios#interceptors).
+- Don't remove any title of the issue template, or it will be treated as invalid by the bot.
 
 **⚠️👆 Delete the instructions before submitting the issue 👆⚠️**
+
+-->
 
 #### Summary
 
@@ -20,7 +21,11 @@ If you're reporting a bug, include the relevant code and stack traces to debug i
 
 If you're requesting a feature, include some context and examples of code using it.
 
-#### Context
-
-- axios version: *e.g.: v0.16.0*
-- Environment: *e.g.: node v6.9.4, chrome 54, windows 7*
+#### Environment
+ - Axios Version [e.g. 0.18.0]
+ - Adapter [e.g. XHR/HTTP]
+ - Browser [e.g. Chrome, Safari]
+ - Browser Version [e.g. 22]
+ - Node.js Version [e.g. 13.0.1]
+ - OS: [e.g. iOS 12.1.0, OSX 10.13.4]
+ - Additional Library Versions [e.g. React 16.7, React Native 0.58.0]

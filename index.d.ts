@@ -29,6 +29,7 @@ export type Method =
   | 'post' | 'POST'
   | 'put' | 'PUT'
   | 'patch' | 'PATCH'
+  | 'purge' | 'PURGE'
   | 'link' | 'LINK'
   | 'unlink' | 'UNLINK'
 
@@ -61,8 +62,8 @@ export interface AxiosRequestConfig {
   onUploadProgress?: (progressEvent: any) => void;
   onDownloadProgress?: (progressEvent: any) => void;
   maxContentLength?: number;
+  validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
-  validateStatus?: (status: number) => boolean;
   maxRedirects?: number;
   socketPath?: string | null;
   httpAgent?: any;
@@ -152,8 +153,9 @@ export interface AxiosStatic extends AxiosInstance {
   isCancel(value: any): boolean;
   all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
+  isAxiosError(payload: any): payload is AxiosError;
 }
 
-declare const Axios: AxiosStatic;
+declare const axios: AxiosStatic;
 
-export default Axios;
+export default axios;

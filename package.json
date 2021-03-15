@@ -30,7 +30,7 @@
   "bugs": {
     "url": "https://github.com/axios/axios/issues"
   },
-  "homepage": "https://github.com/axios/axios",
+  "homepage": "https://axios-http.com",
   "devDependencies": {
     "coveralls": "^3.0.0",
     "es6-promise": "^4.2.4",

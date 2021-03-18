@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 [![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
@@ -422,7 +423,7 @@ These are the available config options for making requests. Only the `url` is re
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
 
-  // `proxy` defines the hostname and port of the proxy server.
+  // `proxy` defines the hostname, port, and protocol of the proxy server.
   // You can also define your proxy using the conventional `http_proxy` and
   // `https_proxy` environment variables. If you are using environment variables
   // for your proxy configuration, you can also define a `no_proxy` environment
@@ -432,7 +433,9 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
+  // If the proxy server uses HTTPS, then you must set the protocol to `https`. 
   proxy: {
+    protocol: 'https',
     host: '127.0.0.1',
     port: 9000,
     auth: {
@@ -508,7 +511,11 @@ You can specify config defaults that will be applied to every request.
 
 ```js
 axios.defaults.baseURL = 'https://api.example.com';
+
+// Important: If axios is used with multiple domains, the AUTH_TOKEN will be sent to all of them.
+// See below for an example using Custom instance defaults instead.
 axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 ```
 
@@ -581,6 +588,34 @@ You can add interceptors to a custom instance of axios.
 ```js
 const instance = axios.create();
 instance.interceptors.request.use(function () {/*...*/});
+```
+
+When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay
+in the execution of your axios request when the main thread is blocked (a promise is created under the hood for 
+the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag
+to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
+
+```js
+axios.interceptors.request.use(function (config) {
+  config.headers.test = 'I am only a header!';
+  return config;
+}, null, { synchronous: true });
+```
+
+If you want to execute a particular interceptor based on a runtime check, 
+you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
+of `runWhen` is `false`. The function will be called with the config
+object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an
+asynchronous request interceptor that only needs to run at certain times.
+
+```js
+function onGetCall(config) {
+  return config.method === 'get';
+}
+axios.interceptors.request.use(function (config) {
+  config.headers.test = 'special get headers';
+  return config;
+}, null, { runWhen: onGetCall });
 ```
 
 ## Handling Errors
@@ -780,6 +815,13 @@ axios includes [TypeScript](http://typescriptlang.org) definitions.
 import axios from 'axios';
 axios.get('/user?ID=12345');
 ```
+
+## Online one-click setup
+
+You can use Gitpod an online IDE(which is free for Open Source) for contributing or running the examples online.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
+
 
 ## Resources
 

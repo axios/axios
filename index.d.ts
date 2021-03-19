@@ -43,6 +43,7 @@ export type ResponseType =
 
 export interface TransitionalOptions{
   silentJSONParsing: boolean;
+  forcedJSONParsing: boolean;
 }
 
 export interface AxiosRequestConfig {

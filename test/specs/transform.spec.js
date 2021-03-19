@@ -95,6 +95,36 @@ describe('transform', function () {
     });
   });
 
+  it('should not assume JSON if responseType is not `json`', function (done) {
+    var response;
+
+    axios.get('/foo', {
+      responseType: 'text',
+      transitional: {
+        forcedJSONParsing: false
+      }
+    }).then(function (_response) {
+      response = _response;
+    }, function (err) {
+      done(err);
+    });
+
+    var rawData = '{"x":1}';
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: rawData
+      });
+
+      setTimeout(function () {
+        expect(response).toBeTruthy();
+        expect(response.data).toBe(rawData);
+        done();
+      }, 100);
+    });
+  });
+
   it('should override default transform', function (done) {
     var data = {
       foo: 'bar'

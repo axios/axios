@@ -30,7 +30,7 @@
   "bugs": {
     "url": "https://github.com/axios/axios/issues"
   },
-  "homepage": "https://github.com/axios/axios",
+  "homepage": "https://axios-http.com",
   "devDependencies": {
     "abortcontroller-polyfill": "^1.5.0",
     "coveralls": "^3.0.0",

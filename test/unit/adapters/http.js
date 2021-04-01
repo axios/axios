@@ -7,6 +7,7 @@ var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
+var pkg = require('./../../../package.json');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -879,5 +880,35 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should supply a user-agent if one is not specified', function (done) {
+    server = http.createServer(function (req, res) {
+      assert.equal(req.headers["user-agent"], 'axios/' + pkg.version);
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/'
+      ).then(function (res) {
+        done();
+      });
+    });
+  });
+
+  it('should omit a user-agent if one is explicitly disclaimed', function (done) {
+    server = http.createServer(function (req, res) {
+      assert.equal("user-agent" in req.headers, false);
+      assert.equal("User-Agent" in req.headers, false);
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        headers: {
+          "User-Agent": null
+        }
+      }
+      ).then(function (res) {
+        done();
+      });
+    });
+  });
+
 });
 

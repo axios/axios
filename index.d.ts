@@ -44,6 +44,7 @@ export type ResponseType =
 export interface TransitionalOptions{
   silentJSONParsing: boolean;
   forcedJSONParsing: boolean;
+  clarifyTimeoutError: boolean;
 }
 
 export interface AxiosRequestConfig {

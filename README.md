@@ -28,6 +28,8 @@ This is a fork of [Axios](https://www.npmjs.com/package/axios) package to test e
 - Fixed potential bug of xhr adapter with proper handling timeouts&errors (at least FakeXMLHTTPRequest failed to handle timeouts);
 - Added `cancel` method to the Axios promise to cancel a single request;
 
+All new features are marked with a 🆕 badge in the documentation;
+
 # ☀️Original Axios Readme with revisions ☀️
 
 > New axios docs website: [click here](https://axios-http.com/)
@@ -470,12 +472,12 @@ These are the available config options for making requests. Only the `url` is re
   }),
 
   // an alternative way to cancel Axios requests using AbortController
-  signal: new AbortController().signal,
+  signal: new AbortController().signal, 🆕
 
   // `cancelable` option activates ability to cancel the request by calling promise.cancel()
   // can not be used if `cancelToken` is set
 
-  cancelable: true,  
+  cancelable: true, 🆕
 
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 
@@ -484,7 +486,7 @@ These are the available config options for making requests. Only the `url` is re
   decompress: true // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
-  transitional: {
+  transitional: { 🆕
     // silent JSON parsing mode
     // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
     // `false` - throw SyntaxError if JSON parsing failed (Note: responseType must be set to 'json')
@@ -733,7 +735,7 @@ axios.post('/user/12345', {
 // cancel the request (the message parameter is optional)
 source.cancel('Operation canceled by the user.');
 ```
-
+🆕
 You can also create a cancel token by passing an executor function to the `CancelToken` constructor:
 
 ```js
@@ -750,7 +752,7 @@ axios.get('/user/12345', {
 // cancel the request
 cancel();
 ```
-
+🆕
 Axios supports AbortController to abort requests in [`fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#aborting_a_fetch) way:
 ```js
 const controller = new AbortController();

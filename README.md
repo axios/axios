@@ -12,7 +12,7 @@ This is a fork of [Axios](https://www.npmjs.com/package/axios) package to test e
 ⚠️`Use at own risk` ⚠️.
 
 # Fork differences
-- Reworked `cancelToken` to fix memory leakage in case of using a persistent token for several requests. This can happen because requests cannot unsubscribe from the token after it completed since cancelToken doesn't provide any methods to do this. Possible this is a fix for #3001 issue, but I'm not sure.
+- Reworked `cancelToken` to fix memory leakage in case of using a persistent token for several requests. This can happen because requests cannot unsubscribe from the token after it completed since cancelToken doesn't provide any methods to do this.
 - Added `AbortController` support. I believe that using the existing API makes it easier to use the library.
 - `CancelToken` and `AbortController` can be used simultaneously (to facilitate the transition to the new API)
 - support for primitive types to be converted to JSON if the request Content-Type is `application/json` (under nodejs we get an error) ([#2613](https://github.com/axios/axios/issues/2613));

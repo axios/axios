@@ -477,7 +477,7 @@ These are the available config options for making requests. Only the `url` is re
   // `cancelable` option activates ability to cancel the request by calling promise.cancel()
   // can not be used if `cancelToken` is set
 
-  cancelable: true, 🆕
+  cancelable: false, 🆕
 
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 

@@ -115,4 +115,30 @@ describe('cancel', function() {
       }, 0);
     });
   });
+
+  describe('if cancelable option is set', function(){
+    it('should support cancellation using promise.cancel method', function (done) {
+      var promise = axios.get('/foo/bar', {
+        cancelable: true
+      });
+
+      promise.catch(function (thrown) {
+        expect(thrown).toEqual(jasmine.any(Cancel));
+        expect(thrown.message).toBe('Operation has been canceled.');
+        done();
+      });
+
+      expect(typeof promise.cancel).toBe('function');
+
+      getAjaxRequest().then(function (request) {
+        // call cancel() when the request has been sent, but a response has not been received
+        promise.cancel('Operation has been canceled.');
+        request.respondWith({
+          status: 200,
+          responseText: 'OK'
+        });
+      });
+    });
+  });
+
 });

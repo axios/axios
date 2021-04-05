@@ -79,6 +79,7 @@ export interface AxiosRequestConfig {
   decompress?: boolean;
   transitional?: TransitionalOptions
   signal?: AbortSignal;
+  cancelable?: boolean;
 }
 
 export interface AxiosResponse<T = any>  {
@@ -133,6 +134,10 @@ export interface CancelTokenSource {
 export interface AxiosInterceptorManager<V> {
   use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
   eject(id: number): void;
+}
+
+export interface AxiosRequestPromise<T = any> extends Promise<T> {
+  cancel: Canceler
 }
 
 export interface AxiosInstance {

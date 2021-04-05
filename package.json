@@ -1,7 +1,7 @@
 {
-  "name": "axios",
-  "version": "0.21.1",
-  "description": "Promise based HTTP client for the browser and node.js",
+  "name": "axios-lab",
+  "version": "0.1.0",
+  "description": "Axios fork with AbortController support and other experimental features",
   "main": "index.js",
   "scripts": {
     "test": "grunt test",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/axios/axios.git"
+    "url": "https://github.com/DigitalBrainJS/axios.git"
   },
   "keywords": [
     "xhr",
@@ -28,7 +28,7 @@
   "author": "Matt Zabriskie",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/axios/axios/issues"
+    "url": "https://github.com/DigitalBrainJS/issues"
   },
   "homepage": "https://axios-http.com",
   "devDependencies": {

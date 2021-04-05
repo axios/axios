@@ -1,6 +1,6 @@
 {
   "name": "axios-lab",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Axios fork with AbortController support and other experimental features",
   "main": "index.js",
   "scripts": {

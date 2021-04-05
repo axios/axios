@@ -50,6 +50,7 @@ export interface AxiosRequestConfig {
   headers?: any;
   params?: any;
   paramsSerializer?: (params: any) => string;
+  bodySerializer?: (body: any) => any;
   data?: any;
   timeout?: number;
   timeoutErrorMessage?: string;

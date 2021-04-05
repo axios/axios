@@ -22,14 +22,22 @@
       (function () {
         var output = document.getElementById('output');
         document.getElementById('upload').onclick = function () {
-          var data = new FormData();
-          data.append('foo', 'bar');
-          data.append('file', document.getElementById('file').files[0]);
+          var data = {
+            foo: 'bar',
+            file: document.getElementById('file').files[0],
+          };
 
           var config = {
             onUploadProgress: function(progressEvent) {
               var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
-            }
+            },
+            serializedBody: function(data) {
+              var formData = new FormData();
+              Object.entries(data).forEach(([key, value]) => {
+                formData.append(key, value);
+              });
+              return formData;
+            },
           };
 
           axios.put('/upload/server', data, config)

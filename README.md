@@ -330,6 +330,15 @@ These are the available config options for making requests. Only the `url` is re
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
 
+  // `bodySerializer` is an optional function in charge of serializing `body`
+  bodySerializer: function (params) {
+      var formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+          formData.append(key, value);
+      });
+      return formData;
+  },
+
   // `data` is the data to be sent as the request body
   // Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH'
   // When no `transformRequest` is set, must be of one of the following types:

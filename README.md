@@ -1,21 +1,38 @@
-# axios
+# axios-lab
 
-[![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
-[![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
-[![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
-[![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
-[![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
-[![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
-[![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
+[![npm version](https://img.shields.io/npm/v/axios-lab.svg?style=flat-square)](https://www.npmjs.org/package/axios-lab)
+[![CDNJS](https://img.shields.io/cdnjs/v/axios-lab.svg?style=flat-square)](https://cdnjs.com/libraries/axios-lab)
+[![build status](https://img.shields.io/travis/DigitalBrainJS/axios/master.svg?style=flat-square)](https://travis-ci.org/DigitalBrain/axios) 
+[![code coverage](https://img.shields.io/coveralls/mzabriskie/axios-lab.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios-lab)
+[![install size](https://packagephobia.now.sh/badge?p=axios-lab)](https://packagephobia.now.sh/result?p=axios-lab)
+[![npm downloads](https://img.shields.io/npm/dm/axios-lab.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios-lab)
 
-Promise based HTTP client for the browser and node.js
+This is a fork of [Axios](https://www.npmjs.com/package/axios) package to test experimental features. 
+
+⚠️`Use at own risk` ⚠️.
+
+# Fork differences
+- Reworked `cancelToken` to fix memory leakage in case of using a persistent token for several requests. This can happen because requests cannot unsubscribe from the token after it completed since cancelToken doesn't provide any methods to do this. Possible this is a fix for #3001 issue, but I'm not sure.
+- Added `AbortController` support. I believe that using the existing API makes it easier to use the library.
+- `CancelToken` and `AbortController` can be used simultaneously (to facilitate the transition to the new API)
+- support for primitive types to be converted to JSON if the request Content-Type is `application/json` (under nodejs we get an error) ([#2613](https://github.com/axios/axios/issues/2613));
+- transitional options object;
+- options validator to assert transitional options;
+- transitional option `silentJSONParsing` - throws SyntaxError if JSON parsing failed while responseType is json and transitional.silentJSONParsing is false; (#61). Default: true - keep current behavior.
+- transitional option `forcedJSONParsing` to control automatic JSON parsing from the response string. Default true - keep current behavior ([#2791](https://github.com/axios/axios/issues/2791))
+- request transformers now calling in the context of the config object.
+- automated deprecation warning message depending on the package version
+- Added `transitional.clarifyTimeoutError` to throw `ETIMEDOUT` error instead of generic `ECONNABORTED` on request timeout ([#1543](https://github.com/axios/axios/issues/1543));
+- Added support of onloadend handler if available instead of onreadystatechange;
+- Added xhr timeout test;
+- Fixed potential bug of xhr adapter with proper handling timeouts&errors (at least FakeXMLHTTPRequest failed to handle timeouts);
+- Added `cancel` method to the Axios promise to cancel a single request;
+
+# ☀️Original Axios Readme with revisions ☀️
 
 > New axios docs website: [click here](https://axios-http.com/)
 
 ## Table of Contents
-
   - [Features](#features)
   - [Browser Support](#browser-support)
   - [Installing](#installing)
@@ -864,13 +881,6 @@ axios includes [TypeScript](http://typescriptlang.org) definitions.
 import axios from 'axios';
 axios.get('/user?ID=12345');
 ```
-
-## Online one-click setup
-
-You can use Gitpod an online IDE(which is free for Open Source) for contributing or running the examples online.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
-
 
 ## Resources
 

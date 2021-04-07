@@ -122,8 +122,12 @@ export interface CancelTokenSource {
   cancel: Canceler;
 }
 
+export interface AxiosInterceptorOptions {
+  synchronous: boolean;
+  runWhen: (config: AxiosRequestConfig) => boolean;
+}
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
+  use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
 }
 

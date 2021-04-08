@@ -42,6 +42,10 @@ describe('static api', function () {
     expect(typeof axios.isCancel).toEqual('function');
   });
 
+  it('should have getUri method', function() {
+    expect(typeof axios.getUri).toEqual('function');
+  });
+
   it('should have isAxiosError properties', function () {
     expect(typeof axios.isAxiosError).toEqual('function');
   });

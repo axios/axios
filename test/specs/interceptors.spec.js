@@ -226,7 +226,111 @@ describe('interceptors', function () {
       done();
     });
   });
+  it('should add a request interceptor (asynchronous by default) and a response interceptor', function (done) {
+    var asyncFlag = false;
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by interceptor';
+      expect(asyncFlag).toBe(true);
+      return config;
+    });
 
+    asyncFlag = true;
+
+    var response;
+
+    axios.interceptors.response.use(function (data) {
+      data.data = data.data + ' - modified by interceptor';
+      return data;
+    });
+
+    axios('/foo').then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders.test).toBe('added by interceptor');
+
+      request.respondWith({
+        status: 200,
+        responseText: 'OK'
+      });
+
+      setTimeout(function () {
+        expect(response.data).toBe('OK - modified by interceptor');
+        done();
+      }, 100);
+    });
+  });
+  it('should add a request interceptor (explicitly flagged as asynchronous) and a response interceptor', function (done) {
+    var asyncFlag = false;
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by interceptor';
+      expect(asyncFlag).toBe(true);
+      return config;
+    }, null, { synchronous: false });
+
+    asyncFlag = true;
+
+    var response;
+
+    axios.interceptors.response.use(function (data) {
+      data.data = data.data + ' - modified by interceptor';
+      return data;
+    });
+
+    axios('/foo').then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders.test).toBe('added by interceptor');
+
+      request.respondWith({
+        status: 200,
+        responseText: 'OK'
+      });
+
+      setTimeout(function () {
+        expect(response.data).toBe('OK - modified by interceptor');
+        done();
+      }, 100);
+    });
+  });
+  it('should add a request interceptor that is executed synchronously when flag is provided and a response interceptor', function (done) {
+    var asyncFlag = false;
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by synchronous interceptor';
+      expect(asyncFlag).toBe(true);
+      return config;
+    }, null, { synchronous: true });
+
+    asyncFlag = true;
+
+    var response;
+
+    axios.interceptors.response.use(function (data) {
+      data.data = data.data + ' - modified by interceptor';
+      return data;
+    });
+
+    axios('/foo').then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders.test).toBe('added by synchronous interceptor');
+
+      request.respondWith({
+        status: 200,
+        responseText: 'OK'
+      });
+
+      setTimeout(function () {
+        expect(response.data).toBe('OK - modified by interceptor');
+        done();
+      }, 100);
+    });
+  });
   it('should add a response interceptor', function (done) {
     var response;
 

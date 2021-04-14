@@ -1,4 +1,4 @@
-/* axios v0.21.0 | (c) 2020 by Matt Zabriskie */
+/* axios v0.21.1 | (c) 2020 by Matt Zabriskie */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -109,6 +109,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Promise.all(promises);
 	};
 	axios.spread = __webpack_require__(25);
+	
+	// Expose isAxiosError
+	axios.isAxiosError = __webpack_require__(26);
 	
 	module.exports = axios;
 	
@@ -1726,6 +1729,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return function wrap(arr) {
 	    return callback.apply(null, arr);
 	  };
+	};
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Determines whether the payload is an error thrown by Axios
+	 *
+	 * @param {*} payload The value to test
+	 * @returns {boolean} True if the payload is an error thrown by Axios, otherwise false
+	 */
+	module.exports = function isAxiosError(payload) {
+	  return (typeof payload === 'object') && (payload.isAxiosError === true);
 	};
 
 

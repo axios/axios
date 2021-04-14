@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 [![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
@@ -10,6 +11,9 @@
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
 Promise based HTTP client for the browser and node.js
+
+> New axios docs website: [click here](https://axios-http.com/)
+
 ## Table of Contents
 
   - [Features](#features)
@@ -589,6 +593,34 @@ const instance = axios.create();
 instance.interceptors.request.use(function () {/*...*/});
 ```
 
+When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay
+in the execution of your axios request when the main thread is blocked (a promise is created under the hood for 
+the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag
+to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
+
+```js
+axios.interceptors.request.use(function (config) {
+  config.headers.test = 'I am only a header!';
+  return config;
+}, null, { synchronous: true });
+```
+
+If you want to execute a particular interceptor based on a runtime check, 
+you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
+of `runWhen` is `false`. The function will be called with the config
+object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an
+asynchronous request interceptor that only needs to run at certain times.
+
+```js
+function onGetCall(config) {
+  return config.method === 'get';
+}
+axios.interceptors.request.use(function (config) {
+  config.headers.test = 'special get headers';
+  return config;
+}, null, { runWhen: onGetCall });
+```
+
 ## Handling Errors
 
 ```js
@@ -786,6 +818,13 @@ axios includes [TypeScript](http://typescriptlang.org) definitions.
 import axios from 'axios';
 axios.get('/user?ID=12345');
 ```
+
+## Online one-click setup
+
+You can use Gitpod an online IDE(which is free for Open Source) for contributing or running the examples online.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
+
 
 ## Resources
 

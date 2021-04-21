@@ -41,6 +41,12 @@ export type ResponseType =
   | 'text'
   | 'stream'
 
+export interface TransitionalOptions{
+  silentJSONParsing: boolean;
+  forcedJSONParsing: boolean;
+  clarifyTimeoutError: boolean;
+}
+
 export interface AxiosRequestConfig {
   url?: string;
   method?: Method;
@@ -71,6 +77,7 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
+  transitional?: TransitionalOptions
   signal?: AbortSignal;
 }
 

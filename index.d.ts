@@ -48,6 +48,8 @@ export interface TransitionalOptions{
 }
 
 export interface AxiosRequestConfig {
+  mode?:string;
+  credentials?:string;
   url?: string;
   method?: Method;
   baseURL?: string;

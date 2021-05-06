@@ -38,12 +38,39 @@ describe('instance', function () {
     });
   });
 
-  it('should make an http request with url instead of baseURL', function (done) {
+  it('should make an http request overrides url of instance', function (done) {
     var instance = axios.create({
       url: 'https://api.example.com'
     });
 
     instance('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo');
+      done();
+    });
+  });
+
+  it('should make an http request with url instead of baseURL', function (done) {
+    var instance = axios.create({
+      url: 'https://api.example.com',
+    });
+
+    instance.request({});
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('https://api.example.com');
+      done();
+    });
+  });
+
+  it('should make an http request with url instead of baseURL and this can be overridden by request config', function (done) {
+    var instance = axios.create({
+      url: 'https://api.example.com',
+      method: 'get'
+    });
+
+    instance.request({url: '/foo'});
 
     getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo');

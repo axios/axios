@@ -101,7 +101,7 @@ describe('core::mergeConfig', function() {
   });
 
   describe('valueFromConfig2Keys', function() {
-    var config1 = {url: '/foo', method: 'post', data: {a: 3}};
+    var config1 = {method: 'post', data: {a: 3}};
 
     it('should skip if config2 is undefined', function() {
       expect(mergeConfig(config1, {})).toEqual({});

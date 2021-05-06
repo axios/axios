@@ -29,7 +29,7 @@ describe('supports http with nodejs', function () {
     }
   });
 
-  it('should NOT parse the timeout property', function (done) {
+  it('should throw an error if the timeout property is not parsable as a number', function (done) {
 
     server = http.createServer(function (req, res) {
       setTimeout(function () {

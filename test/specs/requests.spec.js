@@ -7,6 +7,24 @@ describe('requests', function () {
     jasmine.Ajax.uninstall();
   });
 
+  it('should throw error when missing url', function (done) {
+    expect(() => axios()).toThrowError(/url setting is not valid./);
+    done();
+
+    expect(() => axios('')).toThrowError(/url setting is not valid./);
+    done();
+
+    expect(() => axios({
+      url: undefined,
+    })).toThrowError(/url setting is not valid./);
+    done();
+
+    expect(() => axios({
+      method: 'POST',
+    })).toThrowError(/url setting is not valid./);
+    done();
+  });
+
   it('should treat single string arg as url', function (done) {
     axios('/foo');
 

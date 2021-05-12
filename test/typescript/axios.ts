@@ -1,4 +1,6 @@
-import axios, {
+import axios = require('../..');
+
+import {
   AxiosRequestConfig,
   AxiosResponse,
   AxiosError,

@@ -338,11 +338,11 @@ axios.get('/user')
 
 axios.get('/user')
   .catch((error: any) => 'foo')
-  .then((value: string) => {});
+  .then((value) => {});
 
 axios.get('/user')
   .catch((error: any) => Promise.resolve('foo'))
-  .then((value: string) => {});
+  .then((value) => {});
 
 // Cancellation
 

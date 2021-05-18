@@ -727,6 +727,7 @@ cancel();
 ```
 
 > Note: you can cancel several requests with the same cancel token.
+> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
 
 ## Using application/x-www-form-urlencoded format
 

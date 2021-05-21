@@ -7,6 +7,7 @@ var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
+var pkg = require('./../../../package.json');
 var server, proxy;
 
 describe('supports http with nodejs', function () {
@@ -26,6 +27,64 @@ describe('supports http with nodejs', function () {
     if (process.env.no_proxy) {
       delete process.env.no_proxy;
     }
+  });
+
+  it('should throw an error if the timeout property is not parsable as a number', function (done) {
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+        timeout: { strangeTimeout: 250 }
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ERR_PARSE_TIMEOUT');
+        assert.equal(error.message, 'error trying to parse `config.timeout` to int');
+        done();
+      }, 300);
+    });
+  });
+
+  it('should parse the timeout property', function (done) {
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+        timeout: '250'
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ECONNABORTED');
+        assert.equal(error.message, 'timeout of 250ms exceeded');
+        done();
+      }, 300);
+    });
   });
 
   it('should respect the timeout property', function (done) {
@@ -879,5 +938,35 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+
+  it('should supply a user-agent if one is not specified', function (done) {
+    server = http.createServer(function (req, res) {
+      assert.equal(req.headers["user-agent"], 'axios/' + pkg.version);
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/'
+      ).then(function (res) {
+        done();
+      });
+    });
+  });
+
+  it('should omit a user-agent if one is explicitly disclaimed', function (done) {
+    server = http.createServer(function (req, res) {
+      assert.equal("user-agent" in req.headers, false);
+      assert.equal("User-Agent" in req.headers, false);
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        headers: {
+          "User-Agent": null
+        }
+      }
+      ).then(function (res) {
+        done();
+      });
+    });
+  });
+
 });
 

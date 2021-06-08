@@ -12,6 +12,12 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=bar');
   });
 
+  it('should not render params that are null or undefined', function () {
+    expect(buildURL('/foo', {
+      foo: null
+    })).toEqual('/foo');
+  });
+
   it('should support object params', function () {
     expect(buildURL('/foo', {
       foo: {

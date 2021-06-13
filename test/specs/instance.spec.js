@@ -111,4 +111,31 @@ describe('instance', function () {
       }, 100);
     });
   });
+
+  it('should make an http request with instance data', function (done) {
+    var instance = axios.create({
+      method:'post',
+      data:'bar'
+    });
+
+    instance('/foo');
+    getAjaxRequest().then(function (request) {
+      expect(request.params).toEqual('bar');
+      done();
+    });
+  });
+
+  it('should make an http request with data instead of instance data', function (done) {
+    var instance = axios.create({
+      method:'post',
+      data: 'bar'
+    });
+
+    instance('/foo',{data:'foo'});
+
+    getAjaxRequest().then(function (request) {
+      expect(request.params).toBe('foo');
+      done();
+    });
+  });
 });

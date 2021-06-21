@@ -469,7 +469,7 @@ These are the available config options for making requests. Only the `url` is re
     forcedJSONParsing: true,
     
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
-    clarifyTimeoutError: false
+    clarifyTimeoutError: false,
   }
 }
 ```

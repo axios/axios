@@ -1,3 +1,6 @@
+import * as coreHttp from 'http';
+import * as coreHttps from 'https';
+
 export interface AxiosTransformer {
   (data: any, headers?: any): any;
 }
@@ -71,6 +74,7 @@ export interface AxiosRequestConfig {
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
   maxRedirects?: number;
+  beforeRedirect?: (options: coreHttp.RequestOptions | coreHttps.RequestOptions, responseDetails: {headers: coreHttp.IncomingHttpHeaders}) => void;
   socketPath?: string | null;
   httpAgent?: any;
   httpsAgent?: any;

@@ -41,6 +41,19 @@ export type ResponseType =
   | 'text'
   | 'stream'
 
+export type ResponseEncoding = 
+  | 'ascii' 
+  | 'utf8' 
+  | 'utf-8' 
+  | 'utf16le' 
+  | 'ucs2' 
+  | 'ucs-2' 
+  | 'base64' 
+  | 'base64url' 
+  | 'latin1' 
+  | 'binary' 
+  | 'hex'
+
 export interface TransitionalOptions{
   silentJSONParsing: boolean;
   forcedJSONParsing: boolean;
@@ -63,6 +76,7 @@ export interface AxiosRequestConfig {
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
+  responseEncoding?: ResponseEncoding;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: any) => void;

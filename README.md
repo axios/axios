@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 [![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
@@ -16,35 +16,35 @@ Promise based HTTP client for the browser and node.js
 
 ## Table of Contents
 
-  - [Features](#features)
-  - [Browser Support](#browser-support)
-  - [Installing](#installing)
-  - [Example](#example)
-  - [Axios API](#axios-api)
-  - [Request method aliases](#request-method-aliases)
-  - [Concurrency (Deprecated)](#concurrency-deprecated)
-  - [Creating an instance](#creating-an-instance)
-  - [Instance methods](#instance-methods)
-  - [Request Config](#request-config)
-  - [Response Schema](#response-schema)
-  - [Config Defaults](#config-defaults)
-    - [Global axios defaults](#global-axios-defaults)
-    - [Custom instance defaults](#custom-instance-defaults)
-    - [Config order of precedence](#config-order-of-precedence)
-  - [Interceptors](#interceptors)
-  - [Handling Errors](#handling-errors)
-  - [Cancellation](#cancellation)
-  - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
-    - [Browser](#browser)
-    - [Node.js](#nodejs)
-      - [Query string](#query-string)
-      - [Form data](#form-data)
-  - [Semver](#semver)
-  - [Promises](#promises)
-  - [TypeScript](#typescript)
-  - [Resources](#resources)
-  - [Credits](#credits)
-  - [License](#license)
+- [Features](#features)
+- [Browser Support](#browser-support)
+- [Installing](#installing)
+- [Example](#example)
+- [Axios API](#axios-api)
+- [Request method aliases](#request-method-aliases)
+- [Concurrency (Deprecated)](#concurrency-deprecated)
+- [Creating an instance](#creating-an-instance)
+- [Instance methods](#instance-methods)
+- [Request Config](#request-config)
+- [Response Schema](#response-schema)
+- [Config Defaults](#config-defaults)
+  - [Global axios defaults](#global-axios-defaults)
+  - [Custom instance defaults](#custom-instance-defaults)
+  - [Config order of precedence](#config-order-of-precedence)
+- [Interceptors](#interceptors)
+- [Handling Errors](#handling-errors)
+- [Cancellation](#cancellation)
+- [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
+  - [Browser](#browser)
+  - [Node.js](#nodejs)
+    - [Query string](#query-string)
+    - [Form data](#form-data)
+- [Semver](#semver)
+- [Promises](#promises)
+- [TypeScript](#typescript)
+- [Resources](#resources)
+- [Credits](#credits)
+- [License](#license)
 
 ## Features
 
@@ -59,9 +59,9 @@ Promise based HTTP client for the browser and node.js
 
 ## Browser Support
 
-![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
---- | --- | --- | --- | --- | --- |
-Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
+| ![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Latest ✔                                                                                 | Latest ✔                                                                                    | Latest ✔                                                                                 | Latest ✔                                                                              | Latest ✔                                                                           | 11 ✔                                                                                                                         |
 
 [![Browser Matrix](https://saucelabs.com/open_sauce/build_matrix/axios.svg)](https://saucelabs.com/u/axios)
 
@@ -100,10 +100,11 @@ Using unpkg CDN:
 ## Example
 
 ### note: CommonJS usage
+
 In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
 
 ```js
-const axios = require('axios').default;
+const axios = require("axios").default;
 
 // axios.<method> will now provide autocomplete and parameter typings
 ```
@@ -111,10 +112,11 @@ const axios = require('axios').default;
 Performing a `GET` request
 
 ```js
-const axios = require('axios');
+const axios = require("axios");
 
 // Make a request for a user with a given ID
-axios.get('/user?ID=12345')
+axios
+  .get("/user?ID=12345")
   .then(function (response) {
     // handle success
     console.log(response);
@@ -128,10 +130,11 @@ axios.get('/user?ID=12345')
   });
 
 // Optionally the request above could also be done as
-axios.get('/user', {
+axios
+  .get("/user", {
     params: {
-      ID: 12345
-    }
+      ID: 12345,
+    },
   })
   .then(function (response) {
     console.log(response);
@@ -141,12 +144,12 @@ axios.get('/user', {
   })
   .then(function () {
     // always executed
-  });  
+  });
 
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
   try {
-    const response = await axios.get('/user?ID=12345');
+    const response = await axios.get("/user?ID=12345");
     console.log(response);
   } catch (error) {
     console.error(error);
@@ -160,9 +163,10 @@ async function getUser() {
 Performing a `POST` request
 
 ```js
-axios.post('/user', {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
+axios
+  .post("/user", {
+    firstName: "Fred",
+    lastName: "Flintstone",
   })
   .then(function (response) {
     console.log(response);
@@ -176,18 +180,17 @@ Performing multiple concurrent requests
 
 ```js
 function getUserAccount() {
-  return axios.get('/user/12345');
+  return axios.get("/user/12345");
 }
 
 function getUserPermissions() {
-  return axios.get('/user/12345/permissions');
+  return axios.get("/user/12345/permissions");
 }
 
-Promise.all([getUserAccount(), getUserPermissions()])
-  .then(function (results) {
-    const acct = results[0];
-    const perm = results[1];
-  });
+Promise.all([getUserAccount(), getUserPermissions()]).then(function (results) {
+  const acct = results[0];
+  const perm = results[1];
+});
 ```
 
 ## axios API
@@ -199,32 +202,31 @@ Requests can be made by passing the relevant config to `axios`.
 ```js
 // Send a POST request
 axios({
-  method: 'post',
-  url: '/user/12345',
+  method: "post",
+  url: "/user/12345",
   data: {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
-  }
+    firstName: "Fred",
+    lastName: "Flintstone",
+  },
 });
 ```
 
 ```js
 // GET request for remote image in node.js
 axios({
-  method: 'get',
-  url: 'http://bit.ly/2mTM3nY',
-  responseType: 'stream'
-})
-  .then(function (response) {
-    response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
-  });
+  method: "get",
+  url: "http://bit.ly/2mTM3nY",
+  responseType: "stream",
+}).then(function (response) {
+  response.data.pipe(fs.createWriteStream("ada_lovelace.jpg"));
+});
 ```
 
 ##### axios(url[, config])
 
 ```js
 // Send a GET request (default method)
-axios('/user/12345');
+axios("/user/12345");
 ```
 
 ### Request method aliases
@@ -232,18 +234,27 @@ axios('/user/12345');
 For convenience aliases have been provided for all supported request methods.
 
 ##### axios.request(config)
+
 ##### axios.get(url[, config])
+
 ##### axios.delete(url[, config])
+
 ##### axios.head(url[, config])
+
 ##### axios.options(url[, config])
+
 ##### axios.post(url[, data[, config]])
+
 ##### axios.put(url[, data[, config]])
+
 ##### axios.patch(url[, data[, config]])
 
 ###### NOTE
+
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
 ### Concurrency (Deprecated)
+
 Please use `Promise.all` to replace the below functions.
 
 Helper functions for dealing with concurrent requests.
@@ -259,9 +270,9 @@ You can create a new instance of axios with a custom config.
 
 ```js
 const instance = axios.create({
-  baseURL: 'https://some-domain.com/api/',
+  baseURL: "https://some-domain.com/api/",
   timeout: 1000,
-  headers: {'X-Custom-Header': 'foobar'}
+  headers: { "X-Custom-Header": "foobar" },
 });
 ```
 
@@ -270,13 +281,21 @@ const instance = axios.create({
 The available instance methods are listed below. The specified config will be merged with the instance config.
 
 ##### axios#request(config)
+
 ##### axios#get(url[, config])
+
 ##### axios#delete(url[, config])
+
 ##### axios#head(url[, config])
+
 ##### axios#options(url[, config])
+
 ##### axios#post(url[, data[, config]])
+
 ##### axios#put(url[, data[, config]])
+
 ##### axios#patch(url[, data[, config]])
+
 ##### axios#getUri([config])
 
 ## Request Config
@@ -294,7 +313,7 @@ These are the available config options for making requests. Only the `url` is re
   // `baseURL` will be prepended to `url` unless `url` is absolute.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
-  baseURL: 'https://some-domain.com/api/',
+  baseURL: 'https://some-domain.com/api/:id',
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
@@ -324,6 +343,13 @@ These are the available config options for making requests. Only the `url` is re
     ID: 12345
   },
 
+  // `urlParams` are the parameters that appears as a subpath
+  // the `:id` will be replaced with the value
+  // MUST BE plain object
+  urlParams: {
+    id: 0xDEAD // whatever
+  }
+
   // `paramsSerializer` is an optional function in charge of serializing `params`
   // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
   paramsSerializer: function (params) {
@@ -339,7 +365,7 @@ These are the available config options for making requests. Only the `url` is re
   data: {
     firstName: 'Fred'
   },
-  
+
   // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
@@ -436,7 +462,7 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
-  // If the proxy server uses HTTPS, then you must set the protocol to `https`. 
+  // If the proxy server uses HTTPS, then you must set the protocol to `https`.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',
@@ -452,8 +478,8 @@ These are the available config options for making requests. Only the `url` is re
   cancelToken: new CancelToken(function (cancel) {
   }),
 
-  // `decompress` indicates whether or not the response body should be decompressed 
-  // automatically. If set to `true` will also remove the 'content-encoding' header 
+  // `decompress` indicates whether or not the response body should be decompressed
+  // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
   decompress: true // default
@@ -467,7 +493,7 @@ These are the available config options for making requests. Only the `url` is re
 
     // try to parse the response string as JSON even if `resposeType` is not 'json'
     forcedJSONParsing: true;
-    
+
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false;
   }
@@ -507,14 +533,13 @@ The response for a request contains the following information.
 When using `then`, you will receive the response as follows:
 
 ```js
-axios.get('/user/12345')
-  .then(function (response) {
-    console.log(response.data);
-    console.log(response.status);
-    console.log(response.statusText);
-    console.log(response.headers);
-    console.log(response.config);
-  });
+axios.get("/user/12345").then(function (response) {
+  console.log(response.data);
+  console.log(response.status);
+  console.log(response.statusText);
+  console.log(response.headers);
+  console.log(response.config);
+});
 ```
 
 When using `catch`, or passing a [rejection callback](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then) as second parameter of `then`, the response will be available through the `error` object as explained in the [Handling Errors](#handling-errors) section.
@@ -526,13 +551,13 @@ You can specify config defaults that will be applied to every request.
 ### Global axios defaults
 
 ```js
-axios.defaults.baseURL = 'https://api.example.com';
+axios.defaults.baseURL = "https://api.example.com";
 
 // Important: If axios is used with multiple domains, the AUTH_TOKEN will be sent to all of them.
 // See below for an example using Custom instance defaults instead.
-axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+axios.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 
-axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 ```
 
 ### Custom instance defaults
@@ -540,11 +565,11 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 ```js
 // Set config defaults when creating the instance
 const instance = axios.create({
-  baseURL: 'https://api.example.com'
+  baseURL: "https://api.example.com",
 });
 
 // Alter defaults after instance has been created
-instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+instance.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 ```
 
 ### Config order of precedence
@@ -561,8 +586,8 @@ const instance = axios.create();
 instance.defaults.timeout = 2500;
 
 // Override timeout for this request as it's known to take a long time
-instance.get('/longRequest', {
-  timeout: 5000
+instance.get("/longRequest", {
+  timeout: 5000,
 });
 ```
 
@@ -572,30 +597,38 @@ You can intercept requests or responses before they are handled by `then` or `ca
 
 ```js
 // Add a request interceptor
-axios.interceptors.request.use(function (config) {
+axios.interceptors.request.use(
+  function (config) {
     // Do something before request is sent
     return config;
-  }, function (error) {
+  },
+  function (error) {
     // Do something with request error
     return Promise.reject(error);
-  });
+  }
+);
 
 // Add a response interceptor
-axios.interceptors.response.use(function (response) {
+axios.interceptors.response.use(
+  function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
     return response;
-  }, function (error) {
+  },
+  function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
     return Promise.reject(error);
-  });
+  }
+);
 ```
 
 If you need to remove an interceptor later you can.
 
 ```js
-const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+const myInterceptor = axios.interceptors.request.use(function () {
+  /*...*/
+});
 axios.interceptors.request.eject(myInterceptor);
 ```
 
@@ -603,22 +636,28 @@ You can add interceptors to a custom instance of axios.
 
 ```js
 const instance = axios.create();
-instance.interceptors.request.use(function () {/*...*/});
+instance.interceptors.request.use(function () {
+  /*...*/
+});
 ```
 
 When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay
-in the execution of your axios request when the main thread is blocked (a promise is created under the hood for 
+in the execution of your axios request when the main thread is blocked (a promise is created under the hood for
 the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag
 to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
 
 ```js
-axios.interceptors.request.use(function (config) {
-  config.headers.test = 'I am only a header!';
-  return config;
-}, null, { synchronous: true });
+axios.interceptors.request.use(
+  function (config) {
+    config.headers.test = "I am only a header!";
+    return config;
+  },
+  null,
+  { synchronous: true }
+);
 ```
 
-If you want to execute a particular interceptor based on a runtime check, 
+If you want to execute a particular interceptor based on a runtime check,
 you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
 of `runWhen` is `false`. The function will be called with the config
 object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an
@@ -626,60 +665,62 @@ asynchronous request interceptor that only needs to run at certain times.
 
 ```js
 function onGetCall(config) {
-  return config.method === 'get';
+  return config.method === "get";
 }
-axios.interceptors.request.use(function (config) {
-  config.headers.test = 'special get headers';
-  return config;
-}, null, { runWhen: onGetCall });
+axios.interceptors.request.use(
+  function (config) {
+    config.headers.test = "special get headers";
+    return config;
+  },
+  null,
+  { runWhen: onGetCall }
+);
 ```
 
 ## Handling Errors
 
 ```js
-axios.get('/user/12345')
-  .catch(function (error) {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
-    } else if (error.request) {
-      // The request was made but no response was received
-      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-      // http.ClientRequest in node.js
-      console.log(error.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.log('Error', error.message);
-    }
-    console.log(error.config);
-  });
+axios.get("/user/12345").catch(function (error) {
+  if (error.response) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    console.log(error.response.data);
+    console.log(error.response.status);
+    console.log(error.response.headers);
+  } else if (error.request) {
+    // The request was made but no response was received
+    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+    // http.ClientRequest in node.js
+    console.log(error.request);
+  } else {
+    // Something happened in setting up the request that triggered an Error
+    console.log("Error", error.message);
+  }
+  console.log(error.config);
+});
 ```
 
 Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
 
 ```js
-axios.get('/user/12345', {
+axios.get("/user/12345", {
   validateStatus: function (status) {
     return status < 500; // Resolve only if the status code is less than 500
-  }
-})
+  },
+});
 ```
 
 Using `toJSON` you get an object with more information about the HTTP error.
 
 ```js
-axios.get('/user/12345')
-  .catch(function (error) {
-    console.log(error.toJSON());
-  });
+axios.get("/user/12345").catch(function (error) {
+  console.log(error.toJSON());
+});
 ```
 
 ## Cancellation
 
-You can cancel a request using a *cancel token*.
+You can cancel a request using a _cancel token_.
 
 > The axios cancel token API is based on the withdrawn [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
 
@@ -689,24 +730,30 @@ You can create a cancel token using the `CancelToken.source` factory as shown be
 const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
 
-axios.get('/user/12345', {
-  cancelToken: source.token
-}).catch(function (thrown) {
-  if (axios.isCancel(thrown)) {
-    console.log('Request canceled', thrown.message);
-  } else {
-    // handle error
-  }
-});
+axios
+  .get("/user/12345", {
+    cancelToken: source.token,
+  })
+  .catch(function (thrown) {
+    if (axios.isCancel(thrown)) {
+      console.log("Request canceled", thrown.message);
+    } else {
+      // handle error
+    }
+  });
 
-axios.post('/user/12345', {
-  name: 'new name'
-}, {
-  cancelToken: source.token
-})
+axios.post(
+  "/user/12345",
+  {
+    name: "new name",
+  },
+  {
+    cancelToken: source.token,
+  }
+);
 
 // cancel the request (the message parameter is optional)
-source.cancel('Operation canceled by the user.');
+source.cancel("Operation canceled by the user.");
 ```
 
 You can also create a cancel token by passing an executor function to the `CancelToken` constructor:
@@ -715,11 +762,11 @@ You can also create a cancel token by passing an executor function to the `Cance
 const CancelToken = axios.CancelToken;
 let cancel;
 
-axios.get('/user/12345', {
+axios.get("/user/12345", {
   cancelToken: new CancelToken(function executor(c) {
     // An executor function receives a cancel function as a parameter
     cancel = c;
-  })
+  }),
 });
 
 // cancel the request
@@ -739,9 +786,9 @@ In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/
 
 ```js
 const params = new URLSearchParams();
-params.append('param1', 'value1');
-params.append('param2', 'value2');
-axios.post('/foo', params);
+params.append("param1", "value1");
+params.append("param2", "value2");
+axios.post("/foo", params);
 ```
 
 > Note that `URLSearchParams` is not supported by all browsers (see [caniuse.com](http://www.caniuse.com/#feat=urlsearchparams)), but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
@@ -749,18 +796,18 @@ axios.post('/foo', params);
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 
 ```js
-const qs = require('qs');
-axios.post('/foo', qs.stringify({ 'bar': 123 }));
+const qs = require("qs");
+axios.post("/foo", qs.stringify({ bar: 123 }));
 ```
 
 Or in another way (ES6),
 
 ```js
-import qs from 'qs';
-const data = { 'bar': 123 };
+import qs from "qs";
+const data = { bar: 123 };
 const options = {
-  method: 'POST',
-  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  method: "POST",
+  headers: { "content-type": "application/x-www-form-urlencoded" },
   data: qs.stringify(data),
   url,
 };
@@ -774,21 +821,22 @@ axios(options);
 In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
-const querystring = require('querystring');
-axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
+const querystring = require("querystring");
+axios.post("http://something.com/", querystring.stringify({ foo: "bar" }));
 ```
 
 or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
 
 ```js
-const url = require('url');
-const params = new url.URLSearchParams({ foo: 'bar' });
-axios.post('http://something.com/', params.toString());
+const url = require("url");
+const params = new url.URLSearchParams({ foo: "bar" });
+axios.post("http://something.com/", params.toString());
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ###### NOTE
+
 The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has known issues with that use case (https://github.com/nodejs/node-v0.x-archive/issues/1665).
 
 #### Form data
@@ -796,20 +844,20 @@ The `qs` library is preferable if you need to stringify nested objects, as the `
 In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
 
 ```js
-const FormData = require('form-data');
- 
-const form = new FormData();
-form.append('my_field', 'my value');
-form.append('my_buffer', new Buffer(10));
-form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+const FormData = require("form-data");
 
-axios.post('https://example.com', form, { headers: form.getHeaders() })
+const form = new FormData();
+form.append("my_field", "my value");
+form.append("my_buffer", new Buffer(10));
+form.append("my_file", fs.createReadStream("/foo/bar.jpg"));
+
+axios.post("https://example.com", form, { headers: form.getHeaders() });
 ```
 
 Alternatively, use an interceptor:
 
 ```js
-axios.interceptors.request.use(config => {
+axios.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {
     Object.assign(config.headers, config.data.getHeaders());
   }
@@ -833,7 +881,7 @@ axios includes [TypeScript](http://typescriptlang.org) definitions and a type gu
 ```typescript
 let user: User = null;
 try {
-  const { data } = await axios.get('/user?ID=12345');
+  const { data } = await axios.get("/user?ID=12345");
   user = data.userDetails;
 } catch (error) {
   if (axios.isAxiosError(error)) {
@@ -850,14 +898,13 @@ You can use Gitpod an online IDE(which is free for Open Source) for contributing
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
 
-
 ## Resources
 
-* [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
+- [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)
+- [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
+- [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
+- [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
 
 ## Credits
 

@@ -25,7 +25,7 @@
     "promise",
     "node"
   ],
-  "author": "Matt Zabriskie",
+  "author": "hanxiao",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/axios/axios/issues"

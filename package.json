@@ -1,5 +1,5 @@
 {
-  "name": "@youzanyun/axios",
+  "name": "@youzan/yun-axios",
   "version": "0.0.1",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",

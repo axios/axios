@@ -968,5 +968,36 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should throw an error if http server that aborts a chunked request', function (done) {
+    server = http.createServer(function (req, res) {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.write('chunk 1');
+      setTimeout(function () {
+        res.write('chunk 2');
+      }, 100);
+      setTimeout(function() {
+        res.destroy();
+      }, 200);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/aborted', {
+        timeout: 500
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      }).finally(function () {
+        assert.strictEqual(success, false, 'request should not succeed');
+        assert.strictEqual(failure, true, 'request should fail');
+        assert.strictEqual(error.code, 'ERR_REQUEST_ABORTED');
+        assert.strictEqual(error.message, 'error request aborted');
+        done();
+      });
+    });
+  });
+
 });
 

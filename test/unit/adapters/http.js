@@ -968,5 +968,20 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should apply custom user-agent case-insensitively if one is specified', function (done) {
+    server = http.createServer(function (req, res) {
+      assert.equal(req.headers["user-agent"], "custom-ua");
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        headers: {
+          "uSeR-AGenT": "custom-ua"
+        }
+      }
+      ).then(function (res) {
+        done();
+      });
+    });
+  });
 });
 

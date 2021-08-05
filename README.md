@@ -456,20 +456,20 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header 
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
     // silent JSON parsing mode
     // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
     // `false` - throw SyntaxError if JSON parsing failed (Note: responseType must be set to 'json')
-    silentJSONParsing: true; // default value for the current Axios version
+    silentJSONParsing: true, // default value for the current Axios version
 
     // try to parse the response string as JSON even if `resposeType` is not 'json'
-    forcedJSONParsing: true;
+    forcedJSONParsing: true,
     
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
-    clarifyTimeoutError: false;
+    clarifyTimeoutError: false,
   }
 }
 ```

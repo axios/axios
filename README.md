@@ -466,7 +466,7 @@ These are the available config options for making requests. Only the `url` is re
     silentJSONParsing: true, // default value for the current Axios version
 
     // try to parse the response string as JSON even if `responseType` is not 'json'
-    forcedJSONParsing: true;
+    forcedJSONParsing: true,
     
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false,

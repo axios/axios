@@ -54,7 +54,7 @@ export interface AxiosRequestConfig {
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
   headers?: any;
-  params?: Record<string, unknown>;
+  params?: any;
   paramsSerializer?: (params: any) => string;
   data?: any;
   timeout?: number;

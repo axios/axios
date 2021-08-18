@@ -429,7 +429,7 @@ describe('supports http with nodejs', function () {
   });
 
   it('should display error while parsing params', function (done) {
-    server = http.createServer(function (req, res) {
+    server = http.createServer(function () {
       
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {

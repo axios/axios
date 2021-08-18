@@ -414,7 +414,7 @@ These are the available config options for making requests. Only the `url` is re
   // If set to 0, no redirects will be followed.
   maxRedirects: 21, // default
 
-  // `beforeRedirect` defines function that will be called before redirect.
+  // `beforeRedirect` defines a function that will be called before redirect.
   // Use this to adjust the request options upon redirecting,
   // to inspect the latest response headers,
   // or to cancel the request by throwing an error

@@ -494,6 +494,67 @@ describe('supports http with nodejs', function () {
       });
     });
   });
+  
+  it('should display error if stream is destroyed', function (done) {
+
+    let server = http.createServer(async function (req, res) {
+      for await (let chunk of req);
+      res.end("ok");
+    }).listen(4444, async function () {
+      let stream = fs.createReadStream(__filename);
+      setTimeout(function () {
+        stream.destroy();
+      }, 1000);
+      await axios.post('http://localhost:4444/', stream)
+        .catch(function (err) {
+          assert.equal(err.message, 'Stream destroyed')
+        });
+      server.close();
+      done();
+    });
+  });
+
+  it('should display custom error if stream is destroyed', function (done) {
+
+    let server = http.createServer(async function (req, res) {
+      for await (let chunk of req);
+      res.end("ok");
+    }).listen(4444, async function () {
+      let stream = fs.createReadStream(__filename);
+      setTimeout(function () {
+        stream.destroy(new Error('Custom error message'));
+      }, 1000);
+      await axios.post('http://localhost:4444/', stream)
+        .catch(function (err) {
+          assert.equal(err.message, 'Custom error message');
+        });
+      server.close();
+      done();
+    });
+  });
+
+  it('should support buffers', function (done) {
+    var buf = Buffer.alloc(1024, 'x'); // Unsafe buffer < Buffer.poolSize (8192 bytes)
+    server = http.createServer(function (req, res) {
+      assert.equal(req.headers['content-length'], buf.length.toString());
+      req.pipe(res);
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/',
+        buf, {
+          responseType: 'stream'
+        }).then(function (res) {
+          var stream = res.data;
+          var string = '';
+          stream.on('data', function (chunk) {
+            string += chunk.toString('utf8');
+          });
+          stream.on('end', function () {
+            assert.equal(string, buf.toString());
+            done();
+          });
+        });
+    });
+  });
 
   it('should support buffers', function (done) {
     var buf = Buffer.alloc(1024, 'x'); // Unsafe buffer < Buffer.poolSize (8192 bytes)

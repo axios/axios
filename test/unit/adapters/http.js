@@ -293,6 +293,20 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support inflation of deflate streams without zlib header', function (done) {
+
+    const config = {
+      headers: {
+        'Accept-Encoding': 'deflate',
+      },
+    };
+
+    axios.get('https://www.konicaminolta.eu/eu-en/about-us/corporate-book', config).then(res => {
+      assert.equal(res.status, 200);
+      done();
+    });    
+  });
+
   it('should support UTF8', function (done) {
     var str = Array(100000).join('ж');
 

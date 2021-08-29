@@ -294,7 +294,7 @@ These are the available config options for making requests. Only the `url` is re
   // `baseURL` will be prepended to `url` unless `url` is absolute.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
-  baseURL: 'https://some-domain.com/api/',
+  baseURL: 'https://some-domain.com/api',
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'

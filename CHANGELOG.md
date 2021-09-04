@@ -1,5 +1,15 @@
 # Changelog
 
+### 0.21.3 (September 4, 2021)
+
+Fixes and Functionality:
+- Fixing response interceptor not being called when request interceptor is attached ([#4013](https://github.com/axios/axios/pull/4013))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Julian Hollmann](https://github.com/nerdbeere)
+
 ### 0.21.2 (September 4, 2021)
 
 Fixes and Functionality:

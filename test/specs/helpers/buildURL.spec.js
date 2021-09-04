@@ -60,6 +60,12 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=bar&query=baz');
   });
 
+  it('should correctly discard url hash mark when no additional params are provided', function () {
+    expect(buildURL('/foo?foo=bar&query=baz#hash')).toEqual(
+      '/foo?foo=bar&query=baz'
+    );
+  });
+
   it('should use serializer if provided', function () {
     serializer = sinon.stub();
     params = {foo: 'bar'};

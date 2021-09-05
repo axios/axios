@@ -44,6 +44,14 @@ const config: AxiosRequestConfig = {
   cancelToken: new axios.CancelToken((cancel: Canceler) => {})
 };
 
+const nullValidateStatusConfig: AxiosRequestConfig = {
+  validateStatus: null
+};
+
+const undefinedValidateStatusConfig: AxiosRequestConfig = {
+  validateStatus: undefined
+};
+
 const handleResponse = (response: AxiosResponse) => {
   console.log(response.data);
   console.log(response.status);
@@ -354,3 +362,12 @@ axios.get('/user', {
 });
 
 source.cancel('Operation has been canceled.');
+
+// AxiosError
+
+axios.get('/user')
+  .catch((error) => {
+    if (axios.isAxiosError(error)) {
+      const axiosError: AxiosError = error;
+    }
+  });

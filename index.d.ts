@@ -135,9 +135,8 @@ export interface AxiosInterceptorManager<V> {
   eject(id: number): void;
 }
 
-export interface AxiosInstance {
-  (config: AxiosRequestConfig): AxiosPromise;
-  (url: string, config?: AxiosRequestConfig): AxiosPromise;
+export class Axios {
+  constructor(config?: AxiosRequestConfig);
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
@@ -154,10 +153,16 @@ export interface AxiosInstance {
   patch<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
 }
 
+export interface AxiosInstance extends Axios {
+  (config: AxiosRequestConfig): AxiosPromise;
+  (url: string, config?: AxiosRequestConfig): AxiosPromise;
+}
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
+  Axios: typeof Axios;
   isCancel(value: any): boolean;
   all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;

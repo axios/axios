@@ -1,40 +1,21 @@
-# axios-lab
+# axios
 
-[![npm version](https://img.shields.io/npm/v/axios-lab.svg?style=flat-square)](https://www.npmjs.org/package/axios-lab)
-[![CDNJS](https://img.shields.io/cdnjs/v/axios-lab.svg?style=flat-square)](https://cdnjs.com/libraries/axios-lab)
-[![build status](https://img.shields.io/travis/DigitalBrainJS/axios/master.svg?style=flat-square)](https://travis-ci.org/DigitalBrain/axios) 
-[![code coverage](https://img.shields.io/coveralls/mzabriskie/axios-lab.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios-lab)
-[![install size](https://packagephobia.now.sh/badge?p=axios-lab)](https://packagephobia.now.sh/result?p=axios-lab)
-[![npm downloads](https://img.shields.io/npm/dm/axios-lab.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios-lab)
+[![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
+[![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
+![Build status](https://github.com/axios/axios/actions/workflows/ci.yml/badge.svg)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
+[![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
+[![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
+[![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
+[![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
+[![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
-This is a fork of [Axios](https://www.npmjs.com/package/axios) package to test experimental features. 
-
-⚠️`Use at own risk` ⚠️.
-
-# Fork differences
-- Reworked `cancelToken` to fix memory leakage in case of using a persistent token for several requests. This can happen because requests cannot unsubscribe from the token after it completed since cancelToken doesn't provide any methods to do this.
-- Added `AbortController` support. I believe that using the existing API makes it easier to use the library.
-- `CancelToken` and `AbortController` can be used simultaneously (to facilitate the transition to the new API)
-- support for primitive types to be converted to JSON if the request Content-Type is `application/json` (under nodejs we get an error) ([#2613](https://github.com/axios/axios/issues/2613));
-- transitional options object;
-- options validator to assert transitional options;
-- transitional option `silentJSONParsing` - throws SyntaxError if JSON parsing failed while responseType is json and transitional.silentJSONParsing is false; (#61). Default: true - keep current behavior.
-- transitional option `forcedJSONParsing` to control automatic JSON parsing from the response string. Default true - keep current behavior ([#2791](https://github.com/axios/axios/issues/2791))
-- request transformers now calling in the context of the config object.
-- automated deprecation warning message depending on the package version
-- Added `transitional.clarifyTimeoutError` to throw `ETIMEDOUT` error instead of generic `ECONNABORTED` on request timeout ([#1543](https://github.com/axios/axios/issues/1543));
-- Added support of onloadend handler if available instead of onreadystatechange;
-- Added xhr timeout test;
-- Fixed potential bug of xhr adapter with proper handling timeouts&errors (at least FakeXMLHTTPRequest failed to handle timeouts);
-- Added `cancel` method to the Axios promise to cancel a single request;
-
-All new features are marked with a 🆕 badge in the documentation;
-
-# ☀️Original Axios Readme with revisions ☀️
+Promise based HTTP client for the browser and node.js
 
 > New axios docs website: [click here](https://axios-http.com/)
 
 ## Table of Contents
+
   - [Features](#features)
   - [Browser Support](#browser-support)
   - [Installing](#installing)
@@ -464,20 +445,12 @@ These are the available config options for making requests. Only the `url` is re
       username: 'mikeymike',
       password: 'rapunz3l'
     }
-  },````
+  },
 
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {
   }),
-
-  // an alternative way to cancel Axios requests using AbortController
-  signal: new AbortController().signal, 🆕
-
-  // `cancelable` option activates ability to cancel the request by calling promise.cancel()
-  // can not be used if `cancelToken` is set
-
-  cancelable: false, 🆕
 
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 
@@ -485,18 +458,26 @@ These are the available config options for making requests. Only the `url` is re
   // - Node only (XHR cannot turn off decompression)
   decompress: true // default
 
+  // `insecureHTTPParser` boolean.
+  // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
+  // This may allow interoperability with non-conformant HTTP implementations.
+  // Using the insecure parser should be avoided.
+  // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
+  // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
+  insecureHTTPParser: undefined // default
+
   // transitional options for backward compatibility that may be removed in the newer versions
-  transitional: { 🆕
+  transitional: {
     // silent JSON parsing mode
     // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
     // `false` - throw SyntaxError if JSON parsing failed (Note: responseType must be set to 'json')
-    silentJSONParsing: true; // default value for the current Axios version
+    silentJSONParsing: true, // default value for the current Axios version
 
-    // try to parse the response string as JSON even if `resposeType` is not 'json'
+    // try to parse the response string as JSON even if `responseType` is not 'json'
     forcedJSONParsing: true;
     
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
-    clarifyTimeoutError: false;
+    clarifyTimeoutError: false,
   }
 }
 ```
@@ -735,7 +716,7 @@ axios.post('/user/12345', {
 // cancel the request (the message parameter is optional)
 source.cancel('Operation canceled by the user.');
 ```
-🆕
+
 You can also create a cancel token by passing an executor function to the `CancelToken` constructor:
 
 ```js
@@ -752,33 +733,9 @@ axios.get('/user/12345', {
 // cancel the request
 cancel();
 ```
-🆕
-Axios supports AbortController to abort requests in [`fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#aborting_a_fetch) way:
-```js
-const controller = new AbortController();
 
-axios.get('/foo/bar', {
-   signal: controller.signal
-}).then(function(response) {
-   //...
-});
-// cancel the request
-controller.abort()
-```
-
-> Note: you can cancel several requests with the same cancel token/abort controller.
-
-To cancel a single request, you can use the `.cancel` (reason) method defined in
-the promise returned by the request method. To use this API you must set cancelable
-option in the request config.
-
-````javascript
-const promise= axios.get('/user/12345', {cancelable: true});
-promise.then(response=> {...})
-
-// cancel the request
-promise.cancel();
-````
+> Note: you can cancel several requests with the same cancel token.
+> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
 
 ## Using application/x-www-form-urlencoded format
 
@@ -878,11 +835,29 @@ axios depends on a native ES6 Promise implementation to be [supported](http://ca
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
-axios includes [TypeScript](http://typescriptlang.org) definitions.
+
+axios includes [TypeScript](http://typescriptlang.org) definitions and a type guard for axios errors.
+
 ```typescript
-import axios from 'axios';
-axios.get('/user?ID=12345');
+let user: User = null;
+try {
+  const { data } = await axios.get('/user?ID=12345');
+  user = data.userDetails;
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    handleAxiosError(error);
+  } else {
+    handleUnexpectedError(error);
+  }
+}
 ```
+
+## Online one-click setup
+
+You can use Gitpod an online IDE(which is free for Open Source) for contributing or running the examples online.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
+
 
 ## Resources
 

@@ -64,7 +64,6 @@ describe('transform', function () {
         setTimeout(function () {
           expect(thrown).toBeTruthy();
           expect(thrown.name).toContain('SyntaxError');
-          expect(thrown.message).toContain('JSON');
           done();
         }, 100);
       });

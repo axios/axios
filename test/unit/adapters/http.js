@@ -29,6 +29,64 @@ describe('supports http with nodejs', function () {
     }
   });
 
+  it('should throw an error if the timeout property is not parsable as a number', function (done) {
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+        timeout: { strangeTimeout: 250 }
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ERR_PARSE_TIMEOUT');
+        assert.equal(error.message, 'error trying to parse `config.timeout` to int');
+        done();
+      }, 300);
+    });
+  });
+
+  it('should parse the timeout property', function (done) {
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+        timeout: '250'
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.code, 'ECONNABORTED');
+        assert.equal(error.message, 'timeout of 250ms exceeded');
+        done();
+      }, 300);
+    });
+  });
+
   it('should respect the timeout property', function (done) {
 
     server = http.createServer(function (req, res) {
@@ -66,7 +124,7 @@ describe('supports http with nodejs', function () {
     };
 
     server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(data));
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').then(function (res) {
@@ -84,7 +142,7 @@ describe('supports http with nodejs', function () {
     };
 
     server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.setHeader('Content-Type', 'application/json');
       var bomBuffer = Buffer.from([0xEF, 0xBB, 0xBF])
       var jsonBuffer = Buffer.from(JSON.stringify(data));
       res.end(Buffer.concat([bomBuffer, jsonBuffer]));
@@ -189,7 +247,7 @@ describe('supports http with nodejs', function () {
     zlib.gzip(JSON.stringify(data), function (err, zipped) {
 
       server = http.createServer(function (req, res) {
-        res.setHeader('Content-Type', 'application/json;charset=utf-8');
+        res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Encoding', 'gzip');
         res.end(zipped);
       }).listen(4444, function () {
@@ -204,7 +262,7 @@ describe('supports http with nodejs', function () {
 
   it('should support gunzip error handling', function (done) {
     server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json;charset=utf-8');
+      res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Encoding', 'gzip');
       res.end('invalid response');
     }).listen(4444, function () {

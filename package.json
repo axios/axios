@@ -1,8 +1,9 @@
 {
   "name": "axios",
-  "version": "0.21.0",
+  "version": "0.21.3",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "grunt test",
     "start": "node ./sandbox/server.js",
@@ -30,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/axios/axios/issues"
   },
-  "homepage": "https://github.com/axios/axios",
+  "homepage": "https://axios-http.com",
   "devDependencies": {
     "coveralls": "^3.0.0",
     "es6-promise": "^4.2.4",
@@ -46,12 +47,13 @@
     "grunt-webpack": "^4.0.2",
     "istanbul-instrumenter-loader": "^1.0.0",
     "jasmine-core": "^2.4.1",
-    "karma": "^5.2.3",
+    "karma": "^6.3.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^2.1.0",
     "karma-jasmine": "^1.1.1",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-safari-launcher": "^1.0.0",
+    "karma-sauce-launcher": "^4.3.6",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.8",
     "karma-webpack": "^4.0.2",
@@ -72,7 +74,7 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "^1.10.0"
+    "follow-redirects": "^1.14.0"
   },
   "bundlesize": [
     {

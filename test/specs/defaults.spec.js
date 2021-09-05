@@ -25,7 +25,7 @@ describe('defaults', function () {
   });
 
   it('should transform response json', function () {
-    var data = defaults.transformResponse[0]('{"foo":"bar"}');
+    var data = defaults.transformResponse[0].call(defaults, '{"foo":"bar"}');
 
     expect(typeof data).toEqual('object');
     expect(data.foo).toEqual('bar');

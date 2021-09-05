@@ -41,6 +41,12 @@ export type ResponseType =
   | 'text'
   | 'stream'
 
+export interface TransitionalOptions{
+  silentJSONParsing: boolean;
+  forcedJSONParsing: boolean;
+  clarifyTimeoutError: boolean;
+}
+
 export interface AxiosRequestConfig {
   url?: string;
   method?: Method;
@@ -71,6 +77,7 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
+  transitional?: TransitionalOptions
 }
 
 export interface AxiosResponse<T = any>  {
@@ -123,7 +130,7 @@ export interface CancelTokenSource {
 }
 
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
+  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any): number;
   eject(id: number): void;
 }
 

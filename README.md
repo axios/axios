@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
-[![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
+![Build status](https://github.com/axios/axios/actions/workflows/ci.yml/badge.svg)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
@@ -11,6 +11,9 @@
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 
 Promise based HTTP client for the browser and node.js
+
+> New axios docs website: [click here](https://axios-http.com/)
+
 ## Table of Contents
 
   - [Features](#features)
@@ -453,8 +456,21 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header 
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
+  // transitional options for backward compatibility that may be removed in the newer versions
+  transitional: {
+    // silent JSON parsing mode
+    // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
+    // `false` - throw SyntaxError if JSON parsing failed (Note: responseType must be set to 'json')
+    silentJSONParsing: true, // default value for the current Axios version
+
+    // try to parse the response string as JSON even if `responseType` is not 'json'
+    forcedJSONParsing: true;
+    
+    // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
+    clarifyTimeoutError: false,
+  }
 }
 ```
 
@@ -711,6 +727,7 @@ cancel();
 ```
 
 > Note: you can cancel several requests with the same cancel token.
+> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
 
 ## Using application/x-www-form-urlencoded format
 
@@ -810,10 +827,21 @@ axios depends on a native ES6 Promise implementation to be [supported](http://ca
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
-axios includes [TypeScript](http://typescriptlang.org) definitions.
+
+axios includes [TypeScript](http://typescriptlang.org) definitions and a type guard for axios errors.
+
 ```typescript
-import axios from 'axios';
-axios.get('/user?ID=12345');
+let user: User = null;
+try {
+  const { data } = await axios.get('/user?ID=12345');
+  user = data.userDetails;
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    handleAxiosError(error);
+  } else {
+    handleUnexpectedError(error);
+  }
+}
 ```
 
 ## Online one-click setup

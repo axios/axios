@@ -1,5 +1,10 @@
+/* eslint-disable no-console */
+/* eslint-disable no-unused-vars */
+/* eslint-disable func-names */
 // Karma configuration
 // Generated on Fri Aug 15 2014 23:11:13 GMT-0500 (CDT)
+
+'use strict';
 
 var webpack = require('webpack');
 
@@ -19,7 +24,7 @@ module.exports = function(config) {
 
   if (process.env.SAUCE_USERNAME || process.env.SAUCE_ACCESS_KEY) {
     customLaunchers = {};
-  
+
     var runAll = true;
     var options = [
       'SAUCE_CHROME',
@@ -32,7 +37,7 @@ module.exports = function(config) {
       'SAUCE_ANDROID'
     ];
 
-    options.forEach(function (opt) {
+    options.forEach(function(opt) {
       if (process.env[opt]) {
         runAll = false;
       }
@@ -56,21 +61,20 @@ module.exports = function(config) {
     if (runAll || process.env.SAUCE_SAFARI) {
       // customLaunchers.SL_Safari7 = createCustomLauncher('safari', 7);
       // customLaunchers.SL_Safari8 = createCustomLauncher('safari', 8);
-
       customLaunchers.SL_Safari9 = createCustomLauncher(
-        "safari",
+        'safari',
         9.0,
-        "OS X 10.11"
+        'OS X 10.11'
       );
       customLaunchers.SL_Safari10 = createCustomLauncher(
-        "safari",
-        "10.1",
-        "macOS 10.12"
+        'safari',
+        '10.1',
+        'macOS 10.12'
       );
       customLaunchers.SL_Safari11 = createCustomLauncher(
-        "safari",
-        "11.1",
-        "macOS 10.13"
+        'safari',
+        '11.1',
+        'macOS 10.13'
       );
     }
 
@@ -123,11 +127,14 @@ module.exports = function(config) {
       'Running on Travis.'
     );
     browsers = ['Firefox'];
+  } else if (process.env.GITHUB_ACTIONS !== 'false') {
+    console.log('Running ci on Github Actions.');
+    browsers = ['FirefoxHeadless', 'ChromeHeadless'];
   } else {
     console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.');
     browsers = ['Firefox', 'Chrome'];
   }
-  
+
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
@@ -141,14 +148,12 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'test/specs/__helpers.js',
-      'test/specs/**/*.spec.js',
+      'test/specs/**/*.spec.js'
     ],
 
 
     // list of files to exclude
-    exclude: [
-
-    ],
+    exclude: [],
 
 
     // preprocess matching files before serving them to the browser
@@ -209,7 +214,7 @@ module.exports = function(config) {
         {
           './adapters/http': 'var undefined'
         }
-      ],
+      ]
     },
 
     webpackServer: {

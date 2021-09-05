@@ -90,7 +90,7 @@ describe('headers', function () {
     });
 
     getAjaxRequest().then(function (request) {
-      testHeaderValue(request.requestHeaders, 'Content-Type', 'application/json;charset=utf-8');
+      testHeaderValue(request.requestHeaders, 'Content-Type', 'application/json');
       done();
     });
   });

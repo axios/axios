@@ -174,4 +174,31 @@ describe('transform', function () {
       done();
     });
   });
+
+  it('should not stringify twice if the payload was already encoded to the JSON string', function (done) {
+    var response;
+    var rawPayload = '{"x": 123}';
+
+    axios.post('/foo', rawPayload, {
+      responseType: 'text',
+      headers: {'Content-Type': 'application/json'}
+    }).then(function (_response) {
+      response = _response;
+    }, function (err) {
+      done(err);
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: request.body
+      });
+
+      setTimeout(function () {
+        expect(response).toBeTruthy();
+        expect(request.params).toEqual(rawPayload);
+        done();
+      }, 100);
+    });
+  });
 });

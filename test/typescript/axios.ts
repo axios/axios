@@ -296,7 +296,7 @@ axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(res
 // Adapters
 
 const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
-  const response: AxiosResponse = {
+  const response: AxiosResponse<any> = {
     data: { foo: 'bar' },
     status: 200,
     statusText: 'OK',

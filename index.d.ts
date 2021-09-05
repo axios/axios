@@ -41,6 +41,12 @@ export type ResponseType =
   | 'text'
   | 'stream'
 
+export interface TransitionalOptions{
+  silentJSONParsing: boolean;
+  forcedJSONParsing: boolean;
+  clarifyTimeoutError: boolean;
+}
+
 export interface AxiosRequestConfig {
   url?: string;
   method?: Method;
@@ -59,11 +65,11 @@ export interface AxiosRequestConfig {
   responseType?: ResponseType;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  onUploadProgress?: (progressEvent: ProgressEvent) => void;
-  onDownloadProgress?: (progressEvent: ProgressEvent) => void;
+  onUploadProgress?: (progressEvent: any) => void;
+  onDownloadProgress?: (progressEvent: any) => void;
   maxContentLength?: number;
+  validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
-  validateStatus?: (status: number) => boolean;
   maxRedirects?: number;
   socketPath?: string | null;
   httpAgent?: any;
@@ -71,6 +77,7 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
+  transitional?: TransitionalOptions
 }
 
 export interface AxiosResponse<T = any>  {
@@ -123,13 +130,12 @@ export interface CancelTokenSource {
 }
 
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any): number;
+  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any): number;
   eject(id: number): void;
 }
 
-export interface AxiosInstance {
-  (config: AxiosRequestConfig): AxiosPromise;
-  (url: string, config?: AxiosRequestConfig): AxiosPromise;
+export class Axios {
+  constructor(config?: AxiosRequestConfig);
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
@@ -146,15 +152,22 @@ export interface AxiosInstance {
   patch<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
 }
 
+export interface AxiosInstance extends Axios {
+  (config: AxiosRequestConfig): AxiosPromise;
+  (url: string, config?: AxiosRequestConfig): AxiosPromise;
+}
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
+  Axios: typeof Axios;
   isCancel(value: any): boolean;
   all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
+  isAxiosError(payload: any): payload is AxiosError;
 }
 
-declare const Axios: AxiosStatic;
+declare const axios: AxiosStatic;
 
-export default Axios;
+export default axios;

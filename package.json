@@ -1,8 +1,9 @@
 {
   "name": "axios",
-  "version": "0.21.1",
+  "version": "0.21.3",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "grunt test",
     "start": "node ./sandbox/server.js",

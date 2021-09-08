@@ -130,7 +130,7 @@ export interface CancelTokenSource {
 }
 
 export interface AxiosInterceptorManager<V> {
-  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any): number;
+  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any, options?: { synchronous?: boolean, runWhen?: (config: AxiosRequestConfig) => boolean }): number;
   eject(id: number): void;
 }
 

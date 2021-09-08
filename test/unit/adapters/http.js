@@ -18,7 +18,7 @@ describe('supports http with nodejs', function () {
       server = null;
     }
     if (proxy) {
-      proxy.close()
+      proxy.close();
       proxy = null;
     }
     if (process.env.http_proxy) {
@@ -326,10 +326,45 @@ describe('supports http with nodejs', function () {
       res.end(req.headers.authorization);
     }).listen(4444, function () {
       var auth = { username: 'foo', password: 'bar' };
-      var headers = { Authorization: 'Bearer 1234' };
+      var headers = { AuThOrIzAtIoN: 'Bearer 1234' }; // wonky casing to ensure caseless comparison
       axios.get('http://localhost:4444/', { auth: auth, headers: headers }).then(function (res) {
         var base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
         assert.equal(res.data, 'Basic ' + base64);
+        done();
+      });
+    });
+  });
+
+  it('should provides a default User-Agent header', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end(req.headers['user-agent']);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/').then(function (res) {
+        assert.ok(/^axios\/[\d.]+$/.test(res.data), `User-Agent header does not match: ${res.data}`);
+        done();
+      });
+    });
+  });
+
+  it('should allow the User-Agent header to be overridden', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end(req.headers['user-agent']);
+    }).listen(4444, function () {
+      var headers = { 'UsEr-AgEnT': 'foo bar' }; // wonky casing to ensure caseless comparison
+      axios.get('http://localhost:4444/', { headers }).then(function (res) {
+        assert.equal(res.data, 'foo bar');
+        done();
+      });
+    });
+  });
+
+  it('should allow the Content-Length header to be overridden', function (done) {
+    server = http.createServer(function (req, res) {
+      assert.strictEqual(req.headers['content-length'], '42');
+      res.end();
+    }).listen(4444, function () {
+      var headers = { 'CoNtEnT-lEnGtH': '42' }; // wonky casing to ensure caseless comparison
+      axios.post('http://localhost:4444/', 'foo', { headers }).then(function () {
         done();
       });
     });

@@ -252,6 +252,35 @@ describe('interceptors', function () {
     });
   });
 
+  it('should add a response interceptor when request interceptor is defined', function (done) {
+    var response;
+
+    axios.interceptors.request.use(function (data) {
+      return data;
+    });
+
+    axios.interceptors.response.use(function (data) {
+      data.data = data.data + ' - modified by interceptor';
+      return data;
+    });
+
+    axios('/foo').then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: 'OK'
+      });
+
+      setTimeout(function () {
+        expect(response.data).toBe('OK - modified by interceptor');
+        done();
+      }, 100);
+    });
+  });
+
   it('should add a response interceptor that returns a new data object', function (done) {
     var response;
 

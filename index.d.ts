@@ -77,6 +77,7 @@ export interface AxiosRequestConfig<T = any> {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
+  insecureHTTPParser?: boolean;
   transitional?: TransitionalOptions
 }
 

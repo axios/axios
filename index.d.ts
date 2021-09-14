@@ -77,7 +77,9 @@ export interface AxiosRequestConfig<T = any> {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
-  transitional?: TransitionalOptions
+  transitional?: TransitionalOptions;
+  readonly instanceId?: number;
+  defaultReject?: ((AxiosError) => any) | null;
 }
 
 export interface AxiosResponse<T = never>  {
@@ -136,6 +138,7 @@ export interface AxiosInterceptorManager<V> {
 
 export class Axios {
   constructor(config?: AxiosRequestConfig);
+  readonly instanceId: number;
   defaults: AxiosRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;

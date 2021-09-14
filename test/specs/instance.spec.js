@@ -111,4 +111,17 @@ describe('instance', function () {
       }, 100);
     });
   });
+
+  it('should have its _instanceId incremented every time a new instance is created', function () {
+    var instance1 = axios.create();
+    var instance2 = axios.create();
+    var instance3 = axios.create();
+    var instance4 = axios.create();
+
+    var firstInstanceId = instance1._instanceId;
+
+    expect(instance2._instanceId).toEqual(firstInstanceId + 1);
+    expect(instance3._instanceId).toEqual(firstInstanceId + 2);
+    expect(instance4._instanceId).toEqual(firstInstanceId + 3);
+  });
 });

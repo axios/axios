@@ -456,7 +456,7 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header 
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
   // `insecureHTTPParser` boolean.
   // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
@@ -464,7 +464,7 @@ These are the available config options for making requests. Only the `url` is re
   // Using the insecure parser should be avoided.
   // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
-  insecureHTTPParser: undefined // default
+  insecureHTTPParser: undefined, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
@@ -478,6 +478,13 @@ These are the available config options for making requests. Only the `url` is re
     
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false,
+  },
+
+  // `defaultReject`, when set to a function, is executed when your axios request is rejected
+  // and you haven't explicitly used a catch block
+  // it implements the unhandledRejection event
+  defaultReject: function (err) {
+    console.log(err.toJSON());
   }
 }
 ```
@@ -684,6 +691,17 @@ axios.get('/user/12345')
     console.log(error.toJSON());
   });
 ```
+
+You can set a default error handler for axios requests; it will be executed only in case you don't explicitly use a catch block.
+
+```js
+axios.defaults.defaultReject = function (error) {
+    console.log(error.toJSON());
+}
+axios.get('/user/12345'); // will print an error in case promise is rejected
+```
+
+> Warning: since this feature implements unhandled rejections, it might terminate the process in certain node environments; if possible, you should use an interceptor instead.
 
 ## Cancellation
 

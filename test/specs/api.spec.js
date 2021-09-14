@@ -45,6 +45,10 @@ describe('static api', function () {
   it('should have isAxiosError properties', function () {
     expect(typeof axios.isAxiosError).toEqual('function');
   });
+
+  it('should have instance ID', function () {
+    expect(axios._instanceId).toEqual(0);
+  });
 });
 
 describe('instance api', function () {
@@ -64,5 +68,9 @@ describe('instance api', function () {
   it('should have interceptors', function () {
     expect(typeof instance.interceptors.request).toEqual('object');
     expect(typeof instance.interceptors.response).toEqual('object');
+  });
+
+  it('should increment instance ID', function () {
+    expect(instance._instanceId).toEqual(1);
   });
 });

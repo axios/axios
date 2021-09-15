@@ -1,5 +1,17 @@
 # Changelog
 
+### 0.21.4 (September 6, 2021)
+
+Fixes and Functionality:
+- Fixing JSON transform when data is stringified. Providing backward compatability and complying to the JSON RFC standard ([#4020](https://github.com/axios/axios/pull/4020))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Guillaume Fortaine](https://github.com/gfortaine)
+- [Yusuke Kawasaki](https://github.com/kawanet)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+
 ### 0.21.3 (September 4, 2021)
 
 Fixes and Functionality:

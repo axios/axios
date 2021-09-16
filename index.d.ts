@@ -78,6 +78,7 @@ export interface AxiosRequestConfig<T = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions
+  signal?: AbortSignal;
 }
 
 export interface AxiosResponse<T = never>  {

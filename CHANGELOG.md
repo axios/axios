@@ -1,5 +1,153 @@
 # Changelog
 
+### 0.21.4 (September 6, 2021)
+
+Fixes and Functionality:
+- Fixing JSON transform when data is stringified. Providing backward compatability and complying to the JSON RFC standard ([#4020](https://github.com/axios/axios/pull/4020))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Guillaume Fortaine](https://github.com/gfortaine)
+- [Yusuke Kawasaki](https://github.com/kawanet)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+
+### 0.21.3 (September 4, 2021)
+
+Fixes and Functionality:
+- Fixing response interceptor not being called when request interceptor is attached ([#4013](https://github.com/axios/axios/pull/4013))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Julian Hollmann](https://github.com/nerdbeere)
+
+### 0.21.2 (September 4, 2021)
+
+Fixes and Functionality:
+
+- Updating axios requests to be delayed by pre-emptive promise creation ([#2702](https://github.com/axios/axios/pull/2702))
+- Adding "synchronous" and "runWhen" options to interceptors api ([#2702](https://github.com/axios/axios/pull/2702))
+- Updating of transformResponse ([#3377](https://github.com/axios/axios/pull/3377))
+- Adding ability to omit User-Agent header ([#3703](https://github.com/axios/axios/pull/3703))
+- Adding multiple JSON improvements ([#3688](https://github.com/axios/axios/pull/3688), [#3763](https://github.com/axios/axios/pull/3763))
+- Fixing quadratic runtime and extra memory usage when setting a maxContentLength ([#3738](https://github.com/axios/axios/pull/3738))
+- Adding parseInt to config.timeout ([#3781](https://github.com/axios/axios/pull/3781))
+- Adding custom return type support to interceptor ([#3783](https://github.com/axios/axios/pull/3783))
+- Adding security fix for ReDoS vulnerability ([#3980](https://github.com/axios/axios/pull/3980))
+
+Internal and Tests:
+
+- Updating build dev dependancies ([#3401](https://github.com/axios/axios/pull/3401))
+- Fixing builds running on Travis CI ([#3538](https://github.com/axios/axios/pull/3538))
+- Updating follow rediect version ([#3694](https://github.com/axios/axios/pull/3694), [#3771](https://github.com/axios/axios/pull/3771))
+- Updating karma sauce launcher to fix failing sauce tests ([#3712](https://github.com/axios/axios/pull/3712), [#3717](https://github.com/axios/axios/pull/3717))
+- Updating content-type header for application/json to not contain charset field, according do RFC 8259 ([#2154](https://github.com/axios/axios/pull/2154))
+- Fixing tests by bumping karma-sauce-launcher version ([#3813](https://github.com/axios/axios/pull/3813))
+- Changing testing process from Travis CI to GitHub Actions ([#3938](https://github.com/axios/axios/pull/3938))
+
+Documentation:
+
+- Updating documentation around the use of `AUTH_TOKEN` with multiple domain endpoints ([#3539](https://github.com/axios/axios/pull/3539))
+- Remove duplication of item in changelog ([#3523](https://github.com/axios/axios/pull/3523))
+- Fixing gramatical errors ([#2642](https://github.com/axios/axios/pull/2642))
+- Fixing spelling error ([#3567](https://github.com/axios/axios/pull/3567))
+- Moving gitpod metion ([#2637](https://github.com/axios/axios/pull/2637))
+- Adding new axios documentation website link ([#3681](https://github.com/axios/axios/pull/3681), [#3707](https://github.com/axios/axios/pull/3707))
+- Updating documentation around dispatching requests ([#3772](https://github.com/axios/axios/pull/3772))
+- Adding documentation for the type guard isAxiosError ([#3767](https://github.com/axios/axios/pull/3767))
+- Adding explanation of cancel token ([#3803](https://github.com/axios/axios/pull/3803))
+- Updating CI status badge ([#3953](https://github.com/axios/axios/pull/3953))
+- Fixing errors with JSON documentation ([#3936](https://github.com/axios/axios/pull/3936))
+- Fixing README typo under Request Config ([#3825](https://github.com/axios/axios/pull/3825))
+- Adding axios-multi-api to the ecosystem file ([#3817](https://github.com/axios/axios/pull/3817))
+- Adding SECURITY.md to properly disclose security vulnerabilities ([#3981](https://github.com/axios/axios/pull/3981))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Sasha Korotkov](https://github.com/SashaKoro)
+- [Daniel Lopretto](https://github.com/timemachine3030)
+- [Mike Bishop](https://github.com/MikeBishop)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [Mark](https://github.com/bimbiltu)
+- [Philipe Gouveia Paixão](https://github.com/piiih)
+- [hippo](https://github.com/hippo2cat)
+- [ready-research](https://github.com/ready-research)
+- [Xianming Zhong](https://github.com/chinesedfan)
+- [Christopher Chrapka](https://github.com/OJezu)
+- [Brian Anglin](https://github.com/anglinb)
+- [Kohta Ito](https://github.com/koh110)
+- [Ali Clark](https://github.com/aliclark)
+- [caikan](https://github.com/caikan)
+- [Elina Gorshkova](https://github.com/elinagorshkova)
+- [Ryota Ikezawa](https://github.com/paveg)
+- [Nisar Hassan Naqvi](https://github.com/nisarhassan12)
+- [Jake](https://github.com/codemaster138)
+- [TagawaHirotaka](https://github.com/wafuwafu13)
+- [Johannes Jarbratt](https://github.com/johachi)
+- [Mo Sattler](https://github.com/MoSattler)
+- [Sam Carlton](https://github.com/ThatGuySam)
+- [Matt Czapliński](https://github.com/MattCCC)
+- [Ziding Zhang](https://github.com/zidingz)
+
+### 0.21.1 (December 21, 2020)
+
+Fixes and Functionality:
+
+- Hotfix: Prevent SSRF ([#3410](https://github.com/axios/axios/pull/3410))
+- Protocol not parsed when setting proxy config from env vars ([#3070](https://github.com/axios/axios/pull/3070))
+- Updating axios in types to be lower case ([#2797](https://github.com/axios/axios/pull/2797))
+- Adding a type guard for `AxiosError` ([#2949](https://github.com/axios/axios/pull/2949))
+
+Internal and Tests:
+
+- Remove the skipping of the `socket` http test ([#3364](https://github.com/axios/axios/pull/3364))
+- Use different socket for Win32 test ([#3375](https://github.com/axios/axios/pull/3375))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- Daniel Lopretto <timemachine3030@users.noreply.github.com>
+- Jason Kwok <JasonHK@users.noreply.github.com>
+- Jay <jasonsaayman@gmail.com>
+- Jonathan Foster <jonathan@jonathanfoster.io>
+- Remco Haszing <remcohaszing@gmail.com>
+- Xianming Zhong <chinesedfan@qq.com>
+
+### 0.21.0 (October 23, 2020)
+
+Fixes and Functionality:
+
+- Fixing requestHeaders.Authorization ([#3287](https://github.com/axios/axios/pull/3287))
+- Fixing node types ([#3237](https://github.com/axios/axios/pull/3237))
+- Fixing axios.delete ignores config.data ([#3282](https://github.com/axios/axios/pull/3282))
+- Revert "Fixing overwrite Blob/File type as Content-Type in browser. (#1773)" ([#3289](https://github.com/axios/axios/pull/3289))
+- Fixing an issue that type 'null' and 'undefined' is not assignable to validateStatus when typescript strict option is enabled ([#3200](https://github.com/axios/axios/pull/3200))
+
+Internal and Tests:
+
+- Lock travis to not use node v15 ([#3361](https://github.com/axios/axios/pull/3361))
+
+Documentation:
+
+- Fixing simple typo, existant -> existent ([#3252](https://github.com/axios/axios/pull/3252))
+- Fixing typos ([#3309](https://github.com/axios/axios/pull/3309))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- Allan Cruz <57270969+Allanbcruz@users.noreply.github.com>
+- George Cheng <Gerhut@GMail.com>
+- Jay <jasonsaayman@gmail.com>
+- Kevin Kirsche <Kev.Kirsche+GitHub@gmail.com>
+- Remco Haszing <remcohaszing@gmail.com>
+- Taemin Shin <cprayer13@gmail.com>
+- Tim Gates <tim.gates@iress.com>
+- Xianming Zhong <chinesedfan@qq.com>
+
+### 0.20.0 (August 20, 2020)
+
+Release of 0.20.0-pre as a full release with no other changes.
+
 ### 0.20.0-pre (July 15, 2020)
 
 Fixes and Functionality:
@@ -36,7 +184,7 @@ Fixes and Functionality:
   - Adding test to check if password with non-Latin1 characters pass
 - Fixing 'Network Error' in react native android ([#1487](https://github.com/axios/axios/pull/1487))
   There is a bug in react native Android platform when using get method. It will trigger a 'Network Error' when passing the requestData which is an empty string to request.send function. So if the requestData is an empty string we can set it to null as well to fix the bug.
-- Fixing Cookie Helper with Asyc Components ([#1105](https://github.com/axios/axios/pull/1105)) ([#1107](https://github.com/axios/axios/pull/1107))
+- Fixing Cookie Helper with Async Components ([#1105](https://github.com/axios/axios/pull/1105)) ([#1107](https://github.com/axios/axios/pull/1107))
 - Fixing 'progressEvent' type ([#2851](https://github.com/axios/axios/pull/2851))
   - Fix 'progressEvent' type
   - Update axios.ts
@@ -54,7 +202,7 @@ Fixes and Functionality:
   - Fixing test\unit\adapters\http.js lint errors
   - Adding test for disabling auto decompression
   - Removing changes that fixed lint errors in tests
-  - Removing formating change to unit test
+  - Removing formatting change to unit test
 - Add independent `maxBodyLength` option ([#2781](https://github.com/axios/axios/pull/2781))
   - Add independent option to set the maximum size of the request body
   - Remove maxBodyLength check
@@ -100,14 +248,14 @@ Internal and Tests:
 - Adding console log on sandbox server startup ([#2210](https://github.com/axios/axios/pull/2210))
   - Adding console log on sandbox server startup
   - Update server.js
-    Add server error handeling
+    Add server error handling
   - Update server.js
     Better error message, remove retry.
 - Adding tests for method `options` type definitions ([#1996](https://github.com/axios/axios/pull/1996))
   Update tests.
 - Add test for redirecting with too large response ([#2695](https://github.com/axios/axios/pull/2695))
 - Fixing unit test failure in Windows OS ([#2601](https://github.com/axios/axios/pull/2601))
-- Fixing issue for HEAD method and gziped repsonse ([#2666](https://github.com/axios/axios/pull/2666))
+- Fixing issue for HEAD method and gzipped response ([#2666](https://github.com/axios/axios/pull/2666))
 - Fix tests in browsers ([#2748](https://github.com/axios/axios/pull/2748))
 - chore: add `jsdelivr` and `unpkg` support ([#2443](https://github.com/axios/axios/pull/2443))
 
@@ -145,7 +293,7 @@ Documentation:
 - Add CDNJS version badge in README.md ([#878](https://github.com/axios/axios/pull/878))
   This badge will show the version on CDNJS!
 - Documentation update to clear up ambiguity in code examples ([#2928](https://github.com/axios/axios/pull/2928))
-  - Made a adjustment to the documenation to clear up any ambiguity around the use of "fs". This should help clear up that the code examples with "fs" cannot be used on the client side.
+  - Made an adjustment to the documentation to clear up any ambiguity around the use of "fs". This should help clear up that the code examples with "fs" cannot be used on the client side.
 - Update README.md about validateStatus ([#2912](https://github.com/axios/axios/pull/2912))
   Rewrote the comment from "Reject only if the status code is greater than or equal to 500" to "Resolve only if the status code is less than 500"
 - Updating documentation for usage form-data ([#2805](https://github.com/axios/axios/pull/2805))
@@ -248,7 +396,6 @@ Fixes and Functionality:
 - Fixing set `config.method` after mergeConfig for Axios.prototype.request ([#2383](https://github.com/axios/axios/pull/2383))
 - Axios create url bug ([#2290](https://github.com/axios/axios/pull/2290))
 - Do not modify config.url when using a relative baseURL (resolves [#1628](https://github.com/axios/axios/issues/1098)) ([#2391](https://github.com/axios/axios/pull/2391))
-- Add typescript HTTP method definition for LINK and UNLINK ([#2444](https://github.com/axios/axios/pull/2444))
 
 Internal:
 
@@ -272,7 +419,7 @@ Documentation:
 - Update response interceptor docs ([#2399](https://github.com/axios/axios/pull/2399))
 - Update README.md ([#2504](https://github.com/axios/axios/pull/2504))
 - Fix word 'sintaxe' to 'syntax' in README.md ([#2432](https://github.com/axios/axios/pull/2432))
-- upadating README: notes on CommonJS autocomplete ([#2256](https://github.com/axios/axios/pull/2256))
+- updating README: notes on CommonJS autocomplete ([#2256](https://github.com/axios/axios/pull/2256))
 - Fix grammar in README.md ([#2271](https://github.com/axios/axios/pull/2271))
 - Doc fixes, minor examples cleanup ([#2198](https://github.com/axios/axios/pull/2198))
 
@@ -325,7 +472,7 @@ New Functionality:
 
 - Add getUri method ([#1712](https://github.com/axios/axios/issues/1712))
 - Add support for no_proxy env variable ([#1693](https://github.com/axios/axios/issues/1693))
-- Add toJSON to decorated Axios errors to faciliate serialization ([#1625](https://github.com/axios/axios/issues/1625))
+- Add toJSON to decorated Axios errors to facilitate serialization ([#1625](https://github.com/axios/axios/issues/1625))
 - Add second then on axios call ([#1623](https://github.com/axios/axios/issues/1623))
 - Typings: allow custom return types
 - Add option to specify character set in responses (with http adapter)

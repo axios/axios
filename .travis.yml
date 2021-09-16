@@ -4,7 +4,7 @@ language: node_js
 node_js:
   - 10
   - 12
-  - node
+  - 14
 email:
   on_failure: change
   on_success: never

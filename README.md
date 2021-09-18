@@ -483,8 +483,8 @@ These are the available config options for making requests. Only the `url` is re
   // `defaultReject`, when set to a function, is executed when your axios request is rejected
   // and you haven't explicitly used a catch block
   // it implements the unhandledRejection event
-  defaultReject: function (err) {
-    console.log(err.toJSON());
+  defaultReject: function (error) {
+    throw error;
   }
 }
 ```

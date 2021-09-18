@@ -16,8 +16,12 @@ describe('defaultReject', function () {
     axios.defaults.defaultReject.calls.reset();
   });
 
-  it('should be null by default', function () {
-  	expect(instanceWithInitialDefaults.defaults.defaultReject).toBe(null);
+  it('should throw an error by default', function () {
+    var myError = new Error('Test error');
+    var myDefaultReject = function () {
+      instanceWithInitialDefaults.defaults.defaultReject(myError);
+    };
+  	expect(myDefaultReject).toThrow(myError);
   });
 
   it('should not be called if axios request was successful', function (done) {

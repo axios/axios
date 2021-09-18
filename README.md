@@ -408,9 +408,6 @@ These are the available config options for making requests. Only the `url` is re
   // rejected.
   validateStatus: function (status) {
     return status >= 200 && status < 300; // default
-
-  // Dont encode the URI's path (OData example)
-  keepPathnameDecoded: true, // default is false
   },
 
   // `maxRedirects` defines the maximum number of redirects to follow in node.js.
@@ -482,6 +479,9 @@ These are the available config options for making requests. Only the `url` is re
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false,
   }
+
+  // Dont encode the URI's path (OData example)
+  keepPathnameDecoded: true, // default is false
 }
 ```
 

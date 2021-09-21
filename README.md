@@ -701,7 +701,8 @@ axios.defaults.defaultReject = function (error) {
 axios.get('/user/12345'); // will print an error in case promise is rejected
 ```
 
-> Warning: since this feature implements unhandled rejections, it might terminate the process in certain node environments; if possible, you should use an interceptor instead.
+> Warning: since this feature implements unhandled rejections, it might terminate the process in certain node environments; if possible, you should use an interceptor instead, or explicit catch blocks.
+Works on browsers that support the unhandledrejection event.
 
 ## Cancellation
 

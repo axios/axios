@@ -16,12 +16,40 @@ describe('defaultReject', function () {
     axios.defaults.defaultReject.calls.reset();
   });
 
-  it('should throw an error by default', function () {
-    var myError = new Error('Test error');
-    var myDefaultReject = function () {
-      instanceWithInitialDefaults.defaults.defaultReject(myError);
-    };
-  	expect(myDefaultReject).toThrow(myError);
+  it('should be null by default', function () {
+  	expect(instanceWithInitialDefaults.defaults.defaultReject).toBe(null);
+  });
+
+  describe('defaultReject setter', function () {
+    beforeEach(function () {
+      spyOn(window, 'addEventListener').and.callThrough();
+      spyOn(window, 'removeEventListener').and.callThrough();
+    });
+
+    afterEach(function () {
+      window.addEventListener.calls.reset();
+      window.removeEventListener.calls.reset();
+    });
+
+    it('should clear/add an unhandledrejection event listener when set to a function', function () {
+      instanceWithInitialDefaults.defaults.defaultReject = function () {
+        return 'Testing behaviour of defaultReject setter';
+      };
+      expect(window.addEventListener).toHaveBeenCalled();
+    });
+
+    it('should clear its event listener(s) when set to any other value', function () {
+      instanceWithInitialDefaults.defaults.defaultReject = null;
+      expect(window.removeEventListener).toHaveBeenCalled();
+    });
+
+    it('should throw an error if browser does not support the unhandledrejection event', function () {
+      spyOnProperty(window, 'onunhandledrejection', 'get').and.returnValue(undefined);
+      function setDefaultReject() {
+        instance.defaults.defaults = function () { return ('Setting this should throw an error'); }
+      }
+      expect(setDefaultReject).toThrow();
+    });
   });
 
   it('should not be called if axios request was successful', function (done) {

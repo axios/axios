@@ -1,5 +1,22 @@
 # Changelog
 
+### 0.22.0 (September 30, 2021)
+
+Fixes and Functionality:
+- Caseless header comparing in HTTP adapter ([#2880](https://github.com/axios/axios/pull/2880))
+- Avoid package.json import fixing issues and warnings related to this ([#4041](https://github.com/axios/axios/pull/4041)), ([#4065](https://github.com/axios/axios/pull/4065))
+- Fixed cancelToken leakage and added AbortController support ([#3305](https://github.com/axios/axios/pull/3305))
+- Updating CI to run on release branches
+- Bump follow redirects version
+- Fixed default transitional config for custom Axios instance; ([#4052](https://github.com/axios/axios/pull/4052))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Matt R. Wilson](https://github.com/mastermatt)
+- [Xianming Zhong](https://github.com/chinesedfan)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+
 ### 0.21.4 (September 6, 2021)
 
 Fixes and Functionality:

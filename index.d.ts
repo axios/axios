@@ -21,9 +21,11 @@ export interface AxiosProxyConfig {
   protocol?: string;
 }
 
-export type Headers = Record<string, string>;
+export type Headers = Record<string, string>
 
-export type DefaultHeaders = Record<'common' | Extract<Method, 'delete' | 'get' | 'head' | 'patch' | 'post' | 'put'>, Headers>;
+export type DefaultHeaders = Record<'common' | Extract<Method, 'delete' | 'get' | 'head' | 'patch' | 'post' | 'put'>, Headers>
+
+export type CreateAxiosHeaders = Partial<DefaultHeaders>
 
 export type Method =
   | 'get' | 'GET'
@@ -85,8 +87,12 @@ export interface AxiosRequestConfig<T = any> {
   signal?: AbortSignal;
 }
 
-export interface AxiosDefaultRequestConfig<T = any> extends Omit<AxiosRequestConfig<T>, 'headers'> {
+export interface AxiosDefaultConfig<T = any> extends Omit<AxiosRequestConfig<T>, 'headers'> {
   headers: DefaultHeaders;
+}
+
+export interface AxiosInstanceCreateConfig<T = any> extends Omit<AxiosRequestConfig<T>, 'headers'> {
+  headers?: CreateAxiosHeaders;
 }
 
 export interface AxiosResponse<T = never>  {
@@ -144,8 +150,8 @@ export interface AxiosInterceptorManager<V> {
 }
 
 export class Axios {
-  constructor(config?: AxiosRequestConfig);
-  defaults: AxiosDefaultRequestConfig;
+  constructor(config?: AxiosDefaultConfig);
+  defaults: AxiosDefaultConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
@@ -167,7 +173,7 @@ export interface AxiosInstance extends Axios {
 }
 
 export interface AxiosStatic extends AxiosInstance {
-  create(config?: AxiosRequestConfig): AxiosInstance;
+  create(config?: AxiosInstanceCreateConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;

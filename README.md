@@ -372,6 +372,8 @@ These are the available config options for making requests. Only the `url` is re
   // `responseType` indicates the type of data that the server will respond with
   // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
   //   browser only: 'blob'
+  // Response type can be based on the response by providing a function
+  // that has an AxiosResponse parameter and returns one of these values
   responseType: 'json', // default
 
   // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)

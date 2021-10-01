@@ -62,7 +62,7 @@ export interface AxiosRequestConfig<T = any> {
   withCredentials?: boolean;
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;
-  responseType?: ResponseType;
+  responseType?: ResponseType | ((AxiosResponse) => ResponseType);
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: any) => void;

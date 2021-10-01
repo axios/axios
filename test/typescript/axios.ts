@@ -111,10 +111,6 @@ axios.patch('/user', { foo: 'bar' })
   .catch(handleError);
 
 // Typed methods
-interface UserCreationDef {
-    name: string;
-}
-
 interface User {
   id: number;
   name: string;
@@ -142,7 +138,7 @@ axios.get<User>('/user', { params: { id: 12345 } })
 axios.head<User>('/user')
 	.then(handleUserResponse)
     .catch(handleError);
-
+    
 axios.options<User>('/user')
 	.then(handleUserResponse)
 	.catch(handleError);
@@ -151,19 +147,19 @@ axios.delete<User>('/user')
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.post<User>('/user', { name: 'foo', id: 1 })
+axios.post<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.post<User>('/user', { name: 'foo', id: 1 }, { headers: { 'X-FOO': 'bar' } })
+axios.post<User>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.put<User>('/user', { name: 'foo', id: 1 })
+axios.put<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.patch<User>('/user', { name: 'foo', id: 1 })
+axios.patch<User>('/user', { foo: 'bar' })
 	.then(handleUserResponse)
   .catch(handleError);
 
@@ -193,19 +189,19 @@ axios.delete<User, string>('/user')
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
+axios.post<User, string>('/user', { foo: 'bar' })
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' }, { headers: { 'X-FOO': 'bar' } })
+axios.post<User, string>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.put<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
+axios.put<User, string>('/user', { foo: 'bar' })
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.patch<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
+axios.patch<User, string>('/user', { foo: 'bar' })
   .then(handleStringResponse)
   .catch(handleError);
 

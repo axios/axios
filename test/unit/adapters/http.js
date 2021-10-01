@@ -953,7 +953,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         cancelToken: source.token
       }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel obejct');
+        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel object');
         assert.equal(thrown.message, 'Operation has been canceled.');
         done();
       });

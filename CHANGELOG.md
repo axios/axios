@@ -1,6 +1,6 @@
 # Changelog
 
-### 0.22.0 (September 30, 2021)
+### 0.22.0 (October 01, 2021)
 
 Fixes and Functionality:
 - Caseless header comparing in HTTP adapter ([#2880](https://github.com/axios/axios/pull/2880))

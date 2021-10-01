@@ -1,5 +1,5 @@
 export interface AxiosTransformer {
-  (data: any, headers?: Record<string, string>): any;
+  (data: any, headers?: Headers): any;
 }
 
 export interface AxiosAdapter {
@@ -20,6 +20,10 @@ export interface AxiosProxyConfig {
   };
   protocol?: string;
 }
+
+export type Headers = Record<string, string>;
+
+export type DefaultHeaders = Record<'common' | Extract<Method, 'delete' | 'get' | 'head' | 'patch' | 'post' | 'put'>, Headers>;
 
 export type Method =
   | 'get' | 'GET'
@@ -53,7 +57,7 @@ export interface AxiosRequestConfig<T = any> {
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: Record<string, string>;
+  headers?: Headers;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: T;
@@ -81,11 +85,15 @@ export interface AxiosRequestConfig<T = any> {
   signal?: AbortSignal;
 }
 
+export interface AxiosDefaultRequestConfig<T = any> extends Omit<AxiosRequestConfig<T>, 'headers'> {
+  headers: DefaultHeaders;
+}
+
 export interface AxiosResponse<T = never>  {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string>;
+  headers: Headers;
   config: AxiosRequestConfig<T>;
   request?: any;
 }
@@ -137,7 +145,7 @@ export interface AxiosInterceptorManager<V> {
 
 export class Axios {
   constructor(config?: AxiosRequestConfig);
-  defaults: AxiosRequestConfig;
+  defaults: AxiosDefaultRequestConfig;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;

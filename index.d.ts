@@ -148,9 +148,9 @@ export class Axios {
   delete<T = never, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
   head<T = never, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
   options<T = never, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  post<T = never, R = AxiosResponse<T>, D = any>(url: string, data?: T, config?: AxiosRequestConfig<D>): Promise<R>;
-  put<T = never, R = AxiosResponse<T>, D = any>(url: string, data?: T, config?: AxiosRequestConfig<D>): Promise<R>;
-  patch<T = never, R = AxiosResponse<T>, D = any>(url: string, data?: T, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = never, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = never, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = never, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {

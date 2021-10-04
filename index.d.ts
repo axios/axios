@@ -85,7 +85,7 @@ export interface AxiosResponse<T = never>  {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string>;
+  headers: Record<string, string | string[]>;
   config: AxiosRequestConfig<T>;
   request?: any;
 }

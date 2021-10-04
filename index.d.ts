@@ -93,6 +93,7 @@ export interface AxiosRequestConfig<T = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions
+  signal?: AbortSignal;
 }
 
 export interface AxiosResponse<T = never>  {
@@ -177,6 +178,7 @@ export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
+  readonly VERSION: string;
   isCancel(value: any): boolean;
   all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;

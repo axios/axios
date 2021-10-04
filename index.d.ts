@@ -53,7 +53,7 @@ export interface AxiosRequestConfig<T = any> {
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: Record<string, string>;
+  headers?: Record<string, string | boolean | undefined>;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: T;

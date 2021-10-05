@@ -1,5 +1,5 @@
 export interface AxiosTransformer {
-  (data: any, headers?: Record<string, string>): any;
+  (data: any, headers?: RequestHeaders): any;
 }
 
 export interface AxiosAdapter {
@@ -20,6 +20,9 @@ export interface AxiosProxyConfig {
   };
   protocol?: string;
 }
+
+export type RequestHeaders = Record<string, string | number | boolean>
+export type ResponseHeaders = Record<string, string>
 
 export type Method =
   | 'get' | 'GET'
@@ -53,7 +56,7 @@ export interface AxiosRequestConfig<T = any> {
   baseURL?: string;
   transformRequest?: AxiosTransformer | AxiosTransformer[];
   transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: Record<string, string>;
+  headers?: RequestHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: T;
@@ -85,7 +88,7 @@ export interface AxiosResponse<T = never>  {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string>;
+  headers: ResponseHeaders;
   config: AxiosRequestConfig<T>;
   request?: any;
 }

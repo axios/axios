@@ -45,7 +45,6 @@
     "grunt-eslint": "^23.0.0",
     "grunt-karma": "^4.0.0",
     "grunt-mocha-test": "^0.13.3",
-    "grunt-ts": "^6.0.0-beta.19",
     "grunt-webpack": "^4.0.2",
     "istanbul-instrumenter-loader": "^1.0.0",
     "jasmine-core": "^2.4.1",

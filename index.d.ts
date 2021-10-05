@@ -1,3 +1,17 @@
+export interface HeadersDefaults {
+  common: Record<string, string>;
+  delete: Record<string, string>;
+  get: Record<string, string>;
+  head: Record<string, string>;
+  post: Record<string, string>;
+  put: Record<string, string>;
+  patch: Record<string, string>;
+  options?: Record<string, string>;
+  purge?: Record<string, string>;
+  link?: Record<string, string>;
+  unlink?: Record<string, string>;
+}
+
 export interface AxiosTransformer {
   (data: any, headers?: Record<string, string>): any;
 }
@@ -81,6 +95,10 @@ export interface AxiosRequestConfig<D = any> {
   signal?: AbortSignal;
 }
 
+export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+  headers: HeadersDefaults
+}
+
 export interface AxiosResponse<T = never, D = any>  {
   data: T;
   status: number;
@@ -137,7 +155,7 @@ export interface AxiosInterceptorManager<V> {
 
 export class Axios {
   constructor(config?: AxiosRequestConfig);
-  defaults: AxiosRequestConfig;
+  defaults: AxiosDefaults;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;

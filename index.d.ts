@@ -1,3 +1,5 @@
+// TypeScript Version: 3.0
+
 export interface HeadersDefaults {
   common: Record<string, string>;
   delete: Record<string, string>;
@@ -30,7 +32,7 @@ export interface AxiosProxyConfig {
   port: number;
   auth?: {
     username: string;
-    password:string;
+    password: string;
   };
   protocol?: string;
 }
@@ -45,7 +47,7 @@ export type Method =
   | 'patch' | 'PATCH'
   | 'purge' | 'PURGE'
   | 'link' | 'LINK'
-  | 'unlink' | 'UNLINK'
+  | 'unlink' | 'UNLINK';
 
 export type ResponseType =
   | 'arraybuffer'
@@ -53,9 +55,9 @@ export type ResponseType =
   | 'document'
   | 'json'
   | 'text'
-  | 'stream'
+  | 'stream';
 
-export interface TransitionalOptions{
+export interface TransitionalOptions {
   silentJSONParsing: boolean;
   forcedJSONParsing: boolean;
   clarifyTimeoutError: boolean;
@@ -91,12 +93,12 @@ export interface AxiosRequestConfig<D = any> {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
-  transitional?: TransitionalOptions
+  transitional?: TransitionalOptions;
   signal?: AbortSignal;
 }
 
 export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
-  headers: HeadersDefaults
+  headers: HeadersDefaults;
 }
 
 export interface AxiosResponse<T = never, D = any>  {
@@ -161,7 +163,7 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = never, R = AxiosResponse<T>, D = any> (config: AxiosRequestConfig<D>): Promise<R>;
+  request<T = never, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
   get<T = never, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
   delete<T = never, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
   head<T = never, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
@@ -183,7 +185,7 @@ export interface AxiosStatic extends AxiosInstance {
   Axios: typeof Axios;
   readonly VERSION: string;
   isCancel(value: any): boolean;
-  all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
+  all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError(payload: any): payload is AxiosError;
 }

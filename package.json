@@ -63,6 +63,7 @@
     "mocha": "^8.2.1",
     "sinon": "^4.5.0",
     "terser-webpack-plugin": "^4.2.3",
+    "typescript": "^4.0.5",
     "url-search-params": "^0.10.0",
     "webpack": "^4.44.2",
     "webpack-dev-server": "^3.11.0"

@@ -21,7 +21,7 @@ export interface AxiosProxyConfig {
   protocol?: string;
 }
 
-export type RequestHeaders = Record<string, string | number | boolean>
+export type RequestHeaders = Record<string, string | number | boolean | undefined>
 export type ResponseHeaders = Record<string, string>
 
 export type Method =

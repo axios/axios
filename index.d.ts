@@ -50,7 +50,7 @@ export interface TransitionalOptions{
   clarifyTimeoutError: boolean;
 }
 
-export interface AxiosRequestConfig<T = any> {
+export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
@@ -59,7 +59,7 @@ export interface AxiosRequestConfig<T = any> {
   headers?: RequestHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
-  data?: T;
+  data?: D;
   timeout?: number;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
@@ -84,25 +84,25 @@ export interface AxiosRequestConfig<T = any> {
   signal?: AbortSignal;
 }
 
-export interface AxiosResponse<T = never>  {
+export interface AxiosResponse<T = unknown, D = any>  {
   data: T;
   status: number;
   statusText: string;
   headers: ResponseHeaders;
-  config: AxiosRequestConfig<T>;
+  config: AxiosRequestConfig<D>;
   request?: any;
 }
 
-export interface AxiosError<T = never> extends Error {
-  config: AxiosRequestConfig;
+export interface AxiosError<T = unknown, D = any> extends Error {
+  config: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
-  response?: AxiosResponse<T>;
+  response?: AxiosResponse<T, D>;
   isAxiosError: boolean;
   toJSON: () => object;
 }
 
-export interface AxiosPromise<T = never> extends Promise<AxiosResponse<T>> {
+export interface AxiosPromise<T = unknown> extends Promise<AxiosResponse<T>> {
 }
 
 export interface CancelStatic {
@@ -146,14 +146,14 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = never, R = AxiosResponse<T>> (config: AxiosRequestConfig<T>): Promise<R>;
-  get<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  delete<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  head<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  options<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  post<T = never, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
-  put<T = never, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
-  patch<T = never, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
+  request<T = unknown, R = AxiosResponse<T>, D = any> (config: AxiosRequestConfig<D>): Promise<R>;
+  get<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  delete<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  head<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  options<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = unknown, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = unknown, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = unknown, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {

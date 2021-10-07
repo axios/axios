@@ -1,5 +1,15 @@
-export interface AxiosTransformer {
-  (data: any, headers?: Record<string, string>): any;
+export type AxiosRequestHeaders = Record<string, string>
+
+export type AxiosResponseHeaders = Record<string, string> & {
+  "set-cookie"?: string[]
+}
+
+export interface AxiosRequestTransformer {
+  (data: any, headers?: AxiosRequestHeaders): any;
+}
+
+export interface AxiosResponseTransformer {
+  (data: any, headers?: AxiosResponseHeaders): any;
 }
 
 export interface AxiosAdapter {
@@ -51,9 +61,9 @@ export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
-  transformRequest?: AxiosTransformer | AxiosTransformer[];
-  transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: Record<string, string>;
+  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+  transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
+  headers?: AxiosRequestHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: D;
@@ -85,7 +95,7 @@ export interface AxiosResponse<T = unknown, D = any>  {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string>;
+  headers: AxiosResponseHeaders;
   config: AxiosRequestConfig<D>;
   request?: any;
 }

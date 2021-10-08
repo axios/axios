@@ -254,27 +254,6 @@ describe('requests', function () {
     });
   });
 
-  it('should resolve when validateStatus is undefined', function (done) {
-    var resolveSpy = jasmine.createSpy('resolve');
-    var rejectSpy = jasmine.createSpy('reject');
-
-    axios('/foo', {
-      validateStatus: undefined
-    }).then(resolveSpy)
-      .catch(rejectSpy)
-      .then(function () {
-        expect(resolveSpy).toHaveBeenCalled();
-        expect(rejectSpy).not.toHaveBeenCalled();
-        done();
-      });
-
-    getAjaxRequest().then(function (request) {
-      request.respondWith({
-        status: 500
-      });
-    });
-  });
-
   // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;

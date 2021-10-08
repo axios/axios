@@ -452,6 +452,9 @@ These are the available config options for making requests. Only the `url` is re
   cancelToken: new CancelToken(function (cancel) {
   }),
 
+  // an alternative way to cancel Axios requests using AbortController
+  signal: new AbortController().signal,
+
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 
   // from the responses objects of all decompressed responses
@@ -555,6 +558,62 @@ const instance = axios.create({
 instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ```
 
+The `create` method can be called recursively to get an instance that inherits defaults of its parents:
+```js
+const instance = axios.create({
+  baseURL: 'https://api.example.com'
+});
+
+const instance2 = instance.create({
+  responseType: 'json'
+});
+
+const instance3 = instance2.create({
+  headers: {'header1': value}
+});
+```
+Passing `true` as the second argument activates the `useLiveConfig` mode. In this mode,
+the actual configuration will be recalculated based on the configuration of all its
+parent instances before making a request.
+This can be used for centralized configuration updates that will affect all child instances,
+e.g. updating token values.
+````js
+const axios= require('../index');
+
+const instance2 = axios.create({
+  responseType: 'json'
+}, true);
+
+const instance3Live = instance2.create({
+  headers: {
+    header1: 'foo'
+  }
+}, true);
+
+instance2.setConfig({
+  headers: {
+    myToken: 222
+  }
+});
+
+const instance3Static = instance2.create({
+  headers: {
+    header1: 'bar'
+  }
+});
+
+instance2.setConfig({
+  headers: {
+    myToken: 333
+  }
+});
+
+console.log(instance3Live.getConfig().responseType); // json
+console.log(instance3Live.getConfig().headers.header1); // foo
+console.log(instance3Static.getConfig().headers.header1); // bar
+console.log('live', instance3Live.getConfig().headers.myToken); // 333
+console.log('static', instance3Static.getConfig().headers.myToken); // 222
+````
 ### Config order of precedence
 
 Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
@@ -734,7 +793,20 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-> Note: you can cancel several requests with the same cancel token.
+Axios supports AbortController to abort requests in [`fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#aborting_a_fetch) way:
+```js
+const controller = new AbortController();
+
+axios.get('/foo/bar', {
+   signal: controller.signal
+}).then(function(response) {
+   //...
+});
+// cancel the request
+controller.abort()
+```
+
+> Note: you can cancel several requests with the same cancel token/abort controller.
 > If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
 
 ## Using application/x-www-form-urlencoded format

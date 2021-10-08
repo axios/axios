@@ -1,5 +1,15 @@
-export interface AxiosTransformer {
-  (data: any, headers?: RequestHeaders): any;
+export type AxiosRequestHeaders = Record<string, string | number | boolean>
+
+export type AxiosResponseHeaders = Record<string, string> & {
+  "set-cookie"?: string[]
+}
+
+export interface AxiosRequestTransformer {
+  (data: any, headers?: AxiosRequestHeaders): any;
+}
+
+export interface AxiosResponseTransformer {
+  (data: any, headers?: AxiosResponseHeaders): any;
 }
 
 export interface AxiosAdapter {
@@ -20,9 +30,6 @@ export interface AxiosProxyConfig {
   };
   protocol?: string;
 }
-
-export type RequestHeaders = Record<string, string | number | boolean | undefined>
-export type ResponseHeaders = Record<string, string>
 
 export type Method =
   | 'get' | 'GET'
@@ -54,9 +61,9 @@ export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
-  transformRequest?: AxiosTransformer | AxiosTransformer[];
-  transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: RequestHeaders;
+  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+  transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
+  headers?: AxiosRequestHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: D;
@@ -88,7 +95,7 @@ export interface AxiosResponse<T = unknown, D = any>  {
   data: T;
   status: number;
   statusText: string;
-  headers: ResponseHeaders;
+  headers: AxiosResponseHeaders;
   config: AxiosRequestConfig<D>;
   request?: any;
 }

@@ -1,21 +1,17 @@
 // TypeScript Version: 3.0
 
-export interface HeadersDefaults {
-  common: Record<string, string>;
-  delete: Record<string, string>;
-  get: Record<string, string>;
-  head: Record<string, string>;
-  post: Record<string, string>;
-  put: Record<string, string>;
-  patch: Record<string, string>;
-  options?: Record<string, string>;
-  purge?: Record<string, string>;
-  link?: Record<string, string>;
-  unlink?: Record<string, string>;
+export type AxiosRequestHeaders = Record<string, string>
+
+export type AxiosResponseHeaders = Record<string, string> & {
+  "set-cookie"?: string[]
 }
 
-export interface AxiosTransformer {
-  (data: any, headers?: Record<string, string>): any;
+export interface AxiosRequestTransformer {
+  (data: any, headers?: AxiosRequestHeaders): any;
+}
+
+export interface AxiosResponseTransformer {
+  (data: any, headers?: AxiosResponseHeaders): any;
 }
 
 export interface AxiosAdapter {
@@ -67,9 +63,9 @@ export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
-  transformRequest?: AxiosTransformer | AxiosTransformer[];
-  transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: Record<string, string>;
+  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+  transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
+  headers?: AxiosRequestHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
   data?: D;
@@ -97,6 +93,20 @@ export interface AxiosRequestConfig<D = any> {
   signal?: AbortSignal;
 }
 
+export interface HeadersDefaults {
+  common: AxiosRequestHeaders;
+  delete: AxiosRequestHeaders;
+  get: AxiosRequestHeaders;
+  head: AxiosRequestHeaders;
+  post: AxiosRequestHeaders;
+  put: AxiosRequestHeaders;
+  patch: AxiosRequestHeaders;
+  options?: AxiosRequestHeaders;
+  purge?: AxiosRequestHeaders;
+  link?: AxiosRequestHeaders;
+  unlink?: AxiosRequestHeaders;
+}
+
 export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
   headers: HeadersDefaults;
 }
@@ -105,7 +115,7 @@ export interface AxiosResponse<T = unknown, D = any>  {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string>;
+  headers: AxiosResponseHeaders;
   config: AxiosRequestConfig<D>;
   request?: any;
 }

@@ -54,9 +54,9 @@ export type ResponseType =
   | 'stream';
 
 export interface TransitionalOptions {
-  silentJSONParsing: boolean;
-  forcedJSONParsing: boolean;
-  clarifyTimeoutError: boolean;
+  silentJSONParsing?: boolean;
+  forcedJSONParsing?: boolean;
+  clarifyTimeoutError?: boolean;
 }
 
 export interface AxiosRequestConfig<D = any> {
@@ -91,6 +91,7 @@ export interface AxiosRequestConfig<D = any> {
   decompress?: boolean;
   transitional?: TransitionalOptions;
   signal?: AbortSignal;
+  insecureHTTPParser?: boolean;
 }
 
 export interface HeadersDefaults {

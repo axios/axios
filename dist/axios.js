@@ -7,7 +7,7 @@
 		exports["axios"] = factory();
 	else
 		root["axios"] = factory();
-})(window, function() {
+})(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -239,7 +239,7 @@ module.exports = function xhrAdapter(config) {
 
     // Handle timeout
     request.ontimeout = function handleTimeout() {
-      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+      var timeoutErrorMessage = config.timeout ? 'timeout of ' + config.timeout + 'ms exceeded' : 'timeout exceeded';
       var transitional = config.transitional || defaults.transitional;
       if (config.timeoutErrorMessage) {
         timeoutErrorMessage = config.timeoutErrorMessage;
@@ -1357,7 +1357,7 @@ module.exports = defaults;
 /***/ (function(module, exports) {
 
 module.exports = {
-  "version": "0.22.0"
+  "version": "0.23.0"
 };
 
 /***/ }),

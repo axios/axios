@@ -52,9 +52,9 @@ export type ResponseType =
   | 'stream'
 
 export interface TransitionalOptions{
-  silentJSONParsing: boolean;
-  forcedJSONParsing: boolean;
-  clarifyTimeoutError: boolean;
+  silentJSONParsing?: boolean;
+  forcedJSONParsing?: boolean;
+  clarifyTimeoutError?: boolean;
 }
 
 export interface AxiosRequestConfig<D = any> {

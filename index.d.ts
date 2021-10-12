@@ -89,6 +89,7 @@ export interface AxiosRequestConfig<D = any> {
   decompress?: boolean;
   transitional?: TransitionalOptions;
   signal?: AbortSignal;
+  insecureHTTPParser?: boolean
 }
 
 export interface AxiosResponse<T = unknown, D = any>  {

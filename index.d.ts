@@ -121,7 +121,7 @@ export interface AxiosResponse<T = any, D = any>  {
   request?: any;
 }
 
-export interface AxiosError<T, D> extends Error {
+export interface AxiosError<T = any, D = any> extends Error {
   config: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
@@ -130,7 +130,7 @@ export interface AxiosError<T, D> extends Error {
   toJSON: () => object;
 }
 
-export interface AxiosPromise<T> extends Promise<AxiosResponse<T>> {
+export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
 }
 
 export interface CancelStatic {
@@ -174,14 +174,14 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T, R = AxiosResponse<T>, D>(config: AxiosRequestConfig<D>): Promise<R>;
-  get<T, R = AxiosResponse<T>, D>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  delete<T, R = AxiosResponse<T>, D>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  head<T, R = AxiosResponse<T>, D>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  options<T, R = AxiosResponse<T>, D>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  post<T, R = AxiosResponse<T>, D>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  put<T, R = AxiosResponse<T>, D>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patch<T, R = AxiosResponse<T>, D>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
+  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {

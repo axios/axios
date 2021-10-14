@@ -112,6 +112,10 @@ export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'hea
   headers: HeadersDefaults;
 }
 
+export interface AxiosInstanceConfig<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+  headers?: Partial<HeadersDefaults> | AxiosRequestHeaders;
+}
+
 export interface AxiosResponse<T = unknown, D = any>  {
   data: T;
   status: number;
@@ -190,7 +194,7 @@ export interface AxiosInstance extends Axios {
 }
 
 export interface AxiosStatic extends AxiosInstance {
-  create(config?: AxiosRequestConfig): AxiosInstance;
+  create(config?: AxiosInstanceConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;

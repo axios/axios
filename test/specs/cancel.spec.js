@@ -14,7 +14,7 @@ describe('cancel', function() {
   });
 
   describe('when called before sending request', function() {
-    it('rejects Promise with a Cancel object', function(done) {
+    it('rejects Promise with a CanceledError object', function(done) {
       var source = CancelToken.source();
       source.cancel('Operation has been canceled.');
       axios.get('/foo', {
@@ -28,7 +28,7 @@ describe('cancel', function() {
   });
 
   describe('when called after request has been sent', function() {
-    it('rejects Promise with a Cancel object', function(done) {
+    it('rejects Promise with a CanceledError object', function(done) {
       var source = CancelToken.source();
       axios.get('/foo/bar', {
         cancelToken: source.token

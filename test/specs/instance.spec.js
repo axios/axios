@@ -13,8 +13,10 @@ describe('instance', function () {
     for (var prop in axios) {
       if ([
         'Axios',
+        'AxiosError',
         'create',
         'Cancel',
+        'CanceledError',
         'CancelToken',
         'isCancel',
         'all',

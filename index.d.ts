@@ -121,13 +121,34 @@ export interface AxiosResponse<T = unknown, D = any>  {
   request?: any;
 }
 
-export interface AxiosError<T = unknown, D = any> extends Error {
+export class AxiosError<T = unknown, D = any> extends Error {
+  constructor(
+      message?: string,
+      code?: string,
+      config?: AxiosRequestConfig<D>,
+      request?: any,
+      response?: AxiosResponse<T, D>
+  );
   config: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
   response?: AxiosResponse<T, D>;
   isAxiosError: boolean;
+  status?: string;
   toJSON: () => object;
+  static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
+  static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
+  static readonly ERR_BAD_OPTION = "ERR_BAD_OPTION";
+  static readonly ERR_NETWORK = "ERR_NETWORK";
+  static readonly ERR_DEPRECATED = "ERR_DEPRECATED";
+  static readonly ERR_BAD_RESPONSE = "ERR_BAD_RESPONSE";
+  static readonly ERR_BAD_REQUEST = "ERR_BAD_REQUEST";
+  static readonly ERR_CANCELED = "ERR_CANCELED";
+  static readonly ECONNABORTED = "ECONNABORTED";
+  static readonly ETIMEDOUT = "ETIMEDOUT";
+}
+
+export class CanceledError<T> extends AxiosError<T> {
 }
 
 export interface AxiosPromise<T = unknown> extends Promise<AxiosResponse<T>> {

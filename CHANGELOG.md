@@ -1,5 +1,54 @@
 # Changelog
 
+### 0.23.0 (October 12, 2021)
+
+Breaking changes:
+- Distinguish request and response data types ([#4116](https://github.com/axios/axios/pull/4116))
+- Change never type to unknown ([#4142](https://github.com/axios/axios/pull/4142))
+- Fixed TransitionalOptions typings ([#4147](https://github.com/axios/axios/pull/4147))
+
+Fixes and Functionality:
+- Adding globalObject: 'this' to webpack config ([#3176](https://github.com/axios/axios/pull/3176))
+- Adding insecureHTTPParser type to AxiosRequestConfig ([#4066](https://github.com/axios/axios/pull/4066))
+- Fix missing semicolon in typings ([#4115](https://github.com/axios/axios/pull/4115))
+- Fix response headers types ([#4136](https://github.com/axios/axios/pull/4136))
+
+Internal and Tests:
+- Improve timeout error when timeout is browser default ([#3209](https://github.com/axios/axios/pull/3209))
+- Fix node version on CI ([#4069](https://github.com/axios/axios/pull/4069))
+- Added testing to TypeScript portion of project ([#4140](https://github.com/axios/axios/pull/4140))
+
+Documentation:
+- Rename Angular to AngularJS ([#4114](https://github.com/axios/axios/pull/4114))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Evan-Finkelstein](https://github.com/Evan-Finkelstein)
+- [Paweł Szymański](https://github.com/Jezorko)
+- [Dobes Vandermeer](https://github.com/dobesv)
+- [Claas Augner](https://github.com/caugner)
+- [Remco Haszing](https://github.com/remcohaszing)
+- [Evgeniy](https://github.com/egmen)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+
+### 0.22.0 (October 01, 2021)
+
+Fixes and Functionality:
+- Caseless header comparing in HTTP adapter ([#2880](https://github.com/axios/axios/pull/2880))
+- Avoid package.json import fixing issues and warnings related to this ([#4041](https://github.com/axios/axios/pull/4041)), ([#4065](https://github.com/axios/axios/pull/4065))
+- Fixed cancelToken leakage and added AbortController support ([#3305](https://github.com/axios/axios/pull/3305))
+- Updating CI to run on release branches
+- Bump follow redirects version
+- Fixed default transitional config for custom Axios instance; ([#4052](https://github.com/axios/axios/pull/4052))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Matt R. Wilson](https://github.com/mastermatt)
+- [Xianming Zhong](https://github.com/chinesedfan)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+
 ### 0.21.4 (September 6, 2021)
 
 Fixes and Functionality:

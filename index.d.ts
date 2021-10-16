@@ -162,7 +162,7 @@ export interface CancelTokenSource {
 }
 
 export interface AxiosInterceptorOptions {
-  runWhen?: (config: HttpRequestConfig) => boolean | undefined;
+  runWhen?: (config: AxiosRequestConfig) => boolean | undefined;
   synchronous?: boolean;
 }
 

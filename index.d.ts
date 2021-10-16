@@ -161,8 +161,17 @@ export interface CancelTokenSource {
   cancel: Canceler;
 }
 
+export interface AxiosInterceptorOptions {
+  runWhen?: (config: HttpRequestConfig) => boolean | undefined;
+  synchronous?: boolean;
+}
+
 export interface AxiosInterceptorManager<V> {
-  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any): number;
+  use<T = V>(
+    onFulfilled?: (value: V) => T | Promise<T>,
+    onRejected?: (error: any) => any,
+    options?: AxiosInterceptorOptions
+  ): number;
   eject(id: number): void;
 }
 

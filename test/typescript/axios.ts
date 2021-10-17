@@ -7,16 +7,25 @@ import axios, {
   Cancel,
   CancelToken,
   CancelTokenSource,
-  Canceler
+  Canceler,
+  HeadersDefaults
 } from 'axios';
 
 const config: AxiosRequestConfig = {
   url: '/user',
   method: 'get',
   baseURL: 'https://api.example.com/',
-  transformRequest: (data: any) => '{"foo":"bar"}',
+  transformRequest: (data: any, headers?: HeadersDefaults) => {
+    if (headers)
+      headers.common['Accept'] = "application/json";
+    return '{"foo":"bar"}';
+  },
   transformResponse: [
-    (data: any) => ({ baz: 'qux' })
+    (data: any, headers?: HeadersDefaults) => {
+      if (headers)
+        console.log(headers.common['Accept']);
+      return { baz: 'qux' };
+    }
   ],
   headers: { 'X-FOO': 'bar' },
   params: { id: 12345 },

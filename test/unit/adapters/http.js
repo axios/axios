@@ -968,7 +968,7 @@ describe('supports http with nodejs', function () {
         baseURL: 'http://localhost:4444/',
       }).then(function (res) {
         assert.equal(res.config.baseURL, 'http://localhost:4444/');
-        assert.equal(res.config.url, '/foo');
+        assert.equal(res.config.url, 'http://localhost:4444/foo');
         done();
       });
     });

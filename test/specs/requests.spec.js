@@ -32,7 +32,33 @@ describe('requests', function () {
       });
     });
   });
+  const invalidHeaders = ['foo', 1, true];
+  invalidHeaders.forEach(header => {
+    const headerType = header.constructor.name
+    const methods = ['delete', 'get', 'head', 'options'];
+    methods.forEach(m => it(`should throw an error if given header is ${headerType} on a ${m} method`, function (done) {
+      axios({
+        url: '/foo',
+        headers: header
+      }).catch(function (err) {
+        expect(err.message).toBe(`Headers must be an object, currently set to: ${header}`);
+        done();
+      });
+    }));
 
+    const methodsWithPayload = ['post', 'put', 'patch'];
+    methodsWithPayload.forEach(m => it(`should throw an error if given header is ${headerType} on a ${m} method`, function (done) {
+      axios({
+        url: '/foo',
+        data: {},
+        headers: header
+      }).catch(function (err) {
+        expect(err.message).toBe(`Headers must be an object, currently set to: ${header}`);
+        done();
+      });
+    }));
+  })
+  
   it('should allow string arg as url, and config arg', function (done) {
     axios.post('/foo');
 

@@ -782,6 +782,80 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should not use proxy for domains in no_proxy with point', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+
+      }).listen(4000, function () {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = '.foo.com, .localhost, .bar.net , , .quix.co';
+
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.equal(res.data, '4567', 'should not use proxy for domains in no_proxy');
+          done();
+        });
+      });
+    });
+  });
+
+  it('should not use proxy for domains in no_proxy with asterisk and point', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('4567');
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+
+      }).listen(4000, function () {
+        // set the env variable
+        process.env.http_proxy = 'http://localhost:4000/';
+        process.env.no_proxy = '*.foo.com, *.localhost, *.bar.net , , *.quix.co';
+
+        axios.get('http://localhost:4444/').then(function (res) {
+          assert.equal(res.data, '4567', 'should not use proxy for domains in no_proxy');
+          done();
+        });
+      });
+    });
+  });
+
   it('should use proxy for domains not in no_proxy', function (done) {
     server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');

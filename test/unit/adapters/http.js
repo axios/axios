@@ -6,9 +6,14 @@ var url = require('url');
 var zlib = require('zlib');
 var assert = require('assert');
 var fs = require('fs');
+var stream = require('stream');
 var path = require('path');
 var pkg = require('./../../../package.json');
 var server, proxy;
+
+function delay(ms){
+  return new Promise(resolve=> setTimeout(resolve, ms));
+}
 
 describe('supports http with nodejs', function () {
 
@@ -1003,5 +1008,154 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  describe('progress capturing', function(){
+    describe('upload', function (){
+      it('should support streams', function (done) {
+        const expectedUploadProgressSamples= [
+          {
+            loaded: 1,
+            total: 5,
+            progress: 0.2
+          },
+          {
+            loaded: 2,
+            total: 5,
+            progress: 0.4
+          },
+          {
+            loaded: 3,
+            total: 5,
+            progress: 0.6
+          },
+          {
+            loaded: 4,
+            total: 5,
+            progress: 0.8
+          },
+          {
+            loaded: 5,
+            total: 5,
+            progress: 1
+          }
+        ];
+
+        server = http.createServer(function (req, res) {
+          req.pipe(res);
+        }).listen(4444, function () {
+          const requestStream= stream.Readable();
+
+          const requestContent= '01234';
+          let n= 0;
+
+          requestStream._read = function () {
+            if (n === requestContent.length) {
+              this.push(null);
+              return;
+            }
+            setTimeout(() => this.push(requestContent[n++]), 200);
+          };
+
+          var uploadProgressSamples= [];
+
+          axios.post('http://localhost:4444/', requestStream,{
+            headers: {
+              'content-length': requestContent.length
+            },
+            onUploadProgress: function(entry){
+              uploadProgressSamples.push(entry);
+            }
+          }).then(function (res) {
+            assert.deepStrictEqual(uploadProgressSamples, expectedUploadProgressSamples);
+            done();
+          }).catch(done);
+        });
+      });
+
+      it('should support buffers', function (done) {
+        server = http.createServer(function (req, res) {
+          (async()=>{
+            await delay(1000);
+            for await (const chunk of req){
+              await delay(10);
+            }
+            res.end('ok');
+          })();
+        }).listen(4444, function () {
+          const bufferSize = 10 * 1024 * 1024;
+          const buffer= Buffer.alloc(bufferSize, "a", "utf-8");
+          let progressSamples = 0;
+
+          axios.post('http://localhost:4444/', buffer,{
+            maxBodyLength: Infinity,
+            maxRedirects: 0,
+            onUploadProgress: function(entry){
+              progressSamples++;
+              assert.equal(entry.total, bufferSize);
+            }
+          }).then(function (res) {
+            assert.ok(progressSamples > 1, 'Progress events were not emitted');
+            done();
+          }).catch(done);
+        });
+      });
+    });
+
+    describe('download', function (){
+      it('should support streams', function (done) {
+
+      const expectedDownloadProgressSamples= [
+        {
+          loaded: 1,
+          total: 5,
+          progress: 0.2
+        },
+        {
+          loaded: 2,
+          total: 5,
+          progress: 0.4
+        },
+        {
+          loaded: 3,
+          total: 5,
+          progress: 0.6
+        },
+        {
+          loaded: 4,
+          total: 5,
+          progress: 0.8
+        },
+        {
+          loaded: 5,
+          total: 5,
+          progress: 1
+        }
+      ];
+
+      server = http.createServer(function (req, res) {
+        (async () => {
+          const responseContent= "01234";
+
+          res.setHeader('Content-Length', responseContent.length);
+          for (let i = 0; i < responseContent.length; i++) {
+            res.write(String(responseContent[i]));
+            await delay(200);
+          }
+          res.end();
+        })();
+      }).listen(4444, function () {
+        var downloadProgressSamples= [];
+
+        axios.get('http://localhost:4444/', {
+          onDownloadProgress: function (entry){
+            downloadProgressSamples.push(entry);
+          }
+        }).then(function (res) {
+          assert.deepStrictEqual(downloadProgressSamples, expectedDownloadProgressSamples);
+          done();
+        }).catch(done);
+      });
+    });
+    });
+  });
 });
 

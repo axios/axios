@@ -3,7 +3,7 @@
 ### 0.24.0 (October 25, 2021)
 
 Breaking changes:
-- Revert: change type of AxiosResponse to any, please read lengthy discussion here: ([4141](https://github.com/axios/axios/issues/4141)) pull request: ([#4114](https://github.com/axios/axios/pull/4114))
+- Revert: change type of AxiosResponse to any, please read lengthy discussion here: ([4141](https://github.com/axios/axios/issues/4141)) pull request: ([#4186](https://github.com/axios/axios/pull/4186))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
 

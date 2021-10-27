@@ -12,19 +12,6 @@ module.exports = function(grunt) {
       dist: 'dist/**'
     },
 
-    ts: {
-      test: {
-        options: {
-          lib: [
-            'es5',
-            'es2015.promise',
-            'dom'
-          ]
-        },
-        src: ['typings/index.d.ts', 'test/typescript/*.ts']
-      }
-    },
-
     package2bower: {
       all: {
         fields: [
@@ -116,7 +103,7 @@ module.exports = function(grunt) {
       ';'].join(''));
   });
 
-  grunt.registerTask('test', 'Run the jasmine and mocha tests', ['eslint', 'mochaTest', 'karma:single', 'ts']);
+  grunt.registerTask('test', 'Run the jasmine and mocha tests', ['eslint', 'mochaTest', 'karma:single']);
   grunt.registerTask('build', 'Run webpack and bundle the source', ['clean', 'webpack']);
   grunt.registerTask('version', 'Sync version info for a release', ['usebanner', 'package2bower', 'package2env']);
 };

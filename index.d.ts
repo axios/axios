@@ -135,7 +135,7 @@ export interface AxiosPromise<T = unknown> extends Promise<AxiosResponse<T>> {
 }
 
 export interface CancelStatic {
-  new(message?: string): Cancel;
+  new (message?: string): Cancel;
 }
 
 export interface Cancel {
@@ -147,7 +147,7 @@ export interface Canceler {
 }
 
 export interface CancelTokenStatic {
-  new(executor: (cancel: Canceler) => void): CancelToken;
+  new (executor: (cancel: Canceler) => void): CancelToken;
   source(): CancelTokenSource;
 }
 

@@ -1153,19 +1153,8 @@ var createError = __webpack_require__(/*! ./createError */ "./lib/core/createErr
  */
 module.exports = function settle(resolve, reject, response) {
   var validateStatus = response.config.validateStatus;
-  var validateData = response.config.validateData;
   if (!response.status || !validateStatus || validateStatus(response.status)) {
-    if (!response.data || !validateData || validateData(response.data)) {
-      resolve(response);
-    } else {
-      reject(createError(
-        'Request failed with invalid data',
-        response.config,
-        response.status,
-        response.request,
-        response
-      ));
-    }
+    resolve(response);
   } else {
     reject(createError(
       'Request failed with status code ' + response.status,

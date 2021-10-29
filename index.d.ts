@@ -15,7 +15,7 @@ export interface AxiosResponseTransformer {
 }
 
 export interface AxiosAdapter {
-  (config: AxiosRequestConfig): AxiosPromise<any>;
+  (config: AxiosRequestConfig): AxiosPromise;
 }
 
 export interface AxiosBasicCredentials {
@@ -131,7 +131,7 @@ export interface AxiosError<T = unknown, D = any> extends Error {
   toJSON: () => object;
 }
 
-export interface AxiosPromise<T = unknown> extends Promise<AxiosResponse<T>> {
+export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
 }
 
 export interface CancelStatic {

@@ -59,7 +59,7 @@ export interface TransitionalOptions {
   clarifyTimeoutError?: boolean;
 }
 
-export interface AxiosRequestConfig<T = unknown, D = any> {
+export interface AxiosRequestConfig<T = any, D = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
@@ -109,11 +109,11 @@ export interface HeadersDefaults {
   unlink?: AxiosRequestHeaders;
 }
 
-export interface AxiosDefaults<T = unknown, D = any> extends Omit<AxiosRequestConfig<T, D>, 'headers'> {
+export interface AxiosDefaults<T = any, D = any> extends Omit<AxiosRequestConfig<T, D>, 'headers'> {
   headers: HeadersDefaults;
 }
 
-export interface AxiosResponse<T = unknown, D = any> {
+export interface AxiosResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
@@ -122,7 +122,7 @@ export interface AxiosResponse<T = unknown, D = any> {
   request?: any;
 }
 
-export interface AxiosError<T = unknown, D = any> extends Error {
+export interface AxiosError<T = any, D = any> extends Error {
   config: AxiosRequestConfig<T, D>;
   code?: string;
   request?: any;
@@ -175,14 +175,14 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = unknown, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<T, D>): Promise<R>;
-  get<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
-  delete<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
-  head<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
-  options<T = unknown, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
-  post<T = unknown, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<T, D>): Promise<R>;
-  put<T = unknown, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<T, D>): Promise<R>;
-  patch<T = unknown, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<T, D>): Promise<R>;
+  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<T, D>): Promise<R>;
+  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
+  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
+  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
+  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<T, D>): Promise<R>;
+  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<T, D>): Promise<R>;
+  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<T, D>): Promise<R>;
+  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<T, D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {

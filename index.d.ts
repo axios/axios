@@ -59,6 +59,13 @@ export interface TransitionalOptions {
   clarifyTimeoutError?: boolean;
 }
 
+export interface AxiosAbortSignal {
+  aborted: boolean;
+  onabort: ((...args: any) => any) | null;
+  addEventListener: (...args: any) => any;
+  removeEventListener: (...args: any) => any;
+}
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method;
@@ -90,7 +97,7 @@ export interface AxiosRequestConfig<D = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions;
-  signal?: AbortSignal;
+  signal?: AxiosAbortSignal;
   insecureHTTPParser?: boolean;
 }
 

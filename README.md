@@ -329,6 +329,13 @@ These are the available config options for making requests. Only the `url` is re
   paramsSerializer: function (params) {
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
+  
+  // `restfulParams` are the restful style parameters living in the sub-paths of 
+  // a url, for example: /user/:id
+  // the `:id` is the restful param, which will be replaced by the actual value
+  restfulParams: {
+    id: "some_id"
+  }
 
   // `data` is the data to be sent as the request body
   // Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH'

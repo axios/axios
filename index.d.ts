@@ -67,6 +67,7 @@ export interface AxiosRequestConfig<D = any> {
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: AxiosRequestHeaders;
   params?: any;
+  restfulParams?: {[name: string]: number | boolean | string}
   paramsSerializer?: (params: any) => string;
   data?: D;
   timeout?: number;

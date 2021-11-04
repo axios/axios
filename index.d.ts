@@ -1,9 +1,21 @@
-export interface AxiosTransformer {
-  (data: any, headers?: Record<string, string>): any;
+// TypeScript Version: 3.0
+
+export type AxiosRequestHeaders = Record<string, string>;
+
+export type AxiosResponseHeaders = Record<string, string> & {
+  "set-cookie"?: string[]
+};
+
+export interface AxiosRequestTransformer {
+  (data: any, headers?: AxiosRequestHeaders): any;
+}
+
+export interface AxiosResponseTransformer {
+  (data: any, headers?: AxiosResponseHeaders): any;
 }
 
 export interface AxiosAdapter {
-  (config: AxiosRequestConfig): AxiosPromise<any>;
+  (config: AxiosRequestConfig): AxiosPromise;
 }
 
 export interface AxiosBasicCredentials {
@@ -16,7 +28,7 @@ export interface AxiosProxyConfig {
   port: number;
   auth?: {
     username: string;
-    password:string;
+    password: string;
   };
   protocol?: string;
 }
@@ -31,7 +43,7 @@ export type Method =
   | 'patch' | 'PATCH'
   | 'purge' | 'PURGE'
   | 'link' | 'LINK'
-  | 'unlink' | 'UNLINK'
+  | 'unlink' | 'UNLINK';
 
 export type ResponseType =
   | 'arraybuffer'
@@ -39,24 +51,24 @@ export type ResponseType =
   | 'document'
   | 'json'
   | 'text'
-  | 'stream'
+  | 'stream';
 
-export interface TransitionalOptions{
-  silentJSONParsing: boolean;
-  forcedJSONParsing: boolean;
-  clarifyTimeoutError: boolean;
+export interface TransitionalOptions {
+  silentJSONParsing?: boolean;
+  forcedJSONParsing?: boolean;
+  clarifyTimeoutError?: boolean;
 }
 
-export interface AxiosRequestConfig<T = any> {
+export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
-  transformRequest?: AxiosTransformer | AxiosTransformer[];
-  transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: Record<string, string>;
+  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+  transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
+  headers?: AxiosRequestHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
-  data?: T;
+  data?: D;
   timeout?: number;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
@@ -77,28 +89,48 @@ export interface AxiosRequestConfig<T = any> {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
-  transitional?: TransitionalOptions
+  transitional?: TransitionalOptions;
+  signal?: AbortSignal;
+  insecureHTTPParser?: boolean;
 }
 
-export interface AxiosResponse<T = never>  {
+export interface HeadersDefaults {
+  common: AxiosRequestHeaders;
+  delete: AxiosRequestHeaders;
+  get: AxiosRequestHeaders;
+  head: AxiosRequestHeaders;
+  post: AxiosRequestHeaders;
+  put: AxiosRequestHeaders;
+  patch: AxiosRequestHeaders;
+  options?: AxiosRequestHeaders;
+  purge?: AxiosRequestHeaders;
+  link?: AxiosRequestHeaders;
+  unlink?: AxiosRequestHeaders;
+}
+
+export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+  headers: HeadersDefaults;
+}
+
+export interface AxiosResponse<T = any, D = any>  {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string>;
-  config: AxiosRequestConfig<T>;
+  headers: AxiosResponseHeaders;
+  config: AxiosRequestConfig<D>;
   request?: any;
 }
 
-export interface AxiosError<T = never> extends Error {
-  config: AxiosRequestConfig;
+export interface AxiosError<T = any, D = any> extends Error {
+  config: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
-  response?: AxiosResponse<T>;
+  response?: AxiosResponse<T, D>;
   isAxiosError: boolean;
   toJSON: () => object;
 }
 
-export interface AxiosPromise<T = never> extends Promise<AxiosResponse<T>> {
+export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
 }
 
 export interface CancelStatic {
@@ -136,20 +168,20 @@ export interface AxiosInterceptorManager<V> {
 
 export class Axios {
   constructor(config?: AxiosRequestConfig);
-  defaults: AxiosRequestConfig;
+  defaults: AxiosDefaults;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = never, R = AxiosResponse<T>> (config: AxiosRequestConfig<T>): Promise<R>;
-  get<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  delete<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  head<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  options<T = never, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig<T>): Promise<R>;
-  post<T = never, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
-  put<T = never, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
-  patch<T = never, R = AxiosResponse<T>>(url: string, data?: T, config?: AxiosRequestConfig<T>): Promise<R>;
+  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
+  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {
@@ -162,8 +194,9 @@ export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
+  readonly VERSION: string;
   isCancel(value: any): boolean;
-  all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
+  all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError(payload: any): payload is AxiosError;
 }

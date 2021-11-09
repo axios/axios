@@ -1,13 +1,7 @@
 import axios, {
-  AxiosRequestConfig,
-  AxiosResponse,
-  AxiosError,
-  AxiosInstance,
-  AxiosAdapter,
-  Cancel,
-  CancelToken,
-  CancelTokenSource,
-  Canceler
+  AxiosAdapter, AxiosError,
+  AxiosInstance, AxiosRequestConfig,
+  AxiosResponse, Cancel, Canceler, CancelTokenSource
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -173,47 +167,57 @@ const handleStringResponse = (response: string) => {
   console.log(response);
 };
 
-axios.get<User, string>('/user?id=12345')
-  .then(handleStringResponse)
+axios.get<User, AxiosResponse<string>>('/user?id=12345')
+  .then(handleResponse)
   .catch(handleError);
 
-axios.get<User, string>('/user', { params: { id: 12345 } })
-  .then(handleStringResponse)
+axios.get<User, AxiosResponse<string>>('/user', { params: { id: 12345 } })
+  .then(handleResponse)
   .catch(handleError);
 
-axios.head<User, string>('/user')
-  .then(handleStringResponse)
+axios.head<User, AxiosResponse<string>>('/user')
+  .then(handleResponse)
   .catch(handleError);
 
-axios.options<User, string>('/user')
-  .then(handleStringResponse)
+axios.options<User, AxiosResponse<string>>('/user')
+  .then(handleResponse)
   .catch(handleError);
 
-axios.delete<User, string>('/user')
-  .then(handleStringResponse)
+axios.delete<User, AxiosResponse<string>>('/user')
+  .then(handleResponse)
   .catch(handleError);
 
-axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
-  .then(handleStringResponse)
+axios.post<Partial<UserCreationDef>, AxiosResponse<string>>('/user', {
+    name: 'foo',
+  })
+  .then(handleResponse)
   .catch(handleError);
 
-axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' }, { headers: { 'X-FOO': 'bar' } })
-  .then(handleStringResponse)
+axios.post<Partial<UserCreationDef>, AxiosResponse<string>>(
+    '/user',
+    { name: 'foo' },
+    { headers: { 'X-FOO': 'bar' } }
+  )
+  .then(handleResponse)
   .catch(handleError);
 
-axios.put<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
-  .then(handleStringResponse)
+axios.put<Partial<UserCreationDef>, AxiosResponse<string>>('/user', {
+    name: 'foo',
+  })
+  .then(handleResponse)
   .catch(handleError);
 
-axios.patch<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
-  .then(handleStringResponse)
+axios.patch<Partial<UserCreationDef>, AxiosResponse<string>>('/user', {
+    name: 'foo',
+  })
+  .then(handleResponse)
   .catch(handleError);
 
-axios.request<User, string>({
+axios.request<User, AxiosResponse<string>>({
   method: 'get',
-  url: '/user?id=12345'
+  url: '/user?id=12345',
 })
-  .then(handleStringResponse)
+  .then(handleResponse)
   .catch(handleError);
 
 // Instances

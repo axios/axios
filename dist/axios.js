@@ -1357,7 +1357,7 @@ module.exports = defaults;
 /***/ (function(module, exports) {
 
 module.exports = {
-  "version": "0.23.0"
+  "version": "0.24.0"
 };
 
 /***/ }),

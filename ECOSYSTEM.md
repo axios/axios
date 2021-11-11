@@ -21,8 +21,6 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Easy API handling whenever there are many endpoints to add. It helps to make Axios requests in an easy and declarative manner. 
 * [sttp](https://github.com/supercharge/sttp) - Axios wrapper providing a fluent interface for an enjoyable developer experience.
 
-
-
 ### Logging and debugging
 
 * [axios-response-logger](https://github.com/srph/axios-response-logger) - Axios interceptor which logs responses

@@ -18,7 +18,10 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [r2curl](https://github.com/uyu423/r2curl) - Extracts the cURL command string from the Axios object. (AxiosResponse, AxiosRequestConfig)
 * [swagger-taxos-codegen](https://github.com/michalzaq12/swagger-taxos-codegen) - Axios based Swagger Codegen (tailored for typescript)
 * [axios-endpoints](https://github.com/renancaraujo/axios-endpoints) - Axios endpoints helps you to create a more concise endpoint mapping with axios. 
-* [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Easy API handling whenever there are many endpoints to add. It helps to make Axios requests in an easy and declarative manner. 
+* [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Easy API handling whenever there are many endpoints to add. It helps to make Axios requests in an easy and declarative manner.
+* [sttp](https://github.com/supercharge/sttp) - Axios wrapper providing a fluent interface for an enjoyable developer experience.
+
+
 
 ### Logging and debugging
 

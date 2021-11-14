@@ -43,6 +43,17 @@ describe('requests', function () {
     });
   });
 
+  it('should allow data', function (done) {
+    axios.delete('/foo', {
+      data: { foo: 'bar' }
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.params).toBe(JSON.stringify({ foo: 'bar' }));
+      done();
+    });
+  });
+
   it('should make an http request', function (done) {
     axios('/foo');
 
@@ -52,8 +63,53 @@ describe('requests', function () {
     });
   });
 
+  describe('timeouts', function(){
+    beforeEach(function () {
+      jasmine.clock().install();
+    });
+
+    afterEach(function () {
+      jasmine.clock().uninstall();
+    });
+
+    it('should handle timeouts', function (done) {
+      axios({
+        url: '/foo',
+        timeout: 100
+      }).then(function () {
+        fail(new Error('timeout error not caught'));
+      }, function (err) {
+        expect(err instanceof Error).toBe(true);
+        expect(err.code).toEqual('ECONNABORTED');
+        done();
+      });
+
+      jasmine.Ajax.requests.mostRecent().responseTimeout();
+    });
+
+    describe('transitional.clarifyTimeoutError', function () {
+      it('should activate throwing ETIMEDOUT instead of ECONNABORTED on request timeouts', function (done) {
+        axios({
+          url: '/foo',
+          timeout: 100,
+          transitional: {
+            clarifyTimeoutError: true
+          }
+        }).then(function () {
+          fail(new Error('timeout error not caught'));
+        }, function (err) {
+          expect(err instanceof Error).toBe(true);
+          expect(err.code).toEqual('ETIMEDOUT');
+          done();
+        });
+
+        jasmine.Ajax.requests.mostRecent().responseTimeout();
+      });
+    });
+  });
+
   it('should reject on network errors', function (done) {
-    // disable jasmine.Ajax since we're hitting a non-existant server anyway
+    // disable jasmine.Ajax since we're hitting a non-existent server anyway
     jasmine.Ajax.uninstall();
 
     var resolveSpy = jasmine.createSpy('resolve');
@@ -157,6 +213,68 @@ describe('requests', function () {
     });
   });
 
+  it('should resolve when the response status is 0 (i.e. requesting with file protocol)', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('file:///xxx').then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 0,
+        responseURL: 'file:///xxx',
+      });
+    });
+  });
+
+  it('should resolve when validateStatus is null', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('/foo', {
+      validateStatus: null
+    }).then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 500
+      });
+    });
+  });
+
+  it('should resolve when validateStatus is undefined', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('/foo', {
+      validateStatus: undefined
+    }).then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 500
+      });
+    });
+  });
+
   // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', function (done) {
     var response;
@@ -190,7 +308,7 @@ describe('requests', function () {
     });
   });
 
-  it('should make cross domian http request', function (done) {
+  it('should make cross domain http request', function (done) {
     var response;
 
     axios.post('www.someurl.com/foo').then(function(res){
@@ -240,6 +358,30 @@ describe('requests', function () {
         expect(response.status).toEqual(200);
         expect(response.statusText).toEqual('OK');
         expect(response.headers['content-type']).toEqual('application/json');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should not modify the config url with relative baseURL', function (done) {
+    var config;
+
+    axios.get('/foo', {
+        baseURL: '/api'
+    }).catch(function (error) {
+        config = error.config;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 404,
+        statusText: 'NOT FOUND',
+        responseText: 'Resource not found'
+      });
+
+      setTimeout(function () {
+        expect(config.baseURL).toEqual('/api');
+        expect(config.url).toEqual('/foo');
         done();
       }, 100);
     });

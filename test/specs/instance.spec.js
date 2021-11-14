@@ -19,6 +19,8 @@ describe('instance', function () {
         'isCancel',
         'all',
         'spread',
+        'isAxiosError',
+        'VERSION',
         'default'].indexOf(prop) > -1) {
         continue;
       }
@@ -28,6 +30,19 @@ describe('instance', function () {
 
   it('should make an http request without verb helper', function (done) {
     var instance = axios.create();
+
+    instance('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo');
+      done();
+    });
+  });
+
+  it('should make an http request with url instead of baseURL', function (done) {
+    var instance = axios.create({
+      url: 'https://api.example.com'
+    });
 
     instance('/foo');
 

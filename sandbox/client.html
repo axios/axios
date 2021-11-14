@@ -2,10 +2,9 @@
 <html>
 <head>
   <title>axios</title>
-  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
   <style type="text/css">
     pre {
-      max-height: 200px;
       min-height: 39px;
       overflow: auto;
     }
@@ -58,6 +57,11 @@
     <pre id="response">No Data</pre>
   </div>
 
+  <div class="well">
+    <h3>Error</h3>
+    <pre id="error">None</pre>
+  </div>
+
   <script src="/axios.js"></script>
   <script>
     (function () {
@@ -81,6 +85,7 @@
       var submit = document.getElementById('submit');
       var request = document.getElementById('request');
       var response = document.getElementById('response');
+      var error = document.getElementById('error');
 
       function acceptsData(method) {
         return ['PATCH', 'POST', 'PUT'].indexOf(method) > -1;
@@ -138,8 +143,11 @@
         axios(options)
           .then(function (res) {
             response.innerHTML = JSON.stringify(res.data, null, 2);
+            error.innerHTML = "None";
           })
           .catch(function (res) {
+            error.innerHTML = JSON.stringify(res.toJSON(), null, 2)
+            console.error('Axios caught an error from request', res.toJSON());
             response.innerHTML = JSON.stringify(res.data, null, 2);
           });
       };

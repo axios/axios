@@ -8,7 +8,7 @@ import axios, {
   CancelToken,
   CancelTokenSource,
   Canceler
-} from '../../';
+} from 'axios';
 
 const config: AxiosRequestConfig = {
   url: '/user',
@@ -31,9 +31,10 @@ const config: AxiosRequestConfig = {
   responseType: 'json',
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
-  onUploadProgress: (progressEvent: any) => {},
-  onDownloadProgress: (progressEvent: any) => {},
+  onUploadProgress: (progressEvent: ProgressEvent) => {},
+  onDownloadProgress: (progressEvent: ProgressEvent) => {},
   maxContentLength: 2000,
+  maxBodyLength: 2000,
   validateStatus: (status: number) => status >= 200 && status < 300,
   maxRedirects: 5,
   proxy: {
@@ -41,6 +42,14 @@ const config: AxiosRequestConfig = {
     port: 9000
   },
   cancelToken: new axios.CancelToken((cancel: Canceler) => {})
+};
+
+const nullValidateStatusConfig: AxiosRequestConfig = {
+  validateStatus: null
+};
+
+const undefinedValidateStatusConfig: AxiosRequestConfig = {
+  validateStatus: undefined
 };
 
 const handleResponse = (response: AxiosResponse) => {
@@ -77,6 +86,10 @@ axios.head('/user')
   .then(handleResponse)
   .catch(handleError);
 
+axios.options('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
 axios.delete('/user')
   .then(handleResponse)
   .catch(handleError);
@@ -98,6 +111,10 @@ axios.patch('/user', { foo: 'bar' })
   .catch(handleError);
 
 // Typed methods
+interface UserCreationDef {
+    name: string;
+}
+
 interface User {
   id: number;
   name: string;
@@ -124,33 +141,37 @@ axios.get<User>('/user', { params: { id: 12345 } })
 
 axios.head<User>('/user')
 	.then(handleUserResponse)
+    .catch(handleError);
+
+axios.options<User>('/user')
+	.then(handleUserResponse)
 	.catch(handleError);
 
 axios.delete<User>('/user')
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.post<User>('/user', { foo: 'bar' })
+axios.post<User>('/user', { name: 'foo', id: 1 })
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.post<User>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+axios.post<User>('/user', { name: 'foo', id: 1 }, { headers: { 'X-FOO': 'bar' } })
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.put<User>('/user', { foo: 'bar' })
+axios.put<User>('/user', { name: 'foo', id: 1 })
 	.then(handleUserResponse)
 	.catch(handleError);
 
-axios.patch<User>('/user', { foo: 'bar' })
+axios.patch<User>('/user', { name: 'foo', id: 1 })
 	.then(handleUserResponse)
   .catch(handleError);
 
 // (Typed methods) with custom response type
 
 const handleStringResponse = (response: string) => {
-  console.log(response)
-}
+  console.log(response);
+};
 
 axios.get<User, string>('/user?id=12345')
   .then(handleStringResponse)
@@ -164,23 +185,27 @@ axios.head<User, string>('/user')
   .then(handleStringResponse)
   .catch(handleError);
 
+axios.options<User, string>('/user')
+  .then(handleStringResponse)
+  .catch(handleError);
+
 axios.delete<User, string>('/user')
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.post<User, string>('/user', { foo: 'bar' })
+axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.post<User, string>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' }, { headers: { 'X-FOO': 'bar' } })
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.put<User, string>('/user', { foo: 'bar' })
+axios.put<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
   .then(handleStringResponse)
   .catch(handleError);
 
-axios.patch<User, string>('/user', { foo: 'bar' })
+axios.patch<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
   .then(handleStringResponse)
   .catch(handleError);
 
@@ -205,6 +230,10 @@ instance1.request(config)
   .catch(handleError);
 
 instance1.get('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.options('/user')
   .then(handleResponse)
   .catch(handleError);
 
@@ -313,11 +342,11 @@ axios.get('/user')
 
 axios.get('/user')
   .catch((error: any) => 'foo')
-  .then((value: string) => {});
+  .then((value) => {});
 
 axios.get('/user')
   .catch((error: any) => Promise.resolve('foo'))
-  .then((value: string) => {});
+  .then((value) => {});
 
 // Cancellation
 
@@ -333,3 +362,12 @@ axios.get('/user', {
 });
 
 source.cancel('Operation has been canceled.');
+
+// AxiosError
+
+axios.get('/user')
+  .catch((error) => {
+    if (axios.isAxiosError(error)) {
+      const axiosError: AxiosError = error;
+    }
+  });

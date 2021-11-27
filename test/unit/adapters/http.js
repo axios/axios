@@ -1034,5 +1034,16 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should not accept an URL without protocol', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      axios.get('localhost:4444/').catch(function (error) {
+        assert.strictEqual(error.code, 'URL_PROTOCOL_MISSING');
+        done();
+      });
+    });
+  });
+
 });
 

@@ -476,7 +476,7 @@ describe('interceptors', function () {
 
     instance.interceptors.request.clear();
 
-    expect(instance.interceptors.request.handlers).toBe(null);
+    expect(instance.interceptors.request.handlers.length).toBe(0);
   });
 
   it('should clear all response interceptors', function () {
@@ -490,6 +490,6 @@ describe('interceptors', function () {
 
     instance.interceptors.response.clear();
 
-    expect(instance.interceptors.response.handlers).toBe(null);
+    expect(instance.interceptors.response.handlers.length).toBe(0);
   });
 });

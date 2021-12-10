@@ -3,7 +3,7 @@
 export type AxiosRequestHeaders = Record<string, string | number | boolean>;
 
 export type AxiosResponseHeaders = Record<string, string> & {
-  "set-cookie"?: string[]
+  "set-cookie"?: string[];
 };
 
 export interface AxiosRequestTransformer {
@@ -161,8 +161,17 @@ export interface CancelTokenSource {
   cancel: Canceler;
 }
 
+export interface AxiosInterceptorOptions {
+  runWhen?: (config?: AxiosRequestConfig) => boolean;
+  synchronous?: boolean;
+}
+
 export interface AxiosInterceptorManager<V> {
-  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any): number;
+  use<T = V>(
+    onFulfilled?: (value: V) => T | Promise<T>,
+    onRejected?: (error: any) => any,
+    options?: AxiosInterceptorOptions
+  ): number;
   eject(id: number): void;
 }
 

@@ -9,6 +9,7 @@ var fs = require('fs');
 var path = require('path');
 var pkg = require('./../../../package.json');
 var server, proxy;
+var nock = require('nock');
 
 describe('supports http with nodejs', function () {
 
@@ -114,6 +115,63 @@ describe('supports http with nodejs', function () {
         done();
       }, 300);
     });
+  });
+
+  it('should fail a request when the connectionTimeout property is set and exceeded', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    nock('http://localhost:4444')
+      .get('/timeout')
+      .delayConnection(10000)
+      .reply(200);
+
+    axios.get('http://localhost:4444/timeout', {
+      connectionTimeout: 250
+    }).then(function (res) {
+      success = true;
+    }).catch(function (err) {
+      error = err;
+      failure = true;
+    }).then(function () {
+      nock.cleanAll();
+    });
+
+    setTimeout(function () {
+      assert.equal(success, false, 'request should not succeed');
+      assert.equal(failure, true, 'request should fail');
+      assert.equal(error.code, 'ETIMEDOUT');
+      assert.equal(error.message, 'connection timeout of 250ms exceeded');
+      done();
+    }, 300);
+  });
+
+  it('should resolve a request when the connection timeout property is set and not exceeded', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    nock('http://localhost:4444')
+      .get('/timeout')
+      .delayConnection(100)
+      .reply(200);
+
+    axios.get('http://localhost:4444/timeout', {
+      connectionTimeout: 250
+    }).then(function (res) {
+      success = true;
+    }).catch(function (err) {
+      error = err;
+      failure = true;
+    }).then(function () {
+      nock.cleanAll();
+    });
+
+    setTimeout(function () {
+      assert.equal(success, true, 'request should succeed');
+      assert.equal(failure, false, 'request should not fail');
+      assert.equal(error, undefined);
+      done();
+    }, 300);
   });
 
   it('should allow passing JSON', function (done) {

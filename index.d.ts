@@ -70,6 +70,7 @@ export interface AxiosRequestConfig<D = any> {
   paramsSerializer?: (params: any) => string;
   data?: D;
   timeout?: number;
+  connectionTimeout?: number;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
   adapter?: AxiosAdapter;

@@ -1,6 +1,16 @@
-// TypeScript Version: 3.0
+// TypeScript Version: 4.1
 
-export type AxiosRequestHeaders = Record<string, string | number | boolean>;
+type AxiosHeaders = Record<string, string | number | boolean>;
+
+type MethodsHeaders = {
+  [Key in Method as Lowercase<Key>]: AxiosHeaders;
+};
+
+interface CommonHeaders  {
+  common: AxiosHeaders;
+}
+
+export type AxiosRequestHeaders = Partial<AxiosHeaders & MethodsHeaders & CommonHeaders>;
 
 export type AxiosResponseHeaders = Record<string, string> & {
   "set-cookie"?: string[]

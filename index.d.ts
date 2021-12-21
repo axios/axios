@@ -198,7 +198,7 @@ export interface AxiosStatic extends AxiosInstance {
   isCancel(value: any): boolean;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
-  isAxiosError(payload: any): payload is AxiosError;
+  isAxiosError<T = any>(payload: any): payload is AxiosError<T>;
 }
 
 declare const axios: AxiosStatic;

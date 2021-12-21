@@ -7,4 +7,3 @@ typings/
 coverage/
 test/typescript/axios.js*
 sauce_connect.log
-package-lock.json

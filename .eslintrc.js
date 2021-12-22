@@ -147,5 +147,5 @@ module.exports = {
     }]
   },
 
-  'ignorePatterns': ['**/env/data.js']
+  'ignorePatterns': ['**/env/data.js', '**/adapters/ohos.js']
 };

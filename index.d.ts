@@ -138,7 +138,7 @@ export interface CancelStatic {
 }
 
 export interface Cancel {
-  message: string;
+  message: string | undefined;
 }
 
 export interface Canceler {

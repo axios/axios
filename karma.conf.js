@@ -212,7 +212,8 @@ module.exports = function(config) {
       devtool: 'inline-source-map',
       externals: [
         {
-          './adapters/http': 'var undefined'
+          './adapters/http': 'var undefined',
+          '@ohos.net.http': '@ohos.net.http'
         }
       ]
     },

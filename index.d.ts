@@ -1,6 +1,6 @@
 // TypeScript Version: 3.0
 
-export type AxiosRequestHeaders = Record<string, string>;
+export type AxiosRequestHeaders = Record<string, string | number | boolean>;
 
 export type AxiosResponseHeaders = Record<string, string> & {
   "set-cookie"?: string[]

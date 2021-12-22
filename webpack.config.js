@@ -18,7 +18,10 @@ function generateConfig(name) {
       process: false
     },
     devtool: 'source-map',
-    mode: compress ? 'production' : 'development'
+    mode: compress ? 'production' : 'development',
+    externals: {
+      '@ohos.net.http': '@ohos.net.http'
+    }
   };
   return config;
 }

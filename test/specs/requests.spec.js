@@ -63,6 +63,51 @@ describe('requests', function () {
     });
   });
 
+  describe('timeouts', function(){
+    beforeEach(function () {
+      jasmine.clock().install();
+    });
+
+    afterEach(function () {
+      jasmine.clock().uninstall();
+    });
+
+    it('should handle timeouts', function (done) {
+      axios({
+        url: '/foo',
+        timeout: 100
+      }).then(function () {
+        fail(new Error('timeout error not caught'));
+      }, function (err) {
+        expect(err instanceof Error).toBe(true);
+        expect(err.code).toEqual('ECONNABORTED');
+        done();
+      });
+
+      jasmine.Ajax.requests.mostRecent().responseTimeout();
+    });
+
+    describe('transitional.clarifyTimeoutError', function () {
+      it('should activate throwing ETIMEDOUT instead of ECONNABORTED on request timeouts', function (done) {
+        axios({
+          url: '/foo',
+          timeout: 100,
+          transitional: {
+            clarifyTimeoutError: true
+          }
+        }).then(function () {
+          fail(new Error('timeout error not caught'));
+        }, function (err) {
+          expect(err instanceof Error).toBe(true);
+          expect(err.code).toEqual('ETIMEDOUT');
+          done();
+        });
+
+        jasmine.Ajax.requests.mostRecent().responseTimeout();
+      });
+    });
+  });
+
   it('should reject on network errors', function (done) {
     // disable jasmine.Ajax since we're hitting a non-existent server anyway
     jasmine.Ajax.uninstall();

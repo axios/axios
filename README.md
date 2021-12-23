@@ -32,6 +32,7 @@ Promise based HTTP client for the browser and node.js
     - [Custom instance defaults](#custom-instance-defaults)
     - [Config order of precedence](#config-order-of-precedence)
   - [Interceptors](#interceptors)
+    - [Multiple Interceptors](#multiple-interceptors)
   - [Handling Errors](#handling-errors)
   - [Cancellation](#cancellation)
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
@@ -452,6 +453,9 @@ These are the available config options for making requests. Only the `url` is re
   cancelToken: new CancelToken(function (cancel) {
   }),
 
+  // an alternative way to cancel Axios requests using AbortController
+  signal: new AbortController().signal,
+
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 
   // from the responses objects of all decompressed responses
@@ -642,6 +646,21 @@ axios.interceptors.request.use(function (config) {
 }, null, { runWhen: onGetCall });
 ```
 
+### Multiple Interceptors
+
+Given you add multiple response interceptors
+and when the response was fulfilled
+- then each interceptor is executed
+- then they are executed in the order they were added
+- then only the last interceptor's result is returned
+- then every interceptor receives the result of it's predecessor
+- and when the fulfillment-interceptor throws
+    - then the following fulfillment-interceptor is not called
+    - then the following rejection-interceptor is called
+    - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
+    
+Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
+
 ## Handling Errors
 
 ```js
@@ -734,7 +753,20 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-> Note: you can cancel several requests with the same cancel token.
+Axios supports AbortController to abort requests in [`fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#aborting_a_fetch) way:
+```js
+const controller = new AbortController();
+
+axios.get('/foo/bar', {
+   signal: controller.signal
+}).then(function(response) {
+   //...
+});
+// cancel the request
+controller.abort()
+```
+
+> Note: you can cancel several requests with the same cancel token/abort controller.
 > If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
 
 ## Using application/x-www-form-urlencoded format
@@ -869,7 +901,7 @@ You can use Gitpod an online IDE(which is free for Open Source) for contributing
 
 ## Credits
 
-axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [Angular](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of Angular.
+axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [AngularJS](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of AngularJS.
 
 ## License
 

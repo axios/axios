@@ -127,6 +127,9 @@ module.exports = function(config) {
       'Running on Travis.'
     );
     browsers = ['Firefox'];
+  } else if (process.env.GITHUB_ACTIONS !== 'false') {
+    console.log('Running ci on Github Actions.');
+    browsers = ['FirefoxHeadless', 'ChromeHeadless'];
   } else {
     console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.');
     browsers = ['Firefox', 'Chrome'];

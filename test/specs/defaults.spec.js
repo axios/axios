@@ -20,6 +20,19 @@ describe('defaults', function () {
     expect(defaults.transformRequest[0]({foo: 'bar'})).toEqual('{"foo":"bar"}');
   });
 
+  it("should also transform request json when 'Content-Type' is 'application/json'", function () {
+    var headers = {
+      'Content-Type': 'application/json',
+    };
+    expect(defaults.transformRequest[0](JSON.stringify({ foo: 'bar' }), headers)).toEqual('{"foo":"bar"}');
+    expect(defaults.transformRequest[0]([42, 43], headers)).toEqual('[42,43]');
+    expect(defaults.transformRequest[0]('foo', headers)).toEqual('"foo"');
+    expect(defaults.transformRequest[0](42, headers)).toEqual('42');
+    expect(defaults.transformRequest[0](true, headers)).toEqual('true');
+    expect(defaults.transformRequest[0](false, headers)).toEqual('false');
+    expect(defaults.transformRequest[0](null, headers)).toEqual('null');
+  });  
+
   it('should do nothing to request string', function () {
     expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');
   });

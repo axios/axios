@@ -252,6 +252,35 @@ describe('interceptors', function () {
     });
   });
 
+  it('should add a response interceptor when request interceptor is defined', function (done) {
+    var response;
+
+    axios.interceptors.request.use(function (data) {
+      return data;
+    });
+
+    axios.interceptors.response.use(function (data) {
+      data.data = data.data + ' - modified by interceptor';
+      return data;
+    });
+
+    axios('/foo').then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: 'OK'
+      });
+
+      setTimeout(function () {
+        expect(response.data).toBe('OK - modified by interceptor');
+        done();
+      }, 100);
+    });
+  });
+
   it('should add a response interceptor that returns a new data object', function (done) {
     var response;
 
@@ -308,36 +337,143 @@ describe('interceptors', function () {
     });
   });
 
-  it('should add multiple response interceptors', function (done) {
-    var response;
+  describe('given you add multiple response interceptors', function () {
 
-    axios.interceptors.response.use(function (data) {
-      data.data = data.data + '1';
-      return data;
-    });
-    axios.interceptors.response.use(function (data) {
-      data.data = data.data + '2';
-      return data;
-    });
-    axios.interceptors.response.use(function (data) {
-      data.data = data.data + '3';
-      return data;
-    });
+    describe('and when the response was fulfilled', function () {
 
-    axios('/foo').then(function (data) {
-      response = data;
-    });
+      function fireRequestAndExpect(expectation) {
+        var response;
+        axios('/foo').then(function(data) {
+          response = data;
+        });
+        getAjaxRequest().then(function (request) {
+          request.respondWith({
+            status: 200,
+            responseText: 'OK'
+          });
 
-    getAjaxRequest().then(function (request) {
-      request.respondWith({
-        status: 200,
-        responseText: 'OK'
+          setTimeout(function() {
+            expectation(response)
+          }, 100);
+        });
+      }
+
+      it('then each interceptor is executed', function (done) {
+        var interceptor1 = jasmine.createSpy('interceptor1');
+        var interceptor2 = jasmine.createSpy('interceptor2');
+        axios.interceptors.response.use(interceptor1);
+        axios.interceptors.response.use(interceptor2);
+
+        fireRequestAndExpect(function () {
+          expect(interceptor1).toHaveBeenCalled();
+          expect(interceptor2).toHaveBeenCalled();
+          done();
+        });
       });
 
-      setTimeout(function () {
-        expect(response.data).toBe('OK123');
-        done();
-      }, 100);
+      it('then they are executed in the order they were added', function (done) {
+        var interceptor1 = jasmine.createSpy('interceptor1');
+        var interceptor2 = jasmine.createSpy('interceptor2');
+        axios.interceptors.response.use(interceptor1);
+        axios.interceptors.response.use(interceptor2);
+
+        fireRequestAndExpect(function () {
+          expect(interceptor1).toHaveBeenCalledBefore(interceptor2);
+          done();
+        });
+      });
+
+      it('then only the last interceptor\'s result is returned', function (done) {
+        axios.interceptors.response.use(function() {
+          return 'response 1';
+        });
+        axios.interceptors.response.use(function() {
+          return 'response 2';
+        });
+
+        fireRequestAndExpect(function (response) {
+          expect(response).toBe('response 2');
+          done();
+        });
+      });
+
+      it('then every interceptor receives the result of it\'s predecessor', function (done) {
+        axios.interceptors.response.use(function() {
+          return 'response 1';
+        });
+        axios.interceptors.response.use(function(response) {
+          return [response, 'response 2'];
+        });
+
+        fireRequestAndExpect(function (response) {
+          expect(response).toEqual(['response 1', 'response 2']);
+          done();
+        });
+      });
+
+      describe('and when the fulfillment-interceptor throws', function () {
+
+        function fireRequestCatchAndExpect(expectation) {
+          axios('/foo').catch(function(data) {
+            // dont handle result
+          });
+          getAjaxRequest().then(function (request) {
+            request.respondWith({
+              status: 200,
+              responseText: 'OK'
+            });
+
+            setTimeout(function() {
+              expectation()
+            }, 100);
+          });
+        }
+
+        it('then the following fulfillment-interceptor is not called', function (done) {
+          axios.interceptors.response.use(function() {
+            throw Error('throwing interceptor');
+          });
+          var interceptor2 = jasmine.createSpy('interceptor2');
+          axios.interceptors.response.use(interceptor2);
+
+          fireRequestCatchAndExpect(function () {
+            expect(interceptor2).not.toHaveBeenCalled();
+            done();
+          });
+        });
+
+        it('then the following rejection-interceptor is called', function (done) {
+          axios.interceptors.response.use(function() {
+            throw Error('throwing interceptor');
+          });
+          var unusedFulfillInterceptor = function() {};
+          var rejectIntercept = jasmine.createSpy('rejectIntercept');
+          axios.interceptors.response.use(unusedFulfillInterceptor, rejectIntercept);
+
+          fireRequestCatchAndExpect(function () {
+            expect(rejectIntercept).toHaveBeenCalled();
+            done();
+          });
+        });
+        
+        it('once caught, another following fulfill-interceptor is called again (just like in a promise chain)', function (done) {
+          axios.interceptors.response.use(function() {
+            throw Error('throwing interceptor');
+          });
+
+          var unusedFulfillInterceptor = function() {};
+          var catchingThrowingInterceptor = function() {};
+          axios.interceptors.response.use(unusedFulfillInterceptor, catchingThrowingInterceptor);
+
+          var interceptor3 = jasmine.createSpy('interceptor3');
+          axios.interceptors.response.use(interceptor3);
+
+          fireRequestCatchAndExpect(function () {
+            expect(interceptor3).toHaveBeenCalled();
+            done();
+          });
+        });
+      });
     });
   });
 

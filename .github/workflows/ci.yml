@@ -2,9 +2,9 @@ name: ci
 
 on:
   push:
-    branches: [master]
+    branches: [master, 'release/*', dev]
   pull_request:
-    branches: [master]
+    branches: [master, 'release/*', dev]
 
 jobs:
   build:
@@ -19,6 +19,6 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm test

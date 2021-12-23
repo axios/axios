@@ -1,7 +1,7 @@
 var enhanceError = require('../../../lib/core/enhanceError');
 
 describe('core::enhanceError', function() {
-  it('should add config, config, request and response to error', function() {
+  it('should add config, code, request, response, and toJSON function to error', function() {
     var error = new Error('Boom!');
     var request = { path: '/foo' };
     var response = { status: 200, data: { foo: 'bar' } };
@@ -11,7 +11,17 @@ describe('core::enhanceError', function() {
     expect(error.code).toBe('ESOMETHING');
     expect(error.request).toBe(request);
     expect(error.response).toBe(response);
+    expect(typeof error.toJSON).toBe('function');
     expect(error.isAxiosError).toBe(true);
+  });
+
+  it('should serialize to JSON with a status of null when there is no response', function() {
+    var error = new Error('Boom!');
+    var request = { path: '/foo' };
+    var response = undefined;
+
+    var errorAsJson = enhanceError(error, { foo: 'bar' }, 'ESOMETHING', request, response).toJSON();
+    expect(errorAsJson.status).toEqual(null);
   });
 
   it('should return error', function() {

@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+    branches: [master, 'release/*', dev]
+  pull_request:
+    branches: [master, 'release/*', dev]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install
+      - run: npm test

@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
-[![build status](https://img.shields.io/travis/axios/axios/master.svg?style=flat-square)](https://travis-ci.org/axios/axios)
+![Build status](https://github.com/axios/axios/actions/workflows/ci.yml/badge.svg)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
@@ -32,6 +32,7 @@ Promise based HTTP client for the browser and node.js
     - [Custom instance defaults](#custom-instance-defaults)
     - [Config order of precedence](#config-order-of-precedence)
   - [Interceptors](#interceptors)
+    - [Multiple Interceptors](#multiple-interceptors)
   - [Handling Errors](#handling-errors)
   - [Cancellation](#cancellation)
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
@@ -452,12 +453,36 @@ These are the available config options for making requests. Only the `url` is re
   cancelToken: new CancelToken(function (cancel) {
   }),
 
+  // an alternative way to cancel Axios requests using AbortController
+  signal: new AbortController().signal,
+
   // `decompress` indicates whether or not the response body should be decompressed 
   // automatically. If set to `true` will also remove the 'content-encoding' header 
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
   decompress: true // default
 
+  // `insecureHTTPParser` boolean.
+  // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
+  // This may allow interoperability with non-conformant HTTP implementations.
+  // Using the insecure parser should be avoided.
+  // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
+  // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
+  insecureHTTPParser: undefined // default
+
+  // transitional options for backward compatibility that may be removed in the newer versions
+  transitional: {
+    // silent JSON parsing mode
+    // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
+    // `false` - throw SyntaxError if JSON parsing failed (Note: responseType must be set to 'json')
+    silentJSONParsing: true, // default value for the current Axios version
+
+    // try to parse the response string as JSON even if `responseType` is not 'json'
+    forcedJSONParsing: true,
+    
+    // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
+    clarifyTimeoutError: false,
+  }
 }
 ```
 
@@ -621,6 +646,21 @@ axios.interceptors.request.use(function (config) {
 }, null, { runWhen: onGetCall });
 ```
 
+### Multiple Interceptors
+
+Given you add multiple response interceptors
+and when the response was fulfilled
+- then each interceptor is executed
+- then they are executed in the order they were added
+- then only the last interceptor's result is returned
+- then every interceptor receives the result of it's predecessor
+- and when the fulfillment-interceptor throws
+    - then the following fulfillment-interceptor is not called
+    - then the following rejection-interceptor is called
+    - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
+    
+Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
+
 ## Handling Errors
 
 ```js
@@ -713,7 +753,21 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-> Note: you can cancel several requests with the same cancel token.
+Axios supports AbortController to abort requests in [`fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#aborting_a_fetch) way:
+```js
+const controller = new AbortController();
+
+axios.get('/foo/bar', {
+   signal: controller.signal
+}).then(function(response) {
+   //...
+});
+// cancel the request
+controller.abort()
+```
+
+> Note: you can cancel several requests with the same cancel token/abort controller.
+> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
 
 ## Using application/x-www-form-urlencoded format
 
@@ -813,10 +867,21 @@ axios depends on a native ES6 Promise implementation to be [supported](http://ca
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
-axios includes [TypeScript](http://typescriptlang.org) definitions.
+
+axios includes [TypeScript](http://typescriptlang.org) definitions and a type guard for axios errors.
+
 ```typescript
-import axios from 'axios';
-axios.get('/user?ID=12345');
+let user: User = null;
+try {
+  const { data } = await axios.get('/user?ID=12345');
+  user = data.userDetails;
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    handleAxiosError(error);
+  } else {
+    handleUnexpectedError(error);
+  }
+}
 ```
 
 ## Online one-click setup
@@ -836,7 +901,7 @@ You can use Gitpod an online IDE(which is free for Open Source) for contributing
 
 ## Credits
 
-axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [Angular](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of Angular.
+axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [AngularJS](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of AngularJS.
 
 ## License
 

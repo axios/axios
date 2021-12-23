@@ -8,20 +8,20 @@ describe('requests', function () {
   });
 
   it('should throw error when missing url', function (done) {
-    expect(() => axios()).toThrowError(/url setting is not valid./);
+    expect(() => axios()).toThrowError(/Provided config url is not valid/);
     done();
 
-    expect(() => axios('')).toThrowError(/url setting is not valid./);
+    expect(() => axios('')).toThrowError(/Provided config url is not valid/);
     done();
 
     expect(() => axios({
       url: undefined,
-    })).toThrowError(/url setting is not valid./);
+    })).toThrowError(/Provided config url is not valid/);
     done();
 
     expect(() => axios({
       method: 'POST',
-    })).toThrowError(/url setting is not valid./);
+    })).toThrowError(/Provided config url is not valid/);
     done();
   });
 

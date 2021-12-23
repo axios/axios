@@ -65,7 +65,7 @@ export type ResponseType =
   | 'ucs2' | 'UCS2'
   | 'utf-8' | 'UTF-8'
   | 'utf8' | 'UTF8'
-  | 'utf16le' | 'UTF16LE'
+  | 'utf16le' | 'UTF16LE';
 
 export interface TransitionalOptions {
   silentJSONParsing?: boolean;

@@ -213,7 +213,7 @@ module.exports = function(config) {
       externals: [
         {
           './adapters/http': 'var undefined',
-          '@ohos.net.http': '@ohos.net.http'
+          './adapters/ohos': 'var undefined'
         }
       ]
     },

@@ -23,6 +23,7 @@ describe('core::createError', function() {
     expect(json.message).toBe('Boom!');
     expect(json.config).toEqual({ foo: 'bar' });
     expect(json.code).toBe('ESOMETHING');
+    expect(json.status).toBe(200);
     expect(json.request).toBe(undefined);
     expect(json.response).toBe(undefined);
   });

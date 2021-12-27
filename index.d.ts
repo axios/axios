@@ -1,9 +1,21 @@
-export interface AxiosTransformer {
-  (data: any, headers?: any): any;
+// TypeScript Version: 3.0
+
+export type AxiosRequestHeaders = Record<string, string | number | boolean>;
+
+export type AxiosResponseHeaders = Record<string, string> & {
+  "set-cookie"?: string[]
+};
+
+export interface AxiosRequestTransformer {
+  (data: any, headers?: AxiosRequestHeaders): any;
+}
+
+export interface AxiosResponseTransformer {
+  (data: any, headers?: AxiosResponseHeaders): any;
 }
 
 export interface AxiosAdapter {
-  (config: AxiosRequestConfig): AxiosPromise<any>;
+  (config: AxiosRequestConfig): AxiosPromise;
 }
 
 export interface AxiosBasicCredentials {
@@ -16,7 +28,7 @@ export interface AxiosProxyConfig {
   port: number;
   auth?: {
     username: string;
-    password:string;
+    password: string;
   };
   protocol?: string;
 }
@@ -31,7 +43,7 @@ export type Method =
   | 'patch' | 'PATCH'
   | 'purge' | 'PURGE'
   | 'link' | 'LINK'
-  | 'unlink' | 'UNLINK'
+  | 'unlink' | 'UNLINK';
 
 export type ResponseType =
   | 'arraybuffer'
@@ -39,30 +51,45 @@ export type ResponseType =
   | 'document'
   | 'json'
   | 'text'
-  | 'stream'
+  | 'stream';
 
-export interface TransitionalOptions{
-  silentJSONParsing: boolean;
-  forcedJSONParsing: boolean;
-  clarifyTimeoutError: boolean;
+  export type responseEncoding =
+  | 'ascii' | 'ASCII'
+  | 'ansi' | 'ANSI'
+  | 'binary' | 'BINARY'
+  | 'base64' | 'BASE64'
+  | 'base64url' | 'BASE64URL'
+  | 'hex' | 'HEX'
+  | 'latin1' | 'LATIN1'
+  | 'ucs-2' | 'UCS-2'
+  | 'ucs2' | 'UCS2'
+  | 'utf-8' | 'UTF-8'
+  | 'utf8' | 'UTF8'
+  | 'utf16le' | 'UTF16LE';
+
+export interface TransitionalOptions {
+  silentJSONParsing?: boolean;
+  forcedJSONParsing?: boolean;
+  clarifyTimeoutError?: boolean;
 }
 
-export interface AxiosRequestConfig {
+export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method;
   baseURL?: string;
-  transformRequest?: AxiosTransformer | AxiosTransformer[];
-  transformResponse?: AxiosTransformer | AxiosTransformer[];
-  headers?: any;
+  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+  transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
+  headers?: AxiosRequestHeaders;
   params?: any;
   paramsSerializer?: (params: any) => string;
-  data?: any;
+  data?: D;
   timeout?: number;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
+  responseEncoding?: responseEncoding | string;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: any) => void;
@@ -77,23 +104,43 @@ export interface AxiosRequestConfig {
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
-  transitional?: TransitionalOptions
+  transitional?: TransitionalOptions;
+  signal?: AbortSignal;
+  insecureHTTPParser?: boolean;
 }
 
-export interface AxiosResponse<T = any>  {
+export interface HeadersDefaults {
+  common: AxiosRequestHeaders;
+  delete: AxiosRequestHeaders;
+  get: AxiosRequestHeaders;
+  head: AxiosRequestHeaders;
+  post: AxiosRequestHeaders;
+  put: AxiosRequestHeaders;
+  patch: AxiosRequestHeaders;
+  options?: AxiosRequestHeaders;
+  purge?: AxiosRequestHeaders;
+  link?: AxiosRequestHeaders;
+  unlink?: AxiosRequestHeaders;
+}
+
+export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+  headers: HeadersDefaults;
+}
+
+export interface AxiosResponse<T = any, D = any>  {
   data: T;
   status: number;
   statusText: string;
-  headers: any;
-  config: AxiosRequestConfig;
+  headers: AxiosResponseHeaders;
+  config: AxiosRequestConfig<D>;
   request?: any;
 }
 
-export interface AxiosError<T = any> extends Error {
-  config: AxiosRequestConfig;
+export interface AxiosError<T = any, D = any> extends Error {
+  config: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
-  response?: AxiosResponse<T>;
+  response?: AxiosResponse<T, D>;
   isAxiosError: boolean;
   toJSON: () => object;
 }
@@ -106,7 +153,7 @@ export interface CancelStatic {
 }
 
 export interface Cancel {
-  message: string;
+  message: string | undefined;
 }
 
 export interface Canceler {
@@ -134,31 +181,37 @@ export interface AxiosInterceptorManager<V> {
   eject(id: number): void;
 }
 
-export interface AxiosInstance {
-  (config: AxiosRequestConfig): AxiosPromise;
-  (url: string, config?: AxiosRequestConfig): AxiosPromise;
-  defaults: AxiosRequestConfig;
+export class Axios {
+  constructor(config?: AxiosRequestConfig);
+  defaults: AxiosDefaults;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = any, R = AxiosResponse<T>> (config: AxiosRequestConfig): Promise<R>;
-  get<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  delete<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  head<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  options<T = any, R = AxiosResponse<T>>(url: string, config?: AxiosRequestConfig): Promise<R>;
-  post<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
-  put<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
-  patch<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
+  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
+  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+}
+
+export interface AxiosInstance extends Axios {
+  (config: AxiosRequestConfig): AxiosPromise;
+  (url: string, config?: AxiosRequestConfig): AxiosPromise;
 }
 
 export interface AxiosStatic extends AxiosInstance {
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
+  Axios: typeof Axios;
+  readonly VERSION: string;
   isCancel(value: any): boolean;
-  all<T>(values: (T | Promise<T>)[]): Promise<T[]>;
+  all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError(payload: any): payload is AxiosError;
 }

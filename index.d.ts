@@ -63,6 +63,20 @@ export type ResponseType =
   | 'text'
   | 'stream';
 
+  export type responseEncoding =
+  | 'ascii' | 'ASCII'
+  | 'ansi' | 'ANSI'
+  | 'binary' | 'BINARY'
+  | 'base64' | 'BASE64'
+  | 'base64url' | 'BASE64URL'
+  | 'hex' | 'HEX'
+  | 'latin1' | 'LATIN1'
+  | 'ucs-2' | 'UCS-2'
+  | 'ucs2' | 'UCS2'
+  | 'utf-8' | 'UTF-8'
+  | 'utf8' | 'UTF8'
+  | 'utf16le' | 'UTF16LE';
+
 export interface TransitionalOptions {
   silentJSONParsing?: boolean;
   forcedJSONParsing?: boolean;
@@ -85,6 +99,7 @@ export interface AxiosRequestConfig<D = any> {
   adapter?: AxiosAdapter;
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
+  responseEncoding?: responseEncoding | string;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: any) => void;
@@ -148,7 +163,7 @@ export interface CancelStatic {
 }
 
 export interface Cancel {
-  message: string;
+  message: string | undefined;
 }
 
 export interface Canceler {

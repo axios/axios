@@ -456,7 +456,6 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.code, 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED');
         assert.equal(error.message, 'Request body larger than maxBodyLength limit');
         done();
       }, 100);

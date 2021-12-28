@@ -45,7 +45,7 @@
     "grunt-eslint": "^23.0.0",
     "grunt-karma": "^4.0.0",
     "grunt-mocha-test": "^0.13.3",
-    "grunt-webpack": "^4.0.2",
+    "grunt-webpack": "^5.0.0",
     "istanbul-instrumenter-loader": "^1.0.0",
     "jasmine-core": "^2.4.1",
     "karma": "^6.3.2",
@@ -57,16 +57,16 @@
     "karma-sauce-launcher": "^4.3.6",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.8",
-    "karma-webpack": "^4.0.2",
+    "karma-webpack": "^5.0.0",
     "load-grunt-tasks": "^3.5.2",
     "minimist": "^1.2.0",
     "mocha": "^8.2.1",
     "sinon": "^4.5.0",
-    "terser-webpack-plugin": "^4.2.3",
+    "stream": "^0.0.2",
     "typescript": "^4.0.5",
     "url-search-params": "^0.10.0",
-    "webpack": "^4.44.2",
-    "webpack-dev-server": "^3.11.0"
+    "webpack": "^5.65.0",
+    "webpack-dev-server": "^4.7.1"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

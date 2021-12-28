@@ -1,30 +1,40 @@
-const TerserPlugin = require('terser-webpack-plugin');
-var webpack = require('webpack');
-var config = {};
+// @ts-check
+'use strict';
 
-function generateConfig(name) {
-  var compress = name.indexOf('min') > -1;
-  var config = {
-    entry: './index.js',
+var path = require('path');
+// installed because webpack requires it by default
+var TerserWebpackPlugin = require('terser-webpack-plugin');
+
+/**
+ * @param {string} name
+ * @param {boolean} compress
+ * @returns {import('webpack').Configuration}
+ */
+function generateConfig(name, compress) {
+  return {
+    mode: compress ? 'production' : 'development',
+
+    entry: path.resolve(__dirname, 'index.js'),
+
     output: {
-      path: __dirname + '/dist/',
+      path: path.join(__dirname, 'dist'),
+      globalObject: "'undefined'==typeof self?this:self",
       filename: name + '.js',
       sourceMapFilename: name + '.map',
-      library: 'axios',
-      libraryTarget: 'umd',
-      globalObject: 'this'
+      library: {
+        type: 'umd',
+        name: 'axios'
+      }
     },
-    node: {
-      process: false
-    },
+
     devtool: 'source-map',
-    mode: compress ? 'production' : 'development'
+
+    optimization: {
+      minimize: !!compress,
+      minimizer: [new TerserWebpackPlugin({ parallel: true })]
+    }
   };
-  return config;
 }
 
-['axios', 'axios.min'].forEach(function (key) {
-  config[key] = generateConfig(key);
-});
-
-module.exports = config;
+module.exports.axios = generateConfig('axios', false);
+module.exports['axios.min'] = generateConfig('axios.min', true);

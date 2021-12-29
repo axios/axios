@@ -32,6 +32,7 @@ Promise based HTTP client for the browser and node.js
     - [Custom instance defaults](#custom-instance-defaults)
     - [Config order of precedence](#config-order-of-precedence)
   - [Interceptors](#interceptors)
+    - [Multiple Interceptors](#multiple-interceptors)
   - [Handling Errors](#handling-errors)
   - [Cancellation](#cancellation)
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
@@ -644,6 +645,21 @@ axios.interceptors.request.use(function (config) {
   return config;
 }, null, { runWhen: onGetCall });
 ```
+
+### Multiple Interceptors
+
+Given you add multiple response interceptors
+and when the response was fulfilled
+- then each interceptor is executed
+- then they are executed in the order they were added
+- then only the last interceptor's result is returned
+- then every interceptor receives the result of it's predecessor
+- and when the fulfillment-interceptor throws
+    - then the following fulfillment-interceptor is not called
+    - then the following rejection-interceptor is called
+    - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
+    
+Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
 
 ## Handling Errors
 

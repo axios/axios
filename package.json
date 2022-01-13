@@ -75,7 +75,7 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "^1.14.4"
+    "follow-redirects": "^1.14.7"
   },
   "bundlesize": [
     {

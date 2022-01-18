@@ -7,6 +7,24 @@ describe('requests', function () {
     jasmine.Ajax.uninstall();
   });
 
+  it('should throw error when missing url', function (done) {
+    expect(() => axios()).toThrowError(/Provided config url is not valid/);
+    done();
+
+    expect(() => axios('')).toThrowError(/Provided config url is not valid/);
+    done();
+
+    expect(() => axios({
+      url: undefined,
+    })).toThrowError(/Provided config url is not valid/);
+    done();
+
+    expect(() => axios({
+      method: 'POST',
+    })).toThrowError(/Provided config url is not valid/);
+    done();
+  });
+
   it('should treat single string arg as url', function (done) {
     axios('/foo');
 
@@ -60,6 +78,51 @@ describe('requests', function () {
     getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/foo');
       done();
+    });
+  });
+
+  describe('timeouts', function(){
+    beforeEach(function () {
+      jasmine.clock().install();
+    });
+
+    afterEach(function () {
+      jasmine.clock().uninstall();
+    });
+
+    it('should handle timeouts', function (done) {
+      axios({
+        url: '/foo',
+        timeout: 100
+      }).then(function () {
+        fail(new Error('timeout error not caught'));
+      }, function (err) {
+        expect(err instanceof Error).toBe(true);
+        expect(err.code).toEqual('ECONNABORTED');
+        done();
+      });
+
+      jasmine.Ajax.requests.mostRecent().responseTimeout();
+    });
+
+    describe('transitional.clarifyTimeoutError', function () {
+      it('should activate throwing ETIMEDOUT instead of ECONNABORTED on request timeouts', function (done) {
+        axios({
+          url: '/foo',
+          timeout: 100,
+          transitional: {
+            clarifyTimeoutError: true
+          }
+        }).then(function () {
+          fail(new Error('timeout error not caught'));
+        }, function (err) {
+          expect(err instanceof Error).toBe(true);
+          expect(err.code).toEqual('ETIMEDOUT');
+          done();
+        });
+
+        jasmine.Ajax.requests.mostRecent().responseTimeout();
+      });
     });
   });
 

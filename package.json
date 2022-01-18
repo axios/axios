@@ -4,6 +4,17 @@
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "types": "index.d.ts",
+  "scripts": {
+    "test": "grunt test && dtslint",
+    "start": "node ./sandbox/server.js",
+    "build": "NODE_ENV=production grunt build",
+    "preversion": "grunt version && npm test",
+    "version": "npm run build && git add -A dist && git add CHANGELOG.md bower.json package.json",
+    "postversion": "git push && git push --tags",
+    "examples": "node ./examples/server.js",
+    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "fix": "eslint --fix lib/**/*.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/axios/axios.git"
@@ -15,32 +26,10 @@
     "promise",
     "node"
   ],
+  "author": "Matt Zabriskie",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/axios/axios/issues"
-  },
-  "license": "MIT",
-  "author": "Matt Zabriskie",
-  "jsdelivr": "dist/axios.min.js",
-  "unpkg": "dist/axios.min.js",
-  "browser": {
-    "./lib/adapters/http.js": "./lib/adapters/xhr.js"
-  },
-  "typings": "./index.d.ts",
-  "files": [
-    "lib",
-    "dist",
-    "UPGRADE_GUIDE.md"
-  ],
-  "scripts": {
-    "build": "NODE_ENV=production grunt build",
-    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "examples": "node ./examples/server.js",
-    "fix": "eslint --fix lib/**/*.js",
-    "start": "node ./sandbox/server.js",
-    "test": "grunt test && bundlesize",
-    "preversion": "npm test",
-    "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
-    "postversion": "git push && git push --tags"
   },
   "homepage": "https://axios-http.com",
   "devDependencies": {
@@ -79,6 +68,12 @@
     "webpack": "^4.44.2",
     "webpack-dev-server": "^3.11.0"
   },
+  "browser": {
+    "./lib/adapters/http.js": "./lib/adapters/xhr.js"
+  },
+  "jsdelivr": "dist/axios.min.js",
+  "unpkg": "dist/axios.min.js",
+  "typings": "./index.d.ts",
   "dependencies": {
     "follow-redirects": "^1.14.7"
   },
@@ -87,5 +82,10 @@
       "path": "./dist/axios.min.js",
       "threshold": "5kB"
     }
-  ]
+  ],
+  "files": [
+    "lib",
+    "dist",
+    "UPGRADE_GUIDE.md"
+  ],
 }

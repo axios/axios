@@ -492,6 +492,21 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should display error while parsing params', function (done) {
+    server = http.createServer(function () {
+      
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        params: {
+          errorParam: new Date(undefined),
+        },
+      }).catch(function (err) {
+        assert.deepEqual(err.exists, true)
+        done();
+      });
+    });
+  });
+
   it('should support sockets', function (done) {
     // Different sockets for win32 vs darwin/linux
     var socketName = './test.sock';

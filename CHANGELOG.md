@@ -1,5 +1,60 @@
 # Changelog
 
+### 0.25.0 (January 18, 2022)
+
+Breaking changes:
+- Fixing maxBodyLength enforcement ([#3786](https://github.com/axios/axios/pull/3786))
+- Don't rely on strict mode behaviour for arguments ([#3470](https://github.com/axios/axios/pull/3470))
+- Adding error handling when missing url ([#3791](https://github.com/axios/axios/pull/3791))
+- Update isAbsoluteURL.js removing escaping of non-special characters ([#3809](https://github.com/axios/axios/pull/3809))
+- Use native Array.isArray() in utils.js ([#3836](https://github.com/axios/axios/pull/3836))
+- Adding error handling inside stream end callback ([#3967](https://github.com/axios/axios/pull/3967))
+
+Fixes and Functionality:
+- Added aborted even handler ([#3916](https://github.com/axios/axios/pull/3916))
+- Header types expanded allowing `boolean` and `number` types ([#4144](https://github.com/axios/axios/pull/4144))
+- Fix cancel signature allowing cancel message to be `undefined` ([#3153](https://github.com/axios/axios/pull/3153))
+- Updated type checks to be formulated better ([#3342](https://github.com/axios/axios/pull/3342))
+- Avoid unnecessary buffer allocations ([#3321](https://github.com/axios/axios/pull/3321))
+- Adding a socket handler to keep TCP connection live when processing long living requests ([#3422](https://github.com/axios/axios/pull/3422))
+- Added toFormData helper function ([#3757](https://github.com/axios/axios/pull/3757))
+- Adding responseEncoding prop type in AxiosRequestConfig ([#3918](https://github.com/axios/axios/pull/3918))
+
+Internal and Tests:
+- Adding axios-test-instance to ecosystem ([#3786](https://github.com/axios/axios/pull/3786))
+- Optimize the logic of isAxiosError ([#3546](https://github.com/axios/axios/pull/3546))
+- Add tests and documentation to display how multiple inceptors work ([#3564](https://github.com/axios/axios/pull/3564))
+- Updating follow-redirects to version 1.14.7 ([#4379](https://github.com/axios/axios/pull/4379))
+
+
+Documentation:
+- Fixing changelog to show corrext pull request ([#4219](https://github.com/axios/axios/pull/4219))
+- Update upgrade guide for https proxy setting ([#3604](https://github.com/axios/axios/pull/3604))
+
+Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
+
+- [Jay](mailto:jasonsaayman@gmail.com)
+- [Rijk van Zanten](https://github.com/rijkvanzanten)
+- [Kohta Ito](https://github.com/koh110)
+- [Brandon Faulkner](https://github.com/bfaulk96)
+- [Stefano Magni](https://github.com/NoriSte)
+- [enofan](https://github.com/fanguangyi)
+- [Andrey Pechkurov](https://github.com/puzpuzpuz)
+- [Doowonee](https://github.com/doowonee)
+- [Emil Broman](https://github.com/emilbroman-eqt)
+- [Remco Haszing](https://github.com/remcohaszing)
+- [Black-Hole](https://github.com/BlackHole1)
+- [Wolfram Kriesing](https://github.com/wolframkriesing)
+- [Andrew Ovens](https://github.com/repl-andrew-ovens)
+- [Paulo Renato](https://github.com/PauloRSF)
+- [Ben Carp](https://github.com/carpben)
+- [Hirotaka Tagawa](https://github.com/wafuwafu13)
+- [狼族小狈](https://github.com/lzxb)
+- [C. Lewis](https://github.com/ctjlewis)
+- [Felipe Carvalho](https://github.com/FCarvalhoVII)
+- [Daniel](https://github.com/djs113)
+- [Gustavo Sales](https://github.com/gussalesdev)
+
 ### 0.24.0 (October 25, 2021)
 
 Breaking changes:

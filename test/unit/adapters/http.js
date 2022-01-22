@@ -116,6 +116,36 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should respect the timeoutErrorMessage property', function (done) {
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+        timeout: 250,
+        timeoutErrorMessage: 'oops, timeout',
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.strictEqual(success, false, 'request should not succeed');
+        assert.strictEqual(failure, true, 'request should fail');
+        assert.strictEqual(error.code, 'ECONNABORTED');
+        assert.strictEqual(error.message, 'oops, timeout');
+        done();
+      }, 300);
+    });
+  });
+
   it('should allow passing JSON', function (done) {
     var data = {
       firstName: 'Fred',
@@ -456,10 +486,24 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.code, 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED');
         assert.equal(error.message, 'Request body larger than maxBodyLength limit');
         done();
       }, 100);
+    });
+  });
+
+  it('should display error while parsing params', function (done) {
+    server = http.createServer(function () {
+      
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        params: {
+          errorParam: new Date(undefined),
+        },
+      }).catch(function (err) {
+        assert.deepEqual(err.exists, true)
+        done();
+      });
     });
   });
 
@@ -998,6 +1042,37 @@ describe('supports http with nodejs', function () {
         }
       }
       ).then(function (res) {
+        done();
+      });
+    });
+  });
+
+  it('should throw an error if http server that aborts a chunked request', function (done) {
+    server = http.createServer(function (req, res) {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.write('chunk 1');
+      setTimeout(function () {
+        res.write('chunk 2');
+      }, 100);
+      setTimeout(function() {
+        res.destroy();
+      }, 200);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/aborted', {
+        timeout: 500
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      }).finally(function () {
+        assert.strictEqual(success, false, 'request should not succeed');
+        assert.strictEqual(failure, true, 'request should fail');
+        assert.strictEqual(error.code, 'ERR_REQUEST_ABORTED');
+        assert.strictEqual(error.message, 'error request aborted');
         done();
       });
     });

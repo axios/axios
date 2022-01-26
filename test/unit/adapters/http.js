@@ -232,6 +232,9 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3
+      }).catch(function(error) {
+        assert.equal(error.code, 'ERR_FR_TOO_MANY_REDIRECTS');
+        done();
       }).catch(done);
     });
   });

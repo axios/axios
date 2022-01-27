@@ -670,7 +670,7 @@ describe('supports http with nodejs', function () {
           proxy: {
             host: 'localhost',
             port: 4000,
-            protocol: 'https'
+            protocol: 'https:'
           },
           httpsAgent: new https.Agent({
             rejectUnauthorized: false

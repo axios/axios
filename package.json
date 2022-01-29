@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "0.24.0",
+  "version": "0.25.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "types": "index.d.ts",
@@ -75,7 +75,7 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "^1.14.4"
+    "follow-redirects": "^1.14.7"
   },
   "bundlesize": [
     {

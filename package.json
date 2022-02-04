@@ -76,7 +76,8 @@
   "typings": "./index.d.ts",
   "dependencies": {
     "follow-redirects": "^1.14.7",
-    "form-data": "^4.0.0"
+    "form-data": "^4.0.0",
+    "fs": "0.0.1-security"
   },
   "bundlesize": [
     {

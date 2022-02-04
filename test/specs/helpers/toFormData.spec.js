@@ -10,7 +10,7 @@ describe('toFormData', function() {
       }
     };
 
-    convertedVal = toFormData(o);
+    const convertedVal = toFormData(o);
     expect(convertedVal instanceof FormData).toEqual(true);
     expect(Array.from(convertedVal.keys()).length).toEqual(3);
     expect(convertedVal.get('val')).toEqual('123');

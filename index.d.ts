@@ -107,6 +107,9 @@ export interface AxiosRequestConfig<D = any> {
   transitional?: TransitionalOptions;
   signal?: AbortSignal;
   insecureHTTPParser?: boolean;
+  env?: {
+    FormData?: new (...args: any[]) => object;
+  };
 }
 
 export interface HeadersDefaults {

@@ -31,7 +31,19 @@ describe('defaults', function () {
     expect(defaults.transformRequest[0](true, headers)).toEqual('true');
     expect(defaults.transformRequest[0](false, headers)).toEqual('false');
     expect(defaults.transformRequest[0](null, headers)).toEqual('null');
-  });  
+  });
+
+  it("should transform the plain data object to a FormData instance 'Content-Type' header is 'multipart/form-data'", function() {
+    var headers = {
+      'Content-Type': 'multipart/form-data'
+    };
+
+    var payload = {x: 1};
+
+    var transformed = defaults.transformRequest[0](payload, headers);
+
+    expect(transformed).toEqual(jasmine.any(FormData));
+  });
 
   it('should do nothing to request string', function () {
     expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');

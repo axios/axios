@@ -7,7 +7,7 @@
   "scripts": {
     "test": "grunt test && dtslint",
     "start": "node ./sandbox/server.js",
-    "build": "NODE_ENV=production grunt build",
+    "build": "cross-env NODE_ENV=production grunt build",
     "preversion": "grunt version && npm test",
     "version": "npm run build && git add -A dist && git add CHANGELOG.md bower.json package.json",
     "postversion": "git push && git push --tags",
@@ -35,8 +35,10 @@
   "devDependencies": {
     "abortcontroller-polyfill": "^1.5.0",
     "coveralls": "^3.0.0",
+    "cross-env": "^7.0.3",
     "dtslint": "^4.1.6",
     "es6-promise": "^4.2.4",
+    "formidable": "^2.0.1",
     "grunt": "^1.3.0",
     "grunt-banner": "^0.6.0",
     "grunt-cli": "^1.2.0",
@@ -69,13 +71,15 @@
     "webpack-dev-server": "^3.11.0"
   },
   "browser": {
-    "./lib/adapters/http.js": "./lib/adapters/xhr.js"
+    "./lib/adapters/http.js": "./lib/adapters/xhr.js",
+    "./lib/defaults/env/FormData.js": "./lib/helpers/null.js"
   },
   "jsdelivr": "dist/axios.min.js",
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "^1.14.7"
+    "follow-redirects": "^1.14.7",
+    "form-data": "^4.0.0"
   },
   "bundlesize": [
     {

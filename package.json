@@ -67,7 +67,6 @@
     "url-search-params": "^0.10.0",
     "webpack": "^4.44.2",
     "webpack-dev-server": "^3.11.0", 
-    "fs": "0.0.1-security"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

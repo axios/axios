@@ -1,13 +1,13 @@
 import axios, {
-  AxiosRequestConfig,
-  AxiosResponse,
+  AxiosAdapter,
+  AxiosCreateConfig,
   AxiosError,
   AxiosInstance,
-  AxiosAdapter,
+  AxiosRequestConfig,
+  AxiosResponse,
   Cancel,
-  CancelToken,
-  CancelTokenSource,
-  Canceler
+  Canceler,
+  CancelTokenSource
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -217,9 +217,20 @@ axios.request<User, string>({
   .catch(handleError);
 
 // Instances
+const createConfig: AxiosCreateConfig = {
+  ...config,
+  headers: {
+    ...config.headers,
+    get: {
+      'Cache-Control': 'no-cache',
+      'X-INSTANCE-NUM': 2,
+      'X-INSTANCE-BOOL': true,
+    }
+  }
+};
 
 const instance1: AxiosInstance = axios.create();
-const instance2: AxiosInstance = axios.create(config);
+const instance2: AxiosInstance = axios.create(createConfig);
 
 instance1(config)
   .then(handleResponse)

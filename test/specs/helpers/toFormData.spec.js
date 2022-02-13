@@ -1,8 +1,8 @@
 'use strict';
 var toFormData = require('../../../lib/helpers/toFormData');
 
-describe('toFormData', function() {
-  it('Convert nested data object to FormDAta', function() {
+describe("toFormData", function () {
+  it("Convert nested data object to FormData", function () {
     var o = {
       val: 123,
       nested: {

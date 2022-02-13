@@ -53,7 +53,7 @@ export type ResponseType =
   | 'text'
   | 'stream';
 
-  export type responseEncoding =
+export type responseEncoding =
   | 'ascii' | 'ASCII'
   | 'ansi' | 'ANSI'
   | 'binary' | 'BINARY'
@@ -204,8 +204,19 @@ export interface AxiosInstance extends Axios {
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
 }
 
+export interface AxiosCreateConfig extends Omit<AxiosRequestConfig, 'headers'> {
+  headers?: AxiosRequestHeaders | Partial<{
+    delete: AxiosRequestHeaders,
+    get: AxiosRequestHeaders,
+    head: AxiosRequestHeaders,
+    post: AxiosRequestHeaders,
+    put: AxiosRequestHeaders,
+    patch: AxiosRequestHeaders,
+  }>;
+}
+
 export interface AxiosStatic extends AxiosInstance {
-  create(config?: AxiosRequestConfig): AxiosInstance;
+  create(config?: AxiosCreateConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;

@@ -66,7 +66,7 @@
     "typescript": "^4.0.5",
     "url-search-params": "^0.10.0",
     "webpack": "^4.44.2",
-    "webpack-dev-server": "^3.11.0", 
+    "webpack-dev-server": "^3.11.0"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js"

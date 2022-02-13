@@ -1,5 +1,6 @@
 'use strict';
 var toFormData = require('../../../lib/helpers/toFormData');
+var NodeFormData = require('form-data');
 
 var assert = require('assert');
 
@@ -12,7 +13,7 @@ describe('toFormData', function() {
       }
     };
 
-    var nodeFormData = toFormData(o);
+    var nodeFormData = toFormData(o, new NodeFormData());
     var stringRepresentation = nodeFormData.getBuffer().toString();
 
     assert(stringRepresentation.indexOf(

@@ -854,15 +854,15 @@ You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 ##### 🆕 Automatic serialization
 
-Starting from `v0.26.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type` 
+Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type` 
 header is set to `multipart/form-data`.
 
-The following request will submit the data object as a form (Browser & Node.js):
+The following request will submit the data in a FormData format (Browser & Node.js):
 
 ```js
 import axios from 'axios';
 
-axios.post('https://postman-echo.com/post', {x: 1}, {
+axios.post('https://httpbin.org/post', {x: 1}, {
   headers: {
     'Content-Type': 'multipart/form-data'
   }
@@ -878,19 +878,41 @@ but you probably won't need it in most cases:
 const axios= require('axios');
 var FormData = require('form-data');
 
-// OR
-// axios.defaults.env.FormData= FormData;
-
-axios.post('https://postman-echo.com/post', {x: 1, buf: new Buffer(10)}, {
+axios.post('https://httpbin.org/post', {x: 1, buf: new Buffer(10)}, {
   headers: {
     'Content-Type': 'multipart/form-data'
-  },
-
-  env: {  // OR
-    FormData
   }
 }).then(({data})=> console.log(data));
 ```
+
+Axios FormData serializer support JSON and array fields by adding a special ending to the value name:
+
+- `{}` - serialize the value with JSON.stringify
+- `[]` - unwrap the array like object as separate fields with the same key 
+
+```js
+const axios= require('axios');
+
+axios.post('https://httpbin.org/post', {
+  'myObj{}': {x: 1, s: "foo"},
+  'files[]': document.querySelector('#fileInput').files 
+}, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+}).then(({data})=> console.log(data));
+```
+
+Axios supports the following shortcut methods: `postForm`, `putForm`, `patchForm`
+which are just the corresponding http methods with preset `Content-Type` to `multipart/form-data`.
+
+FileList object can be passed directly:
+
+```js
+await axios.postForm('https://httpbin.org/post', document.querySelector('#fileInput').files)
+```
+
+All files will be sent with the same field names: `files[]`;
 
 ##### Manual FormData passing
   

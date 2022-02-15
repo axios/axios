@@ -1082,13 +1082,19 @@ describe('supports http with nodejs', function () {
 
   it('should allow passing FormData', function (done) {
     var form = new FormData();
+    var file1= Buffer.from('foo', 'utf8');
 
     form.append('foo', "bar");
+    form.append('file1', file1, {
+      filename: 'bar.jpg',
+      filepath: 'temp/bar.jpg',
+      contentType: 'image/jpeg'
+    });
 
     server = http.createServer(function (req, res) {
-      var form = new formidable.IncomingForm();
+      var receivedForm = new formidable.IncomingForm();
 
-      form.parse(req, function (err, fields, files) {
+      receivedForm.parse(req, function (err, fields, files) {
         if (err) {
           return done(err);
         }
@@ -1104,10 +1110,12 @@ describe('supports http with nodejs', function () {
           'Content-Type': 'multipart/form-data'
         }
       }).then(function (res) {
-        assert.deepStrictEqual(res.data, {
-          fields: {foo: "bar"},
-          files: {}
-        });
+        assert.deepStrictEqual(res.data.fields,{foo: 'bar'});
+
+        assert.strictEqual(res.data.files.file1.mimetype,'image/jpeg');
+        assert.strictEqual(res.data.files.file1.originalFilename,'temp/bar.jpg');
+        assert.strictEqual(res.data.files.file1.size,3);
+
         done();
       }).catch(done);
     });

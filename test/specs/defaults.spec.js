@@ -33,7 +33,7 @@ describe('defaults', function () {
     expect(defaults.transformRequest[0](null, headers)).toEqual('null');
   });
 
-  it("should transform the plain data object to a FormData instance 'Content-Type' header is 'multipart/form-data'", function() {
+  it("should transform the plain data object to a FormData instance 'Content-Type' if header is 'multipart/form-data'", function() {
     var headers = {
       'Content-Type': 'multipart/form-data'
     };

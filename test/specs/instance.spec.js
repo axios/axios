@@ -21,7 +21,9 @@ describe('instance', function () {
         'spread',
         'isAxiosError',
         'VERSION',
-        'default'].indexOf(prop) > -1) {
+        'default',
+        'toFormData'
+      ].indexOf(prop) > -1) {
         continue;
       }
       expect(typeof instance[prop]).toBe(typeof axios[prop]);

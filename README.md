@@ -885,7 +885,7 @@ axios.post('https://httpbin.org/post', {x: 1, buf: new Buffer(10)}, {
 }).then(({data})=> console.log(data));
 ```
 
-Axios FormData serializer support JSON and array fields by adding a special ending to the value name:
+Axios FormData serializer supports some special endings to perform the following operations:
 
 - `{}` - serialize the value with JSON.stringify
 - `[]` - unwrap the array like object as separate fields with the same key 
@@ -904,7 +904,7 @@ axios.post('https://httpbin.org/post', {
 ```
 
 Axios supports the following shortcut methods: `postForm`, `putForm`, `patchForm`
-which are just the corresponding http methods with preset `Content-Type` to `multipart/form-data`.
+which are just the corresponding http methods with a header preset: `Content-Type`: `multipart/form-data`.
 
 FileList object can be passed directly:
 

@@ -281,6 +281,20 @@ The available instance methods are listed below. The specified config will be me
 ##### axios#patch(url[, data[, config]])
 ##### axios#getUri([config])
 
+```js
+const config = {
+  method: 'post',
+  url: '/user/1199',
+  params: {
+    firstName: 'John',
+    lastName: 'Roe'
+  },
+  paramsSerializer: (params) => Object.keys(params).join(',') + '===' + Object.values(params).join(',')
+}
+axios.getUri(config);
+// outputs: '/user/1199?firstName,lastName===John,Roe'
+```
+
 ## Request Config
 
 These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.

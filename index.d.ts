@@ -145,8 +145,7 @@ export interface AxiosError<T = any, D = any> extends Error {
   toJSON: () => object;
 }
 
-export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
-}
+export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
 
 export interface CancelStatic {
   new (message?: string): Cancel;

@@ -21,6 +21,7 @@ describe('instance', function () {
         'spread',
         'getUri',
         'isAxiosError',
+        'VERSION',
         'default'].indexOf(prop) > -1) {
         continue;
       }

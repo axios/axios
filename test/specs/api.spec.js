@@ -11,7 +11,7 @@ describe('static api', function () {
   });
 
   it('should have promise method helpers', function () {
-    var promise = axios();
+    var promise = axios('/test');
 
     expect(typeof promise.then).toEqual('function');
     expect(typeof promise.catch).toEqual('function');

@@ -844,7 +844,7 @@ form.append('my_field', 'my value');
 form.append('my_buffer', new Buffer(10));
 form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 
-axios.post('https://example.com', form, { headers: form.getHeaders() })
+axios.post('https://example.com', form.getBuffer(), { headers: form.getHeaders() })
 ```
 
 Alternatively, use an interceptor:

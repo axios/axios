@@ -18,6 +18,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [r2curl](https://github.com/uyu423/r2curl) - Extracts the cURL command string from the Axios object. (AxiosResponse, AxiosRequestConfig)
 * [swagger-taxos-codegen](https://github.com/michalzaq12/swagger-taxos-codegen) - Axios based Swagger Codegen (tailored for typescript)
 * [axios-endpoints](https://github.com/renancaraujo/axios-endpoints) - Axios endpoints helps you to create a more concise endpoint mapping with axios. 
+* [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Easy API handling whenever there are many endpoints to add. It helps to make Axios requests in an easy and declarative manner. 
 
 ### Logging and debugging
 
@@ -36,5 +37,6 @@ This is a list of axios related libraries and resources. If you have a suggestio
 
 * [axiosist](https://github.com/Gerhut/axiosist) - Axios based supertest: convert node.js request handler to axios adapter, used for node.js server unit test.
 * [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) — Axios adapter that allows to easily mock requests
+* [axios-test-instance](https://github.com/remcohaszing/axios-test-instance) — Test NodeJS backends using Axios
 * [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
 * [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlined integration testing with Mocha & Axios

@@ -1,5 +1,4 @@
 // TypeScript Version: 3.0
-
 export type AxiosRequestHeaders = Record<string, string | number | boolean>;
 
 export type AxiosResponseHeaders = Record<string, string> & {
@@ -98,6 +97,7 @@ export interface AxiosRequestConfig<D = any> {
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
   maxRedirects?: number;
+  beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
   socketPath?: string | null;
   httpAgent?: any;
   httpsAgent?: any;

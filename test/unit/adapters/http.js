@@ -241,6 +241,26 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support beforeRedirect', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Location', '/foo');
+      res.statusCode = 302;
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        maxRedirects: 3,
+        beforeRedirect: function (options) {
+          if (options.path === '/foo') {
+            throw new Error('path not allowed');
+          }
+        }
+      }).catch(function (error) {
+        assert.equal(error.toJSON().message, 'path not allowed')
+        done();
+      });
+    });
+  });
+
   it('should preserve the HTTP verb on redirect', function (done) {
     server = http.createServer(function (req, res) {
       if (req.method.toLowerCase() !== "head") {

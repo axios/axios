@@ -113,7 +113,7 @@ const axios = require('axios').default;
 Performing a `GET` request
 
 ```js
-const axios = require('axios');
+const axios = require('axios').default;
 
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
@@ -844,7 +844,7 @@ form.append('my_field', 'my value');
 form.append('my_buffer', new Buffer(10));
 form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 
-axios.post('https://example.com', form, { headers: form.getHeaders() })
+axios.post('https://example.com', form.getBuffer(), { headers: form.getHeaders() })
 ```
 
 Alternatively, use an interceptor:

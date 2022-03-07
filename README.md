@@ -113,7 +113,7 @@ const axios = require('axios').default;
 Performing a `GET` request
 
 ```js
-const axios = require('axios');
+const axios = require('axios').default;
 
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')

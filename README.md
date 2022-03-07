@@ -9,6 +9,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
+[![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
 
 Promise based HTTP client for the browser and node.js
 
@@ -112,7 +113,7 @@ const axios = require('axios').default;
 Performing a `GET` request
 
 ```js
-const axios = require('axios');
+const axios = require('axios').default;
 
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')

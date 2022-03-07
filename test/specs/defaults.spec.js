@@ -31,7 +31,7 @@ describe('defaults', function () {
     expect(defaults.transformRequest[0](true, headers)).toEqual('true');
     expect(defaults.transformRequest[0](false, headers)).toEqual('false');
     expect(defaults.transformRequest[0](null, headers)).toEqual('null');
-  });  
+  });
 
   it('should do nothing to request string', function () {
     expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');

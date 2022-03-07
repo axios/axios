@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+### 0.18.x -> 0.19.0
+
+#### HTTPS Proxies
+
+Routing through an https proxy now requires setting the `protocol` attribute of the proxy configuration to `https`
+
 ### 0.15.x -> 0.16.0
 
 #### `Promise` Type Declarations

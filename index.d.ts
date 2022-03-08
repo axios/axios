@@ -100,6 +100,7 @@ export interface AxiosRequestConfig<D = any> {
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
   maxRedirects?: number;
+  beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
   socketPath?: string | null;
   httpAgent?: any;
   httpsAgent?: any;
@@ -178,8 +179,13 @@ export interface CancelTokenSource {
   cancel: Canceler;
 }
 
+export interface AxiosInterceptorOptions {
+  synchronous?: boolean;
+  runWhen?: (config: AxiosRequestConfig) => boolean;
+}
+
 export interface AxiosInterceptorManager<V> {
-  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any): number;
+  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
 }
 

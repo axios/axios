@@ -414,7 +414,18 @@ These are the available config options for making requests. Only the `url` is re
 
   // `maxRedirects` defines the maximum number of redirects to follow in node.js.
   // If set to 0, no redirects will be followed.
-  maxRedirects: 5, // default
+  maxRedirects: 21, // default
+
+  // `beforeRedirect` defines a function that will be called before redirect.
+  // Use this to adjust the request options upon redirecting,
+  // to inspect the latest response headers,
+  // or to cancel the request by throwing an error
+  // If maxRedirects is set to 0, `beforeRedirect` is not used.
+  beforeRedirect: (options, { headers }) => {
+    if (options.hostname === "example.com") {
+      options.auth = "user:password";
+    }
+  };
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.

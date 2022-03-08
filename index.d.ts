@@ -74,7 +74,7 @@ export interface TransitionalOptions {
 
 export interface AxiosRequestConfig<D = any> {
   url?: string;
-  method?: Method;
+  method?: Method | string;
   baseURL?: string;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];

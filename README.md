@@ -231,7 +231,7 @@ axios('/user/12345');
 
 ### Request method aliases
 
-For convenience aliases have been provided for all supported request methods.
+For convenience, aliases have been provided for all common request methods.
 
 ##### axios.request(config)
 ##### axios.get(url[, config])

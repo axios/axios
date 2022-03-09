@@ -36,7 +36,7 @@ describe('static api', function () {
     expect(typeof axios.create).toEqual('function');
   });
 
-  it('should have Cancel, CancelToken, and isCancel properties', function () {
+  it('should have CanceledError, CancelToken, and isCancel properties', function () {
     expect(typeof axios.Cancel).toEqual('function');
     expect(typeof axios.CancelToken).toEqual('function');
     expect(typeof axios.isCancel).toEqual('function');

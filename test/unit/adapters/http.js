@@ -9,6 +9,7 @@ var fs = require('fs');
 var path = require('path');
 var pkg = require('./../../../package.json');
 var server, proxy;
+var AxiosError = require('../../../lib/core/AxiosError');
 
 describe('supports http with nodejs', function () {
 
@@ -51,7 +52,7 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.code, 'ERR_PARSE_TIMEOUT');
+        assert.equal(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
         assert.equal(error.message, 'error trying to parse `config.timeout` to int');
         done();
       }, 300);
@@ -997,7 +998,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         cancelToken: source.token
       }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel object');
+        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
         assert.equal(thrown.message, 'Operation has been canceled.');
         done();
       });

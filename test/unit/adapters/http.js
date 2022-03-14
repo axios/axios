@@ -9,6 +9,8 @@ var fs = require('fs');
 var path = require('path');
 var pkg = require('./../../../package.json');
 var server, proxy;
+var FormData = require('form-data');
+var formidable = require('formidable');
 
 describe('supports http with nodejs', function () {
 
@@ -494,7 +496,7 @@ describe('supports http with nodejs', function () {
 
   it('should display error while parsing params', function (done) {
     server = http.createServer(function () {
-      
+
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         params: {
@@ -1075,6 +1077,47 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(error.message, 'error request aborted');
         done();
       });
+    });
+  });
+
+  it('should allow passing FormData', function (done) {
+    var form = new FormData();
+    var file1= Buffer.from('foo', 'utf8');
+
+    form.append('foo', "bar");
+    form.append('file1', file1, {
+      filename: 'bar.jpg',
+      filepath: 'temp/bar.jpg',
+      contentType: 'image/jpeg'
+    });
+
+    server = http.createServer(function (req, res) {
+      var receivedForm = new formidable.IncomingForm();
+
+      receivedForm.parse(req, function (err, fields, files) {
+        if (err) {
+          return done(err);
+        }
+
+        res.end(JSON.stringify({
+          fields: fields,
+          files: files
+        }));
+      });
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/', form, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then(function (res) {
+        assert.deepStrictEqual(res.data.fields,{foo: 'bar'});
+
+        assert.strictEqual(res.data.files.file1.mimetype,'image/jpeg');
+        assert.strictEqual(res.data.files.file1.originalFilename,'temp/bar.jpg');
+        assert.strictEqual(res.data.files.file1.size,3);
+
+        done();
+      }).catch(done);
     });
   });
 

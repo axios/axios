@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.26.1 (March 9, 2022)
+
+Fixes and Functionality:
+- Refactored project file structure to avoid circular imports ([#4220](https://github.com/axios/axios/pull/4220))
+
 ### 0.26.0 (February 13, 2022)
 
 Fixes and Functionality:

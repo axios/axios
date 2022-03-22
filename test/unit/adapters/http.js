@@ -9,6 +9,7 @@ var fs = require('fs');
 var path = require('path');
 var pkg = require('./../../../package.json');
 var server, proxy;
+var AxiosError = require('../../../lib/core/AxiosError');
 
 describe('supports http with nodejs', function () {
 
@@ -51,7 +52,7 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.code, 'ERR_PARSE_TIMEOUT');
+        assert.equal(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
         assert.equal(error.message, 'error trying to parse `config.timeout` to int');
         done();
       }, 300);
@@ -140,7 +141,7 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
         assert.strictEqual(error.code, 'ECONNABORTED');
-        assert.strictEqual(error.message, 'oops, timeout');
+        assert.strictEqual(error.message, 'timeout of 250ms exceeded');
         done();
       }, 300);
     });
@@ -236,6 +237,30 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3
       }).catch(function (error) {
+        assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
+        assert.equal(error.message, 'Maximum number of redirects exceeded');
+        done();
+      });
+    });
+  });
+
+  it('should support beforeRedirect', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Location', '/foo');
+      res.statusCode = 302;
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        maxRedirects: 3,
+        beforeRedirect: function (options) {
+          if (options.path === '/foo') {
+            throw new Error(
+              'Provided path is not allowed'
+            );
+          }
+        }
+      }).catch(function (error) {
+        assert.equal(error.message, 'Provided path is not allowed');
         done();
       });
     });
@@ -997,7 +1022,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         cancelToken: source.token
       }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel object');
+        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
         assert.equal(thrown.message, 'Operation has been canceled.');
         done();
       });
@@ -1016,6 +1041,86 @@ describe('supports http with nodejs', function () {
         done();
       });
     });
+  });
+
+  it('should support HTTP protocol', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444')
+        .then(function (res) {
+          assert.equal(res.request.agent.protocol, 'http:');
+          done();
+        })
+    })
+  });
+
+  it('should support HTTPS protocol', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('https://www.google.com')
+        .then(function (res) {
+          assert.equal(res.request.agent.protocol, 'https:');
+          done();
+        })
+    })
+  });
+
+  it('should return malformed URL', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('tel:484-695-3408')
+        .then(function (res) {
+          success = true;
+        }).catch(function (err) {
+          error = err;
+          failure = true;
+        })
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'Unsupported protocol tel:');
+        done();
+      }, 300);
+    })
+  });
+
+  it('should return unsupported protocol', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('ftp:google.com')
+        .then(function (res) {
+          success = true;
+        }).catch(function (err) {
+          error = err;
+          failure = true;
+        })
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'Unsupported protocol ftp:');
+        done();
+      }, 300);
+    })
   });
 
   it('should supply a user-agent if one is not specified', function (done) {
@@ -1071,12 +1176,11 @@ describe('supports http with nodejs', function () {
       }).finally(function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
-        assert.strictEqual(error.code, 'ERR_REQUEST_ABORTED');
-        assert.strictEqual(error.message, 'error request aborted');
+        assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
+        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
         done();
       });
     });
   });
-
 });
 

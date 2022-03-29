@@ -251,6 +251,8 @@ instance1.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
 
 // Defaults
 
+console.log(axios.defaults.headers['X-FOO']);
+
 axios.defaults.baseURL = 'https://api.example.com/';
 axios.defaults.headers.common['Authorization'] = 'token';
 axios.defaults.headers.post['X-FOO'] = 'bar';

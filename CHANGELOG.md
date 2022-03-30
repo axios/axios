@@ -1,6 +1,6 @@
 # Changelog
 
-### 0.26.0 (February 13, 2022)
+### 0.26.3 (February 13, 2022)
 
 Fixes and Functionality:
 - Fixed The timeoutErrorMessage property in config not work with Node.js ([#3581](https://github.com/axios/axios/pull/3581))

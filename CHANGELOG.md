@@ -8,7 +8,7 @@ Fixes and Functionality:
 - Fix/remove url required ([#4426](https://github.com/axios/axios/pull/4426))
 - Update follow-redirects dependency due to Vurnerbility ([#4462](https://github.com/axios/axios/pull/4462))
 - Bump karma from 6.3.11 to 6.3.14 ([#4461](https://github.com/axios/axios/pull/4461))
-- Bump follow-redirects from 1.14.7 to 1.14.8 ([#4473](https://github.com/axios/axios/pull/4473))
+- Bump follow-redirects from 1.14.7 to 1.14.9 ([#4473](https://github.com/axios/axios/pull/4562))
 
 ### 0.25.0 (January 18, 2022)
 

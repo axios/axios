@@ -36,7 +36,7 @@ Fixes and Functionality:
 - Adding responseEncoding prop type in AxiosRequestConfig ([#3918](https://github.com/axios/axios/pull/3918))
 
 Internal and Tests:
-- Adding axios-test-instance to ecosystem ([#3786](https://github.com/axios/axios/pull/3786))
+- Adding axios-test-instance to ecosystem ([#3496](https://github.com/axios/axios/pull/3496))
 - Optimize the logic of isAxiosError ([#3546](https://github.com/axios/axios/pull/3546))
 - Add tests and documentation to display how multiple inceptors work ([#3564](https://github.com/axios/axios/pull/3564))
 - Updating follow-redirects to version 1.14.7 ([#4379](https://github.com/axios/axios/pull/4379))

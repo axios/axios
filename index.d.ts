@@ -107,6 +107,7 @@ export interface AxiosRequestConfig<D = any> {
   transitional?: TransitionalOptions;
   signal?: AbortSignal;
   insecureHTTPParser?: boolean;
+  customConfig?: Record<string, any>;
 }
 
 export interface HeadersDefaults {
@@ -203,9 +204,26 @@ export interface AxiosInterceptorOptions {
   runWhen?: (config: AxiosRequestConfig) => boolean;
 }
 
+export interface FulfilledHandler<T> {
+  (value: T): T | Promise<T>
+}
+
+export interface RejectedHandler {
+  (error: any): any
+}
+
+export interface AxiosInterceptorHandleItem<V> {
+  fulfilled: FulfilledHandler<V>;
+  rejected: RejectedHandler;
+  synchronous: boolean;
+  runWhen: (config: AxiosRequestConfig) => boolean | null;
+}
+
 export interface AxiosInterceptorManager<V> {
-  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+  use<T = V>(onFulfilled?: FulfilledHandler<T>, onRejected?: RejectedHandler, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
+  // interceptor handle item
+  handlers: AxiosInterceptorHandleItem<V>[];
 }
 
 export class Axios {

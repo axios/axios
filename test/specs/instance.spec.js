@@ -24,7 +24,9 @@ describe('instance', function () {
         'getUri',
         'isAxiosError',
         'VERSION',
-        'default'].indexOf(prop) > -1) {
+        'default',
+        'toFormData'
+      ].indexOf(prop) > -1) {
         continue;
       }
       expect(typeof instance[prop]).toBe(typeof axios[prop]);

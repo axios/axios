@@ -1,6 +1,16 @@
 # Changelog
 
-### 0.26.3 (February 13, 2022)
+### 0.26.3
+
+Fixes and Functionality:
+- Bump follow-redirects from 1.14.7 to 1.14.9 ([#4473](https://github.com/axios/axios/pull/4562))
+
+### 0.26.1 (March 9, 2022)
+
+Fixes and Functionality:
+- Refactored project file structure to avoid circular imports ([#4220](https://github.com/axios/axios/pull/4220))
+
+### 0.26.0 (February 13, 2022)
 
 Fixes and Functionality:
 - Fixed The timeoutErrorMessage property in config not work with Node.js ([#3581](https://github.com/axios/axios/pull/3581))
@@ -8,7 +18,7 @@ Fixes and Functionality:
 - Fix/remove url required ([#4426](https://github.com/axios/axios/pull/4426))
 - Update follow-redirects dependency due to Vurnerbility ([#4462](https://github.com/axios/axios/pull/4462))
 - Bump karma from 6.3.11 to 6.3.14 ([#4461](https://github.com/axios/axios/pull/4461))
-- Bump follow-redirects from 1.14.7 to 1.14.9 ([#4473](https://github.com/axios/axios/pull/4562))
+- Bump follow-redirects from 1.14.7 to 1.14.8 ([#4473](https://github.com/axios/axios/pull/4473))
 
 ### 0.25.0 (January 18, 2022)
 
@@ -31,7 +41,7 @@ Fixes and Functionality:
 - Adding responseEncoding prop type in AxiosRequestConfig ([#3918](https://github.com/axios/axios/pull/3918))
 
 Internal and Tests:
-- Adding axios-test-instance to ecosystem ([#3786](https://github.com/axios/axios/pull/3786))
+- Adding axios-test-instance to ecosystem ([#3496](https://github.com/axios/axios/pull/3496))
 - Optimize the logic of isAxiosError ([#3546](https://github.com/axios/axios/pull/3546))
 - Add tests and documentation to display how multiple inceptors work ([#3564](https://github.com/axios/axios/pull/3564))
 - Updating follow-redirects to version 1.14.7 ([#4379](https://github.com/axios/axios/pull/4379))

@@ -1056,7 +1056,7 @@ module.exports = function dispatchRequest(config) {
           config,
           reason.response.data,
           reason.response.headers,
-          response.status,
+          reason.response.status,
           config.transformResponse
         );
       }

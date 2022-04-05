@@ -1,10 +1,5 @@
 # Changelog
 
-### 0.26.3
-
-Fixes and Functionality:
-- Bump follow-redirects from 1.14.7 to 1.14.9 ([#4473](https://github.com/axios/axios/pull/4562))
-
 ### 0.26.1 (March 9, 2022)
 
 Fixes and Functionality:

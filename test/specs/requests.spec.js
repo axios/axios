@@ -7,24 +7,6 @@ describe('requests', function () {
     jasmine.Ajax.uninstall();
   });
 
-  it('should throw error when missing url', function (done) {
-    expect(() => axios()).toThrowError(/Provided config url is not valid/);
-    done();
-
-    expect(() => axios('')).toThrowError(/Provided config url is not valid/);
-    done();
-
-    expect(() => axios({
-      url: undefined,
-    })).toThrowError(/Provided config url is not valid/);
-    done();
-
-    expect(() => axios({
-      method: 'POST',
-    })).toThrowError(/Provided config url is not valid/);
-    done();
-  });
-
   it('should treat single string arg as url', function (done) {
     axios('/foo');
 
@@ -498,5 +480,54 @@ describe('requests', function () {
       expect(request.params).toBe('param1=value1&param2=value2');
       done();
     });
+  });
+
+  it('should support HTTP protocol', function (done) {
+    var response;
+
+    axios.get('/foo')
+      .then(function (res) {
+        response = res
+      })
+
+    getAjaxRequest().then(function (request) {
+      expect(request.method).toBe('GET');
+      request.respondWith({
+        status: 200
+      });
+      done();
+    });
+  });
+
+  it('should support HTTPS protocol', function (done) {
+    var response;
+    axios.get('https://www.google.com')
+      .then(function (res) {
+        response = res
+      })
+    
+    getAjaxRequest().then(function (request) {
+      expect(request.method).toBe('GET');
+      request.respondWith({
+        status: 200
+      });
+      done();
+    });
+  });
+
+  it('should return malformed url error message', function (done) {
+    axios.get('tel:484-695-3408')
+      .catch(function (error) {
+        expect(error.message).toEqual('Malformed URL tel:484-695-3408')
+        done();
+      })
+  });
+
+  it('should return unsupported protocol error message', function (done) {
+    axios.get('ftp:google.com')
+      .catch(function (error) {
+        expect(error.message).toEqual('Unsupported protocol ftp:')
+        done();
+      })
   });
 });

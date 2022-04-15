@@ -233,8 +233,8 @@ export class Axios {
 }
 
 export interface AxiosInstance extends Axios {
-  (config: AxiosRequestConfig): AxiosPromise;
-  (url: string, config?: AxiosRequestConfig): AxiosPromise;
+  <T = any>(config: AxiosRequestConfig): AxiosPromise<T>;
+  <T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>;
 }
 
 export interface AxiosStatic extends AxiosInstance {

@@ -77,4 +77,9 @@ describe('utils::isX', function () {
     expect(utils.isURLSearchParams(new URLSearchParams())).toEqual(true);
     expect(utils.isURLSearchParams('foo=1&bar=2')).toEqual(false);
   });
+
+  it('should validate TypedArray instance', function () {
+    expect(utils.isTypedArray(new Uint8Array([1, 2, 3]))).toEqual(true);
+    expect(utils.isTypedArray([1, 2, 3])).toEqual(false);
+  });
 });

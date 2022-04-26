@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.27.1 (April 25, 2022)
+
+Fixes and Functionality:
+- Removed import of url module in browser build due to huge size overhead and builds being broken ([#4594](https://github.com/axios/axios/pull/4594))
+- Bumped follow-redirects to ^1.14.9 ([#4615](https://github.com/axios/axios/pull/4615))
+
 ### 0.27.0 (April 25, 2022)
 
 Breaking changes:

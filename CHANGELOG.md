@@ -1,6 +1,6 @@
 # Changelog
 
-### 0.27.1 (April 25, 2022)
+### 0.27.1 (April 26, 2022)
 
 Fixes and Functionality:
 - Removed import of url module in browser build due to huge size overhead and builds being broken ([#4594](https://github.com/axios/axios/pull/4594))

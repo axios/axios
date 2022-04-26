@@ -7,7 +7,7 @@
   "scripts": {
     "test": "grunt test && dtslint",
     "start": "node ./sandbox/server.js",
-    "build": "grunt version && npm test & NODE_ENV=production grunt build",
+    "build": "grunt version && npm test && NODE_ENV=production grunt build",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "eslint --fix lib/**/*.js"

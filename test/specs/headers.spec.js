@@ -112,4 +112,17 @@ describe('headers', function () {
       done();
     });
   });
+
+  it('should remove content-type if data is FormData', function (done) {
+    axios.post('/foo', new FormData(), {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    getAjaxRequest().then(function (request) {
+      testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
+      done();
+    })
+  })
 });

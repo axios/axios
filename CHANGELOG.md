@@ -1,5 +1,18 @@
 # Changelog
 
+### 0.27.2 (April 27, 2022)
+
+Fixes and Functionality:
+- Fixed FormData posting in browser environment by reverting #3785 ([#4640](https://github.com/axios/axios/pull/4640))
+- Enhanced protocol parsing implementation ([#4639](https://github.com/axios/axios/pull/4639))
+- Fixed bundle size
+
+### 0.27.1 (April 26, 2022)
+
+Fixes and Functionality:
+- Removed import of url module in browser build due to huge size overhead and builds being broken ([#4594](https://github.com/axios/axios/pull/4594))
+- Bumped follow-redirects to ^1.14.9 ([#4615](https://github.com/axios/axios/pull/4615))
+
 ### 0.27.0 (April 25, 2022)
 
 Breaking changes:

@@ -242,6 +242,7 @@ export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
+  AxiosError: typeof AxiosError;
   readonly VERSION: string;
   isCancel(value: any): boolean;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;

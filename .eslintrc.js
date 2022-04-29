@@ -54,7 +54,7 @@ module.exports = {
     /**
  * Best practices
  */
-    'consistent-return': 2,          // http://eslint.org/docs/rules/consistent-return
+    'consistent-return': 0,          // http://eslint.org/docs/rules/consistent-return
     'curly': [2, 'multi-line'],      // http://eslint.org/docs/rules/curly
     'default-case': 2,               // http://eslint.org/docs/rules/default-case
     'dot-notation': [2, {            // http://eslint.org/docs/rules/dot-notation
@@ -114,7 +114,9 @@ module.exports = {
     }],
     'comma-style': [2, 'last'],      // http://eslint.org/docs/rules/comma-style
     'eol-last': 2,                   // http://eslint.org/docs/rules/eol-last
-    'func-names': 1,                 // http://eslint.org/docs/rules/func-names
+    'func-names': [
+      1, 'as-needed'
+    ],                 // http://eslint.org/docs/rules/func-names
     'key-spacing': [2, {             // http://eslint.org/docs/rules/key-spacing
       'beforeColon': false,
       'afterColon': true

@@ -1,16 +1,14 @@
 {
   "name": "axios",
-  "version": "0.26.1",
+  "version": "0.27.2",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
     "test": "grunt test && dtslint",
     "start": "node ./sandbox/server.js",
-    "build": "cross-env NODE_ENV=production grunt build",
     "preversion": "grunt version && npm test",
-    "version": "npm run build && git add -A dist && git add CHANGELOG.md bower.json package.json",
-    "postversion": "git push && git push --tags",
+    "build": "NODE_ENV=production grunt build",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "eslint --fix lib/**/*.js"
@@ -35,7 +33,6 @@
   "devDependencies": {
     "abortcontroller-polyfill": "^1.7.3",
     "coveralls": "^3.1.1",
-    "cross-env": "^7.0.3",
     "dtslint": "^4.2.1",
     "es6-promise": "^4.2.8",
     "formidable": "^2.0.1",

@@ -505,7 +505,7 @@ describe('requests', function () {
       .then(function (res) {
         response = res
       })
-    
+
     getAjaxRequest().then(function (request) {
       expect(request.method).toBe('GET');
       request.respondWith({
@@ -515,19 +515,12 @@ describe('requests', function () {
     });
   });
 
-  it('should return malformed url error message', function (done) {
-    axios.get('tel:484-695-3408')
-      .catch(function (error) {
-        expect(error.message).toEqual('Malformed URL tel:484-695-3408')
-        done();
-      })
-  });
-
-  it('should return unsupported protocol error message', function (done) {
-    axios.get('ftp:google.com')
-      .catch(function (error) {
+  it('should return unsupported protocol error message', function () {
+    return axios.get('ftp:localhost')
+      .then(function(){
+        fail('Does not throw');
+      }, function (error) {
         expect(error.message).toEqual('Unsupported protocol ftp:')
-        done();
       })
   });
 });

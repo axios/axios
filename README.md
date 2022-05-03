@@ -23,7 +23,7 @@ Promise based HTTP client for the browser and node.js
   - [Example](#example)
   - [Axios API](#axios-api)
   - [Request method aliases](#request-method-aliases)
-  - [Concurrency (Deprecated)](#concurrency-deprecated)
+  - [Concurrency 👎](#concurrency-deprecated)
   - [Creating an instance](#creating-an-instance)
   - [Instance methods](#instance-methods)
   - [Request Config](#request-config)
@@ -36,11 +36,15 @@ Promise based HTTP client for the browser and node.js
     - [Multiple Interceptors](#multiple-interceptors)
   - [Handling Errors](#handling-errors)
   - [Cancellation](#cancellation)
+    - [AbortController](#abortcontroller)
+    - [CancelToken 👎](#canceltoken-deprecated)
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
     - [Browser](#browser)
     - [Node.js](#nodejs)
       - [Query string](#query-string)
       - [Form data](#form-data)
+        - [Automatic serialization](#-automatic-serialization)
+        - [Manual FormData passing](#manual-formdata-passing)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -425,7 +429,7 @@ These are the available config options for making requests. Only the `url` is re
     if (options.hostname === "example.com") {
       options.auth = "user:password";
     }
-  };
+  },
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
@@ -494,6 +498,11 @@ These are the available config options for making requests. Only the `url` is re
     
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false,
+  },
+
+  env: {
+    // The FormData class to be used to automatically serialize the payload into a FormData object
+    FormData: window?.FormData || global?.FormData
   }
 }
 ```
@@ -665,7 +674,7 @@ and when the response was fulfilled
 - then each interceptor is executed
 - then they are executed in the order they were added
 - then only the last interceptor's result is returned
-- then every interceptor receives the result of it's predecessor
+- then every interceptor receives the result of its predecessor
 - and when the fulfillment-interceptor throws
     - then the following fulfillment-interceptor is not called
     - then the following rejection-interceptor is called
@@ -718,9 +727,29 @@ axios.get('/user/12345')
 
 ## Cancellation
 
-You can cancel a request using a *cancel token*.
+### AbortController
+
+Starting from `v0.22.0` Axios supports AbortController to cancel requests in fetch API way:
+
+```js
+const controller = new AbortController();
+
+axios.get('/foo/bar', {
+   signal: controller.signal
+}).then(function(response) {
+   //...
+});
+// cancel the request
+controller.abort()
+```
+
+### CancelToken `👎deprecated`
+
+You can also cancel a request using a *CancelToken*.
 
 > The axios cancel token API is based on the withdrawn [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
+
+> This API is deprecated since v0.22.0 and shouldn't be used in new projects
 
 You can create a cancel token using the `CancelToken.source` factory as shown below:
 
@@ -765,38 +794,24 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-Axios supports AbortController to abort requests in [`fetch API`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#aborting_a_fetch) way:
-```js
-const controller = new AbortController();
-
-axios.get('/foo/bar', {
-   signal: controller.signal
-}).then(function(response) {
-   //...
-});
-// cancel the request
-controller.abort()
-```
-
 > Note: you can cancel several requests with the same cancel token/abort controller.
 > If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
 
+> During the transition period, you can use both cancellation APIs, even for the same request:
+
 ## Using application/x-www-form-urlencoded format
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the `application/x-www-form-urlencoded` format instead, you can use one of the following options.
-
-### Browser
-
-In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API as follows:
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
-const params = new URLSearchParams();
-params.append('param1', 'value1');
-params.append('param2', 'value2');
+const params = new URLSearchParams({ foo: 'bar' });
+params.append('extraparam', 'value');
 axios.post('/foo', params);
 ```
 
-> Note that `URLSearchParams` is not supported by all browsers (see [caniuse.com](http://www.caniuse.com/#feat=urlsearchparams)), but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
+### Older browsers
+
+For compatibility with very old browsers, there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 
@@ -819,32 +834,86 @@ const options = {
 axios(options);
 ```
 
-### Node.js
+### Older Node.js versions
 
-#### Query string
-
-In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
+For older Node.js engines, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
 const querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
-or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
-
-```js
-const url = require('url');
-const params = new url.URLSearchParams({ foo: 'bar' });
-axios.post('http://something.com/', params.toString());
-```
-
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
-###### NOTE
-The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has known issues with that use case (https://github.com/nodejs/node-v0.x-archive/issues/1665).
+> NOTE: 
+> The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
 
 #### Form data
 
+##### 🆕 Automatic serialization
+
+Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type` 
+header is set to `multipart/form-data`.
+
+The following request will submit the data in a FormData format (Browser & Node.js):
+
+```js
+import axios from 'axios';
+
+axios.post('https://httpbin.org/post', {x: 1}, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+}).then(({data})=> console.log(data));
+```
+
+In the `node.js` build, the ([`form-data`](https://github.com/form-data/form-data)) polyfill is used by default.
+
+You can overload the FormData class by setting the `env.FormData` config variable,
+but you probably won't need it in most cases:
+
+```js
+const axios= require('axios');
+var FormData = require('form-data');
+
+axios.post('https://httpbin.org/post', {x: 1, buf: new Buffer(10)}, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+}).then(({data})=> console.log(data));
+```
+
+Axios FormData serializer supports some special endings to perform the following operations:
+
+- `{}` - serialize the value with JSON.stringify
+- `[]` - unwrap the array like object as separate fields with the same key 
+
+```js
+const axios= require('axios');
+
+axios.post('https://httpbin.org/post', {
+  'myObj{}': {x: 1, s: "foo"},
+  'files[]': document.querySelector('#fileInput').files 
+}, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+}).then(({data})=> console.log(data));
+```
+
+Axios supports the following shortcut methods: `postForm`, `putForm`, `patchForm`
+which are just the corresponding http methods with a header preset: `Content-Type`: `multipart/form-data`.
+
+FileList object can be passed directly:
+
+```js
+await axios.postForm('https://httpbin.org/post', document.querySelector('#fileInput').files)
+```
+
+All files will be sent with the same field names: `files[]`;
+
+##### Manual FormData passing
+  
 In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
 
 ```js
@@ -855,18 +924,7 @@ form.append('my_field', 'my value');
 form.append('my_buffer', new Buffer(10));
 form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 
-axios.post('https://example.com', form.getBuffer(), { headers: form.getHeaders() })
-```
-
-Alternatively, use an interceptor:
-
-```js
-axios.interceptors.request.use(config => {
-  if (config.data instanceof FormData) {
-    Object.assign(config.headers, config.data.getHeaders());
-  }
-  return config;
-});
+axios.post('https://example.com', form)
 ```
 
 ## Semver

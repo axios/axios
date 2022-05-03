@@ -237,6 +237,10 @@ export interface AxiosInstance extends Axios {
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
 }
 
+export interface GenericFormData {
+  append(name: string, value: any, options?: any): any;
+}
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
@@ -248,6 +252,7 @@ export interface AxiosStatic extends AxiosInstance {
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError(payload: any): payload is AxiosError;
+  toFormData(sourceObj: object, targetFormData?: GenericFormData): GenericFormData;
 }
 
 declare const axios: AxiosStatic;

@@ -170,8 +170,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
 export class CanceledError<T> extends AxiosError<T> {
 }
 
-export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
-}
+export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
 
 export interface CancelStatic {
   new (message?: string): Cancel;

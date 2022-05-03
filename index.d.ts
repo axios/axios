@@ -148,7 +148,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
     response?: AxiosResponse<T, D>
   );
 
-  config: AxiosRequestConfig<D>;
+  config?: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
   response?: AxiosResponse<T, D>;
@@ -242,6 +242,7 @@ export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
+  AxiosError: typeof AxiosError;
   readonly VERSION: string;
   isCancel(value: any): boolean;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;

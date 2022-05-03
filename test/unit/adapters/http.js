@@ -9,6 +9,9 @@ var fs = require('fs');
 var path = require('path');
 var pkg = require('./../../../package.json');
 var server, proxy;
+var AxiosError = require('../../../lib/core/AxiosError');
+var FormData = require('form-data');
+var formidable = require('formidable');
 
 describe('supports http with nodejs', function () {
 
@@ -51,7 +54,7 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.code, 'ERR_PARSE_TIMEOUT');
+        assert.equal(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
         assert.equal(error.message, 'error trying to parse `config.timeout` to int');
         done();
       }, 300);
@@ -140,7 +143,7 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
         assert.strictEqual(error.code, 'ECONNABORTED');
-        assert.strictEqual(error.message, 'oops, timeout');
+        assert.strictEqual(error.message, 'timeout of 250ms exceeded');
         done();
       }, 300);
     });
@@ -236,6 +239,8 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3
       }).catch(function (error) {
+        assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
+        assert.equal(error.message, 'Maximum number of redirects exceeded');
         done();
       });
     });
@@ -251,11 +256,13 @@ describe('supports http with nodejs', function () {
         maxRedirects: 3,
         beforeRedirect: function (options) {
           if (options.path === '/foo') {
-            throw new Error('path not allowed');
+            throw new Error(
+              'Provided path is not allowed'
+            );
           }
         }
       }).catch(function (error) {
-        assert.equal(error.toJSON().message, 'path not allowed')
+        assert.equal(error.message, 'Provided path is not allowed');
         done();
       });
     });
@@ -514,7 +521,7 @@ describe('supports http with nodejs', function () {
 
   it('should display error while parsing params', function (done) {
     server = http.createServer(function () {
-      
+
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         params: {
@@ -1017,7 +1024,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         cancelToken: source.token
       }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel object');
+        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
         assert.equal(thrown.message, 'Operation has been canceled.');
         done();
       });
@@ -1086,7 +1093,7 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.message, 'Malformed URL tel:484-695-3408');
+        assert.equal(error.message, 'Unsupported protocol tel:');
         done();
       }, 300);
     })
@@ -1171,11 +1178,53 @@ describe('supports http with nodejs', function () {
       }).finally(function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
-        assert.strictEqual(error.code, 'ERR_REQUEST_ABORTED');
-        assert.strictEqual(error.message, 'error request aborted');
+        assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
+        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
         done();
       });
     });
   });
+
+  it('should allow passing FormData', function (done) {
+    var form = new FormData();
+    var file1= Buffer.from('foo', 'utf8');
+
+    form.append('foo', "bar");
+    form.append('file1', file1, {
+      filename: 'bar.jpg',
+      filepath: 'temp/bar.jpg',
+      contentType: 'image/jpeg'
+    });
+
+    server = http.createServer(function (req, res) {
+      var receivedForm = new formidable.IncomingForm();
+
+      receivedForm.parse(req, function (err, fields, files) {
+        if (err) {
+          return done(err);
+        }
+
+        res.end(JSON.stringify({
+          fields: fields,
+          files: files
+        }));
+      });
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/', form, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then(function (res) {
+        assert.deepStrictEqual(res.data.fields,{foo: 'bar'});
+
+        assert.strictEqual(res.data.files.file1.mimetype,'image/jpeg');
+        assert.strictEqual(res.data.files.file1.originalFilename,'temp/bar.jpg');
+        assert.strictEqual(res.data.files.file1.size,3);
+
+        done();
+      }).catch(done);
+    });
+  });
+
 });
 

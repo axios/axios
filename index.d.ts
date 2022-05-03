@@ -148,7 +148,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
     response?: AxiosResponse<T, D>
   );
 
-  config: AxiosRequestConfig<D>;
+  config?: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
   response?: AxiosResponse<T, D>;

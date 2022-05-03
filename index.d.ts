@@ -107,6 +107,9 @@ export interface AxiosRequestConfig<D = any> {
   transitional?: TransitionalOptions;
   signal?: AbortSignal;
   insecureHTTPParser?: boolean;
+  env?: {
+    FormData?: new (...args: any[]) => object;
+  };
 }
 
 export interface HeadersDefaults {
@@ -145,7 +148,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
     response?: AxiosResponse<T, D>
   );
 
-  config: AxiosRequestConfig<D>;
+  config?: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
   response?: AxiosResponse<T, D>;
@@ -223,6 +226,9 @@ export class Axios {
   post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
   put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
   patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  postForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  putForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patchForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {
@@ -230,16 +236,22 @@ export interface AxiosInstance extends Axios {
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
 }
 
+export interface GenericFormData {
+  append(name: string, value: any, options?: any): any;
+}
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
+  AxiosError: typeof AxiosError;
   readonly VERSION: string;
   isCancel(value: any): boolean;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError(payload: any): payload is AxiosError;
+  toFormData(sourceObj: object, targetFormData?: GenericFormData): GenericFormData;
 }
 
 declare const axios: AxiosStatic;

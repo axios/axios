@@ -1,7 +1,7 @@
 var AxiosError = require('../../../lib/core/AxiosError');
 
 describe('core::AxiosError', function() {
-  it('should create an Error with message, config, code, request, response and isAxiosError', function() {
+  it('should create an Error with message, config, code, request, response, stack and isAxiosError', function() {
     var request = { path: '/foo' };
     var response = { status: 200, data: { foo: 'bar' } };
     var error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
@@ -12,6 +12,7 @@ describe('core::AxiosError', function() {
     expect(error.request).toBe(request);
     expect(error.response).toBe(response);
     expect(error.isAxiosError).toBe(true);
+    expect(error.stack).toBeDefined();
   });
   it('should create an Error that can be serialized to JSON', function() {
     // Attempting to serialize request and response results in

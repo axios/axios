@@ -66,7 +66,6 @@ Promise based HTTP client for the browser and node.js
 ## Browser Support
 
 ![Chrome](https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Google_Chrome-48.png) | ![Firefox](https://cdn2.iconfinder.com/data/icons/humano2/48x48/apps/firefox-icon.png) | ![Safari](https://cdn3.iconfinder.com/data/icons/3d-applications/48/app_icons_web_development___safari_logo_browser_application_app_apple.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
-
 --- | --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 

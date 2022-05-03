@@ -429,7 +429,7 @@ These are the available config options for making requests. Only the `url` is re
     if (options.hostname === "example.com") {
       options.auth = "user:password";
     }
-  };
+  },
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
@@ -674,7 +674,7 @@ and when the response was fulfilled
 - then each interceptor is executed
 - then they are executed in the order they were added
 - then only the last interceptor's result is returned
-- then every interceptor receives the result of it's predecessor
+- then every interceptor receives the result of its predecessor
 - and when the fulfillment-interceptor throws
     - then the following fulfillment-interceptor is not called
     - then the following rejection-interceptor is called
@@ -801,20 +801,17 @@ cancel();
 
 ## Using application/x-www-form-urlencoded format
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the `application/x-www-form-urlencoded` format instead, you can use one of the following options.
-
-### Browser
-
-In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API as follows:
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
-const params = new URLSearchParams();
-params.append('param1', 'value1');
-params.append('param2', 'value2');
+const params = new URLSearchParams({ foo: 'bar' });
+params.append('extraparam', 'value');
 axios.post('/foo', params);
 ```
 
-> Note that `URLSearchParams` is not supported by all browsers (see [caniuse.com](http://www.caniuse.com/#feat=urlsearchparams)), but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
+### Older browsers
+
+For compatibility with very old browsers, there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 
@@ -837,23 +834,13 @@ const options = {
 axios(options);
 ```
 
-### Node.js
+### Older Node.js versions
 
-#### Query string
-
-In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
+For older Node.js engines, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
 const querystring = require('querystring');
 axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
-```
-
-or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
-
-```js
-const url = require('url');
-const params = new url.URLSearchParams({ foo: 'bar' });
-axios.post('http://something.com/', params.toString());
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.

@@ -674,7 +674,7 @@ and when the response was fulfilled
 - then each interceptor is executed
 - then they are executed in the order they were added
 - then only the last interceptor's result is returned
-- then every interceptor receives the result of it's predecessor
+- then every interceptor receives the result of its predecessor
 - and when the fulfillment-interceptor throws
     - then the following fulfillment-interceptor is not called
     - then the following rejection-interceptor is called

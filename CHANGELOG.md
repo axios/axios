@@ -1,5 +1,12 @@
 # Changelog
 
+### 0.27.2 (April 27, 2022)
+
+Fixes and Functionality:
+- Fixed FormData posting in browser environment by reverting #3785 ([#4640](https://github.com/axios/axios/pull/4640))
+- Enhanced protocol parsing implementation ([#4639](https://github.com/axios/axios/pull/4639))
+- Fixed bundle size
+
 ### 0.27.1 (April 26, 2022)
 
 Fixes and Functionality:

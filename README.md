@@ -91,6 +91,12 @@ Using yarn:
 $ yarn add axios
 ```
 
+Using pnpm:
+
+```bash
+$ pnpm add axios
+```
+
 Using jsDelivr CDN:
 
 ```html

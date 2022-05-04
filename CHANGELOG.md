@@ -1,10 +1,63 @@
 # Changelog
 
+### 0.27.2 (April 27, 2022)
+
+Fixes and Functionality:
+- Fixed FormData posting in browser environment by reverting #3785 ([#4640](https://github.com/axios/axios/pull/4640))
+- Enhanced protocol parsing implementation ([#4639](https://github.com/axios/axios/pull/4639))
+- Fixed bundle size
+
+### 0.27.1 (April 26, 2022)
+
+Fixes and Functionality:
+- Removed import of url module in browser build due to huge size overhead and builds being broken ([#4594](https://github.com/axios/axios/pull/4594))
+- Bumped follow-redirects to ^1.14.9 ([#4615](https://github.com/axios/axios/pull/4615))
+
+### 0.27.0 (April 25, 2022)
+
+Breaking changes:
+- New toFormData helper function that allows the implementor to pass an object and allow axios to convert it to FormData ([#3757](https://github.com/axios/axios/pull/3757))
+- Removed functionality that removed the the `Content-Type` request header when passing FormData ([#3785](https://github.com/axios/axios/pull/3785))
+- **(*)** Refactored error handling implementing AxiosError as a constructor, this is a large change to error handling on the whole ([#3645](https://github.com/axios/axios/pull/3645))
+- Separated responsibility for FormData instantiation between `transformRequest` and `toFormData` ([#4470](https://github.com/axios/axios/pull/4470))
+- **(*)** Improved and fixed multiple issues with FormData support ([#4448](https://github.com/axios/axios/pull/4448))
+
+QOL and DevX improvements:
+- Added a multipart/form-data testing playground allowing contributors to debug changes easily ([#4465](https://github.com/axios/axios/pull/4465))
+
+Fixes and Functionality:
+- Refactored project file structure to avoid circular imports ([#4515](https://github.com/axios/axios/pull/4516)) & ([#4516](https://github.com/axios/axios/pull/4516))
+- Bumped follow-redirects to ^1.14.9 ([#4562](https://github.com/axios/axios/pull/4562))
+
+Internal and Tests:
+- Updated dev dependencies to latest version
+
+Documentation:
+- Fixing incorrect link in changelog ([#4551](https://github.com/axios/axios/pull/4551))
+
+Notes:
+- **(*)** Please read these pull requests before updating, these changes are very impactful and far reaching.
+
+### 0.26.1 (March 9, 2022)
+
+Fixes and Functionality:
+- Refactored project file structure to avoid circular imports ([#4220](https://github.com/axios/axios/pull/4220))
+
+### 0.26.0 (February 13, 2022)
+
+Fixes and Functionality:
+- Fixed The timeoutErrorMessage property in config not work with Node.js ([#3581](https://github.com/axios/axios/pull/3581))
+- Added errors to be displayed when the query parsing process itself fails ([#3961](https://github.com/axios/axios/pull/3961))
+- Fix/remove url required ([#4426](https://github.com/axios/axios/pull/4426))
+- Update follow-redirects dependency due to Vulnerability ([#4462](https://github.com/axios/axios/pull/4462))
+- Bump karma from 6.3.11 to 6.3.14 ([#4461](https://github.com/axios/axios/pull/4461))
+- Bump follow-redirects from 1.14.7 to 1.14.8 ([#4473](https://github.com/axios/axios/pull/4473))
+
 ### 0.25.0 (January 18, 2022)
 
 Breaking changes:
 - Fixing maxBodyLength enforcement ([#3786](https://github.com/axios/axios/pull/3786))
-- Don't rely on strict mode behaviour for arguments ([#3470](https://github.com/axios/axios/pull/3470))
+- Don't rely on strict mode behavior for arguments ([#3470](https://github.com/axios/axios/pull/3470))
 - Adding error handling when missing url ([#3791](https://github.com/axios/axios/pull/3791))
 - Update isAbsoluteURL.js removing escaping of non-special characters ([#3809](https://github.com/axios/axios/pull/3809))
 - Use native Array.isArray() in utils.js ([#3836](https://github.com/axios/axios/pull/3836))
@@ -21,14 +74,13 @@ Fixes and Functionality:
 - Adding responseEncoding prop type in AxiosRequestConfig ([#3918](https://github.com/axios/axios/pull/3918))
 
 Internal and Tests:
-- Adding axios-test-instance to ecosystem ([#3786](https://github.com/axios/axios/pull/3786))
+- Adding axios-test-instance to ecosystem ([#3496](https://github.com/axios/axios/pull/3496))
 - Optimize the logic of isAxiosError ([#3546](https://github.com/axios/axios/pull/3546))
 - Add tests and documentation to display how multiple inceptors work ([#3564](https://github.com/axios/axios/pull/3564))
 - Updating follow-redirects to version 1.14.7 ([#4379](https://github.com/axios/axios/pull/4379))
 
-
 Documentation:
-- Fixing changelog to show corrext pull request ([#4219](https://github.com/axios/axios/pull/4219))
+- Fixing changelog to show correct pull request ([#4219](https://github.com/axios/axios/pull/4219))
 - Update upgrade guide for https proxy setting ([#3604](https://github.com/axios/axios/pull/3604))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
@@ -119,7 +171,7 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 ### 0.21.4 (September 6, 2021)
 
 Fixes and Functionality:
-- Fixing JSON transform when data is stringified. Providing backward compatability and complying to the JSON RFC standard ([#4020](https://github.com/axios/axios/pull/4020))
+- Fixing JSON transform when data is stringified. Providing backward compatibility and complying to the JSON RFC standard ([#4020](https://github.com/axios/axios/pull/4020))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
 
@@ -154,9 +206,9 @@ Fixes and Functionality:
 
 Internal and Tests:
 
-- Updating build dev dependancies ([#3401](https://github.com/axios/axios/pull/3401))
+- Updating build dev dependencies ([#3401](https://github.com/axios/axios/pull/3401))
 - Fixing builds running on Travis CI ([#3538](https://github.com/axios/axios/pull/3538))
-- Updating follow rediect version ([#3694](https://github.com/axios/axios/pull/3694), [#3771](https://github.com/axios/axios/pull/3771))
+- Updating follow redirect version ([#3694](https://github.com/axios/axios/pull/3694), [#3771](https://github.com/axios/axios/pull/3771))
 - Updating karma sauce launcher to fix failing sauce tests ([#3712](https://github.com/axios/axios/pull/3712), [#3717](https://github.com/axios/axios/pull/3717))
 - Updating content-type header for application/json to not contain charset field, according do RFC 8259 ([#2154](https://github.com/axios/axios/pull/2154))
 - Fixing tests by bumping karma-sauce-launcher version ([#3813](https://github.com/axios/axios/pull/3813))
@@ -166,9 +218,9 @@ Documentation:
 
 - Updating documentation around the use of `AUTH_TOKEN` with multiple domain endpoints ([#3539](https://github.com/axios/axios/pull/3539))
 - Remove duplication of item in changelog ([#3523](https://github.com/axios/axios/pull/3523))
-- Fixing gramatical errors ([#2642](https://github.com/axios/axios/pull/2642))
+- Fixing grammatical errors ([#2642](https://github.com/axios/axios/pull/2642))
 - Fixing spelling error ([#3567](https://github.com/axios/axios/pull/3567))
-- Moving gitpod metion ([#2637](https://github.com/axios/axios/pull/2637))
+- Moving gitpod mention ([#2637](https://github.com/axios/axios/pull/2637))
 - Adding new axios documentation website link ([#3681](https://github.com/axios/axios/pull/3681), [#3707](https://github.com/axios/axios/pull/3707))
 - Updating documentation around dispatching requests ([#3772](https://github.com/axios/axios/pull/3772))
 - Adding documentation for the type guard isAxiosError ([#3767](https://github.com/axios/axios/pull/3767))
@@ -246,7 +298,7 @@ Internal and Tests:
 
 Documentation:
 
-- Fixing simple typo, existant -> existent ([#3252](https://github.com/axios/axios/pull/3252))
+- Fixing simple typo, existent -> existent ([#3252](https://github.com/axios/axios/pull/3252))
 - Fixing typos ([#3309](https://github.com/axios/axios/pull/3309))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:

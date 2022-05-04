@@ -65,7 +65,7 @@ Promise based HTTP client for the browser and node.js
 
 ## Browser Support
 
-![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
+![Chrome](https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Google_Chrome-48.png) | ![Firefox](https://cdn2.iconfinder.com/data/icons/humano2/48x48/apps/firefox-icon.png) | ![Safari](https://cdn3.iconfinder.com/data/icons/3d-applications/48/app_icons_web_development___safari_logo_browser_application_app_apple.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
 --- | --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 
@@ -429,7 +429,7 @@ These are the available config options for making requests. Only the `url` is re
     if (options.hostname === "example.com") {
       options.auth = "user:password";
     }
-  };
+  },
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
@@ -582,7 +582,7 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults/index.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
 ```js
 // Create an instance using the config defaults provided by the library
@@ -674,7 +674,7 @@ and when the response was fulfilled
 - then each interceptor is executed
 - then they are executed in the order they were added
 - then only the last interceptor's result is returned
-- then every interceptor receives the result of it's predecessor
+- then every interceptor receives the result of its predecessor
 - and when the fulfillment-interceptor throws
     - then the following fulfillment-interceptor is not called
     - then the following rejection-interceptor is called
@@ -801,20 +801,17 @@ cancel();
 
 ## Using application/x-www-form-urlencoded format
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the `application/x-www-form-urlencoded` format instead, you can use one of the following options.
-
-### Browser
-
-In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API as follows:
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
-const params = new URLSearchParams();
-params.append('param1', 'value1');
-params.append('param2', 'value2');
+const params = new URLSearchParams({ foo: 'bar' });
+params.append('extraparam', 'value');
 axios.post('/foo', params);
 ```
 
-> Note that `URLSearchParams` is not supported by all browsers (see [caniuse.com](https://caniuse.com/urlsearchparams)), but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
+### Older browsers
+
+For compatibility with very old browsers, there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 
@@ -837,23 +834,13 @@ const options = {
 axios(options);
 ```
 
-### Node.js
+### Older Node.js versions
 
-#### Query string
-
-In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
+For older Node.js engines, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
 const querystring = require('querystring');
 axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
-```
-
-or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
-
-```js
-const url = require('url');
-const params = new url.URLSearchParams({ foo: 'bar' });
-axios.post('https://something.com/', params.toString());
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.

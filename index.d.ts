@@ -6,7 +6,7 @@ export type AxiosResponseHeaders = Record<string, string> & {
 };
 
 export interface AxiosRequestTransformer {
-  (data: any, headers?: AxiosRequestHeaders): any;
+  (data: any, headers: AxiosRequestHeaders): any;
 }
 
 export interface AxiosResponseTransformer {

@@ -296,7 +296,7 @@ axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(res
 // Adapters
 
 const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
-  const response: AxiosResponse<any> = {
+  const response: AxiosResponse = {
     data: { foo: 'bar' },
     status: 200,
     statusText: 'OK',
@@ -371,3 +371,7 @@ axios.get('/user')
       const axiosError: AxiosError = error;
     }
   });
+
+// FormData
+
+axios.toFormData({x: 1}, new FormData());

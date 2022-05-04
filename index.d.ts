@@ -72,7 +72,7 @@ export interface TransitionalOptions {
   clarifyTimeoutError?: boolean;
 }
 
-export interface AxiosAbortSignal {
+export interface GenericAbortSignal {
   aborted: boolean;
   onabort: ((...args: any) => any) | null;
   addEventListener: (...args: any) => any;
@@ -112,7 +112,7 @@ export interface AxiosRequestConfig<D = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions;
-  signal?: AxiosAbortSignal;
+  signal?: GenericAbortSignal;
   insecureHTTPParser?: boolean;
   env?: {
     FormData?: new (...args: any[]) => object;

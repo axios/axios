@@ -12,19 +12,6 @@ module.exports = function(grunt) {
       dist: 'dist/**'
     },
 
-    ts: {
-      test: {
-        options: {
-          lib: [
-            'es5',
-            'es2015.promise',
-            'dom'
-          ]
-        },
-        src: ['typings/index.d.ts', 'test/typescript/*.ts']
-      }
-    },
-
     package2bower: {
       all: {
         fields: [
@@ -40,18 +27,6 @@ module.exports = function(grunt) {
 
     package2env: {
       all: {}
-    },
-
-    usebanner: {
-      all: {
-        options: {
-          banner: '<%= meta.banner %>',
-          linebreak: false
-        },
-        files: {
-          src: ['dist/*.js']
-        }
-      }
     },
 
     eslint: {
@@ -90,7 +65,11 @@ module.exports = function(grunt) {
       }
     },
 
-    webpack: require('./webpack.config.js')
+    shell: {
+      rollup: {
+        command: 'rollup -c -m'
+      }
+    }
   });
 
   grunt.registerMultiTask('package2bower', 'Sync package.json to bower.json', function() {
@@ -116,7 +95,7 @@ module.exports = function(grunt) {
       ';'].join(''));
   });
 
-  grunt.registerTask('test', 'Run the jasmine and mocha tests', ['eslint', 'mochaTest', 'karma:single', 'ts']);
-  grunt.registerTask('build', 'Run webpack and bundle the source', ['clean', 'webpack']);
-  grunt.registerTask('version', 'Sync version info for a release', ['usebanner', 'package2bower', 'package2env']);
+  grunt.registerTask('test', 'Run the jasmine and mocha tests', ['eslint', 'mochaTest', 'karma:single']);
+  grunt.registerTask('build', 'Run rollup and bundle the source', ['clean', 'shell:rollup']);
+  grunt.registerTask('version', 'Sync version info for a release', ['package2bower', 'package2env']);
 };

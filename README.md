@@ -6,7 +6,7 @@
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
-[![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
+[![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
@@ -55,13 +55,13 @@ Promise based HTTP client for the browser and node.js
 ## Features
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
-- Make [http](http://nodejs.org/api/http.html) requests from node.js
+- Make [http](https://nodejs.org/api/http.html) requests from node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
 - Intercept request and response
 - Transform request and response data
 - Cancel requests
 - Automatic transforms for JSON data
-- Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
+- Client side support for protecting against [XSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery)
 
 ## Browser Support
 
@@ -218,7 +218,7 @@ axios({
 // GET request for remote image in node.js
 axios({
   method: 'get',
-  url: 'http://bit.ly/2mTM3nY',
+  url: 'https://bit.ly/2mTM3nY',
   responseType: 'stream'
 })
   .then(function (response) {
@@ -331,7 +331,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `paramsSerializer` is an optional function in charge of serializing `params`
-  // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
+  // (e.g. https://www.npmjs.com/package/qs, https://api.jquery.com/jquery.param/)
   paramsSerializer: function (params) {
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
@@ -840,7 +840,7 @@ For older Node.js engines, you can use the [`querystring`](https://nodejs.org/ap
 
 ```js
 const querystring = require('querystring');
-axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
+axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
@@ -933,12 +933,12 @@ Until axios reaches a `1.0` release, breaking changes will be released with a ne
 
 ## Promises
 
-axios depends on a native ES6 Promise implementation to be [supported](http://caniuse.com/promises).
+axios depends on a native ES6 Promise implementation to be [supported](https://caniuse.com/promises).
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
 
-axios includes [TypeScript](http://typescriptlang.org) definitions and a type guard for axios errors.
+axios includes [TypeScript](https://typescriptlang.org) definitions and a type guard for axios errors.
 
 ```typescript
 let user: User = null;

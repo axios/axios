@@ -14,9 +14,7 @@ function generateConfig(name) {
       libraryTarget: 'umd',
       globalObject: 'this'
     },
-    node: {
-      process: false
-    },
+    node: false,
     devtool: 'source-map',
     mode: compress ? 'production' : 'development'
   };

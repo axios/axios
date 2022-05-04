@@ -481,4 +481,46 @@ describe('requests', function () {
       done();
     });
   });
+
+  it('should support HTTP protocol', function (done) {
+    var response;
+
+    axios.get('/foo')
+      .then(function (res) {
+        response = res
+      })
+
+    getAjaxRequest().then(function (request) {
+      expect(request.method).toBe('GET');
+      request.respondWith({
+        status: 200
+      });
+      done();
+    });
+  });
+
+  it('should support HTTPS protocol', function (done) {
+    var response;
+    axios.get('https://www.google.com')
+      .then(function (res) {
+        response = res
+      })
+
+    getAjaxRequest().then(function (request) {
+      expect(request.method).toBe('GET');
+      request.respondWith({
+        status: 200
+      });
+      done();
+    });
+  });
+
+  it('should return unsupported protocol error message', function () {
+    return axios.get('ftp:localhost')
+      .then(function(){
+        fail('Does not throw');
+      }, function (error) {
+        expect(error.message).toEqual('Unsupported protocol ftp:')
+      })
+  });
 });

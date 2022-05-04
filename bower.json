@@ -1,8 +1,8 @@
 {
   "name": "axios",
   "main": "./dist/axios.js",
-  "version": "0.21.1",
-  "homepage": "https://github.com/axios/axios",
+  "version": "0.27.2",
+  "homepage": "https://axios-http.com",
   "authors": [
     "Matt Zabriskie"
   ],

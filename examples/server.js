@@ -135,6 +135,6 @@ server = http.createServer(function (req, res) {
 
 const PORT = argv.p || 3000;
 
-server.listen(PORT);
-
-console.log("Examples running on " + PORT);
+server.listen(PORT, () => {
+  console.log(`Examples running on ${PORT}`); 
+});

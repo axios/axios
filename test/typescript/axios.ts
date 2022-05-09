@@ -373,3 +373,11 @@ axios.get('/user')
       const axiosError: AxiosError = error;
     }
   });
+
+// FormData
+
+axios.toFormData({x: 1}, new FormData());
+
+// AbortSignal
+
+axios.get('/user', {signal: new AbortController().signal});

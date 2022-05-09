@@ -9,6 +9,9 @@ var fs = require('fs');
 var path = require('path');
 var pkg = require('./../../../package.json');
 var server, proxy;
+var AxiosError = require('../../../lib/core/AxiosError');
+var FormData = require('form-data');
+var formidable = require('formidable');
 
 describe('supports http with nodejs', function () {
 
@@ -21,12 +24,9 @@ describe('supports http with nodejs', function () {
       proxy.close();
       proxy = null;
     }
-    if (process.env.http_proxy) {
-      delete process.env.http_proxy;
-    }
-    if (process.env.no_proxy) {
-      delete process.env.no_proxy;
-    }
+    delete process.env.http_proxy;
+    delete process.env.https_proxy;
+    delete process.env.no_proxy;
   });
 
   it('should throw an error if the timeout property is not parsable as a number', function (done) {
@@ -51,7 +51,7 @@ describe('supports http with nodejs', function () {
       setTimeout(function () {
         assert.equal(success, false, 'request should not succeed');
         assert.equal(failure, true, 'request should fail');
-        assert.equal(error.code, 'ERR_PARSE_TIMEOUT');
+        assert.equal(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
         assert.equal(error.message, 'error trying to parse `config.timeout` to int');
         done();
       }, 300);
@@ -140,7 +140,7 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
         assert.strictEqual(error.code, 'ECONNABORTED');
-        assert.strictEqual(error.message, 'oops, timeout');
+        assert.strictEqual(error.message, 'timeout of 250ms exceeded');
         done();
       }, 300);
     });
@@ -160,7 +160,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/').then(function (res) {
         assert.deepEqual(res.data, data);
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -180,7 +180,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/').then(function (res) {
         assert.deepEqual(res.data, data);
         done();
-      });
+      }).catch(done);;
     });
   });
 
@@ -202,7 +202,7 @@ describe('supports http with nodejs', function () {
         assert.equal(res.data, str);
         assert.equal(res.request.path, '/two');
         done();
-      });
+      }).catch(done);;
     });
   });
 
@@ -221,7 +221,7 @@ describe('supports http with nodejs', function () {
         assert.equal(res.status, 302);
         assert.equal(res.headers['location'], '/foo');
         done();
-      });
+      }).catch(done);;
     });
   });
 
@@ -236,6 +236,30 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3
       }).catch(function (error) {
+        assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
+        assert.equal(error.message, 'Maximum number of redirects exceeded');
+        done();
+      });
+    });
+  });
+
+  it('should support beforeRedirect', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Location', '/foo');
+      res.statusCode = 302;
+      res.end();
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {
+        maxRedirects: 3,
+        beforeRedirect: function (options) {
+          if (options.path === '/foo') {
+            throw new Error(
+              'Provided path is not allowed'
+            );
+          }
+        }
+      }).catch(function (error) {
+        assert.equal(error.message, 'Provided path is not allowed');
         done();
       });
     });
@@ -261,9 +285,7 @@ describe('supports http with nodejs', function () {
       axios.head('http://localhost:4444/one').then(function (res) {
         assert.equal(res.status, 200);
         done();
-      }).catch(function (err) {
-        done(err);
-      });
+      }).catch(done);
     });
   });
 
@@ -284,9 +306,8 @@ describe('supports http with nodejs', function () {
         axios.get('http://localhost:4444/').then(function (res) {
           assert.deepEqual(res.data, data);
           done();
-        });
+        }).catch(done);
       });
-
     });
   });
 
@@ -298,7 +319,7 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').catch(function (error) {
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -318,7 +339,7 @@ describe('supports http with nodejs', function () {
         }).then(function(res) {
           assert.equal(res.data.toString('base64'), zipped.toString('base64'));
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -333,7 +354,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/').then(function (res) {
         assert.equal(res.data, str);
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -347,7 +368,7 @@ describe('supports http with nodejs', function () {
         var base64 = Buffer.from(user + ':', 'utf8').toString('base64');
         assert.equal(res.data, 'Basic ' + base64);
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -361,7 +382,7 @@ describe('supports http with nodejs', function () {
         var base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
         assert.equal(res.data, 'Basic ' + base64);
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -372,7 +393,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/').then(function (res) {
         assert.ok(/^axios\/[\d.]+$/.test(res.data), `User-Agent header does not match: ${res.data}`);
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -384,7 +405,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', { headers }).then(function (res) {
         assert.equal(res.data, 'foo bar');
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -396,7 +417,7 @@ describe('supports http with nodejs', function () {
       var headers = { 'CoNtEnT-lEnGtH': '42' }; // wonky casing to ensure caseless comparison
       axios.post('http://localhost:4444/', 'foo', { headers }).then(function () {
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -494,7 +515,7 @@ describe('supports http with nodejs', function () {
 
   it('should display error while parsing params', function (done) {
     server = http.createServer(function () {
-      
+
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         params: {
@@ -503,7 +524,7 @@ describe('supports http with nodejs', function () {
       }).catch(function (err) {
         assert.deepEqual(err.exists, true)
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -528,11 +549,7 @@ describe('supports http with nodejs', function () {
           assert.equal(resp.status, 200);
           assert.equal(resp.statusText, 'OK');
           done();
-        })
-        .catch(function (error) {
-          assert.ifError(error);
-          done();
-        });
+        }).catch(done);
     });
   });
 
@@ -553,7 +570,7 @@ describe('supports http with nodejs', function () {
             assert.equal(string, fs.readFileSync(__filename, 'utf8'));
             done();
           });
-        });
+        }).catch(done);
     });
   });
 
@@ -566,11 +583,11 @@ describe('supports http with nodejs', function () {
       axios.post('http://localhost:4444/',
         fs.createReadStream(notExitPath)
       ).then(function (res) {
-        assert.fail();
+        assert.fail('expected ENOENT error');
       }).catch(function (err) {
         assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -593,7 +610,7 @@ describe('supports http with nodejs', function () {
             assert.equal(string, buf.toString());
             done();
           });
-        });
+        }).catch(done);
     });
   });
 
@@ -630,7 +647,7 @@ describe('supports http with nodejs', function () {
         }).then(function (res) {
           assert.equal(res.data, '123456789', 'should pass through proxy');
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -678,10 +695,7 @@ describe('supports http with nodejs', function () {
         }).then(function (res) {
           assert.equal(res.data, '123456789', 'should pass through proxy');
           done();
-        }).catch(function (err) {
-          assert.fail(err);
-          done()
-        });
+        }).catch(done);
       });
     });
   });
@@ -699,7 +713,7 @@ describe('supports http with nodejs', function () {
       }).then(function (res) {
         assert.equal(res.data, '123456789', 'should not pass through proxy');
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -734,7 +748,7 @@ describe('supports http with nodejs', function () {
         axios.get('http://localhost:4444/').then(function (res) {
           assert.equal(res.data, '45671234', 'should use proxy set by process.env.http_proxy');
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -779,12 +793,7 @@ describe('supports http with nodejs', function () {
         }).then(function (res) {
           assert.equal(res.data, '123456789', 'should pass through proxy');
           done();
-        }).catch(function (err) {
-          assert.fail(err);
-          done()
-        }).finally(function () {
-          process.env.https_proxy = ''
-        });
+        }).catch(done);
       });
     });
   });
@@ -821,7 +830,7 @@ describe('supports http with nodejs', function () {
         axios.get('http://localhost:4444/').then(function (res) {
           assert.equal(res.data, '4567', 'should not use proxy for domains in no_proxy');
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -858,7 +867,7 @@ describe('supports http with nodejs', function () {
         axios.get('http://localhost:4444/').then(function (res) {
           assert.equal(res.data, '45671234', 'should use proxy for domains not in no_proxy');
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -901,7 +910,7 @@ describe('supports http with nodejs', function () {
           var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
           assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -937,7 +946,7 @@ describe('supports http with nodejs', function () {
           var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
           assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy set by process.env.http_proxy');
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -983,7 +992,7 @@ describe('supports http with nodejs', function () {
           var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
           assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
           done();
-        });
+        }).catch(done);
       });
     });
   });
@@ -997,7 +1006,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/', {
         cancelToken: source.token
       }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel object');
+        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
         assert.equal(thrown.message, 'Operation has been canceled.');
         done();
       });
@@ -1014,8 +1023,88 @@ describe('supports http with nodejs', function () {
         assert.equal(res.config.baseURL, 'http://localhost:4444/');
         assert.equal(res.config.url, '/foo');
         done();
-      });
+      }).catch(done);
     });
+  });
+
+  it('should support HTTP protocol', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444')
+        .then(function (res) {
+          assert.equal(res.request.agent.protocol, 'http:');
+          done();
+        })
+    })
+  });
+
+  it('should support HTTPS protocol', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('https://www.google.com')
+        .then(function (res) {
+          assert.equal(res.request.agent.protocol, 'https:');
+          done();
+        })
+    })
+  });
+
+  it('should return malformed URL', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('tel:484-695-3408')
+        .then(function (res) {
+          success = true;
+        }).catch(function (err) {
+          error = err;
+          failure = true;
+        })
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'Unsupported protocol tel:');
+        done();
+      }, 300);
+    })
+  });
+
+  it('should return unsupported protocol', function (done) {
+    var success = false, failure = false;
+    var error;
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('ftp:google.com')
+        .then(function (res) {
+          success = true;
+        }).catch(function (err) {
+          error = err;
+          failure = true;
+        })
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'Unsupported protocol ftp:');
+        done();
+      }, 300);
+    })
   });
 
   it('should supply a user-agent if one is not specified', function (done) {
@@ -1026,7 +1115,7 @@ describe('supports http with nodejs', function () {
       axios.get('http://localhost:4444/'
       ).then(function (res) {
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -1040,10 +1129,9 @@ describe('supports http with nodejs', function () {
         headers: {
           "User-Agent": null
         }
-      }
-      ).then(function (res) {
+      }).then(function (res) {
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -1068,13 +1156,13 @@ describe('supports http with nodejs', function () {
       }).catch(function (err) {
         error = err;
         failure = true;
-      }).finally(function () {
+      }).then(function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
-        assert.strictEqual(error.code, 'ERR_REQUEST_ABORTED');
-        assert.strictEqual(error.message, 'error request aborted');
+        assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
+        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -1107,3 +1195,44 @@ describe('supports http with nodejs', function () {
   });
 });
 
+  it('should allow passing FormData', function (done) {
+    var form = new FormData();
+    var file1= Buffer.from('foo', 'utf8');
+
+    form.append('foo', "bar");
+    form.append('file1', file1, {
+      filename: 'bar.jpg',
+      filepath: 'temp/bar.jpg',
+      contentType: 'image/jpeg'
+    });
+
+    server = http.createServer(function (req, res) {
+      var receivedForm = new formidable.IncomingForm();
+
+      receivedForm.parse(req, function (err, fields, files) {
+        if (err) {
+          return done(err);
+        }
+
+        res.end(JSON.stringify({
+          fields: fields,
+          files: files
+        }));
+      });
+    }).listen(4444, function () {
+      axios.post('http://localhost:4444/', form, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then(function (res) {
+        assert.deepStrictEqual(res.data.fields,{foo: 'bar'});
+
+        assert.strictEqual(res.data.files.file1.mimetype,'image/jpeg');
+        assert.strictEqual(res.data.files.file1.originalFilename,'temp/bar.jpg');
+        assert.strictEqual(res.data.files.file1.size,3);
+
+        done();
+      }).catch(done);
+    });
+  });
+});

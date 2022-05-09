@@ -8,7 +8,7 @@ import axios, {
   CancelToken,
   CancelTokenSource,
   Canceler
-} from '../../';
+} from 'axios';
 
 const config: AxiosRequestConfig = {
   url: '/user',
@@ -170,8 +170,8 @@ axios.patch<User>('/user', { name: 'foo', id: 1 })
 // (Typed methods) with custom response type
 
 const handleStringResponse = (response: string) => {
-  console.log(response)
-}
+  console.log(response);
+};
 
 axios.get<User, string>('/user?id=12345')
   .then(handleStringResponse)
@@ -251,6 +251,8 @@ instance1.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
 
 // Defaults
 
+axios.defaults.headers['X-FOO'];
+
 axios.defaults.baseURL = 'https://api.example.com/';
 axios.defaults.headers.common['Authorization'] = 'token';
 axios.defaults.headers.post['X-FOO'] = 'bar';
@@ -296,7 +298,7 @@ axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(res
 // Adapters
 
 const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
-  const response: AxiosResponse<any> = {
+  const response: AxiosResponse = {
     data: { foo: 'bar' },
     status: 200,
     statusText: 'OK',
@@ -342,11 +344,11 @@ axios.get('/user')
 
 axios.get('/user')
   .catch((error: any) => 'foo')
-  .then((value: string) => {});
+  .then((value) => {});
 
 axios.get('/user')
   .catch((error: any) => Promise.resolve('foo'))
-  .then((value: string) => {});
+  .then((value) => {});
 
 // Cancellation
 
@@ -371,3 +373,11 @@ axios.get('/user')
       const axiosError: AxiosError = error;
     }
   });
+
+// FormData
+
+axios.toFormData({x: 1}, new FormData());
+
+// AbortSignal
+
+axios.get('/user', {signal: new AbortController().signal});

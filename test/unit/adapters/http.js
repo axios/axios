@@ -1199,7 +1199,7 @@ describe('supports http with nodejs', function () {
       res.end();
     }).listen(4444, function () {
       axios.get('localhost:4444/').catch(function (error) {
-        assert.strictEqual(error.code, 'URL_PROTOCOL_MISSING');
+        assert.strictEqual(error.code, 'ERR_NETWORK');
         done();
       });
     });

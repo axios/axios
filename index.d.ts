@@ -6,7 +6,7 @@ export type AxiosResponseHeaders = Record<string, string> & {
 };
 
 export interface AxiosRequestTransformer {
-  (data: any, headers?: AxiosRequestHeaders): any;
+  (data: any, headers: AxiosRequestHeaders): any;
 }
 
 export interface AxiosResponseTransformer {
@@ -72,6 +72,13 @@ export interface TransitionalOptions {
   clarifyTimeoutError?: boolean;
 }
 
+export interface GenericAbortSignal {
+  aborted: boolean;
+  onabort: ((...args: any) => any) | null;
+  addEventListener: (...args: any) => any;
+  removeEventListener: (...args: any) => any;
+}
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
@@ -105,7 +112,7 @@ export interface AxiosRequestConfig<D = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions;
-  signal?: AbortSignal;
+  signal?: GenericAbortSignal;
   insecureHTTPParser?: boolean;
   env?: {
     FormData?: new (...args: any[]) => object;
@@ -170,8 +177,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
 export class CanceledError<T> extends AxiosError<T> {
 }
 
-export interface AxiosPromise<T = any> extends Promise<AxiosResponse<T>> {
-}
+export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
 
 export interface CancelStatic {
   new (message?: string): Cancel;
@@ -237,6 +243,10 @@ export interface AxiosInstance extends Axios {
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
 }
 
+export interface GenericFormData {
+  append(name: string, value: any, options?: any): any;
+}
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: AxiosRequestConfig): AxiosInstance;
   Cancel: CancelStatic;
@@ -248,6 +258,7 @@ export interface AxiosStatic extends AxiosInstance {
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError(payload: any): payload is AxiosError;
+  toFormData(sourceObj: object, targetFormData?: GenericFormData): GenericFormData;
 }
 
 declare const axios: AxiosStatic;

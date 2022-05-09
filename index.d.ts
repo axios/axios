@@ -10,7 +10,7 @@ export interface AxiosRequestTransformer {
 }
 
 export interface AxiosResponseTransformer {
-  (data: any, headers?: AxiosResponseHeaders): any;
+  (data: any, headers?: AxiosResponseHeaders, status?: number): any;
 }
 
 export interface AxiosAdapter {

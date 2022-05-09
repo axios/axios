@@ -29,18 +29,6 @@ module.exports = function(grunt) {
       all: {}
     },
 
-    usebanner: {
-      all: {
-        options: {
-          banner: '<%= meta.banner %>',
-          linebreak: false
-        },
-        files: {
-          src: ['dist/*.js']
-        }
-      }
-    },
-
     eslint: {
       target: ['lib/**/*.js']
     },
@@ -77,7 +65,11 @@ module.exports = function(grunt) {
       }
     },
 
-    webpack: require('./webpack.config.js')
+    shell: {
+      rollup: {
+        command: 'rollup -c -m'
+      }
+    }
   });
 
   grunt.registerMultiTask('package2bower', 'Sync package.json to bower.json', function() {
@@ -104,6 +96,6 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('test', 'Run the jasmine and mocha tests', ['eslint', 'mochaTest', 'karma:single']);
-  grunt.registerTask('build', 'Run webpack and bundle the source', ['clean', 'webpack']);
-  grunt.registerTask('version', 'Sync version info for a release', ['usebanner', 'package2bower', 'package2env']);
+  grunt.registerTask('build', 'Run rollup and bundle the source', ['clean', 'shell:rollup']);
+  grunt.registerTask('version', 'Sync version info for a release', ['package2bower', 'package2env']);
 };

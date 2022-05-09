@@ -1193,7 +1193,6 @@ describe('supports http with nodejs', function () {
       }).then(done, done);
     });
   });
-});
 
   it('should allow passing FormData', function (done) {
     var form = new FormData();

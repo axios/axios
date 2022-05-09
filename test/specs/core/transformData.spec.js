@@ -26,5 +26,15 @@ describe('core::transformData', function () {
 
     expect(data).toEqual('foo');
   });
+
+  it('should support reference status code in transformData', function () {
+    var data = '';
+    data = transformData(data, null, 200, [function (data, headers, status) {
+      data += status;
+      return data;
+    }]);
+
+    expect(data).toEqual('200');
+  });
 });
 

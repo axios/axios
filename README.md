@@ -529,7 +529,7 @@ The response for a request contains the following information.
   statusText: 'OK',
 
   // `headers` the HTTP headers that the server responded with
-  // All header names are lower cased and can be accessed using the bracket notation.
+  // All header names are lowercase and can be accessed using the bracket notation.
   // Example: `response.headers['content-type']`
   headers: {},
 
@@ -636,6 +636,15 @@ If you need to remove an interceptor later you can.
 ```js
 const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
 axios.interceptors.request.eject(myInterceptor);
+```
+
+You can also clear all interceptors for requests or responses.
+```js
+const instance = axios.create();
+instance.interceptors.request.use(function () {/*...*/});
+instance.interceptors.request.clear(); // Removes interceptors from requests
+instance.interceptors.response.use(function () {/*...*/});
+instance.interceptors.response.clear(); // Removes interceptors from responses
 ```
 
 You can add interceptors to a custom instance of axios.
@@ -801,7 +810,7 @@ cancel();
 ```
 
 > Note: you can cancel several requests with the same cancel token/abort controller.
-> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
+> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make a real request.
 
 > During the transition period, you can use both cancellation APIs, even for the same request:
 
@@ -962,7 +971,7 @@ try {
 
 ## Online one-click setup
 
-You can use Gitpod an online IDE(which is free for Open Source) for contributing or running the examples online.
+You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
 

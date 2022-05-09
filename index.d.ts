@@ -10,7 +10,7 @@ export interface AxiosRequestTransformer {
 }
 
 export interface AxiosResponseTransformer {
-  (data: any, headers?: AxiosResponseHeaders): any;
+  (data: any, headers?: AxiosResponseHeaders, status?: number): any;
 }
 
 export interface AxiosAdapter {
@@ -245,6 +245,12 @@ export class Axios {
 export interface AxiosInstance extends Axios {
   (config: AxiosRequestConfig): AxiosPromise;
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
+
+  defaults: Omit<AxiosDefaults, 'headers'> & {
+    headers: HeadersDefaults & {
+      [key: string]: string | number | boolean | undefined
+    }
+  };
 }
 
 export interface GenericFormData {

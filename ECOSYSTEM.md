@@ -33,6 +33,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [react-hooks-axios](https://github.com/use-hooks/react-hooks-axios) - Custom React Hooks for Axios.js
 * [redux-saga-requests](https://github.com/klis87/redux-saga-requests) - Redux-Saga addon to simplify handling of AJAX requests.
 * [redux-axios-middleware](https://github.com/svrcekmichal/redux-axios-middleware) - Redux middleware for fetching data with axios HTTP client
+* [@react-cmpt/react-request-hook](https://github.com/react-cmpt/react-request-hook) - A React hook plugin for axios. Lightweight and less change.
 
 ### Unit testing
 

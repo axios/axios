@@ -27,6 +27,19 @@ describe('core::transformData', function () {
     expect(data).toEqual('foo');
   });
 
+  it('should support reference headers in transformData', function () {
+    var headers = {
+      'content-type': 'foo/bar',
+    };
+    var data = '';
+    data = transformData(data, headers, null, [function (data, headers) {
+      data += headers['content-type'];
+      return data;
+    }]);
+
+    expect(data).toEqual('foo/bar');
+  });
+
   it('should support reference status code in transformData', function () {
     var data = '';
     data = transformData(data, null, 200, [function (data, headers, status) {

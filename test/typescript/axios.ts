@@ -263,6 +263,11 @@ instance1.defaults.headers.common['Authorization'] = 'token';
 instance1.defaults.headers.post['X-FOO'] = 'bar';
 instance1.defaults.timeout = 2500;
 
+// axios create defaults
+
+axios.create({ headers: { foo: 'bar' } });
+axios.create({ headers: { common: { foo: 'bar' } } });
+
 // Interceptors
 
 const requestInterceptorId: number = axios.interceptors.request.use(

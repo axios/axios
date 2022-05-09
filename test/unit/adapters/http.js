@@ -1166,6 +1166,34 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should able to cancel multiple requests with CancelToken', function(done){
+    server = http.createServer(function (req, res) {
+      res.end('ok');
+    }).listen(4444, function () {
+      var CancelToken = axios.CancelToken;
+      var source = CancelToken.source();
+      var canceledStack = [];
+
+      var requests = [1, 2, 3, 4, 5].map(function(id){
+        return axios
+          .get('/foo/bar', { cancelToken: source.token })
+          .catch(function (e) {
+            if (!axios.isCancel(e)) {
+              throw e;
+            }
+
+            canceledStack.push(id);
+          });
+      });
+
+      source.cancel("Aborted by user");
+
+      Promise.all(requests).then(function () {
+        assert.deepStrictEqual(canceledStack.sort(), [1, 2, 3, 4, 5])
+      }).then(done, done);
+    });
+  });
+
   it('should allow passing FormData', function (done) {
     var form = new FormData();
     var file1= Buffer.from('foo', 'utf8');

@@ -241,6 +241,12 @@ export class Axios {
 export interface AxiosInstance extends Axios {
   (config: AxiosRequestConfig): AxiosPromise;
   (url: string, config?: AxiosRequestConfig): AxiosPromise;
+
+  defaults: Omit<AxiosDefaults, 'headers'> & {
+    headers: HeadersDefaults & {
+      [key: string]: string | number | boolean | undefined
+    }
+  };
 }
 
 export interface GenericFormData {

@@ -265,55 +265,6 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support beforeRedirect and proxy with redirect', function (done) {
-    var requestCount = 0;
-    server = http.createServer(function (req, res) {
-      requestCount += 1;
-      if (requestCount === 1) {
-        res.setHeader('Location', '/redirected');
-        res.writeHead(302);
-      }
-      res.end();
-    }).listen(4444, function () {
-      var proxyUseCount = 0;
-      proxy = http.createServer(function (request, response) {
-        proxyUseCount += 1;
-        var parsed = url.parse(request.url);
-        var opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
-        };
-  
-        http.get(opts, function (res) {
-          response.writeHead(res.statusCode, res.headers);
-          res.on('data', function (data) {
-            response.write(data)
-          });
-          res.on('end', function () {
-            response.end();
-          });
-        });
-      }).listen(4000, function () {
-        var redirectCalled = false;
-        axios.get('http://localhost:4444/', {
-          proxy: {
-            host: 'localhost',
-            port: 4000
-          },
-          maxRedirects: 3,
-          beforeRedirect: function (options) {
-            redirectCalled = true;
-          }
-        }).then(function (res) {
-          assert.ok(redirectCalled, 'should invoke beforeRedirect option');
-          assert.equal(2, proxyUseCount, 'should go through proxy after redirect');
-          done();
-        }).catch(done);
-      });
-    });
-  });
-
   it('should preserve the HTTP verb on redirect', function (done) {
     server = http.createServer(function (req, res) {
       if (req.method.toLowerCase() !== "head") {

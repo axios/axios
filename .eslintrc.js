@@ -114,7 +114,9 @@ module.exports = {
     }],
     'comma-style': [2, 'last'],      // http://eslint.org/docs/rules/comma-style
     'eol-last': 2,                   // http://eslint.org/docs/rules/eol-last
-    'func-names': 1,                 // http://eslint.org/docs/rules/func-names
+    'func-names': [
+      1, 'as-needed'
+    ],                               // http://eslint.org/docs/rules/func-names
     'key-spacing': [2, {             // http://eslint.org/docs/rules/key-spacing
       'beforeColon': false,
       'afterColon': true

@@ -12,6 +12,8 @@ var server, proxy;
 var AxiosError = require('../../../lib/core/AxiosError');
 var FormData = require('form-data');
 var formidable = require('formidable');
+const express = require('express');
+const multer = require('multer');
 
 describe('supports http with nodejs', function () {
 
@@ -687,7 +689,7 @@ describe('supports http with nodejs', function () {
           proxy: {
             host: 'localhost',
             port: 4000,
-            protocol: 'https'
+            protocol: 'https:'
           },
           httpsAgent: new https.Agent({
             rejectUnauthorized: false
@@ -792,6 +794,56 @@ describe('supports http with nodejs', function () {
           })
         }).then(function (res) {
           assert.equal(res.data, '123456789', 'should pass through proxy');
+          done();
+        }).catch(done);
+      });
+    });
+  });
+
+  it('should re-evaluate proxy on redirect when proxy set via env var', function (done) {
+    process.env.http_proxy = 'http://localhost:4000'
+    process.env.no_proxy = 'localhost:4000'
+
+    var proxyUseCount = 0;
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Location', 'http://localhost:4000/redirected');
+      res.statusCode = 302;
+      res.end();
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        if (parsed.pathname === '/redirected') {
+          response.statusCode = 200;
+          response.end();
+          return;
+        }
+
+        proxyUseCount += 1;
+
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path,
+          protocol: parsed.protocol,
+          rejectUnauthorized: false
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.setHeader('Location', res.headers.location);
+            response.end(body);
+          });
+        });
+      }).listen(4000, function () {
+        axios.get('http://localhost:4444/').then(function(res) {
+          assert.equal(res.status, 200);
+          assert.equal(proxyUseCount, 1);
           done();
         }).catch(done);
       });
@@ -1194,44 +1246,82 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should allow passing FormData', function (done) {
-    var form = new FormData();
-    var file1= Buffer.from('foo', 'utf8');
+  describe('FormData', function () {
+    it('should allow passing FormData', function (done) {
+      var form = new FormData();
+      var file1 = Buffer.from('foo', 'utf8');
 
-    form.append('foo', "bar");
-    form.append('file1', file1, {
-      filename: 'bar.jpg',
-      filepath: 'temp/bar.jpg',
-      contentType: 'image/jpeg'
-    });
-
-    server = http.createServer(function (req, res) {
-      var receivedForm = new formidable.IncomingForm();
-
-      receivedForm.parse(req, function (err, fields, files) {
-        if (err) {
-          return done(err);
-        }
-
-        res.end(JSON.stringify({
-          fields: fields,
-          files: files
-        }));
+      form.append('foo', "bar");
+      form.append('file1', file1, {
+        filename: 'bar.jpg',
+        filepath: 'temp/bar.jpg',
+        contentType: 'image/jpeg'
       });
-    }).listen(4444, function () {
-      axios.post('http://localhost:4444/', form, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }).then(function (res) {
-        assert.deepStrictEqual(res.data.fields,{foo: 'bar'});
 
-        assert.strictEqual(res.data.files.file1.mimetype,'image/jpeg');
-        assert.strictEqual(res.data.files.file1.originalFilename,'temp/bar.jpg');
-        assert.strictEqual(res.data.files.file1.size,3);
+      server = http.createServer(function (req, res) {
+        var receivedForm = new formidable.IncomingForm();
 
-        done();
-      }).catch(done);
+        receivedForm.parse(req, function (err, fields, files) {
+          if (err) {
+            return done(err);
+          }
+
+          res.end(JSON.stringify({
+            fields: fields,
+            files: files
+          }));
+        });
+      }).listen(4444, function () {
+        axios.post('http://localhost:4444/', form, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }).then(function (res) {
+          assert.deepStrictEqual(res.data.fields, {foo: 'bar'});
+
+          assert.strictEqual(res.data.files.file1.mimetype, 'image/jpeg');
+          assert.strictEqual(res.data.files.file1.originalFilename, 'temp/bar.jpg');
+          assert.strictEqual(res.data.files.file1.size, 3);
+
+          done();
+        }).catch(done);
+      });
+    });
+    describe('toFormData helper', function () {
+      it('should properly serialize nested objects for parsing with multer.js (express.js)', function (done) {
+        const app = express();
+        var obj = {
+          arr1: ['1', '2', '3'],
+          arr2: ['1', ['2'], '3'],
+          obj: {x: '1', y: {z: '1'}},
+          users: [{name: 'Peter', surname: 'griffin'}, {name: 'Thomas', surname: 'Anderson'}]
+        };
+
+        app.post('/', multer().none(), function (req, res, next) {
+          res.send(JSON.stringify(req.body));
+        });
+
+        server = app.listen(3001, function () {
+          // multer can parse the following key/value pairs to an array (indexes: null, false, true):
+          // arr: '1'
+          // arr: '2'
+          // -------------
+          // arr[]: '1'
+          // arr[]: '2'
+          // -------------
+          // arr[0]: '1'
+          // arr[1]: '2'
+          // -------------
+          Promise.all([null, false, true].map(function (mode) {
+            return axios.postForm('http://localhost:3001/', obj, {formSerializer: {indexes: mode}})
+              .then(function (res) {
+                assert.deepStrictEqual(res.data, obj, 'Index mode ' + mode);
+              });
+          })).then(function (){
+            done();
+          }, done)
+        });
+      });
     });
   });
 });

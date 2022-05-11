@@ -79,6 +79,23 @@ export interface GenericAbortSignal {
   removeEventListener: (...args: any) => any;
 }
 
+export interface FormDataVisitorHelpers {
+  defaultVisitor: FormDataVisitor;
+  convertValue: (value: any) => any;
+  isVisitable: (value: any) => boolean;
+}
+
+export interface FormDataVisitor {
+  (value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
+}
+
+export interface FormSerializerOptions {
+  visitor?: FormDataVisitor;
+  dots?: boolean;
+  metaTokens?: boolean;
+  indexes?: boolean;
+}
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
@@ -117,6 +134,7 @@ export interface AxiosRequestConfig<D = any> {
   env?: {
     FormData?: new (...args: any[]) => object;
   };
+  formSerializer?: FormSerializerOptions;
 }
 
 export interface HeadersDefaults {
@@ -268,7 +286,7 @@ export interface AxiosStatic extends AxiosInstance {
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
-  toFormData(sourceObj: object, targetFormData?: GenericFormData): GenericFormData;
+  toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
 }
 
 declare const axios: AxiosStatic;

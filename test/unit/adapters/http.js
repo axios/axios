@@ -689,7 +689,7 @@ describe('supports http with nodejs', function () {
           proxy: {
             host: 'localhost',
             port: 4000,
-            protocol: 'https'
+            protocol: 'https:'
           },
           httpsAgent: new https.Agent({
             rejectUnauthorized: false
@@ -794,6 +794,56 @@ describe('supports http with nodejs', function () {
           })
         }).then(function (res) {
           assert.equal(res.data, '123456789', 'should pass through proxy');
+          done();
+        }).catch(done);
+      });
+    });
+  });
+
+  it('should re-evaluate proxy on redirect when proxy set via env var', function (done) {
+    process.env.http_proxy = 'http://localhost:4000'
+    process.env.no_proxy = 'localhost:4000'
+
+    var proxyUseCount = 0;
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Location', 'http://localhost:4000/redirected');
+      res.statusCode = 302;
+      res.end();
+    }).listen(4444, function () {
+      proxy = http.createServer(function (request, response) {
+        var parsed = url.parse(request.url);
+        if (parsed.pathname === '/redirected') {
+          response.statusCode = 200;
+          response.end();
+          return;
+        }
+
+        proxyUseCount += 1;
+
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path,
+          protocol: parsed.protocol,
+          rejectUnauthorized: false
+        };
+
+        http.get(opts, function (res) {
+          var body = '';
+          res.on('data', function (data) {
+            body += data;
+          });
+          res.on('end', function () {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.setHeader('Location', res.headers.location);
+            response.end(body);
+          });
+        });
+      }).listen(4000, function () {
+        axios.get('http://localhost:4444/').then(function(res) {
+          assert.equal(res.status, 200);
+          assert.equal(proxyUseCount, 1);
           done();
         }).catch(done);
       });

@@ -285,7 +285,7 @@ export interface AxiosStatic extends AxiosInstance {
   isCancel(value: any): boolean;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
-  isAxiosError(payload: any): payload is AxiosError;
+  isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
   toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
 }
 

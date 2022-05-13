@@ -39,12 +39,12 @@ Promise based HTTP client for the browser and node.js
     - [AbortController](#abortcontroller)
     - [CancelToken 👎](#canceltoken-deprecated)
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
-    - [Browser](#browser)
-    - [Node.js](#nodejs)
-      - [Query string](#query-string)
-      - [Form data](#form-data)
-        - [Automatic serialization](#-automatic-serialization)
-        - [Manual FormData passing](#manual-formdata-passing)
+    - [URLSearchParams](#urlsearchparams)
+    - [Query string](#query-string-older-browsers)
+    - [🆕 Automatic serialization](#-automatic-serialization-to-urlsearchparams)        
+  - [Using multipart/form-data format](#using-multipartform-data-format)    
+    - [FormData](#formdata)
+    - [🆕 Automatic serialization](#-automatic-serialization-to-formdata) 
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -61,6 +61,7 @@ Promise based HTTP client for the browser and node.js
 - Transform request and response data
 - Cancel requests
 - Automatic transforms for JSON data
+- 🆕 Automatic data object serialization to `multipart/form-data` and `x-www-form-urlencoded` body encodings
 - Client side support for protecting against [XSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery)
 
 ## Browser Support
@@ -814,7 +815,9 @@ cancel();
 
 > During the transition period, you can use both cancellation APIs, even for the same request:
 
-## Using application/x-www-form-urlencoded format
+## Using `application/x-www-form-urlencoded` format
+
+### URLSearchParams
 
 By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
@@ -824,7 +827,7 @@ params.append('extraparam', 'value');
 axios.post('/foo', params);
 ```
 
-### Older browsers
+### Query string (Older browsers)
 
 For compatibility with very old browsers, there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
@@ -863,9 +866,73 @@ You can also use the [`qs`](https://github.com/ljharb/qs) library.
 > NOTE: 
 > The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
 
-#### Form data
+### 🆕 Automatic serialization to URLSearchParams
 
-##### 🆕 Automatic serialization
+Axios will automatically serialize the data object to urlencoded format if the content-type header is set to "application/x-www-form-urlencoded".
+
+```
+const data = {
+  x: 1,
+  arr: [1, 2, 3],
+  arr2: [1, [2], 3],
+  users: [{name: 'Peter', surname: 'Griffin'}, {name: 'Thomas', surname: 'Anderson'}],
+};
+
+await axios.postForm('https://postman-echo.com/post', data,
+  {headers: {'content-type': 'application/x-www-form-urlencoded'}}
+);
+```
+
+The server will handle it as 
+
+```js
+  {
+    x: '1',
+    'arr[]': [ '1', '2', '3' ],
+    'arr2[0]': '1',
+    'arr2[1][0]': '2',
+    'arr2[2]': '3',
+    'arr3[]': [ '1', '2', '3' ],
+    'users[0][name]': 'Peter',
+    'users[0][surname]': 'griffin',
+    'users[1][name]': 'Thomas',
+    'users[1][surname]': 'Anderson'
+  }
+````
+
+If your backend body-parser (like `body-parser` of `express.js`) supports nested objects decoding, you will get the same object on the server-side automatically
+
+```js
+  var app = express();
+  
+  app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+  
+  app.post('/', function (req, res, next) {
+     // echo body as JSON
+     res.send(JSON.stringify(req.body));
+  });
+
+  server = app.listen(3000);
+```
+
+## Using `multipart/form-data` format
+
+### FormData
+  
+In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
+
+```js
+const FormData = require('form-data');
+ 
+const form = new FormData();
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+
+axios.post('https://example.com', form)
+```
+
+### 🆕 Automatic serialization to FormData
 
 Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type` 
 header is set to `multipart/form-data`.
@@ -904,7 +971,7 @@ Axios FormData serializer supports some special endings to perform the following
 - `[]` - unwrap the array-like object as separate fields with the same key 
 
 > NOTE: 
-> unwrap/expand operation will be used by default on array-like objects
+> unwrap/expand operation will be used by default on arrays and FileList objects
 
 FormData serializer supports additional options via `config.formSerializer: object` property to handle rare cases:
 
@@ -975,21 +1042,6 @@ await axios.postForm('https://httpbin.org/post', document.querySelector('#fileIn
 ```
 
 All files will be sent with the same field names: `files[]`;
-
-##### Manual FormData passing
-  
-In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
-
-```js
-const FormData = require('form-data');
- 
-const form = new FormData();
-form.append('my_field', 'my value');
-form.append('my_buffer', new Buffer(10));
-form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
-
-axios.post('https://example.com', form)
-```
 
 ## Semver
 

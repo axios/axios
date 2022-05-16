@@ -210,7 +210,7 @@ export interface Cancel {
 }
 
 export interface Canceler {
-  (message?: string): void;
+  (message?: string, config?: AxiosRequestConfig, request?: any): void;
 }
 
 export interface CancelTokenStatic {

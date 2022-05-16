@@ -182,7 +182,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
   request?: any;
   response?: AxiosResponse<T, D>;
   isAxiosError: boolean;
-  status?: string;
+  status?: number;
   toJSON: () => object;
   static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
   static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
@@ -210,7 +210,7 @@ export interface Cancel {
 }
 
 export interface Canceler {
-  (message?: string): void;
+  (message?: string, config?: AxiosRequestConfig, request?: any): void;
 }
 
 export interface CancelTokenStatic {

@@ -12,8 +12,9 @@ var server, proxy;
 var AxiosError = require('../../../lib/core/AxiosError');
 var FormData = require('form-data');
 var formidable = require('formidable');
-const express = require('express');
-const multer = require('multer');
+var express = require('express');
+var multer = require('multer');
+var bodyParser = require('body-parser');
 
 describe('supports http with nodejs', function () {
 
@@ -204,7 +205,7 @@ describe('supports http with nodejs', function () {
         assert.equal(res.data, str);
         assert.equal(res.request.path, '/two');
         done();
-      }).catch(done);;
+      }).catch(done);
     });
   });
 
@@ -223,7 +224,7 @@ describe('supports http with nodejs', function () {
         assert.equal(res.status, 302);
         assert.equal(res.headers['location'], '/foo');
         done();
-      }).catch(done);;
+      }).catch(done);
     });
   });
 
@@ -241,7 +242,7 @@ describe('supports http with nodejs', function () {
         assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
         assert.equal(error.message, 'Maximum number of redirects exceeded');
         done();
-      });
+      }).catch(done);
     });
   });
 
@@ -263,6 +264,56 @@ describe('supports http with nodejs', function () {
       }).catch(function (error) {
         assert.equal(error.message, 'Provided path is not allowed');
         done();
+      }).catch(done);
+    });
+  });
+
+  it('should support beforeRedirect and proxy with redirect', function (done) {
+    var requestCount = 0;
+    var totalRedirectCount = 5;
+    server = http.createServer(function (req, res) {
+      requestCount += 1;
+      if (requestCount <= totalRedirectCount) {
+        res.setHeader('Location', 'http://localhost:4444');
+        res.writeHead(302);
+      }
+      res.end();
+    }).listen(4444, function () {
+      var proxyUseCount = 0;
+      proxy = http.createServer(function (request, response) {
+        proxyUseCount += 1;
+        var parsed = url.parse(request.url);
+        var opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: parsed.path
+        };
+
+        http.get(opts, function (res) {
+          response.writeHead(res.statusCode, res.headers);
+          res.on('data', function (data) {
+            response.write(data)
+          });
+          res.on('end', function () {
+            response.end();
+          });
+        });
+      }).listen(4000, function () {
+        var configBeforeRedirectCount = 0;
+        axios.get('http://localhost:4444/', {
+          proxy: {
+            host: 'localhost',
+            port: 4000
+          },
+          maxRedirects: totalRedirectCount,
+          beforeRedirect: function (options) {
+            configBeforeRedirectCount += 1;
+          }
+        }).then(function (res) {
+          assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
+          assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
+          done();
+        }).catch(done);
       });
     });
   });
@@ -1287,9 +1338,11 @@ describe('supports http with nodejs', function () {
         }).catch(done);
       });
     });
+
     describe('toFormData helper', function () {
       it('should properly serialize nested objects for parsing with multer.js (express.js)', function (done) {
-        const app = express();
+        var app = express();
+
         var obj = {
           arr1: ['1', '2', '3'],
           arr2: ['1', ['2'], '3'],
@@ -1321,6 +1374,37 @@ describe('supports http with nodejs', function () {
             done();
           }, done)
         });
+      });
+    });
+  });
+
+  describe('URLEncoded Form', function () {
+    it('should post object data as url-encoded form if content-type is application/x-www-form-urlencoded', function (done) {
+      var app = express();
+
+      var obj = {
+        arr1: ['1', '2', '3'],
+        arr2: ['1', ['2'], '3'],
+        obj: {x: '1', y: {z: '1'}},
+        users: [{name: 'Peter', surname: 'griffin'}, {name: 'Thomas', surname: 'Anderson'}]
+      };
+
+      app.use(bodyParser.urlencoded({ extended: true }));
+
+      app.post('/', function (req, res, next) {
+        res.send(JSON.stringify(req.body));
+      });
+
+      server = app.listen(3001, function () {
+        return axios.post('http://localhost:3001/', obj, {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded'
+          }
+        })
+          .then(function (res) {
+            assert.deepStrictEqual(res.data, obj);
+            done();
+          }, done);
       });
     });
   });

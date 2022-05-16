@@ -571,4 +571,32 @@ describe('interceptors', function () {
       done();
     });
   });
+
+  it('should clear all request interceptors', function () {
+    var instance = axios.create({
+      baseURL: 'http://test.com/'
+    });
+
+    instance.interceptors.request.use(function (config) {
+      return config
+    });
+
+    instance.interceptors.request.clear();
+
+    expect(instance.interceptors.request.handlers.length).toBe(0);
+  });
+
+  it('should clear all response interceptors', function () {
+    var instance = axios.create({
+      baseURL: 'http://test.com/'
+    });
+
+    instance.interceptors.response.use(function (config) {
+      return config
+    });
+
+    instance.interceptors.response.clear();
+
+    expect(instance.interceptors.response.handlers.length).toBe(0);
+  });
 });

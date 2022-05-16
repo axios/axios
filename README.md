@@ -6,7 +6,7 @@
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
-[![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](http://npm-stat.com/charts.html?package=axios)
+[![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
@@ -39,12 +39,12 @@ Promise based HTTP client for the browser and node.js
     - [AbortController](#abortcontroller)
     - [CancelToken 👎](#canceltoken-deprecated)
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
-    - [Browser](#browser)
-    - [Node.js](#nodejs)
-      - [Query string](#query-string)
-      - [Form data](#form-data)
-        - [Automatic serialization](#-automatic-serialization)
-        - [Manual FormData passing](#manual-formdata-passing)
+    - [URLSearchParams](#urlsearchparams)
+    - [Query string](#query-string-older-browsers)
+    - [🆕 Automatic serialization](#-automatic-serialization-to-urlsearchparams)        
+  - [Using multipart/form-data format](#using-multipartform-data-format)    
+    - [FormData](#formdata)
+    - [🆕 Automatic serialization](#-automatic-serialization-to-formdata) 
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -55,17 +55,18 @@ Promise based HTTP client for the browser and node.js
 ## Features
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
-- Make [http](http://nodejs.org/api/http.html) requests from node.js
+- Make [http](https://nodejs.org/api/http.html) requests from node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
 - Intercept request and response
 - Transform request and response data
 - Cancel requests
 - Automatic transforms for JSON data
-- Client side support for protecting against [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery)
+- 🆕 Automatic data object serialization to `multipart/form-data` and `x-www-form-urlencoded` body encodings
+- Client side support for protecting against [XSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery)
 
 ## Browser Support
 
-![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
+![Chrome](https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png) | ![Safari](https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png) | ![Opera](https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png) | ![Edge](https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png) | ![IE](https://raw.githubusercontent.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
 --- | --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 
@@ -89,6 +90,12 @@ Using yarn:
 
 ```bash
 $ yarn add axios
+```
+
+Using pnpm:
+
+```bash
+$ pnpm add axios
 ```
 
 Using jsDelivr CDN:
@@ -218,7 +225,7 @@ axios({
 // GET request for remote image in node.js
 axios({
   method: 'get',
-  url: 'http://bit.ly/2mTM3nY',
+  url: 'https://bit.ly/2mTM3nY',
   responseType: 'stream'
 })
   .then(function (response) {
@@ -331,7 +338,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `paramsSerializer` is an optional function in charge of serializing `params`
-  // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
+  // (e.g. https://www.npmjs.com/package/qs, https://api.jquery.com/jquery.param/)
   paramsSerializer: function (params) {
     return Qs.stringify(params, {arrayFormat: 'brackets'})
   },
@@ -429,7 +436,7 @@ These are the available config options for making requests. Only the `url` is re
     if (options.hostname === "example.com") {
       options.auth = "user:password";
     }
-  };
+  },
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
@@ -523,7 +530,7 @@ The response for a request contains the following information.
   statusText: 'OK',
 
   // `headers` the HTTP headers that the server responded with
-  // All header names are lower cased and can be accessed using the bracket notation.
+  // All header names are lowercase and can be accessed using the bracket notation.
   // Example: `response.headers['content-type']`
   headers: {},
 
@@ -582,7 +589,7 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults/index.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
 ```js
 // Create an instance using the config defaults provided by the library
@@ -632,6 +639,15 @@ const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
 axios.interceptors.request.eject(myInterceptor);
 ```
 
+You can also clear all interceptors for requests or responses.
+```js
+const instance = axios.create();
+instance.interceptors.request.use(function () {/*...*/});
+instance.interceptors.request.clear(); // Removes interceptors from requests
+instance.interceptors.response.use(function () {/*...*/});
+instance.interceptors.response.clear(); // Removes interceptors from responses
+```
+
 You can add interceptors to a custom instance of axios.
 
 ```js
@@ -674,7 +690,7 @@ and when the response was fulfilled
 - then each interceptor is executed
 - then they are executed in the order they were added
 - then only the last interceptor's result is returned
-- then every interceptor receives the result of it's predecessor
+- then every interceptor receives the result of its predecessor
 - and when the fulfillment-interceptor throws
     - then the following fulfillment-interceptor is not called
     - then the following rejection-interceptor is called
@@ -795,26 +811,25 @@ cancel();
 ```
 
 > Note: you can cancel several requests with the same cancel token/abort controller.
-> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make real request.
+> If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make a real request.
 
 > During the transition period, you can use both cancellation APIs, even for the same request:
 
-## Using application/x-www-form-urlencoded format
+## Using `application/x-www-form-urlencoded` format
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the `application/x-www-form-urlencoded` format instead, you can use one of the following options.
+### URLSearchParams
 
-### Browser
-
-In a browser, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API as follows:
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
-const params = new URLSearchParams();
-params.append('param1', 'value1');
-params.append('param2', 'value2');
+const params = new URLSearchParams({ foo: 'bar' });
+params.append('extraparam', 'value');
 axios.post('/foo', params);
 ```
 
-> Note that `URLSearchParams` is not supported by all browsers (see [caniuse.com](http://www.caniuse.com/#feat=urlsearchparams)), but there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
+### Query string (Older browsers)
+
+For compatibility with very old browsers, there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
 Alternatively, you can encode data using the [`qs`](https://github.com/ljharb/qs) library:
 
@@ -837,23 +852,13 @@ const options = {
 axios(options);
 ```
 
-### Node.js
+### Older Node.js versions
 
-#### Query string
-
-In node.js, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
+For older Node.js engines, you can use the [`querystring`](https://nodejs.org/api/querystring.html) module as follows:
 
 ```js
 const querystring = require('querystring');
-axios.post('http://something.com/', querystring.stringify({ foo: 'bar' }));
-```
-
-or ['URLSearchParams'](https://nodejs.org/api/url.html#url_class_urlsearchparams) from ['url module'](https://nodejs.org/api/url.html) as follows:
-
-```js
-const url = require('url');
-const params = new url.URLSearchParams({ foo: 'bar' });
-axios.post('http://something.com/', params.toString());
+axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
@@ -861,9 +866,73 @@ You can also use the [`qs`](https://github.com/ljharb/qs) library.
 > NOTE: 
 > The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
 
-#### Form data
+### 🆕 Automatic serialization to URLSearchParams
 
-##### 🆕 Automatic serialization
+Axios will automatically serialize the data object to urlencoded format if the content-type header is set to "application/x-www-form-urlencoded".
+
+```
+const data = {
+  x: 1,
+  arr: [1, 2, 3],
+  arr2: [1, [2], 3],
+  users: [{name: 'Peter', surname: 'Griffin'}, {name: 'Thomas', surname: 'Anderson'}],
+};
+
+await axios.postForm('https://postman-echo.com/post', data,
+  {headers: {'content-type': 'application/x-www-form-urlencoded'}}
+);
+```
+
+The server will handle it as 
+
+```js
+  {
+    x: '1',
+    'arr[]': [ '1', '2', '3' ],
+    'arr2[0]': '1',
+    'arr2[1][0]': '2',
+    'arr2[2]': '3',
+    'arr3[]': [ '1', '2', '3' ],
+    'users[0][name]': 'Peter',
+    'users[0][surname]': 'griffin',
+    'users[1][name]': 'Thomas',
+    'users[1][surname]': 'Anderson'
+  }
+````
+
+If your backend body-parser (like `body-parser` of `express.js`) supports nested objects decoding, you will get the same object on the server-side automatically
+
+```js
+  var app = express();
+  
+  app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+  
+  app.post('/', function (req, res, next) {
+     // echo body as JSON
+     res.send(JSON.stringify(req.body));
+  });
+
+  server = app.listen(3000);
+```
+
+## Using `multipart/form-data` format
+
+### FormData
+  
+In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
+
+```js
+const FormData = require('form-data');
+ 
+const form = new FormData();
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+
+axios.post('https://example.com', form)
+```
+
+### 🆕 Automatic serialization to FormData
 
 Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type` 
 header is set to `multipart/form-data`.
@@ -899,7 +968,56 @@ axios.post('https://httpbin.org/post', {x: 1, buf: new Buffer(10)}, {
 Axios FormData serializer supports some special endings to perform the following operations:
 
 - `{}` - serialize the value with JSON.stringify
-- `[]` - unwrap the array like object as separate fields with the same key 
+- `[]` - unwrap the array-like object as separate fields with the same key 
+
+> NOTE: 
+> unwrap/expand operation will be used by default on arrays and FileList objects
+
+FormData serializer supports additional options via `config.formSerializer: object` property to handle rare cases:
+
+- `visitor: Function` - user-defined visitor function that will be called recursively to serialize the data object
+to a `FormData` object by following custom rules.
+
+- `dots: boolean = false` - use dot notation instead of brackets to serialize arrays and objects;
+
+- `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key. 
+The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
+
+- `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
+
+    - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`) 
+    - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
+    - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
+    
+Let's say we have an object like this one:
+
+```js
+const obj = {
+  x: 1,
+  arr: [1, 2, 3],
+  arr2: [1, [2], 3],
+  users: [{name: 'Peter', surname: 'Griffin'}, {name: 'Thomas', surname: 'Anderson'}],
+  'obj2{}': [{x:1}]
+};
+```
+
+The following steps will be executed by the Axios serializer internally:
+
+```js
+const formData= new FormData();
+formData.append('x', '1');
+formData.append('arr[]', '1');
+formData.append('arr[]', '2');
+formData.append('arr[]', '3');
+formData.append('arr2[0]', '1');
+formData.append('arr2[1][0]', '2');
+formData.append('arr2[2]', '3');
+formData.append('users[0][name]', 'Peter');
+formData.append('users[0][surname]', 'Griffin');
+formData.append('users[1][name]', 'Thomas');
+formData.append('users[1][surname]', 'Anderson');
+formData.append('obj2{}', '[{"x":1}]');
+```
 
 ```js
 const axios= require('axios');
@@ -915,9 +1033,9 @@ axios.post('https://httpbin.org/post', {
 ```
 
 Axios supports the following shortcut methods: `postForm`, `putForm`, `patchForm`
-which are just the corresponding http methods with a header preset: `Content-Type`: `multipart/form-data`.
+which are just the corresponding http methods with the content-type header preset to `multipart/form-data`.
 
-FileList object can be passed directly:
+`FileList` object can be passed directly:
 
 ```js
 await axios.postForm('https://httpbin.org/post', document.querySelector('#fileInput').files)
@@ -925,33 +1043,18 @@ await axios.postForm('https://httpbin.org/post', document.querySelector('#fileIn
 
 All files will be sent with the same field names: `files[]`;
 
-##### Manual FormData passing
-  
-In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
-
-```js
-const FormData = require('form-data');
- 
-const form = new FormData();
-form.append('my_field', 'my value');
-form.append('my_buffer', new Buffer(10));
-form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
-
-axios.post('https://example.com', form)
-```
-
 ## Semver
 
 Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
 
 ## Promises
 
-axios depends on a native ES6 Promise implementation to be [supported](http://caniuse.com/promises).
+axios depends on a native ES6 Promise implementation to be [supported](https://caniuse.com/promises).
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
 
-axios includes [TypeScript](http://typescriptlang.org) definitions and a type guard for axios errors.
+axios includes [TypeScript](https://typescriptlang.org) definitions and a type guard for axios errors.
 
 ```typescript
 let user: User = null;
@@ -969,7 +1072,7 @@ try {
 
 ## Online one-click setup
 
-You can use Gitpod an online IDE(which is free for Open Source) for contributing or running the examples online.
+You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
 

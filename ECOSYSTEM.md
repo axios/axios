@@ -19,6 +19,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [swagger-taxos-codegen](https://github.com/michalzaq12/swagger-taxos-codegen) - Axios based Swagger Codegen (tailored for typescript)
 * [axios-endpoints](https://github.com/renancaraujo/axios-endpoints) - Axios endpoints helps you to create a more concise endpoint mapping with axios. 
 * [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Easy API handling whenever there are many endpoints to add. It helps to make Axios requests in an easy and declarative manner. 
+* [axios-url-template](https://github.com/rafw87/axios-url-template) - Axios interceptor adding support for URL templates.
 
 ### Logging and debugging
 
@@ -32,6 +33,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [react-hooks-axios](https://github.com/use-hooks/react-hooks-axios) - Custom React Hooks for Axios.js
 * [redux-saga-requests](https://github.com/klis87/redux-saga-requests) - Redux-Saga addon to simplify handling of AJAX requests.
 * [redux-axios-middleware](https://github.com/svrcekmichal/redux-axios-middleware) - Redux middleware for fetching data with axios HTTP client
+* [@react-cmpt/react-request-hook](https://github.com/react-cmpt/react-request-hook) - A React hook plugin for axios. Lightweight and less change.
 
 ### Unit testing
 

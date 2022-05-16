@@ -37,6 +37,7 @@
     "@rollup/plugin-multi-entry": "^4.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "abortcontroller-polyfill": "^1.7.3",
+    "body-parser": "^1.20.0",
     "coveralls": "^3.1.1",
     "dtslint": "^4.2.1",
     "es6-promise": "^4.2.8",
@@ -79,7 +80,8 @@
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js",
-    "./lib/defaults/env/FormData.js": "./lib/helpers/null.js"
+    "./lib/defaults/env/FormData.js": "./lib/helpers/null.js",
+    "./lib/platform/node/index.js": "./lib/platform/browser/index.js"
   },
   "jsdelivr": "dist/axios.min.js",
   "unpkg": "dist/axios.min.js",

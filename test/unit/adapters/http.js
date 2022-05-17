@@ -1404,8 +1404,42 @@ describe('supports http with nodejs', function () {
           .then(function (res) {
             assert.deepStrictEqual(res.data, obj);
             done();
-          }, done);
+          }).catch(done);
       });
+    });
+  });
+
+  it('should respect formSerializer config', function (done) {
+    const obj = {
+      arr1: ['1', '2', '3'],
+      arr2: ['1', ['2'], '3'],
+    };
+
+    const form = new URLSearchParams();
+
+    form.append('arr1[0]', '1');
+    form.append('arr1[1]', '2');
+    form.append('arr1[2]', '3');
+
+    form.append('arr2[0]', '1');
+    form.append('arr2[1][0]', '2');
+    form.append('arr2[2]', '3');
+
+    server = http.createServer(function (req, res) {
+      req.pipe(res);
+    }).listen(3001, () => {
+      return axios.post('http://localhost:3001/', obj, {
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded'
+        },
+        formSerializer: {
+          indexes: true
+        }
+      })
+        .then(function (res) {
+          assert.strictEqual(res.data, form.toString());
+          done();
+        }).catch(done);
     });
   });
 });

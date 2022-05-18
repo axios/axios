@@ -5,10 +5,10 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "grunt test && dtslint",
+    "test": "cross-env NODE_OPTIONS=--openssl-legacy-provider grunt test && dtslint",
     "start": "node ./sandbox/server.js",
     "preversion": "grunt version && npm test",
-    "build": "NODE_ENV=production grunt build",
+    "build": "cross-env NODE_ENV=production grunt build",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "eslint --fix lib/**/*.js"
@@ -39,6 +39,7 @@
     "abortcontroller-polyfill": "^1.7.3",
     "body-parser": "^1.20.0",
     "coveralls": "^3.1.1",
+    "cross-env": "^7.0.3",
     "dtslint": "^4.2.1",
     "es6-promise": "^4.2.8",
     "express": "^4.18.1",

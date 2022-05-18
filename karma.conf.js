@@ -7,7 +7,6 @@
 'use strict';
 
 var webpack = require('webpack');
-require('dotenv').config();
 
 function createCustomLauncher(browser, version, platform) {
   return {

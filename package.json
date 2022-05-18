@@ -5,7 +5,9 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--openssl-legacy-provider grunt test && dtslint",
+    "test": "node bin/ssl_hotfix.js",
+    "test:run": "grunt test && dtslint",
+    "test:run:ssl-fix": "cross-env NODE_OPTIONS=--openssl-legacy-provider grunt test && dtslint",
     "start": "node ./sandbox/server.js",
     "preversion": "grunt version && npm test",
     "build": "cross-env NODE_ENV=production grunt build",

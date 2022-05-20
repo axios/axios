@@ -7,6 +7,6 @@ describe('helpers::fromDataURI', function () {
 
     const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-    assert.deepStrictEqual(fromDataURI(dataURI), buffer);
+    assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
   });
 });

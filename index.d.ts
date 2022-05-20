@@ -90,20 +90,32 @@ export interface GenericAbortSignal {
 }
 
 export interface FormDataVisitorHelpers {
-  defaultVisitor: FormDataVisitor;
+  defaultVisitor: SerializerVisitor;
   convertValue: (value: any) => any;
   isVisitable: (value: any) => boolean;
 }
 
-export interface FormDataVisitor {
+export interface SerializerVisitor {
   (value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
 }
 
-export interface FormSerializerOptions {
-  visitor?: FormDataVisitor;
+export interface SerializerOptions {
+  visitor?: SerializerVisitor;
   dots?: boolean;
   metaTokens?: boolean;
   indexes?: boolean;
+}
+
+// tslint:disable-next-line
+export interface FormSerializerOptions extends SerializerOptions {
+}
+
+export interface ParamEncoder {
+  (value: any, defaultEncoder: (value: any) => any): any;
+}
+
+export interface ParamsSerializerOptions extends SerializerOptions {
+  encode?: ParamEncoder;
 }
 
 export interface AxiosRequestConfig<D = any> {
@@ -114,7 +126,7 @@ export interface AxiosRequestConfig<D = any> {
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: AxiosRequestHeaders;
   params?: any;
-  paramsSerializer?: (params: any) => string;
+  paramsSerializer?: ParamsSerializerOptions;
   data?: D;
   timeout?: number;
   timeoutErrorMessage?: string;

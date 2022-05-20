@@ -1,17 +1,21 @@
 const {spawn} = require('child_process');
 
-console.log(`Running on ${process.version}`);
+const args = process.argv.slice(2);
+
+console.log(`Running ${args.join(' ')} on ${process.version}\n`);
 
 const match = /v(\d+)/.exec(process.version);
 
-const hotfixNeeded = match && match[1] > 16;
+const isHotfixNeeded = match && match[1] > 16;
 
-hotfixNeeded && console.warn('Setting --openssl-legacy-provider as ssl hotfix');
+isHotfixNeeded && console.warn('Setting --openssl-legacy-provider as ssl hotfix');
 
-const test = spawn('npm', ['run', hotfixNeeded ? 'test:run:ssl-fix' : 'test:run'], {
-  shell: true,
-  stdio: 'inherit'
-});
+const test = spawn('cross-env',
+  isHotfixNeeded ? ['NODE_OPTIONS=--openssl-legacy-provider', ...args] : args, {
+    shell: true,
+    stdio: 'inherit'
+  }
+);
 
 test.on('exit', function (code) {
   process.exit(code)

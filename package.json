@@ -5,10 +5,10 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "grunt test && dtslint",
+    "test": "node bin/ssl_hotfix.js grunt test && node bin/ssl_hotfix.js dtslint",
     "start": "node ./sandbox/server.js",
     "preversion": "grunt version && npm test",
-    "build": "NODE_ENV=production grunt build",
+    "build": "cross-env NODE_ENV=production grunt build",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "eslint --fix lib/**/*.js"
@@ -31,10 +31,18 @@
   },
   "homepage": "https://axios-http.com",
   "devDependencies": {
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-multi-entry": "^4.0.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "abortcontroller-polyfill": "^1.7.3",
+    "body-parser": "^1.20.0",
     "coveralls": "^3.1.1",
+    "cross-env": "^7.0.3",
     "dtslint": "^4.2.1",
     "es6-promise": "^4.2.8",
+    "express": "^4.18.1",
     "formidable": "^2.0.1",
     "grunt": "^1.4.1",
     "grunt-banner": "^0.6.0",
@@ -44,6 +52,7 @@
     "grunt-eslint": "^24.0.0",
     "grunt-karma": "^4.0.2",
     "grunt-mocha-test": "^0.13.3",
+    "grunt-shell": "^3.0.1",
     "grunt-webpack": "^5.0.0",
     "istanbul-instrumenter-loader": "^3.0.1",
     "jasmine-core": "^2.4.1",
@@ -60,6 +69,9 @@
     "load-grunt-tasks": "^5.1.0",
     "minimist": "^1.2.6",
     "mocha": "^8.2.1",
+    "multer": "^1.4.4",
+    "rollup": "^2.67.0",
+    "rollup-plugin-terser": "^7.0.2",
     "sinon": "^4.5.0",
     "terser-webpack-plugin": "^4.2.3",
     "typescript": "^4.6.3",
@@ -69,14 +81,15 @@
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js",
-    "./lib/defaults/env/FormData.js": "./lib/helpers/null.js"
+    "./lib/platform/node/index.js": "./lib/platform/browser/index.js"
   },
   "jsdelivr": "dist/axios.min.js",
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "^1.14.9",
-    "form-data": "^4.0.0"
+    "follow-redirects": "^1.15.0",
+    "form-data": "^4.0.0",
+    "proxy-from-env": "^1.1.0"
   },
   "bundlesize": [
     {

@@ -125,8 +125,8 @@ export interface AxiosRequestConfig<D = any> {
   responseEncoding?: responseEncoding | string;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  onUploadProgress?: (progressEvent: any) => void;
-  onDownloadProgress?: (progressEvent: any) => void;
+  onUploadProgress?: (progressEvent: ProgressEvent) => void;
+  onDownloadProgress?: (progressEvent: ProgressEvent) => void;
   maxContentLength?: number;
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
@@ -194,6 +194,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
   isAxiosError: boolean;
   status?: number;
   toJSON: () => object;
+  cause?: Error;
   static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
   static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
   static readonly ERR_BAD_OPTION = "ERR_BAD_OPTION";
@@ -201,6 +202,8 @@ export class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_DEPRECATED = "ERR_DEPRECATED";
   static readonly ERR_BAD_RESPONSE = "ERR_BAD_RESPONSE";
   static readonly ERR_BAD_REQUEST = "ERR_BAD_REQUEST";
+  static readonly ERR_NOT_SUPPORT = "ERR_NOT_SUPPORT";
+  static readonly ERR_INVALID_URL = "ERR_INVALID_URL";
   static readonly ERR_CANCELED = "ERR_CANCELED";
   static readonly ECONNABORTED = "ECONNABORTED";
   static readonly ETIMEDOUT = "ETIMEDOUT";
@@ -292,7 +295,7 @@ export interface AxiosStatic extends AxiosInstance {
   Axios: typeof Axios;
   AxiosError: typeof AxiosError;
   readonly VERSION: string;
-  isCancel(value: any): boolean;
+  isCancel(value: any): value is Cancel;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;

@@ -15,6 +15,9 @@ var formidable = require('formidable');
 var express = require('express');
 var multer = require('multer');
 var bodyParser = require('body-parser');
+const isBlobSupported = typeof Blob !== 'undefined';
+
+var noop = ()=> {};
 
 describe('supports http with nodejs', function () {
 
@@ -563,6 +566,32 @@ describe('supports http with nodejs', function () {
         assert.equal(error.message, 'Request body larger than maxBodyLength limit');
         done();
       }, 100);
+    });
+  });
+
+  it('should properly support default max body length (follow-redirects as well)', function (done) {
+    // taken from https://github.com/follow-redirects/follow-redirects/blob/22e81fc37132941fb83939d1dc4c2282b5c69521/index.js#L461
+    var followRedirectsMaxBodyDefaults = 10 * 1024 *1024;
+    var data = Array(2 * followRedirectsMaxBodyDefaults).join('ж');
+
+    server = http.createServer(function (req, res) {
+      // consume the req stream
+      req.on('data', noop);
+      // and wait for the end before responding, otherwise an ECONNRESET error will be thrown
+      req.on('end', ()=> {
+        res.end('OK');
+      });
+    }).listen(4444, function (err) {
+      if (err) {
+        return done(err);
+      }
+      // send using the default -1 (unlimited axios maxBodyLength)
+      axios.post('http://localhost:4444/', {
+        data: data
+      }).then(function (res) {
+        assert.equal(res.data, 'OK', 'should handle response');
+        done();
+      }).catch(done);
     });
   });
 
@@ -1440,6 +1469,67 @@ describe('supports http with nodejs', function () {
           assert.strictEqual(res.data, form.toString());
           done();
         }).catch(done);
+    });
+  });
+
+  describe('Data URL', function () {
+    it('should support requesting data URL as a Buffer', function (done) {
+      const buffer = Buffer.from('123');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI).then(({data})=> {
+        assert.deepStrictEqual(data, buffer);
+        done();
+      }).catch(done);
+    });
+
+    it('should support requesting data URL as a Blob (if supported by the environment)', function (done) {
+
+      if (!isBlobSupported) {
+        this.skip();
+        return;
+      }
+
+      const buffer = Buffer.from('123');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI, {responseType: 'blob'}).then(async ({data})=> {
+        assert.strictEqual(data.type, 'application/octet-stream');
+        assert.deepStrictEqual(await data.text(), '123');
+        done();
+      }).catch(done);
+    });
+
+    it('should support requesting data URL as a String (text)', function (done) {
+      const buffer = Buffer.from('123', 'utf-8');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI, {responseType: "text"}).then(({data})=> {
+        assert.deepStrictEqual(data, '123');
+        done();
+      }).catch(done);
+    });
+
+    it('should support requesting data URL as a Stream', function (done) {
+      const buffer = Buffer.from('123', 'utf-8');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI, {responseType: "stream"}).then(({data})=> {
+        var str = '';
+
+        data.on('data', function(response){
+          str += response.toString();
+        });
+
+        data.on('end', function(){
+          assert.strictEqual(str, '123');
+          done();
+        });
+      }).catch(done);
     });
   });
 });

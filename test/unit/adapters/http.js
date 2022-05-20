@@ -1472,4 +1472,47 @@ describe('supports http with nodejs', function () {
         }).catch(done);
     });
   });
+
+  describe('Data URL', function () {
+    it('should support requesting data URL as a Buffer', function (done) {
+      const buffer = Buffer.from('123');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI).then(({data})=> {
+        assert.deepStrictEqual(data, buffer);
+        done();
+      }).catch(done);
+    });
+
+    it('should support requesting data URL as a String (text)', function (done) {
+      const buffer = Buffer.from('123', 'utf-8');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI, {responseType: "text"}).then(({data})=> {
+        assert.deepStrictEqual(data, '123');
+        done();
+      }).catch(done);
+    });
+
+    it('should support requesting data URL as a Stream', function (done) {
+      const buffer = Buffer.from('123', 'utf-8');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI, {responseType: "stream"}).then(({data})=> {
+        var str = '';
+
+        data.on('data', function(response){
+          str += response.toString();
+        });
+
+        data.on('end', function(){
+          assert.strictEqual(str, '123');
+          done();
+        });
+      }).catch(done);
+    });
+  });
 });

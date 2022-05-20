@@ -80,7 +80,6 @@
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/adapters/xhr.js",
-    "./lib/defaults/env/FormData.js": "./lib/helpers/null.js",
     "./lib/platform/node/index.js": "./lib/platform/browser/index.js"
   },
   "jsdelivr": "dist/axios.min.js",

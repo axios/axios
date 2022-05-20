@@ -16,6 +16,8 @@ var express = require('express');
 var multer = require('multer');
 var bodyParser = require('body-parser');
 
+var noop = ()=> {};
+
 describe('supports http with nodejs', function () {
 
   afterEach(function () {
@@ -572,27 +574,23 @@ describe('supports http with nodejs', function () {
     var data = Array(2 * followRedirectsMaxBodyDefaults).join('ж');
 
     server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end();
-    }).listen(4444, function () {
-      var success = false, failure = false, error;
+      // consume the req stream
+      req.on('data', noop);
+      // and wait for the end before responding, otherwise an ECONNRESET error will be thrown
+      req.on('close', ()=> {
+        res.end('OK');
+      });
+    }).listen(4444, function (err) {
+      if (err) {
+        return done(err);
+      }
       // send using the default -1 (unlimited axios maxBodyLength)
       axios.post('http://localhost:4444/', {
         data: data
       }).then(function (res) {
-        success = true;
-      }).catch(function (err) {
-        error = err;
-        failure = true;
-      });
-
-
-      setTimeout(function () {
-        assert.equal(success, true, 'request should have succeeded');
-        assert.equal(failure, false, 'request should not fail');
-        assert.equal(error, undefined, 'There should not be any error');
+        assert.equal(res.data, 'OK', 'should handle response');
         done();
-      }, 100);
+      }).catch(done);
     });
   });
 

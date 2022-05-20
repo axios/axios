@@ -15,6 +15,7 @@ var formidable = require('formidable');
 var express = require('express');
 var multer = require('multer');
 var bodyParser = require('body-parser');
+const isBlobSupported = typeof Blob !== 'undefined';
 
 var noop = ()=> {};
 
@@ -577,7 +578,7 @@ describe('supports http with nodejs', function () {
       // consume the req stream
       req.on('data', noop);
       // and wait for the end before responding, otherwise an ECONNRESET error will be thrown
-      req.on('close', ()=> {
+      req.on('end', ()=> {
         res.end('OK');
       });
     }).listen(4444, function (err) {
@@ -1479,6 +1480,24 @@ describe('supports http with nodejs', function () {
 
       axios.get(dataURI).then(({data})=> {
         assert.deepStrictEqual(data, buffer);
+        done();
+      }).catch(done);
+    });
+
+    it('should support requesting data URL as a Blob (if supported by the environment)', function (done) {
+
+      if (!isBlobSupported) {
+        this.skip();
+        return;
+      }
+
+      const buffer = Buffer.from('123');
+
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      axios.get(dataURI, {responseType: 'blob'}).then(async ({data})=> {
+        assert.strictEqual(data.type, 'application/octet-stream');
+        assert.deepStrictEqual(await data.text(), '123');
         done();
       }).catch(done);
     });

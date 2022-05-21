@@ -1259,7 +1259,7 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         headers: {
-          "User-Agent": false
+          "User-Agent": null
         }
       }).then(function (res) {
         done();

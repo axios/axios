@@ -288,6 +288,12 @@ export interface GenericFormData {
   append(name: string, value: any, options?: any): any;
 }
 
+export interface GenericHTMLFormElement {
+  name: string;
+  method: string;
+  submit(): void;
+}
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
@@ -300,6 +306,7 @@ export interface AxiosStatic extends AxiosInstance {
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
   isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
   toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
+  formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
 }
 
 declare const axios: AxiosStatic;

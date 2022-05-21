@@ -25,7 +25,8 @@ describe('instance', function () {
         'isAxiosError',
         'VERSION',
         'default',
-        'toFormData'
+        'toFormData',
+        'formToJSON'
       ].indexOf(prop) > -1) {
         continue;
       }

@@ -106,14 +106,14 @@ export interface FormSerializerOptions {
   indexes?: boolean;
 }
 
-export interface AxiosRequestConfig<D = any> {
+export interface AxiosRequestConfig<D = any, P = any> {
   url?: string;
   method?: Method | string;
   baseURL?: string;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: AxiosRequestHeaders;
-  params?: any;
+  params?: P;
   paramsSerializer?: (params: any) => string;
   data?: D;
   timeout?: number;

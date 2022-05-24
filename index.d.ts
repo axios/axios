@@ -178,19 +178,25 @@ export interface AxiosResponse<T = any, D = any>  {
   request?: any;
 }
 
-export class AxiosError<T = unknown, D = any> extends Error {
+interface AxiosResponseDataProperty {
+  code: string;
+  error: boolean;
+  message: string;
+}
+
+export class AxiosError<D = any> extends Error {
   constructor(
     message?: string,
     code?: string,
     config?: AxiosRequestConfig<D>,
     request?: any,
-    response?: AxiosResponse<T, D>
+    response?: AxiosResponse<AxiosResponseDataProperty, D>
   );
 
   config?: AxiosRequestConfig<D>;
   code?: string;
   request?: any;
-  response?: AxiosResponse<T, D>;
+  response?: AxiosResponse<AxiosResponseDataProperty, D>;
   isAxiosError: boolean;
   status?: number;
   toJSON: () => object;
@@ -298,7 +304,7 @@ export interface AxiosStatic extends AxiosInstance {
   isCancel(value: any): value is Cancel;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
-  isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
+  isAxiosError<D = any>(payload: any): payload is AxiosError<D>;
   toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
 }
 

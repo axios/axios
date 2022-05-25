@@ -17,7 +17,7 @@ describe('helpers::buildURL', function () {
       foo: {
         bar: 'baz'
       }
-    })).toEqual('/foo?foo=' + encodeURI('{"bar":"baz"}'));
+    })).toEqual('/foo?foo[bar]=baz');
   });
 
   it('should support date params', function () {
@@ -58,15 +58,6 @@ describe('helpers::buildURL', function () {
     expect(buildURL('/foo?foo=bar#hash', {
       query: 'baz'
     })).toEqual('/foo?foo=bar&query=baz');
-  });
-
-  it('should use serializer if provided', function () {
-    serializer = sinon.stub();
-    params = {foo: 'bar'};
-    serializer.returns('foo=bar');
-    expect(buildURL('/foo', params, serializer)).toEqual('/foo?foo=bar');
-    expect(serializer.calledOnce).toBe(true);
-    expect(serializer.calledWith(params)).toBe(true);
   });
 
   it('should support URLSearchParams', function () {

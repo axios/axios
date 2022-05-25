@@ -20,7 +20,10 @@ const config: AxiosRequestConfig = {
   ],
   headers: { 'X-FOO': 'bar' },
   params: { id: 12345 },
-  paramsSerializer: (params: any) => 'id=12345',
+  paramsSerializer: {
+    indexes: true,
+    encode: (value) => value
+  },
   data: { foo: 'bar' },
   timeout: 10000,
   withCredentials: true,

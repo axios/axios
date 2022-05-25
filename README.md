@@ -10,6 +10,7 @@
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios)
 
 Promise based HTTP client for the browser and node.js
 
@@ -45,6 +46,8 @@ Promise based HTTP client for the browser and node.js
   - [Using multipart/form-data format](#using-multipartform-data-format)    
     - [FormData](#formdata)
     - [🆕 Automatic serialization](#-automatic-serialization-to-formdata) 
+  - [Files Posting](#files-posting)
+  - [HTML Form Posting](#html-form-posting-browser)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -337,10 +340,9 @@ These are the available config options for making requests. Only the `url` is re
     ID: 12345
   },
 
-  // `paramsSerializer` is an optional function in charge of serializing `params`
-  // (e.g. https://www.npmjs.com/package/qs, https://api.jquery.com/jquery.param/)
-  paramsSerializer: function (params) {
-    return Qs.stringify(params, {arrayFormat: 'brackets'})
+  // `paramsSerializer` is an optional config in charge of serializing `params`
+  paramsSerializer: {
+    indexes: null // array indexes format (null - no brackets, false - empty brackets, true - brackets with indexes)
   },
 
   // `data` is the data to be sent as the request body
@@ -510,6 +512,13 @@ These are the available config options for making requests. Only the `url` is re
   env: {
     // The FormData class to be used to automatically serialize the payload into a FormData object
     FormData: window?.FormData || global?.FormData
+  },
+
+  formSerializer: {
+      visitor: (value, key, path, helpers)=> {}; // custom visitor funaction to serrialize form values
+      dots: boolean; // use dots instead of brackets format
+      metaTokens: boolean; // keep special endings like {} in parameter key 
+      indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes
   }
 }
 ```
@@ -918,6 +927,16 @@ If your backend body-parser (like `body-parser` of `express.js`) supports nested
 ## Using `multipart/form-data` format
 
 ### FormData
+
+To send the data as a `multipart/formdata` you need to pass a formData instance as a payload. 
+Setting the `Content-Type` header is not required as Axios guesses it based on the payload type.
+
+```js
+const formData = new FormData();
+formData.append('foo', 'bar');
+
+axios.post('https://httpbin.org/post', formData);
+```
   
 In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
 
@@ -1019,21 +1038,27 @@ formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
 
-```js
-const axios= require('axios');
+Axios supports the following shortcut methods: `postForm`, `putForm`, `patchForm`
+which are just the corresponding http methods with the `Content-Type` header preset to `multipart/form-data`.
 
-axios.post('https://httpbin.org/post', {
-  'myObj{}': {x: 1, s: "foo"},
-  'files[]': document.querySelector('#fileInput').files 
-}, {
-  headers: {
-    'Content-Type': 'multipart/form-data'
-  }
-}).then(({data})=> console.log(data));
+## Files Posting
+
+You can easily sumbit a single file
+
+```js
+await axios.postForm('https://httpbin.org/post', {
+  'myVar' : 'foo',
+  'file': document.querySelector('#fileInput').files[0] 
+});
 ```
 
-Axios supports the following shortcut methods: `postForm`, `putForm`, `patchForm`
-which are just the corresponding http methods with the content-type header preset to `multipart/form-data`.
+or multiple files as `multipart/form-data`.
+
+```js
+await axios.postForm('https://httpbin.org/post', {
+  'files[]': document.querySelector('#fileInput').files 
+});
+```
 
 `FileList` object can be passed directly:
 
@@ -1041,7 +1066,67 @@ which are just the corresponding http methods with the content-type header prese
 await axios.postForm('https://httpbin.org/post', document.querySelector('#fileInput').files)
 ```
 
-All files will be sent with the same field names: `files[]`;
+All files will be sent with the same field names: `files[]`.
+
+## 🆕 HTML Form Posting (browser)
+
+Pass HTML Form element as a payload to submit it as `multipart/form-data` content.
+
+```js
+await axios.postForm('https://httpbin.org/post', document.querySelector('#htmlForm'));
+```
+
+`FormData` and `HTMLForm` objects can also be posted as `JSON` by explicitly setting the `Content-Type` header to `application/json`:
+
+```js
+await axios.post('https://httpbin.org/post', document.querySelector('#htmlForm'), {
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+```
+
+For example, the Form
+
+```html
+<form id="form">
+  <input type="text" name="foo" value="1">
+  <input type="text" name="deep.prop" value="2">
+  <input type="text" name="deep prop spaced" value="3">
+  <input type="text" name="baz" value="4">
+  <input type="text" name="baz" value="5">
+
+  <select name="user.age">
+    <option value="value1">Value 1</option>
+    <option value="value2" selected>Value 2</option>
+    <option value="value3">Value 3</option>
+  </select>
+
+  <input type="submit" value="Save">
+</form>
+```
+
+will be submitted as the following JSON object:
+
+```js
+{
+  "foo": "1",
+  "deep": {
+    "prop": {
+      "spaced": "3"
+    }
+  },
+  "baz": [
+    "4",
+    "5"
+  ],
+  "user": {
+    "age": "value2"
+  }
+}
+````
+
+Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
 
 ## Semver
 

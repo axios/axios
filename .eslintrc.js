@@ -54,17 +54,17 @@ module.exports = {
     /**
  * Best practices
  */
-    'consistent-return': 2,          // http://eslint.org/docs/rules/consistent-return
+    'consistent-return': 0,          // http://eslint.org/docs/rules/consistent-return
     'curly': [2, 'multi-line'],      // http://eslint.org/docs/rules/curly
     'default-case': 2,               // http://eslint.org/docs/rules/default-case
     'dot-notation': [2, {            // http://eslint.org/docs/rules/dot-notation
       'allowKeywords': true
     }],
-    'eqeqeq': 2,                     // http://eslint.org/docs/rules/eqeqeq
+    'eqeqeq': [2, "smart"],          // http://eslint.org/docs/rules/eqeqeq
     'guard-for-in': 2,               // http://eslint.org/docs/rules/guard-for-in
     'no-caller': 2,                  // http://eslint.org/docs/rules/no-caller
     'no-else-return': 2,             // http://eslint.org/docs/rules/no-else-return
-    'no-eq-null': 2,                 // http://eslint.org/docs/rules/no-eq-null
+    'no-eq-null': 0,                 // http://eslint.org/docs/rules/no-eq-null
     'no-eval': 2,                    // http://eslint.org/docs/rules/no-eval
     'no-extend-native': 2,           // http://eslint.org/docs/rules/no-extend-native
     'no-extra-bind': 2,              // http://eslint.org/docs/rules/no-extra-bind
@@ -80,7 +80,7 @@ module.exports = {
     'no-new-wrappers': 2,            // http://eslint.org/docs/rules/no-new-wrappers
     'no-octal': 2,                   // http://eslint.org/docs/rules/no-octal
     'no-octal-escape': 2,            // http://eslint.org/docs/rules/no-octal-escape
-    'no-param-reassign': 2,          // http://eslint.org/docs/rules/no-param-reassign
+    'no-param-reassign': 0,          // http://eslint.org/docs/rules/no-param-reassign
     'no-proto': 2,                   // http://eslint.org/docs/rules/no-proto
     'no-redeclare': 2,               // http://eslint.org/docs/rules/no-redeclare
     'no-return-assign': 2,           // http://eslint.org/docs/rules/no-return-assign
@@ -114,7 +114,7 @@ module.exports = {
     }],
     'comma-style': [2, 'last'],      // http://eslint.org/docs/rules/comma-style
     'eol-last': 2,                   // http://eslint.org/docs/rules/eol-last
-    'func-names': 1,                 // http://eslint.org/docs/rules/func-names
+    'func-names': 0,                  // http://eslint.org/docs/rules/func-names
     'key-spacing': [2, {             // http://eslint.org/docs/rules/key-spacing
       'beforeColon': false,
       'afterColon': true

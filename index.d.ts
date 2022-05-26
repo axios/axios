@@ -96,7 +96,13 @@ export interface FormDataVisitorHelpers {
 }
 
 export interface SerializerVisitor {
-  (value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
+  (
+      this: GenericFormData,
+      value: any,
+      key: string | number,
+      path: null | Array<string | number>,
+      helpers: FormDataVisitorHelpers
+  ): boolean;
 }
 
 export interface SerializerOptions {

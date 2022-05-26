@@ -177,4 +177,24 @@ describe('transform', function () {
       done();
     });
   });
+
+  it('should normalize \'content-type\' header when using a custom transformRequest', function (done) {
+    var data = {
+      foo: 'bar'
+    };
+
+    axios.post('/foo', data, {
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      transformRequest: [
+        function () {
+          return 'aa=44'
+        }
+      ]
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders['Content-Type']).toEqual('application/x-www-form-urlencoded');
+      done();
+    });
+  });
 });

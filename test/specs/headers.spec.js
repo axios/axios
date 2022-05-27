@@ -72,15 +72,17 @@ describe('headers', function () {
         'x-header-a': null,
         'x-header-b': undefined
       }
+    }).catch(function (err) {
+      done(err);
     });
 
     getAjaxRequest().then(function (request) {
-      testHeaderValue(request.requestHeaders, 'Content-Type', null);
-      testHeaderValue(request.requestHeaders, 'x-header-a', null);
+      testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
+      testHeaderValue(request.requestHeaders, 'x-header-a', undefined);
       testHeaderValue(request.requestHeaders, 'x-header-b', undefined);
       testHeaderValue(request.requestHeaders, 'x-header-c', 'c');
       done();
-    });
+    }).catch(done);
   });
 
   it('should use application/json when posting an object', function (done) {

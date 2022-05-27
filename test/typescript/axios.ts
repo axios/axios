@@ -389,3 +389,16 @@ axios.toFormData({x: 1}, new FormData());
 // AbortSignal
 
 axios.get('/user', {signal: new AbortController().signal});
+
+// AxiosHeaders methods
+
+axios.get('/user', {
+    transformRequest: (data, headers) => {
+        headers.setContentType('text/plain');
+        headers['Foo'] = 'bar';
+    },
+
+    transformResponse: (data, headers) => {
+        headers.has('foo');
+    }
+});

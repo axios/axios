@@ -19,7 +19,7 @@ function createCustomLauncher(browser, version, platform) {
 
 module.exports = function(config) {
   var customLaunchers = {};
-  var browsers = [];
+  var browsers = process.env.Browsers && process.env.Browsers.split(',');
   var sauceLabs;
 
   if (process.env.SAUCE_USERNAME || process.env.SAUCE_ACCESS_KEY) {
@@ -52,7 +52,7 @@ module.exports = function(config) {
 
     // Firefox
     if (runAll || process.env.SAUCE_FIREFOX) {
-      customLaunchers.SL_Firefox = createCustomLauncher('firefox');
+      //customLaunchers.SL_Firefox = createCustomLauncher('firefox');
       // customLaunchers.SL_FirefoxDev = createCustomLauncher('firefox', 'dev');
       // customLaunchers.SL_FirefoxBeta = createCustomLauncher('firefox', 'beta');
     }
@@ -127,12 +127,12 @@ module.exports = function(config) {
       'Running on Travis.'
     );
     browsers = ['Firefox'];
-  } else if (process.env.GITHUB_ACTIONS !== 'false') {
+  } else if (process.env.GITHUB_ACTIONS === 'true') {
     console.log('Running ci on Github Actions.');
     browsers = ['FirefoxHeadless', 'ChromeHeadless'];
   } else {
-    console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.');
-    browsers = ['Firefox', 'Chrome'];
+    browsers = browsers || ['Chrome'];
+    console.log(`Running ${browsers} locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.`);
   }
 
   config.set({

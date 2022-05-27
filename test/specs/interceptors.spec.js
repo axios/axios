@@ -159,7 +159,7 @@ describe('interceptors', function () {
       throw error;
     }, rejectedSpy, { synchronous: true });
 
-    axios('/foo');
+    axios('/foo').catch(done);
 
     getAjaxRequest().then(function () {
       expect(rejectedSpy).toHaveBeenCalledWith(error);
@@ -455,7 +455,7 @@ describe('interceptors', function () {
             done();
           });
         });
-        
+
         it('once caught, another following fulfill-interceptor is called again (just like in a promise chain)', function (done) {
           axios.interceptors.response.use(function() {
             throw Error('throwing interceptor');

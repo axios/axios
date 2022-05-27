@@ -58,7 +58,7 @@ describe('promise', function () {
       }))
       .then(function (res) {
         result = res;
-      });
+      }).catch(done);
 
     setTimeout(function () {
       expect(fulfilled).toEqual(true);

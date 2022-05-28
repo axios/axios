@@ -23,8 +23,6 @@ Please update the [docs](README.md) accordingly so that there are no discrepanci
 - `grunt test` run the jasmine and mocha tests
 - `grunt build` run webpack and bundle the source
 - `grunt version` prepare the code for release
-- `grunt watch:test` watch for changes and run `test`
-- `grunt watch:build` watch for changes and run `build`
 
 Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
 

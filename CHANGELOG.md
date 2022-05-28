@@ -1,21 +1,24 @@
 # Changelog
 
-### 0.27.2 (April 27, 2022)
+## 0.27.2 (April 27, 2022)
 
 Fixes and Functionality:
+
 - Fixed FormData posting in browser environment by reverting #3785 ([#4640](https://github.com/axios/axios/pull/4640))
 - Enhanced protocol parsing implementation ([#4639](https://github.com/axios/axios/pull/4639))
 - Fixed bundle size
 
-### 0.27.1 (April 26, 2022)
+## 0.27.1 (April 26, 2022)
 
 Fixes and Functionality:
+
 - Removed import of url module in browser build due to huge size overhead and builds being broken ([#4594](https://github.com/axios/axios/pull/4594))
 - Bumped follow-redirects to ^1.14.9 ([#4615](https://github.com/axios/axios/pull/4615))
 
-### 0.27.0 (April 25, 2022)
+## 0.27.0 (April 25, 2022)
 
 Breaking changes:
+
 - New toFormData helper function that allows the implementor to pass an object and allow axios to convert it to FormData ([#3757](https://github.com/axios/axios/pull/3757))
 - Removed functionality that removed the the `Content-Type` request header when passing FormData ([#3785](https://github.com/axios/axios/pull/3785))
 - **(*)** Refactored error handling implementing AxiosError as a constructor, this is a large change to error handling on the whole ([#3645](https://github.com/axios/axios/pull/3645))
@@ -23,29 +26,36 @@ Breaking changes:
 - **(*)** Improved and fixed multiple issues with FormData support ([#4448](https://github.com/axios/axios/pull/4448))
 
 QOL and DevX improvements:
+
 - Added a multipart/form-data testing playground allowing contributors to debug changes easily ([#4465](https://github.com/axios/axios/pull/4465))
 
 Fixes and Functionality:
+
 - Refactored project file structure to avoid circular imports ([#4515](https://github.com/axios/axios/pull/4516)) & ([#4516](https://github.com/axios/axios/pull/4516))
 - Bumped follow-redirects to ^1.14.9 ([#4562](https://github.com/axios/axios/pull/4562))
 
 Internal and Tests:
+
 - Updated dev dependencies to latest version
 
 Documentation:
+
 - Fixing incorrect link in changelog ([#4551](https://github.com/axios/axios/pull/4551))
 
 Notes:
+
 - **(*)** Please read these pull requests before updating, these changes are very impactful and far reaching.
 
-### 0.26.1 (March 9, 2022)
+## 0.26.1 (March 9, 2022)
 
 Fixes and Functionality:
+
 - Refactored project file structure to avoid circular imports ([#4220](https://github.com/axios/axios/pull/4220))
 
-### 0.26.0 (February 13, 2022)
+## 0.26.0 (February 13, 2022)
 
 Fixes and Functionality:
+
 - Fixed The timeoutErrorMessage property in config not work with Node.js ([#3581](https://github.com/axios/axios/pull/3581))
 - Added errors to be displayed when the query parsing process itself fails ([#3961](https://github.com/axios/axios/pull/3961))
 - Fix/remove url required ([#4426](https://github.com/axios/axios/pull/4426))
@@ -53,9 +63,10 @@ Fixes and Functionality:
 - Bump karma from 6.3.11 to 6.3.14 ([#4461](https://github.com/axios/axios/pull/4461))
 - Bump follow-redirects from 1.14.7 to 1.14.8 ([#4473](https://github.com/axios/axios/pull/4473))
 
-### 0.25.0 (January 18, 2022)
+## 0.25.0 (January 18, 2022)
 
 Breaking changes:
+
 - Fixing maxBodyLength enforcement ([#3786](https://github.com/axios/axios/pull/3786))
 - Don't rely on strict mode behavior for arguments ([#3470](https://github.com/axios/axios/pull/3470))
 - Adding error handling when missing url ([#3791](https://github.com/axios/axios/pull/3791))
@@ -64,6 +75,7 @@ Breaking changes:
 - Adding error handling inside stream end callback ([#3967](https://github.com/axios/axios/pull/3967))
 
 Fixes and Functionality:
+
 - Added aborted even handler ([#3916](https://github.com/axios/axios/pull/3916))
 - Header types expanded allowing `boolean` and `number` types ([#4144](https://github.com/axios/axios/pull/4144))
 - Fix cancel signature allowing cancel message to be `undefined` ([#3153](https://github.com/axios/axios/pull/3153))
@@ -74,12 +86,14 @@ Fixes and Functionality:
 - Adding responseEncoding prop type in AxiosRequestConfig ([#3918](https://github.com/axios/axios/pull/3918))
 
 Internal and Tests:
+
 - Adding axios-test-instance to ecosystem ([#3496](https://github.com/axios/axios/pull/3496))
 - Optimize the logic of isAxiosError ([#3546](https://github.com/axios/axios/pull/3546))
 - Add tests and documentation to display how multiple inceptors work ([#3564](https://github.com/axios/axios/pull/3564))
 - Updating follow-redirects to version 1.14.7 ([#4379](https://github.com/axios/axios/pull/4379))
 
 Documentation:
+
 - Fixing changelog to show correct pull request ([#4219](https://github.com/axios/axios/pull/4219))
 - Update upgrade guide for https proxy setting ([#3604](https://github.com/axios/axios/pull/3604))
 
@@ -107,9 +121,10 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - [Daniel](https://github.com/djs113)
 - [Gustavo Sales](https://github.com/gussalesdev)
 
-### 0.24.0 (October 25, 2021)
+## 0.24.0 (October 25, 2021)
 
 Breaking changes:
+
 - Revert: change type of AxiosResponse to any, please read lengthy discussion here: ([#4141](https://github.com/axios/axios/issues/4141)) pull request: ([#4186](https://github.com/axios/axios/pull/4186))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
@@ -119,25 +134,29 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - [Remco Haszing](https://github.com/remcohaszing)
 - [Isaiah Thomason](https://github.com/ITenthusiasm)
 
-### 0.23.0 (October 12, 2021)
+## 0.23.0 (October 12, 2021)
 
 Breaking changes:
+
 - Distinguish request and response data types ([#4116](https://github.com/axios/axios/pull/4116))
 - Change never type to unknown ([#4142](https://github.com/axios/axios/pull/4142))
 - Fixed TransitionalOptions typings ([#4147](https://github.com/axios/axios/pull/4147))
 
 Fixes and Functionality:
+
 - Adding globalObject: 'this' to webpack config ([#3176](https://github.com/axios/axios/pull/3176))
 - Adding insecureHTTPParser type to AxiosRequestConfig ([#4066](https://github.com/axios/axios/pull/4066))
 - Fix missing semicolon in typings ([#4115](https://github.com/axios/axios/pull/4115))
 - Fix response headers types ([#4136](https://github.com/axios/axios/pull/4136))
 
 Internal and Tests:
+
 - Improve timeout error when timeout is browser default ([#3209](https://github.com/axios/axios/pull/3209))
 - Fix node version on CI ([#4069](https://github.com/axios/axios/pull/4069))
 - Added testing to TypeScript portion of project ([#4140](https://github.com/axios/axios/pull/4140))
 
 Documentation:
+
 - Rename Angular to AngularJS ([#4114](https://github.com/axios/axios/pull/4114))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
@@ -151,9 +170,10 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - [Evgeniy](https://github.com/egmen)
 - [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
 
-### 0.22.0 (October 01, 2021)
+## 0.22.0 (October 01, 2021)
 
 Fixes and Functionality:
+
 - Caseless header comparing in HTTP adapter ([#2880](https://github.com/axios/axios/pull/2880))
 - Avoid package.json import fixing issues and warnings related to this ([#4041](https://github.com/axios/axios/pull/4041)), ([#4065](https://github.com/axios/axios/pull/4065))
 - Fixed cancelToken leakage and added AbortController support ([#3305](https://github.com/axios/axios/pull/3305))
@@ -168,9 +188,10 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - [Xianming Zhong](https://github.com/chinesedfan)
 - [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
 
-### 0.21.4 (September 6, 2021)
+## 0.21.4 (September 6, 2021)
 
 Fixes and Functionality:
+
 - Fixing JSON transform when data is stringified. Providing backward compatibility and complying to the JSON RFC standard ([#4020](https://github.com/axios/axios/pull/4020))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
@@ -180,9 +201,10 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - [Yusuke Kawasaki](https://github.com/kawanet)
 - [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
 
-### 0.21.3 (September 4, 2021)
+## 0.21.3 (September 4, 2021)
 
 Fixes and Functionality:
+
 - Fixing response interceptor not being called when request interceptor is attached ([#4013](https://github.com/axios/axios/pull/4013))
 
 Huge thanks to everyone who contributed to this release via code (authors listed below) or via reviews and triaging on GitHub:
@@ -190,7 +212,7 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - [Jay](mailto:jasonsaayman@gmail.com)
 - [Julian Hollmann](https://github.com/nerdbeere)
 
-### 0.21.2 (September 4, 2021)
+## 0.21.2 (September 4, 2021)
 
 Fixes and Functionality:
 
@@ -259,7 +281,7 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - [Matt Czapliński](https://github.com/MattCCC)
 - [Ziding Zhang](https://github.com/zidingz)
 
-### 0.21.1 (December 21, 2020)
+## 0.21.1 (December 21, 2020)
 
 Fixes and Functionality:
 
@@ -282,7 +304,7 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - Remco Haszing <remcohaszing@gmail.com>
 - Xianming Zhong <chinesedfan@qq.com>
 
-### 0.21.0 (October 23, 2020)
+## 0.21.0 (October 23, 2020)
 
 Fixes and Functionality:
 
@@ -312,11 +334,11 @@ Huge thanks to everyone who contributed to this release via code (authors listed
 - Tim Gates <tim.gates@iress.com>
 - Xianming Zhong <chinesedfan@qq.com>
 
-### 0.20.0 (August 20, 2020)
+## 0.20.0 (August 20, 2020)
 
 Release of 0.20.0-pre as a full release with no other changes.
 
-### 0.20.0-pre (July 15, 2020)
+## 0.20.0-pre (July 15, 2020)
 
 Fixes and Functionality:
 
@@ -531,11 +553,11 @@ below) or via reviews and triaging on GitHub:
 - Yasu Flores <carlosyasu91@gmail.com>
 - Zac Delventhal <delventhalz@gmail.com>
 
-### 0.19.2 (Jan 20, 2020)
+## 0.19.2 (Jan 20, 2020)
 
 - Remove unnecessary XSS check ([#2679](https://github.com/axios/axios/pull/2679)) (see ([#2646](https://github.com/axios/axios/issues/2646)) for discussion)
 
-### 0.19.1 (Jan 7, 2020)
+## 0.19.1 (Jan 7, 2020)
 
 Fixes and Functionality:
 
@@ -591,7 +613,7 @@ Documentation:
 - Fix grammar in README.md ([#2271](https://github.com/axios/axios/pull/2271))
 - Doc fixes, minor examples cleanup ([#2198](https://github.com/axios/axios/pull/2198))
 
-### 0.19.0 (May 30, 2019)
+## 0.19.0 (May 30, 2019)
 
 Fixes and Functionality:
 
@@ -630,11 +652,11 @@ Documentation:
 - Add react-hooks-axios to Libraries section of ECOSYSTEM.md ([#1925](https://github.com/axios/axios/pull/1925)) - Cody Chan
 - Clarify in README that default timeout is 0 (no timeout) ([#1750](https://github.com/axios/axios/pull/1750)) - Ben Standefer
 
-### 0.19.0-beta.1 (Aug 9, 2018)
+## 0.19.0-beta.1 (Aug 9, 2018)
 
 **NOTE:** This is a beta version of this release. There may be functionality that is broken in
 certain browsers, though we suspect that builds are hanging and not erroring. See
-https://saucelabs.com/u/axios for the most up-to-date information.
+<https://saucelabs.com/u/axios> for the most up-to-date information.
 
 New Functionality:
 
@@ -699,7 +721,7 @@ below) or via reviews and triaging on GitHub:
 - Tim Johns <timjohns@yahoo.com>
 - Yutaro Miyazaki <yutaro@studio-rubbish.com>
 
-### 0.18.0 (Feb 19, 2018)
+## 0.18.0 (Feb 19, 2018)
 
 - Adding support for UNIX Sockets when running with Node.js ([#1070](https://github.com/axios/axios/pull/1070))
 - Fixing typings ([#1177](https://github.com/axios/axios/pull/1177)):
@@ -709,32 +731,32 @@ below) or via reviews and triaging on GitHub:
 - Allowing maxContentLength to pass through to redirected calls as maxBodyLength in follow-redirects config ([#1287](https://github.com/axios/axios/pull/1287))
 - Fixing configuration when using an instance - method can now be set ([#1342](https://github.com/axios/axios/pull/1342))
 
-### 0.17.1 (Nov 11, 2017)
+## 0.17.1 (Nov 11, 2017)
 
 - Fixing issue with web workers ([#1160](https://github.com/axios/axios/pull/1160))
 - Allowing overriding transport ([#1080](https://github.com/axios/axios/pull/1080))
 - Updating TypeScript typings ([#1165](https://github.com/axios/axios/pull/1165), [#1125](https://github.com/axios/axios/pull/1125), [#1131](https://github.com/axios/axios/pull/1131))
 
-### 0.17.0 (Oct 21, 2017)
+## 0.17.0 (Oct 21, 2017)
 
 - **BREAKING** Fixing issue with `baseURL` and interceptors ([#950](https://github.com/axios/axios/pull/950))
 - **BREAKING** Improving handing of duplicate headers ([#874](https://github.com/axios/axios/pull/874))
 - Adding support for disabling proxies ([#691](https://github.com/axios/axios/pull/691))
 - Updating TypeScript typings with generic type parameters ([#1061](https://github.com/axios/axios/pull/1061))
 
-### 0.16.2 (Jun 3, 2017)
+## 0.16.2 (Jun 3, 2017)
 
 - Fixing issue with including `buffer` in bundle ([#887](https://github.com/axios/axios/pull/887))
 - Including underlying request in errors ([#830](https://github.com/axios/axios/pull/830))
 - Convert `method` to lowercase ([#930](https://github.com/axios/axios/pull/930))
 
-### 0.16.1 (Apr 8, 2017)
+## 0.16.1 (Apr 8, 2017)
 
 - Improving HTTP adapter to return last request in case of redirects ([#828](https://github.com/axios/axios/pull/828))
 - Updating `follow-redirects` dependency ([#829](https://github.com/axios/axios/pull/829))
 - Adding support for passing `Buffer` in node ([#773](https://github.com/axios/axios/pull/773))
 
-### 0.16.0 (Mar 31, 2017)
+## 0.16.0 (Mar 31, 2017)
 
 - **BREAKING** Removing `Promise` from axios typings in favor of built-in type declarations ([#480](https://github.com/axios/axios/issues/480))
 - Adding `options` shortcut method ([#461](https://github.com/axios/axios/pull/461))
@@ -743,7 +765,7 @@ below) or via reviews and triaging on GitHub:
 - Fixing `combineURLs` to support empty `relativeURL` ([#581](https://github.com/axios/axios/pull/581))
 - Removing `PROTECTION_PREFIX` support ([#561](https://github.com/axios/axios/pull/561))
 
-### 0.15.3 (Nov 27, 2016)
+## 0.15.3 (Nov 27, 2016)
 
 - Fixing issue with custom instances and global defaults ([#443](https://github.com/axios/axios/issues/443))
 - Renaming `axios.d.ts` to `index.d.ts` ([#519](https://github.com/axios/axios/issues/519))
@@ -753,22 +775,22 @@ below) or via reviews and triaging on GitHub:
 - Improving HTTP adapter to use `http` protocol by default ([#493](https://github.com/axios/axios/pull/493))
 - Fixing proxy issues ([#491](https://github.com/axios/axios/pull/491))
 
-### 0.15.2 (Oct 17, 2016)
+## 0.15.2 (Oct 17, 2016)
 
 - Fixing issue with calling `cancel` after response has been received ([#482](https://github.com/axios/axios/issues/482))
 
-### 0.15.1 (Oct 14, 2016)
+## 0.15.1 (Oct 14, 2016)
 
 - Fixing issue with UMD ([#485](https://github.com/axios/axios/issues/485))
 
-### 0.15.0 (Oct 10, 2016)
+## 0.15.0 (Oct 10, 2016)
 
 - Adding cancellation support ([#452](https://github.com/axios/axios/pull/452))
 - Moving default adapter to global defaults ([#437](https://github.com/axios/axios/pull/437))
 - Fixing issue with `file` URI scheme ([#440](https://github.com/axios/axios/pull/440))
 - Fixing issue with `params` objects that have no prototype ([#445](https://github.com/axios/axios/pull/445))
 
-### 0.14.0 (Aug 27, 2016)
+## 0.14.0 (Aug 27, 2016)
 
 - **BREAKING** Updating TypeScript definitions ([#419](https://github.com/axios/axios/pull/419))
 - **BREAKING** Replacing `agent` option with `httpAgent` and `httpsAgent` ([#387](https://github.com/axios/axios/pull/387))
@@ -777,11 +799,11 @@ below) or via reviews and triaging on GitHub:
 - Fixing issue with `auth` config option and `Authorization` header ([#397](https://github.com/axios/axios/pull/397))
 - Don't set XSRF header if `xsrfCookieName` is `null` ([#406](https://github.com/axios/axios/pull/406))
 
-### 0.13.1 (Jul 16, 2016)
+## 0.13.1 (Jul 16, 2016)
 
 - Fixing issue with response data not being transformed on error ([#378](https://github.com/axios/axios/issues/378))
 
-### 0.13.0 (Jul 13, 2016)
+## 0.13.0 (Jul 13, 2016)
 
 - **BREAKING** Improved error handling ([#345](https://github.com/axios/axios/pull/345))
 - **BREAKING** Response transformer now invoked in dispatcher not adapter ([10eb238](https://github.com/axios/axios/commit/10eb23865101f9347570552c04e9d6211376e25e))
@@ -791,24 +813,24 @@ below) or via reviews and triaging on GitHub:
 - Fixing custom instance defaults ([#341](https://github.com/axios/axios/issues/341))
 - Fixing instances created from `axios.create` to have same API as default axios ([#217](https://github.com/axios/axios/issues/217))
 
-### 0.12.0 (May 31, 2016)
+## 0.12.0 (May 31, 2016)
 
 - Adding support for `URLSearchParams` ([#317](https://github.com/axios/axios/pull/317))
 - Adding `maxRedirects` option ([#307](https://github.com/axios/axios/pull/307))
 
-### 0.11.1 (May 17, 2016)
+## 0.11.1 (May 17, 2016)
 
 - Fixing IE CORS support ([#313](https://github.com/axios/axios/pull/313))
 - Fixing detection of `FormData` ([#325](https://github.com/axios/axios/pull/325))
 - Adding `Axios` class to exports ([#321](https://github.com/axios/axios/pull/321))
 
-### 0.11.0 (Apr 26, 2016)
+## 0.11.0 (Apr 26, 2016)
 
 - Adding support for Stream with HTTP adapter ([#296](https://github.com/axios/axios/pull/296))
 - Adding support for custom HTTP status code error ranges ([#308](https://github.com/axios/axios/pull/308))
 - Fixing issue with ArrayBuffer ([#299](https://github.com/axios/axios/pull/299))
 
-### 0.10.0 (Apr 20, 2016)
+## 0.10.0 (Apr 20, 2016)
 
 - Fixing issue with some requests sending `undefined` instead of `null` ([#250](https://github.com/axios/axios/pull/250))
 - Fixing basic auth for HTTP adapter ([#252](https://github.com/axios/axios/pull/252))
@@ -819,14 +841,14 @@ below) or via reviews and triaging on GitHub:
 - Fixing XHR support for WebWorker environment ([#279](https://github.com/axios/axios/pull/279))
 - Adding request instance to response ([#200](https://github.com/axios/axios/pull/200))
 
-### 0.9.1 (Jan 24, 2016)
+## 0.9.1 (Jan 24, 2016)
 
 - Improving handling of request timeout in node ([#124](https://github.com/axios/axios/issues/124))
 - Fixing network errors not rejecting ([#205](https://github.com/axios/axios/pull/205))
 - Fixing issue with IE rejecting on HTTP 204 ([#201](https://github.com/axios/axios/issues/201))
 - Fixing host/port when following redirects ([#198](https://github.com/axios/axios/pull/198))
 
-### 0.9.0 (Jan 18, 2016)
+## 0.9.0 (Jan 18, 2016)
 
 - Adding support for custom adapters
 - Fixing Content-Type header being removed when data is false ([#195](https://github.com/axios/axios/pull/195))
@@ -834,13 +856,13 @@ below) or via reviews and triaging on GitHub:
 - Improving config merging and order of precedence ([#183](https://github.com/axios/axios/pull/183))
 - Fixing XDomainRequest support for only <= IE9 ([#182](https://github.com/axios/axios/pull/182))
 
-### 0.8.1 (Dec 14, 2015)
+## 0.8.1 (Dec 14, 2015)
 
 - Adding support for passing XSRF token for cross domain requests when using `withCredentials` ([#168](https://github.com/axios/axios/pull/168))
 - Fixing error with format of basic auth header ([#178](https://github.com/axios/axios/pull/173))
 - Fixing error with JSON payloads throwing `InvalidStateError` in some cases ([#174](https://github.com/axios/axios/pull/174))
 
-### 0.8.0 (Dec 11, 2015)
+## 0.8.0 (Dec 11, 2015)
 
 - Adding support for creating instances of axios ([#123](https://github.com/axios/axios/pull/123))
 - Fixing http adapter to use `Buffer` instead of `String` in case of `responseType === 'arraybuffer'` ([#128](https://github.com/axios/axios/pull/128))
@@ -852,7 +874,7 @@ below) or via reviews and triaging on GitHub:
 - Adding support for HTTP basic auth via Authorization header ([#167](https://github.com/axios/axios/pull/167))
 - Adding support for baseURL option ([#160](https://github.com/axios/axios/pull/160))
 
-### 0.7.0 (Sep 29, 2015)
+## 0.7.0 (Sep 29, 2015)
 
 - Fixing issue with minified bundle in IE8 ([#87](https://github.com/axios/axios/pull/87))
 - Adding support for passing agent in node ([#102](https://github.com/axios/axios/pull/102))
@@ -862,7 +884,7 @@ below) or via reviews and triaging on GitHub:
 - Adding support for use in web workers, and react-native ([#70](https://github.com/axios/axios/issue/70)), ([#98](https://github.com/axios/axios/pull/98))
 - Adding support for fetch like API `axios(url[, config])` ([#116](https://github.com/axios/axios/issues/116))
 
-### 0.6.0 (Sep 21, 2015)
+## 0.6.0 (Sep 21, 2015)
 
 - Removing deprecated success/error aliases
 - Fixing issue with array params not being properly encoded ([#49](https://github.com/axios/axios/pull/49))
@@ -873,40 +895,40 @@ below) or via reviews and triaging on GitHub:
 - Fixing issue with IE8 ([#85](https://github.com/axios/axios/pull/85))
 - Converting build to UMD
 
-### 0.5.4 (Apr 08, 2015)
+## 0.5.4 (Apr 08, 2015)
 
 - Fixing issue with FormData not being sent ([#53](https://github.com/axios/axios/issues/53))
 
-### 0.5.3 (Apr 07, 2015)
+## 0.5.3 (Apr 07, 2015)
 
 - Using JSON.parse unconditionally when transforming response string ([#55](https://github.com/axios/axios/issues/55))
 
-### 0.5.2 (Mar 13, 2015)
+## 0.5.2 (Mar 13, 2015)
 
 - Adding support for `statusText` in response ([#46](https://github.com/axios/axios/issues/46))
 
-### 0.5.1 (Mar 10, 2015)
+## 0.5.1 (Mar 10, 2015)
 
 - Fixing issue using strict mode ([#45](https://github.com/axios/axios/issues/45))
 - Fixing issue with standalone build ([#47](https://github.com/axios/axios/issues/47))
 
-### 0.5.0 (Jan 23, 2015)
+## 0.5.0 (Jan 23, 2015)
 
 - Adding support for intercepetors ([#14](https://github.com/axios/axios/issues/14))
 - Updating es6-promise dependency
 
-### 0.4.2 (Dec 10, 2014)
+## 0.4.2 (Dec 10, 2014)
 
 - Fixing issue with `Content-Type` when using `FormData` ([#22](https://github.com/axios/axios/issues/22))
 - Adding support for TypeScript ([#25](https://github.com/axios/axios/issues/25))
 - Fixing issue with standalone build ([#29](https://github.com/axios/axios/issues/29))
 - Fixing issue with verbs needing to be capitalized in some browsers ([#30](https://github.com/axios/axios/issues/30))
 
-### 0.4.1 (Oct 15, 2014)
+## 0.4.1 (Oct 15, 2014)
 
 - Adding error handling to request for node.js ([#18](https://github.com/axios/axios/issues/18))
 
-### 0.4.0 (Oct 03, 2014)
+## 0.4.0 (Oct 03, 2014)
 
 - Adding support for `ArrayBuffer` and `ArrayBufferView` ([#10](https://github.com/axios/axios/issues/10))
 - Adding support for utf-8 for node.js ([#13](https://github.com/axios/axios/issues/13))
@@ -915,29 +937,29 @@ below) or via reviews and triaging on GitHub:
 - Adding standalone build without bundled es6-promise ([#11](https://github.com/axios/axios/issues/11))
 - Deprecating `success`/`error` in favor of `then`/`catch`
 
-### 0.3.1 (Sep 16, 2014)
+## 0.3.1 (Sep 16, 2014)
 
 - Fixing missing post body when using node.js ([#3](https://github.com/axios/axios/issues/3))
 
-### 0.3.0 (Sep 16, 2014)
+## 0.3.0 (Sep 16, 2014)
 
 - Fixing `success` and `error` to properly receive response data as individual arguments ([#8](https://github.com/axios/axios/issues/8))
 - Updating `then` and `catch` to receive response data as a single object ([#6](https://github.com/axios/axios/issues/6))
 - Fixing issue with `all` not working ([#7](https://github.com/axios/axios/issues/7))
 
-### 0.2.2 (Sep 14, 2014)
+## 0.2.2 (Sep 14, 2014)
 
 - Fixing bundling with browserify ([#4](https://github.com/axios/axios/issues/4))
 
-### 0.2.1 (Sep 12, 2014)
+## 0.2.1 (Sep 12, 2014)
 
 - Fixing build problem causing ridiculous file sizes
 
-### 0.2.0 (Sep 12, 2014)
+## 0.2.0 (Sep 12, 2014)
 
 - Adding support for `all` and `spread`
 - Adding support for node.js ([#1](https://github.com/axios/axios/issues/1))
 
-### 0.1.0 (Aug 29, 2014)
+## 0.1.0 (Aug 29, 2014)
 
 - Initial release

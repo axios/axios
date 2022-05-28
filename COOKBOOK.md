@@ -4,10 +4,10 @@ This cookbook contains recipes for some commonly requested features.
 
 In order to keep axios as lightweight as possible, it is often necessary to say no to feature requests. Many of these use cases can be supported by augmenting axios with other libraries.
 
-### Promise.prototype.done
+## Promise.prototype.done
 
 ```bash
-$ npm install axios promise --save
+> npm install axios promise --save
 ```
 
 ```js
@@ -23,10 +23,10 @@ axios
   .done();
 ```
 
-### Promise.prototype.finally
+## Promise.prototype.finally
 
 ```bash
-$ npm install axios promise.prototype.finally --save
+> npm install axios promise.prototype.finally --save
 ```
 
 ```js
@@ -44,10 +44,10 @@ axios
   });
 ```
 
-### Inflate/Deflate
+## Inflate/Deflate
 
 ```bash
-$ npm install axios pako --save
+> npm install axios pako --save
 ```
 
 ```js
@@ -107,10 +107,10 @@ const server = http.createServer((req, res) => {
 server.listen(3333);
 ```
 
-### JSONP
+## JSONP
 
 ```bash
-$ npm install jsonp --save
+> npm install jsonp --save
 ```
 
 ```js

@@ -47,7 +47,7 @@ Promise based HTTP client for the browser and node.js
     - [FormData](#formdata)
     - [🆕 Automatic serialization](#-automatic-serialization-to-formdata) 
   - [Files Posting](#files-posting)
-  - [HTML Form Posting](#html-form-posting-browser)
+  - [HTML Form Posting](#-html-form-posting-browser)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)

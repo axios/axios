@@ -1,20 +1,20 @@
 # Upgrade Guide
 
-### 0.18.x -> 0.19.0
+## 0.18.x -> 0.19.0
 
-#### HTTPS Proxies
+### HTTPS Proxies
 
 Routing through an https proxy now requires setting the `protocol` attribute of the proxy configuration to `https`
 
-### 0.15.x -> 0.16.0
+## 0.15.x -> 0.16.0
 
-#### `Promise` Type Declarations
+### `Promise` Type Declarations
 
 The `Promise` type declarations have been removed from the axios typings in favor of the built-in type declarations. If you use axios in a TypeScript project that targets `ES5`, please make sure to include the `es2015.promise` lib. Please see [this post](https://blog.mariusschulz.com/2016/11/25/typescript-2-0-built-in-type-declarations) for details.
 
-### 0.13.x -> 0.14.0
+## 0.13.x -> 0.14.0
 
-#### TypeScript Definitions
+### TypeScript Definitions
 
 The axios TypeScript definitions have been updated to match the axios API and use the ES2015 module syntax.
 
@@ -28,7 +28,7 @@ axios.get('/foo')
   .catch(error => console.log(error));
 ```
 
-#### `agent` Config Option
+### `agent` Config Option
 
 The `agent` config option has been replaced with two new options: `httpAgent` and `httpsAgent`. Please use them instead.
 
@@ -41,7 +41,7 @@ The `agent` config option has been replaced with two new options: `httpAgent` an
 }
 ```
 
-#### `progress` Config Option
+### `progress` Config Option
 
 The `progress` config option has been replaced with the `onUploadProgress` and `onDownloadProgress` options.
 
@@ -59,11 +59,11 @@ The `progress` config option has been replaced with the `onUploadProgress` and `
 }
 ```
 
-### 0.12.x -> 0.13.0
+## 0.12.x -> 0.13.0
 
 The `0.13.0` release contains several changes to custom adapters and error handling.
 
-#### Error Handling
+### Error Handling
 
 Previous to this release an error could either be a server response with bad status code or an actual `Error`. With this release Promise will always reject with an `Error`. In the case that a response was received, the `Error` will also include the response.
 
@@ -77,7 +77,7 @@ axios.get('/user/12345')
   });
 ```
 
-#### Request Adapters
+### Request Adapters
 
 This release changes a few things about how request adapters work. Please take note if you are using your own custom adapter.
 
@@ -121,14 +121,15 @@ function myAdapter(config) {
 ```
 
 See the related commits for more details:
+
 - [Response transformers](https://github.com/axios/axios/commit/10eb23865101f9347570552c04e9d6211376e25e)
 - [Request adapter Promise](https://github.com/axios/axios/commit/157efd5615890301824e3121cc6c9d2f9b21f94a)
 
-### 0.5.x -> 0.6.0
+## 0.5.x -> 0.6.0
 
 The `0.6.0` release contains mostly bug fixes, but there are a couple things to be aware of when upgrading.
 
-#### ES6 Promise Polyfill
+### ES6 Promise Polyfill
 
 Up until the `0.6.0` release ES6 `Promise` was being polyfilled using [es6-promise](https://github.com/jakearchibald/es6-promise). With this release, the polyfill has been removed, and you will need to supply it yourself if your environment needs it.
 
@@ -139,7 +140,7 @@ var axios = require('axios');
 
 This will polyfill the global environment, and only needs to be done once.
 
-#### `axios.success`/`axios.error`
+### `axios.success`/`axios.error`
 
 The `success`, and `error` aliases were deprecated in [0.4.0](https://github.com/axios/axios/blob/master/CHANGELOG.md#040-oct-03-2014). As of this release they have been removed entirely. Instead please use `axios.then`, and `axios.catch` respectively.
 
@@ -153,7 +154,7 @@ axios.get('some/url')
   });
 ```
 
-#### UMD
+### UMD
 
 Previous versions of axios shipped with an AMD, CommonJS, and Global build. This has all been rolled into a single UMD build.
 

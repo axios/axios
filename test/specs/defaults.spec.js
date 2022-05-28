@@ -1,5 +1,6 @@
 var defaults = require('../../lib/defaults');
 var utils = require('../../lib/utils');
+var AxiosHeaders = require('../../lib/core/AxiosHeaders');
 
 describe('defaults', function () {
   var XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
@@ -17,13 +18,13 @@ describe('defaults', function () {
   });
 
   it('should transform request json', function () {
-    expect(defaults.transformRequest[0]({foo: 'bar'})).toEqual('{"foo":"bar"}');
+    expect(defaults.transformRequest[0]({foo: 'bar'}, new AxiosHeaders())).toEqual('{"foo":"bar"}');
   });
 
   it("should also transform request json when 'Content-Type' is 'application/json'", function () {
-    var headers = {
+    var headers = new AxiosHeaders({
       'Content-Type': 'application/json',
-    };
+    });
     expect(defaults.transformRequest[0](JSON.stringify({ foo: 'bar' }), headers)).toEqual('{"foo":"bar"}');
     expect(defaults.transformRequest[0]([42, 43], headers)).toEqual('[42,43]');
     expect(defaults.transformRequest[0]('foo', headers)).toEqual('"foo"');
@@ -34,9 +35,9 @@ describe('defaults', function () {
   });
 
   it("should transform the plain data object to a FormData instance 'Content-Type' if header is 'multipart/form-data'", function() {
-    var headers = {
+    var headers = new AxiosHeaders({
       'Content-Type': 'multipart/form-data'
-    };
+    });
 
     var payload = {x: 1};
 
@@ -46,7 +47,7 @@ describe('defaults', function () {
   });
 
   it('should do nothing to request string', function () {
-    expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');
+    expect(defaults.transformRequest[0]('foo=bar', new AxiosHeaders())).toEqual('foo=bar');
   });
 
   it('should transform response json', function () {

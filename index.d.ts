@@ -14,7 +14,7 @@ type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, head
 
 type AxiosHeaderSetter = (value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher) => AxiosHeaders;
 
-type AxiosHeaderGetter = ((parser: RegExp) => RegExpExecArray | null) |
+type AxiosHeaderGetter = ((parser?: RegExp) => RegExpExecArray | null) |
     ((matcher?: AxiosHeaderMatcher) => AxiosHeaderValue);
 
 export class AxiosHeaders {

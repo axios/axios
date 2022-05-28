@@ -264,6 +264,17 @@ describe('AxiosHeaders', function () {
       headers.setFoo(2);
       assert.strictEqual(headers.getFoo(), '2');
     });
+
+    it('should support has accessor', function () {
+      const headers = new AxiosHeaders({
+        foo: 1
+      });
+
+      headers.constructor.accessor('foo');
+
+      assert.strictEqual(typeof headers.hasFoo, 'function');
+      assert.strictEqual(headers.hasFoo(), true);
+    });
   });
 
   it('should be caseless', function () {

@@ -393,7 +393,7 @@ describe('requests', function () {
 
     axios.post('/foo', { prop: 'value' }, {
       headers: {
-        'content-type': contentType
+        'Content-Type': contentType
       }
     }).then(function (res) {
       response = res;

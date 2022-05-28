@@ -17,6 +17,8 @@ type AxiosHeaderSetter = (value: AxiosHeaderValue, rewrite?: boolean | AxiosHead
 type AxiosHeaderGetter = ((parser?: RegExp) => RegExpExecArray | null) |
     ((matcher?: AxiosHeaderMatcher) => AxiosHeaderValue);
 
+type AxiosHeaderTester = (matcher?: AxiosHeaderMatcher) => boolean;
+
 export class AxiosHeaders {
   constructor(
       headers?: RawAxiosHeaders | AxiosHeaders,
@@ -45,15 +47,23 @@ export class AxiosHeaders {
 
   setContentType: AxiosHeaderSetter;
   getContentType: AxiosHeaderGetter;
+  hasContentType: AxiosHeaderTester;
+
+  setContentLength: AxiosHeaderSetter;
+  getContentLength: AxiosHeaderGetter;
+  hasContentLength: AxiosHeaderTester;
 
   setAccept: AxiosHeaderSetter;
   getAccept: AxiosHeaderGetter;
+  hasAccept: AxiosHeaderTester;
 
   setUserAgent: AxiosHeaderSetter;
   getUserAgent: AxiosHeaderGetter;
+  hasUserAgent: AxiosHeaderTester;
 
   setContentEncoding: AxiosHeaderSetter;
   getContentEncoding: AxiosHeaderGetter;
+  hasContentEncoding: AxiosHeaderTester;
 }
 
 export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;

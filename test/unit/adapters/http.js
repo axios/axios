@@ -4,6 +4,8 @@ var https = require('https');
 var net = require('net');
 var url = require('url');
 var zlib = require('zlib');
+var stream = require('stream');
+var streamAsync = require('stream/promises');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
@@ -16,8 +18,24 @@ var express = require('express');
 var multer = require('multer');
 var bodyParser = require('body-parser');
 const isBlobSupported = typeof Blob !== 'undefined';
+const Throttle = require('stream-throttle').Throttle;
+const timers = require('timers/promises');
+const devNull = require('dev-null');
 
 var noop = ()=> {};
+
+const LOCAL_SERVER_URL = 'http://localhost:4444';
+
+function startStreamHTTPServer({rate = 64 * 1024, port = 4444} = {}) {
+  return new Promise((resolve, reject) => {
+    http.createServer(function (req, res) {
+      res.setHeader('content-length', req.headers['content-length']);
+      req.pipe(new Throttle({rate})).pipe(res);
+    }).listen(port, function (err) {
+      err ? reject(err) : resolve(this);
+    });
+  });
+}
 
 describe('supports http with nodejs', function () {
 
@@ -1532,4 +1550,249 @@ describe('supports http with nodejs', function () {
       }).catch(done);
     });
   });
+
+  describe('progress', function () {
+    describe('upload', function () {
+      it('should support upload progress capturing', async function () {
+        server = await startStreamHTTPServer({
+          rate: 100 * 1024
+        });
+
+        let content = '';
+        const count = 10;
+        const chunk = "test";
+        const chunkLength = Buffer.byteLength(chunk);
+        const contentLength = count * chunkLength;
+
+        var readable = stream.Readable.from(async function* () {
+          let i = count;
+
+          while (i-- > 0) {
+            await timers.setTimeout(1100);
+            content += chunk;
+            yield chunk;
+          }
+        }());
+
+        const samples = [];
+
+        const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
+          onUploadProgress: ({loaded, total, progress, bytes, upload}) => {
+            samples.push({
+              loaded,
+              total,
+              progress,
+              bytes,
+              upload
+            });
+          },
+          headers: {
+            'Content-Length': contentLength
+          },
+          responseType: 'text'
+        });
+
+        assert.strictEqual(data, content);
+
+        assert.deepStrictEqual(samples, Array.from(function* () {
+          for (let i = 1; i <= 10; i++) {
+            yield ({
+              loaded: chunkLength * i,
+              total: contentLength,
+              progress: (chunkLength * i) / contentLength,
+              bytes: 4,
+              upload: true
+            });
+          }
+        }()));
+      });
+    });
+
+    describe('download', function () {
+      it('should support download progress capturing', async function () {
+        server = await startStreamHTTPServer({
+          rate: 100 * 1024
+        });
+
+        let content = '';
+        const count = 10;
+        const chunk = "test";
+        const chunkLength = Buffer.byteLength(chunk);
+        const contentLength = count * chunkLength;
+
+        var readable = stream.Readable.from(async function* () {
+          let i = count;
+
+          while (i-- > 0) {
+            await timers.setTimeout(1100);
+            content += chunk;
+            yield chunk;
+          }
+        }());
+
+        const samples = [];
+
+        const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
+          onDownloadProgress: ({loaded, total, progress, bytes, download}) => {
+            samples.push({
+              loaded,
+              total,
+              progress,
+              bytes,
+              download
+            });
+          },
+          headers: {
+            'Content-Length': contentLength
+          },
+          responseType: 'text',
+          maxRedirects: 0
+        });
+
+        assert.strictEqual(data, content);
+
+        assert.deepStrictEqual(samples, Array.from(function* () {
+          for (let i = 1; i <= 10; i++) {
+            yield ({
+              loaded: chunkLength * i,
+              total: contentLength,
+              progress: (chunkLength * i) / contentLength,
+              bytes: 4,
+              download: true
+            });
+          }
+        }()));
+      });
+    });
+  });
+
+  describe('Rate limit', function () {
+    it('should support upload rate limit', async function () {
+      const secs = 10;
+      const configRate = 100_000;
+      const chunkLength = configRate * secs;
+
+      server = await startStreamHTTPServer({
+        rate: Infinity
+      });
+
+      const buf = Buffer.alloc(chunkLength);
+
+      for (let i = 0; i < chunkLength; i++) {
+        buf[i] = Math.round(Math.random() * 256);
+      }
+
+      const samples = [];
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
+        onUploadProgress: ({loaded, total, progress, bytes, rate}) => {
+          samples.push({
+            loaded,
+            total,
+            progress,
+            bytes,
+            rate
+          });
+        },
+        maxRate: [configRate],
+        responseType: 'text',
+        maxRedirects: 0
+      });
+
+      samples.slice(1).forEach(({rate, progress}, i)=> {
+        assert.ok(Math.abs(rate - configRate) < configRate * 0.2,
+          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate})`
+        );
+
+        const expectedProgress = (i + 1) / secs;
+
+        assert.ok(
+          Math.abs(expectedProgress - progress) < 0.2,
+          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress})`
+          );
+      });
+
+      assert.strictEqual(data, buf.toString(), 'content corrupted');
+    });
+
+    it('should support download rate limit', async function () {
+      const secs = 10;
+      const configRate = 100_000;
+      const chunkLength = configRate * secs;
+
+      server = await startStreamHTTPServer({
+        rate: Infinity
+      });
+
+      const buf = Buffer.alloc(chunkLength);
+
+      for (let i = 0; i < chunkLength; i++) {
+        buf[i] = Math.round(Math.random() * 256);
+      }
+
+      const samples = [];
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
+        onDownloadProgress: ({loaded, total, progress, bytes, rate}) => {
+          samples.push({
+            loaded,
+            total,
+            progress,
+            bytes,
+            rate
+          });
+        },
+        maxRate: [0, configRate],
+        responseType: 'text',
+        maxRedirects: 0
+      });
+
+      samples.slice(1).forEach(({rate, progress}, i)=> {
+        assert.ok(Math.abs(rate - configRate) < configRate * 0.2,
+          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate})`
+        );
+
+        const expectedProgress = (i + 1) / secs;
+
+        assert.ok(
+          Math.abs(expectedProgress - progress) < 0.2,
+          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress})`
+        );
+      });
+
+      assert.strictEqual(data, buf.toString(), 'content corrupted');
+    });
+  });
+
+  describe('request aborting', function() {
+    it('should be able to abort the response stream', async function () {
+      server = await startStreamHTTPServer({
+        rate: 100_000
+      });
+
+      const buf = Buffer.alloc(1024 * 1024);
+
+      const controller = new AbortController();
+
+      var {data} = await axios.post(LOCAL_SERVER_URL, buf, {
+        responseType: 'stream',
+        signal: controller.signal,
+        maxRedirects: 0
+      });
+
+      setTimeout(() => {
+        controller.abort();
+      }, 500);
+
+      try {
+        await streamAsync.pipeline(data, devNull());
+        assert.fail('stream was not aborted');
+      } catch (err) {
+        if (!axios.isAxiosError(err)) {
+          throw err;
+        }
+        assert.strictEqual(err.code, axios.AxiosError.ERR_CANCELED);
+      }
+    });
+  })
 });

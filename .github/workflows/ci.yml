@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [master, 'v*']
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest

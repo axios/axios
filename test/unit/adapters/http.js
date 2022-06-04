@@ -20,6 +20,7 @@ var bodyParser = require('body-parser');
 const isBlobSupported = typeof Blob !== 'undefined';
 const Throttle = require('stream-throttle').Throttle;
 const devNull = require('dev-null');
+const AbortController = require('abortcontroller-polyfill/dist/cjs-ponyfill').AbortController;
 
 function setTimeoutAsync(ms) {
   return new Promise(resolve=> setTimeout(resolve, ms));

@@ -5,7 +5,7 @@ var net = require('net');
 var url = require('url');
 var zlib = require('zlib');
 var stream = require('stream');
-var streamAsync = require('stream/promises');
+var util = require('util');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
@@ -19,8 +19,13 @@ var multer = require('multer');
 var bodyParser = require('body-parser');
 const isBlobSupported = typeof Blob !== 'undefined';
 const Throttle = require('stream-throttle').Throttle;
-const timers = require('timers/promises');
 const devNull = require('dev-null');
+
+function setTimeoutAsync(ms) {
+  return new Promise(resolve=> setTimeout(resolve, ms));
+}
+
+const pipelineAsync = util.promisify(stream.pipeline);
 
 var noop = ()=> {};
 
@@ -1568,7 +1573,7 @@ describe('supports http with nodejs', function () {
           let i = count;
 
           while (i-- > 0) {
-            await timers.setTimeout(1100);
+            await setTimeoutAsync(1100);
             content += chunk;
             yield chunk;
           }
@@ -1624,7 +1629,7 @@ describe('supports http with nodejs', function () {
           let i = count;
 
           while (i-- > 0) {
-            await timers.setTimeout(1100);
+            await setTimeoutAsync(1100);
             content += chunk;
             yield chunk;
           }
@@ -1785,7 +1790,7 @@ describe('supports http with nodejs', function () {
       }, 500);
 
       try {
-        await streamAsync.pipeline(data, devNull());
+        await pipelineAsync(data, devNull());
         assert.fail('stream was not aborted');
       } catch (err) {
         if (!axios.isAxiosError(err)) {

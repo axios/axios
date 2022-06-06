@@ -9,6 +9,7 @@ var util = require('util');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
+var events = require('events');
 var pkg = require('./../../../package.json');
 var server, proxy;
 var AxiosError = require('../../../lib/core/AxiosError');
@@ -21,6 +22,7 @@ const isBlobSupported = typeof Blob !== 'undefined';
 const Throttle = require('stream-throttle').Throttle;
 const devNull = require('dev-null');
 const AbortController = require('abortcontroller-polyfill/dist/cjs-ponyfill').AbortController;
+const getStream = require('get-stream');
 
 function setTimeoutAsync(ms) {
   return new Promise(resolve=> setTimeout(resolve, ms));
@@ -32,11 +34,21 @@ var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
-function startStreamHTTPServer({rate = 64 * 1024, port = 4444} = {}) {
+function startHTTPServer({useBuffering, rate = 64 * 1024, port = 4444} = {}) {
   return new Promise((resolve, reject) => {
-    http.createServer(function (req, res) {
+    http.createServer(async function (req, res) {
       res.setHeader('content-length', req.headers['content-length']);
-      req.pipe(new Throttle({rate})).pipe(res);
+
+      var dataStream = req;
+
+      if (useBuffering) {
+        dataStream = stream.Readable.from(await getStream(req));
+      }
+
+      stream.pipeline(dataStream, new Throttle({rate}), res, (err) => {
+        err && console.log('Server warning: ' + err.message)
+      });
+
     }).listen(port, function (err) {
       err ? reject(err) : resolve(this);
     });
@@ -1560,7 +1572,7 @@ describe('supports http with nodejs', function () {
   describe('progress', function () {
     describe('upload', function () {
       it('should support upload progress capturing', async function () {
-        server = await startStreamHTTPServer({
+        server = await startHTTPServer({
           rate: 100 * 1024
         });
 
@@ -1616,7 +1628,7 @@ describe('supports http with nodejs', function () {
 
     describe('download', function () {
       it('should support download progress capturing', async function () {
-        server = await startStreamHTTPServer({
+        server = await startHTTPServer({
           rate: 100 * 1024
         });
 
@@ -1678,7 +1690,7 @@ describe('supports http with nodejs', function () {
       const configRate = 100_000;
       const chunkLength = configRate * secs;
 
-      server = await startStreamHTTPServer({
+      server = await startHTTPServer({
         rate: Infinity
       });
 
@@ -1689,6 +1701,7 @@ describe('supports http with nodejs', function () {
       }
 
       const samples = [];
+      const skip = 2;
 
       const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
         onUploadProgress: ({loaded, total, progress, bytes, rate}) => {
@@ -1705,17 +1718,21 @@ describe('supports http with nodejs', function () {
         maxRedirects: 0
       });
 
-      samples.slice(1).forEach(({rate, progress}, i)=> {
-        assert.ok(Math.abs(rate - configRate) < configRate * 0.2,
-          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate})`
+      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+        assert.ok(Math.abs(rate - configRate) < configRate * 0.25,
+          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
+            _samples.map(({rate}) => rate).join(', ')
+          }]`
         );
 
-        const expectedProgress = (i + 1) / secs;
+        const expectedProgress = (i + skip) / secs;
 
         assert.ok(
-          Math.abs(expectedProgress - progress) < 0.2,
-          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress})`
-          );
+          Math.abs(expectedProgress - progress) < 0.25,
+          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${
+            _samples.map(({progress}) => progress).join(', ')
+          }]`
+        );
       });
 
       assert.strictEqual(data, buf.toString(), 'content corrupted');
@@ -1726,7 +1743,7 @@ describe('supports http with nodejs', function () {
       const configRate = 100_000;
       const chunkLength = configRate * secs;
 
-      server = await startStreamHTTPServer({
+      server = await startHTTPServer({
         rate: Infinity
       });
 
@@ -1737,6 +1754,7 @@ describe('supports http with nodejs', function () {
       }
 
       const samples = [];
+      const skip = 2;
 
       const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
         onDownloadProgress: ({loaded, total, progress, bytes, rate}) => {
@@ -1753,16 +1771,20 @@ describe('supports http with nodejs', function () {
         maxRedirects: 0
       });
 
-      samples.slice(1).forEach(({rate, progress}, i)=> {
-        assert.ok(Math.abs(rate - configRate) < configRate * 0.2,
-          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate})`
+      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+        assert.ok(Math.abs(rate - configRate) < configRate * 0.25,
+          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
+            _samples.map(({rate}) => rate).join(', ')
+          }]`
         );
 
-        const expectedProgress = (i + 1) / secs;
+        const expectedProgress = (i + skip) / secs;
 
         assert.ok(
-          Math.abs(expectedProgress - progress) < 0.2,
-          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress})`
+          Math.abs(expectedProgress - progress) < 0.25,
+          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${
+            _samples.map(({progress}) => progress).join(', ')
+          }]`
         );
       });
 
@@ -1770,10 +1792,12 @@ describe('supports http with nodejs', function () {
     });
   });
 
+
   describe('request aborting', function() {
     it('should be able to abort the response stream', async function () {
-      server = await startStreamHTTPServer({
-        rate: 100_000
+      server = await startHTTPServer({
+        rate: 100_000,
+        useBuffering: true
       });
 
       const buf = Buffer.alloc(1024 * 1024);
@@ -1790,15 +1814,20 @@ describe('supports http with nodejs', function () {
         controller.abort();
       }, 500);
 
+      let streamError;
+
+      data.on('error', function(err) {
+        streamError = err;
+      });
+
       try {
         await pipelineAsync(data, devNull());
         assert.fail('stream was not aborted');
       } catch (err) {
-        if (!axios.isAxiosError(err)) {
-          throw err;
-        }
-        assert.strictEqual(err.code, axios.AxiosError.ERR_CANCELED);
+        assert.ok(err.code === axios.AxiosError.ERR_CANCELED || err.code === 'ERR_STREAM_PREMATURE_CLOSE');
       }
+
+      assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
     });
   })
 });

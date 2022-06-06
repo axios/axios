@@ -47,6 +47,7 @@
     "es6-promise": "^4.2.8",
     "express": "^4.18.1",
     "formidable": "^2.0.1",
+    "get-stream": "^3.0.0",
     "grunt": "^1.4.1",
     "grunt-banner": "^0.6.0",
     "grunt-cli": "^1.4.3",

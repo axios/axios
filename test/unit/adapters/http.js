@@ -9,7 +9,7 @@ var util = require('util');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
-var events = require('events');
+var EventEmitter = require('events').EventEmitter;
 var pkg = require('./../../../package.json');
 var server, proxy;
 var AxiosError = require('../../../lib/core/AxiosError');
@@ -29,30 +29,70 @@ function setTimeoutAsync(ms) {
 }
 
 const pipelineAsync = util.promisify(stream.pipeline);
+const finishedAsync = util.promisify(stream.finished);
+
+function toleranceRange(positive, negative) {
+  const p = (1 + 1 / positive);
+  const n = (1 / negative);
+
+  return (actualValue, value) => {
+    return actualValue - value > 0 ? actualValue < value * p : actualValue > value * n;
+  }
+}
 
 var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
-function startHTTPServer({useBuffering, rate = 64 * 1024, port = 4444} = {}) {
+function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = {}) {
   return new Promise((resolve, reject) => {
     http.createServer(async function (req, res) {
-      res.setHeader('content-length', req.headers['content-length']);
+      try {
+        req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
-      var dataStream = req;
+        var dataStream = req;
 
-      if (useBuffering) {
-        dataStream = stream.Readable.from(await getStream(req));
+        if (useBuffering) {
+          dataStream = stream.Readable.from(await getStream(req));
+        }
+
+        var streams = [dataStream];
+
+        if (rate) {
+          streams.push(new Throttle({rate}))
+        }
+
+        streams.push(res);
+
+        stream.pipeline(streams, (err) => {
+          err && console.log('Server warning: ' + err.message)
+        });
+      } catch (err){
+        console.warn('HTTP server error:', err);
       }
-
-      stream.pipeline(dataStream, new Throttle({rate}), res, (err) => {
-        err && console.log('Server warning: ' + err.message)
-      });
 
     }).listen(port, function (err) {
       err ? reject(err) : resolve(this);
     });
   });
+}
+
+function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sleep = 50) {
+  return stream.Readable.from(async function* (){
+    let dataLength = 0;
+
+    while(dataLength < length) {
+      const leftBytes = length - dataLength;
+
+      const chunk = Buffer.alloc(leftBytes > chunkSize? chunkSize : leftBytes);
+
+      dataLength += chunk.length;
+
+      yield chunk;
+
+      await setTimeoutAsync(sleep);
+    }
+  }());
 }
 
 describe('supports http with nodejs', function () {
@@ -671,14 +711,15 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support streams', function (done) {
-    server = http.createServer(function (req, res) {
-      req.pipe(res);
-    }).listen(4444, function () {
-      axios.post('http://localhost:4444/',
-        fs.createReadStream(__filename), {
-          responseType: 'stream'
-        }).then(function (res) {
+  describe('streams', function(){
+    it('should support streams', function (done) {
+      server = http.createServer(function (req, res) {
+        req.pipe(res);
+      }).listen(4444, function () {
+        axios.post('http://localhost:4444/',
+          fs.createReadStream(__filename), {
+            responseType: 'stream'
+          }).then(function (res) {
           var stream = res.data;
           var string = '';
           stream.on('data', function (chunk) {
@@ -689,23 +730,42 @@ describe('supports http with nodejs', function () {
             done();
           });
         }).catch(done);
+      });
     });
-  });
 
-  it('should pass errors for a failed stream', function (done) {
-    var notExitPath = path.join(__dirname, 'does_not_exist');
+    it('should pass errors for a failed stream', function (done) {
+      var notExitPath = path.join(__dirname, 'does_not_exist');
 
-    server = http.createServer(function (req, res) {
-      req.pipe(res);
-    }).listen(4444, function () {
-      axios.post('http://localhost:4444/',
-        fs.createReadStream(notExitPath)
-      ).then(function (res) {
-        assert.fail('expected ENOENT error');
-      }).catch(function (err) {
-        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
-        done();
-      }).catch(done);
+      server = http.createServer(function (req, res) {
+        req.pipe(res);
+      }).listen(4444, function () {
+        axios.post('http://localhost:4444/',
+          fs.createReadStream(notExitPath)
+        ).then(function (res) {
+          assert.fail('expected ENOENT error');
+        }).catch(function (err) {
+          assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
+          done();
+        }).catch(done);
+      });
+    });
+
+    it('should destroy the response stream with an error on request stream destroying', async function () {
+      server = await startHTTPServer();
+
+      let stream = generateReadableStream();
+
+      setTimeout(function () {
+        stream.destroy();
+      }, 1000);
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, stream, {responseType: 'stream'});
+
+      try {
+        await pipelineAsync(data, devNull());
+      } catch (err){
+        assert.strictEqual(err.code, 'ERR_STREAM_PREMATURE_CLOSE');
+      }
     });
   });
 
@@ -1690,18 +1750,12 @@ describe('supports http with nodejs', function () {
       const configRate = 100_000;
       const chunkLength = configRate * secs;
 
-      server = await startHTTPServer({
-        rate: Infinity
-      });
+      server = await startHTTPServer();
 
-      const buf = Buffer.alloc(chunkLength);
-
-      for (let i = 0; i < chunkLength; i++) {
-        buf[i] = Math.round(Math.random() * 256);
-      }
-
+      const buf = Buffer.alloc(chunkLength).fill('s');
       const samples = [];
       const skip = 2;
+      const compareValues = toleranceRange(10, 50);
 
       const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
         onUploadProgress: ({loaded, total, progress, bytes, rate}) => {
@@ -1719,13 +1773,14 @@ describe('supports http with nodejs', function () {
       });
 
       samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
-        assert.ok(Math.abs(rate - configRate) < configRate * 0.25,
+        assert.ok(compareValues(rate, configRate),
           `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
             _samples.map(({rate}) => rate).join(', ')
           }]`
         );
 
-        const expectedProgress = (i + skip) / secs;
+        const progressTicksRate = 2;
+        const expectedProgress = ((i + skip) / secs) / progressTicksRate;
 
         assert.ok(
           Math.abs(expectedProgress - progress) < 0.25,
@@ -1743,18 +1798,12 @@ describe('supports http with nodejs', function () {
       const configRate = 100_000;
       const chunkLength = configRate * secs;
 
-      server = await startHTTPServer({
-        rate: Infinity
-      });
+      server = await startHTTPServer();
 
-      const buf = Buffer.alloc(chunkLength);
-
-      for (let i = 0; i < chunkLength; i++) {
-        buf[i] = Math.round(Math.random() * 256);
-      }
-
+      const buf = Buffer.alloc(chunkLength).fill('s');
       const samples = [];
       const skip = 2;
+      const compareValues = toleranceRange(10, 50);
 
       const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
         onDownloadProgress: ({loaded, total, progress, bytes, rate}) => {
@@ -1772,13 +1821,14 @@ describe('supports http with nodejs', function () {
       });
 
       samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
-        assert.ok(Math.abs(rate - configRate) < configRate * 0.25,
+        assert.ok(compareValues(rate, configRate),
           `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
             _samples.map(({rate}) => rate).join(', ')
           }]`
         );
 
-        const expectedProgress = (i + skip) / secs;
+        const progressTicksRate = 2;
+        const expectedProgress = ((i + skip) / secs) / progressTicksRate;
 
         assert.ok(
           Math.abs(expectedProgress - progress) < 0.25,

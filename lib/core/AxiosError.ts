@@ -26,9 +26,9 @@ export default class AxiosError extends Error {
     this.message = message;
     this.name = 'AxiosError';
     utils.isUndefined(code) && (this.code = code)
-    utils.isUndefined(config) && (this.code = code)
-    utils.isUndefined(request) && (this.code = code)
-    utils.isUndefined(response) && (this.code = code)
+    utils.isUndefined(config) && (this.config = config)
+    utils.isUndefined(request) && (this.request = request)
+    utils.isUndefined(response) && (this.response = response)
 
     if (Error.captureStackTrace) {
       Error.captureStackTrace?.(this, this.constructor)

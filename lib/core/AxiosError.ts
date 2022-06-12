@@ -3,6 +3,37 @@
 import { AxiosRequestConfig, AxiosResponse } from 'index';
 import * as utils from '../utils'
 
+export default interface AxiosError<T = unknown, D = any> extends Error {
+  code?: string
+  config?: AxiosRequestConfig<D>,
+  request?: any
+  response?: AxiosResponse<T, D>
+
+  readonly isAxiosError: true
+}
+
+export interface AxiosErrorConstructor<T = unknown, D = any> extends ErrorConstructor {
+  new(message?: string, config?: AxiosRequestConfig, code?: string, request?: any, response?: AxiosResponse): AxiosError
+  (message?: string): AxiosError
+
+  readonly ERR_BAD_OPTION_VALUE: 'ERR_BAD_OPTION_VALUE'
+  readonly ERR_BAD_OPTION: 'ERR_BAD_OPTION'
+  readonly ECONNABORTED: 'ECONNABORTED'
+  readonly ETIMEDOUT: 'ETIMEDOUT'
+  readonly ERR_NETWORK: 'ERR_NETWORK'
+  readonly ERR_FR_TOO_MANY_REDIRECTS: 'ERR_FR_TOO_MANY_REDIRECTS'
+  readonly ERR_DEPRECATED: 'ERR_DEPRECATED'
+  readonly ERR_BAD_RESPONSE: 'ERR_BAD_RESPONSE'
+  readonly ERR_BAD_REQUEST: 'ERR_BAD_REQUEST'
+  readonly ERR_CANCELED: 'ERR_CANCELED'
+  readonly ERR_NOT_SUPPORT: 'ERR_NOT_SUPPORT'
+  readonly ERR_INVALID_UR: 'ERR_INVALID_UR'
+
+  from: (error: Error, code?: string, config?: AxiosRequestConfig, request?: any, response?: AxiosResponse, customProps?: Record<keyof any, any>) => AxiosError
+
+  readonly prototype: AxiosError<T, D>
+}
+
 /**
  * Create an Error with the specified message, config, error code, request and response.
  *
@@ -14,11 +45,40 @@ import * as utils from '../utils'
  *
  * @returns {Error} The created error.
  */
-export default class AxiosError extends Error {
+export default class AxiosError<T = unknown, D = any> extends Error {
+  static readonly ERR_BAD_OPTION_VALUE = 'ERR_BAD_OPTION_VALUE'
+  static readonly ERR_BAD_OPTION = 'ERR_BAD_OPTION'
+  static readonly ECONNABORTED = 'ECONNABORTED'
+  static readonly ETIMEDOUT = 'ETIMEDOUT'
+  static readonly ERR_NETWORK = 'ERR_NETWORK'
+  static readonly ERR_FR_TOO_MANY_REDIRECTS = 'ERR_FR_TOO_MANY_REDIRECTS'
+  static readonly ERR_DEPRECATED = 'ERR_DEPRECATED'
+  static readonly ERR_BAD_RESPONSE = 'ERR_BAD_RESPONSE'
+  static readonly ERR_BAD_REQUEST = 'ERR_BAD_REQUEST'
+  static readonly ERR_CANCELED = 'ERR_CANCELED'
+  static readonly ERR_NOT_SUPPORT = 'ERR_NOT_SUPPORT'
+  static readonly ERR_INVALID_UR = 'ERR_INVALID_UR'
+
+  static from(error: Error, code?: string, config?: AxiosRequestConfig, request?: any, response?: AxiosResponse, customProps?: Record<keyof any, any>) {
+    const axiosError = Object.create(AxiosError.prototype);
+
+    utils.toFlatObject(error, axiosError, (obj: any) => obj !== Error.prototype);
+
+    AxiosError.call(axiosError, error.message, code, config, request, response);
+
+    axiosError.cause = error;
+
+    axiosError.name = error.name;
+
+    customProps && Object.assign(axiosError, customProps);
+
+    return axiosError;
+  };
+
   code?: string
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig<D>
   request?: any
-  response?: AxiosResponse
+  response?: AxiosResponse<T, D>
 
   constructor(message: string = '', code?: string, config?: AxiosRequestConfig, request?: any, response?: AxiosResponse) {
     super()
@@ -37,22 +97,6 @@ export default class AxiosError extends Error {
     }
   }
 
-  static from(error: Error, code?: string, config?: AxiosRequestConfig, request?: any, response?: AxiosResponse, customProps?: Record<keyof any, any>) {
-    const axiosError = Object.create(prototype) as AxiosError;
-
-    utils.toFlatObject(error, axiosError, (obj: any) => obj !== Error.prototype);
-
-    AxiosError.call(axiosError, error.message, code, config, request, response);
-
-    axiosError.cause = error;
-
-    axiosError.name = error.name;
-
-    customProps && Object.assign(axiosError, customProps);
-
-    return axiosError;
-  };
-
   toJSON() {
     return {
       // Standard
@@ -61,14 +105,14 @@ export default class AxiosError extends Error {
       // Microsoft
       // @ts-expect-error
       description: this.description,
-      // @ts-expect-error 
+      // @ts-expect-error
       number: this.number,
       // Mozilla
-      // @ts-expect-error 
+      // @ts-expect-error
       fileName: this.fileName,
-      // @ts-expect-error 
+      // @ts-expect-error
       lineNumber: this.lineNumber,
-      // @ts-expect-error 
+      // @ts-expect-error
       columnNumber: this.columnNumber,
       stack: this.stack,
       // Axios
@@ -79,27 +123,4 @@ export default class AxiosError extends Error {
   }
 }
 
-const prototype = AxiosError.prototype;
-const descriptorsNames = [
-  'ERR_BAD_OPTION_VALUE',
-  'ERR_BAD_OPTION',
-  'ECONNABORTED',
-  'ETIMEDOUT',
-  'ERR_NETWORK',
-  'ERR_FR_TOO_MANY_REDIRECTS',
-  'ERR_DEPRECATED',
-  'ERR_BAD_RESPONSE',
-  'ERR_BAD_REQUEST',
-  'ERR_CANCELED',
-  'ERR_NOT_SUPPORT',
-  'ERR_INVALID_URL'
-  // eslint-disable-next-line func-names
-];
-const descriptors: Record<string, PropertyDescriptor> = {};
-
-descriptorsNames.forEach(function (code) {
-  descriptors[code] = { value: code };
-});
-
-Object.defineProperties(AxiosError, descriptors);
-Object.defineProperty(prototype, 'isAxiosError', { value: true });
+AxiosError.prototype.isAxiosError = true

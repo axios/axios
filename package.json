@@ -36,6 +36,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-multi-entry": "^4.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
+    "@types/node": "^17.0.42",
     "abortcontroller-polyfill": "^1.7.3",
     "body-parser": "^1.20.0",
     "coveralls": "^3.1.1",

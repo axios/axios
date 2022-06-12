@@ -384,7 +384,7 @@ export const inherits = (constructor: Function, superConstructor: Function, prop
  *
  * @returns {Object}
  */
-export const toFlatObject = <Source extends object, Dest extends object, K extends keyof Source>(sourceObj: Source, destObj: Dest, filter: Function | null, propFilter: Function): object => {
+export const toFlatObject = <Source extends object, Dest extends object, K extends keyof Source>(sourceObj: Source, destObj: Dest, filter: Function | null, propFilter?: Function): object => {
   let props: Array<K>;
   let i: number;
   let prop: K;

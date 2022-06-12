@@ -1,5 +1,6 @@
 'use strict';
 
+import type { Stream } from 'stream';
 import bind from './helpers/bind'
 
 // utils is a library of generic helper functions non-specific to axios
@@ -179,7 +180,7 @@ export const isFunction = (val: any): val is Function => toString.call(val) === 
  *
  * @returns {boolean} True if value is a Stream, otherwise false
  */
-export const isStream = (val: any) => isObject(val) && isFunction((val as Record<any, any>).pipe)
+export const isStream = (val: any): val is Stream => isObject(val) && isFunction((val as Stream).pipe)
 
 /**
  * Determine if a value is a FormData

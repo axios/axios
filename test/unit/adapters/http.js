@@ -90,7 +90,9 @@ function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sle
 
       yield chunk;
 
-      await setTimeoutAsync(sleep);
+      if (sleep) {
+        await setTimeoutAsync(sleep);
+      }
     }
   }());
 }
@@ -733,21 +735,19 @@ describe('supports http with nodejs', function () {
       });
     });
 
-    it('should pass errors for a failed stream', function (done) {
+    it('should pass errors for a failed stream', async function () {
+      server = await startHTTPServer();
+
       var notExitPath = path.join(__dirname, 'does_not_exist');
 
-      server = http.createServer(function (req, res) {
-        req.pipe(res);
-      }).listen(4444, function () {
-        axios.post('http://localhost:4444/',
+      try {
+        await axios.post(LOCAL_SERVER_URL,
           fs.createReadStream(notExitPath)
-        ).then(function (res) {
-          assert.fail('expected ENOENT error');
-        }).catch(function (err) {
-          assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
-          done();
-        }).catch(done);
-      });
+        );
+        assert.fail('expected ENOENT error');
+      } catch (err) {
+        assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
+      }
     });
 
     it('should destroy the response stream with an error on request stream destroying', async function () {
@@ -761,10 +761,19 @@ describe('supports http with nodejs', function () {
 
       const {data} = await axios.post(LOCAL_SERVER_URL, stream, {responseType: 'stream'});
 
+      let streamError;
+
+      data.on('error', function(err) {
+        streamError = err;
+      });
+
       try {
         await pipelineAsync(data, devNull());
-      } catch (err){
-        assert.strictEqual(err.code, 'ERR_STREAM_PREMATURE_CLOSE');
+        assert.fail('stream was not aborted');
+      } catch(e) {
+        console.log(`pipeline error: ${e}`);
+      } finally {
+        assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
       }
     });
   });
@@ -1873,11 +1882,11 @@ describe('supports http with nodejs', function () {
       try {
         await pipelineAsync(data, devNull());
         assert.fail('stream was not aborted');
-      } catch (err) {
-        assert.ok(err.code === axios.AxiosError.ERR_CANCELED || err.code === 'ERR_STREAM_PREMATURE_CLOSE');
+      } catch(e) {
+        console.log(`pipeline error: ${e}`);
+      } finally {
+        assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
       }
-
-      assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
     });
   })
 });

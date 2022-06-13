@@ -123,4 +123,4 @@ export default class AxiosError<T = unknown, D = any> extends Error {
   }
 }
 
-AxiosError.prototype.isAxiosError = true
+Object.defineProperty(AxiosError.prototype, 'isAxiosError', {value: true});

@@ -73,9 +73,11 @@
     "multer": "^1.4.4",
     "rollup": "^2.67.0",
     "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.32.1",
     "sinon": "^4.5.0",
     "terser-webpack-plugin": "^4.2.3",
-    "typescript": "^4.6.3",
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.3",
     "url-search-params": "^0.10.0",
     "webpack": "^4.44.2",
     "webpack-dev-server": "^3.11.0"

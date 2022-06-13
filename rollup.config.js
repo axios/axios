@@ -1,6 +1,7 @@
-import resolve from '@rollup/plugin-node-resolve';
+import resolve, { DEFAULTS } from '@rollup/plugin-node-resolve';
+import typescript from 'rollup-plugin-typescript2';
 import commonjs from '@rollup/plugin-commonjs';
-import {terser} from "rollup-plugin-terser";
+import { terser } from "rollup-plugin-terser";
 import json from '@rollup/plugin-json';
 
 const lib = require("./package.json");
@@ -10,7 +11,7 @@ const input = './lib/axios.js';
 
 const buildConfig = (config) => {
 
-  const build = ({minified}) => ({
+  const build = ({ minified }) => ({
     input,
     ...config,
     output: {
@@ -19,7 +20,11 @@ const buildConfig = (config) => {
     },
     plugins: [
       json(),
-      resolve({browser: true}),
+      resolve({
+        extensions: ['.ts', ...DEFAULTS.extensions],
+        browser: true
+      }),
+      typescript(/*{ plugin options }*/),
       commonjs(),
       minified && terser(),
       ...(config.plugins || []),
@@ -27,8 +32,8 @@ const buildConfig = (config) => {
   });
 
   return [
-    build({minified: false}),
-    build({minified: true}),
+    build({ minified: false }),
+    build({ minified: true }),
   ];
 };
 

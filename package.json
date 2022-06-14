@@ -3,6 +3,7 @@
   "version": "1.0.0-alpha.1",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
+  "type": "module",
   "types": "index.d.ts",
   "scripts": {
     "test": "node bin/ssl_hotfix.js grunt test && node bin/ssl_hotfix.js dtslint",

@@ -1,28 +1,31 @@
-var axios = require('../../../index');
-var http = require('http');
-var https = require('https');
-var net = require('net');
-var url = require('url');
-var zlib = require('zlib');
-var stream = require('stream');
-var util = require('util');
-var assert = require('assert');
-var fs = require('fs');
-var path = require('path');
-var EventEmitter = require('events').EventEmitter;
-var pkg = require('./../../../package.json');
-var server, proxy;
-var AxiosError = require('../../../lib/core/AxiosError');
-var FormData = require('form-data');
-var formidable = require('formidable');
-var express = require('express');
-var multer = require('multer');
-var bodyParser = require('body-parser');
+import axios from '../../../index.js';
+import http from 'http';
+import https from 'https';
+import net from 'net';
+import url from 'url';
+import zlib from 'zlib';
+import stream from 'stream';
+import util from 'util';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import {EventEmitter} from 'events';
+let server, proxy;
+import AxiosError from '../../../lib/core/AxiosError.js';
+import FormData from 'form-data';
+import formidable from 'formidable';
+import express from 'express';
+import multer from 'multer';
+import bodyParser from 'body-parser';
 const isBlobSupported = typeof Blob !== 'undefined';
-const Throttle = require('stream-throttle').Throttle;
-const devNull = require('dev-null');
-const AbortController = require('abortcontroller-polyfill/dist/cjs-ponyfill').AbortController;
-const getStream = require('get-stream');
+import {Throttle} from 'stream-throttle';
+import devNull from 'dev-null';
+import {AbortController} from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import getStream from 'get-stream';
 
 function setTimeoutAsync(ms) {
   return new Promise(resolve=> setTimeout(resolve, ms));
@@ -1346,7 +1349,7 @@ describe('supports http with nodejs', function () {
 
   it('should supply a user-agent if one is not specified', function (done) {
     server = http.createServer(function (req, res) {
-      assert.equal(req.headers["user-agent"], 'axios/' + pkg.version);
+      assert.equal(req.headers["user-agent"], 'axios/' + axios.VERSION);
       res.end();
     }).listen(4444, function () {
       axios.get('http://localhost:4444/'

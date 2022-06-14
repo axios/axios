@@ -1,10 +1,10 @@
-var AxiosHeaders = require('../../../lib/core/AxiosHeaders');
-var assert = require('assert');
+import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
+import assert from 'assert';
 
 
 describe('AxiosHeaders', function () {
   it('should support headers argument', function () {
-    var headers = new AxiosHeaders({
+    const headers = new AxiosHeaders({
       x: 1,
       y: 2
     });
@@ -16,7 +16,7 @@ describe('AxiosHeaders', function () {
 
   describe('set', function () {
     it('should support adding a single header', function(){
-      var headers = new AxiosHeaders();
+      const headers = new AxiosHeaders();
 
       headers.set('foo', 'bar');
 
@@ -24,7 +24,7 @@ describe('AxiosHeaders', function () {
     })
 
     it('should support adding multiple headers', function(){
-      var headers = new AxiosHeaders();
+      const headers = new AxiosHeaders();
 
       headers.set({
         foo: 'value1',
@@ -36,7 +36,7 @@ describe('AxiosHeaders', function () {
     })
 
     it('should not rewrite header the header if the value is false', function(){
-      var headers = new AxiosHeaders();
+      const headers = new AxiosHeaders();
 
       headers.set('foo', 'value1');
 
@@ -54,7 +54,7 @@ describe('AxiosHeaders', function () {
     });
 
     it('should not rewrite the header if its value is false, unless rewrite options is set to true', function(){
-      var headers = new AxiosHeaders();
+      const headers = new AxiosHeaders();
 
       headers.set('foo', false);
       headers.set('foo', 'value2');

@@ -2,9 +2,9 @@
 // https://github.com/axios/axios/issues/3407
 // https://github.com/axios/axios/issues/3369
 
-const axios = require('../../../index');
-const http = require('http');
-const assert = require('assert');
+import axios from '../../../index.js';
+import http from 'http';
+import assert from 'assert';
 
 const PROXY_PORT = 4777;
 const EVIL_PORT = 4666;

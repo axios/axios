@@ -1,12 +1,12 @@
-var defaults = require('../../../lib/defaults');
-var transformData = require('../../../lib/core/transformData');
-var assert = require('assert');
+import defaults from '../../../lib/defaults/index.js';
+import transformData from '../../../lib/core/transformData.js';
+import assert from 'assert';
 
 describe('transformResponse', function () {
     describe('200 request', function () {
         it('parses json', function () {
-            var data = '{"message": "hello, world"}';
-            var result = transformData.call({
+            const data = '{"message": "hello, world"}';
+            const result = transformData.call({
                 data,
                 response: {
                     headers: {'content-type': 'application/json'},
@@ -16,8 +16,8 @@ describe('transformResponse', function () {
             assert.strictEqual(result.message, 'hello, world');
         });
         it('ignores XML', function () {
-            var data = '<message>hello, world</message>';
-            var result = transformData.call({
+            const data = '<message>hello, world</message>';
+            const result = transformData.call({
                 data,
                 response: {
                     headers: {'content-type': 'text/xml'},
@@ -29,8 +29,8 @@ describe('transformResponse', function () {
     });
     describe('204 request', function () {
         it('does not parse the empty string', function () {
-            var data = '';
-            var result = transformData.call({
+            const data = '';
+            const result = transformData.call({
                 data,
                 response: {
                     headers: {'content-type': undefined},
@@ -40,8 +40,8 @@ describe('transformResponse', function () {
             assert.strictEqual(result, '');
         });
         it('does not parse undefined', function () {
-            var data = undefined;
-            var result = transformData.call({
+            const data = undefined;
+            const result = transformData.call({
                 data,
                 response: {
                     headers: {'content-type': undefined},

@@ -1,1 +1,2 @@
-module.exports = require('./lib/axios');
+import axios from './lib/axios.js';
+export default axios;

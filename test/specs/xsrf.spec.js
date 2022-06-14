@@ -1,4 +1,4 @@
-var cookies = require('../../lib/helpers/cookies');
+import cookies from '../../lib/helpers/cookies';
 
 describe('xsrf', function () {
   beforeEach(function () {

@@ -1,10 +1,10 @@
-var AxiosError = require('../../../lib/core/AxiosError');
+import AxiosError from '../../../lib/core/AxiosError';
 
 describe('core::AxiosError', function() {
   it('should create an Error with message, config, code, request, response, stack and isAxiosError', function() {
-    var request = { path: '/foo' };
-    var response = { status: 200, data: { foo: 'bar' } };
-    var error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
+    const request = { path: '/foo' };
+    const response = { status: 200, data: { foo: 'bar' } };
+    const error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
     expect(error instanceof Error).toBe(true);
     expect(error.message).toBe('Boom!');
     expect(error.config).toEqual({ foo: 'bar' });
@@ -17,10 +17,10 @@ describe('core::AxiosError', function() {
   it('should create an Error that can be serialized to JSON', function() {
     // Attempting to serialize request and response results in
     //    TypeError: Converting circular structure to JSON
-    var request = { path: '/foo' };
-    var response = { status: 200, data: { foo: 'bar' } };
-    var error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
-    var json = error.toJSON();
+    const request = { path: '/foo' };
+    const response = { status: 200, data: { foo: 'bar' } };
+    const error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
+    const json = error.toJSON();
     expect(json.message).toBe('Boom!');
     expect(json.config).toEqual({ foo: 'bar' });
     expect(json.code).toBe('ESOMETHING');
@@ -31,11 +31,11 @@ describe('core::AxiosError', function() {
 
   describe('core::createError.from', function() {
     it('should add config, config, request and response to error', function() {
-      var error = new Error('Boom!');
-      var request = { path: '/foo' };
-      var response = { status: 200, data: { foo: 'bar' } };
+      const error = new Error('Boom!');
+      const request = { path: '/foo' };
+      const response = { status: 200, data: { foo: 'bar' } };
 
-      var axiosError = AxiosError.from(error, 'ESOMETHING', { foo: 'bar' },  request, response);
+      const axiosError = AxiosError.from(error, 'ESOMETHING', { foo: 'bar' },  request, response);
       expect(axiosError.config).toEqual({ foo: 'bar' });
       expect(axiosError.code).toBe('ESOMETHING');
       expect(axiosError.request).toBe(request);
@@ -44,7 +44,7 @@ describe('core::AxiosError', function() {
     });
 
     it('should return error', function() {
-      var error = new Error('Boom!');
+      const error = new Error('Boom!');
       expect(AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError).toBeTruthy();
     });
   });

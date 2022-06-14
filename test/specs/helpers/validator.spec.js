@@ -1,6 +1,6 @@
 'use strict';
 
-var validator = require('../../../lib/helpers/validator');
+import validator from '../../../lib/helpers/validator';
 
 describe('validator::assertOptions', function() {
   it('should throw only if unknown an option was passed', function() {

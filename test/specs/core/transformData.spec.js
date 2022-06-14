@@ -1,8 +1,8 @@
-var transformData = require('../../../lib/core/transformData');
+import transformData from '../../../lib/core/transformData';
 
 describe('core::transformData', function () {
   it('should support a single transformer', function () {
-    var data;
+    let data;
 
     data = transformData.call({
 
@@ -15,7 +15,7 @@ describe('core::transformData', function () {
   });
 
   it('should support an array of transformers', function () {
-    var data = '';
+    let data = '';
     data = transformData.call({data}, [function (data) {
       data += 'f';
       return data;
@@ -31,10 +31,10 @@ describe('core::transformData', function () {
   });
 
   it('should support reference headers in transformData', function () {
-    var headers = {
+    const headers = {
       'content-type': 'foo/bar',
     };
-    var data = '';
+    let data = '';
     data = transformData.call({data, headers}, [function (data, headers) {
       data += headers['content-type'];
       return data;
@@ -44,7 +44,7 @@ describe('core::transformData', function () {
   });
 
   it('should support reference status code in transformData', function () {
-    var data = '';
+    let data = '';
     data = transformData.call({}, [function (data, headers, status) {
       data += status;
       return data;

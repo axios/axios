@@ -6,7 +6,8 @@
 
 'use strict';
 
-var webpack = require('webpack');
+var resolve = require('@rollup/plugin-node-resolve').default;
+var commonjs = require('@rollup/plugin-commonjs');
 
 function createCustomLauncher(browser, version, platform) {
   return {
@@ -147,8 +148,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/specs/__helpers.js',
-      'test/specs/**/*.spec.js'
+      {pattern: 'test/specs/__helpers.js', watched: false},
+      {pattern: 'test/specs/**/*.spec.js', watched: false}
     ],
 
 
@@ -159,8 +160,20 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/specs/__helpers.js': ['webpack', 'sourcemap'],
-      'test/specs/**/*.spec.js': ['webpack', 'sourcemap']
+      'test/specs/__helpers.js': ['rollup'],
+      'test/specs/**/*.spec.js': ['rollup']
+    },
+
+    rollupPreprocessor: {
+      plugins: [
+        resolve({browser: true}),
+        commonjs()
+      ],
+      output: {
+        format: 'iife',
+        name: '_axios',
+        sourcemap: 'inline'
+      }
     },
 
 

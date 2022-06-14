@@ -2,13 +2,14 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import {terser} from "rollup-plugin-terser";
 import json from '@rollup/plugin-json';
+import { babel } from '@rollup/plugin-babel';
 
 const lib = require("./package.json");
 const outputFileName = 'axios';
 const name = "axios";
 const input = './lib/axios.js';
 
-const buildConfig = (config) => {
+const buildConfig = ({es5, ...config}) => {
 
   const build = ({minified}) => ({
     input,
@@ -22,6 +23,10 @@ const buildConfig = (config) => {
       resolve({browser: true}),
       commonjs(),
       minified && terser(),
+      ...(es5 ? [babel({
+        babelHelpers: 'bundled',
+        presets: ['@babel/preset-env']
+      })] : []),
       ...(config.plugins || []),
     ]
   });
@@ -38,6 +43,7 @@ export default async () => {
 
   return [
     ...buildConfig({
+      es5: true,
       output: {
         file: `dist/${outputFileName}`,
         name,

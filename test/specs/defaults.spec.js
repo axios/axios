@@ -1,9 +1,9 @@
-var defaults = require('../../lib/defaults');
-var utils = require('../../lib/utils');
-var AxiosHeaders = require('../../lib/core/AxiosHeaders');
+import defaults from '../../lib/defaults';
+import utils from '../../lib/utils';
+import AxiosHeaders from '../../lib/core/AxiosHeaders';
 
 describe('defaults', function () {
-  var XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
+  const XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
 
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -22,7 +22,7 @@ describe('defaults', function () {
   });
 
   it("should also transform request json when 'Content-Type' is 'application/json'", function () {
-    var headers = new AxiosHeaders({
+    const headers = new AxiosHeaders({
       'Content-Type': 'application/json',
     });
     expect(defaults.transformRequest[0](JSON.stringify({ foo: 'bar' }), headers)).toEqual('{"foo":"bar"}');
@@ -35,13 +35,13 @@ describe('defaults', function () {
   });
 
   it("should transform the plain data object to a FormData instance 'Content-Type' if header is 'multipart/form-data'", function() {
-    var headers = new AxiosHeaders({
+    const headers = new AxiosHeaders({
       'Content-Type': 'multipart/form-data'
     });
 
-    var payload = {x: 1};
+    const payload = {x: 1};
 
-    var transformed = defaults.transformRequest[0](payload, headers);
+    const transformed = defaults.transformRequest[0](payload, headers);
 
     expect(transformed).toEqual(jasmine.any(FormData));
   });
@@ -51,7 +51,7 @@ describe('defaults', function () {
   });
 
   it('should transform response json', function () {
-    var data = defaults.transformResponse[0].call(defaults, '{"foo":"bar"}');
+    const data = defaults.transformResponse[0].call(defaults, '{"foo":"bar"}');
 
     expect(typeof data).toEqual('object');
     expect(data.foo).toEqual('bar');
@@ -93,7 +93,7 @@ describe('defaults', function () {
   });
 
   it('should use default config for custom instance', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       xsrfCookieName: XSRF_COOKIE_NAME,
       xsrfHeaderName: 'X-CUSTOM-XSRF-TOKEN'
     });
@@ -128,7 +128,7 @@ describe('defaults', function () {
   });
 
   it('should use header config', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       headers: {
         common: {
           'X-COMMON-HEADER': 'commonHeaderValue'
@@ -164,7 +164,7 @@ describe('defaults', function () {
 
   it('should be used by custom instance if set before instance created', function (done) {
     axios.defaults.baseURL = 'http://example.org/';
-    var instance = axios.create();
+    const instance = axios.create();
 
     instance.get('/foo');
 
@@ -175,7 +175,7 @@ describe('defaults', function () {
   });
 
   it('should not be used by custom instance if set after instance created', function (done) {
-    var instance = axios.create();
+    const instance = axios.create();
     axios.defaults.baseURL = 'http://example.org/';
 
     instance.get('/foo');

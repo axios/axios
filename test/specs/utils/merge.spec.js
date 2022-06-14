@@ -1,10 +1,12 @@
-var merge = require('../../../lib/utils').merge;
+import utils from '../../../lib/utils';
+
+const {merge} = utils;
 
 describe('utils::merge', function () {
   it('should be immutable', function () {
-    var a = {};
-    var b = {foo: 123};
-    var c = {bar: 456};
+    const a = {};
+    const b = {foo: 123};
+    const c = {bar: 456};
 
     merge(a, b, c);
 
@@ -13,21 +15,21 @@ describe('utils::merge', function () {
     expect(typeof b.bar).toEqual('undefined');
     expect(typeof c.foo).toEqual('undefined');
   });
-  
+
   it('should merge properties', function () {
-    var a = {foo: 123};
-    var b = {bar: 456};
-    var c = {foo: 789};
-    var d = merge(a, b, c);
+    const a = {foo: 123};
+    const b = {bar: 456};
+    const c = {foo: 789};
+    const d = merge(a, b, c);
 
     expect(d.foo).toEqual(789);
     expect(d.bar).toEqual(456);
   });
 
   it('should merge recursively', function () {
-    var a = {foo: {bar: 123}};
-    var b = {foo: {baz: 456}, bar: {qux: 789}};
-    
+    const a = {foo: {bar: 123}};
+    const b = {foo: {baz: 456}, bar: {qux: 789}};
+
     expect(merge(a, b)).toEqual({
       foo: {
         bar: 123,
@@ -40,9 +42,9 @@ describe('utils::merge', function () {
   });
 
   it('should remove all references from nested objects', function () {
-    var a = {foo: {bar: 123}};
-    var b = {};
-    var d = merge(a, b);
+    const a = {foo: {bar: 123}};
+    const b = {};
+    const d = merge(a, b);
 
     expect(d).toEqual({
       foo: {
@@ -75,8 +77,8 @@ describe('utils::merge', function () {
   });
 
   it('should replace properties with cloned arrays', function () {
-    var a = [1, 2, 3];
-    var d = merge({}, {a: a});
+    const a = [1, 2, 3];
+    const d = merge({}, {a: a});
 
     expect(d).toEqual({a: [1, 2, 3]});
     expect(d.a).not.toBe(a);

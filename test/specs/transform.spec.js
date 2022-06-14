@@ -1,4 +1,4 @@
-var AxiosError = require("../../lib/core/AxiosError");
+import AxiosError from "../../lib/core/AxiosError";
 
 describe('transform', function () {
   beforeEach(function () {
@@ -10,7 +10,7 @@ describe('transform', function () {
   });
 
   it('should transform JSON to string', function (done) {
-    var data = {
+    const data = {
       foo: 'bar'
     };
 
@@ -23,7 +23,7 @@ describe('transform', function () {
   });
 
   it('should transform string to JSON', function (done) {
-    var response;
+    let response;
 
     axios('/foo').then(function (data) {
       response = data;
@@ -45,7 +45,7 @@ describe('transform', function () {
 
   it('should throw a SyntaxError if JSON parsing failed and responseType is "json" if silentJSONParsing is false',
     function (done) {
-      var thrown;
+      let thrown;
 
       axios({
         url: '/foo',
@@ -74,7 +74,7 @@ describe('transform', function () {
   );
 
   it('should send data as JSON if request content-type is application/json', function (done) {
-    var response;
+    let response;
 
     axios.post('/foo', 123, {headers: {'Content-Type': 'application/json'}}).then(function (_response) {
       response = _response;
@@ -98,7 +98,7 @@ describe('transform', function () {
   });
 
   it('should not assume JSON if responseType is not `json`', function (done) {
-    var response;
+    let response;
 
     axios.get('/foo', {
       responseType: 'text',
@@ -111,7 +111,7 @@ describe('transform', function () {
       done(err);
     });
 
-    var rawData = '{"x":1}';
+    const rawData = '{"x":1}';
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
@@ -128,7 +128,7 @@ describe('transform', function () {
   });
 
   it('should override default transform', function (done) {
-    var data = {
+    const data = {
       foo: 'bar'
     };
 
@@ -145,7 +145,7 @@ describe('transform', function () {
   });
 
   it('should allow an Array of transformers', function (done) {
-    var data = {
+    const data = {
       foo: 'bar'
     };
 
@@ -164,7 +164,7 @@ describe('transform', function () {
   });
 
   it('should allowing mutating headers', function (done) {
-    var token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36);
+    const token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36);
 
     axios('/foo', {
       transformRequest: function (data, headers) {
@@ -179,7 +179,7 @@ describe('transform', function () {
   });
 
   it('should normalize \'content-type\' header when using a custom transformRequest', function (done) {
-    var data = {
+    const data = {
       foo: 'bar'
     };
 

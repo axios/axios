@@ -10,7 +10,7 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor (asynchronous by default)', function (done) {
-    var asyncFlag = false;
+    let asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
       expect(asyncFlag).toBe(true);
@@ -27,7 +27,7 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor (explicitly flagged as asynchronous)', function (done) {
-    var asyncFlag = false;
+    let asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
       expect(asyncFlag).toBe(true);
@@ -44,7 +44,7 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor that is executed synchronously when flag is provided', function (done) {
-    var asyncFlag = false;
+    let asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by synchronous interceptor';
       expect(asyncFlag).toBe(false);
@@ -61,7 +61,7 @@ describe('interceptors', function () {
   });
 
   it('should execute asynchronously when not all interceptors are explicitly flagged as synchronous', function (done) {
-    var asyncFlag = false;
+    let asyncFlag = false;
     axios.interceptors.request.use(function (config) {
       config.headers.foo = 'uh oh, async';
       expect(asyncFlag).toBe(true);
@@ -126,7 +126,7 @@ describe('interceptors', function () {
   });
 
   it('does not run async interceptor if runWhen function is provided and resolves to false (and run synchronously)', function (done) {
-    var asyncFlag = false;
+    let asyncFlag = false;
 
     function onPostCall(config) {
       return config.method === 'post';
@@ -153,8 +153,8 @@ describe('interceptors', function () {
   });
 
   it('should add a request interceptor with an onRejected block that is called if interceptor code fails', function (done) {
-    var rejectedSpy = jasmine.createSpy('rejectedSpy');
-    var error = new Error('deadly error');
+    const rejectedSpy = jasmine.createSpy('rejectedSpy');
+    const error = new Error('deadly error');
     axios.interceptors.request.use(function () {
       throw error;
     }, rejectedSpy, { synchronous: true });
@@ -228,7 +228,7 @@ describe('interceptors', function () {
   });
 
   it('should add a response interceptor', function (done) {
-    var response;
+    let response;
 
     axios.interceptors.response.use(function (data) {
       data.data = data.data + ' - modified by interceptor';
@@ -253,7 +253,7 @@ describe('interceptors', function () {
   });
 
   it('should add a response interceptor when request interceptor is defined', function (done) {
-    var response;
+    let response;
 
     axios.interceptors.request.use(function (data) {
       return data;
@@ -282,7 +282,7 @@ describe('interceptors', function () {
   });
 
   it('should add a response interceptor that returns a new data object', function (done) {
-    var response;
+    let response;
 
     axios.interceptors.response.use(function () {
       return {
@@ -308,7 +308,7 @@ describe('interceptors', function () {
   });
 
   it('should add a response interceptor that returns a promise', function (done) {
-    var response;
+    let response;
 
     axios.interceptors.response.use(function (data) {
       return new Promise(function (resolve) {
@@ -342,7 +342,7 @@ describe('interceptors', function () {
     describe('and when the response was fulfilled', function () {
 
       function fireRequestAndExpect(expectation) {
-        var response;
+        let response;
         axios('/foo').then(function(data) {
           response = data;
         });
@@ -359,8 +359,8 @@ describe('interceptors', function () {
       }
 
       it('then each interceptor is executed', function (done) {
-        var interceptor1 = jasmine.createSpy('interceptor1');
-        var interceptor2 = jasmine.createSpy('interceptor2');
+        const interceptor1 = jasmine.createSpy('interceptor1');
+        const interceptor2 = jasmine.createSpy('interceptor2');
         axios.interceptors.response.use(interceptor1);
         axios.interceptors.response.use(interceptor2);
 
@@ -372,8 +372,8 @@ describe('interceptors', function () {
       });
 
       it('then they are executed in the order they were added', function (done) {
-        var interceptor1 = jasmine.createSpy('interceptor1');
-        var interceptor2 = jasmine.createSpy('interceptor2');
+        const interceptor1 = jasmine.createSpy('interceptor1');
+        const interceptor2 = jasmine.createSpy('interceptor2');
         axios.interceptors.response.use(interceptor1);
         axios.interceptors.response.use(interceptor2);
 
@@ -433,7 +433,7 @@ describe('interceptors', function () {
           axios.interceptors.response.use(function() {
             throw Error('throwing interceptor');
           });
-          var interceptor2 = jasmine.createSpy('interceptor2');
+          const interceptor2 = jasmine.createSpy('interceptor2');
           axios.interceptors.response.use(interceptor2);
 
           fireRequestCatchAndExpect(function () {
@@ -446,8 +446,8 @@ describe('interceptors', function () {
           axios.interceptors.response.use(function() {
             throw Error('throwing interceptor');
           });
-          var unusedFulfillInterceptor = function() {};
-          var rejectIntercept = jasmine.createSpy('rejectIntercept');
+          const unusedFulfillInterceptor = function() {};
+          const rejectIntercept = jasmine.createSpy('rejectIntercept');
           axios.interceptors.response.use(unusedFulfillInterceptor, rejectIntercept);
 
           fireRequestCatchAndExpect(function () {
@@ -461,11 +461,11 @@ describe('interceptors', function () {
             throw Error('throwing interceptor');
           });
 
-          var unusedFulfillInterceptor = function() {};
-          var catchingThrowingInterceptor = function() {};
+          const unusedFulfillInterceptor = function() {};
+          const catchingThrowingInterceptor = function() {};
           axios.interceptors.response.use(unusedFulfillInterceptor, catchingThrowingInterceptor);
 
-          var interceptor3 = jasmine.createSpy('interceptor3');
+          const interceptor3 = jasmine.createSpy('interceptor3');
           axios.interceptors.response.use(interceptor3);
 
           fireRequestCatchAndExpect(function () {
@@ -478,7 +478,7 @@ describe('interceptors', function () {
   });
 
   it('should allow removing interceptors', function (done) {
-    var response, intercept;
+    let response, intercept;
 
     axios.interceptors.response.use(function (data) {
       data.data = data.data + '1';
@@ -513,13 +513,13 @@ describe('interceptors', function () {
   });
 
   it('should remove async interceptor before making request and execute synchronously', function (done) {
-    var asyncFlag = false;
-    var asyncIntercept = axios.interceptors.request.use(function (config) {
+    let asyncFlag = false;
+    const asyncIntercept = axios.interceptors.request.use(function (config) {
       config.headers.async = 'async it!';
       return config;
     }, null, { synchronous: false });
 
-    var syncIntercept = axios.interceptors.request.use(function (config) {
+    const syncIntercept = axios.interceptors.request.use(function (config) {
       config.headers.sync = 'hello world';
       expect(asyncFlag).toBe(false);
       return config;
@@ -555,7 +555,7 @@ describe('interceptors', function () {
   });
 
   it('should modify base URL in request interceptor', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'http://test.com/'
     });
 
@@ -573,7 +573,7 @@ describe('interceptors', function () {
   });
 
   it('should clear all request interceptors', function () {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'http://test.com/'
     });
 
@@ -587,7 +587,7 @@ describe('interceptors', function () {
   });
 
   it('should clear all response interceptors', function () {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'http://test.com/'
     });
 

@@ -1,4 +1,4 @@
-var formDataToJSON = require('../../../lib/helpers/formDataToJSON');
+import formDataToJSON from '../../../lib/helpers/formDataToJSON';
 
 describe('formDataToJSON', function () {
   it('should convert a FormData Object to JSON Object', function () {

@@ -268,6 +268,7 @@ export interface AxiosInterceptorOptions {
 export interface AxiosInterceptorManager<V> {
   use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
+  clear(): void;
 }
 
 export class Axios {

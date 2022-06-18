@@ -42,3 +42,19 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-test-instance](https://github.com/remcohaszing/axios-test-instance) — Test NodeJS backends using Axios
 * [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
 * [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlined integration testing with Mocha & Axios
+
+## Resources
+
+### General
+
+* [Connection pooling with agentkeepalive](https://traveling-coderman.net/code/node-architecture/connection-pooling/)
+* [Error handling in Express.js](https://traveling-coderman.net/code/node-architecture/axios-error-handling/)
+* [Request authentication with JWT](https://traveling-coderman.net/code/node-architecture/http-auth/)
+
+### Logging and debugging
+
+* [Pino request logging](https://traveling-coderman.net/code/node-architecture/logging-http-requests/)
+
+### Unit testing
+
+* [Organizing and testing HTTP requests](https://traveling-coderman.net/code/node-architecture/sending-http-requests/)

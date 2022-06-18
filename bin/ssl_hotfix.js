@@ -1,4 +1,4 @@
-const {spawn} = require('child_process');
+import {spawn} from 'child_process';
 
 const args = process.argv.slice(2);
 

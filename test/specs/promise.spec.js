@@ -8,7 +8,7 @@ describe('promise', function () {
   });
 
   it('should provide succinct object to then', function (done) {
-    var response;
+    let response;
 
     axios('/foo').then(function (r) {
       response = r;
@@ -32,7 +32,7 @@ describe('promise', function () {
   });
 
   it('should support all', function (done) {
-    var fulfilled = false;
+    let fulfilled = false;
 
     axios.all([true, 123]).then(function () {
       fulfilled = true;
@@ -45,9 +45,9 @@ describe('promise', function () {
   });
 
   it('should support spread', function (done) {
-    var sum = 0;
-    var fulfilled = false;
-    var result;
+    let sum = 0;
+    let fulfilled = false;
+    let result;
 
     axios
       .all([123, 456])
@@ -58,7 +58,7 @@ describe('promise', function () {
       }))
       .then(function (res) {
         result = res;
-      });
+      }).catch(done);
 
     setTimeout(function () {
       expect(fulfilled).toEqual(true);

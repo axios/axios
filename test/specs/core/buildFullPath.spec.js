@@ -1,4 +1,4 @@
-var buildFullPath = require('../../../lib/core/buildFullPath');
+import buildFullPath from '../../../lib/core/buildFullPath';
 
 describe('helpers::buildFullPath', function () {
   it('should combine URLs when the requestedURL is relative', function () {

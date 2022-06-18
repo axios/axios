@@ -1,7 +1,7 @@
 function testHeaderValue(headers, key, val) {
-  var found = false;
+  let found = false;
 
-  for (var k in headers) {
+  for (const k in headers) {
     if (k.toLowerCase() === key.toLowerCase()) {
       found = true;
       expect(headers[k]).toEqual(val);
@@ -28,12 +28,12 @@ describe('headers', function () {
   });
 
   it('should default common headers', function (done) {
-    var headers = axios.defaults.headers.common;
+    const headers = axios.defaults.headers.common;
 
     axios('/foo');
 
     getAjaxRequest().then(function (request) {
-      for (var key in headers) {
+      for (const key in headers) {
         if (headers.hasOwnProperty(key)) {
           expect(request.requestHeaders[key]).toEqual(headers[key]);
         }
@@ -43,12 +43,12 @@ describe('headers', function () {
   });
 
   it('should add extra headers for post', function (done) {
-    var headers = axios.defaults.headers.common;
+    const headers = axios.defaults.headers.common;
 
     axios.post('/foo', 'fizz=buzz');
 
     getAjaxRequest().then(function (request) {
-      for (var key in headers) {
+      for (const key in headers) {
         if (headers.hasOwnProperty(key)) {
           expect(request.requestHeaders[key]).toEqual(headers[key]);
         }
@@ -72,15 +72,17 @@ describe('headers', function () {
         'x-header-a': null,
         'x-header-b': undefined
       }
+    }).catch(function (err) {
+      done(err);
     });
 
     getAjaxRequest().then(function (request) {
-      testHeaderValue(request.requestHeaders, 'Content-Type', null);
-      testHeaderValue(request.requestHeaders, 'x-header-a', null);
+      testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
+      testHeaderValue(request.requestHeaders, 'x-header-a', undefined);
       testHeaderValue(request.requestHeaders, 'x-header-b', undefined);
       testHeaderValue(request.requestHeaders, 'x-header-c', 'c');
       done();
-    });
+    }).catch(done);
   });
 
   it('should use application/json when posting an object', function (done) {

@@ -1,3 +1,4 @@
+
 describe('static api', function () {
   it('should have request method helpers', function () {
     expect(typeof axios.request).toEqual('function');
@@ -11,7 +12,7 @@ describe('static api', function () {
   });
 
   it('should have promise method helpers', function () {
-    var promise = axios('/test');
+    const promise = axios('/test');
 
     expect(typeof promise.then).toEqual('function');
     expect(typeof promise.catch).toEqual('function');
@@ -52,7 +53,7 @@ describe('static api', function () {
 });
 
 describe('instance api', function () {
-  var instance = axios.create();
+  const instance = axios.create();
 
   it('should have request methods', function () {
     expect(typeof instance.request).toEqual('function');

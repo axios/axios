@@ -57,7 +57,7 @@ describe('options', function () {
   });
 
   it('should accept base URL', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'http://test.com/'
     });
 
@@ -70,7 +70,7 @@ describe('options', function () {
   });
 
   it('should ignore base URL if request URL is absolute', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'http://someurl.com/'
     });
 
@@ -83,8 +83,8 @@ describe('options', function () {
   });
 
   it('should change only the baseURL of the specified instance', function() {
-    var instance1 = axios.create();
-    var instance2 = axios.create();
+    const instance1 = axios.create();
+    const instance2 = axios.create();
 
     instance1.defaults.baseURL = 'http://instance1.example.com/';
 
@@ -92,8 +92,8 @@ describe('options', function () {
   });
 
   it('should change only the headers of the specified instance', function() {
-    var instance1 = axios.create();
-    var instance2 = axios.create();
+    const instance1 = axios.create();
+    const instance2 = axios.create();
 
     instance1.defaults.headers.common.Authorization = 'faketoken';
     instance2.defaults.headers.common.Authorization = 'differentfaketoken';

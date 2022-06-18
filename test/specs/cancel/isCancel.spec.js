@@ -1,5 +1,5 @@
-var isCancel = require('../../../lib/cancel/isCancel');
-var CanceledError = require('../../../lib/cancel/CanceledError');
+import isCancel from '../../../lib/cancel/isCancel';
+import CanceledError from '../../../lib/cancel/CanceledError';
 
 describe('isCancel', function() {
   it('returns true if value is a CanceledError', function() {

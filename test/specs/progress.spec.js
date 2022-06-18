@@ -8,7 +8,7 @@ describe('progress events', function () {
   });
 
   it('should add a download progress handler', function (done) {
-    var progressSpy = jasmine.createSpy('progress');
+    const progressSpy = jasmine.createSpy('progress');
 
     axios('/foo', { onDownloadProgress: progressSpy } );
 
@@ -23,7 +23,7 @@ describe('progress events', function () {
   });
 
   it('should add a upload progress handler', function (done) {
-    var progressSpy = jasmine.createSpy('progress');
+    const progressSpy = jasmine.createSpy('progress');
 
     axios('/foo', { onUploadProgress: progressSpy } );
 
@@ -35,8 +35,8 @@ describe('progress events', function () {
   });
 
   it('should add both upload and download progress handlers', function (done) {
-    var downloadProgressSpy = jasmine.createSpy('downloadProgress');
-    var uploadProgressSpy = jasmine.createSpy('uploadProgress');
+    const downloadProgressSpy = jasmine.createSpy('downloadProgress');
+    const uploadProgressSpy = jasmine.createSpy('uploadProgress');
 
     axios('/foo', { onDownloadProgress: downloadProgressSpy, onUploadProgress: uploadProgressSpy });
 
@@ -53,9 +53,9 @@ describe('progress events', function () {
   });
 
   it('should add a download progress handler from instance config', function (done) {
-    var progressSpy = jasmine.createSpy('progress');
+    const progressSpy = jasmine.createSpy('progress');
 
-    var instance = axios.create({
+    const instance = axios.create({
       onDownloadProgress: progressSpy,
     });
 
@@ -72,9 +72,9 @@ describe('progress events', function () {
   });
 
   it('should add a upload progress handler from instance config', function (done) {
-    var progressSpy = jasmine.createSpy('progress');
+    const progressSpy = jasmine.createSpy('progress');
 
-    var instance = axios.create({
+    const instance = axios.create({
       onUploadProgress: progressSpy,
     });
 
@@ -87,10 +87,10 @@ describe('progress events', function () {
   });
 
   it('should add upload and download progress handlers from instance config', function (done) {
-    var downloadProgressSpy = jasmine.createSpy('downloadProgress');
-    var uploadProgressSpy = jasmine.createSpy('uploadProgress');
+    const downloadProgressSpy = jasmine.createSpy('downloadProgress');
+    const uploadProgressSpy = jasmine.createSpy('uploadProgress');
 
-    var instance = axios.create({
+    const instance = axios.create({
       onDownloadProgress: downloadProgressSpy,
       onUploadProgress: uploadProgressSpy,
     });

@@ -7,7 +7,7 @@ import axios, {
   Cancel,
   CancelToken,
   CancelTokenSource,
-  Canceler
+  Canceler, AxiosProgressEvent
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -34,8 +34,8 @@ const config: AxiosRequestConfig = {
   responseType: 'json',
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
-  onUploadProgress: (progressEvent: ProgressEvent) => {},
-  onDownloadProgress: (progressEvent: ProgressEvent) => {},
+  onUploadProgress: (progressEvent: AxiosProgressEvent) => {},
+  onDownloadProgress: (progressEvent: AxiosProgressEvent) => {},
   maxContentLength: 2000,
   maxBodyLength: 2000,
   validateStatus: (status: number) => status >= 200 && status < 300,
@@ -389,3 +389,37 @@ axios.toFormData({x: 1}, new FormData());
 // AbortSignal
 
 axios.get('/user', {signal: new AbortController().signal});
+
+// AxiosHeaders methods
+
+axios.get('/user', {
+    transformRequest: (data, headers) => {
+        headers.setContentType('text/plain');
+        headers['Foo'] = 'bar';
+    },
+
+    transformResponse: (data, headers) => {
+        headers.has('foo');
+    }
+});
+
+// Max Rate
+
+axios.get('/user', {
+  maxRate: 1000
+});
+
+axios.get('/user', {
+  maxRate: [1000, 1000],
+});
+
+// Node progress
+
+axios.get('/user', {
+  onUploadProgress: (e) => {
+    console.log(e.loaded);
+    console.log(e.total);
+    console.log(e.progress);
+    console.log(e.rate);
+  }
+});

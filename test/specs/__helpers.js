@@ -1,123 +1,41 @@
-// Polyfill ES6 Promise
-require('es6-promise').polyfill();
+import _axios from '../../index.js';
 
-// Polyfill URLSearchParams
-URLSearchParams = require('url-search-params');
-
-// Import axios
-axios = require('../../index');
+window.axios = _axios;
 
 // Jasmine config
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 jasmine.getEnv().defaultTimeoutInterval = 20000;
 
 // Get Ajax request using an increasing timeout to retry
-getAjaxRequest = (function () {
-var attempts = 0;
-var MAX_ATTEMPTS = 5;
-var ATTEMPT_DELAY_FACTOR = 5;
+window.getAjaxRequest = (function () {
+  let attempts = 0;
+  const MAX_ATTEMPTS = 5;
+  const ATTEMPT_DELAY_FACTOR = 5;
 
-function getAjaxRequest() {
-  return new Promise(function (resolve, reject) {
-    attempts = 0;
-    attemptGettingAjaxRequest(resolve, reject);
-  });
-}
-
-function attemptGettingAjaxRequest(resolve, reject) {
-  var delay = attempts * attempts * ATTEMPT_DELAY_FACTOR;
-
-  if (attempts++ > MAX_ATTEMPTS) {
-    reject(new Error('No request was found'));
-    return;
+  function getAjaxRequest() {
+    return new Promise(function (resolve, reject) {
+      attempts = 0;
+      attemptGettingAjaxRequest(resolve, reject);
+    });
   }
 
-  setTimeout(function () {
-    var request = jasmine.Ajax.requests.mostRecent();
-    if (request) {
-      resolve(request);
-    } else {
-      attemptGettingAjaxRequest(resolve, reject);
+  function attemptGettingAjaxRequest(resolve, reject) {
+    const delay = attempts * attempts * ATTEMPT_DELAY_FACTOR;
+
+    if (attempts++ > MAX_ATTEMPTS) {
+      reject(new Error('No request was found'));
+      return;
     }
-  }, delay);
-}
 
-return getAjaxRequest;
+    setTimeout(function () {
+      const request = jasmine.Ajax.requests.mostRecent();
+      if (request) {
+        resolve(request);
+      } else {
+        attemptGettingAjaxRequest(resolve, reject);
+      }
+    }, delay);
+  }
+
+  return getAjaxRequest;
 })();
-
-// Validate an invalid character error
-validateInvalidCharacterError = function validateInvalidCharacterError(error) {
-  expect(/character/i.test(error.message)).toEqual(true);
-};
-
-// Setup basic auth tests
-setupBasicAuthTest = function setupBasicAuthTest() {
-  beforeEach(function () {
-    jasmine.Ajax.install();
-  });
-
-  afterEach(function () {
-    jasmine.Ajax.uninstall();
-  });
-
-  it('should accept HTTP Basic auth with username/password', function (done) {
-    axios('/foo', {
-      auth: {
-        username: 'Aladdin',
-        password: 'open sesame'
-      }
-    });
-
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
-      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==');
-      done();
-    }, 100);
-  });
-
-  it('should accept HTTP Basic auth credentials without the password parameter', function (done) {
-    axios('/foo', {
-      auth: {
-        username: 'Aladdin'
-      }
-    });
-
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
-      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjo=');
-      done();
-    }, 100);
-  });
-
-  it('should accept HTTP Basic auth credentials with non-Latin1 characters in password', function (done) {
-    axios('/foo', {
-      auth: {
-        username: 'Aladdin',
-        password: 'open ßç£☃sesame'
-      }
-    });
-
-    setTimeout(function () {
-      var request = jasmine.Ajax.requests.mostRecent();
-
-      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIMOfw6fCo+KYg3Nlc2FtZQ==');
-      done();
-    }, 100);
-  });
-
-  it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters in username', function (done) {
-    axios('/foo', {
-      auth: {
-        username: 'Aladßç£☃din',
-        password: 'open sesame'
-      }
-    }).then(function(response) {
-      done(new Error('Should not succeed to make a HTTP Basic auth request with non-latin1 chars in credentials.'));
-    }).catch(function(error) {
-      validateInvalidCharacterError(error);
-      done();
-    });
-  });
-};

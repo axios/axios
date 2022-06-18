@@ -1,23 +1,104 @@
-var axios = require('../../../index');
-var http = require('http');
-var https = require('https');
-var net = require('net');
-var url = require('url');
-var zlib = require('zlib');
-var assert = require('assert');
-var fs = require('fs');
-var path = require('path');
-var pkg = require('./../../../package.json');
-var server, proxy;
-var AxiosError = require('../../../lib/core/AxiosError');
-var FormData = require('form-data');
-var formidable = require('formidable');
-var express = require('express');
-var multer = require('multer');
-var bodyParser = require('body-parser');
+import axios from '../../../index.js';
+import http from 'http';
+import https from 'https';
+import net from 'net';
+import url from 'url';
+import zlib from 'zlib';
+import stream from 'stream';
+import util from 'util';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import {EventEmitter} from 'events';
+let server, proxy;
+import AxiosError from '../../../lib/core/AxiosError.js';
+import FormData from 'form-data';
+import formidable from 'formidable';
+import express from 'express';
+import multer from 'multer';
+import bodyParser from 'body-parser';
 const isBlobSupported = typeof Blob !== 'undefined';
+import {Throttle} from 'stream-throttle';
+import devNull from 'dev-null';
+import {AbortController} from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import getStream from 'get-stream';
+
+function setTimeoutAsync(ms) {
+  return new Promise(resolve=> setTimeout(resolve, ms));
+}
+
+const pipelineAsync = util.promisify(stream.pipeline);
+const finishedAsync = util.promisify(stream.finished);
+
+function toleranceRange(positive, negative) {
+  const p = (1 + 1 / positive);
+  const n = (1 / negative);
+
+  return (actualValue, value) => {
+    return actualValue - value > 0 ? actualValue < value * p : actualValue > value * n;
+  }
+}
 
 var noop = ()=> {};
+
+const LOCAL_SERVER_URL = 'http://localhost:4444';
+
+function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = {}) {
+  return new Promise((resolve, reject) => {
+    http.createServer(async function (req, res) {
+      try {
+        req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
+
+        var dataStream = req;
+
+        if (useBuffering) {
+          dataStream = stream.Readable.from(await getStream(req));
+        }
+
+        var streams = [dataStream];
+
+        if (rate) {
+          streams.push(new Throttle({rate}))
+        }
+
+        streams.push(res);
+
+        stream.pipeline(streams, (err) => {
+          err && console.log('Server warning: ' + err.message)
+        });
+      } catch (err){
+        console.warn('HTTP server error:', err);
+      }
+
+    }).listen(port, function (err) {
+      err ? reject(err) : resolve(this);
+    });
+  });
+}
+
+function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sleep = 50) {
+  return stream.Readable.from(async function* (){
+    let dataLength = 0;
+
+    while(dataLength < length) {
+      const leftBytes = length - dataLength;
+
+      const chunk = Buffer.alloc(leftBytes > chunkSize? chunkSize : leftBytes);
+
+      dataLength += chunk.length;
+
+      yield chunk;
+
+      if (sleep) {
+        await setTimeoutAsync(sleep);
+      }
+    }
+  }());
+}
 
 describe('supports http with nodejs', function () {
 
@@ -635,14 +716,15 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support streams', function (done) {
-    server = http.createServer(function (req, res) {
-      req.pipe(res);
-    }).listen(4444, function () {
-      axios.post('http://localhost:4444/',
-        fs.createReadStream(__filename), {
-          responseType: 'stream'
-        }).then(function (res) {
+  describe('streams', function(){
+    it('should support streams', function (done) {
+      server = http.createServer(function (req, res) {
+        req.pipe(res);
+      }).listen(4444, function () {
+        axios.post('http://localhost:4444/',
+          fs.createReadStream(__filename), {
+            responseType: 'stream'
+          }).then(function (res) {
           var stream = res.data;
           var string = '';
           stream.on('data', function (chunk) {
@@ -653,23 +735,49 @@ describe('supports http with nodejs', function () {
             done();
           });
         }).catch(done);
+      });
     });
-  });
 
-  it('should pass errors for a failed stream', function (done) {
-    var notExitPath = path.join(__dirname, 'does_not_exist');
+    it('should pass errors for a failed stream', async function () {
+      server = await startHTTPServer();
 
-    server = http.createServer(function (req, res) {
-      req.pipe(res);
-    }).listen(4444, function () {
-      axios.post('http://localhost:4444/',
-        fs.createReadStream(notExitPath)
-      ).then(function (res) {
+      var notExitPath = path.join(__dirname, 'does_not_exist');
+
+      try {
+        await axios.post(LOCAL_SERVER_URL,
+          fs.createReadStream(notExitPath)
+        );
         assert.fail('expected ENOENT error');
-      }).catch(function (err) {
+      } catch (err) {
         assert.equal(err.message, `ENOENT: no such file or directory, open \'${notExitPath}\'`);
-        done();
-      }).catch(done);
+      }
+    });
+
+    it('should destroy the response stream with an error on request stream destroying', async function () {
+      server = await startHTTPServer();
+
+      let stream = generateReadableStream();
+
+      setTimeout(function () {
+        stream.destroy();
+      }, 1000);
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, stream, {responseType: 'stream'});
+
+      let streamError;
+
+      data.on('error', function(err) {
+        streamError = err;
+      });
+
+      try {
+        await pipelineAsync(data, devNull());
+        assert.fail('stream was not aborted');
+      } catch(e) {
+        console.log(`pipeline error: ${e}`);
+      } finally {
+        assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
+      }
     });
   });
 
@@ -1241,7 +1349,7 @@ describe('supports http with nodejs', function () {
 
   it('should supply a user-agent if one is not specified', function (done) {
     server = http.createServer(function (req, res) {
-      assert.equal(req.headers["user-agent"], 'axios/' + pkg.version);
+      assert.equal(req.headers["user-agent"], 'axios/' + axios.VERSION);
       res.end();
     }).listen(4444, function () {
       axios.get('http://localhost:4444/'
@@ -1532,4 +1640,256 @@ describe('supports http with nodejs', function () {
       }).catch(done);
     });
   });
+
+  describe('progress', function () {
+    describe('upload', function () {
+      it('should support upload progress capturing', async function () {
+        server = await startHTTPServer({
+          rate: 100 * 1024
+        });
+
+        let content = '';
+        const count = 10;
+        const chunk = "test";
+        const chunkLength = Buffer.byteLength(chunk);
+        const contentLength = count * chunkLength;
+
+        var readable = stream.Readable.from(async function* () {
+          let i = count;
+
+          while (i-- > 0) {
+            await setTimeoutAsync(1100);
+            content += chunk;
+            yield chunk;
+          }
+        }());
+
+        const samples = [];
+
+        const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
+          onUploadProgress: ({loaded, total, progress, bytes, upload}) => {
+            samples.push({
+              loaded,
+              total,
+              progress,
+              bytes,
+              upload
+            });
+          },
+          headers: {
+            'Content-Length': contentLength
+          },
+          responseType: 'text'
+        });
+
+        assert.strictEqual(data, content);
+
+        assert.deepStrictEqual(samples, Array.from(function* () {
+          for (let i = 1; i <= 10; i++) {
+            yield ({
+              loaded: chunkLength * i,
+              total: contentLength,
+              progress: (chunkLength * i) / contentLength,
+              bytes: 4,
+              upload: true
+            });
+          }
+        }()));
+      });
+    });
+
+    describe('download', function () {
+      it('should support download progress capturing', async function () {
+        server = await startHTTPServer({
+          rate: 100 * 1024
+        });
+
+        let content = '';
+        const count = 10;
+        const chunk = "test";
+        const chunkLength = Buffer.byteLength(chunk);
+        const contentLength = count * chunkLength;
+
+        var readable = stream.Readable.from(async function* () {
+          let i = count;
+
+          while (i-- > 0) {
+            await setTimeoutAsync(1100);
+            content += chunk;
+            yield chunk;
+          }
+        }());
+
+        const samples = [];
+
+        const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
+          onDownloadProgress: ({loaded, total, progress, bytes, download}) => {
+            samples.push({
+              loaded,
+              total,
+              progress,
+              bytes,
+              download
+            });
+          },
+          headers: {
+            'Content-Length': contentLength
+          },
+          responseType: 'text',
+          maxRedirects: 0
+        });
+
+        assert.strictEqual(data, content);
+
+        assert.deepStrictEqual(samples, Array.from(function* () {
+          for (let i = 1; i <= 10; i++) {
+            yield ({
+              loaded: chunkLength * i,
+              total: contentLength,
+              progress: (chunkLength * i) / contentLength,
+              bytes: 4,
+              download: true
+            });
+          }
+        }()));
+      });
+    });
+  });
+
+  describe('Rate limit', function () {
+    it('should support upload rate limit', async function () {
+      const secs = 10;
+      const configRate = 100_000;
+      const chunkLength = configRate * secs;
+
+      server = await startHTTPServer();
+
+      const buf = Buffer.alloc(chunkLength).fill('s');
+      const samples = [];
+      const skip = 2;
+      const compareValues = toleranceRange(10, 50);
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
+        onUploadProgress: ({loaded, total, progress, bytes, rate}) => {
+          samples.push({
+            loaded,
+            total,
+            progress,
+            bytes,
+            rate
+          });
+        },
+        maxRate: [configRate],
+        responseType: 'text',
+        maxRedirects: 0
+      });
+
+      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+        assert.ok(compareValues(rate, configRate),
+          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
+            _samples.map(({rate}) => rate).join(', ')
+          }]`
+        );
+
+        const progressTicksRate = 2;
+        const expectedProgress = ((i + skip) / secs) / progressTicksRate;
+
+        assert.ok(
+          Math.abs(expectedProgress - progress) < 0.25,
+          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${
+            _samples.map(({progress}) => progress).join(', ')
+          }]`
+        );
+      });
+
+      assert.strictEqual(data, buf.toString(), 'content corrupted');
+    });
+
+    it('should support download rate limit', async function () {
+      const secs = 10;
+      const configRate = 100_000;
+      const chunkLength = configRate * secs;
+
+      server = await startHTTPServer();
+
+      const buf = Buffer.alloc(chunkLength).fill('s');
+      const samples = [];
+      const skip = 2;
+      const compareValues = toleranceRange(10, 50);
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, buf, {
+        onDownloadProgress: ({loaded, total, progress, bytes, rate}) => {
+          samples.push({
+            loaded,
+            total,
+            progress,
+            bytes,
+            rate
+          });
+        },
+        maxRate: [0, configRate],
+        responseType: 'text',
+        maxRedirects: 0
+      });
+
+      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+        assert.ok(compareValues(rate, configRate),
+          `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
+            _samples.map(({rate}) => rate).join(', ')
+          }]`
+        );
+
+        const progressTicksRate = 2;
+        const expectedProgress = ((i + skip) / secs) / progressTicksRate;
+
+        assert.ok(
+          Math.abs(expectedProgress - progress) < 0.25,
+          `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${
+            _samples.map(({progress}) => progress).join(', ')
+          }]`
+        );
+      });
+
+      assert.strictEqual(data, buf.toString(), 'content corrupted');
+    });
+  });
+
+
+  describe('request aborting', function() {
+    it('should be able to abort the response stream', async function () {
+      server = await startHTTPServer({
+        rate: 100_000,
+        useBuffering: true
+      });
+
+      const buf = Buffer.alloc(1024 * 1024);
+
+      const controller = new AbortController();
+
+      var {data} = await axios.post(LOCAL_SERVER_URL, buf, {
+        responseType: 'stream',
+        signal: controller.signal,
+        maxRedirects: 0
+      });
+
+      setTimeout(() => {
+        controller.abort();
+      }, 500);
+
+      let streamError;
+
+      data.on('error', function(err) {
+        streamError = err;
+      });
+
+      try {
+        await pipelineAsync(data, devNull());
+        assert.fail('stream was not aborted');
+      } catch(e) {
+        console.log(`pipeline error: ${e}`);
+      } finally {
+        assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
+      }
+    });
+  })
 });

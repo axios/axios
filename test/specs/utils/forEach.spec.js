@@ -1,8 +1,10 @@
-var forEach = require('../../../lib/utils').forEach;
+import utils from '../../../lib/utils';
+
+const {forEach} = utils;
 
 describe('utils::forEach', function () {
   it('should loop over an array', function () {
-    var sum = 0;
+    let sum = 0;
 
     forEach([1, 2, 3, 4, 5], function (val) {
       sum += val;
@@ -12,9 +14,9 @@ describe('utils::forEach', function () {
   });
 
   it('should loop over object keys', function () {
-    var keys = '';
-    var vals = 0;
-    var obj = {
+    let keys = '';
+    let vals = 0;
+    const obj = {
       b: 1,
       a: 2,
       r: 3
@@ -30,7 +32,7 @@ describe('utils::forEach', function () {
   });
 
   it('should handle undefined gracefully', function () {
-    var count = 0;
+    let count = 0;
 
     forEach(undefined, function () {
       count++;
@@ -40,7 +42,7 @@ describe('utils::forEach', function () {
   });
 
   it('should make an array out of non-array argument', function () {
-    var count = 0;
+    let count = 0;
 
     forEach(function () {}, function () {
       count++;
@@ -50,8 +52,8 @@ describe('utils::forEach', function () {
   });
 
   it('should handle non object prototype gracefully', function () {
-    var count = 0;
-    var data = Object.create(null);
+    let count = 0;
+    const data = Object.create(null);
     data.foo = 'bar'
 
     forEach(data, function () {

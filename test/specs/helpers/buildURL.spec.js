@@ -1,5 +1,5 @@
-var buildURL = require('../../../lib/helpers/buildURL');
-var URLSearchParams = require('url-search-params');
+import buildURL from '../../../lib/helpers/buildURL';
+import URLSearchParams from 'url-search-params';
 
 describe('helpers::buildURL', function () {
   it('should support null params', function () {
@@ -21,7 +21,7 @@ describe('helpers::buildURL', function () {
   });
 
   it('should support date params', function () {
-    var date = new Date();
+    const date = new Date();
 
     expect(buildURL('/foo', {
       date: date

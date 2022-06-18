@@ -1,18 +1,23 @@
-var fs = require('fs');
-var path = require('path');
-var http = require('http');
-var argv = require('minimist')(process.argv.slice(2));
-var server;
-var dirs;
+import fs from 'fs';
+import path from 'path';
+import http from 'http';
+import minimist from 'minimist';
+import url from "url";
+const argv = minimist(process.argv.slice(2));
+let server;
+let dirs;
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function listDirs(root) {
-  var files = fs.readdirSync(root);
-  var dirs = [];
+  const files = fs.readdirSync(root);
+  const dirs = [];
 
-  for (var i = 0, l = files.length; i < l; i++) {
-    var file = files[i];
+  for (let i = 0, l = files.length; i < l; i++) {
+    const file = files[i];
     if (file[0] !== '.') {
-      var stat = fs.statSync(path.join(root, file));
+      const stat = fs.statSync(path.join(root, file));
       if (stat.isDirectory()) {
         dirs.push(file);
       }
@@ -23,8 +28,8 @@ function listDirs(root) {
 }
 
 function getIndexTemplate() {
-  var links = dirs.map(function (dir) {
-    var url = '/' + dir;
+  const links = dirs.map(function (dir) {
+    const url = '/' + dir;
     return '<li onclick="document.location=\'' + url + '\'"><a href="' + url + '">' + url + '</a></li>';
   });
 
@@ -74,7 +79,7 @@ function pipeFileToResponse(res, file, type) {
 dirs = listDirs(__dirname);
 
 server = http.createServer(function (req, res) {
-  var url = req.url;
+  let url = req.url;
 
   // Process axios itself
   if (/axios\.min\.js$/.test(url)) {
@@ -106,7 +111,7 @@ server = http.createServer(function (req, res) {
   }
 
   // Format request /get -> /get/index.html
-  var parts = url.split('/');
+  const parts = url.split('/');
   if (dirs.indexOf(parts[parts.length - 1]) > -1) {
     url += '/index.html';
   }
@@ -136,5 +141,5 @@ server = http.createServer(function (req, res) {
 const PORT = argv.p || 3000;
 
 server.listen(PORT, () => {
-  console.log(`Examples running on ${PORT}`); 
+  console.log(`Examples running on ${PORT}`);
 });

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+See your console
+<script src="../../dist/axios.js"></script>
+<script>
+    const data = new Int8Array(10 * 1024 * 1024);
+
+    data.fill(123);
+
+    axios.post('http://httpbin.org/post', data, {
+        onUploadProgress: console.log,
+        onDownloadProgress: console.log,
+    }).then(data=> {
+        console.log(`Done: `, data);
+    }).catch(console.warn);
+
+</script>
+
+</body>
+</html>

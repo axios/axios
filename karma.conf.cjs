@@ -6,7 +6,8 @@
 
 'use strict';
 
-var webpack = require('webpack');
+var resolve = require('@rollup/plugin-node-resolve').default;
+var commonjs = require('@rollup/plugin-commonjs');
 
 function createCustomLauncher(browser, version, platform) {
   return {
@@ -19,7 +20,7 @@ function createCustomLauncher(browser, version, platform) {
 
 module.exports = function(config) {
   var customLaunchers = {};
-  var browsers = [];
+  var browsers = process.env.Browsers && process.env.Browsers.split(',');
   var sauceLabs;
 
   if (process.env.SAUCE_USERNAME || process.env.SAUCE_ACCESS_KEY) {
@@ -52,7 +53,7 @@ module.exports = function(config) {
 
     // Firefox
     if (runAll || process.env.SAUCE_FIREFOX) {
-      customLaunchers.SL_Firefox = createCustomLauncher('firefox');
+      //customLaunchers.SL_Firefox = createCustomLauncher('firefox');
       // customLaunchers.SL_FirefoxDev = createCustomLauncher('firefox', 'dev');
       // customLaunchers.SL_FirefoxBeta = createCustomLauncher('firefox', 'beta');
     }
@@ -127,12 +128,12 @@ module.exports = function(config) {
       'Running on Travis.'
     );
     browsers = ['Firefox'];
-  } else if (process.env.GITHUB_ACTIONS !== 'false') {
+  } else if (process.env.GITHUB_ACTIONS === 'true') {
     console.log('Running ci on Github Actions.');
     browsers = ['FirefoxHeadless', 'ChromeHeadless'];
   } else {
-    console.log('Running locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.');
-    browsers = ['Firefox', 'Chrome'];
+    browsers = browsers || ['Chrome'];
+    console.log(`Running ${browsers} locally since SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are not set.`);
   }
 
   config.set({
@@ -147,8 +148,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/specs/__helpers.js',
-      'test/specs/**/*.spec.js'
+      {pattern: 'test/specs/__helpers.js', watched: false},
+      {pattern: 'test/specs/**/*.spec.js', watched: false}
     ],
 
 
@@ -159,8 +160,20 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/specs/__helpers.js': ['webpack', 'sourcemap'],
-      'test/specs/**/*.spec.js': ['webpack', 'sourcemap']
+      'test/specs/__helpers.js': ['rollup'],
+      'test/specs/**/*.spec.js': ['rollup']
+    },
+
+    rollupPreprocessor: {
+      plugins: [
+        resolve({browser: true}),
+        commonjs()
+      ],
+      output: {
+        format: 'iife',
+        name: '_axios',
+        sourcemap: 'inline'
+      }
     },
 
 

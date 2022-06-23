@@ -4,6 +4,7 @@ import {terser} from "rollup-plugin-terser";
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
 import autoExternal from 'rollup-plugin-auto-external';
+import filesize from 'rollup-plugin-filesize';
 
 const lib = require("./package.json");
 const outputFileName = 'axios';
@@ -24,6 +25,7 @@ const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) =
       resolve({browser}),
       commonjs(),
       minified && terser(),
+      minified && filesize(),
       ...(es5 ? [babel({
         babelHelpers: 'bundled',
         presets: ['@babel/preset-env']
@@ -37,7 +39,7 @@ const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) =
   ];
 
   if (minifiedVersion) {
-    build({minified: true})
+    configs.push(build({minified: true}))
   }
 
   return configs;

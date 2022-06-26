@@ -11,7 +11,7 @@ interface CommonHeaders  {
 
 export type AxiosRequestHeaders = Partial<AxiosHeaders & MethodsHeaders & CommonHeaders>;
 
-export type AxiosResponseHeaders = Record<string, string> & {
+export type AxiosResponseHeaders = Partial<Record<string, string>> & {
   "set-cookie"?: string[]
 };
 

@@ -355,22 +355,22 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  postForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  putForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patchForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  request<T = any, D = any>(config: AxiosRequestConfig<D>): AxiosPromise<T>;
+  get<T = any, D = any>(url: string, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  delete<T = any, D = any>(url: string, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  head<T = any, D = any>(url: string, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  options<T = any, D = any>(url: string, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  post<T = any, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  put<T = any, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  patch<T = any, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  postForm<T = any, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  putForm<T = any, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
+  patchForm<T = any, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
 }
 
 export interface AxiosInstance extends Axios {
-  <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): AxiosPromise<R>;
-  <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): AxiosPromise<R>;
+  <T = any, D = any>(config: AxiosRequestConfig<D>): AxiosPromise<T>;
+  <T = any, D = any>(url: string, config?: AxiosRequestConfig<D>): AxiosPromise<T>;
 
   defaults: Omit<AxiosDefaults, 'headers'> & {
     headers: HeadersDefaults & {

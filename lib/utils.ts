@@ -576,8 +576,8 @@ export function freezeMethods<T extends object>(obj: T) {
   });
 }
 
-export function toObjectSet<Item, T extends Array<Item> | string>(arrayOrString: T, delimiter: string = '') {
-  const obj = {} as Record<keyof T, true>;
+export function toObjectSet<T extends string[] | string>(arrayOrString: T, delimiter: string = '') {
+  const obj = {} as Record<string, true>;
 
   function define(arr: Array<any>) {
     arr.forEach(value => {

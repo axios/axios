@@ -261,7 +261,7 @@ export const isStandardBrowserEnv = (): boolean => {
  * @returns {void}
  */
 export function forEach<T>(obj: T[], fn: (item: T, key: number, source: T[]) => any): void
-export function forEach<O extends Record<K, T>, K extends keyof O, T extends O[K]>(obj: O, fn: (item: T, key: K, source: O) => any): void
+export function forEach<O extends Record<string | number | symbol, any>, K extends keyof O, Item extends O[K]>(obj: O, fn: (item: Item, key: K, source: O) => any): void
 export function forEach(obj: any, fn: (item: any, key: any, source: any) => any): void {
   // Don't bother if no value provided
   if (obj === null || typeof obj === 'undefined') {
@@ -526,3 +526,73 @@ export const hasOwnProperty = (function resolver(_hasOwnProperty) {
     return _hasOwnProperty.call(obj, prop);
   };
 })(Object.prototype.hasOwnProperty);
+
+
+/**
+ * Determine if a value is a RegExp object
+ *
+ * @param {*} val The value to test
+ *
+ * @returns {boolean} True if value is a RegExp object, otherwise false
+ */
+export const isRegExp = kindOfTest('RegExp');
+
+export function reduceDescriptors<T extends Record<string | number | symbol, any>>(obj: T, reducer: (descriptor: PropertyDescriptor, name: keyof T, object: T) => boolean | void) {
+  const descriptors = Object.getOwnPropertyDescriptors(obj);
+  const reducedDescriptors = {} as PropertyDescriptorMap;
+
+  forEach(descriptors, (descriptor: PropertyDescriptor, name) => {
+    if (reducer(descriptor, name, obj) !== false) {
+      reducedDescriptors[name] = descriptor;
+    }
+  });
+
+  Object.defineProperties(obj, reducedDescriptors);
+}
+
+/**
+ * Makes all methods read-only
+ * @param {Object} obj
+ */
+
+export function freezeMethods<T extends object>(obj: T) {
+  reduceDescriptors(obj, (descriptor, name) => {
+    const value = obj[name];
+
+    if (!isFunction(value)) return;
+
+    descriptor.enumerable = false;
+
+    if ('writable' in descriptor) {
+      descriptor.writable = false;
+      return;
+    }
+
+    if (!descriptor.set) {
+      descriptor.set = () => {
+        throw Error('Can not read-only method \'' + name.toString() + '\'');
+      };
+    }
+  });
+}
+
+export function toObjectSet<Item, T extends Array<Item> | string>(arrayOrString: T, delimiter: string = '') {
+  const obj = {} as Record<keyof T, true>;
+
+  function define(arr: Array<any>) {
+    arr.forEach(value => {
+      obj[value] = true;
+    });
+  }
+
+  isArray(arrayOrString) ? define(arrayOrString) : define(String(arrayOrString).split(delimiter))
+
+  return obj;
+}
+
+export function noop() { }
+
+export function toFiniteNumber(value: number, defaultValue: number) {
+  value = +value;
+  return Number.isFinite(value) ? value : defaultValue;
+}

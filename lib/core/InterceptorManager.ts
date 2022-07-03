@@ -1,17 +1,25 @@
 'use strict';
 
-import type { AxiosInterceptorOptions, AxiosRequestConfig } from 'index';
+import type { AxiosRequestConfig } from 'index';
 import * as utils from './../utils'
 
-export type Interceptor<V> = {
+export type AxiosInterceptor<V> = AxiosInterceptorOptions & {
   fulfilled?: (value: V) => any | Promise<any>
   rejected?: (error: any) => any
-  synchronous?: boolean
-  runWhen?: (config: AxiosRequestConfig) => boolean
 } | null
 
-export class InterceptorManager<V> {
-  handlers: Interceptor<V>[];
+export interface AxiosInterceptorOptions {
+  synchronous?: boolean;
+  runWhen?: (config: AxiosRequestConfig) => boolean;
+}
+
+export interface AxiosInterceptorManager<V> {
+  use<T = V>(onFulfilled?: (value: V) => T | Promise<T>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+  eject(id: number): void;
+}
+
+export default class InterceptorManager<V> implements AxiosInterceptorManager<V> {
+  handlers: AxiosInterceptor<V>[];
 
   constructor() {
     this.handlers = []

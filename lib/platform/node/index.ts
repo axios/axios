@@ -1,5 +1,5 @@
-import URLSearchParams from './classes/URLSearchParams.js'
-import FormData from './classes/FormData.js'
+import URLSearchParams from './classes/URLSearchParams'
+import FormData from './classes/FormData'
 
 export default {
   isNode: true,

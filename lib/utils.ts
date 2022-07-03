@@ -8,9 +8,9 @@ import bind from './helpers/bind'
 const toString = Object.prototype.toString;
 
 // eslint-disable-next-line func-names
-const kindOf = ((cache: any) => {
+const kindOf = ((cache: Record<string, any>) => {
   // eslint-disable-next-line func-names
-  return (thing: any) => {
+  return (thing: unknown) => {
     const str = toString.call(thing);
     return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
   };
@@ -18,7 +18,7 @@ const kindOf = ((cache: any) => {
 
 export const kindOfTest = (type: string) => {
   type = type.toLowerCase();
-  return (thing: string) => kindOf(thing) === type
+  return (thing: unknown) => kindOf(thing) === type
 }
 
 /**
@@ -65,7 +65,7 @@ export const isBuffer = (val: any) =>
  *
  * @returns {boolean} True if value is an ArrayBuffer, otherwise false
  */
-export const isArrayBuffer = kindOfTest('ArrayBuffer');
+export const isArrayBuffer = kindOfTest('ArrayBuffer') as (val: any) => val is ArrayBuffer;
 
 
 /**
@@ -135,7 +135,7 @@ export function isPlainObject(val: object): boolean {
  *
  * @returns {boolean} True if value is a Date, otherwise false
  */
-export const isDate = kindOfTest('Date');
+export const isDate = kindOfTest('Date') as (val: any) => val is Date;
 
 /**
  * Determine if a value is a File
@@ -153,7 +153,7 @@ export const isFile = kindOfTest('File');
  *
  * @returns {boolean} True if value is a Blob, otherwise false
  */
-export const isBlob = kindOfTest('Blob');
+export const isBlob = kindOfTest('Blob') as (val: any) => val is Blob;
 
 /**
  * Determine if a value is a FileList
@@ -385,7 +385,7 @@ export const inherits = (constructor: Function, superConstructor: Function, prop
  *
  * @returns {Object}
  */
-export const toFlatObject = <Source extends object, Dest extends object, K extends keyof Source>(sourceObj: Source, destObj: Dest, filter: Function | null, propFilter?: Function): object => {
+export const toFlatObject = <Source extends object, Dest extends object, K extends keyof Source>(sourceObj: Source, destObj: Dest, filter?: ((sourceObj: Source, destObj: Dest) => boolean) | null, propFilter?: ((prop: K, sourceObj: Source, destObj: Dest) => boolean) | null): object => {
   let props: Array<K>;
   let i: number;
   let prop: K;
@@ -421,7 +421,7 @@ export const toFlatObject = <Source extends object, Dest extends object, K exten
  *
  * @returns {boolean}
  */
-export const endsWith = (str: string, searchString: string, position: number) => {
+export const endsWith = (str: string, searchString: string, position?: number) => {
   str = String(str);
   if (position === undefined || position > str.length) {
     position = str.length;
@@ -462,6 +462,17 @@ type TypedArrayConstructor =
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
 
+type TypedArray =
+  | Int8Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Float32Array
+  | Float64Array;
+
 /**
  * Checking if the Uint8Array exists and if it does, it returns a function that checks if the
  * thing passed in is an instance of Uint8Array
@@ -473,7 +484,7 @@ type TypedArrayConstructor =
 // eslint-disable-next-line func-names
 export const isTypedArray = ((TypedArray: TypedArrayConstructor) => {
   // eslint-disable-next-line func-names
-  return (thing: any): thing is typeof TypedArray =>
+  return (thing: any): thing is TypedArray =>
     TypedArray && thing instanceof TypedArray
 })(typeof Uint8Array !== 'undefined' && Object.getPrototypeOf(Uint8Array));
 

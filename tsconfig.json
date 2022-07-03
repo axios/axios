@@ -5,6 +5,8 @@
     "types": [
       "node"
     ],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "strict": true,
     "noEmit": true,

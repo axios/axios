@@ -27,7 +27,7 @@ export interface AxiosErrorConstructor<T = unknown, D = any> extends ErrorConstr
   readonly ERR_BAD_REQUEST: 'ERR_BAD_REQUEST'
   readonly ERR_CANCELED: 'ERR_CANCELED'
   readonly ERR_NOT_SUPPORT: 'ERR_NOT_SUPPORT'
-  readonly ERR_INVALID_UR: 'ERR_INVALID_UR'
+  readonly ERR_INVALID_URL: 'ERR_INVALID_URL'
 
   from: (error: Error, code?: string, config?: AxiosRequestConfig, request?: any, response?: AxiosResponse, customProps?: Record<keyof any, any>) => AxiosError
 
@@ -57,7 +57,7 @@ export default class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_BAD_REQUEST = 'ERR_BAD_REQUEST'
   static readonly ERR_CANCELED = 'ERR_CANCELED'
   static readonly ERR_NOT_SUPPORT = 'ERR_NOT_SUPPORT'
-  static readonly ERR_INVALID_UR = 'ERR_INVALID_UR'
+  static readonly ERR_INVALID_URL = 'ERR_INVALID_URL'
 
   static from(error: Error, code?: string, config?: AxiosRequestConfig, request?: any, response?: AxiosResponse, customProps?: Record<keyof any, any>) {
     const axiosError = Object.create(AxiosError.prototype);

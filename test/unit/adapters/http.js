@@ -706,7 +706,7 @@ describe('supports http with nodejs', function () {
     }).listen(socketName, function () {
       axios({
         socketPath: socketName,
-        url: '/'
+        url: 'http://localhost:4444/socket'
       })
         .then(function (resp) {
           assert.equal(resp.status, 200);

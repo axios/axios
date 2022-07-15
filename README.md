@@ -1043,7 +1043,7 @@ which are just the corresponding http methods with the `Content-Type` header pre
 
 ## Files Posting
 
-You can easily sumbit a single file
+You can easily submit a single file:
 
 ```js
 await axios.postForm('https://httpbin.org/post', {
@@ -1052,7 +1052,7 @@ await axios.postForm('https://httpbin.org/post', {
 });
 ```
 
-or multiple files as `multipart/form-data`.
+or multiple files as `multipart/form-data`:
 
 ```js
 await axios.postForm('https://httpbin.org/post', {

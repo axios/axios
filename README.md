@@ -1023,7 +1023,7 @@ const obj = {
 The following steps will be executed by the Axios serializer internally:
 
 ```js
-const formData= new FormData();
+const formData = new FormData();
 formData.append('x', '1');
 formData.append('arr[]', '1');
 formData.append('arr[]', '2');

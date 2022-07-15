@@ -515,7 +515,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   formSerializer: {
-      visitor: (value, key, path, helpers)=> {}; // custom visitor funaction to serrialize form values
+      visitor: (value, key, path, helpers) => {}; // custom visitor funaction to serrialize form values
       dots: boolean; // use dots instead of brackets format
       metaTokens: boolean; // keep special endings like {} in parameter key 
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes
@@ -965,7 +965,7 @@ axios.post('https://httpbin.org/post', {x: 1}, {
   headers: {
     'Content-Type': 'multipart/form-data'
   }
-}).then(({data})=> console.log(data));
+}).then(({data}) => console.log(data));
 ```
 
 In the `node.js` build, the ([`form-data`](https://github.com/form-data/form-data)) polyfill is used by default.
@@ -974,14 +974,14 @@ You can overload the FormData class by setting the `env.FormData` config variabl
 but you probably won't need it in most cases:
 
 ```js
-const axios= require('axios');
+const axios = require('axios');
 var FormData = require('form-data');
 
 axios.post('https://httpbin.org/post', {x: 1, buf: new Buffer(10)}, {
   headers: {
     'Content-Type': 'multipart/form-data'
   }
-}).then(({data})=> console.log(data));
+}).then(({data}) => console.log(data));
 ```
 
 Axios FormData serializer supports some special endings to perform the following operations:

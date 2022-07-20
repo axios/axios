@@ -159,6 +159,21 @@ axios.get('/user', {
     // always executed
   });  
 
+
+// Optionally use a URL object to make a request
+axios.get(new URL('https://some-domain.com/api/'))
+  .then(function (response) {
+    // handle success
+    console.log(response);
+  })
+  .catch(function (error) {
+    // handle error
+    console.log(error);
+  })
+  .then(function () {
+    // always executed
+  });
+
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
   try {

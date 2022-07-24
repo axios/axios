@@ -4,6 +4,9 @@ import path from 'path';
 import http from 'http';
 let server;
 
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 function pipeFileToResponse(res, file, type) {
   if (type) {
     res.writeHead(200, {

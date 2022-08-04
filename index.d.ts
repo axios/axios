@@ -125,7 +125,7 @@ export interface ParamsSerializerOptions extends SerializerOptions {
 }
 
 export interface AxiosRequestConfig<D = any> {
-  url?: string;
+  url: string;
   method?: Method | string;
   baseURL?: string;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
@@ -154,7 +154,7 @@ export interface AxiosRequestConfig<D = any> {
   httpAgent?: any;
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
-  cancelToken?: CancelToken;
+  cancelToken?: CancelToken | undefined;
   decompress?: boolean;
   transitional?: TransitionalOptions;
   signal?: GenericAbortSignal;

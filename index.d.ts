@@ -273,7 +273,7 @@ export interface AxiosResponse<T = any, D = any>  {
   request?: any;
 }
 
-export class AxiosError<T = unknown, D = any> extends Error {
+export class AxiosError<T = any, D = any> extends Error {
   constructor(
       message?: string,
       code?: string,

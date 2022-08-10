@@ -1,10 +1,10 @@
-name: ci
+name: 'CI'
 
 on:
   push:
-    branches: [main, 'v*']
+    branches: '**'
   pull_request:
-    branches: [main, 'v*']
+    branches: '**'
 
 permissions:
   contents: read

@@ -9,7 +9,7 @@ interface CommonHeaders  {
   common: AxiosHeaders;
 }
 
-export type AxiosRequestHeaders = Partial<AxiosHeaders & MethodsHeaders & CommonHeaders>;
+export type AxiosRequestHeaders = Partial<AxiosHeaders | MethodsHeaders | CommonHeaders>;
 
 export type AxiosResponseHeaders = Partial<Record<string, string>> & {
   "set-cookie"?: string[]

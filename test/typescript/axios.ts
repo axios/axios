@@ -162,6 +162,10 @@ axios.post<User>('/user', { name: 'foo', id: 1 }, { headers: { 'X-FOO': 'bar' } 
 	.then(handleUserResponse)
 	.catch(handleError);
 
+axios.post<User>('/user', { name: 'foo', id: 1 }, { headers: { get: { 'X-FOO': 'bar' }} })
+	.then(handleUserResponse) 
+	.catch(handleError);
+
 axios.put<User>('/user', { name: 'foo', id: 1 })
 	.then(handleUserResponse)
 	.catch(handleError);

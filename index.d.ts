@@ -1,5 +1,11 @@
 // TypeScript Version: 4.1
-type AxiosHeaders = Record<string, string | string[] | number | boolean>;
+type JSONValue = string | string[] | number | boolean;
+
+interface JSONObject {
+  [x: string]: JSONValue;
+}
+
+type AxiosHeaders = Record<string, JSONValue | JSONObject>;
 
 type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;

@@ -1159,7 +1159,7 @@ try {
 
 You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/main/examples/server.js)
 
 
 ## Resources

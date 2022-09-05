@@ -139,7 +139,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });
 
@@ -155,7 +155,7 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });  
 

@@ -9,7 +9,6 @@ import util from 'util';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {EventEmitter} from 'events';
 let server, proxy;
 import AxiosError from '../../../lib/core/AxiosError.js';
 import FormData from 'form-data';

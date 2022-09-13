@@ -6,13 +6,13 @@ gulp.task('default', async function(){
   console.log('hello!');
 });
 
-const clear = gulp.task('clear', async function() {
-  await fs.emptyDir('./dist/')
+const clear = gulp.task('clear', function() {
+  fs.emptyDirSync('./dist/')
 });
 
 const bower = gulp.task('bower', async function () {
-  const npm = JSON.parse(await fs.readFile('package.json'));
-  const bower = JSON.parse(await fs.readFile('bower.json'));
+  const npm = JSON.parse(fs.readFileSync('package.json'));
+  const bower = JSON.parse(fs.readFileSync('bower.json'));
 
   const fields = [
     'name',
@@ -28,7 +28,7 @@ const bower = gulp.task('bower', async function () {
     bower[field] = npm[field];
   }
 
-  await fs.writeFile('bower.json', JSON.stringify(bower, null, 2));
+  fs.writeFileSync('bower.json', JSON.stringify(bower, null, 2));
 });
 
 async function getContributors(user, repo, maxCount = 1) {
@@ -46,7 +46,7 @@ async function getContributors(user, repo, maxCount = 1) {
 const packageJSON = gulp.task('package', async function () {
   const CONTRIBUTION_THRESHOLD = 3;
 
-  const npm = JSON.parse(await fs.readFile('package.json'));
+  const npm = JSON.parse(fs.readFileSync('package.json'));
 
   try {
     const contributors = await getContributors('axios', 'axios', 15);
@@ -57,7 +57,7 @@ const packageJSON = gulp.task('package', async function () {
       )
       .map(({login, name, url}) => `${name || login} (https://github.com/${login})`);
 
-    await fs.writeFile('package.json', JSON.stringify(npm, null, 2));
+    fs.writeFileSync('package.json', JSON.stringify(npm, null, 2));
   } catch (err) {
     if (axios.isAxiosError(err) && err.response && err.response.status === 403) {
       throw Error(`GitHub API Error: ${err.response.data && err.response.data.message}`);

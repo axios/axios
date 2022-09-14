@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 ![Build status](https://github.com/axios/axios/actions/workflows/ci.yml/badge.svg)
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://npm-stat.com/charts.html?package=axios)
@@ -42,10 +42,10 @@ Promise based HTTP client for the browser and node.js
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
     - [URLSearchParams](#urlsearchparams)
     - [Query string](#query-string-older-browsers)
-    - [🆕 Automatic serialization](#-automatic-serialization-to-urlsearchparams)        
-  - [Using multipart/form-data format](#using-multipartform-data-format)    
+    - [🆕 Automatic serialization](#-automatic-serialization-to-urlsearchparams)
+  - [Using multipart/form-data format](#using-multipartform-data-format)
     - [FormData](#formdata)
-    - [🆕 Automatic serialization](#-automatic-serialization-to-formdata) 
+    - [🆕 Automatic serialization](#-automatic-serialization-to-formdata)
   - [Files Posting](#files-posting)
   - [HTML Form Posting](#-html-form-posting-browser)
   - [Semver](#semver)
@@ -157,7 +157,7 @@ axios.get('/user', {
   })
   .then(function () {
     // always executed
-  });  
+  });
 
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
@@ -170,7 +170,7 @@ async function getUser() {
 }
 ```
 
-> **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet
+> **Note** `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
@@ -354,7 +354,7 @@ These are the available config options for making requests. Only the `url` is re
   data: {
     firstName: 'Fred'
   },
-  
+
   // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
@@ -462,7 +462,7 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
-  // If the proxy server uses HTTPS, then you must set the protocol to `https`. 
+  // If the proxy server uses HTTPS, then you must set the protocol to `https`.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',
@@ -481,8 +481,8 @@ These are the available config options for making requests. Only the `url` is re
   // an alternative way to cancel Axios requests using AbortController
   signal: new AbortController().signal,
 
-  // `decompress` indicates whether or not the response body should be decompressed 
-  // automatically. If set to `true` will also remove the 'content-encoding' header 
+  // `decompress` indicates whether or not the response body should be decompressed
+  // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
   decompress: true // default
@@ -504,7 +504,7 @@ These are the available config options for making requests. Only the `url` is re
 
     // try to parse the response string as JSON even if `responseType` is not 'json'
     forcedJSONParsing: true,
-    
+
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false,
   },
@@ -517,7 +517,7 @@ These are the available config options for making requests. Only the `url` is re
   formSerializer: {
       visitor: (value, key, path, helpers) => {}; // custom visitor funaction to serrialize form values
       dots: boolean; // use dots instead of brackets format
-      metaTokens: boolean; // keep special endings like {} in parameter key 
+      metaTokens: boolean; // keep special endings like {} in parameter key
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes
   }
 }
@@ -665,7 +665,7 @@ instance.interceptors.request.use(function () {/*...*/});
 ```
 
 When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay
-in the execution of your axios request when the main thread is blocked (a promise is created under the hood for 
+in the execution of your axios request when the main thread is blocked (a promise is created under the hood for
 the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag
 to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
 
@@ -676,7 +676,7 @@ axios.interceptors.request.use(function (config) {
 }, null, { synchronous: true });
 ```
 
-If you want to execute a particular interceptor based on a runtime check, 
+If you want to execute a particular interceptor based on a runtime check,
 you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
 of `runWhen` is `false`. The function will be called with the config
 object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an
@@ -704,7 +704,7 @@ and when the response was fulfilled
     - then the following fulfillment-interceptor is not called
     - then the following rejection-interceptor is called
     - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
-    
+
 Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
 
 ## Handling Errors
@@ -819,7 +819,7 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-> Note: you can cancel several requests with the same cancel token/abort controller.
+> **Note:** you can cancel several requests with the same cancel token/abort controller.
 > If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make a real request.
 
 > During the transition period, you can use both cancellation APIs, even for the same request:
@@ -872,7 +872,7 @@ axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
-> NOTE: 
+> **Note**
 > The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
 
 ### 🆕 Automatic serialization to URLSearchParams
@@ -892,7 +892,7 @@ await axios.postForm('https://postman-echo.com/post', data,
 );
 ```
 
-The server will handle it as 
+The server will handle it as
 
 ```js
   {
@@ -913,9 +913,9 @@ If your backend body-parser (like `body-parser` of `express.js`) supports nested
 
 ```js
   var app = express();
-  
+
   app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-  
+
   app.post('/', function (req, res, next) {
      // echo body as JSON
      res.send(JSON.stringify(req.body));
@@ -928,7 +928,7 @@ If your backend body-parser (like `body-parser` of `express.js`) supports nested
 
 ### FormData
 
-To send the data as a `multipart/formdata` you need to pass a formData instance as a payload. 
+To send the data as a `multipart/formdata` you need to pass a formData instance as a payload.
 Setting the `Content-Type` header is not required as Axios guesses it based on the payload type.
 
 ```js
@@ -937,12 +937,12 @@ formData.append('foo', 'bar');
 
 axios.post('https://httpbin.org/post', formData);
 ```
-  
+
 In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
 
 ```js
 const FormData = require('form-data');
- 
+
 const form = new FormData();
 form.append('my_field', 'my value');
 form.append('my_buffer', new Buffer(10));
@@ -953,7 +953,7 @@ axios.post('https://example.com', form)
 
 ### 🆕 Automatic serialization to FormData
 
-Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type` 
+Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type`
 header is set to `multipart/form-data`.
 
 The following request will submit the data in a FormData format (Browser & Node.js):
@@ -987,9 +987,9 @@ axios.post('https://httpbin.org/post', {x: 1, buf: new Buffer(10)}, {
 Axios FormData serializer supports some special endings to perform the following operations:
 
 - `{}` - serialize the value with JSON.stringify
-- `[]` - unwrap the array-like object as separate fields with the same key 
+- `[]` - unwrap the array-like object as separate fields with the same key
 
-> NOTE: 
+> **Note**
 > unwrap/expand operation will be used by default on arrays and FileList objects
 
 FormData serializer supports additional options via `config.formSerializer: object` property to handle rare cases:
@@ -999,15 +999,15 @@ to a `FormData` object by following custom rules.
 
 - `dots: boolean = false` - use dot notation instead of brackets to serialize arrays and objects;
 
-- `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key. 
+- `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key.
 The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
 
 - `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
 
-    - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`) 
+    - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
     - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
-    
+
 Let's say we have an object like this one:
 
 ```js
@@ -1048,7 +1048,7 @@ You can easily submit a single file:
 ```js
 await axios.postForm('https://httpbin.org/post', {
   'myVar' : 'foo',
-  'file': document.querySelector('#fileInput').files[0] 
+  'file': document.querySelector('#fileInput').files[0]
 });
 ```
 
@@ -1056,7 +1056,7 @@ or multiple files as `multipart/form-data`:
 
 ```js
 await axios.postForm('https://httpbin.org/post', {
-  'files[]': document.querySelector('#fileInput').files 
+  'files[]': document.querySelector('#fileInput').files
 });
 ```
 

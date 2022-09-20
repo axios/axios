@@ -879,7 +879,7 @@ You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
 Axios will automatically serialize the data object to urlencoded format if the content-type header is set to "application/x-www-form-urlencoded".
 
-```
+```js
 const data = {
   x: 1,
   arr: [1, 2, 3],

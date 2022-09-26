@@ -28,7 +28,7 @@
     "preversion": "gulp version && npm test",
     "version": "npm run build && git add dist && git add package.json",
     "prepublishOnly": "npm test",
-    "postpublish": "git push && git push --tags ",
+    "postpublish": "git push && git push --tags",
     "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",

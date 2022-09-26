@@ -1,10 +1,13 @@
-name: ci
+name: 'CI'
 
 on:
   push:
-    branches: [master, 'v*']
+    branches: '**'
   pull_request:
-    branches: [master, 'v*']
+    branches: '**'
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -15,9 +18,9 @@ jobs:
         node-version: [12.x, 14.x, 16.x, 18.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm

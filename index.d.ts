@@ -170,7 +170,7 @@ export interface SerializerOptions {
   visitor?: SerializerVisitor;
   dots?: boolean;
   metaTokens?: boolean;
-  indexes?: boolean;
+  indexes?: boolean | null;
 }
 
 // tslint:disable-next-line

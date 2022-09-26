@@ -369,8 +369,8 @@ export class Axios {
 }
 
 export interface AxiosInstance extends Axios {
-  <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): AxiosPromise<R>;
-  <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): AxiosPromise<R>;
+  <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
+  <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
 
   defaults: Omit<AxiosDefaults, 'headers'> & {
     headers: HeadersDefaults & {

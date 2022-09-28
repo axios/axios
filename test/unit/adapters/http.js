@@ -9,7 +9,6 @@ import util from 'util';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {EventEmitter} from 'events';
 let server, proxy;
 import AxiosError from '../../../lib/core/AxiosError.js';
 import FormData from 'form-data';
@@ -706,7 +705,7 @@ describe('supports http with nodejs', function () {
     }).listen(socketName, function () {
       axios({
         socketPath: socketName,
-        url: '/'
+        url: 'http://localhost:4444/socket'
       })
         .then(function (resp) {
           assert.equal(resp.status, 200);

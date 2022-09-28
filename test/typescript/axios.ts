@@ -5,7 +5,6 @@ import axios, {
   AxiosInstance,
   AxiosAdapter,
   Cancel,
-  CancelToken,
   CancelTokenSource,
   Canceler, AxiosProgressEvent
 } from 'axios';
@@ -299,6 +298,19 @@ axios.interceptors.response.use(
   (response: AxiosResponse) => Promise.resolve(response),
   (error: any) => Promise.reject(error)
 );
+
+const voidRequestInterceptorId = axios.interceptors.request.use(
+  // @ts-expect-error -- Must return an AxiosRequestConfig (or throw)
+  (_response) => {},
+  (error: any) => Promise.reject(error)
+);
+const voidResponseInterceptorId = axios.interceptors.response.use(
+  // @ts-expect-error -- Must return an AxiosResponse (or throw)
+  (_response) => {},
+  (error: any) => Promise.reject(error)
+);
+axios.interceptors.request.eject(voidRequestInterceptorId);
+axios.interceptors.response.eject(voidResponseInterceptorId);
 
 axios.interceptors.response.use((response: AxiosResponse) => response);
 axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));

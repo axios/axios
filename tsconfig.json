@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "es2015",
+    "module": "commonjs",
     "lib": ["dom", "es2015"],
     "types": [],
     "moduleResolution": "node",

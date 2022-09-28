@@ -257,6 +257,22 @@ describe('core::mergeConfig', function() {
         .toEqual({validateStatus: {a: 1, b: 2, c: 2}});
     });
 
+    it('should merge if config1 is class object', function() {
+      class Header {};
+      var validateStatus = new Header();
+      validateStatus["X-Foo"] = "bar";
+      var merged = mergeConfig({validateStatus: validateStatus}, {validateStatus: {}});
+      expect(JSON.stringify(merged.validateStatus)).toBe(JSON.stringify(validateStatus));
+    });
+
+    it('should merge if config2 is class object', function() {
+      class Header {};
+      var validateStatus = new Header();
+      validateStatus["X-Foo"] = "bar";
+      var merged = mergeConfig({validateStatus: {}}, {validateStatus: validateStatus});
+      expect(JSON.stringify(merged.validateStatus)).toBe(JSON.stringify(validateStatus));
+    });
+
     it('should clone config2 if is plain object', function() {
       var config1 = {validateStatus: [1, 2, 3]};
       var config2 = {validateStatus: {a: 1, b: 2}};

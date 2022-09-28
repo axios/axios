@@ -266,6 +266,8 @@ export interface AxiosProgressEvent {
   download?: boolean;
 }
 
+type Milliseconds = number;
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
@@ -276,7 +278,7 @@ export interface AxiosRequestConfig<D = any> {
   params?: any;
   paramsSerializer?: ParamsSerializerOptions;
   data?: D;
-  timeout?: number;
+  timeout?: Milliseconds;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
   adapter?: AxiosAdapter;

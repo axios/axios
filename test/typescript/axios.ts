@@ -204,6 +204,10 @@ axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' }, { headers
   .then(handleStringResponse)
   .catch(handleError);
 
+axios.post<User>('/user', { name: 'foo', id: 1 }, { headers: { get: { 'X-FOO': 'bar' }} })
+  .then(handleUserResponse)
+  .catch(handleError);
+
 axios.put<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
   .then(handleStringResponse)
   .catch(handleError);

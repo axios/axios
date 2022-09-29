@@ -274,6 +274,17 @@ instance1.defaults.timeout = 2500;
 
 axios.create({ headers: { foo: 'bar' } });
 axios.create({ headers: { common: { foo: 'bar' } } });
+axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  formSerializer: {
+    indexes: null,
+  },
+  paramsSerializer: {
+    indexes: null,
+  },
+});
 
 // Interceptors
 

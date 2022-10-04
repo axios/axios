@@ -1,4 +1,17 @@
-# axios
+<h1 align="center">
+   <b>
+        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+    </b>
+</h1>
+
+<p align="center">Promise based HTTP client for the browser and node.js</p>
+
+<p align="center">
+    <a href="https://axios-http.com/"><b>Website</b></a> •
+    <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
+</p> 
+
+<div align="center">
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
@@ -12,10 +25,8 @@
 [![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios)
 
-Promise based HTTP client for the browser and node.js
-
-> New axios docs website: [click here](https://axios-http.com/)
-
+</div>
+  
 ## Table of Contents
 
   - [Features](#features)

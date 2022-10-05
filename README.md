@@ -9,7 +9,7 @@
 <p align="center">
     <a href="https://axios-http.com/"><b>Website</b></a> •
     <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
-</p> 
+</p>
 
 <div align="center">
 
@@ -26,7 +26,7 @@
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios)
 
 </div>
-  
+
 ## Table of Contents
 
   - [Features](#features)

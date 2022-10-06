@@ -1299,7 +1299,7 @@ describe('supports http with nodejs', function () {
     server = http.createServer(function (req, res) {
       res.end();
     }).listen(4444, function () {
-      axios.get(new URL('http://localhost:4444').then(function (res) {
+      axios.get(new URL('http://localhost:4444')).then(function (res) {
         assert.equal(res.config.url, 'http://localhost:4444');
         done();
       }).catch(done);

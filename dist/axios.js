@@ -1,9 +1,9 @@
-// Axios v1.0.0 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.1.0 Copyright (c) 2022 Matt Zabriskie and contributors
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.axios = factory());
-})(this, (function () { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.axios = {}));
+})(this, (function (exports) { 'use strict';
 
   function _typeof(obj) {
     "@babel/helpers - typeof";
@@ -191,7 +191,7 @@
     }
 
     var prototype = getPrototypeOf(val);
-    return prototype === null || prototype === Object.prototype;
+    return (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null) && !(Symbol.toStringTag in val) && !(Symbol.iterator in val);
   };
   /**
    * Determine if a value is a Date
@@ -2442,7 +2442,7 @@
     return config;
   }
 
-  var VERSION = "1.0.0";
+  var VERSION = "1.1.0";
 
   var validators$1 = {}; // eslint-disable-next-line func-names
 
@@ -2915,7 +2915,13 @@
     return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
   };
 
-  return axios;
+  exports.Axios = Axios;
+  exports.AxiosError = AxiosError;
+  exports.AxiosHeaders = AxiosHeaders;
+  exports.CanceledError = CanceledError;
+  exports["default"] = axios;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
 //# sourceMappingURL=axios.js.map

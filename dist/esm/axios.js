@@ -1,4 +1,4 @@
-// Axios v1.0.0 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.1.0 Copyright (c) 2022 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -135,7 +135,7 @@ const isPlainObject = (val) => {
   }
 
   const prototype = getPrototypeOf(val);
-  return prototype === null || prototype === Object.prototype;
+  return (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null) && !(Symbol.toStringTag in val) && !(Symbol.iterator in val);
 };
 
 /**
@@ -2461,7 +2461,7 @@ function mergeConfig(config1, config2) {
   return config;
 }
 
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 
 const validators$1 = {};
 
@@ -2938,5 +2938,5 @@ axios.formToJSON = thing => {
   return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 };
 
-export { axios as default };
+export { Axios, AxiosError, AxiosHeaders, CanceledError, axios as default };
 //# sourceMappingURL=axios.js.map

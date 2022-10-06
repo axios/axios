@@ -179,3 +179,22 @@
 - [Luca Pizzini](https://github.com/lpizzinidev)
 - [Willian Agostini](https://github.com/WillianAgostini)
 - [Huyen Nguyen](https://github.com/huyenltnguyen)
+
+## [1.1.0] - 2022-10-06
+
+### Fixed
+
+- Fixed missing exports in type definition index.d.ts [#5003](https://github.com/axios/axios/pull/5003)
+- Fixed query params composing [#5018](https://github.com/axios/axios/pull/5018)
+- Fixed GenericAbortSignal interface by making it more generic [#5021](https://github.com/axios/axios/pull/5021)
+- Fixed adding "clear" to AxiosInterceptorManager [#5010](https://github.com/axios/axios/pull/5010)
+- Fixed commonjs & umd exports [#5030](https://github.com/axios/axios/pull/5030)
+- Fixed inability to access response headers when using axios 1.x with Jest [#5036](https://github.com/axios/axios/pull/5036)
+
+### Contributors to this release
+
+- [Trim21](https://github.com/trim21)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [shingo.sasaki](https://github.com/s-sasaki-0529)
+- [Ivan Pepelko](https://github.com/ivanpepelko)
+- [Richard Kořínek](https://github.com/risa)

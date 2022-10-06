@@ -1037,6 +1037,57 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support HTTPS requests over an HTTP proxy', done => {
+    process.env.https_proxy = "http://localhost:4000";
+
+    const httpsOptions = {
+      key: fs.readFileSync(path.join(__dirname, 'key.pem')),
+      cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
+    };
+    server = https.createServer(httpsOptions, function (req, res) {
+      res.setHeader("Connection", "Keep-Alive");
+      res.end('HTTPS response');
+    });
+    server.listen(4444, () => {
+      proxy = http.createServer();
+      proxy.on("connect", (req, clientSocket) => {
+        try {
+          assert.equal(req.url, "localhost:4444");
+          assert.equal(req.headers.host, "localhost:4444");
+        } catch (err) {
+          done(err);
+        }
+
+        const proxySocket = new net.Socket();
+        proxySocket.connect(4444);
+        proxySocket.on("connect", () => {
+          clientSocket.write("HTTP/1.1 200 Connection Established\n\n");
+          proxySocket.pipe(clientSocket);
+          clientSocket.pipe(proxySocket);
+        });
+      });
+
+      proxy.listen(4000, async () => {
+        try {
+          const httpsAgent = new https.Agent({
+            rejectUnauthorized: false,
+            keepAlive: true,
+          });
+
+          const res = await axios.get('https://localhost:4444/', { httpsAgent, maxRedirects: 0 });
+          assert.equal(res.status, 200);
+          assert.equal(res.data, "HTTPS response");
+
+          const res2 = await axios.get('https://localhost:4444/', { httpsAgent, maxRedirects: 0 });
+          assert.equal(res2.data, "HTTPS response");
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+  });
+
   it('should not use proxy for domains in no_proxy', function (done) {
     server = http.createServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');

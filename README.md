@@ -462,7 +462,9 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
-  // If the proxy server uses HTTPS, then you must set the protocol to `https`.
+  // `protocol` should be set to the protocol of the proxy (not the upstream server).
+  // Note: HTTPS over an HTTP proxy is only supported on Node.js and cannot be used
+  // together with `maxRedirects` (`maxRedirects` will be automatically set to 0).
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',

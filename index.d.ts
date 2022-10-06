@@ -210,10 +210,10 @@ export interface TransitionalOptions {
 }
 
 export interface GenericAbortSignal {
-  aborted: boolean;
-  onabort: ((...args: any) => any) | null;
-  addEventListener: (...args: any) => any;
-  removeEventListener: (...args: any) => any;
+  readonly aborted: boolean;
+  onabort?: ((...args: any) => any) | null;
+  addEventListener?: (...args: any) => any;
+  removeEventListener?: (...args: any) => any;
 }
 
 export interface FormDataVisitorHelpers {

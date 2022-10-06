@@ -14,6 +14,7 @@ describe('instance', function () {
       if ([
         'Axios',
         'AxiosError',
+        'AxiosHeaders',
         'create',
         'Cancel',
         'CanceledError',

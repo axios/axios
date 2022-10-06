@@ -9,12 +9,13 @@ import bundleSize from 'rollup-plugin-bundle-size'
 const lib = require("./package.json");
 const outputFileName = 'axios';
 const name = "axios";
-const input = './lib/axios.js';
+const entryPoint = './index.js';
+const UMDEntryPoint = './lib/axios.js';
 
 const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) => {
 
   const build = ({minified}) => ({
-    input,
+    input: entryPoint,
     ...config,
     output: {
       ...config.output,
@@ -51,6 +52,7 @@ export default async () => {
 
   return [
     ...buildConfig({
+      input: UMDEntryPoint,
       es5: true,
       output: {
         file: `dist/${outputFileName}`,
@@ -72,7 +74,7 @@ export default async () => {
     }),
     // Node.js commonjs build
     {
-      input,
+      input: entryPoint,
       output: {
         file: `dist/node/${name}.cjs`,
         format: "cjs",

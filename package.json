@@ -6,7 +6,7 @@
   "exports": {
     ".": {
       "browser": {
-        "require": "./index.js",
+        "require": "./dist/axios.js",
         "default": "./index.js"
       },
       "default": {

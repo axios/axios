@@ -210,10 +210,10 @@ export interface TransitionalOptions {
 }
 
 export interface GenericAbortSignal {
-  aborted: boolean;
-  onabort: ((...args: any) => any) | null;
-  addEventListener: (...args: any) => any;
-  removeEventListener: (...args: any) => any;
+  readonly aborted: boolean;
+  onabort?: ((...args: any) => any) | null;
+  addEventListener?: (...args: any) => any;
+  removeEventListener?: (...args: any) => any;
 }
 
 export interface FormDataVisitorHelpers {
@@ -413,6 +413,7 @@ export interface AxiosInterceptorOptions {
 export interface AxiosInterceptorManager<V> {
   use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
+  clear(): void;
 }
 
 export class Axios {

@@ -326,6 +326,9 @@ axios.interceptors.response.eject(voidResponseInterceptorId);
 axios.interceptors.response.use((response: AxiosResponse) => response);
 axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
 
+axios.interceptors.request.clear();
+axios.interceptors.response.clear();
+
 // Adapters
 
 const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {

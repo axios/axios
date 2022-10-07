@@ -1,9 +1,9 @@
-// Axios v1.1.1 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.1.2 Copyright (c) 2022 Matt Zabriskie and contributors
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-  typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.axios = {}));
-})(this, (function (exports) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.axios = factory());
+})(this, (function () { 'use strict';
 
   function _typeof(obj) {
     "@babel/helpers - typeof";
@@ -2442,7 +2442,7 @@
     return config;
   }
 
-  var VERSION = "1.1.1";
+  var VERSION = "1.1.2";
 
   var validators$1 = {}; // eslint-disable-next-line func-names
 
@@ -2915,9 +2915,7 @@
     return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
   };
 
-  exports["default"] = axios;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
+  return axios;
 
 }));
 //# sourceMappingURL=axios.js.map

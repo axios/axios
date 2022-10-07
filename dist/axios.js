@@ -1,4 +1,4 @@
-// Axios v1.1.0 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.1.1 Copyright (c) 2022 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -2442,7 +2442,7 @@
     return config;
   }
 
-  var VERSION = "1.1.0";
+  var VERSION = "1.1.1";
 
   var validators$1 = {}; // eslint-disable-next-line func-names
 
@@ -2914,8 +2914,6 @@
   axios.formToJSON = function (thing) {
     return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
   };
-
-  axios.AxiosHeaders = AxiosHeaders;
 
   exports["default"] = axios;
 

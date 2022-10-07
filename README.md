@@ -526,7 +526,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   formSerializer: {
-      visitor: (value, key, path, helpers) => {}; // custom visitor funaction to serrialize form values
+      visitor: (value, key, path, helpers) => {}; // custom visitor function to serialize form values
       dots: boolean; // use dots instead of brackets format
       metaTokens: boolean; // keep special endings like {} in parameter key
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes

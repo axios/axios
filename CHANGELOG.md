@@ -198,3 +198,13 @@
 - [shingo.sasaki](https://github.com/s-sasaki-0529)
 - [Ivan Pepelko](https://github.com/ivanpepelko)
 - [Richard Kořínek](https://github.com/risa)
+
+## [1.1.1] - 2022-10-07
+
+### Fixed
+
+- Fixed broken exports for common js. This fix breaks a prior fix, I will fix both issues ASAP but the commonJS use is more impactful.
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)

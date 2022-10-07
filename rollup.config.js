@@ -10,7 +10,7 @@ const lib = require("./package.json");
 const outputFileName = 'axios';
 const name = "axios";
 const entryPoint = './index.js';
-const UMDEntryPoint = './lib/axios.js';
+const CJSEntryPoint = './lib/axios.js';
 
 const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) => {
 
@@ -52,7 +52,7 @@ export default async () => {
 
   return [
     ...buildConfig({
-      input: UMDEntryPoint,
+      input: CJSEntryPoint,
       es5: true,
       output: {
         file: `dist/${outputFileName}`,

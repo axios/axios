@@ -77,7 +77,7 @@ export default async () => {
         file: `dist/node/${name}.cjs`,
         format: "cjs",
         preferConst: true,
-        exports: "named",
+        exports: "default",
         banner
       },
       plugins: [

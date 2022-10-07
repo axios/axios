@@ -56,7 +56,7 @@ export default async () => {
         file: `dist/${outputFileName}`,
         name,
         format: "umd",
-        exports: "named",
+        exports: "default",
         banner
       }
     }),

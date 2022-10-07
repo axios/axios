@@ -1,8 +1,6 @@
 // Axios v1.1.0 Copyright (c) 2022 Matt Zabriskie and contributors
 'use strict';
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
 const FormData$1 = require('form-data');
 const url = require('url');
 const proxyFromEnv = require('proxy-from-env');
@@ -3753,9 +3751,7 @@ axios.formToJSON = thing => {
   return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 };
 
-exports.Axios = Axios;
-exports.AxiosError = AxiosError;
-exports.AxiosHeaders = AxiosHeaders;
-exports.CanceledError = CanceledError;
-exports["default"] = axios;
+axios.AxiosHeaders = AxiosHeaders;
+
+module.exports = axios;
 //# sourceMappingURL=axios.cjs.map

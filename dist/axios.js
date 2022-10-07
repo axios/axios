@@ -2915,10 +2915,8 @@
     return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
   };
 
-  exports.Axios = Axios;
-  exports.AxiosError = AxiosError;
-  exports.AxiosHeaders = AxiosHeaders;
-  exports.CanceledError = CanceledError;
+  axios.AxiosHeaders = AxiosHeaders;
+
   exports["default"] = axios;
 
   Object.defineProperty(exports, '__esModule', { value: true });

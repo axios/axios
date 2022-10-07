@@ -2938,5 +2938,7 @@ axios.formToJSON = thing => {
   return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 };
 
-export { Axios, AxiosError, AxiosHeaders, CanceledError, axios as default };
+axios.AxiosHeaders = AxiosHeaders;
+
+export { axios as default };
 //# sourceMappingURL=axios.js.map

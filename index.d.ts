@@ -71,7 +71,7 @@ export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & 
 export type AxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders> & AxiosHeaders;
 
 export type RawAxiosResponseHeaders = Partial<Record<string, string> & {
-  "set-cookie"?: string[]
+  "set-cookie"?: string
 }>;
 
 export type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;

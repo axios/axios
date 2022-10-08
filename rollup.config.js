@@ -56,7 +56,7 @@ export default async () => {
         file: `dist/${outputFileName}`,
         name,
         format: "umd",
-        exports: "named",
+        exports: "default",
         banner
       }
     }),
@@ -77,7 +77,7 @@ export default async () => {
         file: `dist/node/${name}.cjs`,
         format: "cjs",
         preferConst: true,
-        exports: "named",
+        exports: "default",
         banner
       },
       plugins: [

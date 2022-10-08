@@ -208,3 +208,13 @@
 ### Contributors to this release
 
 - [Jason Saayman](https://github.com/jasonsaayman)
+
+## [1.1.2] - 2022-10-07
+
+### Fixed
+
+- Fixed broken exports for UMD builds.
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)

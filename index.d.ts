@@ -398,7 +398,7 @@ export interface AxiosResponse<T = any, D = any> {
   request?: any;
 }
 
-export class AxiosErrorType<T = unknown, D = any> extends Error {
+export class AxiosError<T = unknown, D = any> extends Error {
   constructor(
     message?: string,
     code?: string,
@@ -429,7 +429,7 @@ export class AxiosErrorType<T = unknown, D = any> extends Error {
   static readonly ETIMEDOUT = "ETIMEDOUT";
 }
 
-export class CanceledError<T> extends AxiosErrorType<T> {}
+export class CanceledError<T> extends AxiosError<T> {}
 
 export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
 
@@ -566,12 +566,12 @@ export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
-  AxiosError: typeof AxiosErrorType;
+  AxiosError: typeof AxiosError;
   readonly VERSION: string;
   isCancel(value: any): value is Cancel;
   all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
   spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
-  isAxiosError<T = any, D = any>(payload: any): payload is AxiosErrorType<T, D>;
+  isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
   toFormData(
     sourceObj: object,
     targetFormData?: GenericFormData,

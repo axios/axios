@@ -715,6 +715,18 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should not fail on HEAD request with enconding result header ', function (done) {
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Encoding', 'gzip');
+      res.end();
+    }).listen(4444, function () {
+      axios.head('http://localhost:4444/').then(function (res) {
+          assert.equal(res.status, 200);
+          done();
+        }).catch(done);
+    });
+  });
+
   describe('streams', function(){
     it('should support streams', function (done) {
       server = http.createServer(function (req, res) {

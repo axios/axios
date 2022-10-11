@@ -10,7 +10,7 @@
     <div>
       <h3>User</h3>
       <div class="row">
-        <img id="useravatar" src="" class="col-md-1"/>
+        <img id="useravatar" alt="avatar" src="" class="col-md-1"/>
         <div class="col-md-3">
           <strong id="username"></strong>
         </div>
@@ -31,7 +31,7 @@
         document.getElementById('orgs').innerHTML = orgs.data.map(function (org) {
           return (
             '<li class="row">' +
-              '<img src="' + org.avatar_url + '" class="col-md-1"/>' +
+              '<img src="' + org.avatar_url + alt="org avatar" '" class="col-md-1"/>' +
               '<div class="col-md-3">' +
                 '<strong>' + org.login + '</strong>' +
               '</div>' +

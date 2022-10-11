@@ -480,6 +480,7 @@ These are the available config options for making requests. Only the `url` is re
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',
+    // hostname: '127.0.0.1' // Takes precedence over 'host' if both are defined
     port: 9000,
     auth: {
       username: 'mikeymike',

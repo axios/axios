@@ -1,5 +1,5 @@
 // TypeScript Version: 4.1
-type AxiosHeaderValue = string | string[] | number | boolean | null;
+type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
 
 type MethodsHeaders = {

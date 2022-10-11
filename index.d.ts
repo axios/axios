@@ -503,6 +503,7 @@ export interface AxiosInstance extends Axios {
   <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
   <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
 
+  create(config?: CreateAxiosDefaults): AxiosInstance;
   defaults: Omit<AxiosDefaults, 'headers'> & {
     headers: HeadersDefaults & {
       [key: string]: AxiosHeaderValue
@@ -535,7 +536,6 @@ export function isCancel(value: any): value is Cancel;
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 
 export interface AxiosStatic extends AxiosInstance {
-  create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;

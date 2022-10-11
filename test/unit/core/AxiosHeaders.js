@@ -13,6 +13,20 @@ describe('AxiosHeaders', function () {
     assert.strictEqual(headers.get('y'), '2');
   })
 
+  it('should existing header instance as argument', function () {
+    const headers = new AxiosHeaders({
+      x: 1,
+      y: 2,
+    });
+
+    assert.strictEqual(headers.get('x'), '1');
+    assert.strictEqual(headers.get('y'), '2');
+
+    const newHeaders = new AxiosHeaders(headers);
+
+    assert.strictEqual(newHeaders.get('x'), '1');
+    assert.strictEqual(newHeaders.get('y'), '2');
+  })
 
   describe('set', function () {
     it('should support adding a single header', function(){

@@ -1237,25 +1237,25 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  context("different options for direct proxy configuration (without env variables)", () => {
-    const destination = "www.example.com";
+  context('different options for direct proxy configuration (without env variables)', () => {
+    const destination = 'www.example.com';
 
     const testCases = [{
-      description: "hostname and trailing colon in protocol",
-      proxyConfig: { hostname: "127.0.0.1", protocol: "http:", port: 80 },
-      expectedOptions: { host: "127.0.0.1", protocol: "http:", port: 80, path: destination }
+      description: 'hostname and trailing colon in protocol',
+      proxyConfig: { hostname: '127.0.0.1', protocol: 'http:', port: 80 },
+      expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination }
     }, {
-      description: "hostname and no trailing colon in protocol",
-      proxyConfig: { hostname: "127.0.0.1", protocol: "http", port: 80 },
-      expectedOptions: { host: "127.0.0.1", protocol: "http:", port: 80, path: destination }
+      description: 'hostname and no trailing colon in protocol',
+      proxyConfig: { hostname: '127.0.0.1', protocol: 'http', port: 80 },
+      expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination }
     }, {
-      description: "both hostname and host -> hostname takes precedence",
-      proxyConfig: { hostname: "127.0.0.1", host: "0.0.0.0", protocol: "http", port: 80 },
-      expectedOptions: { host: "127.0.0.1", protocol: "http:", port: 80, path: destination }
+      description: 'both hostname and host -> hostname takes precedence',
+      proxyConfig: { hostname: '127.0.0.1', host: '0.0.0.0', protocol: 'http', port: 80 },
+      expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination }
     }, {
-      description: "only host and https protocol",
-      proxyConfig: { host: "0.0.0.0", protocol: "https", port: 80 },
-      expectedOptions: { host: "0.0.0.0", protocol: "https:", port: 80, path: destination }
+      description: 'only host and https protocol',
+      proxyConfig: { host: '0.0.0.0', protocol: 'https', port: 80 },
+      expectedOptions: { host: '0.0.0.0', protocol: 'https:', port: 80, path: destination }
     }];
 
     for (const test of testCases) {

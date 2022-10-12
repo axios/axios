@@ -52,7 +52,7 @@ describe('helpers::buildURL', function () {
 
   it('should support array params', function () {
     expect(buildURL('/foo', {
-      foo: ['bar', 'baz']
+      foo: ['bar', 'baz', null, undefined]
     })).toEqual('/foo?foo[]=bar&foo[]=baz');
   });
 

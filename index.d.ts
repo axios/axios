@@ -247,8 +247,13 @@ export interface ParamEncoder {
   (value: any, defaultEncoder: (value: any) => any): any;
 }
 
+export interface CustomParamsSerializer {
+  (params: object, options?: ParamsSerializerOptions): string;
+}
+
 export interface ParamsSerializerOptions extends SerializerOptions {
   encode?: ParamEncoder;
+  serialize?: CustomParamsSerializer;
 }
 
 type MaxUploadRate = number;

@@ -12,6 +12,26 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=bar');
   });
 
+  it('should support sending raw params to custom serializer func', function () {
+        const serializer = sinon.stub();
+        const params = { foo: "bar" };
+        serializer.returns("foo=bar");
+    expect(
+      buildURL(
+        "/foo",
+        {
+          foo: "bar",
+        },
+        { 
+          sendRawParams: true, 
+          encode: serializer
+        }
+      )
+    ).toEqual("/foo?foo=bar");
+    expect(serializer.calledOnce).toBe(true);
+    expect(serializer.calledWith(params)).toBe(true);
+  });
+
   it('should support object params', function () {
     expect(buildURL('/foo', {
       foo: {

@@ -8,7 +8,9 @@ describe('helpers::buildURL', function () {
 
   it('should support params', function () {
     expect(buildURL('/foo', {
-      foo: 'bar'
+      foo: 'bar',
+      isUndefined: undefined,
+      isNull: null
     })).toEqual('/foo?foo=bar');
   });
 

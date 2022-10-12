@@ -69,9 +69,9 @@ export class AxiosHeaders {
   hasContentEncoding: AxiosHeaderTester;
 }
 
-export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
+export type RawAxiosRequestHeaders = RawAxiosHeaders & Partial<MethodsHeaders & CommonHeaders>;
 
-export type AxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders> & AxiosHeaders;
+export type AxiosRequestHeaders = RawAxiosHeaders & Partial<MethodsHeaders & CommonHeaders> & AxiosHeaders;
 
 export type RawAxiosResponseHeaders = Partial<Record<string, string> & {
   "set-cookie"?: string[]

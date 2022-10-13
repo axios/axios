@@ -118,13 +118,13 @@ $ pnpm add axios
 Using jsDelivr CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
 ```
 
 ## Example
@@ -529,7 +529,7 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   formSerializer: {
-      visitor: (value, key, path, helpers) => {}; // custom visitor funaction to serrialize form values
+      visitor: (value, key, path, helpers) => {}; // custom visitor function to serialize form values
       dots: boolean; // use dots instead of brackets format
       metaTokens: boolean; // keep special endings like {} in parameter key
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes

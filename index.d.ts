@@ -39,7 +39,7 @@ export class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
-  toJSON(): RawAxiosHeaders;
+  toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 

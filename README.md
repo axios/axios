@@ -358,10 +358,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional config in charge of serializing `params`
   paramsSerializer: {
-    encode(param) => { /* Do custom ops here and return transformed string */ }, // custom encoder function; sends Raw Params Object when sendRawParams === true instead of Key/Values in an iterative fashion 
-    indexes: null, // array indexes format (null - no brackets, false - empty brackets, true - brackets with indexes)
+    encode(param: Record<string unknown> | string): string => { /* Do custom ops here and return transformed string */ }, // custom encoder function; sends Raw Params Object when sendRawParams === true instead of Key/Values in an iterative fashion
     sendRawParams: false, // set to 'true' to mimic pre 1.x behavior and send entire params object to a custom serializer func (defined on the 'encode' field). Allows consumer to control how params are serialized.
-    indexes: false, // array indexes format (null - no brackets, false (default) - empty brackets, true - brackets with indexes)
+    indexes: false // array indexes format (null - no brackets, false (default) - empty brackets, true - brackets with indexes)
   },
 
   // `data` is the data to be sent as the request body

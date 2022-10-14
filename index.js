@@ -28,5 +28,6 @@ export {
   Cancel,
   isAxiosError,
   spread,
-  toFormData
+  toFormData,
+  axios
 }

@@ -24,9 +24,8 @@ describe('helpers::buildURL', function () {
         {
           foo: "bar",
         },
-        { 
-          sendRawParams: true, 
-          encode: serializer
+        {
+          serialize: serializer,
         }
       )
     ).toEqual("/foo?foo=bar");

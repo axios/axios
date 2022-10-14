@@ -248,7 +248,7 @@ export interface ParamEncoder {
 }
 
 export interface CustomParamsSerializer {
-  (params: Record<string, unknown>, options?: ParamsSerializerOptions): string;
+  (params: Record<string, any>, options?: ParamsSerializerOptions): string;
 }
 
 export interface ParamsSerializerOptions extends SerializerOptions {

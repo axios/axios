@@ -85,4 +85,20 @@ describe('helpers::buildURL', function () {
   it('should support URLSearchParams', function () {
     expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
   });
+
+  it('should support custom serialize function', function () {
+    const params = {
+      x: 1
+    }
+
+    const options = {
+      serialize: (thisParams, thisOptions) => {
+        expect(thisParams).toEqual(params);
+        expect(thisOptions).toEqual(options);
+        return "rendered"
+      }
+    };
+
+    expect(buildURL('/foo', params, options)).toEqual('/foo?rendered');
+  });
 });

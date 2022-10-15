@@ -538,6 +538,7 @@ These are the available config options for making requests. Only the `url` is re
       dots: boolean; // use dots instead of brackets format
       metaTokens: boolean; // keep special endings like {} in parameter key
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes
+      skipNulls: boolean; // skip null values when serializing data
   },
 
   // http adapter only (node.js)
@@ -1032,6 +1033,8 @@ The back-end body-parser could potentially use this meta-information to automati
     - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
     - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
+
+- `skipNulls: boolean = false` - by default, `null` values are treated like empty strings, use this flag to completely skip them just like `undefined`.
 
 Let's say we have an object like this one:
 

@@ -237,6 +237,7 @@ export interface SerializerOptions {
   dots?: boolean;
   metaTokens?: boolean;
   indexes?: boolean | null;
+  skipNulls?: boolean;
 }
 
 // tslint:disable-next-line

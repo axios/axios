@@ -621,7 +621,7 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults/index.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axioslib/defaults/index.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
 ```js
 // Create an instance using the config defaults provided by the library
@@ -1258,10 +1258,10 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 ## Resources
 
 * [Changelog](https://github.com/axios/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
+* [Upgrade Guide](https://github.com/axios/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/CODE_OF_CONDUCT.md)
 
 ## Credits
 

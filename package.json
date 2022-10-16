@@ -13,7 +13,8 @@
         "require": "./dist/node/axios.cjs",
         "default": "./index.js"
       }
-    }
+    },
+    "./lib/*": "./lib/*.js"
   },
   "type": "module",
   "types": "index.d.ts",

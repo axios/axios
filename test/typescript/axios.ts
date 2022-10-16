@@ -6,7 +6,7 @@ import axios, {
   AxiosAdapter,
   Cancel,
   CancelTokenSource,
-  Canceler, AxiosProgressEvent
+  Canceler, AxiosProgressEvent, ParamsSerializerOptions
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -21,8 +21,8 @@ const config: AxiosRequestConfig = {
   params: { id: 12345 },
   paramsSerializer: {
     indexes: true,
-    encode: (value) => value,
-    serialize: (value, options) => String(value)
+    encode: (value: any) => value,
+    serialize: (value: Record<string, any>, options?: ParamsSerializerOptions) => String(value)
   },
   data: { foo: 'bar' },
   timeout: 10000,

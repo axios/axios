@@ -106,12 +106,11 @@ describe('headers', function () {
     });
   });
 
-  it('should preserve content-type if data is false', function (done) {
+  it('should preserve content-type if data is false', async function () {
     axios.post('/foo', false);
 
-    getAjaxRequest().then(function (request) {
+    await getAjaxRequest().then(function (request) {
       testHeaderValue(request.requestHeaders, 'Content-Type', 'application/x-www-form-urlencoded');
-      done();
     });
   });
 });

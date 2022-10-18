@@ -1,5 +1,5 @@
 // TypeScript Version: 4.1
-type AxiosHeaderValue = string | string[] | number | boolean | null;
+type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
 
 type MethodsHeaders = {
@@ -39,7 +39,7 @@ export class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
-  toJSON(): RawAxiosHeaders;
+  toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
@@ -247,8 +247,13 @@ export interface ParamEncoder {
   (value: any, defaultEncoder: (value: any) => any): any;
 }
 
+export interface CustomParamsSerializer {
+  (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+}
+
 export interface ParamsSerializerOptions extends SerializerOptions {
   encode?: ParamEncoder;
+  serialize?: CustomParamsSerializer;
 }
 
 type MaxUploadRate = number;

@@ -2,7 +2,7 @@ import axios from './lib/axios.js';
 
 // Keep top-level export same with static properties
 // so that it can keep same with es module or cjs
-const {
+export const {
   Axios,
   AxiosError,
   CanceledError,
@@ -17,16 +17,3 @@ const {
 } = axios;
 
 export default axios;
-export {
-  Axios,
-  AxiosError,
-  CanceledError,
-  isCancel,
-  CancelToken,
-  VERSION,
-  all,
-  Cancel,
-  isAxiosError,
-  spread,
-  toFormData
-}

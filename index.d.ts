@@ -463,6 +463,18 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+export function toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
+
+export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+
+export function isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
+
+export function spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
+
+export function isCancel(value: any): value is Cancel;
+
+export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
@@ -470,12 +482,12 @@ export interface AxiosStatic extends AxiosInstance {
   Axios: typeof Axios;
   AxiosError: typeof AxiosError;
   readonly VERSION: string;
-  isCancel(value: any): value is Cancel;
-  all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
-  spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
-  isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
-  toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
-  formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+  isCancel: typeof isCancel;
+  all: typeof all;
+  spread: typeof spread;
+  isAxiosError: typeof isAxiosError;
+  toFormData: typeof toFormData;
+  formToJSON: typeof formToJSON;
 }
 
 declare const axios: AxiosStatic;

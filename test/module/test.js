@@ -1,0 +1,74 @@
+import assert from 'assert';
+import * as axios from '../../index.js';
+import axiosFactory from '../../lib/axios.js';
+import utils from "../../lib/utils.js";
+import {fileURLToPath} from 'url';
+import path from 'path';
+import util from "util";
+import cp from "child_process";
+import fs from 'fs-extra';
+
+const BACKUP_PATH = './backup/';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const exec = util.promisify(cp.exec);
+
+const {Axios} = axiosFactory;
+const ignoreList = [];
+
+const instance = axiosFactory.create({});
+
+const remove = (file) => {
+  console.log(`✓ Remove entry '${file}'...`);
+  return fs.remove(file);
+}
+
+describe('module', function () {
+
+  before(async ()=> {
+    console.log('✓ Creating build backup...');
+    await fs.copy('./dist/', BACKUP_PATH);
+    console.log('✓ Exec build script...');
+    await exec('npm run build');
+    console.log('✓ Running tests...');
+  });
+
+  after(async () => {
+    console.log('✓ Restore build from the backup...');
+    await fs.copy(BACKUP_PATH, './dist/');
+    await remove(BACKUP_PATH);
+  });
+
+  it('should have consistent ESM export', function () {
+    const namedExport = {};
+    const factoryExport = {};
+
+    Object.entries(axiosFactory).forEach(([key, value]) => {
+      if(!utils.hasOwnProp(Axios, key) && !(key in instance) && ignoreList.indexOf(key) === -1) {
+        factoryExport[key] = value;
+      }
+    });
+
+    Object.entries(axios).forEach(([key, value]) => {
+      key!=='default' && ignoreList.indexOf(key) === -1 && (namedExport[key] = value);
+    });
+
+    assert.deepStrictEqual(namedExport, factoryExport);
+  });
+
+  describe('CommonJS', ()=> {
+    const pkgPath = path.join(__dirname, './cjs');
+
+    after(async ()=> {
+      await remove(path.join(pkgPath, './node_modules'));
+    });
+
+    it('should be able to be loaded with require', async function () {
+      this.timeout(30000);
+
+      await exec(`npm test --prefix ${pkgPath}`);
+    });
+  });
+
+});

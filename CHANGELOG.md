@@ -218,3 +218,38 @@
 ### Contributors to this release
 
 - [Jason Saayman](https://github.com/jasonsaayman)
+
+## [1.1.3] - 2022-10-15
+
+### Added
+Added custom params serializer support [#5113](https://github.com/axios/axios/pull/5113)
+
+### Fixed
+
+Fixed top-level export to keep them in-line with static properties [#5109](https://github.com/axios/axios/pull/5109)
+Stopped including null values to query string. [#5108](https://github.com/axios/axios/pull/5108)
+Restored proxy config backwards compatibility with 0.x [#5097](https://github.com/axios/axios/pull/5097)
+Added back AxiosHeaders in AxiosHeaderValue [#5103](https://github.com/axios/axios/pull/5103)
+Pin CDN install instructions to a specific version [#5060](https://github.com/axios/axios/pull/5060)
+Handling of array values fixed for AxiosHeaders [#5085](https://github.com/axios/axios/pull/5085)
+
+### Chores
+
+docs: match badge style, add link to them [#5046](https://github.com/axios/axios/pull/5046)
+chore: fixing comments typo [#5054](https://github.com/axios/axios/pull/5054)
+chore: update issue template [#5061](https://github.com/axios/axios/pull/5061)
+chore: added progress capturing section to the docs; [#5084](https://github.com/axios/axios/pull/5084)
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)
+- [scarf](https://github.com/scarf005)
+- [Lenz Weber-Tronic](https://github.com/phryneas)
+- [Arvindh](https://github.com/itsarvindh)
+- [Félix Legrelle](https://github.com/FelixLgr)
+- [Patrick Petrovic](https://github.com/ppati000)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [littledian](https://github.com/littledian)
+- [ChronosMasterOfAllTime](https://github.com/ChronosMasterOfAllTime)
+- [Salman Shaikh](https://github.com/salmannotkhan)
+

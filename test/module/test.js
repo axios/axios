@@ -71,4 +71,18 @@ describe('module', function () {
     });
   });
 
+  describe('ESM', ()=> {
+    const pkgPath = path.join(__dirname, './esm');
+
+    after(async ()=> {
+      await remove(path.join(pkgPath, './node_modules'));
+    });
+
+    it('should be able to be loaded with import', async function () {
+      this.timeout(30000);
+
+      await exec(`npm test --prefix ${pkgPath}`);
+    });
+  });
+
 });

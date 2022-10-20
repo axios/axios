@@ -13,7 +13,8 @@ const {
   Cancel,
   isAxiosError,
   spread,
-  toFormData
+  toFormData,
+  HttpStatusCode
 } = axios;
 
 export default axios;
@@ -28,5 +29,6 @@ export {
   Cancel,
   isAxiosError,
   spread,
-  toFormData
+  toFormData,
+  HttpStatusCode
 }

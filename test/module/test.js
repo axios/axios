@@ -19,9 +19,13 @@ const ignoreList = [];
 
 const instance = axiosFactory.create({});
 
-const remove = (file) => {
+const remove = async (file) => {
   console.log(`✓ Remove entry '${file}'...`);
-  return fs.remove(file);
+  try {
+    await fs.remove(file);
+  } catch (err) {
+    console.warn(err);
+  }
 }
 
 describe('module', function () {
@@ -82,6 +86,20 @@ describe('module', function () {
       this.timeout(30000);
 
       await exec(`npm test --prefix ${pkgPath}`);
+    });
+  });
+
+  describe('TS', ()=> {
+    const pkgPath = path.join(__dirname, './ts');
+
+    after(async ()=> {
+      await remove(path.join(pkgPath, './node_modules'));
+    });
+
+    it('should be able to be loaded with import', async function () {
+      this.timeout(30000);
+
+      await exec(`npm test --prefix ${pkgPath}`, {});
     });
   });
 

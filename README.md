@@ -132,7 +132,7 @@ Using unpkg CDN:
 ## Example
 
 ### note: CommonJS usage
-In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
+In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js
 const axios = require('axios').default;

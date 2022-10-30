@@ -5,9 +5,14 @@ import axios, {
   AxiosInstance,
   AxiosAdapter,
   Cancel,
-  CancelToken,
   CancelTokenSource,
-  Canceler, AxiosProgressEvent
+  Canceler, AxiosProgressEvent, ParamsSerializerOptions,
+  toFormData,
+  formToJSON,
+  all,
+  isCancel,
+  isAxiosError,
+  spread
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -22,7 +27,8 @@ const config: AxiosRequestConfig = {
   params: { id: 12345 },
   paramsSerializer: {
     indexes: true,
-    encode: (value) => value
+    encode: (value: any) => value,
+    serialize: (value: Record<string, any>, options?: ParamsSerializerOptions) => String(value)
   },
   data: { foo: 'bar' },
   timeout: 10000,
@@ -270,6 +276,17 @@ instance1.defaults.timeout = 2500;
 
 axios.create({ headers: { foo: 'bar' } });
 axios.create({ headers: { common: { foo: 'bar' } } });
+axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  formSerializer: {
+    indexes: null,
+  },
+  paramsSerializer: {
+    indexes: null,
+  },
+});
 
 // Interceptors
 
@@ -300,8 +317,24 @@ axios.interceptors.response.use(
   (error: any) => Promise.reject(error)
 );
 
+const voidRequestInterceptorId = axios.interceptors.request.use(
+  // @ts-expect-error -- Must return an AxiosRequestConfig (or throw)
+  (_response) => {},
+  (error: any) => Promise.reject(error)
+);
+const voidResponseInterceptorId = axios.interceptors.response.use(
+  // @ts-expect-error -- Must return an AxiosResponse (or throw)
+  (_response) => {},
+  (error: any) => Promise.reject(error)
+);
+axios.interceptors.request.eject(voidRequestInterceptorId);
+axios.interceptors.response.eject(voidResponseInterceptorId);
+
 axios.interceptors.response.use((response: AxiosResponse) => response);
 axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
+
+axios.interceptors.request.clear();
+axios.interceptors.response.clear();
 
 // Adapters
 
@@ -327,10 +360,27 @@ const promises = [
 
 const promise: Promise<number[]> = axios.all(promises);
 
+// axios.all named export
+
+(() => {
+  const promises = [
+    Promise.resolve(1),
+    Promise.resolve(2)
+  ];
+
+  const promise: Promise<number[]> = all(promises);
+})();
+
 // axios.spread
 
 const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
 const fn2: (arr: number[]) => string = axios.spread(fn1);
+
+// axios.spread named export
+(() => {
+  const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
+  const fn2: (arr: number[]) => string = spread(fn1);
+})();
 
 // Promises
 
@@ -369,6 +419,12 @@ axios.get('/user', {
     const cancel: Cancel = thrown;
     console.log(cancel.message);
   }
+
+  // named export
+  if (isCancel(thrown)) {
+    const cancel: Cancel = thrown;
+    console.log(cancel.message);
+  }
 });
 
 source.cancel('Operation has been canceled.');
@@ -380,11 +436,27 @@ axios.get('/user')
     if (axios.isAxiosError(error)) {
       const axiosError: AxiosError = error;
     }
+
+    // named export
+
+    if (isAxiosError(error)) {
+      const axiosError: AxiosError = error;
+    }
   });
 
 // FormData
 
 axios.toFormData({x: 1}, new FormData());
+
+// named export
+toFormData({x: 1}, new FormData());
+
+// formToJSON
+
+axios.toFormData(new FormData());
+
+// named export
+formToJSON(new FormData());
 
 // AbortSignal
 

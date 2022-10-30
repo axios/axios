@@ -8,8 +8,29 @@ describe('helpers::buildURL', function () {
 
   it('should support params', function () {
     expect(buildURL('/foo', {
-      foo: 'bar'
+      foo: 'bar',
+      isUndefined: undefined,
+      isNull: null
     })).toEqual('/foo?foo=bar');
+  });
+
+  it('should support sending raw params to custom serializer func', function () {
+        const serializer = sinon.stub();
+        const params = { foo: "bar" };
+        serializer.returns("foo=bar");
+    expect(
+      buildURL(
+        "/foo",
+        {
+          foo: "bar",
+        },
+        {
+          serialize: serializer,
+        }
+      )
+    ).toEqual("/foo?foo=bar");
+    expect(serializer.calledOnce).toBe(true);
+    expect(serializer.calledWith(params)).toBe(true);
   });
 
   it('should support object params', function () {
@@ -30,7 +51,7 @@ describe('helpers::buildURL', function () {
 
   it('should support array params', function () {
     expect(buildURL('/foo', {
-      foo: ['bar', 'baz']
+      foo: ['bar', 'baz', null, undefined]
     })).toEqual('/foo?foo[]=bar&foo[]=baz');
   });
 
@@ -62,5 +83,21 @@ describe('helpers::buildURL', function () {
 
   it('should support URLSearchParams', function () {
     expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
+  });
+
+  it('should support custom serialize function', function () {
+    const params = {
+      x: 1
+    }
+
+    const options = {
+      serialize: (thisParams, thisOptions) => {
+        expect(thisParams).toEqual(params);
+        expect(thisOptions).toEqual(options);
+        return "rendered"
+      }
+    };
+
+    expect(buildURL('/foo', params, options)).toEqual('/foo?rendered');
   });
 });

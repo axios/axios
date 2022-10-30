@@ -6,22 +6,24 @@
   "exports": {
     ".": {
       "browser": {
-        "require": "./dist/node/axios.cjs",
+        "require": "./dist/browser/axios.cjs",
         "default": "./index.js"
       },
       "default": {
         "require": "./dist/node/axios.cjs",
         "default": "./index.js"
       }
-    }
+    },
+    "./package.json": "./package.json"
   },
   "type": "module",
   "types": "index.d.ts",
   "scripts": {
-    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:dtslint",
+    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:exports && npm run test:dtslint",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
     "test:dtslint": "node bin/ssl_hotfix.js dtslint",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
+    "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
     "test:karma": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "start": "node ./sandbox/server.js",

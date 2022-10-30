@@ -825,7 +825,7 @@ controller.abort()
 
 You can also cancel a request using a *CancelToken*.
 
-> The axios cancel token API is based on the withdrawn [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
+> The axios cancel token API is based on the withdrawn [cancellable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
 
 > This API is deprecated since v0.22.0 and shouldn't be used in new projects
 

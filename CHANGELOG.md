@@ -179,3 +179,78 @@
 - [Luca Pizzini](https://github.com/lpizzinidev)
 - [Willian Agostini](https://github.com/WillianAgostini)
 - [Huyen Nguyen](https://github.com/huyenltnguyen)
+
+## [1.1.0] - 2022-10-06
+
+### Fixed
+
+- Fixed missing exports in type definition index.d.ts [#5003](https://github.com/axios/axios/pull/5003)
+- Fixed query params composing [#5018](https://github.com/axios/axios/pull/5018)
+- Fixed GenericAbortSignal interface by making it more generic [#5021](https://github.com/axios/axios/pull/5021)
+- Fixed adding "clear" to AxiosInterceptorManager [#5010](https://github.com/axios/axios/pull/5010)
+- Fixed commonjs & umd exports [#5030](https://github.com/axios/axios/pull/5030)
+- Fixed inability to access response headers when using axios 1.x with Jest [#5036](https://github.com/axios/axios/pull/5036)
+
+### Contributors to this release
+
+- [Trim21](https://github.com/trim21)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [shingo.sasaki](https://github.com/s-sasaki-0529)
+- [Ivan Pepelko](https://github.com/ivanpepelko)
+- [Richard Kořínek](https://github.com/risa)
+
+## [1.1.1] - 2022-10-07
+
+### Fixed
+
+- Fixed broken exports for common js. This fix breaks a prior fix, I will fix both issues ASAP but the commonJS use is more impactful.
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)
+
+## [1.1.2] - 2022-10-07
+
+### Fixed
+
+- Fixed broken exports for UMD builds.
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)
+
+## [1.1.3] - 2022-10-15
+
+### Added
+
+- Added custom params serializer support [#5113](https://github.com/axios/axios/pull/5113)
+
+### Fixed
+
+- Fixed top-level export to keep them in-line with static properties [#5109](https://github.com/axios/axios/pull/5109)
+- Stopped including null values to query string. [#5108](https://github.com/axios/axios/pull/5108)
+- Restored proxy config backwards compatibility with 0.x [#5097](https://github.com/axios/axios/pull/5097)
+- Added back AxiosHeaders in AxiosHeaderValue [#5103](https://github.com/axios/axios/pull/5103)
+- Pin CDN install instructions to a specific version [#5060](https://github.com/axios/axios/pull/5060)
+- Handling of array values fixed for AxiosHeaders [#5085](https://github.com/axios/axios/pull/5085)
+
+### Chores
+
+- docs: match badge style, add link to them [#5046](https://github.com/axios/axios/pull/5046)
+- chore: fixing comments typo [#5054](https://github.com/axios/axios/pull/5054)
+- chore: update issue template [#5061](https://github.com/axios/axios/pull/5061)
+- chore: added progress capturing section to the docs; [#5084](https://github.com/axios/axios/pull/5084)
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)
+- [scarf](https://github.com/scarf005)
+- [Lenz Weber-Tronic](https://github.com/phryneas)
+- [Arvindh](https://github.com/itsarvindh)
+- [Félix Legrelle](https://github.com/FelixLgr)
+- [Patrick Petrovic](https://github.com/ppati000)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [littledian](https://github.com/littledian)
+- [ChronosMasterOfAllTime](https://github.com/ChronosMasterOfAllTime)
+- [Salman Shaikh](https://github.com/salmannotkhan)
+

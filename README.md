@@ -15,15 +15,18 @@
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
-![Build status](https://github.com/axios/axios/actions/workflows/ci.yml/badge.svg)
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios)
+[![Build status](https://img.shields.io/github/workflow/status/axios/axios/ci?label=CI&logo=github&style=flat-square)](https://github.com/axios/axios/actions/workflows/ci.yml)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod&style=flat-square)](https://gitpod.io/#https://github.com/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
-[![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
+[![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=axios&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=axios)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios?style=flat-square)](https://bundlephobia.com/package/axios@latest)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios)
+
+
+
 
 </div>
   
@@ -32,6 +35,8 @@
   - [Features](#features)
   - [Browser Support](#browser-support)
   - [Installing](#installing)
+    - [Package manager](#package-manager)
+    - [CDN](#cdn)
   - [Example](#example)
   - [Axios API](#axios-api)
   - [Request method aliases](#request-method-aliases)
@@ -59,6 +64,8 @@
     - [🆕 Automatic serialization](#-automatic-serialization-to-formdata)
   - [Files Posting](#files-posting)
   - [HTML Form Posting](#-html-form-posting-browser)
+  - [🆕 Progress capturing](#-progress-capturing)
+  - [🆕 Rate limiting](#-progress-capturing)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -88,6 +95,8 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 
 ## Installing
 
+### Package manager
+
 Using npm:
 
 ```bash
@@ -112,33 +121,57 @@ Using pnpm:
 $ pnpm add axios
 ```
 
-Using jsDelivr CDN:
+Once the package is installed, you can import the library using `import` or `require` approach:
+
+```js
+import axios, {isCancel, AxiosError} from 'axios';
+```
+
+You can also use the default export, since the named export is just a re-export from the Axios factory:
+
+```js
+import axios from 'axios';
+
+console.log(axios.isCancel('something'));
+````
+
+If you use `require` for importing, **only default export is available**:
+
+```js
+const axios = require('axios');
+
+console.log(axios.isCancel('something'));
+```
+
+For cases where something went wrong when trying to import a module into a custom or legacy environment,
+you can try importing the module package directly:
+
+```js
+const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundle (ES2017)
+// const axios = require('axios/dist/node/axios.cjs'); // node commonJS bundle (ES2017)
+```
+
+### CDN
+
+Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
 ```
 
 ## Example
 
-### note: CommonJS usage
-In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
-
-```js
-const axios = require('axios').default;
-
-// axios.<method> will now provide autocomplete and parameter typings
-```
-
 Performing a `GET` request
 
 ```js
-const axios = require('axios').default;
+import axios from 'axios';
+//const axios = require('axios'); // legacy way
 
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
@@ -353,7 +386,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional config in charge of serializing `params`
   paramsSerializer: {
-    indexes: null // array indexes format (null - no brackets, false - empty brackets, true - brackets with indexes)
+    encode?: (param: string): string => { /* Do custom ops here and return transformed string */ }, // custom encoder function; sends Key/Values in an iterative fashion
+    serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ), // mimic pre 1.x behavior and send entire params object to a custom serializer func. Allows consumer to control how params are serialized.
+    indexes: false // array indexes format (null - no brackets, false (default) - empty brackets, true - brackets with indexes)
   },
 
   // `data` is the data to be sent as the request body
@@ -361,7 +396,7 @@ These are the available config options for making requests. Only the `url` is re
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
-  // - Node only: Stream, Buffer
+  // - Node only: Stream, Buffer, FormData (form-data package)
   data: {
     firstName: 'Fred'
   },
@@ -411,15 +446,15 @@ These are the available config options for making requests. Only the `url` is re
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
   // `onUploadProgress` allows handling of progress events for uploads
-  // browser only
-  onUploadProgress: function (progressEvent) {
-    // Do whatever you want with the native progress event
+  // browser & node.js
+  onUploadProgress: function ({loaded, total, progress, bytes, estimated, rate, upload = true}) {
+    // Do whatever you want with the Axios progress event
   },
 
   // `onDownloadProgress` allows handling of progress events for downloads
-  // browser only
-  onDownloadProgress: function (progressEvent) {
-    // Do whatever you want with the native progress event
+  // browser & node.js
+  onDownloadProgress: function ({loaded, total, progress, bytes, estimated, rate, download = true}) {
+    // Do whatever you want with the Axios progress event
   },
 
   // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
@@ -477,6 +512,7 @@ These are the available config options for making requests. Only the `url` is re
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',
+    // hostname: '127.0.0.1' // Takes precedence over 'host' if both are defined
     port: 9000,
     auth: {
       username: 'mikeymike',
@@ -526,11 +562,17 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   formSerializer: {
-      visitor: (value, key, path, helpers) => {}; // custom visitor funaction to serrialize form values
+      visitor: (value, key, path, helpers) => {}; // custom visitor function to serialize form values
       dots: boolean; // use dots instead of brackets format
       metaTokens: boolean; // keep special endings like {} in parameter key
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes
-  }
+  },
+
+  // http adapter only (node.js)
+  maxRate: [
+    100 * 1024, // 100KB/s upload limit,
+    100 * 1024  // 100KB/s download limit
+  ]
 }
 ```
 
@@ -1138,6 +1180,76 @@ will be submitted as the following JSON object:
 ````
 
 Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
+
+## 🆕 Progress capturing
+
+Axios supports both browser and node environments to capture request upload/download progress.
+
+```js    
+await axios.post(url, data, {
+  onUploadProgress: function (axiosProgressEvent) {
+    /*{
+      loaded: number;
+      total?: number;
+      progress?: number; // in range [0..1]
+      bytes: number; // how many bytes have been transferred since the last trigger (delta)
+      estimated?: number; // estimated time in seconds
+      rate?: number; // upload speed in bytes
+      upload: true; // upload sign
+    }*/
+  },
+
+  onDownloadProgress: function (axiosProgressEvent) {
+    /*{
+      loaded: number;
+      total?: number;
+      progress?: number;
+      bytes: number; 
+      estimated?: number;
+      rate?: number; // download speed in bytes
+      download: true; // download sign
+    }*/
+  }
+});  
+```
+
+You can also track stream upload/download progress in node.js:
+
+```js
+const {data} = await axios.post(SERVER_URL, readableStream, {
+   onUploadProgress: ({progress}) => {
+     console.log((progress * 100).toFixed(2));
+   },
+  
+   headers: {
+    'Content-Length': contentLength
+   },
+
+   maxRedirects: 0 // avoid buffering the entire stream
+});
+````
+
+> **Note:**
+> Capturing FormData upload progress is currently not currently supported in node.js environments.
+
+> **⚠️ Warning**
+> It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the **node.js** environment,
+> as follow-redirects package will buffer the entire stream in RAM without following the "backpressure" algorithm.
+
+
+## 🆕 Rate limiting
+
+Download and upload rate limits can only be set for the http adapter (node.js):
+
+```js
+const {data} = await axios.post(LOCAL_SERVER_URL, myBuffer, {
+  onUploadProgress: ({progress, rate}) => {
+    console.log(`Upload [${(progress*100).toFixed(2)}%]: ${(rate / 1024).toFixed(2)}KB/s`)
+  },
+   
+  maxRate: [100 * 1024], // 100KB/s limit
+});
+```
 
 ## Semver
 

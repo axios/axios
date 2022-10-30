@@ -1,5 +1,5 @@
 // TypeScript Version: 4.1
-type AxiosHeaderValue = string | string[] | number | boolean | null;
+type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
 
 type MethodsHeaders = {
@@ -39,7 +39,7 @@ export class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
-  toJSON(): RawAxiosHeaders;
+  toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
@@ -210,10 +210,10 @@ export interface TransitionalOptions {
 }
 
 export interface GenericAbortSignal {
-  aborted: boolean;
-  onabort: ((...args: any) => any) | null;
-  addEventListener: (...args: any) => any;
-  removeEventListener: (...args: any) => any;
+  readonly aborted: boolean;
+  onabort?: ((...args: any) => any) | null;
+  addEventListener?: (...args: any) => any;
+  removeEventListener?: (...args: any) => any;
 }
 
 export interface FormDataVisitorHelpers {
@@ -247,8 +247,13 @@ export interface ParamEncoder {
   (value: any, defaultEncoder: (value: any) => any): any;
 }
 
+export interface CustomParamsSerializer {
+  (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+}
+
 export interface ParamsSerializerOptions extends SerializerOptions {
   encode?: ParamEncoder;
+  serialize?: CustomParamsSerializer;
 }
 
 type MaxUploadRate = number;
@@ -413,6 +418,7 @@ export interface AxiosInterceptorOptions {
 export interface AxiosInterceptorManager<V> {
   use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
+  clear(): void;
 }
 
 export class Axios {
@@ -457,6 +463,18 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+export function toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
+
+export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+
+export function isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
+
+export function spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
+
+export function isCancel(value: any): value is Cancel;
+
+export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
@@ -464,12 +482,14 @@ export interface AxiosStatic extends AxiosInstance {
   Axios: typeof Axios;
   AxiosError: typeof AxiosError;
   readonly VERSION: string;
-  isCancel(value: any): value is Cancel;
-  all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
-  spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
-  isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
-  toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
-  formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+  isCancel: typeof isCancel;
+  all: typeof all;
+  spread: typeof spread;
+  isAxiosError: typeof isAxiosError;
+  toFormData: typeof toFormData;
+  formToJSON: typeof formToJSON;
+  CanceledError: typeof CanceledError;
+  AxiosHeaders: typeof AxiosHeaders;
 }
 
 declare const axios: AxiosStatic;

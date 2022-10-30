@@ -132,5 +132,6 @@
     "Yasu Flores (https://github.com/yasuf)",
     "Ben Carp (https://github.com/carpben)",
     "Daniel Lopretto (https://github.com/timemachine3030)"
-  ]
+  ],
+  "sideEffects": false
 }

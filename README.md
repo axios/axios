@@ -825,7 +825,7 @@ controller.abort()
 
 You can also cancel a request using a *CancelToken*.
 
-> The axios cancel token API is based on the withdrawn [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
+> The axios cancel token API is based on the withdrawn [cancellable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
 
 > This API is deprecated since v0.22.0 and shouldn't be used in new projects
 
@@ -881,7 +881,7 @@ cancel();
 
 ### URLSearchParams
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [ Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
 const params = new URLSearchParams({ foo: 'bar' });
@@ -945,7 +945,7 @@ await axios.postForm('https://postman-echo.com/post', data,
 );
 ```
 
-The server will handle it as
+The server will handle it as:
 
 ```js
   {
@@ -1287,11 +1287,11 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 
 ## Resources
 
-* [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
+* [Changelog](https://github.com/axios/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/axios/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/CODE_OF_CONDUCT.md)
 
 ## Credits
 

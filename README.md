@@ -1,26 +1,42 @@
-# axios
+<h1 align="center">
+   <b>
+        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+    </b>
+</h1>
+
+<p align="center">Promise based HTTP client for the browser and node.js</p>
+
+<p align="center">
+    <a href="https://axios-http.com/"><b>Website</b></a> •
+    <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
+</p> 
+
+<div align="center">
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
 [![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
-![Build status](https://github.com/axios/axios/actions/workflows/ci.yml/badge.svg)
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axios/axios) 
+[![Build status](https://img.shields.io/github/workflow/status/axios/axios/ci?label=CI&logo=github&style=flat-square)](https://github.com/axios/axios/actions/workflows/ci.yml)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod&style=flat-square)](https://gitpod.io/#https://github.com/axios/axios)
 [![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
-[![install size](https://packagephobia.now.sh/badge?p=axios)](https://packagephobia.now.sh/result?p=axios)
+[![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=axios&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=axios)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios?style=flat-square)](https://bundlephobia.com/package/axios@latest)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios)
 
-Promise based HTTP client for the browser and node.js
 
-> New axios docs website: [click here](https://axios-http.com/)
 
+
+</div>
+  
 ## Table of Contents
 
   - [Features](#features)
   - [Browser Support](#browser-support)
   - [Installing](#installing)
+    - [Package manager](#package-manager)
+    - [CDN](#cdn)
   - [Example](#example)
   - [Axios API](#axios-api)
   - [Request method aliases](#request-method-aliases)
@@ -42,12 +58,14 @@ Promise based HTTP client for the browser and node.js
   - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
     - [URLSearchParams](#urlsearchparams)
     - [Query string](#query-string-older-browsers)
-    - [🆕 Automatic serialization](#-automatic-serialization-to-urlsearchparams)        
-  - [Using multipart/form-data format](#using-multipartform-data-format)    
+    - [🆕 Automatic serialization](#-automatic-serialization-to-urlsearchparams)
+  - [Using multipart/form-data format](#using-multipartform-data-format)
     - [FormData](#formdata)
-    - [🆕 Automatic serialization](#-automatic-serialization-to-formdata) 
+    - [🆕 Automatic serialization](#-automatic-serialization-to-formdata)
   - [Files Posting](#files-posting)
   - [HTML Form Posting](#-html-form-posting-browser)
+  - [🆕 Progress capturing](#-progress-capturing)
+  - [🆕 Rate limiting](#-progress-capturing)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -77,6 +95,8 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 
 ## Installing
 
+### Package manager
+
 Using npm:
 
 ```bash
@@ -101,33 +121,57 @@ Using pnpm:
 $ pnpm add axios
 ```
 
-Using jsDelivr CDN:
+Once the package is installed, you can import the library using `import` or `require` approach:
+
+```js
+import axios, {isCancel, AxiosError} from 'axios';
+```
+
+You can also use the default export, since the named export is just a re-export from the Axios factory:
+
+```js
+import axios from 'axios';
+
+console.log(axios.isCancel('something'));
+````
+
+If you use `require` for importing, **only default export is available**:
+
+```js
+const axios = require('axios');
+
+console.log(axios.isCancel('something'));
+```
+
+For cases where something went wrong when trying to import a module into a custom or legacy environment,
+you can try importing the module package directly:
+
+```js
+const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundle (ES2017)
+// const axios = require('axios/dist/node/axios.cjs'); // node commonJS bundle (ES2017)
+```
+
+### CDN
+
+Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
 ```
 
 ## Example
 
-### note: CommonJS usage
-In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
-
-```js
-const axios = require('axios').default;
-
-// axios.<method> will now provide autocomplete and parameter typings
-```
-
 Performing a `GET` request
 
 ```js
-const axios = require('axios').default;
+import axios from 'axios';
+//const axios = require('axios'); // legacy way
 
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
@@ -139,7 +183,7 @@ axios.get('/user?ID=12345')
     // handle error
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
   });
 
@@ -155,9 +199,9 @@ axios.get('/user', {
   .catch(function (error) {
     console.log(error);
   })
-  .then(function () {
+  .finally(function () {
     // always executed
-  });  
+  });
 
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
@@ -170,7 +214,7 @@ async function getUser() {
 }
 ```
 
-> **NOTE:** `async/await` is part of ECMAScript 2017 and is not supported in Internet
+> **Note** `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
@@ -342,7 +386,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional config in charge of serializing `params`
   paramsSerializer: {
-    indexes: null // array indexes format (null - no brackets, false - empty brackets, true - brackets with indexes)
+    encode?: (param: string): string => { /* Do custom ops here and return transformed string */ }, // custom encoder function; sends Key/Values in an iterative fashion
+    serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ), // mimic pre 1.x behavior and send entire params object to a custom serializer func. Allows consumer to control how params are serialized.
+    indexes: false // array indexes format (null - no brackets, false (default) - empty brackets, true - brackets with indexes)
   },
 
   // `data` is the data to be sent as the request body
@@ -350,11 +396,11 @@ These are the available config options for making requests. Only the `url` is re
   // When no `transformRequest` is set, must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
-  // - Node only: Stream, Buffer
+  // - Node only: Stream, Buffer, FormData (form-data package)
   data: {
     firstName: 'Fred'
   },
-  
+
   // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
@@ -400,15 +446,15 @@ These are the available config options for making requests. Only the `url` is re
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
   // `onUploadProgress` allows handling of progress events for uploads
-  // browser only
-  onUploadProgress: function (progressEvent) {
-    // Do whatever you want with the native progress event
+  // browser & node.js
+  onUploadProgress: function ({loaded, total, progress, bytes, estimated, rate, upload = true}) {
+    // Do whatever you want with the Axios progress event
   },
 
   // `onDownloadProgress` allows handling of progress events for downloads
-  // browser only
-  onDownloadProgress: function (progressEvent) {
-    // Do whatever you want with the native progress event
+  // browser & node.js
+  onDownloadProgress: function ({loaded, total, progress, bytes, estimated, rate, download = true}) {
+    // Do whatever you want with the Axios progress event
   },
 
   // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
@@ -462,10 +508,11 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
-  // If the proxy server uses HTTPS, then you must set the protocol to `https`. 
+  // If the proxy server uses HTTPS, then you must set the protocol to `https`.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',
+    // hostname: '127.0.0.1' // Takes precedence over 'host' if both are defined
     port: 9000,
     auth: {
       username: 'mikeymike',
@@ -481,8 +528,8 @@ These are the available config options for making requests. Only the `url` is re
   // an alternative way to cancel Axios requests using AbortController
   signal: new AbortController().signal,
 
-  // `decompress` indicates whether or not the response body should be decompressed 
-  // automatically. If set to `true` will also remove the 'content-encoding' header 
+  // `decompress` indicates whether or not the response body should be decompressed
+  // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
   decompress: true // default
@@ -504,7 +551,7 @@ These are the available config options for making requests. Only the `url` is re
 
     // try to parse the response string as JSON even if `responseType` is not 'json'
     forcedJSONParsing: true,
-    
+
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false,
   },
@@ -515,11 +562,17 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   formSerializer: {
-      visitor: (value, key, path, helpers)=> {}; // custom visitor funaction to serrialize form values
+      visitor: (value, key, path, helpers) => {}; // custom visitor function to serialize form values
       dots: boolean; // use dots instead of brackets format
-      metaTokens: boolean; // keep special endings like {} in parameter key 
+      metaTokens: boolean; // keep special endings like {} in parameter key
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes
-  }
+  },
+
+  // http adapter only (node.js)
+  maxRate: [
+    100 * 1024, // 100KB/s upload limit,
+    100 * 1024  // 100KB/s download limit
+  ]
 }
 ```
 
@@ -665,7 +718,7 @@ instance.interceptors.request.use(function () {/*...*/});
 ```
 
 When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay
-in the execution of your axios request when the main thread is blocked (a promise is created under the hood for 
+in the execution of your axios request when the main thread is blocked (a promise is created under the hood for
 the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag
 to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
 
@@ -676,7 +729,7 @@ axios.interceptors.request.use(function (config) {
 }, null, { synchronous: true });
 ```
 
-If you want to execute a particular interceptor based on a runtime check, 
+If you want to execute a particular interceptor based on a runtime check,
 you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
 of `runWhen` is `false`. The function will be called with the config
 object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an
@@ -704,7 +757,7 @@ and when the response was fulfilled
     - then the following fulfillment-interceptor is not called
     - then the following rejection-interceptor is called
     - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
-    
+
 Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
 
 ## Handling Errors
@@ -772,7 +825,7 @@ controller.abort()
 
 You can also cancel a request using a *CancelToken*.
 
-> The axios cancel token API is based on the withdrawn [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
+> The axios cancel token API is based on the withdrawn [cancellable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
 
 > This API is deprecated since v0.22.0 and shouldn't be used in new projects
 
@@ -819,7 +872,7 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-> Note: you can cancel several requests with the same cancel token/abort controller.
+> **Note:** you can cancel several requests with the same cancel token/abort controller.
 > If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make a real request.
 
 > During the transition period, you can use both cancellation APIs, even for the same request:
@@ -828,7 +881,7 @@ cancel();
 
 ### URLSearchParams
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [ Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
 const params = new URLSearchParams({ foo: 'bar' });
@@ -872,14 +925,14 @@ axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
-> NOTE: 
+> **Note**
 > The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
 
 ### 🆕 Automatic serialization to URLSearchParams
 
 Axios will automatically serialize the data object to urlencoded format if the content-type header is set to "application/x-www-form-urlencoded".
 
-```
+```js
 const data = {
   x: 1,
   arr: [1, 2, 3],
@@ -892,7 +945,7 @@ await axios.postForm('https://postman-echo.com/post', data,
 );
 ```
 
-The server will handle it as 
+The server will handle it as:
 
 ```js
   {
@@ -913,9 +966,9 @@ If your backend body-parser (like `body-parser` of `express.js`) supports nested
 
 ```js
   var app = express();
-  
+
   app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-  
+
   app.post('/', function (req, res, next) {
      // echo body as JSON
      res.send(JSON.stringify(req.body));
@@ -928,7 +981,7 @@ If your backend body-parser (like `body-parser` of `express.js`) supports nested
 
 ### FormData
 
-To send the data as a `multipart/formdata` you need to pass a formData instance as a payload. 
+To send the data as a `multipart/formdata` you need to pass a formData instance as a payload.
 Setting the `Content-Type` header is not required as Axios guesses it based on the payload type.
 
 ```js
@@ -937,12 +990,12 @@ formData.append('foo', 'bar');
 
 axios.post('https://httpbin.org/post', formData);
 ```
-  
+
 In node.js, you can use the [`form-data`](https://github.com/form-data/form-data) library as follows:
 
 ```js
 const FormData = require('form-data');
- 
+
 const form = new FormData();
 form.append('my_field', 'my value');
 form.append('my_buffer', new Buffer(10));
@@ -953,7 +1006,7 @@ axios.post('https://example.com', form)
 
 ### 🆕 Automatic serialization to FormData
 
-Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type` 
+Starting from `v0.27.0`, Axios supports automatic object serialization to a FormData object if the request `Content-Type`
 header is set to `multipart/form-data`.
 
 The following request will submit the data in a FormData format (Browser & Node.js):
@@ -965,7 +1018,7 @@ axios.post('https://httpbin.org/post', {x: 1}, {
   headers: {
     'Content-Type': 'multipart/form-data'
   }
-}).then(({data})=> console.log(data));
+}).then(({data}) => console.log(data));
 ```
 
 In the `node.js` build, the ([`form-data`](https://github.com/form-data/form-data)) polyfill is used by default.
@@ -974,22 +1027,22 @@ You can overload the FormData class by setting the `env.FormData` config variabl
 but you probably won't need it in most cases:
 
 ```js
-const axios= require('axios');
+const axios = require('axios');
 var FormData = require('form-data');
 
 axios.post('https://httpbin.org/post', {x: 1, buf: new Buffer(10)}, {
   headers: {
     'Content-Type': 'multipart/form-data'
   }
-}).then(({data})=> console.log(data));
+}).then(({data}) => console.log(data));
 ```
 
 Axios FormData serializer supports some special endings to perform the following operations:
 
 - `{}` - serialize the value with JSON.stringify
-- `[]` - unwrap the array-like object as separate fields with the same key 
+- `[]` - unwrap the array-like object as separate fields with the same key
 
-> NOTE: 
+> **Note**
 > unwrap/expand operation will be used by default on arrays and FileList objects
 
 FormData serializer supports additional options via `config.formSerializer: object` property to handle rare cases:
@@ -999,15 +1052,15 @@ to a `FormData` object by following custom rules.
 
 - `dots: boolean = false` - use dot notation instead of brackets to serialize arrays and objects;
 
-- `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key. 
+- `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key.
 The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
 
 - `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
 
-    - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`) 
+    - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
     - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
-    
+
 Let's say we have an object like this one:
 
 ```js
@@ -1023,7 +1076,7 @@ const obj = {
 The following steps will be executed by the Axios serializer internally:
 
 ```js
-const formData= new FormData();
+const formData = new FormData();
 formData.append('x', '1');
 formData.append('arr[]', '1');
 formData.append('arr[]', '2');
@@ -1043,20 +1096,20 @@ which are just the corresponding http methods with the `Content-Type` header pre
 
 ## Files Posting
 
-You can easily sumbit a single file
+You can easily submit a single file:
 
 ```js
 await axios.postForm('https://httpbin.org/post', {
   'myVar' : 'foo',
-  'file': document.querySelector('#fileInput').files[0] 
+  'file': document.querySelector('#fileInput').files[0]
 });
 ```
 
-or multiple files as `multipart/form-data`.
+or multiple files as `multipart/form-data`:
 
 ```js
 await axios.postForm('https://httpbin.org/post', {
-  'files[]': document.querySelector('#fileInput').files 
+  'files[]': document.querySelector('#fileInput').files
 });
 ```
 
@@ -1128,6 +1181,76 @@ will be submitted as the following JSON object:
 
 Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
 
+## 🆕 Progress capturing
+
+Axios supports both browser and node environments to capture request upload/download progress.
+
+```js    
+await axios.post(url, data, {
+  onUploadProgress: function (axiosProgressEvent) {
+    /*{
+      loaded: number;
+      total?: number;
+      progress?: number; // in range [0..1]
+      bytes: number; // how many bytes have been transferred since the last trigger (delta)
+      estimated?: number; // estimated time in seconds
+      rate?: number; // upload speed in bytes
+      upload: true; // upload sign
+    }*/
+  },
+
+  onDownloadProgress: function (axiosProgressEvent) {
+    /*{
+      loaded: number;
+      total?: number;
+      progress?: number;
+      bytes: number; 
+      estimated?: number;
+      rate?: number; // download speed in bytes
+      download: true; // download sign
+    }*/
+  }
+});  
+```
+
+You can also track stream upload/download progress in node.js:
+
+```js
+const {data} = await axios.post(SERVER_URL, readableStream, {
+   onUploadProgress: ({progress}) => {
+     console.log((progress * 100).toFixed(2));
+   },
+  
+   headers: {
+    'Content-Length': contentLength
+   },
+
+   maxRedirects: 0 // avoid buffering the entire stream
+});
+````
+
+> **Note:**
+> Capturing FormData upload progress is currently not currently supported in node.js environments.
+
+> **⚠️ Warning**
+> It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the **node.js** environment,
+> as follow-redirects package will buffer the entire stream in RAM without following the "backpressure" algorithm.
+
+
+## 🆕 Rate limiting
+
+Download and upload rate limits can only be set for the http adapter (node.js):
+
+```js
+const {data} = await axios.post(LOCAL_SERVER_URL, myBuffer, {
+  onUploadProgress: ({progress, rate}) => {
+    console.log(`Upload [${(progress*100).toFixed(2)}%]: ${(rate / 1024).toFixed(2)}KB/s`)
+  },
+   
+  maxRate: [100 * 1024], // 100KB/s limit
+});
+```
+
 ## Semver
 
 Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
@@ -1159,16 +1282,16 @@ try {
 
 You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/master/examples/server.js)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/main/examples/server.js)
 
 
 ## Resources
 
-* [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
+* [Changelog](https://github.com/axios/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/axios/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/CODE_OF_CONDUCT.md)
 
 ## Credits
 

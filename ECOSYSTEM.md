@@ -20,6 +20,7 @@ This is a list of axios related libraries and resources. If you have a suggestio
 * [axios-endpoints](https://github.com/renancaraujo/axios-endpoints) - Axios endpoints helps you to create a more concise endpoint mapping with axios.
 * [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Easy API handling whenever there are many endpoints to add. It helps to make Axios requests in an easy and declarative manner.
 * [axios-url-template](https://github.com/rafw87/axios-url-template) - Axios interceptor adding support for URL templates.
+* [zodios](https://www.zodios.org) - Typesafe API client based on axios
 
 ### Logging and debugging
 

@@ -167,7 +167,8 @@ Using unpkg CDN:
 
 ## Example
 
-Performing a `GET` request
+> **Note** CommonJS usage
+> In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js
 import axios from 'axios';

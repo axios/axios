@@ -26,7 +26,8 @@ describe('instance', function () {
         'VERSION',
         'default',
         'toFormData',
-        'formToJSON'
+        'formToJSON',
+        'AxiosHeaders'
       ].indexOf(prop) > -1) {
         continue;
       }

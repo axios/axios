@@ -15,16 +15,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const exec = util.promisify(cp.exec);
 
 const {Axios} = axiosFactory;
-const ignoreList = [];
+const ignoreList = ['default'];
 
 const instance = axiosFactory.create({});
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const remove = async (file) => {
   console.log(`✓ Remove entry '${file}'...`);
   try {
+    await sleep(100);
     await fs.remove(file);
   } catch (err) {
-    console.warn(err);
+    console.warn(err.message);
   }
 }
 
@@ -97,6 +100,34 @@ describe('module', function () {
     });
 
     it('should be able to be loaded with import', async function () {
+      this.timeout(30000);
+
+      await exec(`npm test --prefix ${pkgPath}`, {});
+    });
+  });
+
+  describe('TS require(\'axios\')', ()=> {
+    const pkgPath = path.join(__dirname, './ts-require');
+
+    after(async ()=> {
+      await remove(path.join(pkgPath, './node_modules'));
+    });
+
+    it('should be able to be loaded with require', async function () {
+      this.timeout(30000);
+
+      await exec(`npm test --prefix ${pkgPath}`, {});
+    });
+  });
+
+  describe('TS require(\'axios\').default', ()=> {
+    const pkgPath = path.join(__dirname, './ts-require-default');
+
+    after(async ()=> {
+      await remove(path.join(pkgPath, './node_modules'));
+    });
+
+    it('should be able to be loaded with require', async function () {
       this.timeout(30000);
 
       await exec(`npm test --prefix ${pkgPath}`, {});

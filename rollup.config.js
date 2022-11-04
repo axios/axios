@@ -5,20 +5,28 @@ import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
 import autoExternal from 'rollup-plugin-auto-external';
 import bundleSize from 'rollup-plugin-bundle-size'
+import path from 'path';
 
 const lib = require("./package.json");
 const outputFileName = 'axios';
 const name = "axios";
-const input = './lib/axios.js';
+const namedInput = './index.js';
+const defaultInput = './lib/axios.js';
 
 const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) => {
+  const {file} = config.output;
+  const ext = path.extname(file);
+  const basename = path.basename(file, ext);
+  const extArr = ext.split('.');
+  extArr.shift();
+
 
   const build = ({minified}) => ({
-    input,
+    input: namedInput,
     ...config,
     output: {
       ...config.output,
-      file: `${config.output.file}.${minified ? "min.js" : "js"}`
+      file: `${path.dirname(file)}/${basename}.${(minified ? ['min', ...extArr] : extArr).join('.')}`
     },
     plugins: [
       json(),
@@ -50,10 +58,24 @@ export default async () => {
   const banner = `// Axios v${lib.version} Copyright (c) ${year} ${lib.author} and contributors`;
 
   return [
+    // browser ESM bundle for CDN
     ...buildConfig({
+      input: namedInput,
+      output: {
+        file: `dist/esm/${outputFileName}.js`,
+        format: "esm",
+        preferConst: true,
+        exports: "named",
+        banner
+      }
+    }),
+
+    // Browser UMD bundle for CDN
+    ...buildConfig({
+      input: defaultInput,
       es5: true,
       output: {
-        file: `dist/${outputFileName}`,
+        file: `dist/${outputFileName}.js`,
         name,
         format: "umd",
         exports: "default",
@@ -61,18 +83,23 @@ export default async () => {
       }
     }),
 
+    // Browser CJS bundle
     ...buildConfig({
+      input: defaultInput,
+      es5: false,
+      minifiedVersion: false,
       output: {
-        file: `dist/esm/${outputFileName}`,
-        format: "esm",
-        preferConst: true,
-        exports: "named",
+        file: `dist/browser/${name}.cjs`,
+        name,
+        format: "cjs",
+        exports: "default",
         banner
       }
     }),
-    // Node.js commonjs build
+
+    // Node.js commonjs bundle
     {
-      input,
+      input: defaultInput,
       output: {
         file: `dist/node/${name}.cjs`,
         format: "cjs",

@@ -15,6 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const exec = util.promisify(cp.exec);
 
 const {Axios} = axiosFactory;
+
 const ignoreList = ['default'];
 
 const instance = axiosFactory.create({});
@@ -133,5 +134,4 @@ describe('module', function () {
       await exec(`npm test --prefix ${pkgPath}`, {});
     });
   });
-
 });

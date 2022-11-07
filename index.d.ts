@@ -272,6 +272,7 @@ export interface AxiosProgressEvent {
   estimated?: number;
   upload?: boolean;
   download?: boolean;
+  event?: ProgressEvent;
 }
 
 type Milliseconds = number;

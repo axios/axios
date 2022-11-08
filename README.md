@@ -731,7 +731,7 @@ axios.interceptors.request.use(function (config) {
 ```
 
 If you want to execute a particular interceptor based on a runtime check,
-you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
+you can add a `runWhen` function to the options object. The request interceptor will not be executed **if and only if** the return
 of `runWhen` is `false`. The function will be called with the config
 object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an
 asynchronous request interceptor that only needs to run at certain times.
@@ -745,6 +745,8 @@ axios.interceptors.request.use(function (config) {
   return config;
 }, null, { runWhen: onGetCall });
 ```
+
+> **Note:** options parameter(having `synchronous` and `runWhen` properties) is only supported for request interceptors at the moment.
 
 ### Multiple Interceptors
 

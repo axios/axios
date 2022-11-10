@@ -167,7 +167,8 @@ Using unpkg CDN:
 
 ## Example
 
-Performing a `GET` request
+> **Note** CommonJS usage
+> In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js
 import axios from 'axios';
@@ -1287,11 +1288,11 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 
 ## Resources
 
-* [Changelog](https://github.com/axios/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/axios/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/CODE_OF_CONDUCT.md)
+* [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/axios/axios/blob/v1.x/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/axios/blob/v1.x/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/axios/blob/v1.x/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/axios/blob/v1.x/CODE_OF_CONDUCT.md)
 
 ## Credits
 

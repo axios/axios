@@ -1279,6 +1279,12 @@ try {
 }
 ```
 
+Because axios dual publishes with an ESM default export and a CJS `module.exports`, there are some caveats.
+The recommended setting is to use `"moduleResolution": "node16"` (this is implied by `"module": "node16"`). Note that this requires TypeScript 4.7 or greater.
+If use ESM, your settings should be fine.
+If you compile TypeScript to CJS and you can’t use `"moduleResolution": "node 16"`, you have to enable `esModuleInterop`.
+If you use TypeScript to type check CJS JavaScript code, your only option is to use `"moduleResolution": "node16"`.
+
 ## Online one-click setup
 
 You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.

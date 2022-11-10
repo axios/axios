@@ -5,6 +5,10 @@
   "main": "index.js",
   "exports": {
     ".": {
+      "types": {
+        "require": "./index.d.cts",
+        "default": "./index.d.ts"
+      },
       "browser": {
         "require": "./dist/browser/axios.cjs",
         "default": "./index.js"
@@ -96,7 +100,7 @@
     "sinon": "^4.5.0",
     "stream-throttle": "^0.1.3",
     "terser-webpack-plugin": "^4.2.3",
-    "typescript": "^4.6.3",
+    "typescript": "^4.8.4",
     "url-search-params": "^0.10.0"
   },
   "browser": {

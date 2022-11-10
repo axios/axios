@@ -9,7 +9,7 @@ describe('toFormData', function () {
       }
     };
 
-    const form = toFormData(o, null, {dots: true});
+    const form = toFormData(o, {dots: true});
     expect(form instanceof FormData).toEqual(true);
     expect(Array.from(form.keys()).length).toEqual(3);
     expect(form.get('val')).toEqual('123');
@@ -23,7 +23,7 @@ describe('toFormData', function () {
 
     const str = JSON.stringify(data['obj{}']);
 
-    const form = toFormData(data, null, {metaTokens: false});
+    const form = toFormData(data, {metaTokens: false});
 
     expect(Array.from(form.keys()).length).toEqual(1);
     expect(form.getAll('obj')).toEqual([str]);
@@ -36,7 +36,7 @@ describe('toFormData', function () {
         arr2: [1, [2], 3]
       };
 
-      const form = toFormData(data, null, {indexes: true});
+      const form = toFormData(data, {indexes: true});
 
       expect(Array.from(form.keys()).length).toEqual(6);
 
@@ -49,18 +49,32 @@ describe('toFormData', function () {
       expect(form.get('arr2[2]')).toEqual('3');
     });
 
-    it('should include brackets only when the `indexes` option is set to false', function () {
+    it('should include brackets only when the `indexes` option is set to false', function () { //<<<<<<<<<
       const data = {
         arr: [1, 2, 3],
         arr2: [1, [2], 3]
       };
 
-      const form = toFormData(data, null, {indexes: false});
+      const form = toFormData(data, {indexes: false});
 
       expect(Array.from(form.keys()).length).toEqual(6);
 
       expect(form.getAll('arr[]')).toEqual(['1', '2', '3']);
+      expect(form.getAll('arr2[]')).toEqual(['1', '3']);
+      expect(form.get('arr2[][]')).toEqual('2');
+    });
 
+    it('should use full indexes only for nested objects when the `indexes` option is set to undefined', function () {
+      const data = {
+        arr: [1, 2, 3],
+        arr2: [1, [2], 3]
+      };
+
+      const form = toFormData(data, {indexes: undefined});
+
+      expect(Array.from(form.keys()).length).toEqual(6);
+
+      expect(form.getAll('arr[]')).toEqual(['1', '2', '3']);
       expect(form.get('arr2[0]')).toEqual('1');
       expect(form.get('arr2[1][0]')).toEqual('2');
       expect(form.get('arr2[2]')).toEqual('3');
@@ -72,15 +86,12 @@ describe('toFormData', function () {
         arr2: [1, [2], 3]
       };
 
-      const form = toFormData(data, null, {indexes: null});
+      const form = toFormData(data, {indexes: null});
 
       expect(Array.from(form.keys()).length).toEqual(6);
 
       expect(form.getAll('arr')).toEqual(['1', '2', '3']);
-
-      expect(form.get('arr2[0]')).toEqual('1');
-      expect(form.get('arr2[1][0]')).toEqual('2');
-      expect(form.get('arr2[2]')).toEqual('3');
+      expect(form.getAll('arr2')).toEqual(['1', '2', '3']);
     });
   });
 

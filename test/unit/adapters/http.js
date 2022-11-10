@@ -676,19 +676,18 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should display error while parsing params', function (done) {
-    server = http.createServer(function () {
+  it('should display error while parsing params', async () => {
+    server = await startHTTPServer((req, res)=> {
+      res.end();
+    });
 
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
+    await assert.rejects(()=> {
+      return axios.get(LOCAL_SERVER_URL, {
         params: {
           errorParam: new Date(undefined),
         },
-      }).catch(function (err) {
-        assert.deepEqual(err.exists, true)
-        done();
-      }).catch(done);
-    });
+      });
+    }, /Invalid time value/);
   });
 
   it('should support sockets', function (done) {
@@ -1509,15 +1508,19 @@ describe('supports http with nodejs', function () {
     });
 
     describe('toFormData helper', function () {
-      it('should properly serialize nested objects for parsing with multer.js (express.js)', function (done) {
+      it('should properly serialize flat objects for parsing with multer.js (express.js)', function (done) {
         var app = express();
 
-        var obj = {
+/*        var obj = {
           arr1: ['1', '2', '3'],
           arr2: ['1', ['2'], '3'],
           obj: {x: '1', y: {z: '1'}},
           users: [{name: 'Peter', surname: 'griffin'}, {name: 'Thomas', surname: 'Anderson'}]
-        };
+        };*/
+
+        var obj = {
+          arr: ['1','2','3']
+        }
 
         app.post('/', multer().none(), function (req, res, next) {
           res.send(JSON.stringify(req.body));
@@ -1534,7 +1537,37 @@ describe('supports http with nodejs', function () {
           // arr[0]: '1'
           // arr[1]: '2'
           // -------------
-          Promise.all([null, false, true].map(function (mode) {
+          Promise.all([undefined, null, false, true].map(function (mode) {
+            return axios.postForm('http://localhost:3001/', obj, {formSerializer: {indexes: mode}})
+              .then(function (res) {
+                assert.deepStrictEqual(res.data, obj, 'Index mode ' + mode);
+              });
+          })).then(function (){
+            done();
+          }, done)
+        });
+      });
+
+      it('should properly serialize nested objects for parsing with multer.js (express.js)', function (done) {
+        var app = express();
+
+        var obj = {
+          arr1: ['1', '2', '3'],
+          arr2: ['1', ['2'], '3'],
+          obj: {x: '1', y: {z: '1'}},
+          users: [{name: 'Peter', surname: 'griffin'}, {name: 'Thomas', surname: 'Anderson'}]
+        };
+
+
+        app.post('/', multer().none(), function (req, res, next) {
+          res.send(JSON.stringify(req.body));
+        });
+
+        server = app.listen(3001, function () {
+          // express requires full indexes keys to deserialize nested objects
+          // so only indexes = undefined|true supported:
+
+          Promise.all([undefined, true].map(function (mode) {
             return axios.postForm('http://localhost:3001/', obj, {formSerializer: {indexes: mode}})
               .then(function (res) {
                 assert.deepStrictEqual(res.data, obj, 'Index mode ' + mode);
@@ -1555,7 +1588,7 @@ describe('supports http with nodejs', function () {
         arr1: ['1', '2', '3'],
         arr2: ['1', ['2'], '3'],
         obj: {x: '1', y: {z: '1'}},
-        users: [{name: 'Peter', surname: 'griffin'}, {name: 'Thomas', surname: 'Anderson'}]
+        users: [{name: 'Peter', surname: 'Griffin'}, {name: 'Thomas', surname: 'Anderson'}]
       };
 
       app.use(bodyParser.urlencoded({ extended: true }));

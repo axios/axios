@@ -463,7 +463,7 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
-export function toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
+export function toFormData(this: GenericFormData | null, sourceObj: object, options?: FormSerializerOptions): GenericFormData;
 
 export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
 

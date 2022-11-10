@@ -11,7 +11,7 @@ describe('helpers::buildURL', function () {
       foo: 'bar',
       isUndefined: undefined,
       isNull: null
-    })).toEqual('/foo?foo=bar');
+    })).toEqual('/foo?foo=bar&isNull');
   });
 
   it('should support sending raw params to custom serializer func', function () {
@@ -38,27 +38,21 @@ describe('helpers::buildURL', function () {
       foo: {
         bar: 'baz'
       }
-    })).toEqual('/foo?foo[bar]=baz');
+    })).toEqual('/foo?foo%5Bbar%5D=baz');
   });
 
   it('should support date params', function () {
-    const date = new Date();
+    const date = new Date(2022, 1, 24, 3, 40);
 
     expect(buildURL('/foo', {
       date: date
-    })).toEqual('/foo?date=' + date.toISOString());
+    })).toEqual('/foo?date=2022-02-24T01%3A40%3A00.000Z');
   });
 
   it('should support array params', function () {
     expect(buildURL('/foo', {
       foo: ['bar', 'baz', null, undefined]
-    })).toEqual('/foo?foo[]=bar&foo[]=baz');
-  });
-
-  it('should support special char params', function () {
-    expect(buildURL('/foo', {
-      foo: ':$, '
-    })).toEqual('/foo?foo=:$,+');
+    })).toEqual('/foo?foo%5B%5D=bar&foo%5B%5D=baz&foo%5B%5D');
   });
 
   it('should support existing params', function () {

@@ -19,7 +19,8 @@
       }
     },
     "./lib/*": {
-      "import": "./lib/*"
+      "require": "./lib/*",
+      "default": "./lib/*"
     },
     "./package.json": "./package.json"
   },

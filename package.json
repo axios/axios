@@ -18,6 +18,9 @@
         "default": "./index.js"
       }
     },
+    "./lib/*": {
+      "import": "./lib/*"
+    },
     "./package.json": "./package.json"
   },
   "type": "module",

@@ -1,4 +1,4 @@
-// TypeScript Version: 4.1
+// TypeScript Version: 4.7
 type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
 
@@ -21,8 +21,7 @@ type AxiosHeaderTester = (matcher?: AxiosHeaderMatcher) => boolean;
 
 export class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders,
-      defaultHeaders?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders
   );
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -39,11 +38,15 @@ export class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
+  concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
+
   toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
   static accessor(header: string | string[]): AxiosHeaders;
+
+  static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
 
   setContentType: AxiosHeaderSetter;
   getContentType: AxiosHeaderGetter;
@@ -269,6 +272,7 @@ export interface AxiosProgressEvent {
   estimated?: number;
   upload?: boolean;
   download?: boolean;
+  event?: ProgressEvent;
 }
 
 type Milliseconds = number;

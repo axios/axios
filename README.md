@@ -167,7 +167,8 @@ Using unpkg CDN:
 
 ## Example
 
-Performing a `GET` request
+> **Note** CommonJS usage
+> In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js
 import axios from 'axios';
@@ -1278,6 +1279,12 @@ try {
 }
 ```
 
+Because axios dual publishes with an ESM default export and a CJS `module.exports`, there are some caveats.
+The recommended setting is to use `"moduleResolution": "node16"` (this is implied by `"module": "node16"`). Note that this requires TypeScript 4.7 or greater.
+If use ESM, your settings should be fine.
+If you compile TypeScript to CJS and you can’t use `"moduleResolution": "node 16"`, you have to enable `esModuleInterop`.
+If you use TypeScript to type check CJS JavaScript code, your only option is to use `"moduleResolution": "node16"`.
+
 ## Online one-click setup
 
 You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
@@ -1287,11 +1294,11 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 
 ## Resources
 
-* [Changelog](https://github.com/axios/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/axios/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/CODE_OF_CONDUCT.md)
+* [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/axios/axios/blob/v1.x/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/axios/blob/v1.x/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/axios/blob/v1.x/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/axios/blob/v1.x/CODE_OF_CONDUCT.md)
 
 ## Credits
 

@@ -1405,6 +1405,7 @@ describe('supports http with nodejs', function () {
 
   it('should omit a user-agent if one is explicitly disclaimed', function (done) {
     server = http.createServer(function (req, res) {
+      console.log(req.headers);
       assert.equal("user-agent" in req.headers, false);
       assert.equal("User-Agent" in req.headers, false);
       res.end();

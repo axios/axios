@@ -1,4 +1,5 @@
 import transformData from '../../../lib/core/transformData';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('core::transformData', function () {
   it('should support a single transformer', function () {
@@ -52,5 +53,14 @@ describe('core::transformData', function () {
 
     expect(data).toEqual('200');
   });
+
+  it('should throw eror with response field when transform data failed', function () {
+    const doTransformData = transformData.call({}, [function (data, headers, status) {
+      return JSON.parse(data);
+    }], {data: "", status: 204});
+
+    expect(doTransformData).toThrow(AxiosError);
+  });
+
 });
 

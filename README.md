@@ -763,6 +763,8 @@ Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all t
 
 ## Handling Errors
 
+the default behavior is to reject every response that returns with a status code that falls out of the range of 2xx and treat it as an error.
+
 ```js
 axios.get('/user/12345')
   .catch(function (error) {
@@ -785,7 +787,7 @@ axios.get('/user/12345')
   });
 ```
 
-Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
+Using the `validateStatus` config option, you can override the default condition (status >= 200 && status < 300) and define HTTP code(s) that should throw an error.
 
 ```js
 axios.get('/user/12345', {

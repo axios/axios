@@ -74,6 +74,7 @@
     "es6-promise": "^4.2.8",
     "eslint": "^8.17.0",
     "express": "^4.18.1",
+    "formdata-node": "^5.0.0",
     "formidable": "^2.0.1",
     "fs-extra": "^10.1.0",
     "get-stream": "^3.0.0",

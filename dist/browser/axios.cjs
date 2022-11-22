@@ -1,27 +1,6 @@
 // Axios v1.2.0-alpha.1 Copyright (c) 2022 Matt Zabriskie and contributors
 'use strict';
 
-const FormData$1 = require('form-data');
-const url = require('url');
-const proxyFromEnv = require('proxy-from-env');
-const http = require('http');
-const https = require('https');
-const followRedirects = require('follow-redirects');
-const zlib = require('zlib');
-const stream = require('stream');
-const EventEmitter = require('events');
-
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
-
-const FormData__default = /*#__PURE__*/_interopDefaultLegacy(FormData$1);
-const url__default = /*#__PURE__*/_interopDefaultLegacy(url);
-const http__default = /*#__PURE__*/_interopDefaultLegacy(http);
-const https__default = /*#__PURE__*/_interopDefaultLegacy(https);
-const followRedirects__default = /*#__PURE__*/_interopDefaultLegacy(followRedirects);
-const zlib__default = /*#__PURE__*/_interopDefaultLegacy(zlib);
-const stream__default = /*#__PURE__*/_interopDefaultLegacy(stream);
-const EventEmitter__default = /*#__PURE__*/_interopDefaultLegacy(EventEmitter);
-
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -618,7 +597,7 @@ const toFiniteNumber = (value, defaultValue) => {
   return Number.isFinite(value) ? value : defaultValue;
 };
 
-const utils = {
+var utils = {
   isArray,
   isArrayBuffer,
   isBuffer,
@@ -761,6 +740,11 @@ AxiosError.from = (error, code, config, request, response, customProps) => {
   return axiosError;
 };
 
+/* eslint-env browser */
+var browser = typeof self == 'object' ? self.FormData : window.FormData;
+
+var FormData$2 = browser;
+
 /**
  * Determines if the given thing is a array or js object.
  *
@@ -856,7 +840,7 @@ function toFormData(obj, formData, options) {
   }
 
   // eslint-disable-next-line no-param-reassign
-  formData = formData || new (FormData__default["default"] || FormData)();
+  formData = formData || new (FormData$2 || FormData)();
 
   // eslint-disable-next-line no-param-reassign
   options = utils.toFlatObject(options, {
@@ -1161,30 +1145,63 @@ class InterceptorManager {
   }
 }
 
-const InterceptorManager$1 = InterceptorManager;
+var InterceptorManager$1 = InterceptorManager;
 
-const transitionalDefaults = {
+var transitionalDefaults = {
   silentJSONParsing: true,
   forcedJSONParsing: true,
   clarifyTimeoutError: false
 };
 
-const URLSearchParams = url__default["default"].URLSearchParams;
+var URLSearchParams$1 = typeof URLSearchParams !== 'undefined' ? URLSearchParams : AxiosURLSearchParams;
 
-const platform = {
-  isNode: true,
+var FormData$1 = FormData;
+
+/**
+ * Determine if we're running in a standard browser environment
+ *
+ * This allows axios to run in a web worker, and react-native.
+ * Both environments support XMLHttpRequest, but not fully standard globals.
+ *
+ * web workers:
+ *  typeof window -> undefined
+ *  typeof document -> undefined
+ *
+ * react-native:
+ *  navigator.product -> 'ReactNative'
+ * nativescript
+ *  navigator.product -> 'NativeScript' or 'NS'
+ *
+ * @returns {boolean}
+ */
+const isStandardBrowserEnv = (() => {
+  let product;
+  if (typeof navigator !== 'undefined' && (
+    (product = navigator.product) === 'ReactNative' ||
+    product === 'NativeScript' ||
+    product === 'NS')
+  ) {
+    return false;
+  }
+
+  return typeof window !== 'undefined' && typeof document !== 'undefined';
+})();
+
+var platform = {
+  isBrowser: true,
   classes: {
-    URLSearchParams,
-    FormData: FormData__default["default"],
-    Blob: typeof Blob !== 'undefined' && Blob || null
+    URLSearchParams: URLSearchParams$1,
+    FormData: FormData$1,
+    Blob
   },
-  protocols: [ 'http', 'https', 'file', 'data' ]
+  isStandardBrowserEnv,
+  protocols: ['http', 'https', 'file', 'blob', 'url', 'data']
 };
 
 function toURLEncodedForm(data, options) {
   return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
     visitor: function(value, key, path, helpers) {
-      if (utils.isBuffer(value)) {
+      if (platform.isNode && utils.isBuffer(value)) {
         this.append(key, value.toString('base64'));
         return false;
       }
@@ -1305,6 +1322,54 @@ function settle(resolve, reject, response) {
   }
 }
 
+var cookies = platform.isStandardBrowserEnv ?
+
+// Standard browser envs support document.cookie
+  (function standardBrowserEnv() {
+    return {
+      write: function write(name, value, expires, path, domain, secure) {
+        const cookie = [];
+        cookie.push(name + '=' + encodeURIComponent(value));
+
+        if (utils.isNumber(expires)) {
+          cookie.push('expires=' + new Date(expires).toGMTString());
+        }
+
+        if (utils.isString(path)) {
+          cookie.push('path=' + path);
+        }
+
+        if (utils.isString(domain)) {
+          cookie.push('domain=' + domain);
+        }
+
+        if (secure === true) {
+          cookie.push('secure');
+        }
+
+        document.cookie = cookie.join('; ');
+      },
+
+      read: function read(name) {
+        const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+        return (match ? decodeURIComponent(match[3]) : null);
+      },
+
+      remove: function remove(name) {
+        this.write(name, '', Date.now() - 86400000);
+      }
+    };
+  })() :
+
+// Non standard browser env (web workers, react-native) lack needed support.
+  (function nonStandardBrowserEnv() {
+    return {
+      write: function write() {},
+      read: function read() { return null; },
+      remove: function remove() {}
+    };
+  })();
+
 /**
  * Determines whether the specified URL is absolute
  *
@@ -1350,7 +1415,68 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.2.0-alpha.1";
+var isURLSameOrigin = platform.isStandardBrowserEnv ?
+
+// Standard browser envs have full support of the APIs needed to test
+// whether the request URL is of the same origin as current location.
+  (function standardBrowserEnv() {
+    const msie = /(msie|trident)/i.test(navigator.userAgent);
+    const urlParsingNode = document.createElement('a');
+    let originURL;
+
+    /**
+    * Parse a URL to discover it's components
+    *
+    * @param {String} url The URL to be parsed
+    * @returns {Object}
+    */
+    function resolveURL(url) {
+      let href = url;
+
+      if (msie) {
+        // IE needs attribute set twice to normalize properties
+        urlParsingNode.setAttribute('href', href);
+        href = urlParsingNode.href;
+      }
+
+      urlParsingNode.setAttribute('href', href);
+
+      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+      return {
+        href: urlParsingNode.href,
+        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+        host: urlParsingNode.host,
+        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+        hostname: urlParsingNode.hostname,
+        port: urlParsingNode.port,
+        pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+          urlParsingNode.pathname :
+          '/' + urlParsingNode.pathname
+      };
+    }
+
+    originURL = resolveURL(window.location.href);
+
+    /**
+    * Determine if a URL shares the same origin as the current location
+    *
+    * @param {String} requestURL The URL to test
+    * @returns {boolean} True if URL shares the same origin, otherwise false
+    */
+    return function isURLSameOrigin(requestURL) {
+      const parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
+      return (parsed.protocol === originURL.protocol &&
+          parsed.host === originURL.host);
+    };
+  })() :
+
+  // Non standard browser envs (web workers, react-native) lack needed support.
+  (function nonStandardBrowserEnv() {
+    return function isURLSameOrigin() {
+      return true;
+    };
+  })();
 
 /**
  * A `CanceledError` is an object that is thrown when an operation is canceled.
@@ -1376,54 +1502,6 @@ function parseProtocol(url) {
   return match && match[1] || '';
 }
 
-const DATA_URL_PATTERN = /^(?:([^;]+);)?(?:[^;]+;)?(base64|),([\s\S]*)$/;
-
-/**
- * Parse data uri to a Buffer or Blob
- *
- * @param {String} uri
- * @param {?Boolean} asBlob
- * @param {?Object} options
- * @param {?Function} options.Blob
- *
- * @returns {Buffer|Blob}
- */
-function fromDataURI(uri, asBlob, options) {
-  const _Blob = options && options.Blob || platform.classes.Blob;
-  const protocol = parseProtocol(uri);
-
-  if (asBlob === undefined && _Blob) {
-    asBlob = true;
-  }
-
-  if (protocol === 'data') {
-    uri = protocol.length ? uri.slice(protocol.length + 1) : uri;
-
-    const match = DATA_URL_PATTERN.exec(uri);
-
-    if (!match) {
-      throw new AxiosError('Invalid URL', AxiosError.ERR_INVALID_URL);
-    }
-
-    const mime = match[1];
-    const isBase64 = match[2];
-    const body = match[3];
-    const buffer = Buffer.from(decodeURIComponent(body), isBase64 ? 'base64' : 'utf8');
-
-    if (asBlob) {
-      if (!_Blob) {
-        throw new AxiosError('Blob is not supported', AxiosError.ERR_NOT_SUPPORT);
-      }
-
-      return new _Blob([buffer], {type: mime});
-    }
-
-    return buffer;
-  }
-
-  throw new AxiosError('Unsupported protocol ' + protocol, AxiosError.ERR_NOT_SUPPORT);
-}
-
 // RawAxiosHeaders whose duplicates are ignored by node
 // c.f. https://nodejs.org/api/http.html#http_message_headers
 const ignoreDuplicateOf = utils.toObjectSet([
@@ -1447,7 +1525,7 @@ const ignoreDuplicateOf = utils.toObjectSet([
  *
  * @returns {Object} Headers parsed into an object
  */
-const parseHeaders = rawHeaders => {
+var parseHeaders = rawHeaders => {
   const parsed = {};
   let key;
   let val;
@@ -1744,37 +1822,7 @@ AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encod
 utils.freezeMethods(AxiosHeaders.prototype);
 utils.freezeMethods(AxiosHeaders);
 
-const AxiosHeaders$1 = AxiosHeaders;
-
-/**
- * Throttle decorator
- * @param {Function} fn
- * @param {Number} freq
- * @return {Function}
- */
-function throttle(fn, freq) {
-  let timestamp = 0;
-  const threshold = 1000 / freq;
-  let timer = null;
-  return function throttled(force, args) {
-    const now = Date.now();
-    if (force || now - timestamp > threshold) {
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
-      }
-      timestamp = now;
-      return fn.apply(null, args);
-    }
-    if (!timer) {
-      timer = setTimeout(() => {
-        timer = null;
-        timestamp = Date.now();
-        return fn.apply(null, args);
-      }, threshold - (now - timestamp));
-    }
-  };
-}
+var AxiosHeaders$1 = AxiosHeaders;
 
 /**
  * Calculate data maxRate
@@ -1827,868 +1875,6 @@ function speedometer(samplesCount, min) {
     return  passed ? Math.round(bytesCount * 1000 / passed) : undefined;
   };
 }
-
-const kInternals = Symbol('internals');
-
-class AxiosTransformStream extends stream__default["default"].Transform{
-  constructor(options) {
-    options = utils.toFlatObject(options, {
-      maxRate: 0,
-      chunkSize: 64 * 1024,
-      minChunkSize: 100,
-      timeWindow: 500,
-      ticksRate: 2,
-      samplesCount: 15
-    }, null, (prop, source) => {
-      return !utils.isUndefined(source[prop]);
-    });
-
-    super({
-      readableHighWaterMark: options.chunkSize
-    });
-
-    const self = this;
-
-    const internals = this[kInternals] = {
-      length: options.length,
-      timeWindow: options.timeWindow,
-      ticksRate: options.ticksRate,
-      chunkSize: options.chunkSize,
-      maxRate: options.maxRate,
-      minChunkSize: options.minChunkSize,
-      bytesSeen: 0,
-      isCaptured: false,
-      notifiedBytesLoaded: 0,
-      ts: Date.now(),
-      bytes: 0,
-      onReadCallback: null
-    };
-
-    const _speedometer = speedometer(internals.ticksRate * options.samplesCount, internals.timeWindow);
-
-    this.on('newListener', event => {
-      if (event === 'progress') {
-        if (!internals.isCaptured) {
-          internals.isCaptured = true;
-        }
-      }
-    });
-
-    let bytesNotified = 0;
-
-    internals.updateProgress = throttle(function throttledHandler() {
-      const totalBytes = internals.length;
-      const bytesTransferred = internals.bytesSeen;
-      const progressBytes = bytesTransferred - bytesNotified;
-      if (!progressBytes || self.destroyed) return;
-
-      const rate = _speedometer(progressBytes);
-
-      bytesNotified = bytesTransferred;
-
-      process.nextTick(() => {
-        self.emit('progress', {
-          'loaded': bytesTransferred,
-          'total': totalBytes,
-          'progress': totalBytes ? (bytesTransferred / totalBytes) : undefined,
-          'bytes': progressBytes,
-          'rate': rate ? rate : undefined,
-          'estimated': rate && totalBytes && bytesTransferred <= totalBytes ?
-            (totalBytes - bytesTransferred) / rate : undefined
-        });
-      });
-    }, internals.ticksRate);
-
-    const onFinish = () => {
-      internals.updateProgress(true);
-    };
-
-    this.once('end', onFinish);
-    this.once('error', onFinish);
-  }
-
-  _read(size) {
-    const internals = this[kInternals];
-
-    if (internals.onReadCallback) {
-      internals.onReadCallback();
-    }
-
-    return super._read(size);
-  }
-
-  _transform(chunk, encoding, callback) {
-    const self = this;
-    const internals = this[kInternals];
-    const maxRate = internals.maxRate;
-
-    const readableHighWaterMark = this.readableHighWaterMark;
-
-    const timeWindow = internals.timeWindow;
-
-    const divider = 1000 / timeWindow;
-    const bytesThreshold = (maxRate / divider);
-    const minChunkSize = internals.minChunkSize !== false ? Math.max(internals.minChunkSize, bytesThreshold * 0.01) : 0;
-
-    function pushChunk(_chunk, _callback) {
-      const bytes = Buffer.byteLength(_chunk);
-      internals.bytesSeen += bytes;
-      internals.bytes += bytes;
-
-      if (internals.isCaptured) {
-        internals.updateProgress();
-      }
-
-      if (self.push(_chunk)) {
-        process.nextTick(_callback);
-      } else {
-        internals.onReadCallback = () => {
-          internals.onReadCallback = null;
-          process.nextTick(_callback);
-        };
-      }
-    }
-
-    const transformChunk = (_chunk, _callback) => {
-      const chunkSize = Buffer.byteLength(_chunk);
-      let chunkRemainder = null;
-      let maxChunkSize = readableHighWaterMark;
-      let bytesLeft;
-      let passed = 0;
-
-      if (maxRate) {
-        const now = Date.now();
-
-        if (!internals.ts || (passed = (now - internals.ts)) >= timeWindow) {
-          internals.ts = now;
-          bytesLeft = bytesThreshold - internals.bytes;
-          internals.bytes = bytesLeft < 0 ? -bytesLeft : 0;
-          passed = 0;
-        }
-
-        bytesLeft = bytesThreshold - internals.bytes;
-      }
-
-      if (maxRate) {
-        if (bytesLeft <= 0) {
-          // next time window
-          return setTimeout(() => {
-            _callback(null, _chunk);
-          }, timeWindow - passed);
-        }
-
-        if (bytesLeft < maxChunkSize) {
-          maxChunkSize = bytesLeft;
-        }
-      }
-
-      if (maxChunkSize && chunkSize > maxChunkSize && (chunkSize - maxChunkSize) > minChunkSize) {
-        chunkRemainder = _chunk.subarray(maxChunkSize);
-        _chunk = _chunk.subarray(0, maxChunkSize);
-      }
-
-      pushChunk(_chunk, chunkRemainder ? () => {
-        process.nextTick(_callback, null, chunkRemainder);
-      } : _callback);
-    };
-
-    transformChunk(chunk, function transformNextChunk(err, _chunk) {
-      if (err) {
-        return callback(err);
-      }
-
-      if (_chunk) {
-        transformChunk(_chunk, transformNextChunk);
-      } else {
-        callback(null);
-      }
-    });
-  }
-
-  setLength(length) {
-    this[kInternals].length = +length;
-    return this;
-  }
-}
-
-const AxiosTransformStream$1 = AxiosTransformStream;
-
-const isBrotliSupported = utils.isFunction(zlib__default["default"].createBrotliDecompress);
-
-const {http: httpFollow, https: httpsFollow} = followRedirects__default["default"];
-
-const isHttps = /https:?/;
-
-const supportedProtocols = platform.protocols.map(protocol => {
-  return protocol + ':';
-});
-
-/**
- * If the proxy or config beforeRedirects functions are defined, call them with the options
- * object.
- *
- * @param {Object<string, any>} options - The options object that was passed to the request.
- *
- * @returns {Object<string, any>}
- */
-function dispatchBeforeRedirect(options) {
-  if (options.beforeRedirects.proxy) {
-    options.beforeRedirects.proxy(options);
-  }
-  if (options.beforeRedirects.config) {
-    options.beforeRedirects.config(options);
-  }
-}
-
-/**
- * If the proxy or config afterRedirects functions are defined, call them with the options
- *
- * @param {http.ClientRequestArgs} options
- * @param {AxiosProxyConfig} configProxy configuration from Axios options object
- * @param {string} location
- *
- * @returns {http.ClientRequestArgs}
- */
-function setProxy(options, configProxy, location) {
-  let proxy = configProxy;
-  if (!proxy && proxy !== false) {
-    const proxyUrl = proxyFromEnv.getProxyForUrl(location);
-    if (proxyUrl) {
-      proxy = new URL(proxyUrl);
-    }
-  }
-  if (proxy) {
-    // Basic proxy authorization
-    if (proxy.username) {
-      proxy.auth = (proxy.username || '') + ':' + (proxy.password || '');
-    }
-
-    if (proxy.auth) {
-      // Support proxy auth object form
-      if (proxy.auth.username || proxy.auth.password) {
-        proxy.auth = (proxy.auth.username || '') + ':' + (proxy.auth.password || '');
-      }
-      const base64 = Buffer
-        .from(proxy.auth, 'utf8')
-        .toString('base64');
-      options.headers['Proxy-Authorization'] = 'Basic ' + base64;
-    }
-
-    options.headers.host = options.hostname + (options.port ? ':' + options.port : '');
-    const proxyHost = proxy.hostname || proxy.host;
-    options.hostname = proxyHost;
-    // Replace 'host' since options is not a URL object
-    options.host = proxyHost;
-    options.port = proxy.port;
-    options.path = location;
-    if (proxy.protocol) {
-      options.protocol = proxy.protocol.includes(':') ? proxy.protocol : `${proxy.protocol}:`;
-    }
-  }
-
-  options.beforeRedirects.proxy = function beforeRedirect(redirectOptions) {
-    // Configure proxy for redirected request, passing the original config proxy to apply
-    // the exact same logic as if the redirected request was performed by axios directly.
-    setProxy(redirectOptions, configProxy, redirectOptions.href);
-  };
-}
-
-/*eslint consistent-return:0*/
-function httpAdapter(config) {
-  return new Promise(function dispatchHttpRequest(resolvePromise, rejectPromise) {
-    let data = config.data;
-    const responseType = config.responseType;
-    const responseEncoding = config.responseEncoding;
-    const method = config.method.toUpperCase();
-    let isFinished;
-    let isDone;
-    let rejected = false;
-    let req;
-
-    // temporary internal emitter until the AxiosRequest class will be implemented
-    const emitter = new EventEmitter__default["default"]();
-
-    function onFinished() {
-      if (isFinished) return;
-      isFinished = true;
-
-      if (config.cancelToken) {
-        config.cancelToken.unsubscribe(abort);
-      }
-
-      if (config.signal) {
-        config.signal.removeEventListener('abort', abort);
-      }
-
-      emitter.removeAllListeners();
-    }
-
-    function done(value, isRejected) {
-      if (isDone) return;
-
-      isDone = true;
-
-      if (isRejected) {
-        rejected = true;
-        onFinished();
-      }
-
-      isRejected ? rejectPromise(value) : resolvePromise(value);
-    }
-
-    const resolve = function resolve(value) {
-      done(value);
-    };
-
-    const reject = function reject(value) {
-      done(value, true);
-    };
-
-    function abort(reason) {
-      emitter.emit('abort', !reason || reason.type ? new CanceledError(null, config, req) : reason);
-    }
-
-    emitter.once('abort', reject);
-
-    if (config.cancelToken || config.signal) {
-      config.cancelToken && config.cancelToken.subscribe(abort);
-      if (config.signal) {
-        config.signal.aborted ? abort() : config.signal.addEventListener('abort', abort);
-      }
-    }
-
-    // Parse url
-    const fullPath = buildFullPath(config.baseURL, config.url);
-    const parsed = new URL(fullPath);
-    const protocol = parsed.protocol || supportedProtocols[0];
-
-    if (protocol === 'data:') {
-      let convertedData;
-
-      if (method !== 'GET') {
-        return settle(resolve, reject, {
-          status: 405,
-          statusText: 'method not allowed',
-          headers: {},
-          config
-        });
-      }
-
-      try {
-        convertedData = fromDataURI(config.url, responseType === 'blob', {
-          Blob: config.env && config.env.Blob
-        });
-      } catch (err) {
-        throw AxiosError.from(err, AxiosError.ERR_BAD_REQUEST, config);
-      }
-
-      if (responseType === 'text') {
-        convertedData = convertedData.toString(responseEncoding);
-
-        if (!responseEncoding || responseEncoding === 'utf8') {
-          data = utils.stripBOM(convertedData);
-        }
-      } else if (responseType === 'stream') {
-        convertedData = stream__default["default"].Readable.from(convertedData);
-      }
-
-      return settle(resolve, reject, {
-        data: convertedData,
-        status: 200,
-        statusText: 'OK',
-        headers: new AxiosHeaders$1(),
-        config
-      });
-    }
-
-    if (supportedProtocols.indexOf(protocol) === -1) {
-      return reject(new AxiosError(
-        'Unsupported protocol ' + protocol,
-        AxiosError.ERR_BAD_REQUEST,
-        config
-      ));
-    }
-
-    const headers = AxiosHeaders$1.from(config.headers).normalize();
-
-    // Set User-Agent (required by some servers)
-    // See https://github.com/axios/axios/issues/69
-    // User-Agent is specified; handle case where no UA header is desired
-    // Only set header if it hasn't been set in config
-    headers.set('User-Agent', 'axios/' + VERSION, false);
-
-    const onDownloadProgress = config.onDownloadProgress;
-    const onUploadProgress = config.onUploadProgress;
-    const maxRate = config.maxRate;
-    let maxUploadRate = undefined;
-    let maxDownloadRate = undefined;
-
-    // support for https://www.npmjs.com/package/form-data api
-    if (utils.isFormData(data) && utils.isFunction(data.getHeaders)) {
-      headers.set(data.getHeaders());
-    } else if (data && !utils.isStream(data)) {
-      if (Buffer.isBuffer(data)) ; else if (utils.isArrayBuffer(data)) {
-        data = Buffer.from(new Uint8Array(data));
-      } else if (utils.isString(data)) {
-        data = Buffer.from(data, 'utf-8');
-      } else {
-        return reject(new AxiosError(
-          'Data after transformation must be a string, an ArrayBuffer, a Buffer, or a Stream',
-          AxiosError.ERR_BAD_REQUEST,
-          config
-        ));
-      }
-
-      // Add Content-Length header if data exists
-      headers.set('Content-Length', data.length, false);
-
-      if (config.maxBodyLength > -1 && data.length > config.maxBodyLength) {
-        return reject(new AxiosError(
-          'Request body larger than maxBodyLength limit',
-          AxiosError.ERR_BAD_REQUEST,
-          config
-        ));
-      }
-    }
-
-    const contentLength = +headers.getContentLength();
-
-    if (utils.isArray(maxRate)) {
-      maxUploadRate = maxRate[0];
-      maxDownloadRate = maxRate[1];
-    } else {
-      maxUploadRate = maxDownloadRate = maxRate;
-    }
-
-    if (data && (onUploadProgress || maxUploadRate)) {
-      if (!utils.isStream(data)) {
-        data = stream__default["default"].Readable.from(data, {objectMode: false});
-      }
-
-      data = stream__default["default"].pipeline([data, new AxiosTransformStream$1({
-        length: utils.toFiniteNumber(contentLength),
-        maxRate: utils.toFiniteNumber(maxUploadRate)
-      })], utils.noop);
-
-      onUploadProgress && data.on('progress', progress => {
-        onUploadProgress(Object.assign(progress, {
-          upload: true
-        }));
-      });
-    }
-
-    // HTTP basic authentication
-    let auth = undefined;
-    if (config.auth) {
-      const username = config.auth.username || '';
-      const password = config.auth.password || '';
-      auth = username + ':' + password;
-    }
-
-    if (!auth && parsed.username) {
-      const urlUsername = parsed.username;
-      const urlPassword = parsed.password;
-      auth = urlUsername + ':' + urlPassword;
-    }
-
-    auth && headers.delete('authorization');
-
-    let path;
-
-    try {
-      path = buildURL(
-        parsed.pathname + parsed.search,
-        config.params,
-        config.paramsSerializer
-      ).replace(/^\?/, '');
-    } catch (err) {
-      const customErr = new Error(err.message);
-      customErr.config = config;
-      customErr.url = config.url;
-      customErr.exists = true;
-      return reject(customErr);
-    }
-
-    headers.set('Accept-Encoding', 'gzip, deflate, br', false);
-
-    const options = {
-      path,
-      method: method,
-      headers: headers.toJSON(),
-      agents: { http: config.httpAgent, https: config.httpsAgent },
-      auth,
-      protocol,
-      beforeRedirect: dispatchBeforeRedirect,
-      beforeRedirects: {}
-    };
-
-    if (config.socketPath) {
-      options.socketPath = config.socketPath;
-    } else {
-      options.hostname = parsed.hostname;
-      options.port = parsed.port;
-      setProxy(options, config.proxy, protocol + '//' + parsed.hostname + (parsed.port ? ':' + parsed.port : '') + options.path);
-    }
-
-    let transport;
-    const isHttpsRequest = isHttps.test(options.protocol);
-    options.agent = isHttpsRequest ? config.httpsAgent : config.httpAgent;
-    if (config.transport) {
-      transport = config.transport;
-    } else if (config.maxRedirects === 0) {
-      transport = isHttpsRequest ? https__default["default"] : http__default["default"];
-    } else {
-      if (config.maxRedirects) {
-        options.maxRedirects = config.maxRedirects;
-      }
-      if (config.beforeRedirect) {
-        options.beforeRedirects.config = config.beforeRedirect;
-      }
-      transport = isHttpsRequest ? httpsFollow : httpFollow;
-    }
-
-    if (config.maxBodyLength > -1) {
-      options.maxBodyLength = config.maxBodyLength;
-    } else {
-      // follow-redirects does not skip comparison, so it should always succeed for axios -1 unlimited
-      options.maxBodyLength = Infinity;
-    }
-
-    if (config.insecureHTTPParser) {
-      options.insecureHTTPParser = config.insecureHTTPParser;
-    }
-
-    // Create the request
-    req = transport.request(options, function handleResponse(res) {
-      if (req.destroyed) return;
-
-      const streams = [res];
-
-      // uncompress the response body transparently if required
-      let responseStream = res;
-
-      // return the last request in case of redirects
-      const lastRequest = res.req || req;
-
-      // if decompress disabled we should not decompress
-      if (config.decompress !== false) {
-        // if no content, but headers still say that it is encoded,
-        // remove the header not confuse downstream operations
-        if (data && data.length === 0 && res.headers['content-encoding']) {
-          delete res.headers['content-encoding'];
-        }
-
-        switch (res.headers['content-encoding']) {
-        /*eslint default-case:0*/
-        case 'gzip':
-        case 'compress':
-        case 'deflate':
-          // add the unzipper to the body stream processing pipeline
-          streams.push(zlib__default["default"].createUnzip());
-
-          // remove the content-encoding in order to not confuse downstream operations
-          delete res.headers['content-encoding'];
-          break;
-        case 'br':
-          if (isBrotliSupported) {
-            streams.push(zlib__default["default"].createBrotliDecompress());
-            delete res.headers['content-encoding'];
-          }
-        }
-      }
-
-      if (onDownloadProgress) {
-        const responseLength = +res.headers['content-length'];
-
-        const transformStream = new AxiosTransformStream$1({
-          length: utils.toFiniteNumber(responseLength),
-          maxRate: utils.toFiniteNumber(maxDownloadRate)
-        });
-
-        onDownloadProgress && transformStream.on('progress', progress => {
-          onDownloadProgress(Object.assign(progress, {
-            download: true
-          }));
-        });
-
-        streams.push(transformStream);
-      }
-
-      responseStream = streams.length > 1 ? stream__default["default"].pipeline(streams, utils.noop) : streams[0];
-
-      const offListeners = stream__default["default"].finished(responseStream, () => {
-        offListeners();
-        onFinished();
-      });
-
-      const response = {
-        status: res.statusCode,
-        statusText: res.statusMessage,
-        headers: new AxiosHeaders$1(res.headers),
-        config,
-        request: lastRequest
-      };
-
-      if (responseType === 'stream') {
-        response.data = responseStream;
-        settle(resolve, reject, response);
-      } else {
-        const responseBuffer = [];
-        let totalResponseBytes = 0;
-
-        responseStream.on('data', function handleStreamData(chunk) {
-          responseBuffer.push(chunk);
-          totalResponseBytes += chunk.length;
-
-          // make sure the content length is not over the maxContentLength if specified
-          if (config.maxContentLength > -1 && totalResponseBytes > config.maxContentLength) {
-            // stream.destroy() emit aborted event before calling reject() on Node.js v16
-            rejected = true;
-            responseStream.destroy();
-            reject(new AxiosError('maxContentLength size of ' + config.maxContentLength + ' exceeded',
-              AxiosError.ERR_BAD_RESPONSE, config, lastRequest));
-          }
-        });
-
-        responseStream.on('aborted', function handlerStreamAborted() {
-          if (rejected) {
-            return;
-          }
-
-          const err = new AxiosError(
-            'maxContentLength size of ' + config.maxContentLength + ' exceeded',
-            AxiosError.ERR_BAD_RESPONSE,
-            config,
-            lastRequest
-          );
-          responseStream.destroy(err);
-          reject(err);
-        });
-
-        responseStream.on('error', function handleStreamError(err) {
-          if (req.destroyed) return;
-          reject(AxiosError.from(err, null, config, lastRequest));
-        });
-
-        responseStream.on('end', function handleStreamEnd() {
-          try {
-            let responseData = responseBuffer.length === 1 ? responseBuffer[0] : Buffer.concat(responseBuffer);
-            if (responseType !== 'arraybuffer') {
-              responseData = responseData.toString(responseEncoding);
-              if (!responseEncoding || responseEncoding === 'utf8') {
-                responseData = utils.stripBOM(responseData);
-              }
-            }
-            response.data = responseData;
-          } catch (err) {
-            reject(AxiosError.from(err, null, config, response.request, response));
-          }
-          settle(resolve, reject, response);
-        });
-      }
-
-      emitter.once('abort', err => {
-        if (!responseStream.destroyed) {
-          responseStream.emit('error', err);
-          responseStream.destroy();
-        }
-      });
-    });
-
-    emitter.once('abort', err => {
-      reject(err);
-      req.destroy(err);
-    });
-
-    // Handle errors
-    req.on('error', function handleRequestError(err) {
-      // @todo remove
-      // if (req.aborted && err.code !== AxiosError.ERR_FR_TOO_MANY_REDIRECTS) return;
-      reject(AxiosError.from(err, null, config, req));
-    });
-
-    // set tcp keep alive to prevent drop connection by peer
-    req.on('socket', function handleRequestSocket(socket) {
-      // default interval of sending ack packet is 1 minute
-      socket.setKeepAlive(true, 1000 * 60);
-    });
-
-    // Handle request timeout
-    if (config.timeout) {
-      // This is forcing a int timeout to avoid problems if the `req` interface doesn't handle other types.
-      const timeout = parseInt(config.timeout, 10);
-
-      if (isNaN(timeout)) {
-        reject(new AxiosError(
-          'error trying to parse `config.timeout` to int',
-          AxiosError.ERR_BAD_OPTION_VALUE,
-          config,
-          req
-        ));
-
-        return;
-      }
-
-      // Sometime, the response will be very slow, and does not respond, the connect event will be block by event loop system.
-      // And timer callback will be fired, and abort() will be invoked before connection, then get "socket hang up" and code ECONNRESET.
-      // At this time, if we have a large number of request, nodejs will hang up some socket on background. and the number will up and up.
-      // And then these socket which be hang up will devouring CPU little by little.
-      // ClientRequest.setTimeout will be fired on the specify milliseconds, and can make sure that abort() will be fired after connect.
-      req.setTimeout(timeout, function handleRequestTimeout() {
-        if (isDone) return;
-        let timeoutErrorMessage = config.timeout ? 'timeout of ' + config.timeout + 'ms exceeded' : 'timeout exceeded';
-        const transitional = config.transitional || transitionalDefaults;
-        if (config.timeoutErrorMessage) {
-          timeoutErrorMessage = config.timeoutErrorMessage;
-        }
-        reject(new AxiosError(
-          timeoutErrorMessage,
-          transitional.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED,
-          config,
-          req
-        ));
-        abort();
-      });
-    }
-
-
-    // Send the request
-    if (utils.isStream(data)) {
-      let ended = false;
-      let errored = false;
-
-      data.on('end', () => {
-        ended = true;
-      });
-
-      data.once('error', err => {
-        errored = true;
-        req.destroy(err);
-      });
-
-      data.on('close', () => {
-        if (!ended && !errored) {
-          abort(new CanceledError('Request stream has been aborted', config, req));
-        }
-      });
-
-      data.pipe(req);
-    } else {
-      req.end(data);
-    }
-  });
-}
-
-const cookies = platform.isStandardBrowserEnv ?
-
-// Standard browser envs support document.cookie
-  (function standardBrowserEnv() {
-    return {
-      write: function write(name, value, expires, path, domain, secure) {
-        const cookie = [];
-        cookie.push(name + '=' + encodeURIComponent(value));
-
-        if (utils.isNumber(expires)) {
-          cookie.push('expires=' + new Date(expires).toGMTString());
-        }
-
-        if (utils.isString(path)) {
-          cookie.push('path=' + path);
-        }
-
-        if (utils.isString(domain)) {
-          cookie.push('domain=' + domain);
-        }
-
-        if (secure === true) {
-          cookie.push('secure');
-        }
-
-        document.cookie = cookie.join('; ');
-      },
-
-      read: function read(name) {
-        const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-        return (match ? decodeURIComponent(match[3]) : null);
-      },
-
-      remove: function remove(name) {
-        this.write(name, '', Date.now() - 86400000);
-      }
-    };
-  })() :
-
-// Non standard browser env (web workers, react-native) lack needed support.
-  (function nonStandardBrowserEnv() {
-    return {
-      write: function write() {},
-      read: function read() { return null; },
-      remove: function remove() {}
-    };
-  })();
-
-const isURLSameOrigin = platform.isStandardBrowserEnv ?
-
-// Standard browser envs have full support of the APIs needed to test
-// whether the request URL is of the same origin as current location.
-  (function standardBrowserEnv() {
-    const msie = /(msie|trident)/i.test(navigator.userAgent);
-    const urlParsingNode = document.createElement('a');
-    let originURL;
-
-    /**
-    * Parse a URL to discover it's components
-    *
-    * @param {String} url The URL to be parsed
-    * @returns {Object}
-    */
-    function resolveURL(url) {
-      let href = url;
-
-      if (msie) {
-        // IE needs attribute set twice to normalize properties
-        urlParsingNode.setAttribute('href', href);
-        href = urlParsingNode.href;
-      }
-
-      urlParsingNode.setAttribute('href', href);
-
-      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-      return {
-        href: urlParsingNode.href,
-        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-        host: urlParsingNode.host,
-        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-        hostname: urlParsingNode.hostname,
-        port: urlParsingNode.port,
-        pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
-          urlParsingNode.pathname :
-          '/' + urlParsingNode.pathname
-      };
-    }
-
-    originURL = resolveURL(window.location.href);
-
-    /**
-    * Determine if a URL shares the same origin as the current location
-    *
-    * @param {String} requestURL The URL to test
-    * @returns {boolean} True if URL shares the same origin, otherwise false
-    */
-    return function isURLSameOrigin(requestURL) {
-      const parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
-      return (parsed.protocol === originURL.protocol &&
-          parsed.host === originURL.host);
-    };
-  })() :
-
-  // Non standard browser envs (web workers, react-native) lack needed support.
-  (function nonStandardBrowserEnv() {
-    return function isURLSameOrigin() {
-      return true;
-    };
-  })();
 
 function progressEventReducer(listener, isDownloadStream) {
   let bytesNotified = 0;
@@ -2923,11 +2109,11 @@ function xhrAdapter(config) {
 }
 
 const adapters = {
-  http: httpAdapter,
+  http: xhrAdapter,
   xhr: xhrAdapter
 };
 
-const adapters$1 = {
+var adapters$1 = {
   getAdapter: (nameOrAdapter) => {
     if(utils.isString(nameOrAdapter)){
       const adapter = adapters[nameOrAdapter];
@@ -3125,7 +2311,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
   defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
 });
 
-const defaults$1 = defaults;
+var defaults$1 = defaults;
 
 /**
  * Transform the data for a request or a response
@@ -3328,6 +2514,8 @@ function mergeConfig(config1, config2) {
   return config;
 }
 
+const VERSION = "1.2.0-alpha.1";
+
 const validators$1 = {};
 
 // eslint-disable-next-line func-names
@@ -3410,7 +2598,7 @@ function assertOptions(options, schema, allowUnknown) {
   }
 }
 
-const validator = {
+var validator = {
   assertOptions,
   validators: validators$1
 };
@@ -3600,7 +2788,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
   Axios.prototype[method + 'Form'] = generateHTTPMethod(true);
 });
 
-const Axios$1 = Axios;
+var Axios$1 = Axios;
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -3718,7 +2906,7 @@ class CancelToken {
   }
 }
 
-const CancelToken$1 = CancelToken;
+var CancelToken$1 = CancelToken;
 
 /**
  * Syntactic sugar for invoking a function and expanding an array for arguments.

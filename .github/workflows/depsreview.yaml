@@ -13,4 +13,4 @@ jobs:
         with:
           persist-credentials: false
       - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v2
+        uses: actions/dependency-review-action@v3

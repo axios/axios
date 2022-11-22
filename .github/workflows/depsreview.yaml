@@ -10,5 +10,7 @@ jobs:
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v3

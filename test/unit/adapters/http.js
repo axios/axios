@@ -473,6 +473,7 @@ describe('supports http with nodejs', function () {
         server = http.createServer(function(req, res) {
           res.setHeader('Content-Type', 'text/html;charset=utf-8');
           res.setHeader('Content-Encoding', 'gzip');
+          res.setHeader('Transfer-Encoding', 'chunked');
           res.end(zipped);
         }).listen(4444, function() {
           axios.get('http://localhost:4444/', {

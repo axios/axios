@@ -466,6 +466,27 @@ describe('supports http with nodejs', function () {
     })
   });
 
+    it('should support decompression of response data', function(done) {
+      var data = 'Test data';
+
+      zlib.gzip(data, function(err, zipped) {
+        server = http.createServer(function(req, res) {
+          res.setHeader('Content-Type', 'text/html;charset=utf-8');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function() {
+          axios.get('http://localhost:4444/', {
+            decompress: true,
+            responseType: 'arraybuffer'
+
+          }).then(function(res) {
+            assert.equal(res.data, data);
+            done();
+          }).catch(done);
+        });
+      });
+    });
+
     it('should support disabling automatic decompression of response data', function(done) {
       var data = 'Test data';
 

@@ -18,6 +18,8 @@
         "default": "./index.js"
       }
     },
+    "./axios.js": "./dist/axios.js",
+    "./axios.min.js": "./dist/axios.min.js",
     "./package.json": "./package.json"
   },
   "type": "module",

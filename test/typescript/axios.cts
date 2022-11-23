@@ -1,23 +1,6 @@
-import axios, {
-  AxiosRequestConfig,
-  AxiosResponse,
-  AxiosError,
-  AxiosInstance,
-  AxiosAdapter,
-  Cancel,
-  CancelTokenSource,
-  Canceler,
-  AxiosProgressEvent,
-  ParamsSerializerOptions,
-  toFormData,
-  formToJSON,
-  all,
-  isCancel,
-  isAxiosError,
-  spread
-} from 'axios';
+import axios = require('axios');
 
-const config: AxiosRequestConfig = {
+const config: axios.AxiosRequestConfig = {
   url: '/user',
   method: 'get',
   baseURL: 'https://api.example.com/',
@@ -30,7 +13,7 @@ const config: AxiosRequestConfig = {
   paramsSerializer: {
     indexes: true,
     encode: (value: any) => value,
-    serialize: (value: Record<string, any>, options?: ParamsSerializerOptions) => String(value)
+    serialize: (value: Record<string, any>, options?: axios.ParamsSerializerOptions) => String(value)
   },
   data: { foo: 'bar' },
   timeout: 10000,
@@ -42,8 +25,8 @@ const config: AxiosRequestConfig = {
   responseType: 'json',
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
-  onUploadProgress: (progressEvent: AxiosProgressEvent) => {},
-  onDownloadProgress: (progressEvent: AxiosProgressEvent) => {},
+  onUploadProgress: (progressEvent: axios.AxiosProgressEvent) => {},
+  onDownloadProgress: (progressEvent: axios.AxiosProgressEvent) => {},
   maxContentLength: 2000,
   maxBodyLength: 2000,
   validateStatus: (status: number) => status >= 200 && status < 300,
@@ -52,18 +35,18 @@ const config: AxiosRequestConfig = {
     host: '127.0.0.1',
     port: 9000
   },
-  cancelToken: new axios.CancelToken((cancel: Canceler) => {})
+  cancelToken: new axios.CancelToken((cancel: axios.Canceler) => {})
 };
 
-const nullValidateStatusConfig: AxiosRequestConfig = {
+const nullValidateStatusConfig: axios.AxiosRequestConfig = {
   validateStatus: null
 };
 
-const undefinedValidateStatusConfig: AxiosRequestConfig = {
+const undefinedValidateStatusConfig: axios.AxiosRequestConfig = {
   validateStatus: undefined
 };
 
-const handleResponse = (response: AxiosResponse) => {
+const handleResponse = (response: axios.AxiosResponse) => {
   console.log(response.data);
   console.log(response.status);
   console.log(response.statusText);
@@ -71,7 +54,7 @@ const handleResponse = (response: AxiosResponse) => {
   console.log(response.config);
 };
 
-const handleError = (error: AxiosError) => {
+const handleError = (error: axios.AxiosError) => {
   if (error.response) {
     console.log(error.response.data);
     console.log(error.response.status);
@@ -131,9 +114,9 @@ interface User {
   name: string;
 }
 
-// with default AxiosResponse<T> result
+// with default axios.AxiosResponse<T> result
 
-const handleUserResponse = (response: AxiosResponse<User>) => {
+const handleUserResponse = (response: axios.AxiosResponse<User>) => {
 	console.log(response.data.id);
 	console.log(response.data.name);
 	console.log(response.status);
@@ -229,8 +212,8 @@ axios.request<User, string>({
 
 // Instances
 
-const instance1: AxiosInstance = axios.create();
-const instance2: AxiosInstance = axios.create(config);
+const instance1: axios.AxiosInstance = axios.create();
+const instance2: axios.AxiosInstance = axios.create(config);
 
 instance1(config)
   .then(handleResponse)
@@ -293,55 +276,55 @@ axios.create({
 // Interceptors
 
 const requestInterceptorId: number = axios.interceptors.request.use(
-  (config: AxiosRequestConfig) => config,
+  (config: axios.AxiosRequestConfig) => config,
   (error: any) => Promise.reject(error)
 );
 
 axios.interceptors.request.eject(requestInterceptorId);
 
 axios.interceptors.request.use(
-  (config: AxiosRequestConfig) => Promise.resolve(config),
+  (config: axios.AxiosRequestConfig) => Promise.resolve(config),
   (error: any) => Promise.reject(error)
 );
 
-axios.interceptors.request.use((config: AxiosRequestConfig) => config);
-axios.interceptors.request.use((config: AxiosRequestConfig) => Promise.resolve(config));
+axios.interceptors.request.use((config: axios.AxiosRequestConfig) => config);
+axios.interceptors.request.use((config: axios.AxiosRequestConfig) => Promise.resolve(config));
 
 const responseInterceptorId: number = axios.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: axios.AxiosResponse) => response,
   (error: any) => Promise.reject(error)
 );
 
 axios.interceptors.response.eject(responseInterceptorId);
 
 axios.interceptors.response.use(
-  (response: AxiosResponse) => Promise.resolve(response),
+  (response: axios.AxiosResponse) => Promise.resolve(response),
   (error: any) => Promise.reject(error)
 );
 
 const voidRequestInterceptorId = axios.interceptors.request.use(
-  // @ts-expect-error -- Must return an AxiosRequestConfig (or throw)
+  // @ts-expect-error -- Must return an axios.AxiosRequestConfig (or throw)
   (_response) => {},
   (error: any) => Promise.reject(error)
 );
 const voidResponseInterceptorId = axios.interceptors.response.use(
-  // @ts-expect-error -- Must return an AxiosResponse (or throw)
+  // @ts-expect-error -- Must return an axios.AxiosResponse (or throw)
   (_response) => {},
   (error: any) => Promise.reject(error)
 );
 axios.interceptors.request.eject(voidRequestInterceptorId);
 axios.interceptors.response.eject(voidResponseInterceptorId);
 
-axios.interceptors.response.use((response: AxiosResponse) => response);
-axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
+axios.interceptors.response.use((response: axios.AxiosResponse) => response);
+axios.interceptors.response.use((response: axios.AxiosResponse) => Promise.resolve(response));
 
 axios.interceptors.request.clear();
 axios.interceptors.response.clear();
 
 // Adapters
 
-const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
-  const response: AxiosResponse = {
+const adapter: axios.AxiosAdapter = (config: axios.AxiosRequestConfig) => {
+  const response: axios.AxiosResponse = {
     data: { foo: 'bar' },
     status: 200,
     statusText: 'OK',
@@ -362,44 +345,27 @@ const promises = [
 
 const promise: Promise<number[]> = axios.all(promises);
 
-// axios.all named export
-
-(() => {
-  const promises = [
-    Promise.resolve(1),
-    Promise.resolve(2)
-  ];
-
-  const promise: Promise<number[]> = all(promises);
-})();
-
 // axios.spread
 
 const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
 const fn2: (arr: number[]) => string = axios.spread(fn1);
 
-// axios.spread named export
-(() => {
-  const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
-  const fn2: (arr: number[]) => string = spread(fn1);
-})();
-
 // Promises
 
 axios.get('/user')
-  .then((response: AxiosResponse) => 'foo')
+  .then((response: axios.AxiosResponse) => 'foo')
   .then((value: string) => {});
 
 axios.get('/user')
-  .then((response: AxiosResponse) => Promise.resolve('foo'))
+  .then((response: axios.AxiosResponse) => Promise.resolve('foo'))
   .then((value: string) => {});
 
 axios.get('/user')
-  .then((response: AxiosResponse) => 'foo', (error: any) => 'bar')
+  .then((response: axios.AxiosResponse) => 'foo', (error: any) => 'bar')
   .then((value: string) => {});
 
 axios.get('/user')
-  .then((response: AxiosResponse) => 'foo', (error: any) => 123)
+  .then((response: axios.AxiosResponse) => 'foo', (error: any) => 123)
   .then((value: string | number) => {});
 
 axios.get('/user')
@@ -410,55 +376,33 @@ axios.get('/user')
   .catch((error: any) => Promise.resolve('foo'))
   .then((value) => {});
 
-// Cancellation
+// axios.Cancellation
 
-const source: CancelTokenSource = axios.CancelToken.source();
+const source: axios.CancelTokenSource = axios.CancelToken.source();
 
 axios.get('/user', {
   cancelToken: source.token
-}).catch((thrown: AxiosError | Cancel) => {
+}).catch((thrown: axios.AxiosError | axios.Cancel) => {
   if (axios.isCancel(thrown)) {
-    const cancel: Cancel = thrown;
-    console.log(cancel.message);
-  }
-
-  // named export
-  if (isCancel(thrown)) {
-    const cancel: Cancel = thrown;
+    const cancel: axios.Cancel = thrown;
     console.log(cancel.message);
   }
 });
 
-source.cancel('Operation has been canceled.');
+source.cancel('Operation has been axios.Canceled.');
 
-// AxiosError
+// axios.AxiosError
 
 axios.get('/user')
   .catch((error) => {
     if (axios.isAxiosError(error)) {
-      const axiosError: AxiosError = error;
-    }
-
-    // named export
-
-    if (isAxiosError(error)) {
-      const axiosError: AxiosError = error;
+      const axiosError: axios.AxiosError = error;
     }
   });
 
 // FormData
 
 axios.toFormData({x: 1}, new FormData());
-
-// named export
-toFormData({x: 1}, new FormData());
-
-// formToJSON
-
-axios.toFormData(new FormData());
-
-// named export
-formToJSON(new FormData());
 
 // AbortSignal
 
@@ -496,18 +440,4 @@ axios.get('/user', {
     console.log(e.progress);
     console.log(e.rate);
   }
-});
-
-// adapters
-
-axios.get('/user', {
-  adapter: 'xhr'
-});
-
-axios.get('/user', {
-  adapter: 'http'
-});
-
-axios.get('/user', {
-  adapter: ['xhr', 'http']
 });

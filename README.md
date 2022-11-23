@@ -81,7 +81,7 @@
 - Intercept request and response
 - Transform request and response data
 - Cancel requests
-- Automatic transforms for JSON data
+- Automatic transforms for [JSON](https://www.json.org/json-en.html) data
 - 🆕 Automatic data object serialization to `multipart/form-data` and `x-www-form-urlencoded` body encodings
 - Client side support for protecting against [XSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery)
 
@@ -765,6 +765,8 @@ Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all t
 
 ## Handling Errors
 
+the default behavior is to reject every response that returns with a status code that falls out of the range of 2xx and treat it as an error.
+
 ```js
 axios.get('/user/12345')
   .catch(function (error) {
@@ -787,7 +789,7 @@ axios.get('/user/12345')
   });
 ```
 
-Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
+Using the `validateStatus` config option, you can override the default condition (status >= 200 && status < 300) and define HTTP code(s) that should throw an error.
 
 ```js
 axios.get('/user/12345', {
@@ -1280,6 +1282,12 @@ try {
   }
 }
 ```
+
+Because axios dual publishes with an ESM default export and a CJS `module.exports`, there are some caveats.
+The recommended setting is to use `"moduleResolution": "node16"` (this is implied by `"module": "node16"`). Note that this requires TypeScript 4.7 or greater.
+If use ESM, your settings should be fine.
+If you compile TypeScript to CJS and you can’t use `"moduleResolution": "node 16"`, you have to enable `esModuleInterop`.
+If you use TypeScript to type check CJS JavaScript code, your only option is to use `"moduleResolution": "node16"`.
 
 ## Online one-click setup
 

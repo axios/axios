@@ -263,6 +263,8 @@ type MaxUploadRate = number;
 
 type MaxDownloadRate = number;
 
+type BrowserProgressEvent = any;
+
 export interface AxiosProgressEvent {
   loaded: number;
   total?: number;
@@ -272,7 +274,7 @@ export interface AxiosProgressEvent {
   estimated?: number;
   upload?: boolean;
   download?: boolean;
-  event?: ProgressEvent;
+  event?: BrowserProgressEvent;
 }
 
 type Milliseconds = number;

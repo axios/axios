@@ -4,7 +4,6 @@ import {AxiosHeaders} from "../../../index.js";
 
 describe('core::mergeConfig', function() {
   it('should accept undefined for second argument', function() {
-    console.log("测试：", defaults)
     expect(mergeConfig(defaults, undefined)).toEqual(defaults);
   });
 

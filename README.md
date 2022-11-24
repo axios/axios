@@ -421,6 +421,15 @@ These are the available config options for making requests. Only the `url` is re
     /* ... */
   },
 
+  // `isStandardBrowserEnv`(Browser only option) allows axios to run in a web worker, react-native and other customized BrowserEnv.
+  // Both environments support XMLHttpRequest, but not fully standard globals.
+  // It supports Boolean or Functions that return Boolean.
+  // By default, it will determine whether it is a standard browser
+  isStandardBrowserEnv: function () {
+    /* ... */
+    return true
+  },
+
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing
   // `Authorization` custom headers you have set using `headers`.

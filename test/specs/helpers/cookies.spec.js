@@ -1,4 +1,9 @@
-import cookies from '../../../lib/helpers/cookies';
+import getCookiesFn from '../../../lib/helpers/cookies';
+import platform from  '../../../lib/platform';
+
+const isStandardBrowserEnv = platform.isStandardBrowserEnv();
+
+const cookies = getCookiesFn(isStandardBrowserEnv);
 
 describe('helpers::cookies', function () {
   afterEach(function () {

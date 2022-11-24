@@ -321,6 +321,7 @@ export interface AxiosRequestConfig<D = any> {
     FormData?: new (...args: any[]) => object;
   };
   formSerializer?: FormSerializerOptions;
+  isStandardBrowserEnv?: boolean | (() => boolean);
 }
 
 export interface HeadersDefaults {

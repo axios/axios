@@ -1297,7 +1297,6 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 ## Resources
 
 * [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/axios/blob/v1.x/UPGRADE_GUIDE.md)
 * [Ecosystem](https://github.com/axios/axios/blob/v1.x/ECOSYSTEM.md)
 * [Contributing Guide](https://github.com/axios/axios/blob/v1.x/CONTRIBUTING.md)
 * [Code of Conduct](https://github.com/axios/axios/blob/v1.x/CODE_OF_CONDUCT.md)

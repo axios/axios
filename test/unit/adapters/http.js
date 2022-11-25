@@ -20,6 +20,7 @@ const isBlobSupported = typeof Blob !== 'undefined';
 import {Throttle} from 'stream-throttle';
 import devNull from 'dev-null';
 import {AbortController} from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
+import {__setProxy} from "../../../lib/adapters/http.js";
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,9 +47,14 @@ var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
-function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = {}) {
+function startHTTPServer(options) {
+
+  const {handler, useBuffering = false, rate = undefined, port = 4444} = typeof options === 'function' ? {
+    handler: options
+  } : options || {};
+
   return new Promise((resolve, reject) => {
-    http.createServer(async function (req, res) {
+    http.createServer(handler || async function (req, res) {
       try {
         req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
@@ -425,58 +431,71 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support transparent gunzip', function (done) {
-    var data = {
-      firstName: 'Fred',
-      lastName: 'Flintstone',
-      emailAddr: 'fred@example.com'
-    };
+  describe('compression', () => {
+    it('should support transparent gunzip', function (done) {
+      var data = {
+        firstName: 'Fred',
+        lastName: 'Flintstone',
+        emailAddr: 'fred@example.com'
+      };
 
-    zlib.gzip(JSON.stringify(data), function (err, zipped) {
+      zlib.gzip(JSON.stringify(data), function (err, zipped) {
 
-      server = http.createServer(function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function () {
-        axios.get('http://localhost:4444/').then(function (res) {
-          assert.deepEqual(res.data, data);
-          done();
-        }).catch(done);
+        server = http.createServer(function (req, res) {
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function () {
+          axios.get('http://localhost:4444/').then(function (res) {
+            assert.deepEqual(res.data, data);
+            done();
+          }).catch(done);
+        });
       });
     });
-  });
 
-  it('should support gunzip error handling', function (done) {
-    server = http.createServer(function (req, res) {
+  it('should support gunzip error handling', async () => {
+    server = await startHTTPServer((req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Encoding', 'gzip');
       res.end('invalid response');
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').catch(function (error) {
-        done();
-      }).catch(done);
     });
+
+    await assert.rejects(async ()=> {
+      await axios.get(LOCAL_SERVER_URL);
+    })
   });
 
-  it('should support disabling automatic decompression of response data', function(done) {
-    var data = 'Test data';
+    it('should support disabling automatic decompression of response data', function(done) {
+      var data = 'Test data';
 
-    zlib.gzip(data, function(err, zipped) {
-      server = http.createServer(function(req, res) {
-        res.setHeader('Content-Type', 'text/html;charset=utf-8');
-        res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function() {
-        axios.get('http://localhost:4444/', {
-          decompress: false,
-          responseType: 'arraybuffer'
+      zlib.gzip(data, function(err, zipped) {
+        server = http.createServer(function(req, res) {
+          res.setHeader('Content-Type', 'text/html;charset=utf-8');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function() {
+          axios.get('http://localhost:4444/', {
+            decompress: false,
+            responseType: 'arraybuffer'
 
-        }).then(function(res) {
-          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
-          done();
-        }).catch(done);
+          }).then(function(res) {
+            assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+            done();
+          }).catch(done);
+        });
       });
+    });
+
+    it('should properly handle empty responses without Z_BUF_ERROR throwing', async () => {
+      this.timeout(10000);
+
+      server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end();
+      });
+
+      await axios.get(LOCAL_SERVER_URL);
     });
   });
 
@@ -1236,6 +1255,38 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  context('different options for direct proxy configuration (without env variables)', () => {
+    const destination = 'www.example.com';
+
+    const testCases = [{
+      description: 'hostname and trailing colon in protocol',
+      proxyConfig: { hostname: '127.0.0.1', protocol: 'http:', port: 80 },
+      expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination }
+    }, {
+      description: 'hostname and no trailing colon in protocol',
+      proxyConfig: { hostname: '127.0.0.1', protocol: 'http', port: 80 },
+      expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination }
+    }, {
+      description: 'both hostname and host -> hostname takes precedence',
+      proxyConfig: { hostname: '127.0.0.1', host: '0.0.0.0', protocol: 'http', port: 80 },
+      expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination }
+    }, {
+      description: 'only host and https protocol',
+      proxyConfig: { host: '0.0.0.0', protocol: 'https', port: 80 },
+      expectedOptions: { host: '0.0.0.0', protocol: 'https:', port: 80, path: destination }
+    }];
+
+    for (const test of testCases) {
+      it(test.description, () => {
+        const options = { headers: {}, beforeRedirects: {} };
+        __setProxy(options, test.proxyConfig, destination);
+        for (const [key, expected] of Object.entries(test.expectedOptions)) {
+          assert.equal(options[key], expected);
+        }
+      });
+    }
+  });
+
   it('should support cancel', function (done) {
     var source = axios.CancelToken.source();
     server = http.createServer(function (req, res) {
@@ -1360,6 +1411,7 @@ describe('supports http with nodejs', function () {
 
   it('should omit a user-agent if one is explicitly disclaimed', function (done) {
     server = http.createServer(function (req, res) {
+      console.log(req.headers);
       assert.equal("user-agent" in req.headers, false);
       assert.equal("User-Agent" in req.headers, false);
       res.end();
@@ -1852,7 +1904,6 @@ describe('supports http with nodejs', function () {
       assert.strictEqual(data, buf.toString(), 'content corrupted');
     });
   });
-
 
   describe('request aborting', function() {
     it('should be able to abort the response stream', async function () {

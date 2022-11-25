@@ -204,6 +204,10 @@ axios.post<Partial<UserCreationDef>, string>('/user', { name: 'foo' }, { headers
   .then(handleStringResponse)
   .catch(handleError);
 
+axios.post<User>('/user', { name: 'foo', id: 1 }, { headers: { get: { 'X-FOO': 'bar' }} })
+  .then(handleUserResponse)
+  .catch(handleError);
+
 axios.put<Partial<UserCreationDef>, string>('/user', { name: 'foo' })
   .then(handleStringResponse)
   .catch(handleError);
@@ -270,6 +274,17 @@ instance1.defaults.timeout = 2500;
 
 axios.create({ headers: { foo: 'bar' } });
 axios.create({ headers: { common: { foo: 'bar' } } });
+axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  formSerializer: {
+    indexes: null,
+  },
+  paramsSerializer: {
+    indexes: null,
+  },
+});
 
 // Interceptors
 

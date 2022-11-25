@@ -6,7 +6,7 @@ type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 };
 
-interface CommonHeaders  {
+interface CommonHeaders {
   common: AxiosHeaders;
 }
 
@@ -277,6 +277,10 @@ export interface AxiosProgressEvent {
 
 type Milliseconds = number;
 
+type AxiosAdapterName = 'xhr' | 'http' | string;
+
+type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
@@ -290,7 +294,7 @@ export interface AxiosRequestConfig<D = any> {
   timeout?: Milliseconds;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
-  adapter?: AxiosAdapter;
+  adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
   responseEncoding?: responseEncoding | string;
@@ -341,7 +345,7 @@ export interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>
   headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
 }
 
-export interface AxiosResponse<T = any, D = any>  {
+export interface AxiosResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;

@@ -11,7 +11,7 @@ function pipeFileToResponse(res, file, type) {
     });
   }
 
-  fs.createReadStream(path.join(__dirname, file)).pipe(res);
+  fs.createReadStream(path.join(path.resolve() ,'sandbox', file)).pipe(res);
 }
 
 server = http.createServer(function (req, res) {

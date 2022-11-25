@@ -52,9 +52,14 @@ var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
-function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = {}) {
+function startHTTPServer(options) {
+
+  const {handler, useBuffering = false, rate = undefined, port = 4444} = typeof options === 'function' ? {
+    handler: options
+  } : options || {};
+
   return new Promise((resolve, reject) => {
-    http.createServer(async function (req, res) {
+    http.createServer(handler || async function (req, res) {
       try {
         req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
@@ -86,9 +91,17 @@ function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = 
 }
 
 const handleFormData = (req) => {
-  const form = new formidable.IncomingForm();
+  return new Promise((resolve, reject) => {
+    const form = new formidable.IncomingForm();
 
-  return util.promisify(form.parse).call(form, req);
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        return reject(err);
+      }
+
+      resolve({fields, files});
+    });
+  });
 }
 
 function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sleep = 50) {
@@ -437,58 +450,71 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support transparent gunzip', function (done) {
-    var data = {
-      firstName: 'Fred',
-      lastName: 'Flintstone',
-      emailAddr: 'fred@example.com'
-    };
+  describe('compression', () => {
+    it('should support transparent gunzip', function (done) {
+      var data = {
+        firstName: 'Fred',
+        lastName: 'Flintstone',
+        emailAddr: 'fred@example.com'
+      };
 
-    zlib.gzip(JSON.stringify(data), function (err, zipped) {
+      zlib.gzip(JSON.stringify(data), function (err, zipped) {
 
-      server = http.createServer(function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function () {
-        axios.get('http://localhost:4444/').then(function (res) {
-          assert.deepEqual(res.data, data);
-          done();
-        }).catch(done);
+        server = http.createServer(function (req, res) {
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function () {
+          axios.get('http://localhost:4444/').then(function (res) {
+            assert.deepEqual(res.data, data);
+            done();
+          }).catch(done);
+        });
       });
     });
-  });
 
-  it('should support gunzip error handling', function (done) {
-    server = http.createServer(function (req, res) {
+  it('should support gunzip error handling', async () => {
+    server = await startHTTPServer((req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Encoding', 'gzip');
       res.end('invalid response');
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').catch(function (error) {
-        done();
-      }).catch(done);
     });
+
+    await assert.rejects(async ()=> {
+      await axios.get(LOCAL_SERVER_URL);
+    })
   });
 
-  it('should support disabling automatic decompression of response data', function(done) {
-    var data = 'Test data';
+    it('should support disabling automatic decompression of response data', function(done) {
+      var data = 'Test data';
 
-    zlib.gzip(data, function(err, zipped) {
-      server = http.createServer(function(req, res) {
-        res.setHeader('Content-Type', 'text/html;charset=utf-8');
-        res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function() {
-        axios.get('http://localhost:4444/', {
-          decompress: false,
-          responseType: 'arraybuffer'
+      zlib.gzip(data, function(err, zipped) {
+        server = http.createServer(function(req, res) {
+          res.setHeader('Content-Type', 'text/html;charset=utf-8');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function() {
+          axios.get('http://localhost:4444/', {
+            decompress: false,
+            responseType: 'arraybuffer'
 
-        }).then(function(res) {
-          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
-          done();
-        }).catch(done);
+          }).then(function(res) {
+            assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+            done();
+          }).catch(done);
+        });
       });
+    });
+
+    it('should properly handle empty responses without Z_BUF_ERROR throwing', async () => {
+      this.timeout(10000);
+
+      server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end();
+      });
+
+      await axios.get(LOCAL_SERVER_URL);
     });
   });
 
@@ -1404,7 +1430,6 @@ describe('supports http with nodejs', function () {
 
   it('should omit a user-agent if one is explicitly disclaimed', function (done) {
     server = http.createServer(function (req, res) {
-      console.log(req.headers);
       assert.equal("user-agent" in req.headers, false);
       assert.equal("User-Agent" in req.headers, false);
       res.end();
@@ -1523,33 +1548,41 @@ describe('supports http with nodejs', function () {
     });
 
     describe('SpecCompliant FormData', (done) => {
-      it('should allow passing FormData', async () => {
-        server = await startHTTPServer((req, res) => {
-          var receivedForm = new formidable.IncomingForm();
+      it('should allow passing FormData', async function () {
+        server = await startHTTPServer(async (req, res) => {
+          const {fields, files} = await handleFormData(req);
 
-          receivedForm.parse(req, function (err, fields, files) {
-            if (err) {
-              return done(err);
-            }
-
-            res.end(JSON.stringify({
-              fields: fields,
-              files: files
-            }));
-          });
+          res.end(JSON.stringify({
+            fields,
+            files
+          }));
         });
 
         const form = new FormDataSpecCompliant();
 
-        const blob = new BlobSpecCompliant(['test'], {type: 'image/jpeg'})
+        const blobContent = 'blob-content';
 
-        form.append('foo', 'bar');
+        const blob = new BlobSpecCompliant([blobContent], {type: 'image/jpeg'})
 
-        //form.append('file1', blob);
+        form.append('foo1', 'bar1');
+        form.append('foo2', 'bar2');
 
-        await axios.post(LOCAL_SERVER_URL, form).then(function (res) {
-          assert.deepStrictEqual(res.data.fields, {foo: 'bar'});
+        form.append('file1', blob);
+
+        const {data} = await axios.post(LOCAL_SERVER_URL, form, {
+          maxRedirects: 0
         });
+
+        assert.deepStrictEqual(data.fields, {foo1: 'bar1' ,'foo2': 'bar2'});
+
+        assert.deepStrictEqual(typeof data.files.file1, 'object');
+
+        const {size, mimetype, originalFilename} = data.files.file1;
+
+        assert.deepStrictEqual(
+          {size, mimetype, originalFilename},
+          {mimetype: 'image/jpeg', originalFilename: 'blob', size: Buffer.from(blobContent).byteLength}
+        );
       });
     });
 
@@ -1589,6 +1622,24 @@ describe('supports http with nodejs', function () {
           }, done)
         });
       });
+    });
+  });
+
+  describe('Blob', function () {
+    it('should support Blob', async () => {
+      server = await startHTTPServer(async (req, res) => {
+        res.end(await getStream(req));
+      });
+
+      const blobContent = 'blob-content';
+
+      const blob = new BlobSpecCompliant([blobContent], {type: 'image/jpeg'})
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, blob, {
+        maxRedirects: 0
+      });
+
+      assert.deepStrictEqual(data, blobContent);
     });
   });
 
@@ -1930,7 +1981,6 @@ describe('supports http with nodejs', function () {
       assert.strictEqual(data, buf.toString(), 'content corrupted');
     });
   });
-
 
   describe('request aborting', function() {
     it('should be able to abort the response stream', async function () {

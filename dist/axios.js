@@ -1,4 +1,4 @@
-// Axios v1.2.0-alpha.1 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.2.0 Copyright (c) 2022 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -666,6 +666,28 @@
     value = +value;
     return Number.isFinite(value) ? value : defaultValue;
   };
+  var toJSONObject = function toJSONObject(obj) {
+    var stack = new Array(10);
+    var visit = function visit(source, i) {
+      if (isObject(source)) {
+        if (stack.indexOf(source) >= 0) {
+          return;
+        }
+        if (!('toJSON' in source)) {
+          stack[i] = source;
+          var target = isArray(source) ? [] : {};
+          forEach(source, function (value, key) {
+            var reducedValue = visit(value, i + 1);
+            !isUndefined(reducedValue) && (target[key] = reducedValue);
+          });
+          stack[i] = undefined;
+          return target;
+        }
+      }
+      return source;
+    };
+    return visit(obj, 0);
+  };
   var utils = {
     isArray: isArray,
     isArrayBuffer: isArrayBuffer,
@@ -712,7 +734,8 @@
     toFiniteNumber: toFiniteNumber,
     findKey: findKey,
     global: _global,
-    isContextDefined: isContextDefined
+    isContextDefined: isContextDefined,
+    toJSONObject: toJSONObject
   };
 
   /**
@@ -755,7 +778,7 @@
         columnNumber: this.columnNumber,
         stack: this.stack,
         // Axios
-        config: this.config,
+        config: utils.toJSONObject(this.config),
         code: this.code,
         status: this.response && this.response.status ? this.response.status : null
       };
@@ -1289,185 +1312,127 @@
     return null;
   }
 
-  /**
-   * Resolve or reject a Promise based on response status.
-   *
-   * @param {Function} resolve A function that resolves the promise.
-   * @param {Function} reject A function that rejects the promise.
-   * @param {object} response The response.
-   *
-   * @returns {object} The response.
-   */
-  function settle(resolve, reject, response) {
-    var validateStatus = response.config.validateStatus;
-    if (!response.status || !validateStatus || validateStatus(response.status)) {
-      resolve(response);
-    } else {
-      reject(new AxiosError('Request failed with status code ' + response.status, [AxiosError.ERR_BAD_REQUEST, AxiosError.ERR_BAD_RESPONSE][Math.floor(response.status / 100) - 4], response.config, response.request, response));
-    }
-  }
+  var DEFAULT_CONTENT_TYPE = {
+    'Content-Type': undefined
+  };
 
-  var cookies = platform.isStandardBrowserEnv ?
-  // Standard browser envs support document.cookie
-  function standardBrowserEnv() {
-    return {
-      write: function write(name, value, expires, path, domain, secure) {
-        var cookie = [];
-        cookie.push(name + '=' + encodeURIComponent(value));
-        if (utils.isNumber(expires)) {
-          cookie.push('expires=' + new Date(expires).toGMTString());
+  /**
+   * It takes a string, tries to parse it, and if it fails, it returns the stringified version
+   * of the input
+   *
+   * @param {any} rawValue - The value to be stringified.
+   * @param {Function} parser - A function that parses a string into a JavaScript object.
+   * @param {Function} encoder - A function that takes a value and returns a string.
+   *
+   * @returns {string} A stringified version of the rawValue.
+   */
+  function stringifySafely(rawValue, parser, encoder) {
+    if (utils.isString(rawValue)) {
+      try {
+        (parser || JSON.parse)(rawValue);
+        return utils.trim(rawValue);
+      } catch (e) {
+        if (e.name !== 'SyntaxError') {
+          throw e;
         }
-        if (utils.isString(path)) {
-          cookie.push('path=' + path);
-        }
-        if (utils.isString(domain)) {
-          cookie.push('domain=' + domain);
-        }
-        if (secure === true) {
-          cookie.push('secure');
-        }
-        document.cookie = cookie.join('; ');
-      },
-      read: function read(name) {
-        var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-        return match ? decodeURIComponent(match[3]) : null;
-      },
-      remove: function remove(name) {
-        this.write(name, '', Date.now() - 86400000);
       }
-    };
-  }() :
-  // Non standard browser env (web workers, react-native) lack needed support.
-  function nonStandardBrowserEnv() {
-    return {
-      write: function write() {},
-      read: function read() {
-        return null;
-      },
-      remove: function remove() {}
-    };
-  }();
-
-  /**
-   * Determines whether the specified URL is absolute
-   *
-   * @param {string} url The URL to test
-   *
-   * @returns {boolean} True if the specified URL is absolute, otherwise false
-   */
-  function isAbsoluteURL(url) {
-    // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
-    // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
-    // by any combination of letters, digits, plus, period, or hyphen.
-    return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url);
-  }
-
-  /**
-   * Creates a new URL by combining the specified URLs
-   *
-   * @param {string} baseURL The base URL
-   * @param {string} relativeURL The relative URL
-   *
-   * @returns {string} The combined URL
-   */
-  function combineURLs(baseURL, relativeURL) {
-    return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL;
-  }
-
-  /**
-   * Creates a new URL by combining the baseURL with the requestedURL,
-   * only when the requestedURL is not already an absolute URL.
-   * If the requestURL is absolute, this function returns the requestedURL untouched.
-   *
-   * @param {string} baseURL The base URL
-   * @param {string} requestedURL Absolute or relative URL to combine
-   *
-   * @returns {string} The combined full path
-   */
-  function buildFullPath(baseURL, requestedURL) {
-    if (baseURL && !isAbsoluteURL(requestedURL)) {
-      return combineURLs(baseURL, requestedURL);
     }
-    return requestedURL;
+    return (encoder || JSON.stringify)(rawValue);
   }
-
-  var isURLSameOrigin = platform.isStandardBrowserEnv ?
-  // Standard browser envs have full support of the APIs needed to test
-  // whether the request URL is of the same origin as current location.
-  function standardBrowserEnv() {
-    var msie = /(msie|trident)/i.test(navigator.userAgent);
-    var urlParsingNode = document.createElement('a');
-    var originURL;
-
-    /**
-    * Parse a URL to discover it's components
-    *
-    * @param {String} url The URL to be parsed
-    * @returns {Object}
-    */
-    function resolveURL(url) {
-      var href = url;
-      if (msie) {
-        // IE needs attribute set twice to normalize properties
-        urlParsingNode.setAttribute('href', href);
-        href = urlParsingNode.href;
+  var defaults = {
+    transitional: transitionalDefaults,
+    adapter: ['xhr', 'http'],
+    transformRequest: [function transformRequest(data, headers) {
+      var contentType = headers.getContentType() || '';
+      var hasJSONContentType = contentType.indexOf('application/json') > -1;
+      var isObjectPayload = utils.isObject(data);
+      if (isObjectPayload && utils.isHTMLForm(data)) {
+        data = new FormData(data);
       }
-      urlParsingNode.setAttribute('href', href);
-
-      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-      return {
-        href: urlParsingNode.href,
-        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-        host: urlParsingNode.host,
-        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-        hostname: urlParsingNode.hostname,
-        port: urlParsingNode.port,
-        pathname: urlParsingNode.pathname.charAt(0) === '/' ? urlParsingNode.pathname : '/' + urlParsingNode.pathname
-      };
-    }
-    originURL = resolveURL(window.location.href);
-
+      var isFormData = utils.isFormData(data);
+      if (isFormData) {
+        if (!hasJSONContentType) {
+          return data;
+        }
+        return hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data;
+      }
+      if (utils.isArrayBuffer(data) || utils.isBuffer(data) || utils.isStream(data) || utils.isFile(data) || utils.isBlob(data)) {
+        return data;
+      }
+      if (utils.isArrayBufferView(data)) {
+        return data.buffer;
+      }
+      if (utils.isURLSearchParams(data)) {
+        headers.setContentType('application/x-www-form-urlencoded;charset=utf-8', false);
+        return data.toString();
+      }
+      var isFileList;
+      if (isObjectPayload) {
+        if (contentType.indexOf('application/x-www-form-urlencoded') > -1) {
+          return toURLEncodedForm(data, this.formSerializer).toString();
+        }
+        if ((isFileList = utils.isFileList(data)) || contentType.indexOf('multipart/form-data') > -1) {
+          var _FormData = this.env && this.env.FormData;
+          return toFormData(isFileList ? {
+            'files[]': data
+          } : data, _FormData && new _FormData(), this.formSerializer);
+        }
+      }
+      if (isObjectPayload || hasJSONContentType) {
+        headers.setContentType('application/json', false);
+        return stringifySafely(data);
+      }
+      return data;
+    }],
+    transformResponse: [function transformResponse(data) {
+      var transitional = this.transitional || defaults.transitional;
+      var forcedJSONParsing = transitional && transitional.forcedJSONParsing;
+      var JSONRequested = this.responseType === 'json';
+      if (data && utils.isString(data) && (forcedJSONParsing && !this.responseType || JSONRequested)) {
+        var silentJSONParsing = transitional && transitional.silentJSONParsing;
+        var strictJSONParsing = !silentJSONParsing && JSONRequested;
+        try {
+          return JSON.parse(data);
+        } catch (e) {
+          if (strictJSONParsing) {
+            if (e.name === 'SyntaxError') {
+              throw AxiosError.from(e, AxiosError.ERR_BAD_RESPONSE, this, null, this.response);
+            }
+            throw e;
+          }
+        }
+      }
+      return data;
+    }],
     /**
-    * Determine if a URL shares the same origin as the current location
-    *
-    * @param {String} requestURL The URL to test
-    * @returns {boolean} True if URL shares the same origin, otherwise false
-    */
-    return function isURLSameOrigin(requestURL) {
-      var parsed = utils.isString(requestURL) ? resolveURL(requestURL) : requestURL;
-      return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
-    };
-  }() :
-  // Non standard browser envs (web workers, react-native) lack needed support.
-  function nonStandardBrowserEnv() {
-    return function isURLSameOrigin() {
-      return true;
-    };
-  }();
-
-  /**
-   * A `CanceledError` is an object that is thrown when an operation is canceled.
-   *
-   * @param {string=} message The message.
-   * @param {Object=} config The config.
-   * @param {Object=} request The request.
-   *
-   * @returns {CanceledError} The created error.
-   */
-  function CanceledError(message, config, request) {
-    // eslint-disable-next-line no-eq-null,eqeqeq
-    AxiosError.call(this, message == null ? 'canceled' : message, AxiosError.ERR_CANCELED, config, request);
-    this.name = 'CanceledError';
-  }
-  utils.inherits(CanceledError, AxiosError, {
-    __CANCEL__: true
+     * A timeout in milliseconds to abort a request. If set to 0 (default) a
+     * timeout is not created.
+     */
+    timeout: 0,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: {
+      FormData: platform.classes.FormData,
+      Blob: platform.classes.Blob
+    },
+    validateStatus: function validateStatus(status) {
+      return status >= 200 && status < 300;
+    },
+    headers: {
+      common: {
+        'Accept': 'application/json, text/plain, */*'
+      }
+    }
+  };
+  utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+    defaults.headers[method] = {};
   });
-
-  function parseProtocol(url) {
-    var match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
-    return match && match[1] || '';
-  }
+  utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+    defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
+  });
+  var defaults$1 = defaults;
 
   // RawAxiosHeaders whose duplicates are ignored by node
   // c.f. https://nodejs.org/api/http.html#http_message_headers
@@ -1759,6 +1724,213 @@
   var AxiosHeaders$1 = AxiosHeaders;
 
   /**
+   * Transform the data for a request or a response
+   *
+   * @param {Array|Function} fns A single function or Array of functions
+   * @param {?Object} response The response object
+   *
+   * @returns {*} The resulting transformed data
+   */
+  function transformData(fns, response) {
+    var config = this || defaults$1;
+    var context = response || config;
+    var headers = AxiosHeaders$1.from(context.headers);
+    var data = context.data;
+    utils.forEach(fns, function transform(fn) {
+      data = fn.call(config, data, headers.normalize(), response ? response.status : undefined);
+    });
+    headers.normalize();
+    return data;
+  }
+
+  function isCancel(value) {
+    return !!(value && value.__CANCEL__);
+  }
+
+  /**
+   * A `CanceledError` is an object that is thrown when an operation is canceled.
+   *
+   * @param {string=} message The message.
+   * @param {Object=} config The config.
+   * @param {Object=} request The request.
+   *
+   * @returns {CanceledError} The created error.
+   */
+  function CanceledError(message, config, request) {
+    // eslint-disable-next-line no-eq-null,eqeqeq
+    AxiosError.call(this, message == null ? 'canceled' : message, AxiosError.ERR_CANCELED, config, request);
+    this.name = 'CanceledError';
+  }
+  utils.inherits(CanceledError, AxiosError, {
+    __CANCEL__: true
+  });
+
+  // eslint-disable-next-line strict
+  var httpAdapter = null;
+
+  /**
+   * Resolve or reject a Promise based on response status.
+   *
+   * @param {Function} resolve A function that resolves the promise.
+   * @param {Function} reject A function that rejects the promise.
+   * @param {object} response The response.
+   *
+   * @returns {object} The response.
+   */
+  function settle(resolve, reject, response) {
+    var validateStatus = response.config.validateStatus;
+    if (!response.status || !validateStatus || validateStatus(response.status)) {
+      resolve(response);
+    } else {
+      reject(new AxiosError('Request failed with status code ' + response.status, [AxiosError.ERR_BAD_REQUEST, AxiosError.ERR_BAD_RESPONSE][Math.floor(response.status / 100) - 4], response.config, response.request, response));
+    }
+  }
+
+  var cookies = platform.isStandardBrowserEnv ?
+  // Standard browser envs support document.cookie
+  function standardBrowserEnv() {
+    return {
+      write: function write(name, value, expires, path, domain, secure) {
+        var cookie = [];
+        cookie.push(name + '=' + encodeURIComponent(value));
+        if (utils.isNumber(expires)) {
+          cookie.push('expires=' + new Date(expires).toGMTString());
+        }
+        if (utils.isString(path)) {
+          cookie.push('path=' + path);
+        }
+        if (utils.isString(domain)) {
+          cookie.push('domain=' + domain);
+        }
+        if (secure === true) {
+          cookie.push('secure');
+        }
+        document.cookie = cookie.join('; ');
+      },
+      read: function read(name) {
+        var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+        return match ? decodeURIComponent(match[3]) : null;
+      },
+      remove: function remove(name) {
+        this.write(name, '', Date.now() - 86400000);
+      }
+    };
+  }() :
+  // Non standard browser env (web workers, react-native) lack needed support.
+  function nonStandardBrowserEnv() {
+    return {
+      write: function write() {},
+      read: function read() {
+        return null;
+      },
+      remove: function remove() {}
+    };
+  }();
+
+  /**
+   * Determines whether the specified URL is absolute
+   *
+   * @param {string} url The URL to test
+   *
+   * @returns {boolean} True if the specified URL is absolute, otherwise false
+   */
+  function isAbsoluteURL(url) {
+    // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+    // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+    // by any combination of letters, digits, plus, period, or hyphen.
+    return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url);
+  }
+
+  /**
+   * Creates a new URL by combining the specified URLs
+   *
+   * @param {string} baseURL The base URL
+   * @param {string} relativeURL The relative URL
+   *
+   * @returns {string} The combined URL
+   */
+  function combineURLs(baseURL, relativeURL) {
+    return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL;
+  }
+
+  /**
+   * Creates a new URL by combining the baseURL with the requestedURL,
+   * only when the requestedURL is not already an absolute URL.
+   * If the requestURL is absolute, this function returns the requestedURL untouched.
+   *
+   * @param {string} baseURL The base URL
+   * @param {string} requestedURL Absolute or relative URL to combine
+   *
+   * @returns {string} The combined full path
+   */
+  function buildFullPath(baseURL, requestedURL) {
+    if (baseURL && !isAbsoluteURL(requestedURL)) {
+      return combineURLs(baseURL, requestedURL);
+    }
+    return requestedURL;
+  }
+
+  var isURLSameOrigin = platform.isStandardBrowserEnv ?
+  // Standard browser envs have full support of the APIs needed to test
+  // whether the request URL is of the same origin as current location.
+  function standardBrowserEnv() {
+    var msie = /(msie|trident)/i.test(navigator.userAgent);
+    var urlParsingNode = document.createElement('a');
+    var originURL;
+
+    /**
+    * Parse a URL to discover it's components
+    *
+    * @param {String} url The URL to be parsed
+    * @returns {Object}
+    */
+    function resolveURL(url) {
+      var href = url;
+      if (msie) {
+        // IE needs attribute set twice to normalize properties
+        urlParsingNode.setAttribute('href', href);
+        href = urlParsingNode.href;
+      }
+      urlParsingNode.setAttribute('href', href);
+
+      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+      return {
+        href: urlParsingNode.href,
+        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+        host: urlParsingNode.host,
+        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+        hostname: urlParsingNode.hostname,
+        port: urlParsingNode.port,
+        pathname: urlParsingNode.pathname.charAt(0) === '/' ? urlParsingNode.pathname : '/' + urlParsingNode.pathname
+      };
+    }
+    originURL = resolveURL(window.location.href);
+
+    /**
+    * Determine if a URL shares the same origin as the current location
+    *
+    * @param {String} requestURL The URL to test
+    * @returns {boolean} True if URL shares the same origin, otherwise false
+    */
+    return function isURLSameOrigin(requestURL) {
+      var parsed = utils.isString(requestURL) ? resolveURL(requestURL) : requestURL;
+      return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
+    };
+  }() :
+  // Non standard browser envs (web workers, react-native) lack needed support.
+  function nonStandardBrowserEnv() {
+    return function isURLSameOrigin() {
+      return true;
+    };
+  }();
+
+  function parseProtocol(url) {
+    var match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
+    return match && match[1] || '';
+  }
+
+  /**
    * Calculate data maxRate
    * @param {Number} [samplesCount= 10]
    * @param {Number} [min= 1000]
@@ -1821,7 +1993,8 @@
       listener(data);
     };
   }
-  function xhrAdapter(config) {
+  var isXHRAdapterSupported = typeof XMLHttpRequest !== 'undefined';
+  var xhrAdapter = isXHRAdapterSupported && function (config) {
     return new Promise(function dispatchXhrRequest(resolve, reject) {
       var requestData = config.data;
       var requestHeaders = AxiosHeaders$1.from(config.headers).normalize();
@@ -2000,192 +2173,52 @@
       // Send the request
       request.send(requestData || null);
     });
-  }
+  };
 
-  var adapters = {
-    http: xhrAdapter,
+  var knownAdapters = {
+    http: httpAdapter,
     xhr: xhrAdapter
   };
-  var adapters$1 = {
-    getAdapter: function getAdapter(nameOrAdapter) {
-      if (utils.isString(nameOrAdapter)) {
-        var adapter = adapters[nameOrAdapter];
-        if (!nameOrAdapter) {
-          throw Error(utils.hasOwnProp(nameOrAdapter) ? "Adapter '".concat(nameOrAdapter, "' is not available in the build") : "Can not resolve adapter '".concat(nameOrAdapter, "'"));
-        }
-        return adapter;
+  utils.forEach(knownAdapters, function (fn, value) {
+    if (fn) {
+      try {
+        Object.defineProperty(fn, 'name', {
+          value: value
+        });
+      } catch (e) {
+        // eslint-disable-next-line no-empty
       }
-      if (!utils.isFunction(nameOrAdapter)) {
+      Object.defineProperty(fn, 'adapterName', {
+        value: value
+      });
+    }
+  });
+  var adapters = {
+    getAdapter: function getAdapter(adapters) {
+      adapters = utils.isArray(adapters) ? adapters : [adapters];
+      var _adapters = adapters,
+        length = _adapters.length;
+      var nameOrAdapter;
+      var adapter;
+      for (var i = 0; i < length; i++) {
+        nameOrAdapter = adapters[i];
+        if (adapter = utils.isString(nameOrAdapter) ? knownAdapters[nameOrAdapter.toLowerCase()] : nameOrAdapter) {
+          break;
+        }
+      }
+      if (!adapter) {
+        if (adapter === false) {
+          throw new AxiosError("Adapter ".concat(nameOrAdapter, " is not supported by the environment"), 'ERR_NOT_SUPPORT');
+        }
+        throw new Error(utils.hasOwnProp(knownAdapters, nameOrAdapter) ? "Adapter '".concat(nameOrAdapter, "' is not available in the build") : "Unknown adapter '".concat(nameOrAdapter, "'"));
+      }
+      if (!utils.isFunction(adapter)) {
         throw new TypeError('adapter is not a function');
       }
-      return nameOrAdapter;
+      return adapter;
     },
-    adapters: adapters
+    adapters: knownAdapters
   };
-
-  var DEFAULT_CONTENT_TYPE = {
-    'Content-Type': undefined
-  };
-
-  /**
-   * If the browser has an XMLHttpRequest object, use the XHR adapter, otherwise use the HTTP
-   * adapter
-   *
-   * @returns {Function}
-   */
-  function getDefaultAdapter() {
-    var adapter;
-    if (typeof XMLHttpRequest !== 'undefined') {
-      // For browsers use XHR adapter
-      adapter = adapters$1.getAdapter('xhr');
-    } else if (typeof process !== 'undefined' && utils.kindOf(process) === 'process') {
-      // For node use HTTP adapter
-      adapter = adapters$1.getAdapter('http');
-    }
-    return adapter;
-  }
-
-  /**
-   * It takes a string, tries to parse it, and if it fails, it returns the stringified version
-   * of the input
-   *
-   * @param {any} rawValue - The value to be stringified.
-   * @param {Function} parser - A function that parses a string into a JavaScript object.
-   * @param {Function} encoder - A function that takes a value and returns a string.
-   *
-   * @returns {string} A stringified version of the rawValue.
-   */
-  function stringifySafely(rawValue, parser, encoder) {
-    if (utils.isString(rawValue)) {
-      try {
-        (parser || JSON.parse)(rawValue);
-        return utils.trim(rawValue);
-      } catch (e) {
-        if (e.name !== 'SyntaxError') {
-          throw e;
-        }
-      }
-    }
-    return (encoder || JSON.stringify)(rawValue);
-  }
-  var defaults = {
-    transitional: transitionalDefaults,
-    adapter: getDefaultAdapter(),
-    transformRequest: [function transformRequest(data, headers) {
-      var contentType = headers.getContentType() || '';
-      var hasJSONContentType = contentType.indexOf('application/json') > -1;
-      var isObjectPayload = utils.isObject(data);
-      if (isObjectPayload && utils.isHTMLForm(data)) {
-        data = new FormData(data);
-      }
-      var isFormData = utils.isFormData(data);
-      if (isFormData) {
-        if (!hasJSONContentType) {
-          return data;
-        }
-        return hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data;
-      }
-      if (utils.isArrayBuffer(data) || utils.isBuffer(data) || utils.isStream(data) || utils.isFile(data) || utils.isBlob(data)) {
-        return data;
-      }
-      if (utils.isArrayBufferView(data)) {
-        return data.buffer;
-      }
-      if (utils.isURLSearchParams(data)) {
-        headers.setContentType('application/x-www-form-urlencoded;charset=utf-8', false);
-        return data.toString();
-      }
-      var isFileList;
-      if (isObjectPayload) {
-        if (contentType.indexOf('application/x-www-form-urlencoded') > -1) {
-          return toURLEncodedForm(data, this.formSerializer).toString();
-        }
-        if ((isFileList = utils.isFileList(data)) || contentType.indexOf('multipart/form-data') > -1) {
-          var _FormData = this.env && this.env.FormData;
-          return toFormData(isFileList ? {
-            'files[]': data
-          } : data, _FormData && new _FormData(), this.formSerializer);
-        }
-      }
-      if (isObjectPayload || hasJSONContentType) {
-        headers.setContentType('application/json', false);
-        return stringifySafely(data);
-      }
-      return data;
-    }],
-    transformResponse: [function transformResponse(data) {
-      var transitional = this.transitional || defaults.transitional;
-      var forcedJSONParsing = transitional && transitional.forcedJSONParsing;
-      var JSONRequested = this.responseType === 'json';
-      if (data && utils.isString(data) && (forcedJSONParsing && !this.responseType || JSONRequested)) {
-        var silentJSONParsing = transitional && transitional.silentJSONParsing;
-        var strictJSONParsing = !silentJSONParsing && JSONRequested;
-        try {
-          return JSON.parse(data);
-        } catch (e) {
-          if (strictJSONParsing) {
-            if (e.name === 'SyntaxError') {
-              throw AxiosError.from(e, AxiosError.ERR_BAD_RESPONSE, this, null, this.response);
-            }
-            throw e;
-          }
-        }
-      }
-      return data;
-    }],
-    /**
-     * A timeout in milliseconds to abort a request. If set to 0 (default) a
-     * timeout is not created.
-     */
-    timeout: 0,
-    xsrfCookieName: 'XSRF-TOKEN',
-    xsrfHeaderName: 'X-XSRF-TOKEN',
-    maxContentLength: -1,
-    maxBodyLength: -1,
-    env: {
-      FormData: platform.classes.FormData,
-      Blob: platform.classes.Blob
-    },
-    validateStatus: function validateStatus(status) {
-      return status >= 200 && status < 300;
-    },
-    headers: {
-      common: {
-        'Accept': 'application/json, text/plain, */*'
-      }
-    }
-  };
-  utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
-    defaults.headers[method] = {};
-  });
-  utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-    defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
-  });
-  var defaults$1 = defaults;
-
-  /**
-   * Transform the data for a request or a response
-   *
-   * @param {Array|Function} fns A single function or Array of functions
-   * @param {?Object} response The response object
-   *
-   * @returns {*} The resulting transformed data
-   */
-  function transformData(fns, response) {
-    var config = this || defaults$1;
-    var context = response || config;
-    var headers = AxiosHeaders$1.from(context.headers);
-    var data = context.data;
-    utils.forEach(fns, function transform(fn) {
-      data = fn.call(config, data, headers.normalize(), response ? response.status : undefined);
-    });
-    headers.normalize();
-    return data;
-  }
-
-  function isCancel(value) {
-    return !!(value && value.__CANCEL__);
-  }
 
   /**
    * Throws a `CanceledError` if cancellation has been requested.
@@ -2219,7 +2252,7 @@
     if (['post', 'put', 'patch'].indexOf(config.method) !== -1) {
       config.headers.setContentType('application/x-www-form-urlencoded', false);
     }
-    var adapter = config.adapter || defaults$1.adapter;
+    var adapter = adapters.getAdapter(config.adapter || defaults$1.adapter);
     return adapter(config).then(function onAdapterResolution(response) {
       throwIfCancellationRequested(config);
 
@@ -2344,7 +2377,7 @@
     return config;
   }
 
-  var VERSION = "1.2.0-alpha.1";
+  var VERSION = "1.2.0";
 
   var validators$1 = {};
 

@@ -12,6 +12,12 @@
 - fix: improve AxiosHeaders class [#5224](https://github.com/axios/axios/pull/5224)
 - fix: TypeScript type definitions for commonjs [#5196](https://github.com/axios/axios/pull/5196)
 - fix: type definition of use method on AxiosInterceptorManager to match the the README [#5071](https://github.com/axios/axios/pull/5071)
+- fix: __dirname is not defined in the sandbox [#5269](https://github.com/axios/axios/pull/5269)
+- fix: AxiosError.toJSON method to avoid circular references [#5247](https://github.com/axios/axios/pull/5247)
+- fix: Z_BUF_ERROR when content-encoding is set but the response body is empty [#5250](https://github.com/axios/axios/pull/5250)
+
+### Refactors
+- refactor: allowing adapters to be loaded by name [#5277](https://github.com/axios/axios/pull/5277)
 
 ### Chores
 
@@ -19,15 +25,21 @@
 - chore: update ECOSYSTEM.md [#5077](https://github.com/axios/axios/pull/5077)
 - chore: update get/index.html [#5116](https://github.com/axios/axios/pull/5116)
 - chore: update Sandbox UI/UX [#5205](https://github.com/axios/axios/pull/5205)
-- chore(packages) bump socket.io-parser from 4.0.4 to 4.0.5 [#5241](https://github.com/axios/axios/pull/5241)
+- chore:(actions): remove git credentials after checkout [#5235](https://github.com/axios/axios/pull/5235)
+- chore(actions): bump actions/dependency-review-action from 2 to 3 [#5266](https://github.com/axios/axios/pull/5266)
+- chore(packages): bump loader-utils from 1.4.1 to 1.4.2 [#5295](https://github.com/axios/axios/pull/5295)
+- chore(packages): bump engine.io from 6.2.0 to 6.2.1 [#5294](https://github.com/axios/axios/pull/5294)
+- chore(packages): bump socket.io-parser from 4.0.4 to 4.0.5 [#5241](https://github.com/axios/axios/pull/5241)
 - chore(packages): bump loader-utils from 1.4.0 to 1.4.1 [#5245](https://github.com/axios/axios/pull/5245)
 - chore(docs): update Resources links in README [#5119](https://github.com/axios/axios/pull/5119)
+- chore(docs): update the link for JSON url [#5265](https://github.com/axios/axios/pull/5265)
 - chore(docs): fix broken links [#5218](https://github.com/axios/axios/pull/5218)
 - chore(docs): update and rename UPGRADE_GUIDE.md to MIGRATION_GUIDE.md [#5170](https://github.com/axios/axios/pull/5170)
 - chore(docs): typo fix line #856 and #920 [#5194](https://github.com/axios/axios/pull/5194)
 - chore(docs): typo fix #800 [#5193](https://github.com/axios/axios/pull/5193)
 - chore(docs): fix typos [#5184](https://github.com/axios/axios/pull/5184)
 - chore(docs): fix punctuation in README.md [#5197](https://github.com/axios/axios/pull/5197)
+- chore(docs): update readme in the Handling Errors section - issue reference #5260 [#5261](https://github.com/axios/axios/pull/5261)
 - chore: remove \b from filename [#5207](https://github.com/axios/axios/pull/5207)
 - chore(docs): update CHANGELOG.md [#5137](https://github.com/axios/axios/pull/5137)
 - chore: add sideEffects false to package.json [#5025](https://github.com/axios/axios/pull/5025)
@@ -49,6 +61,10 @@
 - [MoPaMo](https://github.com/MoPaMo)
 - [Daniel Fjeldstad](https://github.com/w3bdesign)
 - [Adrien Brunet](https://github.com/adrien-may)
+- [Frazer Smith](https://github.com/Fdawgs)
+- [HaiTao](https://github.com/836334258)
+- [AZM](https://github.com/aziyatali)
+- [relbns](https://github.com/relbns)
 
 ## [1.1.3] - 2022-10-15
 

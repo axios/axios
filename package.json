@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.2.0-alpha.1",
+  "version": "1.2.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -104,7 +104,7 @@
     "url-search-params": "^0.10.0"
   },
   "browser": {
-    "./lib/adapters/http.js": "./lib/adapters/xhr.js",
+    "./lib/adapters/http.js": "./lib/helpers/null.js",
     "./lib/platform/node/index.js": "./lib/platform/browser/index.js"
   },
   "jsdelivr": "dist/axios.min.js",

@@ -6,7 +6,15 @@ import axios, {
   AxiosAdapter,
   Cancel,
   CancelTokenSource,
-  Canceler, AxiosProgressEvent, ParamsSerializerOptions
+  Canceler,
+  AxiosProgressEvent,
+  ParamsSerializerOptions,
+  toFormData,
+  formToJSON,
+  all,
+  isCancel,
+  isAxiosError,
+  spread
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -257,12 +265,12 @@ instance1.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
 axios.defaults.headers['X-FOO'];
 
 axios.defaults.baseURL = 'https://api.example.com/';
-axios.defaults.headers.common['Authorization'] = 'token';
+axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.post['X-FOO'] = 'bar';
 axios.defaults.timeout = 2500;
 
 instance1.defaults.baseURL = 'https://api.example.com/';
-instance1.defaults.headers.common['Authorization'] = 'token';
+instance1.defaults.headers.common['Accept'] = 'application/json';
 instance1.defaults.headers.post['X-FOO'] = 'bar';
 instance1.defaults.timeout = 2500;
 
@@ -354,10 +362,27 @@ const promises = [
 
 const promise: Promise<number[]> = axios.all(promises);
 
+// axios.all named export
+
+(() => {
+  const promises = [
+    Promise.resolve(1),
+    Promise.resolve(2)
+  ];
+
+  const promise: Promise<number[]> = all(promises);
+})();
+
 // axios.spread
 
 const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
 const fn2: (arr: number[]) => string = axios.spread(fn1);
+
+// axios.spread named export
+(() => {
+  const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
+  const fn2: (arr: number[]) => string = spread(fn1);
+})();
 
 // Promises
 
@@ -396,6 +421,12 @@ axios.get('/user', {
     const cancel: Cancel = thrown;
     console.log(cancel.message);
   }
+
+  // named export
+  if (isCancel(thrown)) {
+    const cancel: Cancel = thrown;
+    console.log(cancel.message);
+  }
 });
 
 source.cancel('Operation has been canceled.');
@@ -407,11 +438,27 @@ axios.get('/user')
     if (axios.isAxiosError(error)) {
       const axiosError: AxiosError = error;
     }
+
+    // named export
+
+    if (isAxiosError(error)) {
+      const axiosError: AxiosError = error;
+    }
   });
 
 // FormData
 
 axios.toFormData({x: 1}, new FormData());
+
+// named export
+toFormData({x: 1}, new FormData());
+
+// formToJSON
+
+axios.toFormData(new FormData());
+
+// named export
+formToJSON(new FormData());
 
 // AbortSignal
 
@@ -449,4 +496,18 @@ axios.get('/user', {
     console.log(e.progress);
     console.log(e.rate);
   }
+});
+
+// adapters
+
+axios.get('/user', {
+  adapter: 'xhr'
+});
+
+axios.get('/user', {
+  adapter: 'http'
+});
+
+axios.get('/user', {
+  adapter: ['xhr', 'http']
 });

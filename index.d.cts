@@ -321,6 +321,8 @@ declare namespace axios {
     serialize?: CustomParamsSerializer;
   }
 
+  type BrowserProgressEvent = any;
+
   interface AxiosProgressEvent {
     loaded: number;
     total?: number;
@@ -330,6 +332,7 @@ declare namespace axios {
     estimated?: number;
     upload?: boolean;
     download?: boolean;
+    event?: BrowserProgressEvent;
   }
 
   interface AxiosRequestConfig<D = any> {

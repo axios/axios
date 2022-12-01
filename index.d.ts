@@ -6,7 +6,7 @@ type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 };
 
-interface CommonHeaders  {
+interface CommonHeaders {
   common: AxiosHeaders;
 }
 
@@ -345,7 +345,7 @@ export interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>
   headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
 }
 
-export interface AxiosResponse<T = any, D = any>  {
+export interface AxiosResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
@@ -371,6 +371,14 @@ export class AxiosError<T = any, D = any> extends Error {
   status?: number;
   toJSON: () => object;
   cause?: Error;
+  static from<T = unknown, D = any>(
+    error: Error | unknown,
+    code?: string,
+    config?: AxiosRequestConfig<D>,
+    request?: any,
+    response?: AxiosResponse<T, D>,
+    customProps?: object,
+): AxiosError<T, D>;
   static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
   static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
   static readonly ERR_BAD_OPTION = "ERR_BAD_OPTION";

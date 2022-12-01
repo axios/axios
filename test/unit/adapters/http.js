@@ -38,6 +38,7 @@ function setTimeoutAsync(ms) {
 
 const pipelineAsync = util.promisify(stream.pipeline);
 const finishedAsync = util.promisify(stream.finished);
+const gzip = util.promisify(zlib.gzip);
 
 function toleranceRange(positive, negative) {
   const p = (1 + 1 / positive);
@@ -515,6 +516,23 @@ describe('supports http with nodejs', function () {
       });
 
       await axios.get(LOCAL_SERVER_URL);
+    });
+
+    it('should not fail if response content-length header is missing', async () => {
+      this.timeout(10000);
+
+      const str = 'zipped';
+      const zipped = await gzip(str);
+
+      server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Encoding', 'gzip');
+        res.removeHeader('Content-Length');
+        res.end(zipped);
+      });
+
+      const {data} = await axios.get(LOCAL_SERVER_URL);
+
+      assert.strictEqual(data, str);
     });
   });
 

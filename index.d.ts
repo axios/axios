@@ -1,4 +1,4 @@
-// TypeScript Version: 4.1
+// TypeScript Version: 4.7
 type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
 
@@ -6,7 +6,7 @@ type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 };
 
-interface CommonHeaders  {
+interface CommonHeaders {
   common: AxiosHeaders;
 }
 
@@ -21,8 +21,7 @@ type AxiosHeaderTester = (matcher?: AxiosHeaderMatcher) => boolean;
 
 export class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders,
-      defaultHeaders?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders
   );
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -39,11 +38,15 @@ export class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
+  concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
+
   toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
   static accessor(header: string | string[]): AxiosHeaders;
+
+  static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
 
   setContentType: AxiosHeaderSetter;
   getContentType: AxiosHeaderGetter;
@@ -269,9 +272,14 @@ export interface AxiosProgressEvent {
   estimated?: number;
   upload?: boolean;
   download?: boolean;
+  event?: ProgressEvent;
 }
 
 type Milliseconds = number;
+
+type AxiosAdapterName = 'xhr' | 'http' | string;
+
+type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
 export interface AxiosRequestConfig<D = any> {
   url?: string;
@@ -286,7 +294,7 @@ export interface AxiosRequestConfig<D = any> {
   timeout?: Milliseconds;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
-  adapter?: AxiosAdapter;
+  adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
   responseEncoding?: responseEncoding | string;
@@ -337,7 +345,7 @@ export interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>
   headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
 }
 
-export interface AxiosResponse<T = any, D = any>  {
+export interface AxiosResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
@@ -416,7 +424,7 @@ export interface AxiosInterceptorOptions {
 }
 
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+  use(onFulfilled?: ((value: V) => V | Promise<V>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
   clear(): void;
 }
@@ -463,6 +471,18 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+export function toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
+
+export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+
+export function isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
+
+export function spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
+
+export function isCancel(value: any): value is Cancel;
+
+export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
@@ -470,12 +490,14 @@ export interface AxiosStatic extends AxiosInstance {
   Axios: typeof Axios;
   AxiosError: typeof AxiosError;
   readonly VERSION: string;
-  isCancel(value: any): value is Cancel;
-  all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
-  spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
-  isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
-  toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
-  formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+  isCancel: typeof isCancel;
+  all: typeof all;
+  spread: typeof spread;
+  isAxiosError: typeof isAxiosError;
+  toFormData: typeof toFormData;
+  formToJSON: typeof formToJSON;
+  CanceledError: typeof CanceledError;
+  AxiosHeaders: typeof AxiosHeaders;
 }
 
 declare const axios: AxiosStatic;

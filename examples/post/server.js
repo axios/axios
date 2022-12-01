@@ -1,6 +1,6 @@
 export default function (req, res) {
   let data = '';
-  
+
   req.on('data', function (chunk) {
     data += chunk;
   });

@@ -129,7 +129,7 @@ module.exports = function(config) {
     );
     browsers = ['Firefox'];
   } else if (process.env.GITHUB_ACTIONS === 'true') {
-    console.log('Running ci on Github Actions.');
+    console.log('Running ci on GitHub Actions.');
     browsers = ['FirefoxHeadless', 'ChromeHeadless'];
   } else {
     browsers = browsers || ['Chrome'];

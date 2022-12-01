@@ -1,3 +1,5 @@
+const {AxiosHeaders} = axios;
+
 function testHeaderValue(headers, key, val) {
   let found = false;
 
@@ -106,12 +108,35 @@ describe('headers', function () {
     });
   });
 
-  it('should preserve content-type if data is false', function (done) {
+  it('should preserve content-type if data is false', async function () {
     axios.post('/foo', false);
 
-    getAjaxRequest().then(function (request) {
+    await getAjaxRequest().then(function (request) {
       testHeaderValue(request.requestHeaders, 'Content-Type', 'application/x-www-form-urlencoded');
-      done();
     });
+  });
+
+  it('should allow an AxiosHeaders instance to be used as the value of the headers option', async ()=> {
+    const instance = axios.create({
+      headers: new AxiosHeaders({
+        xFoo: 'foo',
+        xBar: 'bar'
+      })
+    });
+
+    instance.get('/foo', {
+      headers: {
+        XFOO: 'foo2',
+        xBaz: 'baz'
+      }
+    });
+
+    await getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders.xFoo).toEqual('foo2');
+      expect(request.requestHeaders.xBar).toEqual('bar');
+      expect(request.requestHeaders.xBaz).toEqual('baz');
+      expect(request.requestHeaders.XFOO).toEqual(undefined);
+    });
+
   });
 });

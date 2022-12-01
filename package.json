@@ -1,27 +1,33 @@
 {
   "name": "axios",
-  "version": "1.1.3",
+  "version": "1.2.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
     ".": {
+      "types": {
+        "require": "./index.d.cts",
+        "default": "./index.d.ts"
+      },
       "browser": {
-        "require": "./dist/node/axios.cjs",
+        "require": "./dist/browser/axios.cjs",
         "default": "./index.js"
       },
       "default": {
         "require": "./dist/node/axios.cjs",
         "default": "./index.js"
       }
-    }
+    },
+    "./package.json": "./package.json"
   },
   "type": "module",
   "types": "index.d.ts",
   "scripts": {
-    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:dtslint",
+    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:exports && npm run test:dtslint",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
     "test:dtslint": "node bin/ssl_hotfix.js dtslint",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
+    "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
     "test:karma": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "start": "node ./sandbox/server.js",
@@ -94,11 +100,11 @@
     "sinon": "^4.5.0",
     "stream-throttle": "^0.1.3",
     "terser-webpack-plugin": "^4.2.3",
-    "typescript": "^4.6.3",
+    "typescript": "^4.8.4",
     "url-search-params": "^0.10.0"
   },
   "browser": {
-    "./lib/adapters/http.js": "./lib/adapters/xhr.js",
+    "./lib/adapters/http.js": "./lib/helpers/null.js",
     "./lib/platform/node/index.js": "./lib/platform/browser/index.js"
   },
   "jsdelivr": "dist/axios.min.js",
@@ -130,5 +136,6 @@
     "Yasu Flores (https://github.com/yasuf)",
     "Ben Carp (https://github.com/carpben)",
     "Daniel Lopretto (https://github.com/timemachine3030)"
-  ]
+  ],
+  "sideEffects": false
 }

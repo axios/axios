@@ -83,4 +83,14 @@ describe('utils::merge', function () {
     expect(d).toEqual({a: [1, 2, 3]});
     expect(d.a).not.toBe(a);
   });
+
+  it('should support caseless option', ()=> {
+    const a = {x: 1};
+    const b = {X: 2};
+    const merged = merge.call({caseless: true}, a, b);
+
+    expect(merged).toEqual({
+      x: 2
+    });
+  });
 });

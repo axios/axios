@@ -1,5 +1,144 @@
 # Changelog
 
+## [1.2.0] - 2022-11-10
+
+### Changed
+
+- changed: refactored module exports [#5162](https://github.com/axios/axios/pull/5162)
+- change: re-added support for loading Axios with require('axios').default [#5225](https://github.com/axios/axios/pull/5225)
+
+### Fixed
+
+- fix: improve AxiosHeaders class [#5224](https://github.com/axios/axios/pull/5224)
+- fix: TypeScript type definitions for commonjs [#5196](https://github.com/axios/axios/pull/5196)
+- fix: type definition of use method on AxiosInterceptorManager to match the the README [#5071](https://github.com/axios/axios/pull/5071)
+- fix: __dirname is not defined in the sandbox [#5269](https://github.com/axios/axios/pull/5269)
+- fix: AxiosError.toJSON method to avoid circular references [#5247](https://github.com/axios/axios/pull/5247)
+- fix: Z_BUF_ERROR when content-encoding is set but the response body is empty [#5250](https://github.com/axios/axios/pull/5250)
+
+### Refactors
+- refactor: allowing adapters to be loaded by name [#5277](https://github.com/axios/axios/pull/5277)
+
+### Chores
+
+- chore: force CI restart [#5243](https://github.com/axios/axios/pull/5243)
+- chore: update ECOSYSTEM.md [#5077](https://github.com/axios/axios/pull/5077)
+- chore: update get/index.html [#5116](https://github.com/axios/axios/pull/5116)
+- chore: update Sandbox UI/UX [#5205](https://github.com/axios/axios/pull/5205)
+- chore:(actions): remove git credentials after checkout [#5235](https://github.com/axios/axios/pull/5235)
+- chore(actions): bump actions/dependency-review-action from 2 to 3 [#5266](https://github.com/axios/axios/pull/5266)
+- chore(packages): bump loader-utils from 1.4.1 to 1.4.2 [#5295](https://github.com/axios/axios/pull/5295)
+- chore(packages): bump engine.io from 6.2.0 to 6.2.1 [#5294](https://github.com/axios/axios/pull/5294)
+- chore(packages): bump socket.io-parser from 4.0.4 to 4.0.5 [#5241](https://github.com/axios/axios/pull/5241)
+- chore(packages): bump loader-utils from 1.4.0 to 1.4.1 [#5245](https://github.com/axios/axios/pull/5245)
+- chore(docs): update Resources links in README [#5119](https://github.com/axios/axios/pull/5119)
+- chore(docs): update the link for JSON url [#5265](https://github.com/axios/axios/pull/5265)
+- chore(docs): fix broken links [#5218](https://github.com/axios/axios/pull/5218)
+- chore(docs): update and rename UPGRADE_GUIDE.md to MIGRATION_GUIDE.md [#5170](https://github.com/axios/axios/pull/5170)
+- chore(docs): typo fix line #856 and #920 [#5194](https://github.com/axios/axios/pull/5194)
+- chore(docs): typo fix #800 [#5193](https://github.com/axios/axios/pull/5193)
+- chore(docs): fix typos [#5184](https://github.com/axios/axios/pull/5184)
+- chore(docs): fix punctuation in README.md [#5197](https://github.com/axios/axios/pull/5197)
+- chore(docs): update readme in the Handling Errors section - issue reference #5260 [#5261](https://github.com/axios/axios/pull/5261)
+- chore: remove \b from filename [#5207](https://github.com/axios/axios/pull/5207)
+- chore(docs): update CHANGELOG.md [#5137](https://github.com/axios/axios/pull/5137)
+- chore: add sideEffects false to package.json [#5025](https://github.com/axios/axios/pull/5025)
+
+### Contributors to this release
+
+- [Maddy Miller](https://github.com/me4502)
+- [Amit Saini](https://github.com/amitsainii)
+- [ecyrbe](https://github.com/ecyrbe)
+- [Ikko Ashimine](https://github.com/eltociear)
+- [Geeth Gunnampalli](https://github.com/thetechie7)
+- [Shreem Asati](https://github.com/shreem-123)
+- [Frieder Bluemle](https://github.com/friederbluemle)
+- [윤세영](https://github.com/yunseyeong)
+- [Claudio Busatto](https://github.com/cjcbusatto)
+- [Remco Haszing](https://github.com/remcohaszing)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [Csaba Maulis](https://github.com/om4csaba)
+- [MoPaMo](https://github.com/MoPaMo)
+- [Daniel Fjeldstad](https://github.com/w3bdesign)
+- [Adrien Brunet](https://github.com/adrien-may)
+- [Frazer Smith](https://github.com/Fdawgs)
+- [HaiTao](https://github.com/836334258)
+- [AZM](https://github.com/aziyatali)
+- [relbns](https://github.com/relbns)
+
+## [1.1.3] - 2022-10-15
+
+### Added
+
+- Added custom params serializer support [#5113](https://github.com/axios/axios/pull/5113)
+
+### Fixed
+
+- Fixed top-level export to keep them in-line with static properties [#5109](https://github.com/axios/axios/pull/5109)
+- Stopped including null values to query string. [#5108](https://github.com/axios/axios/pull/5108)
+- Restored proxy config backwards compatibility with 0.x [#5097](https://github.com/axios/axios/pull/5097)
+- Added back AxiosHeaders in AxiosHeaderValue [#5103](https://github.com/axios/axios/pull/5103)
+- Pin CDN install instructions to a specific version [#5060](https://github.com/axios/axios/pull/5060)
+- Handling of array values fixed for AxiosHeaders [#5085](https://github.com/axios/axios/pull/5085)
+
+### Chores
+
+- docs: match badge style, add link to them [#5046](https://github.com/axios/axios/pull/5046)
+- chore: fixing comments typo [#5054](https://github.com/axios/axios/pull/5054)
+- chore: update issue template [#5061](https://github.com/axios/axios/pull/5061)
+- chore: added progress capturing section to the docs; [#5084](https://github.com/axios/axios/pull/5084)
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)
+- [scarf](https://github.com/scarf005)
+- [Lenz Weber-Tronic](https://github.com/phryneas)
+- [Arvindh](https://github.com/itsarvindh)
+- [Félix Legrelle](https://github.com/FelixLgr)
+- [Patrick Petrovic](https://github.com/ppati000)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [littledian](https://github.com/littledian)
+- [ChronosMasterOfAllTime](https://github.com/ChronosMasterOfAllTime)
+
+## [1.1.2] - 2022-10-07
+
+### Fixed
+
+- Fixed broken exports for UMD builds.
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)
+
+## [1.1.1] - 2022-10-07
+
+### Fixed
+
+- Fixed broken exports for common js. This fix breaks a prior fix, I will fix both issues ASAP but the commonJS use is more impactful.
+
+### Contributors to this release
+
+- [Jason Saayman](https://github.com/jasonsaayman)
+
+## [1.1.0] - 2022-10-06
+
+### Fixed
+
+- Fixed missing exports in type definition index.d.ts [#5003](https://github.com/axios/axios/pull/5003)
+- Fixed query params composing [#5018](https://github.com/axios/axios/pull/5018)
+- Fixed GenericAbortSignal interface by making it more generic [#5021](https://github.com/axios/axios/pull/5021)
+- Fixed adding "clear" to AxiosInterceptorManager [#5010](https://github.com/axios/axios/pull/5010)
+- Fixed commonjs & umd exports [#5030](https://github.com/axios/axios/pull/5030)
+- Fixed inability to access response headers when using axios 1.x with Jest [#5036](https://github.com/axios/axios/pull/5036)
+
+### Contributors to this release
+
+- [Trim21](https://github.com/trim21)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [shingo.sasaki](https://github.com/s-sasaki-0529)
+- [Ivan Pepelko](https://github.com/ivanpepelko)
+- [Richard Kořínek](https://github.com/risa)
+
 ## [1.0.0] - 2022-10-04
 
 ### Added
@@ -179,77 +318,3 @@
 - [Luca Pizzini](https://github.com/lpizzinidev)
 - [Willian Agostini](https://github.com/WillianAgostini)
 - [Huyen Nguyen](https://github.com/huyenltnguyen)
-
-## [1.1.0] - 2022-10-06
-
-### Fixed
-
-- Fixed missing exports in type definition index.d.ts [#5003](https://github.com/axios/axios/pull/5003)
-- Fixed query params composing [#5018](https://github.com/axios/axios/pull/5018)
-- Fixed GenericAbortSignal interface by making it more generic [#5021](https://github.com/axios/axios/pull/5021)
-- Fixed adding "clear" to AxiosInterceptorManager [#5010](https://github.com/axios/axios/pull/5010)
-- Fixed commonjs & umd exports [#5030](https://github.com/axios/axios/pull/5030)
-- Fixed inability to access response headers when using axios 1.x with Jest [#5036](https://github.com/axios/axios/pull/5036)
-
-### Contributors to this release
-
-- [Trim21](https://github.com/trim21)
-- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
-- [shingo.sasaki](https://github.com/s-sasaki-0529)
-- [Ivan Pepelko](https://github.com/ivanpepelko)
-- [Richard Kořínek](https://github.com/risa)
-
-## [1.1.1] - 2022-10-07
-
-### Fixed
-
-- Fixed broken exports for common js. This fix breaks a prior fix, I will fix both issues ASAP but the commonJS use is more impactful.
-
-### Contributors to this release
-
-- [Jason Saayman](https://github.com/jasonsaayman)
-
-## [1.1.2] - 2022-10-07
-
-### Fixed
-
-- Fixed broken exports for UMD builds.
-
-### Contributors to this release
-
-- [Jason Saayman](https://github.com/jasonsaayman)
-
-## [1.1.3] - 2022-10-15
-
-### Added
-Added custom params serializer support [#5113](https://github.com/axios/axios/pull/5113)
-
-### Fixed
-
-Fixed top-level export to keep them in-line with static properties [#5109](https://github.com/axios/axios/pull/5109)
-Stopped including null values to query string. [#5108](https://github.com/axios/axios/pull/5108)
-Restored proxy config backwards compatibility with 0.x [#5097](https://github.com/axios/axios/pull/5097)
-Added back AxiosHeaders in AxiosHeaderValue [#5103](https://github.com/axios/axios/pull/5103)
-Pin CDN install instructions to a specific version [#5060](https://github.com/axios/axios/pull/5060)
-Handling of array values fixed for AxiosHeaders [#5085](https://github.com/axios/axios/pull/5085)
-
-### Chores
-
-docs: match badge style, add link to them [#5046](https://github.com/axios/axios/pull/5046)
-chore: fixing comments typo [#5054](https://github.com/axios/axios/pull/5054)
-chore: update issue template [#5061](https://github.com/axios/axios/pull/5061)
-chore: added progress capturing section to the docs; [#5084](https://github.com/axios/axios/pull/5084)
-
-### Contributors to this release
-
-- [Jason Saayman](https://github.com/jasonsaayman)
-- [scarf](https://github.com/scarf005)
-- [Lenz Weber-Tronic](https://github.com/phryneas)
-- [Arvindh](https://github.com/itsarvindh)
-- [Félix Legrelle](https://github.com/FelixLgr)
-- [Patrick Petrovic](https://github.com/ppati000)
-- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
-- [littledian](https://github.com/littledian)
-- [ChronosMasterOfAllTime](https://github.com/ChronosMasterOfAllTime)
-- [Salman Shaikh](https://github.com/salmannotkhan)
-

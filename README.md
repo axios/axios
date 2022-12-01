@@ -9,7 +9,7 @@
 <p align="center">
     <a href="https://axios-http.com/"><b>Website</b></a> •
     <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
-</p> 
+</p>
 
 <div align="center">
 
@@ -29,12 +29,14 @@
 
 
 </div>
-  
+
 ## Table of Contents
 
   - [Features](#features)
   - [Browser Support](#browser-support)
   - [Installing](#installing)
+    - [Package manager](#package-manager)
+    - [CDN](#cdn)
   - [Example](#example)
   - [Axios API](#axios-api)
   - [Request method aliases](#request-method-aliases)
@@ -79,7 +81,7 @@
 - Intercept request and response
 - Transform request and response data
 - Cancel requests
-- Automatic transforms for JSON data
+- Automatic transforms for [JSON](https://www.json.org/json-en.html) data
 - 🆕 Automatic data object serialization to `multipart/form-data` and `x-www-form-urlencoded` body encodings
 - Client side support for protecting against [XSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery)
 
@@ -92,6 +94,8 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 [![Browser Matrix](https://saucelabs.com/open_sauce/build_matrix/axios.svg)](https://saucelabs.com/u/axios)
 
 ## Installing
+
+### Package manager
 
 Using npm:
 
@@ -117,7 +121,39 @@ Using pnpm:
 $ pnpm add axios
 ```
 
-Using jsDelivr CDN:
+Once the package is installed, you can import the library using `import` or `require` approach:
+
+```js
+import axios, {isCancel, AxiosError} from 'axios';
+```
+
+You can also use the default export, since the named export is just a re-export from the Axios factory:
+
+```js
+import axios from 'axios';
+
+console.log(axios.isCancel('something'));
+````
+
+If you use `require` for importing, **only default export is available**:
+
+```js
+const axios = require('axios');
+
+console.log(axios.isCancel('something'));
+```
+
+For cases where something went wrong when trying to import a module into a custom or legacy environment,
+you can try importing the module package directly:
+
+```js
+const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundle (ES2017)
+// const axios = require('axios/dist/node/axios.cjs'); // node commonJS bundle (ES2017)
+```
+
+### CDN
+
+Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
@@ -131,19 +167,12 @@ Using unpkg CDN:
 
 ## Example
 
-### note: CommonJS usage
-In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()` use the following approach:
+> **Note** CommonJS usage
+> In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js
-const axios = require('axios').default;
-
-// axios.<method> will now provide autocomplete and parameter typings
-```
-
-Performing a `GET` request
-
-```js
-const axios = require('axios').default;
+import axios from 'axios';
+//const axios = require('axios'); // legacy way
 
 // Make a request for a user with a given ID
 axios.get('/user?ID=12345')
@@ -734,6 +763,8 @@ Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all t
 
 ## Handling Errors
 
+the default behavior is to reject every response that returns with a status code that falls out of the range of 2xx and treat it as an error.
+
 ```js
 axios.get('/user/12345')
   .catch(function (error) {
@@ -756,7 +787,7 @@ axios.get('/user/12345')
   });
 ```
 
-Using the `validateStatus` config option, you can define HTTP code(s) that should throw an error.
+Using the `validateStatus` config option, you can override the default condition (status >= 200 && status < 300) and define HTTP code(s) that should throw an error.
 
 ```js
 axios.get('/user/12345', {
@@ -797,7 +828,7 @@ controller.abort()
 
 You can also cancel a request using a *CancelToken*.
 
-> The axios cancel token API is based on the withdrawn [cancelable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
+> The axios cancel token API is based on the withdrawn [cancellable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
 
 > This API is deprecated since v0.22.0 and shouldn't be used in new projects
 
@@ -853,7 +884,7 @@ cancel();
 
 ### URLSearchParams
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, [and Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [ Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
 const params = new URLSearchParams({ foo: 'bar' });
@@ -917,7 +948,7 @@ await axios.postForm('https://postman-echo.com/post', data,
 );
 ```
 
-The server will handle it as
+The server will handle it as:
 
 ```js
   {
@@ -1250,6 +1281,12 @@ try {
 }
 ```
 
+Because axios dual publishes with an ESM default export and a CJS `module.exports`, there are some caveats.
+The recommended setting is to use `"moduleResolution": "node16"` (this is implied by `"module": "node16"`). Note that this requires TypeScript 4.7 or greater.
+If use ESM, your settings should be fine.
+If you compile TypeScript to CJS and you can’t use `"moduleResolution": "node 16"`, you have to enable `esModuleInterop`.
+If you use TypeScript to type check CJS JavaScript code, your only option is to use `"moduleResolution": "node16"`.
+
 ## Online one-click setup
 
 You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
@@ -1259,11 +1296,11 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 
 ## Resources
 
-* [Changelog](https://github.com/axios/axios/blob/master/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/axios/blob/master/UPGRADE_GUIDE.md)
-* [Ecosystem](https://github.com/axios/axios/blob/master/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/axios/blob/master/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md)
+* [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
+* [Upgrade Guide](https://github.com/axios/axios/blob/v1.x/UPGRADE_GUIDE.md)
+* [Ecosystem](https://github.com/axios/axios/blob/v1.x/ECOSYSTEM.md)
+* [Contributing Guide](https://github.com/axios/axios/blob/v1.x/CONTRIBUTING.md)
+* [Code of Conduct](https://github.com/axios/axios/blob/v1.x/CODE_OF_CONDUCT.md)
 
 ## Credits
 

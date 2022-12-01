@@ -9,7 +9,7 @@
 <p align="center">
     <a href="https://axios-http.com/"><b>Website</b></a> •
     <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
-</p> 
+</p>
 
 <div align="center">
 
@@ -29,7 +29,7 @@
 
 
 </div>
-  
+
 ## Table of Contents
 
   - [Features](#features)

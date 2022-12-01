@@ -9,7 +9,7 @@
 <p align="center">
     <a href="https://axios-http.com/"><b>Website</b></a> •
     <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
-</p> 
+</p>
 
 <div align="center">
 
@@ -29,7 +29,7 @@
 
 
 </div>
-  
+
 ## Table of Contents
 
   - [Features](#features)
@@ -1297,7 +1297,6 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 ## Resources
 
 * [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
-* [Upgrade Guide](https://github.com/axios/axios/blob/v1.x/UPGRADE_GUIDE.md)
 * [Ecosystem](https://github.com/axios/axios/blob/v1.x/ECOSYSTEM.md)
 * [Contributing Guide](https://github.com/axios/axios/blob/v1.x/CONTRIBUTING.md)
 * [Code of Conduct](https://github.com/axios/axios/blob/v1.x/CODE_OF_CONDUCT.md)

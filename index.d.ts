@@ -1,4 +1,4 @@
-// TypeScript Version: 4.1
+// TypeScript Version: 4.7
 type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
 
@@ -6,7 +6,7 @@ type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 };
 
-interface CommonHeaders  {
+interface CommonHeaders {
   common: AxiosHeaders;
 }
 
@@ -21,8 +21,7 @@ type AxiosHeaderTester = (matcher?: AxiosHeaderMatcher) => boolean;
 
 export class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders,
-      defaultHeaders?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders
   );
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -39,11 +38,15 @@ export class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
+  concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
+
   toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
   static accessor(header: string | string[]): AxiosHeaders;
+
+  static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
 
   setContentType: AxiosHeaderSetter;
   getContentType: AxiosHeaderGetter;
@@ -260,6 +263,8 @@ type MaxUploadRate = number;
 
 type MaxDownloadRate = number;
 
+type BrowserProgressEvent = any;
+
 export interface AxiosProgressEvent {
   loaded: number;
   total?: number;
@@ -269,9 +274,14 @@ export interface AxiosProgressEvent {
   estimated?: number;
   upload?: boolean;
   download?: boolean;
+  event?: BrowserProgressEvent;
 }
 
 type Milliseconds = number;
+
+type AxiosAdapterName = 'xhr' | 'http' | string;
+
+type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
 export interface AxiosRequestConfig<D = any> {
   url?: string;
@@ -286,7 +296,7 @@ export interface AxiosRequestConfig<D = any> {
   timeout?: Milliseconds;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
-  adapter?: AxiosAdapter;
+  adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
   responseEncoding?: responseEncoding | string;
@@ -337,7 +347,7 @@ export interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>
   headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
 }
 
-export interface AxiosResponse<T = any, D = any>  {
+export interface AxiosResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
@@ -363,6 +373,14 @@ export class AxiosError<T = unknown, D = any> extends Error {
   status?: number;
   toJSON: () => object;
   cause?: Error;
+  static from<T = unknown, D = any>(
+    error: Error | unknown,
+    code?: string,
+    config?: AxiosRequestConfig<D>,
+    request?: any,
+    response?: AxiosResponse<T, D>,
+    customProps?: object,
+): AxiosError<T, D>;
   static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
   static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
   static readonly ERR_BAD_OPTION = "ERR_BAD_OPTION";

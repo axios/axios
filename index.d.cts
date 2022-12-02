@@ -85,7 +85,6 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   request?: any;
   response?: axios.AxiosResponse<T, D>;
   isAxiosError: boolean;
-  status?: number;
   toJSON: () => object;
   cause?: Error;
   static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";

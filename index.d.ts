@@ -370,7 +370,6 @@ export class AxiosError<T = unknown, D = any> extends Error {
   request?: any;
   response?: AxiosResponse<T, D>;
   isAxiosError: boolean;
-  status?: number;
   toJSON: () => object;
   cause?: Error;
   static from<T = unknown, D = any>(

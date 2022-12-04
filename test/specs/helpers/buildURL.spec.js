@@ -45,8 +45,8 @@ describe('helpers::buildURL', function () {
     const date = new Date(2022, 1, 24, 3, 40);
 
     expect(buildURL('/foo', {
-      date: date
-    })).toEqual('/foo?date=2022-02-24T01%3A40%3A00.000Z');
+      date
+    })).toEqual(`/foo?date=${encodeURIComponent(date.toISOString())}`);
   });
 
   it('should support array params', function () {

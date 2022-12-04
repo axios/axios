@@ -343,7 +343,7 @@ declare namespace axios {
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
     headers?: RawAxiosRequestHeaders;
     params?: any;
-    paramsSerializer?: ParamsSerializerOptions;
+    paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
     data?: D;
     timeout?: Milliseconds;
     timeoutErrorMessage?: string;
@@ -483,7 +483,7 @@ declare namespace axios {
     all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
     spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
-    toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
+    toFormData(dataObj: object, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
   }
 }

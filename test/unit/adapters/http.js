@@ -46,7 +46,8 @@ function toleranceRange(positive, negative) {
 
 var noop = ()=> {};
 
-const LOCAL_SERVER_URL = 'http://localhost:4444';
+const LOCAL_SERVER_PORT = 4444;
+const LOCAL_SERVER_URL = `http://localhost:${LOCAL_SERVER_PORT}`;
 
 function startHTTPServer(options) {
 
@@ -1562,7 +1563,7 @@ describe('supports http with nodejs', function () {
           res.send(JSON.stringify(req.body));
         });
 
-        server = app.listen(3001, function () {
+        server = app.listen(LOCAL_SERVER_PORT, function () {
           // multer can parse the following key/value pairs to an array (indexes: null, false, true):
           // arr: '1'
           // arr: '2'
@@ -1574,7 +1575,7 @@ describe('supports http with nodejs', function () {
           // arr[1]: '2'
           // -------------
           Promise.all([undefined, null, false, true].map(function (mode) {
-            return axios.postForm('http://localhost:3001/', obj, {formSerializer: {indexes: mode}})
+            return axios.postForm(LOCAL_SERVER_URL, obj, {formSerializer: {indexes: mode}})
               .then(function (res) {
                 assert.deepStrictEqual(res.data, obj, 'Index mode ' + mode);
               });
@@ -1599,12 +1600,12 @@ describe('supports http with nodejs', function () {
           res.send(JSON.stringify(req.body));
         });
 
-        server = app.listen(3001, function () {
+        server = app.listen(LOCAL_SERVER_PORT, function () {
           // express requires full indexes keys to deserialize nested objects
           // so only indexes = undefined|true supported:
 
           Promise.all([undefined, true].map(function (mode) {
-            return axios.postForm('http://localhost:3001/', obj, {formSerializer: {indexes: mode}})
+            return axios.postForm(LOCAL_SERVER_URL, obj, {formSerializer: {indexes: mode}})
               .then(function (res) {
                 assert.deepStrictEqual(res.data, obj, 'Index mode ' + mode);
               });
@@ -1633,8 +1634,8 @@ describe('supports http with nodejs', function () {
         res.send(JSON.stringify(req.body));
       });
 
-      server = app.listen(3001, function () {
-        return axios.post('http://localhost:3001/', obj, {
+      server = app.listen(LOCAL_SERVER_PORT, function () {
+        return axios.post(LOCAL_SERVER_URL, obj, {
           headers: {
             'content-type': 'application/x-www-form-urlencoded'
           }
@@ -1645,6 +1646,21 @@ describe('supports http with nodejs', function () {
           }).catch(done);
       });
     });
+
+    it('should support passing a function as paramsSerializer option', async () => {
+      server = await startHTTPServer((req, res) => {
+        res.end(req.url);
+      });
+
+      const paramsStr = 'serialized';
+
+      const {data} = await axios.get(LOCAL_SERVER_URL, {
+        paramsSerializer: () => paramsStr,
+        params: {x:1}
+      })
+
+      assert.strictEqual(data, '/?' + paramsStr);
+    })
   });
 
   it('should respect formSerializer config', function (done) {
@@ -1665,8 +1681,8 @@ describe('supports http with nodejs', function () {
 
     server = http.createServer(function (req, res) {
       req.pipe(res);
-    }).listen(3001, () => {
-      return axios.post('http://localhost:3001/', obj, {
+    }).listen(LOCAL_SERVER_PORT, () => {
+      return axios.post(LOCAL_SERVER_URL, obj, {
         headers: {
           'content-type': 'application/x-www-form-urlencoded'
         },

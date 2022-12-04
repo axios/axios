@@ -291,7 +291,7 @@ export interface AxiosRequestConfig<D = any> {
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: RawAxiosRequestHeaders;
   params?: any;
-  paramsSerializer?: ParamsSerializerOptions;
+  paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
   data?: D;
   timeout?: Milliseconds;
   timeoutErrorMessage?: string;
@@ -481,7 +481,7 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
-export function toFormData(this: GenericFormData | null, sourceObj: object, options?: FormSerializerOptions): GenericFormData;
+export function toFormData(dataObj: object, options?: FormSerializerOptions): GenericFormData;
 
 export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
 

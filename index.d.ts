@@ -307,7 +307,7 @@ export interface AxiosRequestConfig<D = any> {
   maxBodyLength?: number;
   maxRedirects?: number;
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-  beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
+  beforeRedirect?: (options: Record<string, any>, responseDetails: { headers: Record<string, string> }) => void;
   socketPath?: string | null;
   httpAgent?: any;
   httpsAgent?: any;
@@ -321,6 +321,9 @@ export interface AxiosRequestConfig<D = any> {
     FormData?: new (...args: any[]) => object;
   };
   formSerializer?: FormSerializerOptions;
+  family?: 4 | 6 | undefined;
+  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: string, family: number) => void) => void) |
+      ((hostname: string, options: object) => Promise<[address: string, family: number]>);
 }
 
 export interface HeadersDefaults {

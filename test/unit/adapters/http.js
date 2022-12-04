@@ -47,6 +47,8 @@ var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
+const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
+
 function startHTTPServer(options) {
 
   const {handler, useBuffering = false, rate = undefined, port = 4444} = typeof options === 'function' ? {
@@ -1941,5 +1943,45 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
       }
     });
-  })
+  });
+
+  describe('DNS', function() {
+    it('should support custom DNS lookup function', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: (hostname, opt, cb) =>  {
+          isCalled = true;
+          cb(null, '127.0.0.1', 4);
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support custom DNS lookup function (async)', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: async (hostname, opt) =>  {
+          isCalled = true;
+          return ['127.0.0.1', 4];
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+  });
 });

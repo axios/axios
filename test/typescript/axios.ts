@@ -497,3 +497,17 @@ axios.get('/user', {
     console.log(e.rate);
   }
 });
+
+// adapters
+
+axios.get('/user', {
+  adapter: 'xhr'
+});
+
+axios.get('/user', {
+  adapter: 'http'
+});
+
+axios.get('/user', {
+  adapter: ['xhr', 'http']
+});

@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.2.1] - 2022-12-05
+
+### Changed
+- feat(exports): export mergeConfig [#5151](https://github.com/axios/axios/pull/5151)
+
+### Fixed
+- fix(CancelledError): include config [#4922](https://github.com/axios/axios/pull/4922)
+- fix(general): removing multiple/trailing/leading whitespace [#5022](https://github.com/axios/axios/pull/5022)
+- fix(headers): decompression for responses without Content-Length header [#5306](https://github.com/axios/axios/pull/5306)
+- fix(webWorker): exception to sending form data in web worker [#5139](https://github.com/axios/axios/pull/5139)
+
+### Refactors
+- refactor(types): AxiosProgressEvent.event type to any [#5308](https://github.com/axios/axios/pull/5308)
+- refactor(types): add missing types for static AxiosError.from method [#4956](https://github.com/axios/axios/pull/4956)
+
+### Chores
+- chore(docs): remove README link to non-existent upgrade guide [#5307](https://github.com/axios/axios/pull/5307)
+- chore(docs): typo in issue template name [#5159](https://github.com/axios/axios/pull/5159)
+
+### Contributors to this release
+
+- [](https://github.com/DigitalBrainJS)
+- [](https://github.com/zachlysobey)
+- [](https://github.com/kevincennis)
+- [](https://github.com/phloose)
+- [](https://github.com/secondl1ght)
+- [](https://github.com/0x30)
+- [](https://github.com/ovarn)
+- [](https://github.com/arthurfiorette)
+- [](https://github.com/0x30)
+
 ## [1.2.0] - 2022-11-10
 
 ### Changed

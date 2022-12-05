@@ -21,15 +21,14 @@
 
 ### Contributors to this release
 
-- [](https://github.com/DigitalBrainJS)
-- [](https://github.com/zachlysobey)
-- [](https://github.com/kevincennis)
-- [](https://github.com/phloose)
-- [](https://github.com/secondl1ght)
-- [](https://github.com/0x30)
-- [](https://github.com/ovarn)
-- [](https://github.com/arthurfiorette)
-- [](https://github.com/0x30)
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [Zachary Lysobey](https://github.com/zachlysobey)
+- [Kevin Ennis](https://github.com/kevincennis)
+- [Philipp Loose](https://github.com/phloose)
+- [secondl1ght](https://github.com/secondl1ght)
+- [wenzheng](https://github.com/0x30)
+- [Ivan Barsukov](https://github.com/ovarn)
+- [Arthur Fiorette](https://github.com/arthurfiorette)
 
 ## [1.2.0] - 2022-11-10
 

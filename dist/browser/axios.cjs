@@ -1,4 +1,4 @@
-// Axios v1.2.0 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.2.1 Copyright (c) 2022 Matt Zabriskie and contributors
 'use strict';
 
 function bind(fn, thisArg) {
@@ -1219,6 +1219,24 @@ const isStandardBrowserEnv = (() => {
   return typeof window !== 'undefined' && typeof document !== 'undefined';
 })();
 
+/**
+ * Determine if we're running in a standard browser webWorker environment
+ *
+ * Although the `isStandardBrowserEnv` method indicates that
+ * `allows axios to run in a web worker`, the WebWorker will still be
+ * filtered out due to its judgment standard
+ * `typeof window !== 'undefined' && typeof document !== 'undefined'`.
+ * This leads to a problem when axios post `FormData` in webWorker
+ */
+ const isStandardBrowserWebWorkerEnv = (() => {
+  return (
+    typeof WorkerGlobalScope !== 'undefined' &&
+    self instanceof WorkerGlobalScope &&
+    typeof self.importScripts === 'function'
+  );
+})();
+
+
 var platform = {
   isBrowser: true,
   classes: {
@@ -1227,6 +1245,7 @@ var platform = {
     Blob
   },
   isStandardBrowserEnv,
+  isStandardBrowserWebWorkerEnv,
   protocols: ['http', 'https', 'file', 'blob', 'url', 'data']
 };
 
@@ -2091,7 +2110,7 @@ function speedometer(samplesCount, min) {
 
     const passed = startedAt && now - startedAt;
 
-    return  passed ? Math.round(bytesCount * 1000 / passed) : undefined;
+    return passed ? Math.round(bytesCount * 1000 / passed) : undefined;
   };
 }
 
@@ -2142,7 +2161,7 @@ var xhrAdapter = isXHRAdapterSupported && function (config) {
       }
     }
 
-    if (utils.isFormData(requestData) && platform.isStandardBrowserEnv) {
+    if (utils.isFormData(requestData) && (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv)) {
       requestHeaders.setContentType(false); // Let the browser set it
     }
 
@@ -2170,7 +2189,7 @@ var xhrAdapter = isXHRAdapterSupported && function (config) {
       const responseHeaders = AxiosHeaders$1.from(
         'getAllResponseHeaders' in request && request.getAllResponseHeaders()
       );
-      const responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+      const responseData = !responseType || responseType === 'text' || responseType === 'json' ?
         request.responseText : request.response;
       const response = {
         data: responseData,
@@ -2397,7 +2416,7 @@ function throwIfCancellationRequested(config) {
   }
 
   if (config.signal && config.signal.aborted) {
-    throw new CanceledError();
+    throw new CanceledError(null, config);
   }
 }
 
@@ -2558,7 +2577,7 @@ function mergeConfig(config1, config2) {
   return config;
 }
 
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 
 const validators$1 = {};
 
@@ -3043,6 +3062,9 @@ axios.spread = spread;
 
 // Expose isAxiosError
 axios.isAxiosError = isAxiosError;
+
+// Expose mergeConfig
+axios.mergeConfig = mergeConfig;
 
 axios.AxiosHeaders = AxiosHeaders$1;
 

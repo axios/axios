@@ -11,10 +11,10 @@ describe('helpers::buildURL', function () {
       foo: 'bar',
       isUndefined: undefined,
       isNull: null
-    })).toEqual('/foo?foo=bar&isNull=');
+    })).toEqual('/foo?foo=bar');
   });
 
-  it("should support skipping nulls in params", function () {
+  it("should support not skipping nulls in params", function () {
     expect(
       buildURL(
         "/foo",
@@ -23,9 +23,9 @@ describe('helpers::buildURL', function () {
           isUndefined: undefined,
           isNull: null,
         },
-        { skipNulls: true }
+        { skipNulls: false }
       )
-    ).toEqual("/foo?foo=bar");
+    ).toEqual("/foo?foo=bar&isNull=");
   });
 
   it('should support sending raw params to custom serializer func', function () {
@@ -66,19 +66,19 @@ describe('helpers::buildURL', function () {
   it('should support array params', function () {
     expect(buildURL('/foo', {
       foo: ['bar', 'baz', null, undefined]
-    })).toEqual('/foo?foo[]=bar&foo[]=baz&foo[]=');
+    })).toEqual('/foo?foo[]=bar&foo[]=baz');
   });
 
-  it("should support skipping nulls in array params", function () {
+  it("should support not skipping nulls in array params", function () {
     expect(
       buildURL(
         "/foo",
         {
           foo: ["bar", "baz", null, undefined],
         },
-        { skipNulls: true }
+        { skipNulls: false }
       )
-    ).toEqual("/foo?foo[]=bar&foo[]=baz");
+    ).toEqual("/foo?foo[]=bar&foo[]=baz&foo[]=");
   });
 
   it('should support special char params', function () {

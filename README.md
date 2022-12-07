@@ -1065,7 +1065,7 @@ The back-end body-parser could potentially use this meta-information to automati
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
     - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
 
-- `skipNulls: boolean = false` - by default, `null` values are treated like empty strings, use this flag to completely skip them just like `undefined`.
+- `skipNulls: boolean = true` - by default, `null` values are completely skipped just like `undefined`, use this flag to treat them like empty strings.
 
 Let's say we have an object like this one:
 

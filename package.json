@@ -38,7 +38,10 @@
     "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "fix": "eslint --fix lib/**/*.js"
+    "fix": "eslint --fix lib/**/*.js",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run",
+    "release:info": "release-it --release-version"
   },
   "repository": {
     "type": "git",
@@ -60,6 +63,7 @@
   "devDependencies": {
     "@babel/core": "^7.18.2",
     "@babel/preset-env": "^7.18.2",
+    "@release-it/conventional-changelog": "^5.1.1",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-json": "^4.1.0",
@@ -93,6 +97,7 @@
     "minimist": "^1.2.6",
     "mocha": "^10.0.0",
     "multer": "^1.4.4",
+    "release-it": "^15.5.1",
     "rollup": "^2.67.0",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-bundle-size": "^1.0.3",
@@ -137,5 +142,20 @@
     "Ben Carp (https://github.com/carpben)",
     "Daniel Lopretto (https://github.com/timemachine3030)"
   ],
-  "sideEffects": false
+  "sideEffects": false,
+  "release-it": {
+    "github": {
+      "release": false
+    },
+    "npm": {
+      "publish": false,
+      "ignoreVersion": false
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular",
+        "infile": "CHANGELOG.md"
+      }
+    }
+  }
 }

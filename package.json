@@ -30,18 +30,22 @@
     "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
     "test:karma": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
+    "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
     "preversion": "gulp version && npm test",
     "version": "npm run build && git add dist && git add package.json",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm run test:build:version",
     "postpublish": "git push && git push --tags",
     "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "eslint --fix lib/**/*.js",
-    "release": "release-it",
+    "prepare": "husky install && npm run prepare:hooks",
+    "prepare:hooks": "npx husky add .husky/commit-msg \"npx commitlint --edit $1\"",
     "release:dry": "release-it --dry-run",
-    "release:info": "release-it --release-version"
+    "release:info": "release-it --release-version",
+    "prerelease": "release-it --preRelease=beta",
+    "release": "release-it"
   },
   "repository": {
     "type": "git",
@@ -63,6 +67,8 @@
   "devDependencies": {
     "@babel/core": "^7.18.2",
     "@babel/preset-env": "^7.18.2",
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
     "@release-it/conventional-changelog": "^5.1.1",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^15.1.0",
@@ -82,6 +88,8 @@
     "fs-extra": "^10.1.0",
     "get-stream": "^3.0.0",
     "gulp": "^4.0.2",
+    "husky": "^8.0.2",
+    "inquirer": "^9.1.4",
     "istanbul-instrumenter-loader": "^3.0.1",
     "jasmine-core": "^2.4.1",
     "karma": "^6.3.17",
@@ -145,10 +153,10 @@
   "sideEffects": false,
   "release-it": {
     "github": {
-      "release": false
+      "release": true
     },
     "npm": {
-      "publish": false,
+      "publish": true,
       "ignoreVersion": false
     },
     "plugins": {
@@ -156,6 +164,16 @@
         "preset": "angular",
         "infile": "CHANGELOG.md"
       }
+    },
+    "hooks": {
+      "before:init": "npm test",
+      "after:bump": "npm run build",
+      "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }

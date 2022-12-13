@@ -1,10 +1,4 @@
-
-+                            Response Date : 07-29-2022                                  
-+
-+                            Tracking Number : 102393399156 
-+
-+                            Customer File Number : 132624428
-+        (IRS USE ONLY)       575A                                                  03-18-2022       WOOD       B       9999999999       SS-4
+'-''       : '('I'R'S'' 'U'S'E''''O'N'L'Y')''       '575'A'''                                                  '03'-18-'2022''       'W'O'O'D''       'B''       '9999999999''       'S'S'-4''
 +
 +
 +
@@ -29,9 +23,9 @@
 +
 +
 +
-+Return this part with any correspondence         
-+           so we may idetify your account.  Please                                                                                            CP 575 A
-+correct any errors in your name or address                                                                                               9999999999
+'-'' 'Return'' 'this'' 'part'' 'with'' 'any'' 'correspondence''         :
+'-'' 'so we may idetify your account.  Please                            :                                                                CP 575 A'
+'-'' correct any errors in your name or address                           :                                                                    9999999999
 +
 +
 +

@@ -14,6 +14,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const exec = util.promisify(cp.exec);
 
+const spawn = (command, args) =>  new Promise((resolve, reject) => {
+  cp.spawn(command, args, {
+    shell : true,
+    stdio: 'inherit'
+  }).once('error', reject).on(
+    'close',
+    (code) => code ? reject(new Error(`Exit code ${code}`)) : resolve()
+  );
+});
+
 const {Axios} = axiosFactory;
 
 const ignoreList = ['default'];
@@ -132,6 +142,42 @@ describe('module', function () {
       this.timeout(30000);
 
       await exec(`npm test --prefix ${pkgPath}`, {});
+    });
+  });
+
+  describe('typings', () => {
+    describe('ESM', ()=> {
+      const pkgPath = path.join(__dirname, './typings/esm');
+
+      after(async ()=> {
+        await remove(path.join(pkgPath, './node_modules'));
+      });
+
+      it('should pass types check', async function () {
+        this.timeout(30000);
+
+        await spawn(`npm test --prefix ${pkgPath}`, [], {
+          shell : true,
+          stdio: 'pipe'
+        });
+      });
+    });
+
+    describe('CommonJS', ()=> {
+      const pkgPath = path.join(__dirname, './typings/cjs');
+
+      after(async ()=> {
+        await remove(path.join(pkgPath, './node_modules'));
+      });
+
+      it('should pass types check', async function () {
+        this.timeout(30000);
+
+        await spawn(`npm test --prefix ${pkgPath}`, [], {
+          shell : true,
+          stdio: 'pipe'
+        });
+      });
     });
   });
 });

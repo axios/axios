@@ -3,10 +3,9 @@
 .tscache
 .DS_Store
 node_modules/
-typings/
 coverage/
 test/typescript/axios.js*
 sauce_connect.log
-test/module/cjs/node_modules/
-test/module/cjs/package-lock.json
+test/module/**/package-lock.json
 backup/
+./.husky/

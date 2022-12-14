@@ -169,7 +169,7 @@
     },
     "hooks": {
       "before:init": "npm test",
-      "after:bump": "npm run build",
+      "after:bump": "gulp version && npm run build",
       "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }
   },

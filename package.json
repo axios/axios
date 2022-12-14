@@ -23,7 +23,7 @@
   "type": "module",
   "types": "index.d.ts",
   "scripts": {
-    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:exports && npm run test:dtslint",
+    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:dtslint && npm run test:exports",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
     "test:dtslint": "node bin/ssl_hotfix.js dtslint",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",

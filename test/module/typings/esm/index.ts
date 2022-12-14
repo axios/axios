@@ -1,5 +1,9 @@
 import axios, {
   AxiosRequestConfig,
+  AxiosHeaders,
+  AxiosRequestHeaders,
+  AxiosResponseHeaders,
+  RawAxiosRequestHeaders,
   AxiosResponse,
   AxiosError,
   AxiosInstance,
@@ -293,8 +297,14 @@ axios.create({
 // Interceptors
 
 const requestInterceptorId: number = axios.interceptors.request.use(
-  (config: AxiosRequestConfig) => config,
-  (error: any) => Promise.reject(error)
+  async (config: AxiosRequestConfig) => {
+    await axios.get('/foo', {
+      headers: config.headers
+    });
+    return config;
+  },
+  (error: any) => Promise.reject(error),
+  {synchronous: false}
 );
 
 axios.interceptors.request.eject(requestInterceptorId);
@@ -404,11 +414,11 @@ axios.get('/user')
 
 axios.get('/user')
   .catch((error: any) => 'foo')
-  .then((value) => {});
+  .then((value: any) => {});
 
 axios.get('/user')
   .catch((error: any) => Promise.resolve('foo'))
-  .then((value) => {});
+  .then((value: any) => {});
 
 // Cancellation
 
@@ -434,7 +444,7 @@ source.cancel('Operation has been canceled.');
 // AxiosError
 
 axios.get('/user')
-  .catch((error) => {
+  .catch((error: AxiosError) => {
     if (axios.isAxiosError(error)) {
       const axiosError: AxiosError = error;
     }
@@ -467,15 +477,55 @@ axios.get('/user', {signal: new AbortController().signal});
 // AxiosHeaders methods
 
 axios.get('/user', {
-    transformRequest: (data, headers) => {
-        headers.setContentType('text/plain');
-        headers['Foo'] = 'bar';
+  transformRequest: [
+    (data: any, headers) => {
+      headers.setContentType('text/plain');
+      return 'baz';
     },
-
-    transformResponse: (data, headers) => {
-        headers.has('foo');
+    (data: any, headers) => {
+      headers['foo'] = 'bar';
+      return 'baz'
     }
+  ],
+
+  transformResponse: [(data: any, headers: AxiosResponseHeaders) => {
+    headers.has('foo');
+  }]
 });
+
+// config headers
+
+axios.get('/user', {
+  headers: new AxiosHeaders({x:1})
+});
+
+axios.get('/user', {
+  headers: {
+    foo : 1
+  }
+});
+
+// issue #5034
+
+function getRequestConfig1(options: AxiosRequestConfig): AxiosRequestConfig {
+  return {
+    ...options,
+    headers: {
+    ...(options.headers as RawAxiosRequestHeaders),
+      Authorization: `Bearer ...`,
+    },
+  };
+}
+
+function getRequestConfig2(options: AxiosRequestConfig): AxiosRequestConfig {
+  return {
+    ...options,
+    headers: {
+      ...(options.headers as AxiosHeaders).toJSON(),
+      Authorization: `Bearer ...`,
+    },
+  };
+}
 
 // Max Rate
 
@@ -490,7 +540,7 @@ axios.get('/user', {
 // Node progress
 
 axios.get('/user', {
-  onUploadProgress: (e) => {
+  onUploadProgress: (e: AxiosProgressEvent) => {
     console.log(e.loaded);
     console.log(e.total);
     console.log(e.progress);

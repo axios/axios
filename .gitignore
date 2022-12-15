@@ -9,3 +9,5 @@ sauce_connect.log
 test/module/**/package-lock.json
 backup/
 ./.husky/
+.npmrc
+.env

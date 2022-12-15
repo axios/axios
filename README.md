@@ -4,7 +4,7 @@
     </b>
 </h1>
 
-<p align="center">Promise based HTTP client for the browser and node.js</p>
+<p align="center">Promise-based HTTP client for the browser and Node.js</p>
 
 <p align="center">
     <a href="https://axios-http.com/"><b>Website</b></a> •
@@ -251,9 +251,9 @@ Promise.all([getUserAccount(), getUserPermissions()])
   });
 ```
 
-## axios API
+## Axios API
 
-Requests can be made by passing the relevant config to `axios`.
+Requests can be made by passing the relevant config to `axios()`.
 
 ##### axios(config)
 
@@ -314,7 +314,7 @@ axios.spread(callback)
 
 ### Creating an instance
 
-You can create a new instance of axios with a custom config.
+You can create a new instance of Axios with a custom config.
 
 ##### axios.create([config])
 
@@ -353,7 +353,7 @@ These are the available config options for making requests. Only the `url` is re
   method: 'get', // default
 
   // `baseURL` will be prepended to `url` unless `url` is absolute.
-  // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
+  // It can be convenient to set `baseURL` for an instance of Axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
 
@@ -597,7 +597,7 @@ The response for a request contains the following information.
   // Example: `response.headers['content-type']`
   headers: {},
 
-  // `config` is the config that was provided to `axios` for the request
+  // `config` is the config that was provided to `axios()` for the request
   config: {},
 
   // `request` is the request that generated this response
@@ -626,12 +626,12 @@ When using `catch`, or passing a [rejection callback](https://developer.mozilla.
 
 You can specify config defaults that will be applied to every request.
 
-### Global axios defaults
+### Global Axios defaults
 
 ```js
 axios.defaults.baseURL = 'https://api.example.com';
 
-// Important: If axios is used with multiple domains, the AUTH_TOKEN will be sent to all of them.
+// Important: If Axios is used with multiple domains, the AUTH_TOKEN will be sent to all of them.
 // See below for an example using Custom instance defaults instead.
 axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
@@ -711,7 +711,7 @@ instance.interceptors.response.use(function () {/*...*/});
 instance.interceptors.response.clear(); // Removes interceptors from responses
 ```
 
-You can add interceptors to a custom instance of axios.
+You can add interceptors to a custom instance of Axios.
 
 ```js
 const instance = axios.create();
@@ -719,9 +719,9 @@ instance.interceptors.request.use(function () {/*...*/});
 ```
 
 When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay
-in the execution of your axios request when the main thread is blocked (a promise is created under the hood for
+in the execution of your Axios request when the main thread is blocked (a promise is created under the hood for
 the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag
-to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
+to the options object that will tell Axios to run the code synchronously and avoid any delays in request execution.
 
 ```js
 axios.interceptors.request.use(function (config) {
@@ -828,7 +828,7 @@ controller.abort()
 
 You can also cancel a request using a *CancelToken*.
 
-> The axios cancel token API is based on the withdrawn [cancellable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
+> The Axios cancel token API is based on the withdrawn [cancellable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
 
 > This API is deprecated since v0.22.0 and shouldn't be used in new projects
 
@@ -884,7 +884,7 @@ cancel();
 
 ### URLSearchParams
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [ Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
+By default, Axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [ Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
 const params = new URLSearchParams({ foo: 'bar' });
@@ -1256,16 +1256,16 @@ const {data} = await axios.post(LOCAL_SERVER_URL, myBuffer, {
 
 ## Semver
 
-Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
+Until Axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
 
 ## Promises
 
-axios depends on a native ES6 Promise implementation to be [supported](https://caniuse.com/promises).
+Axios depends on a native ES6 Promise implementation to be [supported](https://caniuse.com/promises).
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
 
-axios includes [TypeScript](https://typescriptlang.org) definitions and a type guard for axios errors.
+Axios includes [TypeScript](https://typescriptlang.org) definitions and a type guard for Axios errors.
 
 ```typescript
 let user: User = null;
@@ -1281,7 +1281,7 @@ try {
 }
 ```
 
-Because axios dual publishes with an ESM default export and a CJS `module.exports`, there are some caveats.
+Because Axios dual-publishes with an ESM default export and a CJS `module.exports`, there are some caveats.
 The recommended setting is to use `"moduleResolution": "node16"` (this is implied by `"module": "node16"`). Note that this requires TypeScript 4.7 or greater.
 If use ESM, your settings should be fine.
 If you compile TypeScript to CJS and you can’t use `"moduleResolution": "node 16"`, you have to enable `esModuleInterop`.
@@ -1303,7 +1303,7 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 
 ## Credits
 
-axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [AngularJS](https://angularjs.org/). Ultimately axios is an effort to provide a standalone `$http`-like service for use outside of AngularJS.
+Axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) provided in [AngularJS](https://angularjs.org/). Ultimately Axios is an effort to provide a standalone `$http`-like service for use outside of AngularJS.
 
 ## License
 

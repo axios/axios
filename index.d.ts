@@ -71,7 +71,7 @@ export class AxiosHeaders {
 
 export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
 
-export type AxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders> & AxiosHeaders;
+export type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 
 export type RawAxiosResponseHeaders = Partial<Record<string, string> & {
   "set-cookie"?: string[]
@@ -289,7 +289,7 @@ export interface AxiosRequestConfig<D = any> {
   baseURL?: string;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
-  headers?: RawAxiosRequestHeaders;
+  headers?: RawAxiosRequestHeaders | AxiosHeaders;
   params?: any;
   paramsSerializer?: ParamsSerializerOptions;
   data?: D;
@@ -344,7 +344,7 @@ export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'hea
 }
 
 export interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
-  headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
+  headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
 }
 
 export interface AxiosResponse<T = any, D = any> {
@@ -499,6 +499,7 @@ export interface AxiosStatic extends AxiosInstance {
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
   AxiosError: typeof AxiosError;
+  HttpStatusCode: typeof HttpStatusCode;
   readonly VERSION: string;
   isCancel: typeof isCancel;
   all: typeof all;

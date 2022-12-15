@@ -18,16 +18,9 @@ type AxiosHeaderGetter = ((parser?: RegExp) => RegExpExecArray | null) |
 
 type AxiosHeaderTester = (matcher?: AxiosHeaderMatcher) => boolean;
 
-type MaxUploadRate = number;
-
-type MaxDownloadRate = number;
-
-type Milliseconds = number;
-
 declare class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders,
-      defaultHeaders?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders
   );
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -44,11 +37,15 @@ declare class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
+  concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
+
   toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
   static accessor(header: string | string[]): AxiosHeaders;
+
+  static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
 
   setContentType: AxiosHeaderSetter;
   getContentType: AxiosHeaderGetter;
@@ -199,7 +196,7 @@ declare namespace axios {
 
   type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
 
-  type AxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders> & AxiosHeaders;
+  type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 
   type RawAxiosResponseHeaders = Partial<Record<string, string> & {
     "set-cookie"?: string[]
@@ -321,6 +318,10 @@ declare namespace axios {
     serialize?: CustomParamsSerializer;
   }
 
+  type MaxUploadRate = number;
+
+  type MaxDownloadRate = number;
+
   type BrowserProgressEvent = any;
 
   interface AxiosProgressEvent {
@@ -335,20 +336,26 @@ declare namespace axios {
     event?: BrowserProgressEvent;
   }
 
+  type Milliseconds = number;
+
+  type AxiosAdapterName = 'xhr' | 'http' | string;
+
+  type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
+
   interface AxiosRequestConfig<D = any> {
     url?: string;
     method?: Method | string;
     baseURL?: string;
     transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
-    headers?: RawAxiosRequestHeaders;
+    headers?: RawAxiosRequestHeaders | AxiosHeaders;
     params?: any;
     paramsSerializer?: ParamsSerializerOptions;
     data?: D;
     timeout?: Milliseconds;
     timeoutErrorMessage?: string;
     withCredentials?: boolean;
-    adapter?: AxiosAdapter;
+    adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
     auth?: AxiosBasicCredentials;
     responseType?: ResponseType;
     responseEncoding?: responseEncoding | string;
@@ -396,7 +403,7 @@ declare namespace axios {
   }
 
   interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
-    headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
+    headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   }
 
   interface AxiosResponse<T = any, D = any>  {
@@ -485,6 +492,7 @@ declare namespace axios {
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+    AxiosHeaders: typeof AxiosHeaders;
   }
 }
 

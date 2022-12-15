@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -23,22 +23,31 @@
   "type": "module",
   "types": "index.d.ts",
   "scripts": {
-    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:exports && npm run test:dtslint",
+    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:dtslint && npm run test:exports",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
     "test:dtslint": "node bin/ssl_hotfix.js dtslint",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
     "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
     "test:karma": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
+    "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
     "preversion": "gulp version && npm test",
     "version": "npm run build && git add dist && git add package.json",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm run test:build:version",
     "postpublish": "git push && git push --tags",
     "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "fix": "eslint --fix lib/**/*.js"
+    "fix": "eslint --fix lib/**/*.js",
+    "prepare": "husky install && npm run prepare:hooks",
+    "prepare:hooks": "npx husky add .husky/commit-msg \"npx commitlint --edit $1\"",
+    "release:dry": "release-it --dry-run --no-npm",
+    "release:info": "release-it --release-version",
+    "prerelease:no-npm": "release-it --preRelease=beta --no-npm",
+    "prerelease": "release-it --preRelease=beta",
+    "release:no-npm": "release-it --no-npm",
+    "release": "release-it"
   },
   "repository": {
     "type": "git",
@@ -60,6 +69,9 @@
   "devDependencies": {
     "@babel/core": "^7.18.2",
     "@babel/preset-env": "^7.18.2",
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
+    "@release-it/conventional-changelog": "^5.1.1",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-json": "^4.1.0",
@@ -78,6 +90,8 @@
     "fs-extra": "^10.1.0",
     "get-stream": "^3.0.0",
     "gulp": "^4.0.2",
+    "husky": "^8.0.2",
+    "inquirer": "^9.1.4",
     "istanbul-instrumenter-loader": "^3.0.1",
     "jasmine-core": "^2.4.1",
     "karma": "^6.3.17",
@@ -93,6 +107,7 @@
     "minimist": "^1.2.6",
     "mocha": "^10.0.0",
     "multer": "^1.4.4",
+    "release-it": "^15.5.1",
     "rollup": "^2.67.0",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-bundle-size": "^1.0.3",
@@ -137,5 +152,30 @@
     "Ben Carp (https://github.com/carpben)",
     "Daniel Lopretto (https://github.com/timemachine3030)"
   ],
-  "sideEffects": false
+  "sideEffects": false,
+  "release-it": {
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": true,
+      "ignoreVersion": false
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular",
+        "infile": "CHANGELOG.md"
+      }
+    },
+    "hooks": {
+      "before:init": "npm test",
+      "after:bump": "gulp version && npm run build",
+      "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  }
 }

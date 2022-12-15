@@ -1,0 +1,20 @@
+{
+  "name": "commonjs-typings-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm i --no-save --no-package-lock && tsc -v && npm run test:types",
+    "test:types": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^18.11.3",
+    "axios": "file:../../../.."
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}

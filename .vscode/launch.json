@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Launch Chrome against localhost",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/dist"
+        },{
+            "type": "node",
+            "request": "launch",
+            "name": "调试tars构建",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/sandbox/server.js"
+        }
+    ]
+}

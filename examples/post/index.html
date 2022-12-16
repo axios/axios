@@ -21,9 +21,10 @@
     <script>
       (function () {
         var output = document.getElementById('output');
+        debugger
         document.getElementById('post').onclick = function () {
           var data = document.getElementById('data').value;
-
+        debugger
           axios.post('/post/server', JSON.parse(data))
             .then(function (res) {
               output.className = 'container';

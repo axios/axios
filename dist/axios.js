@@ -986,9 +986,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var parseHeaders = __webpack_require__(20);
 	var isURLSameOrigin = __webpack_require__(21);
 	var createError = __webpack_require__(14);
-	
+	// ************************************************************** 
 	module.exports = function xhrAdapter(config) {
-	  return new Promise(function dispatchXhrRequest(resolve, reject) {
+        return new Promise(
+      function dispatchXhrRequest(resolve, reject) {
 	    var requestData = config.data;
 	    var requestHeaders = config.headers;
 	

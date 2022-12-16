@@ -44,8 +44,8 @@
     "prepare:hooks": "npx husky add .husky/commit-msg \"npx commitlint --edit $1\"",
     "release:dry": "release-it --dry-run --no-npm",
     "release:info": "release-it --release-version",
-    "prerelease:no-npm": "release-it --preRelease=beta --no-npm",
-    "prerelease": "release-it --preRelease=beta",
+    "release:beta:no-npm": "release-it --preRelease=beta --no-npm",
+    "release:beta": "release-it --preRelease=beta",
     "release:no-npm": "release-it --no-npm",
     "release": "release-it"
   },

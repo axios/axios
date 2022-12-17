@@ -13,6 +13,10 @@
       "node": "./lib/adapters/http.js",
       "default": "./lib/helpers/null.js"
     },
+    "#xhrAdapter": {
+      "browser": "./lib/adapters/xhr.js",
+      "default": "./lib/helpers/null.js"
+    },
     "#abortController": {
       "node": "./lib/platform/node/classes/AbortController.js",
       "browser": "./lib/platform/browser/classes/AbortController.js",

@@ -106,6 +106,15 @@ const buildConfig = ({
           replacement: '../helpers/null.js'
         },
 
+        // alias `#xhrAdapter` to `null` except for browser builds
+        browser ? {
+          find: '#xhrAdapter',
+          replacement: './xhr.js'
+        } : {
+          find: '#xhrAdapter',
+          replacement: '../helpers/null.js'
+        },
+
         // resolve the browser or native `fetch` implementation aliases
         {
           find: '#fetchApi',
@@ -231,6 +240,10 @@ export default async () => {
             {
               find: '#httpAdapter',
               replacement: './http.js'
+            },
+            {
+              find: '#xhrAdapter',
+              replacement: '../helpers/null.js'
             },
             {
               find: '#formData',

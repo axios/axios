@@ -11,3 +11,5 @@ backup/
 /.husky/
 .npmrc
 .env
+.husky/
+.nyc_output/

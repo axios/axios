@@ -1,0 +1,8 @@
+{
+  "name": "axios-worker-sample",
+  "main": "axios-worker.js",
+  "module": true,
+  "dependencies": {
+    "axios": "file:../../../"
+  }
+}

@@ -6,6 +6,7 @@
 
 'use strict';
 
+var alias = require('@rollup/plugin-alias').default;
 var resolve = require('@rollup/plugin-node-resolve').default;
 var commonjs = require('@rollup/plugin-commonjs');
 
@@ -167,7 +168,43 @@ module.exports = function(config) {
     rollupPreprocessor: {
       plugins: [
         resolve({browser: true}),
-        commonjs()
+        commonjs(),
+        alias({entries: [
+          {
+            find: '#platform',
+            replacement: './generic/index.js'
+          },
+
+          // resolve the abort controller
+          {
+            find: '#abortController',
+            replacement: `../platform/browser/classes/AbortController.js`
+          },
+
+          // alias `#httpAdapter` adapter to `null` adapter on non-node platforms where it is not supported
+          {
+            find: '#httpAdapter',
+            replacement: '../helpers/null.js'
+          },
+
+          // resolve the browser or native `fetch` implementation aliases
+          {
+            find: '#fetchApi',
+            replacement: `../platform/browser/classes/FetchAPI.js`
+          },
+
+          // use the browser's `FormData` implementation
+          {
+            find: '#formData',
+            replacement: '../platform/browser/classes/FormData.js'
+          },
+
+          // alias `stream` module to `readable-stream`, but only in pure environments and browser builds
+          {
+            find: 'stream',
+            replacement: 'readable-stream'
+          }
+        ]})
       ],
       output: {
         format: 'iife',

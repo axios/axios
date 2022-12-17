@@ -3,11 +3,56 @@
   "version": "1.6.8",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
+  "imports": {
+    "#platform": {
+      "browser": "./lib/platform/node/browser.js",
+      "node": "./lib/platform/node/index.js",
+      "default": "./lib/platform/generic/index.js"
+    },
+    "#httpAdapter": {
+      "node": "./lib/adapters/http.js",
+      "default": "./lib/helpers/null.js"
+    },
+    "#abortController": {
+      "node": "./lib/platform/node/classes/AbortController.js",
+      "browser": "./lib/platform/browser/classes/AbortController.js",
+      "default": "./lib/platform/generic/classes/AbortController.js"
+    },
+    "#formData": {
+      "node": "./lib/platform/node/classes/FormData.js",
+      "deno": "./lib/platform/generic/classes/FormData.js",
+      "browser": "./lib/platform/browser/classes/FormData.js",
+      "default": "./lib/platform/generic/classes/FormData.js"
+    },
+    "#fetchApi": {
+      "node": "./lib/platform/node/classes/FetchAPI.js",
+      "deno": "./lib/platform/generic/classes/FetchAPI.js",
+      "browser": "./lib/platform/browser/classes/FetchAPI.js",
+      "default": "./lib/platform/generic/classes/FetchAPI.js"
+    },
+    "#fetchTests": {
+      "browser": "./test/fetch/browser/fetch.browser.spec.js",
+      "deno": "./test/fetch/deno/fetch.deno.spec.js",
+      "default": "./test/fetch/generic/fetch.generic.spec.js"
+    }
+  },
   "exports": {
     ".": {
       "types": {
         "require": "./index.d.cts",
         "default": "./index.d.ts"
+      },
+      "deno": {
+        "import": "./dist/generic/axios.mjs",
+        "default": "./index.js"
+      },
+      "generic": {
+        "import": "./dist/generic/axios.mjs",
+        "default": "./index.js"
+      },
+      "node": {
+        "require": "./dist/node/axios.cjs",
+        "default": "./index.js"
       },
       "browser": {
         "require": "./dist/browser/axios.cjs",
@@ -18,8 +63,16 @@
         "default": "./index.js"
       }
     },
-    "./lib/adapters/http.js": "./lib/adapters/http.js",
-    "./lib/adapters/xhr.js": "./lib/adapters/xhr.js",
+    "./lib/platform/node/index.js": {
+      "node": "./lib/platform/node/index.js",
+      "deno": "./lib/platform/generic/index.js",
+      "browser": "./lib/platform/browser/index.js",
+      "default": "./lib/platform/generic/index.js"
+    },
+    "./lib/adapters/http.js": {
+      "node": "./lib/adapters/http.js",
+      "default": "./lib/helpers/null.js"
+    },
     "./unsafe/*": "./lib/*",
     "./unsafe/core/settle.js": "./lib/core/settle.js",
     "./unsafe/core/buildFullPath.js": "./lib/core/buildFullPath.js",
@@ -60,7 +113,8 @@
     "release:beta": "release-it --preRelease=beta",
     "release:no-npm": "release-it --no-npm",
     "release:changelog:fix": "node ./bin/injectContributorsList.js && git add CHANGELOG.md",
-    "release": "release-it"
+    "release": "release-it",
+    "sizes": "sleep 1 && du -h dist/*/*.{mjs,cjs,js}"
   },
   "repository": {
     "type": "git",
@@ -85,6 +139,7 @@
     "@commitlint/cli": "^17.8.1",
     "@commitlint/config-conventional": "^17.8.1",
     "@release-it/conventional-changelog": "^5.1.1",
+    "@rollup/plugin-alias": "^4.0.2",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-json": "^4.1.0",
@@ -131,6 +186,7 @@
     "rollup": "^2.79.1",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-bundle-size": "^1.0.3",
+    "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-terser": "^7.0.2",
     "sinon": "^4.5.0",
     "stream-throttle": "^0.1.3",
@@ -142,18 +198,25 @@
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/helpers/null.js",
+    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js",
     "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
-    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js"
+    "./lib/platform/generic/index.js": "./lib/platform/browser/index.js"
   },
   "jsdelivr": "dist/axios.min.js",
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
+    "assert": "^2.0.0",
     "cross-fetch": "^3.1.5",
+    "events": "^3.3.0",
     "follow-redirects": "^1.15.6",
     "form-data": "^4.0.0",
+    "inherits": "^2.0.4",
     "node-abort-controller": "^3.0.1",
+    "path": "^0.12.7",
     "proxy-from-env": "^1.1.0",
+    "readable-stream": "^4.2.0",
+    "url": "^0.11.0",
     "web-streams-polyfill": "^3.2.1"
   },
   "bundlesize": [

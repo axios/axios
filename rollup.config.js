@@ -1,10 +1,12 @@
+import alias from '@rollup/plugin-alias';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import {terser} from "rollup-plugin-terser";
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
 import autoExternal from 'rollup-plugin-auto-external';
-import bundleSize from 'rollup-plugin-bundle-size'
+import bundleSize from 'rollup-plugin-bundle-size';
+import copy from 'rollup-plugin-copy';
 import path from 'path';
 
 const lib = require("./package.json");
@@ -13,13 +15,37 @@ const name = "axios";
 const namedInput = './index.js';
 const defaultInput = './lib/axios.js';
 
-const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) => {
+const buildConfig = ({
+  es5,
+  node = true,
+  pure = false,
+  esm = false,
+  browser = true,
+  minifiedVersion = true,
+  typeHint = false,
+  ...config
+}) => {
   const {file} = config.output;
   const ext = path.extname(file);
   const basename = path.basename(file, ext);
   const extArr = ext.split('.');
   extArr.shift();
+  if (node) {
+    delete config.node;
+  }
+  if (pure) {
+    delete config.pure;
+  }
+  delete config.esm;
+  delete config.typeHint;
 
+  // relative to `./lib/platform/`
+  let platformTarget = './generic/index.js';
+  if (browser) {
+    platformTarget = './browser/index.js';
+  } else if (pure) {
+    platformTarget = './generic/index.js';
+  }
 
   const build = ({minified}) => ({
     input: namedInput,
@@ -30,8 +56,17 @@ const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) =
     },
     plugins: [
       json(),
-      resolve({browser}),
-      commonjs(),
+      resolve(Object.assign({}, {
+        browser,
+        preferBuiltins: node,
+      }, node ? {
+        exportConditions: ['node']
+      } : {}, pure ? {
+        exportConditions: ['generic', 'default']
+      } : {})),
+      commonjs(Object.assign({}, pure ? {
+        transformMixedEsModules: true
+      }: {})),
       minified && terser(),
       minified && bundleSize(),
       ...(es5 ? [babel({
@@ -39,7 +74,51 @@ const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) =
         presets: ['@babel/preset-env']
       })] : []),
       ...(config.plugins || []),
-    ]
+    ].concat(typeHint ? [
+      copy({
+        targets: [
+          { src: './index.d.ts', dest: `dist/${browser ? 'browser' : 'generic'}`, rename: 'axios.d.ts' },
+          { src: './index.d.cts', dest: `dist/${browser ? 'browser' : 'generic'}`, rename: 'axios.d.cts' },
+        ]
+      })
+    ] : []).concat((esm || pure || browser) ? [
+      alias({entries: [
+        {
+          find: '#platform',
+          replacement: platformTarget
+        },
+
+        // splice in a `AbortController` alias, which is expected to exist in generic environments
+        {
+          find: '#abortController',
+          replacement: `../platform/${browser ? 'browser' : 'generic'}/classes/AbortController.js`
+        },
+
+        // splice in a `FormData` alias, which is expected to exist in generic environments
+        {
+          find: '#formData',
+          replacement: `../platform/${browser ? 'browser' : 'generic'}/classes/FormData.js`
+        },
+
+        // alias `#httpAdapter` adapter to `null` adapter on non-node platforms where it is not supported
+        {
+          find: '#httpAdapter',
+          replacement: '../helpers/null.js'
+        },
+
+        // resolve the browser or native `fetch` implementation aliases
+        {
+          find: '#fetchApi',
+          replacement: `../platform/${browser ? 'browser' : 'generic'}/classes/FetchAPI.js`
+        },
+
+        // alias `stream` module to `readable-stream`, but only in pure environments and browser builds
+        pure || browser ? {
+          find: 'stream',
+          replacement: 'readable-stream'
+        } : undefined
+      ]})
+    ] : [])
   });
 
   const configs = [
@@ -55,11 +134,34 @@ const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) =
 
 export default async () => {
   const year = new Date().getFullYear();
+  const typeReference = (browser) => `/// <reference types="./${browser ? 'axios.d.cts' : 'axios.d.ts'}" />`;
   const banner = `// Axios v${lib.version} Copyright (c) ${year} ${lib.author} and contributors`;
 
   return [
-    // browser ESM bundle for CDN
+    // Pure JS ESM bundle for workers, Deno, etc.
     ...buildConfig({
+      es5: false,
+      browser: false,
+      node: false,
+      pure: true,
+      typeHint: true,
+      minifiedVersion: true,
+      input: namedInput,
+      output: {
+        file: `dist/generic/${outputFileName}.mjs`,
+        format: "esm",
+        preferConst: true,
+        exports: "named",
+        banner: `${typeReference()}\n${banner}`
+      }
+    }),
+
+    // Browser ESM bundle for CDN
+    ...buildConfig({
+      browser: true,
+      node: false,
+      pure: false,
+      esm: true,
       input: namedInput,
       output: {
         file: `dist/esm/${outputFileName}.js`,
@@ -72,6 +174,9 @@ export default async () => {
 
     // Browser UMD bundle for CDN
     ...buildConfig({
+      browser: true,
+      node: false,
+      pure: false,
       input: defaultInput,
       es5: true,
       output: {
@@ -85,6 +190,9 @@ export default async () => {
 
     // Browser CJS bundle
     ...buildConfig({
+      browser: true,
+      node: false,
+      pure: false,
       input: defaultInput,
       es5: false,
       minifiedVersion: false,
@@ -110,7 +218,29 @@ export default async () => {
       plugins: [
         autoExternal(),
         resolve(),
-        commonjs()
+        commonjs(),
+        alias({entries: [
+            {
+              find: '#platform',
+              replacement: './node/index.js'  // relative to `lib/platform/`
+            },
+            {
+              find: '#abortController',
+              replacement: '../platform/node/classes/AbortController.js'
+            },
+            {
+              find: '#httpAdapter',
+              replacement: './http.js'
+            },
+            {
+              find: '#formData',
+              replacement: '../platform/node/classes/FormData.js'
+            },
+            {
+              find: '#fetchApi',
+              replacement: `../platform/node/classes/FetchAPI.js`
+            },
+        ]})
       ]
     }
   ]

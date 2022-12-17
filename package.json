@@ -91,7 +91,6 @@
     "get-stream": "^3.0.0",
     "gulp": "^4.0.2",
     "husky": "^8.0.2",
-    "inquirer": "^9.1.4",
     "istanbul-instrumenter-loader": "^3.0.1",
     "jasmine-core": "^2.4.1",
     "karma": "^6.3.17",
@@ -169,7 +168,7 @@
     },
     "hooks": {
       "before:init": "npm test",
-      "after:bump": "gulp version && npm run build",
+      "after:bump": "gulp version && npm run build && npm run test:build:version",
       "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }
   },

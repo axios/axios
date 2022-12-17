@@ -75,11 +75,20 @@ const buildConfig = ({
       })] : []),
       ...(config.plugins || []),
     ].concat(typeHint ? [
+      // copy typings so that they can be referenced from compatible JS targets.
       copy({
         targets: [
-          { src: './index.d.ts', dest: `dist/${browser ? 'browser' : 'generic'}`, rename: 'axios.d.ts' },
-          { src: './index.d.cts', dest: `dist/${browser ? 'browser' : 'generic'}`, rename: 'axios.d.cts' },
-        ]
+          {
+            src: pure ? './index.generic.d.ts' : './index.d.ts',
+            dest: `dist/${browser ? 'browser' : 'generic'}`,
+            rename: `axios.d.ts`
+          },
+          {
+            src: pure ? './index.generic.d.cts' : './index.d.cts',
+            dest: `dist/${browser ? 'browser' : 'generic'}`,
+            rename: 'axios.d.cts'
+          },
+        ].filter(i => i)
       })
     ] : []).concat((esm || pure || browser) ? [
       alias({entries: [

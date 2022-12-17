@@ -9,7 +9,7 @@
 </body>
 <script src="https://axios.elide.dev/axios/1.2.1-fetch/beta1/axios.min.js"></script>
 <script>
-  axios.get("https://httpbin.org/json").then(function (response) {
+  axios.get("https://httpbin.org/json", {adapter: 'fetch'}).then(function (response) {
     console.log("data from response: ", JSON.stringify(response.data));
   });
 </script>

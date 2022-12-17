@@ -9,6 +9,7 @@ describe('instance', function () {
 
   it('should have the same methods as default instance', function () {
     const instance = axios.create();
+    expect(instance).toBeDefined();
 
     for (const prop in axios) {
       if ([
@@ -18,6 +19,7 @@ describe('instance', function () {
         'Cancel',
         'CanceledError',
         'CancelToken',
+        'FetchAdapter',  // @TODO(sgammon): should this be ignored?
         'isCancel',
         'all',
         'spread',

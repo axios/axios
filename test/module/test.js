@@ -26,7 +26,7 @@ const spawn = (command, args) =>  new Promise((resolve, reject) => {
 
 const {Axios} = axiosFactory;
 
-const ignoreList = ['default'];
+const ignoreList = ['default', 'FetchAdapter'];
 
 const instance = axiosFactory.create({});
 

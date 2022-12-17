@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from "axios/dist/generic/axios.mjs";
 
-const moduleMode = true;
+const moduleMode = false;
 const proxyTarget = 'httpbin.org';
 
 // Proxy `request` to `proxyTarget`, but with fetch via Axios.

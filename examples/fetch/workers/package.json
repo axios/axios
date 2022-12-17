@@ -3,6 +3,6 @@
   "main": "axios-worker.js",
   "module": true,
   "dependencies": {
-    "axios": "file:../../../"
+    "axios": "github:sgammon/axios"
   }
 }

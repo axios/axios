@@ -18,7 +18,6 @@ function axiosOpts(overrides = {}) {
   return Object.assign({}, axiosDefaults, overrides);
 }
 
-
 describe('supports fetch with nodejs', function () {
   afterEach(function () {
     if (server) {

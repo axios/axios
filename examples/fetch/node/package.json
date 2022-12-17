@@ -1,5 +1,7 @@
 {
-  "name": "node-fetch-sample",
+  "name": "axios-node-samples",
+  "type": "module",
   "dependencies": {
+    "axios": "github:sgammon/axios"
   }
 }

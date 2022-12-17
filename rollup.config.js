@@ -1,4 +1,5 @@
 import alias from '@rollup/plugin-alias';
+import analyze from 'rollup-plugin-analyzer'
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import {terser} from "rollup-plugin-terser";
@@ -135,7 +136,9 @@ const buildConfig = ({
           find: 'stream',
           replacement: 'readable-stream'
         } : undefined
-      ]})
+      ].filter(i => i)})
+    ] : []).concat((pure || browser) ? [
+      analyze()
     ] : [])
   });
 
@@ -262,7 +265,7 @@ export default async () => {
               find: '#fetchApi',
               replacement: `../platform/node/classes/FetchAPI.js`
             },
-        ]})
+        ]}),
       ]
     }
   ]

@@ -122,7 +122,9 @@
     "release:no-npm": "release-it --no-npm",
     "release:changelog:fix": "node ./bin/injectContributorsList.js && git add CHANGELOG.md",
     "release": "release-it",
-    "sizes": "sleep 1 && du -h dist/*/*.{mjs,cjs,js}"
+    "sizes": "sleep 1 && npm run sizes:gzip && npm run sizes:brotli && du -h dist/*/*.{mjs,cjs,js,gz,br}",
+    "sizes:gzip": "find dist -name \"*.*js\" -exec gzip --best -k {} \\;",
+    "sizes:brotli": "find dist -name \"*.*js\" -exec brotli --best -k {} \\;"
   },
   "repository": {
     "type": "git",
@@ -192,6 +194,7 @@
     "pretty-bytes": "^6.1.1",
     "release-it": "^15.11.0",
     "rollup": "^2.79.1",
+    "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-bundle-size": "^1.0.3",
     "rollup-plugin-copy": "^3.4.0",

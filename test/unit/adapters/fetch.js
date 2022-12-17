@@ -85,15 +85,24 @@ describe('supports fetch with nodejs', function () {
   it('should be able to perform a basic POST', function (done) {
     const data = 'hello';
     let captured = null;
+    let responded = false;
+
+    function complete(error) {
+      if (error) {
+        throw error();
+      }
+      if (!responded) {
+        done();
+      }
+    }
 
     server = http.createServer(function (req, res) {
       let body = '';
       req.on('data', chunk => {
-          body += chunk.toString();
+        body += chunk.toString();
       });
       req.on('end', () => {
-          captured = body;
-          res.end('ok');
+        captured = body;
       });
       res.setHeader('Content-Type', 'text/plain');
       res.end("OK");
@@ -101,8 +110,8 @@ describe('supports fetch with nodejs', function () {
       axios.post('http://localhost:4444/', data, axiosOpts()).then(function (res) {
         assert.equal(res.status, 200);
         assert.equal(captured, data);
-        done();
-      }).catch(done);
+        complete();
+      }).catch(complete);
     });
   });
 });

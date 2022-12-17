@@ -15,9 +15,9 @@ jobs:
 
     strategy:
       matrix:
-        engine: [deno]
-        version: [v1.x]
-        mode: [labs]
+        engine: [deno, node]
+        version: [v1.x, 19.x]
+        mode: [labs, labs]
 
     steps:
       - uses: actions/checkout@v3

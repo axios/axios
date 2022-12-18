@@ -1,7 +1,7 @@
 import _axios from '../../index.js';
 import fetchTestSuite from '../fetch/fetch_abstract.js';
 import _fetchHelpers from '../fetch/fetch_helpers.js';
-import {teardownMockFetch} from "../fetch/deno/helpers.js";
+import {teardownMockFetch} from "../fetch/default_helpers.mjs";
 
 window.axios = _axios;
 

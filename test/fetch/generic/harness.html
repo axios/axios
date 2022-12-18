@@ -1,0 +1,24 @@
+<html>
+<body>
+<script type="module">
+    import { mocha, sessionFinished, sessionFailed } from '@web/test-runner-mocha';
+
+    try {
+        // setup mocha
+        mocha.setup({ ui: 'bdd' });
+
+        // import test file
+        await import('./fetch.generic.spec.js');
+
+        // run the tests, and notify the test runner after finishing
+        mocha.run(() => {
+            sessionFinished();
+        });
+    } catch (error) {
+        console.error(error);
+        // notify the test runner about errors
+        sessionFailed(error);
+    }
+</script>
+</body>
+</html>

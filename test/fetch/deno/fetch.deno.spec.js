@@ -8,7 +8,7 @@ import helpers, {
     getFetch,
     fetchConfigurator,
     withMockFetch,
-} from './helpers.js';
+} from '../default_helpers.mjs';
 
 import {
     assert,

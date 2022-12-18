@@ -2,7 +2,7 @@
 import _fetchHelpers, {
     getFetchAtIndex,
     getFetchAsync,
-} from "../fetch_helpers.js";
+} from "./fetch_helpers.js";
 
 export {
     getFetchAtIndex,

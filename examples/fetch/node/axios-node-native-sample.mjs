@@ -6,7 +6,7 @@
 // for temporary testing, before the feature is merged, you can do:
 // `npm install axios@git+https://github.com/sgammon/axios.git --ignore-scripts`
 
-import axios from "../../../dist/node/axios.cjs";
+import axios from "../../../dist/generic/axios.mjs";
 
 function doTest(cbk, err) {
     console.log('fetching...');

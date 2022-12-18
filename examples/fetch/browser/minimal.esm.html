@@ -8,11 +8,11 @@
 <h2>Check the console!</h2>
 </body>
 <script type="module">
-  import axios from "https://axios.elide.dev/axios/1.2.1-fetch/beta1/esm/axios.min.js";
+  import axios from "https://axios.elide.dev/axios/1.2.1-fetch/beta2/esm/axios.min.js";
   const response = await axios.get("https://httpbin.org/json", {adapter: 'fetch'});
   console.log("data from response: ", JSON.stringify(response.data));
 </script>
-<script nomodule src="https://axios.elide.dev/axios/1.2.1-fetch/beta1/axios.min.js"></script>
+<script nomodule src="https://axios.elide.dev/axios/1.2.1-fetch/beta2/axios.min.js"></script>
 <script nomodule>
   const response = await axios.get("https://httpbin.org/json", {adapter: 'fetch'});
   console.log("data from response: ", JSON.stringify(response.data));

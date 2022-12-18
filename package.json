@@ -43,29 +43,39 @@
   "exports": {
     ".": {
       "types": {
+        "deno": "./index.generic.d.ts",
+        "generic": "./index.generic.d.ts",
+        "modern": "./dist/generic/axios.min.mjs",
         "require": "./index.d.cts",
         "default": "./index.d.ts"
       },
       "deno": {
-        "import": "./dist/generic/axios.mjs",
-        "default": "./index.js"
+        "debug": "./dist/generic/axios.mjs",
+        "default": "./dist/generic/axios.min.mjs"
       },
       "generic": {
-        "import": "./dist/generic/axios.mjs",
-        "default": "./index.js"
+        "debug": "./dist/generic/axios.mjs",
+        "default": "./dist/generic/axios.min.mjs"
       },
       "node": {
+        "modern": "./dist/generic/axios.min.mjs",
         "require": "./dist/node/axios.cjs",
         "default": "./index.js"
       },
       "browser": {
+        "modern": "./dist/generic/axios.min.mjs",
         "require": "./dist/browser/axios.cjs",
         "default": "./index.js"
       },
       "default": {
+        "modern": "./dist/generic/axios.min.mjs",
         "require": "./dist/node/axios.cjs",
         "default": "./index.js"
       }
+    },
+    "./generic": {
+      "debug": "./dist/generic/axios.mjs",
+      "default": "./dist/generic/axios.min.mjs"
     },
     "./lib/platform/node/index.js": {
       "node": "./lib/platform/node/index.js",

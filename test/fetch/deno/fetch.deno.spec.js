@@ -11,6 +11,7 @@ import helpers, {
 } from './helpers.js';
 
 import {
+    assert,
     assertEquals,
     assertExists,
 } from "https://deno.land/std@0.168.0/testing/asserts.ts";
@@ -37,6 +38,10 @@ async function testCase(ctx, test, label, operation) {
     return await test.step(label, operation);
 }
 
+function doAssert(ctx, ...args) {
+    return assert(...args);
+}
+
 function doAssertEquals(ctx, ...args) {
     return assertEquals(...args);
 }
@@ -55,6 +60,7 @@ fetchTest.setupFetchTest(
 )(
     Deno.test,
     testCase,
+    doAssert,
     doAssertEquals,
     doAssertExists,
     (ctx, op) => {

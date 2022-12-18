@@ -2,6 +2,15 @@
 let fetchStubbed = false;
 let fetchQueue = [];
 let cachedGlobalFetch = null;
+const fetchDebugLogging = true;
+
+function createHeaders(fromObject) {
+    const h = new Headers();
+    Object.keys(fromObject).forEach((key) => {
+        h.append(key, fromObject[key]);
+    });
+    return h;
+}
 
 const defaultMockResponseHeaders = {
     'Content-Type': 'test/mock',
@@ -10,26 +19,90 @@ const defaultMockResponseHeaders = {
 const defaultMockResponseInfo = {
     status: 200,
     statusText: 'OK',
-    headers: new Headers(defaultMockResponseHeaders),
-    body: null,
 };
 
 const defaultFetchOptions = {
     mock: defaultMockResponseInfo
 };
 
-function createResponse(config, statusCode, statusMessage, headers, body) {
-    return new Response(body || null, Object.assign({}, defaultMockResponseInfo,{
+function createResponse(config, statusCode, statusMessage, headers, bodyGenerator, contentTypeIfKnown) {
+    const body = (bodyGenerator ? bodyGenerator() : null);
+    if (fetchDebugLogging) {
+        console.log("[axios:fetch.mock] mock has body: ", !!body);
+    }
+
+    const responseInfo = {
         status: statusCode || 200,
         statusText: statusMessage || 'OK',
-        headers: headers || new Headers(defaultMockResponseHeaders),
-    }));
+        headers: Object.assign({}, defaultMockResponseHeaders, {
+            'Content-Type': contentTypeIfKnown || 'test/mock',
+            'Content-Length': body ? body.length : undefined,
+        }, headers || {}),
+    };
+    if (contentTypeIfKnown) {
+        responseInfo.headers['Content-Type'] = contentTypeIfKnown;
+    }
+    if (fetchDebugLogging) {
+        console.log("[axios:fetch.mock] mock response info: ", JSON.stringify(responseInfo));
+    }
+
+    return new Response(body, Object.assign({}, defaultMockResponseInfo, responseInfo));
+}
+
+function fakeJsonResponse() {
+    return JSON.stringify({
+        slideshow: {
+            author: "Yours Truly",
+            date: "date of publication",
+            slides: [
+                {
+                    title: "Wake up to WonderWidgets!",
+                    type: "all"
+                },
+                {
+                    items: [
+                        "Why <em>WonderWidgets</em> are great",
+                        "Who <em>buys</em> WonderWidgets"
+                    ],
+                    title: "Overview",
+                    type: "all"
+                }
+            ],
+            title: "Sample Slide Show"
+        }
+    });
+}
+
+function fakeTextResponse() {
+    return (
+      "<!DOCTYPE html>\n" +
+      "<html>\n" +
+      "  <head>\n" +
+      "  </head>\n" +
+      "  <body>\n" +
+      "      <h1>Herman Melville - Moby-Dick</h1>\n" +
+      "\n" +
+      "      <div>\n" +
+      "        <p>\n" +
+      "          Availing himself of the mild, summer-cool weather that now reigned in these latitudes...\n" +
+      "        </p>\n" +
+      "      </div>\n" +
+      "  </body>\n" +
+      "</html>" +
+      ""
+    );
 }
 
 function mockFetch(fetchTarget) {
     function mockFetch(input, opts) {
+        if (fetchDebugLogging) {
+            console.log("[axios:fetch.mock] mock fetch call: ", input, JSON.stringify(opts || {}));
+        }
         const options = opts || defaultFetchOptions;
         if (!options.mock) {
+            if (fetchDebugLogging) {
+                console.log("[axios:fetch.mock] mocking is not active");
+            }
             return fetchTarget(input, options);
         }
         fetchQueue.push({
@@ -38,14 +111,46 @@ function mockFetch(fetchTarget) {
         })
         return new Promise(function (resolve, reject) {
             if (options.mock && options.mock.error) {
+                if (fetchDebugLogging) {
+                    console.log("[axios:fetch.mock] mock injected error", options.mock.error);
+                }
+
+                // if the mock tells us to fake a rejection, do that, with the provided error.
                 reject(options.mock.error);
             } else {
+                let resolvedUrl;
+                if (typeof input === 'string') {
+                    resolvedUrl = input;
+                } else if (input instanceof URL) {
+                    resolvedUrl = input.toString();
+                } else if (input instanceof Request) {
+                    resolvedUrl = input.url;
+                }
+                let responseGenerator = null;
+                let knownContentType = null;
+                if (resolvedUrl === 'https://httpbin.org/json') {
+                    // fake a JSON response
+                    responseGenerator = fakeJsonResponse;
+                    knownContentType = 'application/json';
+                } else if (resolvedUrl === 'https://httpbin.org/html') {
+                    // fake a text response
+                    responseGenerator = fakeTextResponse;
+                    knownContentType = 'text/html';
+                }
+                if (fetchDebugLogging) {
+                    console.log("[axios:fetch.mock] resolving mock URL: ", resolvedUrl);
+                    console.log("[axios:fetch.mock] resolving with mock content-type: ", knownContentType);
+                }
+
                 resolve(createResponse(
                     options,
                     options.mock ? options.mock.statusCode : 200,
                     options.mock ? options.mock.statusMessage : 'OK',
-                    options.mock ? options.mock.headers : defaultMockResponseHeaders,
-                    options.mock ? options.mock.body : null,
+                    options.mock?.response ? (options.mock.response.headers || null) : null,
+                    options.mock?.response ? (
+                        responseGenerator || (() => options.mock?.response.body)
+                    ) : responseGenerator,
+                    knownContentType,
                 ));
             }
         });

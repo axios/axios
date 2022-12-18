@@ -9,6 +9,7 @@ const setupFetchTest = (
 ) => (
     describe,
     testCase,
+    assert,
     assertEquals,
     assertExists,
     testFactory = null,
@@ -86,6 +87,45 @@ const setupFetchTest = (
                 this,
                 (await getFetch()).input.url,
                 'https://stubbed_domain.local:1/foo'
+            );
+        }));
+
+        await testCase(this, t, "should support fetching JSON", withMockFetch(async function () {
+            const response = await axios(fetchConfigurator({
+                url: new URL('https://httpbin.org/json'),
+                responseType: 'json'
+            }));
+
+            assertExists(response, "should not get `null` response from axios fetch");
+
+            assertEquals(
+                this,
+                response.status,
+                200,
+            )
+            assertEquals(
+                this,
+                response.data.slideshow.title,
+                "Sample Slide Show",
+            );
+        }));
+
+        await testCase(this, t, "should support fetching text", withMockFetch(async function () {
+            const response = await axios(fetchConfigurator({
+                url: new URL('https://httpbin.org/html'),
+                responseType: 'text'
+            }));
+
+            assertExists(response, "should not get `null` response from axios fetch");
+
+            assertEquals(
+                this,
+                response.status,
+                200,
+            )
+            assert(
+                this,
+                response.data.includes("Herman Melville"),
             );
         }));
     }));

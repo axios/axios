@@ -33,6 +33,10 @@ function runFetchTestsuite() {
         })
     }
 
+    function doAssert(ctx, condition, message) {
+        expect.bind(ctx)(condition).toBeTruthy(message);
+    }
+
     function expectEqual(ctx, actual, expected, message) {
         expect.bind(ctx)(actual).toEqual(expected, message);
     }
@@ -80,6 +84,7 @@ function runFetchTestsuite() {
     )(
         describer,
         testCase,
+        doAssert,
         expectEqual,
         expectDefined,
         testFactory,

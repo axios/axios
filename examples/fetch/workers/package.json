@@ -1,8 +1,12 @@
 {
   "name": "axios-worker-sample",
-  "main": "axios-worker.js",
-  "module": true,
+  "type": "module",
+  "main": "axios-worker.mjs",
+  "module": "axios-worker.mjs",
   "dependencies": {
-    "axios": "github:sgammon/axios"
+    "axios": "file:../../../"
+  },
+  "devDependencies": {
+    "wrangler": "^2.6.2"
   }
 }

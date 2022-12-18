@@ -1,5 +1,5 @@
-type = "webpack"
 name = "axios-worker"
 workers_dev = true
-webpack_config = "webpack.config.js"
 compatibility_date = "2022-12-17"
+main = "axios-worker.mjs"
+

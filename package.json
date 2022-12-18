@@ -256,6 +256,20 @@
     {
       "path": "./dist/axios.min.js",
       "threshold": "5kB"
+    },
+    {
+      "path": "./dist/generic/axios.mjs",
+      "threshold": "28kB"
+    },
+    {
+      "path": "./dist/generic/axios.mjs",
+      "threshold": "28kB",
+      "compression": "brotli"
+    },
+    {
+      "path": "./dist/generic/axios.min.mjs",
+      "threshold": "12kB",
+      "compression": "brotli"
     }
   ],
   "contributors": [

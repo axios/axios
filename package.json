@@ -255,16 +255,28 @@
   "bundlesize": [
     {
       "path": "./dist/axios.min.js",
-      "threshold": "5kB"
+      "threshold": "5kB",
+      "compression": "gzip"
     },
     {
-      "path": "./dist/generic/axios.mjs",
-      "threshold": "28kB"
-    },
-    {
-      "path": "./dist/generic/axios.mjs",
-      "threshold": "28kB",
+      "path": "./dist/axios.min.js",
+      "threshold": "5kB",
       "compression": "brotli"
+    },
+    {
+      "path": "./dist/generic/axios.mjs",
+      "threshold": "24kB",
+      "compression": "gzip"
+    },
+    {
+      "path": "./dist/generic/axios.mjs",
+      "threshold": "24kB",
+      "compression": "brotli"
+    },
+    {
+      "path": "./dist/generic/axios.min.mjs",
+      "threshold": "12kB",
+      "compression": "gzip"
     },
     {
       "path": "./dist/generic/axios.min.mjs",

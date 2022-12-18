@@ -135,6 +135,8 @@
 ## Features
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
+- Make [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) requests from the browser, node.js, or pure-JS
+  runtimes like Workers, Deno, Bun, etc.
 - Make [http](https://nodejs.org/api/http.html) requests from node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
 - Intercept request and response
@@ -222,6 +224,23 @@ Using unpkg CDN:
 
 ```html
 <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+```
+
+### Pure JS environments
+
+Using Axios in **Deno**:
+```js
+import axios from "https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/generic/axios.min.mjs";
+```
+
+Using in CloudFlare Workers, Bun, and other environments which support the Fetch API:
+```js
+{npm|pnpm|yarn} install axios
+```
+
+Then:
+```js
+import axios from "axios/generic";
 ```
 
 ## Example
@@ -345,6 +364,9 @@ axios({
 ```js
 // Send a GET request (default method)
 axios('/user/12345');
+
+// You can also use a `URL` object
+axios(new URL('https://example.com/user/12345'));
 ```
 
 ### Request method aliases

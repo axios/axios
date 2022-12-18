@@ -84,11 +84,11 @@ const buildConfig = ({
             dest: `dist/${browser ? 'browser' : 'generic'}`,
             rename: `axios.d.ts`
           },
-          {
-            src: pure ? './index.generic.d.cts' : './index.d.cts',
-            dest: `dist/${browser ? 'browser' : 'generic'}`,
+          browser ? {
+            src: './index.d.cts',
+            dest: 'dist/browser',
             rename: 'axios.d.cts'
-          },
+          } : undefined,
         ].filter(i => i)
       })
     ] : []).concat((esm || pure || browser) ? [

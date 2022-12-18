@@ -2,7 +2,7 @@ import alias from '@rollup/plugin-alias';
 import analyze from 'rollup-plugin-analyzer'
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import {terser} from "rollup-plugin-terser";
+import terser from "@rollup/plugin-terser";
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
 import autoExternal from 'rollup-plugin-auto-external';
@@ -53,8 +53,19 @@ const buildConfig = ({
     ...config,
     output: {
       ...config.output,
-      file: `${path.dirname(file)}/${basename}.${(minified ? ['min', ...extArr] : extArr).join('.')}`
+      file: `${path.dirname(file)}/${basename}.${(minified ? ['min', ...extArr] : extArr).join('.')}`,
+      interop: browser ? 'default' : 'esModule',
+      generatedCode: pure ? 'es2015' : 'es5',
+      externalLiveBindings: pure ? false : undefined,
     },
+    treeshake: pure ? {
+      preset: 'smallest',
+      annotations: true,
+      moduleSideEffects: false,
+      propertyReadSideEffects: false,
+      tryCatchDeoptimization: false,
+      unknownGlobalSideEffects: false
+    } : true,
     plugins: [
       json(),
       resolve(Object.assign({}, {
@@ -68,14 +79,29 @@ const buildConfig = ({
       commonjs(Object.assign({}, pure ? {
         transformMixedEsModules: true
       }: {})),
-      minified && terser(),
+      minified && terser(pure ? {
+        ecma: 2021,
+        sourceMap: true,
+        compress: {
+          dead_code: true,
+          drop_console: true,
+          drop_debugger: true,
+          ecma: 2021,
+          passes: 3,
+          pure_getters: 'strict'
+        },
+        format: {
+          ecma: 2021,
+          comments: /@license|@preserve|@copyright|Copyright|<reference/,
+        }
+      } : undefined),
       minified && bundleSize(),
       ...(es5 ? [babel({
         babelHelpers: 'bundled',
         presets: ['@babel/preset-env']
       })] : []),
       ...(config.plugins || []),
-    ].concat(typeHint ? [
+    ].filter(i => i).concat(typeHint ? [
       // copy typings so that they can be referenced from compatible JS targets.
       copy({
         targets: [
@@ -137,8 +163,11 @@ const buildConfig = ({
           replacement: 'readable-stream'
         } : undefined
       ].filter(i => i)})
-    ] : []).concat((pure || browser) ? [
-      analyze()
+    ] : []).concat((pure && minified) ? [
+      analyze({
+        limit: 10,
+        showExports: true
+      })
     ] : [])
   });
 
@@ -173,7 +202,8 @@ export default async () => {
         format: "esm",
         preferConst: true,
         exports: "named",
-        banner: `${typeReference()}\n${banner}`
+        banner: `${typeReference()}`,
+        footer: banner
       }
     }),
 

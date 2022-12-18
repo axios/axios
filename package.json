@@ -77,6 +77,13 @@
       "debug": "./dist/generic/axios.mjs",
       "default": "./dist/generic/axios.min.mjs"
     },
+    "./generic/axios.mjs": {
+      "default": "./dist/generic/axios.mjs"
+    },
+    "./generic/axios.min.mjs": {
+      "debug": "./dist/generic/axios.mjs",
+      "default": "./dist/generic/axios.min.mjs"
+    },
     "./lib/platform/node/index.js": {
       "node": "./lib/platform/node/index.js",
       "deno": "./lib/platform/generic/index.js",

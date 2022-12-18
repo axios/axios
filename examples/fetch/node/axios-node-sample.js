@@ -10,9 +10,8 @@ import axios from "../../../dist/node/axios.cjs";
 
 function doTest(cbk, err) {
     console.log('fetching...');
-    axios.get("https://httpbin.org/json", {
-        adapter: 'fetch'
-    }).then(cbk, err);
+    axios.get("https://httpbin.org/json", {adapter: 'fetch'})
+        .then(cbk, err);
 }
 
 doTest(function (response) {

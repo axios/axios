@@ -11,27 +11,37 @@ export {
 
 
 export async function getFetch() {
-    return await _fetchHelpers.getFetchAsync(fetch, globalThis);
+    return await _fetchHelpers.getFetchAsync(fetch, globalThis || window);
 }
 
 export function setupMockFetch() {
-    _fetchHelpers.setupMockFetch(fetch, globalThis);
+    _fetchHelpers.setupMockFetch(fetch, globalThis || window);
 }
 
 export function teardownMockFetch() {
-    _fetchHelpers.teardownMockFetch(fetch, globalThis);
+    _fetchHelpers.teardownMockFetch(fetch, globalThis || window);
 }
 
 export function fetchConfigurator(config_or_mock, config, forceFetch) {
-    return _fetchHelpers.fetchConfigurator(fetch, config_or_mock, config, forceFetch);
+    return _fetchHelpers.fetchConfigurator(
+        fetch,
+        config_or_mock,
+        config,
+        forceFetch,
+    );
 }
 
 export function withMockFetch(ctxOrCb, cb) {
     const cbk = cb || ctxOrCb;
     const ctx = cb ? ctxOrCb : this;
     return (t) => {
-        return _fetchHelpers.withMockFetch(fetch, globalThis, ctx, cbk, /* skipResolve= */ true)(t)
-            .then(teardownMockFetch);
+        return _fetchHelpers.withMockFetch(
+            fetch,
+            globalThis || window,
+            ctx,
+            cbk,
+            /* skipResolve= */ true
+        )(t).then(teardownMockFetch);
     }
 }
 

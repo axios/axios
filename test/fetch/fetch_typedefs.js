@@ -270,6 +270,25 @@ let TestHookAfterEach;
 let AxiosTestInstance;
 
 /**
+ * Specifies the interface expected for test module entrypoint functions; these are expected to be named `runTest`.
+ *
+ * @typedef {function({
+ *   platformName: !string,
+ *   axios: !AxiosTestInstance,
+ *   axiosModule: !AxiosModule,
+ *   withMockFetch: !MockFetchFn,
+ *   fetchConfigurator: !FetchConfiguratorFn,
+ *   getFetch: !FetchGetter,
+ *   describe: !TestSuiteDescriber,
+ *   it: !TestCaseDescriber,
+ *   assert: ?TestAsserter,
+ *   assertEquals: ?TestEqualsAsserter,
+ *   assertExists: ?TestExistsAsserter,
+ * }): Promise<void>}
+ */
+let AxiosTestModule;
+
+/**
  * Type definition for the entire Axios module under test; this should behave like the `axios` package itself, with the
  * same expected exports.
  *

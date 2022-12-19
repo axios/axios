@@ -186,6 +186,9 @@ export function getFetch() {
 }
 
 export function setupMockFetch(fetchPolyfill, target) {
+    if (fetchStubbed) {
+        throw new Error('Cannot install fetch mock: already active.');
+    }
     fetchStubbed = true;
     fetchQueue = [];
     cachedGlobalFetch = target.fetch || fetchPolyfill;
@@ -193,6 +196,9 @@ export function setupMockFetch(fetchPolyfill, target) {
 };
 
 export function teardownMockFetch(fetchPolyfill, target) {
+    if (!fetchStubbed) {
+        throw new Error('Cannot teardown fetch mock: not active.');
+    }
     fetchStubbed = false;
     fetchQueue = [];
     target.fetch = cachedGlobalFetch;

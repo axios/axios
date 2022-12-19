@@ -49,6 +49,9 @@
       "browser": "./test/fetch/browser/fetch.browser.spec.js",
       "deno": "./test/fetch/deno/fetch.deno.spec.js",
       "default": "./test/fetch/generic/fetch.generic.spec.js"
+    },
+    "#testing": {
+      "default": "./test/abstract.esm.mjs"
     }
   },
   "exports": {
@@ -129,7 +132,7 @@
     "test:karma": "npm run test:browser",
     "test:karma:firefox": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: Browsers=Firefox karma start karma.conf.cjs --single-run",
     "test:browser": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
-    "test:browser:modern": "node bin/ssl_hotfix.js wtr test/fetch/generic/harness.html --playwright --browsers chromium firefox webkit",
+    "test:browser:modern": "node bin/ssl_hotfix.js wtr test/fetch/generic/harness.html test/**/*.spec.mjs --playwright --browsers chromium firefox webkit",
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
@@ -222,7 +225,8 @@
     "memoizee": "^0.4.15",
     "minimist": "^1.2.8",
     "mocha": "^10.3.0",
-    "multer": "^1.4.4",
+    "mock-xmlhttprequest": "^8.1.0",
+    "multer": "1.4.5-lts.1",
     "pretty-bytes": "^6.1.1",
     "release-it": "^15.11.0",
     "rollup": "^2.79.1",

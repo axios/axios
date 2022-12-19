@@ -44,24 +44,28 @@ async function testCase(ctx, test, label, operation) {
 }
 
 function doAssert(ctx, condition, message) {
-    // return expect(condition, message).to.be.true;
+    return expect(condition, message).to.be.true;
 }
 
 function doAssertEquals(ctx, actual, expected, message) {
-    // return expect(actual, message).to.equal(expected);
+    return expect(actual, message).to.equal(expected);
 }
 
 function doAssertExists(ctx, actual, message) {
-    // return expect(actual, message).to.exist;
+    return expect(actual, message).to.exist;
 }
 
-fetchTest.setupFetchTest(
-    "deno",
+await fetchTest.setupFetchTest(
+    "generic",
     axios,
     _axios,
     withMockFetch,
     fetchConfigurator,
     getFetch,
+    [
+        './abstract/fetch.basic.spec.mjs',
+        './abstract/fetch.basicAuth.spec.mjs'
+    ],
 )(
     describe,
     testCase,

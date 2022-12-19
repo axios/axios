@@ -45,7 +45,7 @@
       "types": {
         "deno": "./index.generic.d.ts",
         "generic": "./index.generic.d.ts",
-        "modern": "./dist/generic/axios.min.mjs",
+        "modern": "./index.generic.d.ts",
         "require": "./index.d.cts",
         "default": "./index.d.ts"
       },

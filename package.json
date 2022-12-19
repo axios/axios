@@ -256,12 +256,12 @@
   "bundlesize": [
     {
       "path": "./dist/axios.min.js",
-      "threshold": "5kB",
+      "threshold": "16kB",
       "compression": "gzip"
     },
     {
       "path": "./dist/axios.min.js",
-      "threshold": "5kB",
+      "threshold": "15kB",
       "compression": "brotli"
     },
     {
@@ -276,12 +276,12 @@
     },
     {
       "path": "./dist/generic/axios.min.mjs",
-      "threshold": "12kB",
+      "threshold": "10kB",
       "compression": "gzip"
     },
     {
       "path": "./dist/generic/axios.min.mjs",
-      "threshold": "12kB",
+      "threshold": "10kB",
       "compression": "brotli"
     }
   ],

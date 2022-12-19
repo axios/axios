@@ -63,8 +63,7 @@ await fetchTest.setupFetchTest(
     fetchConfigurator,
     getFetch,
     [
-        './abstract/fetch.basic.spec.mjs',
-        './abstract/fetch.basicAuth.spec.mjs'
+        './abstract/fetch.basic.spec.mjs'
     ],
 )(
     describe,

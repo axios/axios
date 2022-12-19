@@ -125,8 +125,6 @@ export interface AxiosAdapter {
   (config: InternalAxiosRequestConfig): AxiosPromise;
 }
 
-export const AxiosFetchAdapter : AxiosAdapter;
-
 export interface AxiosBasicCredentials {
   username: string;
   password: string;
@@ -575,7 +573,7 @@ export interface AxiosStatic extends AxiosInstance {
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
-  FetchAdapter: typeof AxiosFetchAdapter;
+  FetchAdapter: AxiosAdapter;
 }
 
 declare const axios: AxiosStatic;

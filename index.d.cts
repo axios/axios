@@ -254,8 +254,6 @@ declare namespace axios {
     (config: InternalAxiosRequestConfig): AxiosPromise;
   }
 
-  export const AxiosFetchAdapter : AxiosAdapter;
-
   interface AxiosBasicCredentials {
     username: string;
     password: string;
@@ -388,7 +386,7 @@ declare namespace axios {
 
   type LookupAddress = string | LookupAddressEntry;
 
-  export interface Fetcher {
+  interface Fetcher {
     (input: FetchInput, init?: FetchOptions): Promise<Response>;
   }
 
@@ -559,7 +557,7 @@ declare namespace axios {
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
     getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
-    FetchAdapter: typeof AxiosFetchAdapter;
+    FetchAdapter: AxiosAdapter;
   }
 }
 

@@ -2,7 +2,7 @@
 let fetchStubbed = false;
 let fetchQueue = [];
 let cachedGlobalFetch = null;
-const fetchDebugLogging = true;
+const fetchDebugLogging = false;
 
 function createHeaders(fromObject) {
     const h = new Headers();

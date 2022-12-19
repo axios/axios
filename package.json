@@ -103,7 +103,7 @@
     "karma-sauce-launcher": "^4.3.6",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.8",
-    "minimist": "^1.2.6",
+    "minimist": "^1.2.7",
     "mocha": "^10.0.0",
     "multer": "^1.4.4",
     "release-it": "^15.5.1",
@@ -153,6 +153,9 @@
   ],
   "sideEffects": false,
   "release-it": {
+    "git": {
+      "commitMessage": "chore(release): v${version}"
+    },
     "github": {
       "release": true
     },
@@ -168,7 +171,7 @@
     },
     "hooks": {
       "before:init": "npm test",
-      "after:bump": "gulp version && npm run build && npm run test:build:version && git add ./dist",
+      "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./dist",
       "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }
   },

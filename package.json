@@ -41,7 +41,7 @@
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "eslint --fix lib/**/*.js",
     "prepare": "husky install && npm run prepare:hooks",
-    "prepare:hooks": "npx husky add .husky/commit-msg \"npx commitlint --edit $1\"",
+    "prepare:hooks": "npx husky set .husky/commit-msg \"npx commitlint --edit $1\"",
     "release:dry": "release-it --dry-run --no-npm",
     "release:info": "release-it --release-version",
     "release:beta:no-npm": "release-it --preRelease=beta --no-npm",

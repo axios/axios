@@ -12,7 +12,7 @@ interface CommonHeaders  {
   common: AxiosHeaders;
 }
 
-type FetchOptions = object;
+type FetchOptions = Omit<Omit<Omit<RequestInit, "body">, "headers">, "window">;
 
 type FetchURL = URL;
 
@@ -254,6 +254,8 @@ declare namespace axios {
     (config: InternalAxiosRequestConfig): AxiosPromise;
   }
 
+  export const AxiosFetchAdapter : AxiosAdapter;
+
   interface AxiosBasicCredentials {
     username: string;
     password: string;
@@ -386,7 +388,9 @@ declare namespace axios {
 
   type LookupAddress = string | LookupAddressEntry;
 
-  type Fetcher = (input: FetchInput, init?: FetchOptions) => Promise<Response>;
+  export interface Fetcher {
+    (input: FetchInput, init?: FetchOptions): Promise<Response>;
+  }
 
   interface AxiosRequestConfig<D = any> {
     url?: string | FetchURL;
@@ -555,6 +559,7 @@ declare namespace axios {
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
     getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
+    FetchAdapter: typeof AxiosFetchAdapter;
   }
 }
 

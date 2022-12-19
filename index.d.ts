@@ -5,7 +5,7 @@ interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;
 }
 
-type FetchOptions = object;
+type FetchOptions = Omit<Omit<Omit<RequestInit, "body">, "headers">, "window">;
 
 type FetchURL = URL;
 
@@ -124,6 +124,8 @@ export interface AxiosResponseTransformer {
 export interface AxiosAdapter {
   (config: InternalAxiosRequestConfig): AxiosPromise;
 }
+
+export const AxiosFetchAdapter : AxiosAdapter;
 
 export interface AxiosBasicCredentials {
   username: string;
@@ -323,7 +325,9 @@ export interface LookupAddressEntry {
 
 export type LookupAddress = string | LookupAddressEntry;
 
-type Fetcher = (input: FetchInput, init?: FetchOptions) => Promise<Response>;
+export interface Fetcher {
+  (input: FetchInput, init?: FetchOptions): Promise<Response>;
+}
 
 export interface AxiosRequestConfig<D = any> {
   url?: string | FetchURL;
@@ -571,6 +575,7 @@ export interface AxiosStatic extends AxiosInstance {
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
+  FetchAdapter: typeof AxiosFetchAdapter;
 }
 
 declare const axios: AxiosStatic;

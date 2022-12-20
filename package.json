@@ -160,7 +160,7 @@
       "release": true
     },
     "npm": {
-      "publish": true,
+      "publish": false,
       "ignoreVersion": false
     },
     "plugins": {

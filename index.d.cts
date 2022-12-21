@@ -519,6 +519,7 @@ declare namespace axios {
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+    mergeConfig<D = any>(config1: AxiosRequestConfig<any>, config2?: AxiosRequestConfig<D>): AxiosRequestConfig<D>;
     AxiosHeaders: typeof AxiosHeaders;
   }
 }

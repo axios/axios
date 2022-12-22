@@ -1,8 +1,11 @@
 import gulp from 'gulp';
 import fs from 'fs-extra';
 import axios from './index.js';
+import minimist from 'minimist'
 
-gulp.task('default', async function(){
+const argv = minimist(process.argv.slice(2));
+
+  gulp.task('default', async function(){
   console.log('hello!');
 });
 
@@ -70,8 +73,10 @@ const packageJSON = gulp.task('package', async function () {
 const env = gulp.task('env', async function () {
   var npm = JSON.parse(await fs.readFile('package.json'));
 
-  await fs.writeFile('./lib/env/data.js', Object.entries({
-    VERSION: npm.version
+  const envFilePath = './lib/env/data.js';
+
+  await fs.writeFile(envFilePath, Object.entries({
+    VERSION: (argv.bump || npm.version).replace(/^v/, '')
   }).map(([key, value]) => {
     return `export const ${key} = ${JSON.stringify(value)};`
   }).join('\n'));

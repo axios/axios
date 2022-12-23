@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.2](https://github.com/axios/axios/compare/v1.2.1...v1.2.2) (2022-12-23)
+
+
+### Bug Fixes
+
+* Add missing HttpStatusCode ([#5345](https://github.com/axios/axios/issues/5345)) ([56e9ca1](https://github.com/axios/axios/commit/56e9ca1a865099f75eb0e897e944883a36bddf48))
+* fixed Brotli decompression; ([#5353](https://github.com/axios/axios/issues/5353)) ([1e58a65](https://github.com/axios/axios/commit/1e58a659ec9b0653f4693508d748caa5a41bb1a2))
+
+### Contributors 🤵
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS) (2963++ / 45--)
+- ![avatar](https://avatars.githubusercontent.com/u/1652293?v&#x3D;4&amp;s&#x3D;16) [Winnie](https://github.com/winniehell) (78++ / 1--)
+
 ## [1.2.1] - 2022-12-05
 
 ### Changed

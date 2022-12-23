@@ -1,4 +1,4 @@
-// Axios v1.2.1 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.2.2 Copyright (c) 2022 Matt Zabriskie and contributors
 'use strict';
 
 function bind(fn, thisArg) {
@@ -282,7 +282,11 @@ function findKey(obj, key) {
   return null;
 }
 
-const _global = typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self;
+const _global = (() => {
+  /*eslint no-undef:0*/
+  if (typeof globalThis !== "undefined") return globalThis;
+  return typeof self !== "undefined" ? self : (typeof window !== 'undefined' ? window : global)
+})();
 
 const isContextDefined = (context) => !isUndefined(context) && context !== _global;
 
@@ -1231,6 +1235,7 @@ const isStandardBrowserEnv = (() => {
  const isStandardBrowserWebWorkerEnv = (() => {
   return (
     typeof WorkerGlobalScope !== 'undefined' &&
+    // eslint-disable-next-line no-undef
     self instanceof WorkerGlobalScope &&
     typeof self.importScripts === 'function'
   );
@@ -2577,7 +2582,7 @@ function mergeConfig(config1, config2) {
   return config;
 }
 
-const VERSION = "1.2.1";
+const VERSION = "1.2.2";
 
 const validators$1 = {};
 
@@ -3009,6 +3014,78 @@ function isAxiosError(payload) {
   return utils.isObject(payload) && (payload.isAxiosError === true);
 }
 
+const HttpStatusCode = {
+  Continue: 100,
+  SwitchingProtocols: 101,
+  Processing: 102,
+  EarlyHints: 103,
+  Ok: 200,
+  Created: 201,
+  Accepted: 202,
+  NonAuthoritativeInformation: 203,
+  NoContent: 204,
+  ResetContent: 205,
+  PartialContent: 206,
+  MultiStatus: 207,
+  AlreadyReported: 208,
+  ImUsed: 226,
+  MultipleChoices: 300,
+  MovedPermanently: 301,
+  Found: 302,
+  SeeOther: 303,
+  NotModified: 304,
+  UseProxy: 305,
+  Unused: 306,
+  TemporaryRedirect: 307,
+  PermanentRedirect: 308,
+  BadRequest: 400,
+  Unauthorized: 401,
+  PaymentRequired: 402,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  NotAcceptable: 406,
+  ProxyAuthenticationRequired: 407,
+  RequestTimeout: 408,
+  Conflict: 409,
+  Gone: 410,
+  LengthRequired: 411,
+  PreconditionFailed: 412,
+  PayloadTooLarge: 413,
+  UriTooLong: 414,
+  UnsupportedMediaType: 415,
+  RangeNotSatisfiable: 416,
+  ExpectationFailed: 417,
+  ImATeapot: 418,
+  MisdirectedRequest: 421,
+  UnprocessableEntity: 422,
+  Locked: 423,
+  FailedDependency: 424,
+  TooEarly: 425,
+  UpgradeRequired: 426,
+  PreconditionRequired: 428,
+  TooManyRequests: 429,
+  RequestHeaderFieldsTooLarge: 431,
+  UnavailableForLegalReasons: 451,
+  InternalServerError: 500,
+  NotImplemented: 501,
+  BadGateway: 502,
+  ServiceUnavailable: 503,
+  GatewayTimeout: 504,
+  HttpVersionNotSupported: 505,
+  VariantAlsoNegotiates: 506,
+  InsufficientStorage: 507,
+  LoopDetected: 508,
+  NotExtended: 510,
+  NetworkAuthenticationRequired: 511,
+};
+
+Object.entries(HttpStatusCode).forEach(([key, value]) => {
+  HttpStatusCode[value] = key;
+});
+
+var HttpStatusCode$1 = HttpStatusCode;
+
 /**
  * Create an instance of Axios
  *
@@ -3069,6 +3146,8 @@ axios.mergeConfig = mergeConfig;
 axios.AxiosHeaders = AxiosHeaders$1;
 
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
+
+axios.HttpStatusCode = HttpStatusCode$1;
 
 axios.default = axios;
 

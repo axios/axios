@@ -19,7 +19,9 @@ const getUserInfo = ((userCache) => async (email) => {
     return userCache[email];
   }
   try {
-    const {data: {items: [user]}} = await axios.get(`https://api.github.com/search/users?q=${email}`);
+    const tag = email.replace(/@users\.noreply\.github\.com/, '');
+
+    const {data: {items: [user]}} = await axios.get(`https://api.github.com/search/users?q=${tag}`);
 
     return (userCache[email] = user ? {
       ...user,
@@ -52,13 +54,14 @@ const getReleaseInfo = async (version, useGithub) => {
 
     for(const {author, email, insertions, deletions} of commits) {
       const user = Object.assign({
-        name: author,
         email
       }, useGithub ? await getUserInfo(email) : null);
 
-      const entry = authors[author] = (authors[author] || {
+      const entry = authors[email] = (authors[email] || {
         insertions: 0, deletions: 0, ...user
       });
+
+      entry.displayName = entry.name || author || entry.login;
 
       entry.github = entry.login ? `https://github.com/${encodeURIComponent(entry.login)}` : '';
 

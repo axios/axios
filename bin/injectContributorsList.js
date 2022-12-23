@@ -12,7 +12,7 @@ const injectContributors = async (infile, injector) => {
   infile = path.resolve(__dirname, infile);
 
   const content = String(await fs.readFile(infile));
-  const headerRE = /^##\s+\[([-_\d.\w]+)]\s+-.+/mig;
+  const headerRE = /^#+\s+\[([-_\d.\w]+)].+?$/mig;
   const contributorsRE = /^\s*### Contributors/mi;
 
   let tag;

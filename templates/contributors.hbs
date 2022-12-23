@@ -4,9 +4,9 @@
 
   {{#each authors}}
     {{#if github}}
-      - {{#if avatar_url}}![avatar]({{avatar_url_sm}}){{/if}} [{{name}}]({{github}}) ({{insertions}}++ / {{deletions}}--)
+      - {{#if avatar_url}}![avatar]({{avatar_url_sm}}){{/if}} [{{displayName}}]({{github}}) ({{insertions}}++ / {{deletions}}--)
     {{else}}
-      - {{name}} ({{insertions}}++ / {{deletions}}--)
+      - {{displayName}} ({{insertions}}++ / {{deletions}}--)
     {{/if}}
   {{/each}}
 

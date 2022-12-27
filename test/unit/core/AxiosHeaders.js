@@ -387,6 +387,16 @@ describe('AxiosHeaders', function () {
     });
   });
 
+  describe('AxiosHeaders.clear', function () {
+    it('should clear AxiosHeader instance to a clear header instance', function () {
+      const header = new AxiosHeaders({x:1, y:2});
+      const emptyHeader = new AxiosHeaders();
+      assert.deepStrictEqual(header.clear(), true);
+      assert.deepStrictEqual(header.normalize(), emptyHeader.normalize());
+      assert.deepStrictEqual(header.toJSON(), emptyHeader.toJSON());
+    });
+  });
+
   describe('toString', function () {
     it('should serialize AxiosHeader instance to a raw headers string', function () {
       assert.deepStrictEqual(new AxiosHeaders({x:1, y:2}).toString(), 'x: 1\ny: 2');

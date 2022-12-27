@@ -33,7 +33,16 @@ describe('AxiosHeaders', function () {
 
       assert.strictEqual(headers.get('foo'), 'value1');
       assert.strictEqual(headers.get('bar'), 'value2');
-    })
+    });
+
+    it('should support adding multiple headers from raw headers string', function(){
+      const headers = new AxiosHeaders();
+
+      headers.set(`foo:value1\nbar:value2`);
+
+      assert.strictEqual(headers.get('foo'), 'value1');
+      assert.strictEqual(headers.get('bar'), 'value2');
+    });
 
     it('should not rewrite header the header if the value is false', function(){
       const headers = new AxiosHeaders();
@@ -326,6 +335,61 @@ describe('AxiosHeaders', function () {
         foo: '2',
         bar: '3'
       });
+    });
+
+    it('should support array values', function () {
+      const headers = new AxiosHeaders({
+        foo: [1,2,3]
+      });
+
+      assert.deepStrictEqual({...headers.normalize().toJSON()}, {
+        foo: ['1','2','3']
+      });
+    });
+  });
+
+  describe('AxiosHeaders.concat', function () {
+    it('should concatenate plain headers into an AxiosHeader instance', function () {
+      const a = {a: 1};
+      const b = {b: 2};
+      const c = {c: 3};
+      const headers = AxiosHeaders.concat(a, b, c);
+
+      assert.deepStrictEqual({...headers.toJSON()}, {
+        a: '1',
+        b: '2',
+        c: '3'
+      });
+    });
+
+    it('should concatenate raw headers into an AxiosHeader instance', function () {
+      const a = 'a:1\nb:2';
+      const b = 'c:3\nx:4';
+      const headers = AxiosHeaders.concat(a, b);
+
+      assert.deepStrictEqual({...headers.toJSON()}, {
+        a: '1',
+        b: '2',
+        c: '3',
+        x: '4'
+      });
+    });
+
+    it('should concatenate Axios headers into a new AxiosHeader instance', function () {
+      const a = new AxiosHeaders({x: 1});
+      const b = new AxiosHeaders({y: 2});
+      const headers = AxiosHeaders.concat(a, b);
+
+      assert.deepStrictEqual({...headers.toJSON()}, {
+        x: '1',
+        y: '2'
+      });
+    });
+  });
+
+  describe('toString', function () {
+    it('should serialize AxiosHeader instance to a raw headers string', function () {
+      assert.deepStrictEqual(new AxiosHeaders({x:1, y:2}).toString(), 'x: 1\ny: 2');
     });
   });
 });

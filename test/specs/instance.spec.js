@@ -23,10 +23,13 @@ describe('instance', function () {
         'spread',
         'getUri',
         'isAxiosError',
+        'mergeConfig',
         'VERSION',
         'default',
         'toFormData',
-        'formToJSON'
+        'formToJSON',
+        'AxiosHeaders',
+        'HttpStatusCode'
       ].indexOf(prop) > -1) {
         continue;
       }

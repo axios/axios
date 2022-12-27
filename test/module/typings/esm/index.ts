@@ -1,13 +1,24 @@
 import axios, {
   AxiosRequestConfig,
+  AxiosHeaders,
+  AxiosRequestHeaders,
+  AxiosResponseHeaders,
+  RawAxiosRequestHeaders,
   AxiosResponse,
   AxiosError,
   AxiosInstance,
   AxiosAdapter,
   Cancel,
-  CancelToken,
   CancelTokenSource,
-  Canceler, AxiosProgressEvent
+  Canceler,
+  AxiosProgressEvent,
+  ParamsSerializerOptions,
+  toFormData,
+  formToJSON,
+  all,
+  isCancel,
+  isAxiosError,
+  spread
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -22,7 +33,8 @@ const config: AxiosRequestConfig = {
   params: { id: 12345 },
   paramsSerializer: {
     indexes: true,
-    encode: (value) => value
+    encode: (value: any) => value,
+    serialize: (value: Record<string, any>, options?: ParamsSerializerOptions) => String(value)
   },
   data: { foo: 'bar' },
   timeout: 10000,
@@ -257,12 +269,12 @@ instance1.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
 axios.defaults.headers['X-FOO'];
 
 axios.defaults.baseURL = 'https://api.example.com/';
-axios.defaults.headers.common['Authorization'] = 'token';
+axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.post['X-FOO'] = 'bar';
 axios.defaults.timeout = 2500;
 
 instance1.defaults.baseURL = 'https://api.example.com/';
-instance1.defaults.headers.common['Authorization'] = 'token';
+instance1.defaults.headers.common['Accept'] = 'application/json';
 instance1.defaults.headers.post['X-FOO'] = 'bar';
 instance1.defaults.timeout = 2500;
 
@@ -270,12 +282,29 @@ instance1.defaults.timeout = 2500;
 
 axios.create({ headers: { foo: 'bar' } });
 axios.create({ headers: { common: { foo: 'bar' } } });
+axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  formSerializer: {
+    indexes: null,
+  },
+  paramsSerializer: {
+    indexes: null,
+  },
+});
 
 // Interceptors
 
 const requestInterceptorId: number = axios.interceptors.request.use(
-  (config: AxiosRequestConfig) => config,
-  (error: any) => Promise.reject(error)
+  async (config: AxiosRequestConfig) => {
+    await axios.get('/foo', {
+      headers: config.headers
+    });
+    return config;
+  },
+  (error: any) => Promise.reject(error),
+  {synchronous: false}
 );
 
 axios.interceptors.request.eject(requestInterceptorId);
@@ -316,6 +345,9 @@ axios.interceptors.response.eject(voidResponseInterceptorId);
 axios.interceptors.response.use((response: AxiosResponse) => response);
 axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
 
+axios.interceptors.request.clear();
+axios.interceptors.response.clear();
+
 // Adapters
 
 const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
@@ -340,10 +372,27 @@ const promises = [
 
 const promise: Promise<number[]> = axios.all(promises);
 
+// axios.all named export
+
+(() => {
+  const promises = [
+    Promise.resolve(1),
+    Promise.resolve(2)
+  ];
+
+  const promise: Promise<number[]> = all(promises);
+})();
+
 // axios.spread
 
 const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
 const fn2: (arr: number[]) => string = axios.spread(fn1);
+
+// axios.spread named export
+(() => {
+  const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
+  const fn2: (arr: number[]) => string = spread(fn1);
+})();
 
 // Promises
 
@@ -365,11 +414,11 @@ axios.get('/user')
 
 axios.get('/user')
   .catch((error: any) => 'foo')
-  .then((value) => {});
+  .then((value: any) => {});
 
 axios.get('/user')
   .catch((error: any) => Promise.resolve('foo'))
-  .then((value) => {});
+  .then((value: any) => {});
 
 // Cancellation
 
@@ -382,6 +431,12 @@ axios.get('/user', {
     const cancel: Cancel = thrown;
     console.log(cancel.message);
   }
+
+  // named export
+  if (isCancel(thrown)) {
+    const cancel: Cancel = thrown;
+    console.log(cancel.message);
+  }
 });
 
 source.cancel('Operation has been canceled.');
@@ -389,8 +444,14 @@ source.cancel('Operation has been canceled.');
 // AxiosError
 
 axios.get('/user')
-  .catch((error) => {
+  .catch((error: AxiosError) => {
     if (axios.isAxiosError(error)) {
+      const axiosError: AxiosError = error;
+    }
+
+    // named export
+
+    if (isAxiosError(error)) {
       const axiosError: AxiosError = error;
     }
   });
@@ -399,6 +460,16 @@ axios.get('/user')
 
 axios.toFormData({x: 1}, new FormData());
 
+// named export
+toFormData({x: 1}, new FormData());
+
+// formToJSON
+
+axios.toFormData(new FormData());
+
+// named export
+formToJSON(new FormData());
+
 // AbortSignal
 
 axios.get('/user', {signal: new AbortController().signal});
@@ -406,15 +477,55 @@ axios.get('/user', {signal: new AbortController().signal});
 // AxiosHeaders methods
 
 axios.get('/user', {
-    transformRequest: (data, headers) => {
-        headers.setContentType('text/plain');
-        headers['Foo'] = 'bar';
+  transformRequest: [
+    (data: any, headers) => {
+      headers.setContentType('text/plain');
+      return 'baz';
     },
-
-    transformResponse: (data, headers) => {
-        headers.has('foo');
+    (data: any, headers) => {
+      headers['foo'] = 'bar';
+      return 'baz'
     }
+  ],
+
+  transformResponse: [(data: any, headers: AxiosResponseHeaders) => {
+    headers.has('foo');
+  }]
 });
+
+// config headers
+
+axios.get('/user', {
+  headers: new AxiosHeaders({x:1})
+});
+
+axios.get('/user', {
+  headers: {
+    foo : 1
+  }
+});
+
+// issue #5034
+
+function getRequestConfig1(options: AxiosRequestConfig): AxiosRequestConfig {
+  return {
+    ...options,
+    headers: {
+    ...(options.headers as RawAxiosRequestHeaders),
+      Authorization: `Bearer ...`,
+    },
+  };
+}
+
+function getRequestConfig2(options: AxiosRequestConfig): AxiosRequestConfig {
+  return {
+    ...options,
+    headers: {
+      ...(options.headers as AxiosHeaders).toJSON(),
+      Authorization: `Bearer ...`,
+    },
+  };
+}
 
 // Max Rate
 
@@ -429,10 +540,24 @@ axios.get('/user', {
 // Node progress
 
 axios.get('/user', {
-  onUploadProgress: (e) => {
+  onUploadProgress: (e: AxiosProgressEvent) => {
     console.log(e.loaded);
     console.log(e.total);
     console.log(e.progress);
     console.log(e.rate);
   }
+});
+
+// adapters
+
+axios.get('/user', {
+  adapter: 'xhr'
+});
+
+axios.get('/user', {
+  adapter: 'http'
+});
+
+axios.get('/user', {
+  adapter: ['xhr', 'http']
 });

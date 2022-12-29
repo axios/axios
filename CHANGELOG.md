@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.2.2] - 2022-12-29
+
+### Fixed
+- fix(ci): fix release script inputs [#5392](https://github.com/axios/axios/pull/5392)
+- fix(ci): prerelease scipts [#5377](https://github.com/axios/axios/pull/5377)
+- fix(ci): release scripts [#5376](https://github.com/axios/axios/pull/5376)
+- fix(ci): typescript tests [#5375](https://github.com/axios/axios/pull/5375)
+- fix: Brotli decompression [#5353](https://github.com/axios/axios/pull/5353)
+- fix: add missing HttpStatusCode [#5345](https://github.com/axios/axios/pull/5345)
+
+### Chores
+- chore(ci): set conventional-changelog header config [#5406](https://github.com/axios/axios/pull/5406)
+- chore(ci): fix automatic contributors resolving [#5403](https://github.com/axios/axios/pull/5403)
+- chore(ci): improved logging for the contributors list generator [#5398](https://github.com/axios/axios/pull/5398)
+- chore(ci): fix release action [#5397](https://github.com/axios/axios/pull/5397)
+- chore(ci): fix version bump script by adding bump argument for target version [#5393](https://github.com/axios/axios/pull/5393)
+- chore(deps): bump decode-uri-component from 0.2.0 to 0.2.2 [#5342](https://github.com/axios/axios/pull/5342)
+- chore(ci): GitHub Actions Release script [#5384](https://github.com/axios/axios/pull/5384)
+- chore(ci): release scripts [#5364](https://github.com/axios/axios/pull/5364)
+
+### Contributors to this release
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- ![avatar](https://avatars.githubusercontent.com/u/1652293?v&#x3D;4&amp;s&#x3D;16) [Winnie](https://github.com/winniehell)
+
 ## [1.2.1] - 2022-12-05
 
 ### Changed

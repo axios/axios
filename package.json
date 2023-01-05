@@ -91,10 +91,10 @@
     "formidable": "^2.0.1",
     "fs-extra": "^10.1.0",
     "get-stream": "^3.0.0",
-    "gulp": "^4.0.2",
+    "gulp": "^3.9.1",
     "handlebars": "^4.7.7",
     "husky": "^8.0.2",
-    "istanbul-instrumenter-loader": "^3.0.1",
+    "istanbul-instrumenter-loader": "^2.0.0",
     "jasmine-core": "^2.4.1",
     "karma": "^6.3.17",
     "karma-chrome-launcher": "^3.1.1",
@@ -103,7 +103,7 @@
     "karma-jasmine-ajax": "^0.1.13",
     "karma-rollup-preprocessor": "^7.0.8",
     "karma-safari-launcher": "^1.0.0",
-    "karma-sauce-launcher": "^4.3.6",
+    "karma-sauce-launcher": "^4.1.4",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.8",
     "minimist": "^1.2.7",
@@ -131,6 +131,7 @@
   "dependencies": {
     "follow-redirects": "^1.15.0",
     "form-data": "^4.0.0",
+    "graceful-fs": "^4.2.10",
     "proxy-from-env": "^1.1.0"
   },
   "bundlesize": [

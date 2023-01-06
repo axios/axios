@@ -31,8 +31,6 @@ jobs:
         with:
           node-version: 16
           cache: npm
-      - name: npm credentials
-        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
       - run: npm install
       - name: release
         env:
@@ -70,4 +68,4 @@ jobs:
             maintainers
           #assignees: jasonsaayman
           #reviewers: jasonsaayman
-          draft: true
+          draft: false

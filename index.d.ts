@@ -6,7 +6,7 @@ type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 };
 
-interface CommonHeaders  {
+interface CommonHeaders {
   common: AxiosHeaders;
 }
 
@@ -71,7 +71,7 @@ export class AxiosHeaders {
 
 export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
 
-export type AxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders> & AxiosHeaders;
+export type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 
 export type RawAxiosResponseHeaders = Partial<Record<string, string> & {
   "set-cookie"?: string[]
@@ -263,6 +263,8 @@ type MaxUploadRate = number;
 
 type MaxDownloadRate = number;
 
+type BrowserProgressEvent = any;
+
 export interface AxiosProgressEvent {
   loaded: number;
   total?: number;
@@ -272,25 +274,29 @@ export interface AxiosProgressEvent {
   estimated?: number;
   upload?: boolean;
   download?: boolean;
-  event?: ProgressEvent;
+  event?: BrowserProgressEvent;
 }
 
 type Milliseconds = number;
 
-export interface AxiosRequestConfig<D = any> {
+type AxiosAdapterName = 'xhr' | 'http' | string;
+
+type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
+
+export interface RawAxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
   baseURL?: string;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
-  headers?: RawAxiosRequestHeaders;
+  headers?: RawAxiosRequestHeaders | AxiosHeaders;
   params?: any;
   paramsSerializer?: ParamsSerializerOptions;
   data?: D;
   timeout?: Milliseconds;
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
-  adapter?: AxiosAdapter;
+  adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
   responseEncoding?: responseEncoding | string;
@@ -319,6 +325,10 @@ export interface AxiosRequestConfig<D = any> {
   formSerializer?: FormSerializerOptions;
 }
 
+export interface AxiosRequestConfig<D = any> extends RawAxiosRequestConfig {
+  headers: AxiosRequestHeaders;
+}
+
 export interface HeadersDefaults {
   common: RawAxiosRequestHeaders;
   delete: RawAxiosRequestHeaders;
@@ -333,15 +343,15 @@ export interface HeadersDefaults {
   unlink?: RawAxiosRequestHeaders;
 }
 
-export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+export interface AxiosDefaults<D = any> extends Omit<RawAxiosRequestConfig<D>, 'headers'> {
   headers: HeadersDefaults;
 }
 
-export interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
-  headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
+export interface CreateAxiosDefaults<D = any> extends Omit<RawAxiosRequestConfig<D>, 'headers'> {
+  headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
 }
 
-export interface AxiosResponse<T = any, D = any>  {
+export interface AxiosResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
@@ -367,6 +377,14 @@ export class AxiosError<T = unknown, D = any> extends Error {
   status?: number;
   toJSON: () => object;
   cause?: Error;
+  static from<T = unknown, D = any>(
+    error: Error | unknown,
+    code?: string,
+    config?: AxiosRequestConfig<D>,
+    request?: any,
+    response?: AxiosResponse<T, D>,
+    customProps?: object,
+): AxiosError<T, D>;
   static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
   static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
   static readonly ERR_BAD_OPTION = "ERR_BAD_OPTION";
@@ -395,7 +413,7 @@ export interface Cancel {
 }
 
 export interface Canceler {
-  (message?: string, config?: AxiosRequestConfig, request?: any): void;
+  (message?: string, config?: RawAxiosRequestConfig, request?: any): void;
 }
 
 export interface CancelTokenStatic {
@@ -426,29 +444,29 @@ export interface AxiosInterceptorManager<V> {
 }
 
 export class Axios {
-  constructor(config?: AxiosRequestConfig);
+  constructor(config?: RawAxiosRequestConfig);
   defaults: AxiosDefaults;
   interceptors: {
     request: AxiosInterceptorManager<AxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
-  getUri(config?: AxiosRequestConfig): string;
-  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  postForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  putForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patchForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  getUri(config?: RawAxiosRequestConfig): string;
+  request<T = any, R = AxiosResponse<T>, D = any>(config: RawAxiosRequestConfig<D>): Promise<R>;
+  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  postForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  putForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: RawAxiosRequestConfig<D>): Promise<R>;
+  patchForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: RawAxiosRequestConfig<D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {
-  <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-  <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  <T = any, R = AxiosResponse<T>, D = any>(config: RawAxiosRequestConfig<D>): Promise<R>;
+  <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: RawAxiosRequestConfig<D>): Promise<R>;
 
   defaults: Omit<AxiosDefaults, 'headers'> & {
     headers: HeadersDefaults & {
@@ -485,6 +503,7 @@ export interface AxiosStatic extends AxiosInstance {
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
   AxiosError: typeof AxiosError;
+  HttpStatusCode: typeof HttpStatusCode;
   readonly VERSION: string;
   isCancel: typeof isCancel;
   all: typeof all;

@@ -1,0 +1,13 @@
+{{#if authors}}
+
+  ### Contributors 🤵
+
+  {{#each authors}}
+    {{#if github}}
+      - {{#if avatar_url}}![avatar]({{avatar_url_sm}}){{/if}} [{{displayName}}]({{github}}) ({{insertions}}++ / {{deletions}}--)
+    {{else}}
+      - {{displayName}} ({{insertions}}++ / {{deletions}}--)
+    {{/if}}
+  {{/each}}
+
+{{/if}}

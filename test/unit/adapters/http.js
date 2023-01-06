@@ -33,6 +33,9 @@ function setTimeoutAsync(ms) {
 
 const pipelineAsync = util.promisify(stream.pipeline);
 const finishedAsync = util.promisify(stream.finished);
+const gzip = util.promisify(zlib.gzip);
+const deflate = util.promisify(zlib.deflate);
+const brotliCompress = util.promisify(zlib.brotliCompress);
 
 function toleranceRange(positive, negative) {
   const p = (1 + 1 / positive);
@@ -47,9 +50,14 @@ var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
-function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = {}) {
+function startHTTPServer(options) {
+
+  const {handler, useBuffering = false, rate = undefined, port = 4444} = typeof options === 'function' ? {
+    handler: options
+  } : options || {};
+
   return new Promise((resolve, reject) => {
-    http.createServer(async function (req, res) {
+    http.createServer(handler || async function (req, res) {
       try {
         req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
@@ -426,58 +434,132 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support transparent gunzip', function (done) {
-    var data = {
-      firstName: 'Fred',
-      lastName: 'Flintstone',
-      emailAddr: 'fred@example.com'
-    };
+  describe('compression', async () => {
+    it('should support transparent gunzip', function (done) {
+      var data = {
+        firstName: 'Fred',
+        lastName: 'Flintstone',
+        emailAddr: 'fred@example.com'
+      };
 
-    zlib.gzip(JSON.stringify(data), function (err, zipped) {
+      zlib.gzip(JSON.stringify(data), function (err, zipped) {
 
-      server = http.createServer(function (req, res) {
+        server = http.createServer(function (req, res) {
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function () {
+          axios.get('http://localhost:4444/').then(function (res) {
+            assert.deepEqual(res.data, data);
+            done();
+          }).catch(done);
+        });
+      });
+    });
+
+    it('should support gunzip error handling', async () => {
+      server = await startHTTPServer((req, res) => {
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function () {
-        axios.get('http://localhost:4444/').then(function (res) {
-          assert.deepEqual(res.data, data);
-          done();
-        }).catch(done);
+        res.end('invalid response');
+      });
+
+      await assert.rejects(async () => {
+        await axios.get(LOCAL_SERVER_URL);
+      })
+    });
+
+    it('should support disabling automatic decompression of response data', function(done) {
+      var data = 'Test data';
+
+      zlib.gzip(data, function(err, zipped) {
+        server = http.createServer(function(req, res) {
+          res.setHeader('Content-Type', 'text/html;charset=utf-8');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function() {
+          axios.get('http://localhost:4444/', {
+            decompress: false,
+            responseType: 'arraybuffer'
+
+          }).then(function(res) {
+            assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+            done();
+          }).catch(done);
+        });
       });
     });
-  });
 
-  it('should support gunzip error handling', function (done) {
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Encoding', 'gzip');
-      res.end('invalid response');
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').catch(function (error) {
-        done();
-      }).catch(done);
-    });
-  });
+    describe('algorithms', ()=> {
+      const responseBody ='str';
 
-  it('should support disabling automatic decompression of response data', function(done) {
-    var data = 'Test data';
+      for (const [type, zipped] of Object.entries({
+        gzip: gzip(responseBody),
+        compress: gzip(responseBody),
+        deflate: deflate(responseBody),
+        br: brotliCompress(responseBody)
+      })) {
+        describe(`${type} decompression`, async () => {
+          it(`should support decompression`, async () => {
+            server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.end(await zipped);
+            });
 
-    zlib.gzip(data, function(err, zipped) {
-      server = http.createServer(function(req, res) {
-        res.setHeader('Content-Type', 'text/html;charset=utf-8');
-        res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function() {
-        axios.get('http://localhost:4444/', {
-          decompress: false,
-          responseType: 'arraybuffer'
+            const {data} = await axios.get(LOCAL_SERVER_URL);
 
-        }).then(function(res) {
-          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
-          done();
-        }).catch(done);
-      });
+            assert.strictEqual(data, responseBody);
+          });
+
+          it(`should not fail if response content-length header is missing (${type})`, async () => {
+            server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.removeHeader('Content-Length');
+              res.end(await zipped);
+            });
+
+            const {data} = await axios.get(LOCAL_SERVER_URL);
+
+            assert.strictEqual(data, responseBody);
+          });
+
+          it('should not fail with chunked responses (without Content-Length header)', async () => {
+            server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.setHeader('Transfer-Encoding', 'chunked');
+              res.removeHeader('Content-Length');
+              res.write(await zipped);
+              res.end();
+            });
+
+            const {data} = await axios.get(LOCAL_SERVER_URL);
+
+            assert.strictEqual(data, responseBody);
+          });
+
+          it('should not fail with an empty response without content-length header (Z_BUF_ERROR)', async () => {
+            server = await startHTTPServer((req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.removeHeader('Content-Length');
+              res.end();
+            });
+
+            const {data} = await axios.get(LOCAL_SERVER_URL);
+
+            assert.strictEqual(data, '');
+          });
+
+          it('should not fail with an empty response with content-length header (Z_BUF_ERROR)', async () => {
+            server = await startHTTPServer((req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.end();
+            });
+
+            await axios.get(LOCAL_SERVER_URL);
+          });
+        });
+      }
+
     });
   });
 
@@ -1393,7 +1475,6 @@ describe('supports http with nodejs', function () {
 
   it('should omit a user-agent if one is explicitly disclaimed', function (done) {
     server = http.createServer(function (req, res) {
-      console.log(req.headers);
       assert.equal("user-agent" in req.headers, false);
       assert.equal("User-Agent" in req.headers, false);
       res.end();
@@ -1886,7 +1967,6 @@ describe('supports http with nodejs', function () {
       assert.strictEqual(data, buf.toString(), 'content corrupted');
     });
   });
-
 
   describe('request aborting', function() {
     it('should be able to abort the response stream', async function () {

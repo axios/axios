@@ -1,6 +1,6 @@
 import gulp from 'gulp';
 import fs from 'fs-extra';
-import axios from './index.js';
+import axios from './bin/githubAPI.js';
 import minimist from 'minimist'
 
 const argv = minimist(process.argv.slice(2));

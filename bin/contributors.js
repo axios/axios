@@ -1,4 +1,4 @@
-import axios from "../index.js";
+import axios from "./githubAPI.js";
 import util from "util";
 import cp from "child_process";
 import Handlebars from "handlebars";

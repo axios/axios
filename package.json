@@ -160,10 +160,12 @@
   "sideEffects": false,
   "release-it": {
     "git": {
-      "commitMessage": "chore(release): v${version}"
+      "commitMessage": "chore(release): v${version}",
+      "push": false,
+      "commit": false
     },
     "github": {
-      "release": true
+      "release": false
     },
     "npm": {
       "publish": false,

@@ -78,7 +78,7 @@ function pipeFileToResponse(res, file, type) {
 
 dirs = listDirs(__dirname);
 
-server = http.createServer(function (req, res) {
+server = http.createServer(async function (req, res) {
   let url = req.url;
 
   // Process axios itself
@@ -128,7 +128,11 @@ server = http.createServer(function (req, res) {
   // Process server request
   else if (new RegExp('(' + dirs.join('|') + ')\/server').test(url)) {
     if (fs.existsSync(path.join(__dirname, url + '.js'))) {
-      require(path.join(__dirname, url + '.js'))(req, res);
+      try{
+        require(path.join(__dirname, url + '.js'))(req, res);
+      }catch(err){
+        (await import(path.join(__dirname, url + '.js'))).default(req, res);;
+      }
     } else {
       send404(res);
     }

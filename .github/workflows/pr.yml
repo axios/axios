@@ -38,6 +38,10 @@ jobs:
           TYPE_ARG: ${{ fromJSON('{"auto":"", "patch":"--patch", "minor":"--minor", "major":"--major"}')[github.event.inputs.type] }}
           BETA_ARG: ${{ github.event.inputs.beta == 'true' && '--preRelease=beta' || '' }}
         run: npm run release -- --ci --verbose --no-git.push --no-git.commit --no-git.tag --no-github $TYPE_ARG $BETA_ARG $DRY_ARG
+      - name: Add contributors CHANGELOG.md
+        run: npm run release:changelog:fix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: get-npm-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@main
@@ -71,7 +75,7 @@ jobs:
           #assignees: jasonsaayman
           #reviewers: jasonsaayman
           draft: false
-      - name: Check outputs
+      - name: Show PR link
         if: ${{ steps.cpr.outputs.pull-request-url }}
         run: |
-          echo "Axios Release v{{ steps.package-version.outputs.current-version}}' pull request - ${{ steps.cpr.outputs.pull-request-url }}"
+          echo "Axios Release v${{ steps.package-version.outputs.current-version}}' pull request - ${{ steps.cpr.outputs.pull-request-url }}"

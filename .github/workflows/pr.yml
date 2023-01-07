@@ -51,9 +51,11 @@ jobs:
           run: node ./bin/pr.js
       - name: Create pull request
         uses: peter-evans/create-pull-request@v4
+        id: cpr
         with:
           branch: release
           delete-branch: true
+          commit-message: 'chore(release): v${{ steps.package-version.outputs.current-version}}'
           title: '[Release] v${{ steps.package-version.outputs.current-version}}'
           body: |
             ${{ steps.body.outputs.stdout }}
@@ -69,3 +71,7 @@ jobs:
           #assignees: jasonsaayman
           #reviewers: jasonsaayman
           draft: false
+      - name: Check outputs
+        if: ${{ steps.cpr.outputs.pull-request-url }}
+        run: |
+          echo "Axios Release v{{ steps.package-version.outputs.current-version}}' pull request - ${{ steps.cpr.outputs.pull-request-url }}"

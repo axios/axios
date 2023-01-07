@@ -30,13 +30,17 @@ const injectContributors = async (infile, injector) => {
 
     if(currentTag) {
       if (hasContributorsSection) {
-        console.log(`[${currentTag}]: found contribution section`);
+        console.log(`[${currentTag}]: ✓ OK`);
       } else {
+        console.log(`[${currentTag}]: ❌ MISSED`);
+        console.log(`Generating contributors list...`);
+
         const section = await injector(currentTag);
 
-        console.log(`[${currentTag}]: contribution section not found. Adding...`);
-
+        console.log(`\nRENDERED CONTRIBUTORS LIST [${currentTag}]:`);
+        console.log('-------------BEGIN--------------\n');
         console.log(section);
+        console.log('--------------END---------------\n');
 
         return section + match;
       }

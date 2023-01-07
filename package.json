@@ -47,7 +47,7 @@
     "release:beta:no-npm": "release-it --preRelease=beta --no-npm",
     "release:beta": "release-it --preRelease=beta",
     "release:no-npm": "release-it --no-npm",
-    "release:changelog:fix": "node ./bin/injectContributorsList.js && git add CHANGELOG.md",
+    "release:changelog:fix": "node ./bin/injectContributorsList.js",
     "release": "release-it"
   },
   "repository": {
@@ -184,7 +184,7 @@
     "hooks": {
       "before:init": "npm test",
       "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./dist",
-      "before:release": "npm run release:changelog:fix",
+      "before:release": "npm run release:changelog:fix && git add CHANGELOG.md",
       "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }
   },

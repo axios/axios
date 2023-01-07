@@ -163,10 +163,12 @@
       "commitMessage": "chore(release): v${version}",
       "push": true,
       "commit": true,
-      "tag": true
+      "tag": true,
+      "requireCommits": false
     },
     "github": {
-      "release": false
+      "release": true,
+      "draft": true
     },
     "npm": {
       "publish": false,

@@ -1,13 +1,15 @@
 {{#if authors}}
 
-  ### Contributors 🤵
+  ### Contributors to this release
 
   {{#each authors}}
-    {{#if github}}
-      - {{#if avatar_url}}![avatar]({{avatar_url_sm}}){{/if}} [{{displayName}}]({{github}}) ({{insertions}}++ / {{deletions}}--)
+    {{#unless isBot}}
+    {{#if login}}
+      - {{#if avatar_url}}![avatar]({{avatar_url_sm}}){{/if}} [{{displayName}}]({{html_url}})
     {{else}}
-      - {{displayName}} ({{insertions}}++ / {{deletions}}--)
+      - {{displayName}}
     {{/if}}
+    {{/unless}}
   {{/each}}
 
 {{/if}}

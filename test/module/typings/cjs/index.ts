@@ -1,6 +1,6 @@
 import axios = require('axios');
 
-const config: axios.AxiosRequestConfig = {
+const config: axios.RawAxiosRequestConfig = {
   url: '/user',
   method: 'get',
   baseURL: 'https://api.example.com/',
@@ -38,11 +38,11 @@ const config: axios.AxiosRequestConfig = {
   cancelToken: new axios.CancelToken((cancel: axios.Canceler) => {})
 };
 
-const nullValidateStatusConfig: axios.AxiosRequestConfig = {
+const nullValidateStatusConfig: axios.RawAxiosRequestConfig = {
   validateStatus: null
 };
 
-const undefinedValidateStatusConfig: axios.AxiosRequestConfig = {
+const undefinedValidateStatusConfig: axios.RawAxiosRequestConfig = {
   validateStatus: undefined
 };
 

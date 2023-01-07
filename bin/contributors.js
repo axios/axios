@@ -1,4 +1,4 @@
-import axios from "../index.js";
+import axios from "./githubAPI.js";
 import util from "util";
 import cp from "child_process";
 import Handlebars from "handlebars";
@@ -14,25 +14,65 @@ const cleanTemplate = template => template
   .replace(/\n\n\n+/g, '\n\n')
   .replace(/\n\n$/, '\n');
 
-const getUserInfo = ((userCache) => async (email) => {
-  if (userCache[email] !== undefined) {
-    return userCache[email];
-  }
+const getUserFromCommit = ((commitCache) => async (sha) => {
   try {
-    const tag = email.replace(/@users\.noreply\.github\.com/, '');
+    if(commitCache[sha] !== undefined) {
+      return commitCache[sha];
+    }
 
-    const {data: {items: [user]}} = await axios.get(`https://api.github.com/search/users?q=${tag}`);
+    const {data} = await axios.get(`https://api.github.com/repos/axios/axios/commits/${sha}`);
 
-    return (userCache[email] = user ? {
-      ...user,
-      avatar_url_sm: user.avatar_url + '&s=16'
-    } : null);
+    return commitCache[sha] = {
+      ...data.commit.author,
+      ...data.author,
+      avatar_url_sm: data.author.avatar_url ? data.author.avatar_url + '&s=16' : '',
+    };
   } catch (err) {
-    console.warn(err);
-    return {};
+    return commitCache[sha] = null;
   }
 })({});
 
+const getUserInfo = ((userCache) => async (userEntry) => {
+  const {email, commits} = userEntry;
+
+  if (userCache[email] !== undefined) {
+    return userCache[email];
+  }
+
+  return userCache[email] = {
+    ...userEntry,
+    ...await getUserFromCommit(commits[0])
+  }
+})({});
+
+const deduplicate = (authors) => {
+  const loginsMap = {};
+  const combined= {};
+
+  const assign = (a, b) => {
+    const {insertions, deletions, points, ...rest} = b;
+
+    Object.assign(a, rest);
+
+    a.insertions += insertions;
+    a.deletions += insertions;
+    a.insertions += insertions;
+  }
+
+  for(const [email, user] of Object.entries(authors)) {
+    const {login} = user;
+    let entry;
+
+    if(login && (entry = loginsMap[login])) {
+       assign(entry, user);
+    } else {
+      login && (loginsMap[login] = user);
+      combined[email] = user;
+    }
+  }
+
+  return combined;
+}
 
 const getReleaseInfo = async (version, useGithub) => {
   version = 'v' + version.replace(/^v/, '');
@@ -52,14 +92,15 @@ const getReleaseInfo = async (version, useGithub) => {
       ...release.merges.map(fix => fix.commit)
     ].filter(Boolean);
 
-    for(const {author, email, insertions, deletions} of commits) {
-      const user = Object.assign({
-        email
-      }, useGithub ? await getUserInfo(email) : null);
-
+    for(const {hash, author, email, insertions, deletions} of commits) {
       const entry = authors[email] = (authors[email] || {
-        insertions: 0, deletions: 0, ...user
+        name: author,
+        email,
+        commits: [],
+        insertions: 0, deletions: 0
       });
+
+      entry.commits.push(hash);
 
       entry.displayName = entry.name || author || entry.login;
 
@@ -68,9 +109,14 @@ const getReleaseInfo = async (version, useGithub) => {
       entry.insertions += insertions;
       entry.deletions += deletions;
       entry.points = entry.insertions + entry.deletions;
+      entry.isBot = entry.type === "Bot"
     }
 
-    release.authors = Object.values(authors).sort((a, b) => b.points - a.points);
+    for(const [email, author] of Object.entries(authors)) {
+      authors[email] = await getUserInfo(author);
+    }
+
+    release.authors = Object.values(deduplicate(authors)).sort((a, b) => b.points - a.points);
     release.allCommits = commits;
   }
 

@@ -103,24 +103,24 @@ declare class CanceledError<T> extends AxiosError<T> {
 }
 
 declare class Axios {
-  constructor(config?: axios.AxiosRequestConfig);
+  constructor(config?: axios.RawAxiosRequestConfig);
   defaults: axios.AxiosDefaults;
   interceptors: {
     request: axios.AxiosInterceptorManager<axios.AxiosRequestConfig>;
     response: axios.AxiosInterceptorManager<axios.AxiosResponse>;
   };
-  getUri(config?: axios.AxiosRequestConfig): string;
-  request<T = any, R = axios.AxiosResponse<T>, D = any>(config: axios.AxiosRequestConfig<D>): Promise<R>;
-  get<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  delete<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  head<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  options<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  post<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  put<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  patch<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  postForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  putForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  getUri(config?: axios.RawAxiosRequestConfig): string;
+  request<T = any, R = axios.AxiosResponse<T>, D = any>(config: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  get<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  postForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  putForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
 }
 
 declare enum HttpStatusCode {
@@ -342,7 +342,7 @@ declare namespace axios {
 
   type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
-  interface AxiosRequestConfig<D = any> {
+  interface RawAxiosRequestConfig<D = any> {
     url?: string;
     method?: Method | string;
     baseURL?: string;
@@ -384,6 +384,10 @@ declare namespace axios {
     formSerializer?: FormSerializerOptions;
   }
 
+  interface AxiosRequestConfig<D = any> extends RawAxiosRequestConfig {
+    headers: AxiosRequestHeaders;
+  }
+
   interface HeadersDefaults {
     common: RawAxiosRequestHeaders;
     delete: RawAxiosRequestHeaders;
@@ -398,11 +402,11 @@ declare namespace axios {
     unlink?: RawAxiosRequestHeaders;
   }
 
-  interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+  interface AxiosDefaults<D = any> extends Omit<RawAxiosRequestConfig<D>, 'headers'> {
     headers: HeadersDefaults;
   }
 
-  interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+  interface CreateAxiosDefaults<D = any> extends Omit<RawAxiosRequestConfig<D>, 'headers'> {
     headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   }
 
@@ -426,7 +430,7 @@ declare namespace axios {
   }
 
   interface Canceler {
-    (message?: string, config?: AxiosRequestConfig, request?: any): void;
+    (message?: string, config?: RawAxiosRequestConfig, request?: any): void;
   }
 
   interface CancelTokenStatic {
@@ -457,8 +461,8 @@ declare namespace axios {
   }
 
   interface AxiosInstance extends Axios {
-    <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-    <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+    <T = any, R = AxiosResponse<T>, D = any>(config: RawAxiosRequestConfig<D>): Promise<R>;
+    <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: RawAxiosRequestConfig<D>): Promise<R>;
 
     defaults: Omit<AxiosDefaults, 'headers'> & {
       headers: HeadersDefaults & {

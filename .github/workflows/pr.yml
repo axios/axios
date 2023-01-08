@@ -32,13 +32,13 @@ jobs:
           node-version: 16
           cache: npm
       - run: npm install
-      - name: release
+      - name: Prepare release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TYPE_ARG: ${{ fromJSON('{"auto":"", "patch":"--patch", "minor":"--minor", "major":"--major"}')[github.event.inputs.type] }}
           BETA_ARG: ${{ github.event.inputs.beta == 'true' && '--preRelease=beta' || '' }}
         run: npm run release -- --ci --verbose --no-git.push --no-git.commit --no-git.tag --no-github $TYPE_ARG $BETA_ARG $DRY_ARG
-      - name: Add contributors CHANGELOG.md
+      - name: Add contributors list to CHANGELOG.md
         run: npm run release:changelog:fix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

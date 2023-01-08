@@ -39,6 +39,8 @@ const getUserInfo = ((userCache) => async (userEntry) => {
     return userCache[email];
   }
 
+  console.log(`fetch github user info [${userEntry.name}]`);
+
   return userCache[email] = {
     ...userEntry,
     ...await getUserFromCommit(commits[0])

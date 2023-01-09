@@ -46,6 +46,10 @@ const injectSection = async (name, contributorsRE, injector, infile = '../CHANGE
 
         const section = await injector(target);
 
+        if (!section) {
+          return match;
+        }
+
         console.log(colorize()`\nRENDERED SECTION [${name}] for [${currentTag}]:`);
         console.log('-------------BEGIN--------------\n');
         console.log(section);
@@ -64,7 +68,7 @@ const injectSection = async (name, contributorsRE, injector, infile = '../CHANGE
 await injectSection(
   'PRs',
   /^\s*### PRs/mi,
-  (tag) => !tag && renderPRsList(tag, PRS_TEMPLATE, {awesome_threshold: 5, comments_threshold: 7}),
+  (tag) => tag ? '' : renderPRsList(tag, PRS_TEMPLATE, {awesome_threshold: 5, comments_threshold: 7}),
 );
 
 await injectSection(

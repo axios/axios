@@ -28,7 +28,6 @@ jobs:
       - name: Extract release notes
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
-      - uses: 8BitJonny/gh-get-current-pr@2.2.0
       - name: Check versions
         run: node ./bin/check-build-version.js
       ############# TAG RELEASE ##############
@@ -48,6 +47,6 @@ jobs:
             ${{ steps.extract-release-notes.outputs.release_notes }}
       ############# NPM RELEASE ##############
       - name: Publish the release to NPM
-        run: echo "NPM publish command here" # temporary skipped
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

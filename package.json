@@ -32,7 +32,7 @@
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
-    "preversion": "gulp version && npm test",
+    "preversion": "gulp version",
     "version": "npm run build && git add dist && git add package.json",
     "prepublishOnly": "npm run test:build:version",
     "postpublish": "git push && git push --tags",

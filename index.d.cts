@@ -18,16 +18,9 @@ type AxiosHeaderGetter = ((parser?: RegExp) => RegExpExecArray | null) |
 
 type AxiosHeaderTester = (matcher?: AxiosHeaderMatcher) => boolean;
 
-type MaxUploadRate = number;
-
-type MaxDownloadRate = number;
-
-type Milliseconds = number;
-
 declare class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders,
-      defaultHeaders?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders
   );
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -44,11 +37,15 @@ declare class AxiosHeaders {
 
   normalize(format: boolean): AxiosHeaders;
 
+  concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
+
   toJSON(asStrings?: boolean): RawAxiosHeaders;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
   static accessor(header: string | string[]): AxiosHeaders;
+
+  static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string>): AxiosHeaders;
 
   setContentType: AxiosHeaderSetter;
   getContentType: AxiosHeaderGetter;
@@ -106,24 +103,24 @@ declare class CanceledError<T> extends AxiosError<T> {
 }
 
 declare class Axios {
-  constructor(config?: axios.AxiosRequestConfig);
+  constructor(config?: axios.RawAxiosRequestConfig);
   defaults: axios.AxiosDefaults;
   interceptors: {
     request: axios.AxiosInterceptorManager<axios.AxiosRequestConfig>;
     response: axios.AxiosInterceptorManager<axios.AxiosResponse>;
   };
-  getUri(config?: axios.AxiosRequestConfig): string;
-  request<T = any, R = axios.AxiosResponse<T>, D = any>(config: axios.AxiosRequestConfig<D>): Promise<R>;
-  get<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  delete<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  head<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  options<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  post<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  put<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  patch<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  postForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  putForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  getUri(config?: axios.RawAxiosRequestConfig): string;
+  request<T = any, R = axios.AxiosResponse<T>, D = any>(config: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  get<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  postForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  putForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
+  patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.RawAxiosRequestConfig<D>): Promise<R>;
 }
 
 declare enum HttpStatusCode {
@@ -199,7 +196,7 @@ declare namespace axios {
 
   type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
 
-  type AxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders> & AxiosHeaders;
+  type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 
   type RawAxiosResponseHeaders = Partial<Record<string, string> & {
     "set-cookie"?: string[]
@@ -321,6 +318,10 @@ declare namespace axios {
     serialize?: CustomParamsSerializer;
   }
 
+  type MaxUploadRate = number;
+
+  type MaxDownloadRate = number;
+
   type BrowserProgressEvent = any;
 
   interface AxiosProgressEvent {
@@ -335,20 +336,26 @@ declare namespace axios {
     event?: BrowserProgressEvent;
   }
 
-  interface AxiosRequestConfig<D = any> {
+  type Milliseconds = number;
+
+  type AxiosAdapterName = 'xhr' | 'http' | string;
+
+  type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
+
+  interface RawAxiosRequestConfig<D = any> {
     url?: string;
     method?: Method | string;
     baseURL?: string;
     transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
-    headers?: RawAxiosRequestHeaders;
+    headers?: RawAxiosRequestHeaders | AxiosHeaders;
     params?: any;
     paramsSerializer?: ParamsSerializerOptions;
     data?: D;
     timeout?: Milliseconds;
     timeoutErrorMessage?: string;
     withCredentials?: boolean;
-    adapter?: AxiosAdapter;
+    adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
     auth?: AxiosBasicCredentials;
     responseType?: ResponseType;
     responseEncoding?: responseEncoding | string;
@@ -377,6 +384,10 @@ declare namespace axios {
     formSerializer?: FormSerializerOptions;
   }
 
+  interface AxiosRequestConfig<D = any> extends RawAxiosRequestConfig {
+    headers: AxiosRequestHeaders;
+  }
+
   interface HeadersDefaults {
     common: RawAxiosRequestHeaders;
     delete: RawAxiosRequestHeaders;
@@ -391,12 +402,12 @@ declare namespace axios {
     unlink?: RawAxiosRequestHeaders;
   }
 
-  interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+  interface AxiosDefaults<D = any> extends Omit<RawAxiosRequestConfig<D>, 'headers'> {
     headers: HeadersDefaults;
   }
 
-  interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
-    headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
+  interface CreateAxiosDefaults<D = any> extends Omit<RawAxiosRequestConfig<D>, 'headers'> {
+    headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   }
 
   interface AxiosResponse<T = any, D = any>  {
@@ -419,7 +430,7 @@ declare namespace axios {
   }
 
   interface Canceler {
-    (message?: string, config?: AxiosRequestConfig, request?: any): void;
+    (message?: string, config?: RawAxiosRequestConfig, request?: any): void;
   }
 
   interface CancelTokenStatic {
@@ -450,8 +461,8 @@ declare namespace axios {
   }
 
   interface AxiosInstance extends Axios {
-    <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-    <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+    <T = any, R = AxiosResponse<T>, D = any>(config: RawAxiosRequestConfig<D>): Promise<R>;
+    <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: RawAxiosRequestConfig<D>): Promise<R>;
 
     defaults: Omit<AxiosDefaults, 'headers'> & {
       headers: HeadersDefaults & {
@@ -485,6 +496,7 @@ declare namespace axios {
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+    AxiosHeaders: typeof AxiosHeaders;
   }
 }
 

@@ -1,4 +1,4 @@
-// Axios v1.2.2 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.2.3 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -2397,7 +2397,7 @@
     return config;
   }
 
-  var VERSION = "1.2.2";
+  var VERSION = "1.2.3";
 
   var validators$1 = {};
 

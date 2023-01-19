@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.3](https://github.com/axios/axios/compare/1.2.2...1.2.3) (2023-01-10)
+
+
+### Bug Fixes
+
+* **types:** fixed AxiosRequestConfig header interface by refactoring it to RawAxiosRequestConfig; ([#5420](https://github.com/axios/axios/issues/5420)) ([0811963](https://github.com/axios/axios/commit/08119634a22f1d5b19f5c9ea0adccb6d3eebc3bc))
+
+### Contributors to this release
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+938/-442 (#5456 #5455 #5453 #5451 #5449 #5447 #5446 #5443 #5442 #5439 #5420 )")
+
 ## [1.2.2] - 2022-12-29
 
 ### Fixed

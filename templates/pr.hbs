@@ -1,12 +1,10 @@
 {{#if files}}
+### Build info
 
-  ### Build info
-
-  {{#each files}}
-    - {{ name}} ({{ path }}) {{ filesize size }} ({{ filesize gzip }} gzipped)
-    {{#each commits}}
-      - {{ tag }} - {{filesize size}}
-    {{/each}}
+{{#each files}}
+  - {{ name}} ({{ path }}) {{ filesize size }} (**{{ filesize gzip }}** gzipped)
+  {{#each commits}}
+    - {{ tag }} - {{filesize size}}
   {{/each}}
-
+{{/each}}
 {{/if}}

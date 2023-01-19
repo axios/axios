@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -32,7 +32,7 @@
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
-    "preversion": "gulp version && npm test",
+    "preversion": "gulp version",
     "version": "npm run build && git add dist && git add package.json",
     "prepublishOnly": "npm run test:build:version",
     "postpublish": "git push && git push --tags",
@@ -81,6 +81,7 @@
     "abortcontroller-polyfill": "^1.7.3",
     "auto-changelog": "^2.4.0",
     "body-parser": "^1.20.0",
+    "chalk": "^5.2.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
     "dev-null": "^0.1.1",

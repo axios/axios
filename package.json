@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -32,7 +32,7 @@
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
-    "preversion": "gulp version && npm test",
+    "preversion": "gulp version",
     "version": "npm run build && git add dist && git add package.json",
     "prepublishOnly": "npm run test:build:version",
     "postpublish": "git push && git push --tags",
@@ -47,7 +47,7 @@
     "release:beta:no-npm": "release-it --preRelease=beta --no-npm",
     "release:beta": "release-it --preRelease=beta",
     "release:no-npm": "release-it --no-npm",
-    "release:changelog:fix": "node ./bin/injectContributorsList.js",
+    "release:changelog:fix": "node ./bin/injectContributorsList.js && git add CHANGELOG.md",
     "release": "release-it"
   },
   "repository": {
@@ -81,6 +81,7 @@
     "abortcontroller-polyfill": "^1.7.3",
     "auto-changelog": "^2.4.0",
     "body-parser": "^1.20.0",
+    "chalk": "^5.2.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
     "dev-null": "^0.1.1",
@@ -92,6 +93,7 @@
     "fs-extra": "^10.1.0",
     "get-stream": "^3.0.0",
     "gulp": "^4.0.2",
+    "gzip-size": "^7.0.0",
     "handlebars": "^4.7.7",
     "husky": "^8.0.2",
     "istanbul-instrumenter-loader": "^3.0.1",
@@ -109,6 +111,7 @@
     "minimist": "^1.2.7",
     "mocha": "^10.0.0",
     "multer": "^1.4.4",
+    "pretty-bytes": "^6.0.0",
     "release-it": "^15.5.1",
     "rollup": "^2.67.0",
     "rollup-plugin-auto-external": "^2.0.0",
@@ -158,10 +161,15 @@
   "sideEffects": false,
   "release-it": {
     "git": {
-      "commitMessage": "chore(release): v${version}"
+      "commitMessage": "chore(release): v${version}",
+      "push": true,
+      "commit": true,
+      "tag": true,
+      "requireCommits": false
     },
     "github": {
-      "release": true
+      "release": true,
+      "draft": true
     },
     "npm": {
       "publish": false,
@@ -177,7 +185,7 @@
     "hooks": {
       "before:init": "npm test",
       "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./dist",
-      "before:release": "npm run release:changelog:fix && git add CHANGELOG.md",
+      "before:release": "npm run release:changelog:fix",
       "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }
   },

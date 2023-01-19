@@ -325,7 +325,7 @@ export interface RawAxiosRequestConfig<D = any> {
   formSerializer?: FormSerializerOptions;
 }
 
-export interface AxiosRequestConfig<D = any> extends RawAxiosRequestConfig {
+export interface AxiosRequestConfig<D = any> extends RawAxiosRequestConfig<D> {
   headers: AxiosRequestHeaders;
 }
 

@@ -1,5 +1,8 @@
 type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
-type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
+
+interface RawAxiosHeaders {
+  [key: string]: AxiosHeaderValue;
+}
 
 type MethodsHeaders = {
   [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
@@ -22,6 +25,8 @@ declare class AxiosHeaders {
   constructor(
       headers?: RawAxiosHeaders | AxiosHeaders
   );
+
+  [key: string]: any;
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
@@ -66,6 +71,8 @@ declare class AxiosHeaders {
   setContentEncoding: AxiosHeaderSetter;
   getContentEncoding: AxiosHeaderGetter;
   hasContentEncoding: AxiosHeaderTester;
+
+  [Symbol.iterator](): IterableIterator<[string, AxiosHeaderValue]>;
 }
 
 declare class AxiosError<T = unknown, D = any> extends Error {
@@ -194,9 +201,15 @@ type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 declare namespace axios {
   type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
 
+  type CommonRequestHeadersList = 'Accept' | 'Content-Type' | 'Content-Length' | 'User-Agent'| 'Content-Encoding';
+
+  type RawCommonRequestHeaders = {
+    [Key in CommonRequestHeadersList]: AxiosHeaderValue;
+  };
+
   type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
 
-  type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
+  type AxiosRequestHeaders = Partial<RawCommonRequestHeaders & RawAxiosHeaders> & AxiosHeaders;
 
   type RawAxiosResponseHeaders = Partial<Record<string, string> & {
     "set-cookie"?: string[]

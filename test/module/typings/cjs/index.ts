@@ -441,3 +441,51 @@ axios.get('/user', {
     console.log(e.rate);
   }
 });
+
+// AxiosHeaders
+
+// iterator
+
+const headers = new axios.AxiosHeaders({foo: "bar"})
+
+for (const [header, value] of headers) {
+  console.log(header, value);
+}
+
+// index signature
+
+(()=>{
+  const headers = new axios.AxiosHeaders({x:1});
+
+  headers.y = 2;
+})();
+
+
+// AxiosRequestHeaders
+
+(()=>{
+  const headers:axios.AxiosRequestHeaders = new axios.AxiosHeaders({x:1});
+
+  headers.y = 2;
+
+  headers.get('x');
+})();
+
+// AxiosHeaders instance assigment
+
+{
+  const requestInterceptorId: number = axios.interceptors.request.use(
+      async (config) => {
+        config.headers.Accept ="foo";
+        config.headers.setAccept("foo");
+        config.headers = new axios.AxiosHeaders({x:1});
+        config.headers.foo = "1";
+        config.headers.set('bar', '2');
+        config.headers.set({myHeader: "myValue"})
+        config.headers = new axios.AxiosHeaders({myHeader: "myValue"});
+        config.headers = {...config.headers} as axios.AxiosRequestHeaders;
+        return config;
+      },
+      (error: any) => Promise.reject(error)
+  );
+}

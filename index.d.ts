@@ -1,6 +1,9 @@
 // TypeScript Version: 4.7
 type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
-type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
+
+interface RawAxiosHeaders {
+  [key: string]: AxiosHeaderValue;
+}
 
 type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
@@ -23,6 +26,8 @@ export class AxiosHeaders {
   constructor(
       headers?: RawAxiosHeaders | AxiosHeaders
   );
+
+  [key: string]: any;
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
@@ -67,11 +72,19 @@ export class AxiosHeaders {
   setContentEncoding: AxiosHeaderSetter;
   getContentEncoding: AxiosHeaderGetter;
   hasContentEncoding: AxiosHeaderTester;
+
+  [Symbol.iterator](): IterableIterator<[string, AxiosHeaderValue]>;
 }
+
+type CommonRequestHeadersList = 'Accept' | 'Content-Type' | 'Content-Length' | 'User-Agent'| 'Content-Encoding';
+
+type RawCommonRequestHeaders = {
+  [Key in CommonRequestHeadersList]: AxiosHeaderValue;
+};
 
 export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
 
-export type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
+export type AxiosRequestHeaders = Partial<RawCommonRequestHeaders & RawAxiosHeaders> & AxiosHeaders;
 
 export type RawAxiosResponseHeaders = Partial<Record<string, string> & {
   "set-cookie"?: string[]

@@ -1,6 +1,6 @@
 import axios = require('axios');
 
-const config: axios.RawAxiosRequestConfig = {
+const config: axios.AxiosRequestConfig = {
   url: '/user',
   method: 'get',
   baseURL: 'https://api.example.com/',
@@ -38,11 +38,11 @@ const config: axios.RawAxiosRequestConfig = {
   cancelToken: new axios.CancelToken((cancel: axios.Canceler) => {})
 };
 
-const nullValidateStatusConfig: axios.RawAxiosRequestConfig = {
+const nullValidateStatusConfig: axios.AxiosRequestConfig = {
   validateStatus: null
 };
 
-const undefinedValidateStatusConfig: axios.RawAxiosRequestConfig = {
+const undefinedValidateStatusConfig: axios.AxiosRequestConfig = {
   validateStatus: undefined
 };
 
@@ -276,19 +276,19 @@ axios.create({
 // Interceptors
 
 const requestInterceptorId: number = axios.interceptors.request.use(
-    (config: axios.AxiosRequestConfig) => config,
+    (config: axios.InternalAxiosRequestConfig) => config,
     (error: any) => Promise.reject(error)
 );
 
 axios.interceptors.request.eject(requestInterceptorId);
 
 axios.interceptors.request.use(
-    (config: axios.AxiosRequestConfig) => Promise.resolve(config),
+    (config: axios.InternalAxiosRequestConfig) => Promise.resolve(config),
     (error: any) => Promise.reject(error)
 );
 
-axios.interceptors.request.use((config: axios.AxiosRequestConfig) => config);
-axios.interceptors.request.use((config: axios.AxiosRequestConfig) => Promise.resolve(config));
+axios.interceptors.request.use((config: axios.InternalAxiosRequestConfig) => config);
+axios.interceptors.request.use((config: axios.InternalAxiosRequestConfig) => Promise.resolve(config));
 
 const responseInterceptorId: number = axios.interceptors.response.use(
     (response: axios.AxiosResponse) => response,
@@ -301,6 +301,13 @@ axios.interceptors.response.use(
     (response: axios.AxiosResponse) => Promise.resolve(response),
     (error: any) => Promise.reject(error)
 );
+
+axios.interceptors.request.use(req => {
+  // https://github.com/axios/axios/issues/5415
+  req.headers.set('foo', 'bar');
+  req.headers['Content-Type'] = 123;
+  return req;
+});
 
 const voidRequestInterceptorId = axios.interceptors.request.use(
     // @ts-expect-error -- Must return an axios.AxiosRequestConfig (or throw)
@@ -323,7 +330,7 @@ axios.interceptors.response.clear();
 
 // Adapters
 
-const adapter: axios.AxiosAdapter = (config: axios.AxiosRequestConfig) => {
+const adapter: axios.AxiosAdapter = (config: axios.InternalAxiosRequestConfig) => {
   const response: axios.AxiosResponse = {
     data: { foo: 'bar' },
     status: 200,

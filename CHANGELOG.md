@@ -6,6 +6,7 @@
 ### Bug Fixes
 
 * **types:** renamed `RawAxiosRequestConfig` back to `AxiosRequestConfig`; ([#5486](https://github.com/axios/axios/issues/5486)) ([2a71f49](https://github.com/axios/axios/commit/2a71f49bc6c68495fa419003a3107ed8bd703ad0))
+* **types:** fix `AxiosRequestConfig` generic; ([#5478](https://github.com/axios/axios/issues/5478)) ([9bce81b](https://github.com/axios/axios/commit/186ea062da8b7d578ae78b1a5c220986b9bce81b))
 
 ### Contributors to this release
 

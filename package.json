@@ -11,7 +11,7 @@
       },
       "browser": {
         "require": "./dist/browser/axios.cjs",
-        "default": "./index.js"
+        "default": "./dist/esm/axios.js"
       },
       "default": {
         "require": "./dist/node/axios.cjs",

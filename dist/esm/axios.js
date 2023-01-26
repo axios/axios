@@ -1,4 +1,4 @@
-// Axios v1.2.4 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.2.5 Copyright (c) 2023 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -2580,7 +2580,7 @@ function mergeConfig$1(config1, config2) {
   return config;
 }
 
-const VERSION$1 = "1.2.4";
+const VERSION$1 = "1.2.5";
 
 const validators$1 = {};
 

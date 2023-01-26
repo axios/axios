@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.2.5](https://github.com/axios/axios/compare/v1.2.4...v1.2.5) (2023-01-26)
+
+
+### Bug Fixes
+
+* **types:** fixed AxiosHeaders to handle spread syntax by making all methods non-enumerable; ([#5499](https://github.com/axios/axios/issues/5499)) ([580f1e8](https://github.com/axios/axios/commit/580f1e8033a61baa38149d59fd16019de3932c22))
+
+### Contributors to this release
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+82/-54 (#5499 )")
+- ![avatar](https://avatars.githubusercontent.com/u/20516159?v&#x3D;4&amp;s&#x3D;16) [Elliot Ford](https://github.com/EFord36 "+1/-1 (#5462 )")
+
+## [1.2.4](https://github.com/axios/axios/compare/v1.2.3...v1.2.4) (2023-01-22)
+
+
+### Bug Fixes
+
+* **types:** renamed `RawAxiosRequestConfig` back to `AxiosRequestConfig`; ([#5486](https://github.com/axios/axios/issues/5486)) ([2a71f49](https://github.com/axios/axios/commit/2a71f49bc6c68495fa419003a3107ed8bd703ad0))
+* **types:** fix `AxiosRequestConfig` generic; ([#5478](https://github.com/axios/axios/issues/5478)) ([9bce81b](https://github.com/axios/axios/commit/186ea062da8b7d578ae78b1a5c220986b9bce81b))
+
+### Contributors to this release
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+242/-108 (#5486 #5482 )")
+- ![avatar](https://avatars.githubusercontent.com/u/9430821?v&#x3D;4&amp;s&#x3D;16) [Daniel Hillmann](https://github.com/hilleer "+1/-1 (#5478 )")
+
 ## [1.2.3](https://github.com/axios/axios/compare/1.2.2...1.2.3) (2023-01-10)
 
 

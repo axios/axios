@@ -616,3 +616,14 @@ for (const [header, value] of headers) {
       (error: any) => Promise.reject(error)
   );
 }
+
+{
+  const config: AxiosRequestConfig = {headers: new AxiosHeaders({foo: 1})};
+
+  axios.get('', {
+    headers: {
+      bar: 2,
+      ...config.headers
+    }
+  });
+}

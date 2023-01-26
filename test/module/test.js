@@ -35,7 +35,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const remove = async (file) => {
   console.log(`✓ Remove entry '${file}'...`);
   try {
-    await sleep(100);
+    await sleep(1000);
     await fs.remove(file);
   } catch (err) {
     console.warn(err.message);

@@ -1,5 +1,5 @@
 import axios, {
-  RawAxiosRequestConfig,
+  InternalAxiosRequestConfig,
   AxiosRequestConfig,
   AxiosHeaders,
   AxiosRequestHeaders,
@@ -22,7 +22,7 @@ import axios, {
   spread
 } from 'axios';
 
-const config: RawAxiosRequestConfig = {
+const config: AxiosRequestConfig = {
   url: '/user',
   method: 'get',
   baseURL: 'https://api.example.com/',
@@ -60,11 +60,11 @@ const config: RawAxiosRequestConfig = {
   cancelToken: new axios.CancelToken((cancel: Canceler) => {})
 };
 
-const nullValidateStatusConfig: RawAxiosRequestConfig = {
+const nullValidateStatusConfig: AxiosRequestConfig = {
   validateStatus: null
 };
 
-const undefinedValidateStatusConfig: RawAxiosRequestConfig = {
+const undefinedValidateStatusConfig: AxiosRequestConfig = {
   validateStatus: undefined
 };
 
@@ -515,7 +515,7 @@ axios.get('/user', {
 
 // issue #5034
 
-function getRequestConfig1(options: RawAxiosRequestConfig): RawAxiosRequestConfig {
+function getRequestConfig1(options: AxiosRequestConfig): AxiosRequestConfig {
   return {
     ...options,
     headers: {
@@ -525,7 +525,7 @@ function getRequestConfig1(options: RawAxiosRequestConfig): RawAxiosRequestConfi
   };
 }
 
-function getRequestConfig2(options: RawAxiosRequestConfig): RawAxiosRequestConfig {
+function getRequestConfig2(options: AxiosRequestConfig): AxiosRequestConfig {
   return {
     ...options,
     headers: {
@@ -569,3 +569,61 @@ axios.get('/user', {
 axios.get('/user', {
   adapter: ['xhr', 'http']
 });
+
+// AxiosHeaders
+
+// iterator
+
+const headers = new AxiosHeaders({foo: "bar"})
+
+for (const [header, value] of headers) {
+  console.log(header, value);
+}
+
+// index signature
+
+(()=>{
+  const headers = new AxiosHeaders({x:1});
+
+  headers.y = 2;
+})();
+
+// AxiosRequestHeaders
+
+(()=>{
+  const headers:AxiosRequestHeaders = new AxiosHeaders({x:1});
+
+  headers.y = 2;
+
+  headers.get('x');
+})();
+
+// AxiosHeaders instance assigment
+
+{
+  const requestInterceptorId: number = axios.interceptors.request.use(
+      async (config) => {
+        config.headers.Accept ="foo";
+        config.headers.setAccept("foo");
+        config.headers = new AxiosHeaders({x:1});
+        config.headers.foo = "1";
+        config.headers.set('bar', '2');
+        config.headers.set({myHeader: "myValue"})
+        config.headers = new AxiosHeaders({myHeader: "myValue"});
+        config.headers = {...config.headers} as AxiosRequestHeaders;
+        return config;
+      },
+      (error: any) => Promise.reject(error)
+  );
+}
+
+{
+  const config: AxiosRequestConfig = {headers: new AxiosHeaders({foo: 1})};
+
+  axios.get('', {
+    headers: {
+      bar: 2,
+      ...config.headers
+    }
+  });
+}

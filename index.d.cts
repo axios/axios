@@ -10,6 +10,12 @@ type MethodsHeaders = Partial<{
 
 type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
 
+type CommonRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent'| 'Content-Encoding' | 'Authorization';
+
+type ContentType = AxiosHeaderValue | 'text/html' | 'text/plain' | 'multipart/form-data' | 'application/json' | 'application/x-www-form-urlencoded' | 'application/octet-stream';
+
+type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
+
 declare class AxiosHeaders {
   constructor(
       headers?: RawAxiosHeaders | AxiosHeaders
@@ -41,7 +47,7 @@ declare class AxiosHeaders {
 
   static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
 
-  setContentType(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentType(parser?: RegExp): RegExpExecArray | null;
   getContentType(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasContentType(matcher?: AxiosHeaderMatcher): boolean;
@@ -200,15 +206,13 @@ type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 declare namespace axios {
   type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
 
-  type CommonRequestHeadersList = 'Accept' | 'Content-Type' | 'Content-Length' | 'User-Agent'| 'Content-Encoding';
-
   type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & {
     [Key in CommonRequestHeadersList]: AxiosHeaderValue;
+  } & {
+    'Content-Type': ContentType
   }>;
 
   type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
-
-  type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
 
   type RawCommonResponseHeaders = {
     [Key in CommonResponseHeadersList]: AxiosHeaderValue;

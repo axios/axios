@@ -1,4 +1,4 @@
-// Axios v1.2.0 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.2.6 Copyright (c) 2023 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -303,7 +303,11 @@ function findKey(obj, key) {
   return null;
 }
 
-const _global = typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self;
+const _global = (() => {
+  /*eslint no-undef:0*/
+  if (typeof globalThis !== "undefined") return globalThis;
+  return typeof self !== "undefined" ? self : (typeof window !== 'undefined' ? window : global)
+})();
 
 const isContextDefined = (context) => !isUndefined(context) && context !== _global;
 
@@ -1785,7 +1789,7 @@ class AxiosHeaders {
   }
 }
 
-AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent']);
+AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
 
 utils.freezeMethods(AxiosHeaders.prototype);
 utils.freezeMethods(AxiosHeaders);
@@ -1907,7 +1911,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.2.0";
+const VERSION = "1.2.6";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -2040,7 +2044,7 @@ function speedometer(samplesCount, min) {
 
     const passed = startedAt && now - startedAt;
 
-    return  passed ? Math.round(bytesCount * 1000 / passed) : undefined;
+    return passed ? Math.round(bytesCount * 1000 / passed) : undefined;
   };
 }
 
@@ -2228,6 +2232,16 @@ class AxiosTransformStream extends stream__default["default"].Transform{
 }
 
 const AxiosTransformStream$1 = AxiosTransformStream;
+
+const zlibOptions = {
+  flush: zlib__default["default"].constants.Z_SYNC_FLUSH,
+  finishFlush: zlib__default["default"].constants.Z_SYNC_FLUSH
+};
+
+const brotliOptions = {
+  flush: zlib__default["default"].constants.BROTLI_OPERATION_FLUSH,
+  finishFlush: zlib__default["default"].constants.BROTLI_OPERATION_FLUSH
+};
 
 const isBrotliSupported = utils.isFunction(zlib__default["default"].createBrotliDecompress);
 
@@ -2469,7 +2483,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
       }
     }
 
-    const contentLength = +headers.getContentLength();
+    const contentLength = utils.toFiniteNumber(headers.getContentLength());
 
     if (utils.isArray(maxRate)) {
       maxUploadRate = maxRate[0];
@@ -2484,7 +2498,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
       }
 
       data = stream__default["default"].pipeline([data, new AxiosTransformStream$1({
-        length: utils.toFiniteNumber(contentLength),
+        length: contentLength,
         maxRate: utils.toFiniteNumber(maxUploadRate)
       })], utils.noop);
 
@@ -2527,7 +2541,10 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
       return reject(customErr);
     }
 
-    headers.set('Accept-Encoding', 'gzip, deflate, br', false);
+    headers.set(
+      'Accept-Encoding',
+      'gzip, compress, deflate' + (isBrotliSupported ? ', br' : ''), false
+      );
 
     const options = {
       path,
@@ -2599,34 +2616,36 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
         streams.push(transformStream);
       }
 
-      // uncompress the response body transparently if required
+      // decompress the response body transparently if required
       let responseStream = res;
 
       // return the last request in case of redirects
       const lastRequest = res.req || req;
 
       // if decompress disabled we should not decompress
-      if (config.decompress !== false) {
+      if (config.decompress !== false && res.headers['content-encoding']) {
         // if no content, but headers still say that it is encoded,
         // remove the header not confuse downstream operations
-        if ((!responseLength || res.statusCode === 204) && res.headers['content-encoding']) {
+        if (method === 'HEAD' || res.statusCode === 204) {
           delete res.headers['content-encoding'];
         }
 
         switch (res.headers['content-encoding']) {
         /*eslint default-case:0*/
         case 'gzip':
+        case 'x-gzip':
         case 'compress':
+        case 'x-compress':
         case 'deflate':
           // add the unzipper to the body stream processing pipeline
-          streams.push(zlib__default["default"].createUnzip());
+          streams.push(zlib__default["default"].createUnzip(zlibOptions));
 
           // remove the content-encoding in order to not confuse downstream operations
           delete res.headers['content-encoding'];
           break;
         case 'br':
           if (isBrotliSupported) {
-            streams.push(zlib__default["default"].createBrotliDecompress());
+            streams.push(zlib__default["default"].createBrotliDecompress(brotliOptions));
             delete res.headers['content-encoding'];
           }
         }
@@ -2955,7 +2974,7 @@ const xhrAdapter = isXHRAdapterSupported && function (config) {
       }
     }
 
-    if (utils.isFormData(requestData) && platform.isStandardBrowserEnv) {
+    if (utils.isFormData(requestData) && (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv)) {
       requestHeaders.setContentType(false); // Let the browser set it
     }
 
@@ -2983,7 +3002,7 @@ const xhrAdapter = isXHRAdapterSupported && function (config) {
       const responseHeaders = AxiosHeaders$1.from(
         'getAllResponseHeaders' in request && request.getAllResponseHeaders()
       );
-      const responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+      const responseData = !responseType || responseType === 'text' || responseType === 'json' ?
         request.responseText : request.response;
       const response = {
         data: responseData,
@@ -3210,7 +3229,7 @@ function throwIfCancellationRequested(config) {
   }
 
   if (config.signal && config.signal.aborted) {
-    throw new CanceledError();
+    throw new CanceledError(null, config);
   }
 }
 
@@ -3801,6 +3820,78 @@ function isAxiosError(payload) {
   return utils.isObject(payload) && (payload.isAxiosError === true);
 }
 
+const HttpStatusCode = {
+  Continue: 100,
+  SwitchingProtocols: 101,
+  Processing: 102,
+  EarlyHints: 103,
+  Ok: 200,
+  Created: 201,
+  Accepted: 202,
+  NonAuthoritativeInformation: 203,
+  NoContent: 204,
+  ResetContent: 205,
+  PartialContent: 206,
+  MultiStatus: 207,
+  AlreadyReported: 208,
+  ImUsed: 226,
+  MultipleChoices: 300,
+  MovedPermanently: 301,
+  Found: 302,
+  SeeOther: 303,
+  NotModified: 304,
+  UseProxy: 305,
+  Unused: 306,
+  TemporaryRedirect: 307,
+  PermanentRedirect: 308,
+  BadRequest: 400,
+  Unauthorized: 401,
+  PaymentRequired: 402,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  NotAcceptable: 406,
+  ProxyAuthenticationRequired: 407,
+  RequestTimeout: 408,
+  Conflict: 409,
+  Gone: 410,
+  LengthRequired: 411,
+  PreconditionFailed: 412,
+  PayloadTooLarge: 413,
+  UriTooLong: 414,
+  UnsupportedMediaType: 415,
+  RangeNotSatisfiable: 416,
+  ExpectationFailed: 417,
+  ImATeapot: 418,
+  MisdirectedRequest: 421,
+  UnprocessableEntity: 422,
+  Locked: 423,
+  FailedDependency: 424,
+  TooEarly: 425,
+  UpgradeRequired: 426,
+  PreconditionRequired: 428,
+  TooManyRequests: 429,
+  RequestHeaderFieldsTooLarge: 431,
+  UnavailableForLegalReasons: 451,
+  InternalServerError: 500,
+  NotImplemented: 501,
+  BadGateway: 502,
+  ServiceUnavailable: 503,
+  GatewayTimeout: 504,
+  HttpVersionNotSupported: 505,
+  VariantAlsoNegotiates: 506,
+  InsufficientStorage: 507,
+  LoopDetected: 508,
+  NotExtended: 510,
+  NetworkAuthenticationRequired: 511,
+};
+
+Object.entries(HttpStatusCode).forEach(([key, value]) => {
+  HttpStatusCode[value] = key;
+});
+
+const HttpStatusCode$1 = HttpStatusCode;
+
 /**
  * Create an instance of Axios
  *
@@ -3855,9 +3946,14 @@ axios.spread = spread;
 // Expose isAxiosError
 axios.isAxiosError = isAxiosError;
 
+// Expose mergeConfig
+axios.mergeConfig = mergeConfig;
+
 axios.AxiosHeaders = AxiosHeaders$1;
 
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
+
+axios.HttpStatusCode = HttpStatusCode$1;
 
 axios.default = axios;
 

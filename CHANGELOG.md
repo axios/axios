@@ -1,5 +1,107 @@
 # Changelog
 
+## [1.2.6](https://github.com/axios/axios/compare/v1.2.5...v1.2.6) (2023-01-28)
+
+
+### Bug Fixes
+
+* **headers:** added missed Authorization accessor; ([#5502](https://github.com/axios/axios/issues/5502)) ([342c0ba](https://github.com/axios/axios/commit/342c0ba9a16ea50f5ed7d2366c5c1a2c877e3f26))
+* **types:** fixed `CommonRequestHeadersList` & `CommonResponseHeadersList` types to be private in commonJS; ([#5503](https://github.com/axios/axios/issues/5503)) ([5a3d0a3](https://github.com/axios/axios/commit/5a3d0a3234d77361a1bc7cedee2da1e11df08e2c))
+
+### Contributors to this release
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+24/-9 (#5503 #5502 )")
+
+## [1.2.5](https://github.com/axios/axios/compare/v1.2.4...v1.2.5) (2023-01-26)
+
+
+### Bug Fixes
+
+* **types:** fixed AxiosHeaders to handle spread syntax by making all methods non-enumerable; ([#5499](https://github.com/axios/axios/issues/5499)) ([580f1e8](https://github.com/axios/axios/commit/580f1e8033a61baa38149d59fd16019de3932c22))
+
+### Contributors to this release
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+82/-54 (#5499 )")
+- ![avatar](https://avatars.githubusercontent.com/u/20516159?v&#x3D;4&amp;s&#x3D;16) [Elliot Ford](https://github.com/EFord36 "+1/-1 (#5462 )")
+
+## [1.2.4](https://github.com/axios/axios/compare/v1.2.3...v1.2.4) (2023-01-22)
+
+
+### Bug Fixes
+
+* **types:** renamed `RawAxiosRequestConfig` back to `AxiosRequestConfig`; ([#5486](https://github.com/axios/axios/issues/5486)) ([2a71f49](https://github.com/axios/axios/commit/2a71f49bc6c68495fa419003a3107ed8bd703ad0))
+* **types:** fix `AxiosRequestConfig` generic; ([#5478](https://github.com/axios/axios/issues/5478)) ([9bce81b](https://github.com/axios/axios/commit/186ea062da8b7d578ae78b1a5c220986b9bce81b))
+
+### Contributors to this release
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+242/-108 (#5486 #5482 )")
+- ![avatar](https://avatars.githubusercontent.com/u/9430821?v&#x3D;4&amp;s&#x3D;16) [Daniel Hillmann](https://github.com/hilleer "+1/-1 (#5478 )")
+
+## [1.2.3](https://github.com/axios/axios/compare/1.2.2...1.2.3) (2023-01-10)
+
+
+### Bug Fixes
+
+* **types:** fixed AxiosRequestConfig header interface by refactoring it to RawAxiosRequestConfig; ([#5420](https://github.com/axios/axios/issues/5420)) ([0811963](https://github.com/axios/axios/commit/08119634a22f1d5b19f5c9ea0adccb6d3eebc3bc))
+
+### Contributors to this release
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+938/-442 (#5456 #5455 #5453 #5451 #5449 #5447 #5446 #5443 #5442 #5439 #5420 )")
+
+## [1.2.2] - 2022-12-29
+
+### Fixed
+- fix(ci): fix release script inputs [#5392](https://github.com/axios/axios/pull/5392)
+- fix(ci): prerelease scipts [#5377](https://github.com/axios/axios/pull/5377)
+- fix(ci): release scripts [#5376](https://github.com/axios/axios/pull/5376)
+- fix(ci): typescript tests [#5375](https://github.com/axios/axios/pull/5375)
+- fix: Brotli decompression [#5353](https://github.com/axios/axios/pull/5353)
+- fix: add missing HttpStatusCode [#5345](https://github.com/axios/axios/pull/5345)
+
+### Chores
+- chore(ci): set conventional-changelog header config [#5406](https://github.com/axios/axios/pull/5406)
+- chore(ci): fix automatic contributors resolving [#5403](https://github.com/axios/axios/pull/5403)
+- chore(ci): improved logging for the contributors list generator [#5398](https://github.com/axios/axios/pull/5398)
+- chore(ci): fix release action [#5397](https://github.com/axios/axios/pull/5397)
+- chore(ci): fix version bump script by adding bump argument for target version [#5393](https://github.com/axios/axios/pull/5393)
+- chore(deps): bump decode-uri-component from 0.2.0 to 0.2.2 [#5342](https://github.com/axios/axios/pull/5342)
+- chore(ci): GitHub Actions Release script [#5384](https://github.com/axios/axios/pull/5384)
+- chore(ci): release scripts [#5364](https://github.com/axios/axios/pull/5364)
+
+### Contributors to this release
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- ![avatar](https://avatars.githubusercontent.com/u/1652293?v&#x3D;4&amp;s&#x3D;16) [Winnie](https://github.com/winniehell)
+
+## [1.2.1] - 2022-12-05
+
+### Changed
+- feat(exports): export mergeConfig [#5151](https://github.com/axios/axios/pull/5151)
+
+### Fixed
+- fix(CancelledError): include config [#4922](https://github.com/axios/axios/pull/4922)
+- fix(general): removing multiple/trailing/leading whitespace [#5022](https://github.com/axios/axios/pull/5022)
+- fix(headers): decompression for responses without Content-Length header [#5306](https://github.com/axios/axios/pull/5306)
+- fix(webWorker): exception to sending form data in web worker [#5139](https://github.com/axios/axios/pull/5139)
+
+### Refactors
+- refactor(types): AxiosProgressEvent.event type to any [#5308](https://github.com/axios/axios/pull/5308)
+- refactor(types): add missing types for static AxiosError.from method [#4956](https://github.com/axios/axios/pull/4956)
+
+### Chores
+- chore(docs): remove README link to non-existent upgrade guide [#5307](https://github.com/axios/axios/pull/5307)
+- chore(docs): typo in issue template name [#5159](https://github.com/axios/axios/pull/5159)
+
+### Contributors to this release
+
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- [Zachary Lysobey](https://github.com/zachlysobey)
+- [Kevin Ennis](https://github.com/kevincennis)
+- [Philipp Loose](https://github.com/phloose)
+- [secondl1ght](https://github.com/secondl1ght)
+- [wenzheng](https://github.com/0x30)
+- [Ivan Barsukov](https://github.com/ovarn)
+- [Arthur Fiorette](https://github.com/arthurfiorette)
+
 ## [1.2.0] - 2022-11-10
 
 ### Changed

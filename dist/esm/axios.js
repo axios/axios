@@ -1,4 +1,4 @@
-// Axios v1.2.0 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.2.6 Copyright (c) 2023 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -280,7 +280,11 @@ function findKey(obj, key) {
   return null;
 }
 
-const _global = typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self;
+const _global = (() => {
+  /*eslint no-undef:0*/
+  if (typeof globalThis !== "undefined") return globalThis;
+  return typeof self !== "undefined" ? self : (typeof window !== 'undefined' ? window : global)
+})();
 
 const isContextDefined = (context) => !isUndefined(context) && context !== _global;
 
@@ -1217,6 +1221,25 @@ const isStandardBrowserEnv = (() => {
   return typeof window !== 'undefined' && typeof document !== 'undefined';
 })();
 
+/**
+ * Determine if we're running in a standard browser webWorker environment
+ *
+ * Although the `isStandardBrowserEnv` method indicates that
+ * `allows axios to run in a web worker`, the WebWorker will still be
+ * filtered out due to its judgment standard
+ * `typeof window !== 'undefined' && typeof document !== 'undefined'`.
+ * This leads to a problem when axios post `FormData` in webWorker
+ */
+ const isStandardBrowserWebWorkerEnv = (() => {
+  return (
+    typeof WorkerGlobalScope !== 'undefined' &&
+    // eslint-disable-next-line no-undef
+    self instanceof WorkerGlobalScope &&
+    typeof self.importScripts === 'function'
+  );
+})();
+
+
 const platform = {
   isBrowser: true,
   classes: {
@@ -1225,6 +1248,7 @@ const platform = {
     Blob
   },
   isStandardBrowserEnv,
+  isStandardBrowserWebWorkerEnv,
   protocols: ['http', 'https', 'file', 'blob', 'url', 'data']
 };
 
@@ -1800,7 +1824,7 @@ class AxiosHeaders$1 {
   }
 }
 
-AxiosHeaders$1.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent']);
+AxiosHeaders$1.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
 
 utils.freezeMethods(AxiosHeaders$1.prototype);
 utils.freezeMethods(AxiosHeaders$1);
@@ -2089,7 +2113,7 @@ function speedometer(samplesCount, min) {
 
     const passed = startedAt && now - startedAt;
 
-    return  passed ? Math.round(bytesCount * 1000 / passed) : undefined;
+    return passed ? Math.round(bytesCount * 1000 / passed) : undefined;
   };
 }
 
@@ -2140,7 +2164,7 @@ const xhrAdapter = isXHRAdapterSupported && function (config) {
       }
     }
 
-    if (utils.isFormData(requestData) && platform.isStandardBrowserEnv) {
+    if (utils.isFormData(requestData) && (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv)) {
       requestHeaders.setContentType(false); // Let the browser set it
     }
 
@@ -2168,7 +2192,7 @@ const xhrAdapter = isXHRAdapterSupported && function (config) {
       const responseHeaders = AxiosHeaders$2.from(
         'getAllResponseHeaders' in request && request.getAllResponseHeaders()
       );
-      const responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+      const responseData = !responseType || responseType === 'text' || responseType === 'json' ?
         request.responseText : request.response;
       const response = {
         data: responseData,
@@ -2395,7 +2419,7 @@ function throwIfCancellationRequested(config) {
   }
 
   if (config.signal && config.signal.aborted) {
-    throw new CanceledError$1();
+    throw new CanceledError$1(null, config);
   }
 }
 
@@ -2466,7 +2490,7 @@ const headersToObject = (thing) => thing instanceof AxiosHeaders$2 ? thing.toJSO
  *
  * @returns {Object} New object resulting from merging config2 to config1
  */
-function mergeConfig(config1, config2) {
+function mergeConfig$1(config1, config2) {
   // eslint-disable-next-line no-param-reassign
   config2 = config2 || {};
   const config = {};
@@ -2556,7 +2580,7 @@ function mergeConfig(config1, config2) {
   return config;
 }
 
-const VERSION$1 = "1.2.0";
+const VERSION$1 = "1.2.6";
 
 const validators$1 = {};
 
@@ -2681,7 +2705,7 @@ class Axios$1 {
       config = configOrUrl || {};
     }
 
-    config = mergeConfig(this.defaults, config);
+    config = mergeConfig$1(this.defaults, config);
 
     const {transitional, paramsSerializer, headers} = config;
 
@@ -2791,7 +2815,7 @@ class Axios$1 {
   }
 
   getUri(config) {
-    config = mergeConfig(this.defaults, config);
+    config = mergeConfig$1(this.defaults, config);
     const fullPath = buildFullPath(config.baseURL, config.url);
     return buildURL(fullPath, config.params, config.paramsSerializer);
   }
@@ -2801,7 +2825,7 @@ class Axios$1 {
 utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
   /*eslint func-names:0*/
   Axios$1.prototype[method] = function(url, config) {
-    return this.request(mergeConfig(config || {}, {
+    return this.request(mergeConfig$1(config || {}, {
       method,
       url,
       data: (config || {}).data
@@ -2814,7 +2838,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
   function generateHTTPMethod(isForm) {
     return function httpMethod(url, data, config) {
-      return this.request(mergeConfig(config || {}, {
+      return this.request(mergeConfig$1(config || {}, {
         method,
         headers: isForm ? {
           'Content-Type': 'multipart/form-data'
@@ -2988,6 +3012,78 @@ function isAxiosError$1(payload) {
   return utils.isObject(payload) && (payload.isAxiosError === true);
 }
 
+const HttpStatusCode$1 = {
+  Continue: 100,
+  SwitchingProtocols: 101,
+  Processing: 102,
+  EarlyHints: 103,
+  Ok: 200,
+  Created: 201,
+  Accepted: 202,
+  NonAuthoritativeInformation: 203,
+  NoContent: 204,
+  ResetContent: 205,
+  PartialContent: 206,
+  MultiStatus: 207,
+  AlreadyReported: 208,
+  ImUsed: 226,
+  MultipleChoices: 300,
+  MovedPermanently: 301,
+  Found: 302,
+  SeeOther: 303,
+  NotModified: 304,
+  UseProxy: 305,
+  Unused: 306,
+  TemporaryRedirect: 307,
+  PermanentRedirect: 308,
+  BadRequest: 400,
+  Unauthorized: 401,
+  PaymentRequired: 402,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  NotAcceptable: 406,
+  ProxyAuthenticationRequired: 407,
+  RequestTimeout: 408,
+  Conflict: 409,
+  Gone: 410,
+  LengthRequired: 411,
+  PreconditionFailed: 412,
+  PayloadTooLarge: 413,
+  UriTooLong: 414,
+  UnsupportedMediaType: 415,
+  RangeNotSatisfiable: 416,
+  ExpectationFailed: 417,
+  ImATeapot: 418,
+  MisdirectedRequest: 421,
+  UnprocessableEntity: 422,
+  Locked: 423,
+  FailedDependency: 424,
+  TooEarly: 425,
+  UpgradeRequired: 426,
+  PreconditionRequired: 428,
+  TooManyRequests: 429,
+  RequestHeaderFieldsTooLarge: 431,
+  UnavailableForLegalReasons: 451,
+  InternalServerError: 500,
+  NotImplemented: 501,
+  BadGateway: 502,
+  ServiceUnavailable: 503,
+  GatewayTimeout: 504,
+  HttpVersionNotSupported: 505,
+  VariantAlsoNegotiates: 506,
+  InsufficientStorage: 507,
+  LoopDetected: 508,
+  NotExtended: 510,
+  NetworkAuthenticationRequired: 511,
+};
+
+Object.entries(HttpStatusCode$1).forEach(([key, value]) => {
+  HttpStatusCode$1[value] = key;
+});
+
+const HttpStatusCode$2 = HttpStatusCode$1;
+
 /**
  * Create an instance of Axios
  *
@@ -3007,7 +3103,7 @@ function createInstance(defaultConfig) {
 
   // Factory for creating new instances
   instance.create = function create(instanceConfig) {
-    return createInstance(mergeConfig(defaultConfig, instanceConfig));
+    return createInstance(mergeConfig$1(defaultConfig, instanceConfig));
   };
 
   return instance;
@@ -3042,9 +3138,14 @@ axios.spread = spread$1;
 // Expose isAxiosError
 axios.isAxiosError = isAxiosError$1;
 
+// Expose mergeConfig
+axios.mergeConfig = mergeConfig$1;
+
 axios.AxiosHeaders = AxiosHeaders$2;
 
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
+
+axios.HttpStatusCode = HttpStatusCode$2;
 
 axios.default = axios;
 
@@ -3067,8 +3168,10 @@ const {
   spread,
   toFormData,
   AxiosHeaders,
-  formToJSON
+  HttpStatusCode,
+  formToJSON,
+  mergeConfig
 } = axios$1;
 
-export { Axios, AxiosError, AxiosHeaders, Cancel, CancelToken, CanceledError, VERSION, all, axios$1 as default, formToJSON, isAxiosError, isCancel, spread, toFormData };
+export { Axios, AxiosError, AxiosHeaders, Cancel, CancelToken, CanceledError, HttpStatusCode, VERSION, all, axios$1 as default, formToJSON, isAxiosError, isCancel, mergeConfig, spread, toFormData };
 //# sourceMappingURL=axios.js.map

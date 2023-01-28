@@ -1,4 +1,4 @@
-// Axios v1.2.5 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.2.6 Copyright (c) 2023 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -1824,7 +1824,7 @@ class AxiosHeaders$1 {
   }
 }
 
-AxiosHeaders$1.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent']);
+AxiosHeaders$1.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
 
 utils.freezeMethods(AxiosHeaders$1.prototype);
 utils.freezeMethods(AxiosHeaders$1);
@@ -2580,7 +2580,7 @@ function mergeConfig$1(config1, config2) {
   return config;
 }
 
-const VERSION$1 = "1.2.5";
+const VERSION$1 = "1.2.6";
 
 const validators$1 = {};
 

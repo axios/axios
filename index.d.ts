@@ -42,7 +42,7 @@ export class AxiosHeaders {
 
   static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
 
-  setContentType(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentType(parser?: RegExp): RegExpExecArray | null;
   getContentType(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasContentType(matcher?: AxiosHeaderMatcher): boolean;
@@ -75,10 +75,14 @@ export class AxiosHeaders {
   [Symbol.iterator](): IterableIterator<[string, AxiosHeaderValue]>;
 }
 
-type CommonRequestHeadersList = 'Accept' | 'Content-Type' | 'Content-Length' | 'User-Agent' | 'Content-Encoding' | 'Authorization';
+type CommonRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent' | 'Content-Encoding' | 'Authorization';
+
+type ContentType = AxiosHeaderValue | 'text/html' | 'text/plain' | 'multipart/form-data' | 'application/json' | 'application/x-www-form-urlencoded' | 'application/octet-stream';
 
 export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & {
   [Key in CommonRequestHeadersList]: AxiosHeaderValue;
+} & {
+  'Content-Type': ContentType
 }>;
 
 export type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;

@@ -1,4 +1,4 @@
-// Axios v1.2.5 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.2.6 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1738,7 +1738,7 @@
     }]);
     return AxiosHeaders;
   }(Symbol.iterator, Symbol.toStringTag);
-  AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent']);
+  AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
   utils.freezeMethods(AxiosHeaders.prototype);
   utils.freezeMethods(AxiosHeaders);
   var AxiosHeaders$1 = AxiosHeaders;
@@ -2397,7 +2397,7 @@
     return config;
   }
 
-  var VERSION = "1.2.5";
+  var VERSION = "1.2.6";
 
   var validators$1 = {};
 

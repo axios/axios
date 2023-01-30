@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.2.3",
+  "version": "1.2.6",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -190,6 +190,13 @@
     }
   },
   "commitlint": {
+    "rules": {
+      "header-max-length": [
+        2,
+        "always",
+        130
+      ]
+    },
     "extends": [
       "@commitlint/config-conventional"
     ]

@@ -33,7 +33,7 @@ declare class AxiosHeaders {
 
   delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
 
-  clear(): boolean;
+  clear(matcher?: AxiosHeaderMatcher): boolean;
 
   normalize(format: boolean): AxiosHeaders;
 

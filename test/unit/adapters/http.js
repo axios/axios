@@ -35,6 +35,7 @@ const pipelineAsync = util.promisify(stream.pipeline);
 const finishedAsync = util.promisify(stream.finished);
 const gzip = util.promisify(zlib.gzip);
 const deflate = util.promisify(zlib.deflate);
+const deflateRaw = util.promisify(zlib.deflateRaw);
 const brotliCompress = util.promisify(zlib.brotliCompress);
 
 function toleranceRange(positive, negative) {
@@ -493,13 +494,16 @@ describe('supports http with nodejs', function () {
     describe('algorithms', ()=> {
       const responseBody ='str';
 
-      for (const [type, zipped] of Object.entries({
+      for (const [typeName, zipped] of Object.entries({
         gzip: gzip(responseBody),
         compress: gzip(responseBody),
         deflate: deflate(responseBody),
+        'deflate-raw': deflateRaw(responseBody),
         br: brotliCompress(responseBody)
       })) {
-        describe(`${type} decompression`, async () => {
+        const type = typeName.split('-')[0];
+
+        describe(`${typeName} decompression`, async () => {
           it(`should support decompression`, async () => {
             server = await startHTTPServer(async (req, res) => {
               res.setHeader('Content-Encoding', type);

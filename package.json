@@ -167,7 +167,8 @@
       "push": true,
       "commit": true,
       "tag": true,
-      "requireCommits": false
+      "requireCommits": false,
+      "requireCleanWorkingDir": false
     },
     "github": {
       "release": true,

@@ -28,7 +28,8 @@ describe('instance', function () {
         'default',
         'toFormData',
         'formToJSON',
-        'AxiosHeaders'
+        'AxiosHeaders',
+        'HttpStatusCode'
       ].indexOf(prop) > -1) {
         continue;
       }

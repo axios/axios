@@ -40,7 +40,7 @@ jobs:
         run: npm run release -- --ci --verbose --no-git.push --no-git.commit --no-git.tag --no-github $TYPE_ARG $BETA_ARG $DRY_ARG
       - name: Show git status
         if: failure()
-        run: git status
+        run: git status && git diff
       - name: Add contributors list to CHANGELOG.md
         run: npm run release:changelog:fix
         env:

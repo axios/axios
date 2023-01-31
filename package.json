@@ -186,7 +186,7 @@
     },
     "hooks": {
       "before:init": "npm test",
-      "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./dist",
+      "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./dist && git add ./package-lock.json",
       "before:release": "npm run release:changelog:fix",
       "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }

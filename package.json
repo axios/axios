@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.2.6",
+  "version": "1.3.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -167,7 +167,8 @@
       "push": true,
       "commit": true,
       "tag": true,
-      "requireCommits": false
+      "requireCommits": false,
+      "requireCleanWorkingDir": false
     },
     "github": {
       "release": true,
@@ -186,7 +187,7 @@
     },
     "hooks": {
       "before:init": "npm test",
-      "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./dist",
+      "after:bump": "gulp version --bump ${version} && npm run build && npm run test:build:version && git add ./dist && git add ./package-lock.json",
       "before:release": "npm run release:changelog:fix",
       "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
     }

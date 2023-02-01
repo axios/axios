@@ -28,7 +28,7 @@ const getUserFromCommit = ((commitCache) => async (sha) => {
     return commitCache[sha] = {
       ...data.commit.author,
       ...data.author,
-      avatar_url_sm: data.author.avatar_url ? data.author.avatar_url + '&s=16' : '',
+      avatar_url_sm: data.author.avatar_url ? data.author.avatar_url + '&s=18' : '',
     };
   } catch (err) {
     return commitCache[sha] = null;

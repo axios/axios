@@ -124,6 +124,7 @@ export interface AxiosProxyConfig {
     password: string;
   };
   protocol?: string;
+  servername?: string;
 }
 
 export enum HttpStatusCode {

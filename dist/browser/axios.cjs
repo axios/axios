@@ -1,4 +1,4 @@
-// Axios v1.3.0 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.1 Copyright (c) 2023 Matt Zabriskie and contributors
 'use strict';
 
 function bind(fn, thisArg) {
@@ -960,7 +960,7 @@ function toFormData(obj, formData, options) {
         value = JSON.stringify(value);
       } else if (
         (utils.isArray(value) && isFlatArray(value)) ||
-        (utils.isFileList(value) || utils.endsWith(key, '[]') && (arr = utils.toArray(value))
+        ((utils.isFileList(value) || utils.endsWith(key, '[]')) && (arr = utils.toArray(value))
         )) {
         // eslint-disable-next-line no-param-reassign
         key = removeBrackets(key);
@@ -1722,7 +1722,7 @@ class AxiosHeaders {
     if (header) {
       const key = utils.findKey(this, header);
 
-      return !!(key && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+      return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
     }
 
     return false;
@@ -2612,7 +2612,7 @@ function mergeConfig(config1, config2) {
   return config;
 }
 
-const VERSION = "1.3.0";
+const VERSION = "1.3.1";
 
 const validators$1 = {};
 

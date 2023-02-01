@@ -1,4 +1,4 @@
-// Axios v1.3.0 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.1 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -987,7 +987,7 @@
           key = metaTokens ? key : key.slice(0, -2);
           // eslint-disable-next-line no-param-reassign
           value = JSON.stringify(value);
-        } else if (utils.isArray(value) && isFlatArray(value) || utils.isFileList(value) || utils.endsWith(key, '[]') && (arr = utils.toArray(value))) {
+        } else if (utils.isArray(value) && isFlatArray(value) || (utils.isFileList(value) || utils.endsWith(key, '[]')) && (arr = utils.toArray(value))) {
           // eslint-disable-next-line no-param-reassign
           key = removeBrackets(key);
           arr.forEach(function each(el, index) {
@@ -1629,7 +1629,7 @@
         header = normalizeHeader(header);
         if (header) {
           var key = utils.findKey(this, header);
-          return !!(key && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+          return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
         }
         return false;
       }
@@ -2423,7 +2423,7 @@
     return config;
   }
 
-  var VERSION = "1.3.0";
+  var VERSION = "1.3.1";
 
   var validators$1 = {};
 

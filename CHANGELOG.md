@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1](https://github.com/axios/axios/compare/v1.3.0...v1.3.1) (2023-02-01)
+
+
+### Bug Fixes
+
+* **formdata:** add hotfix to use the asynchronous API to compute the content-length header value; ([#5521](https://github.com/axios/axios/issues/5521)) ([96d336f](https://github.com/axios/axios/commit/96d336f527619f21da012fe1f117eeb53e5a2120))
+* **serializer:** fixed serialization of array-like objects; ([#5518](https://github.com/axios/axios/issues/5518)) ([08104c0](https://github.com/axios/axios/commit/08104c028c0f9353897b1b6691d74c440fd0c32d))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+27/-8 (#5521 #5518 )")
+
 # [1.3.0](https://github.com/axios/axios/compare/v1.2.6...v1.3.0) (2023-01-31)
 
 

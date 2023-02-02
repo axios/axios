@@ -1,4 +1,4 @@
-type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
+export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
 interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;

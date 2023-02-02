@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.3.1](https://github.com/axios/axios/compare/v1.3.0...v1.3.1) (2023-02-01)
+
+
+### Bug Fixes
+
+* **formdata:** add hotfix to use the asynchronous API to compute the content-length header value; ([#5521](https://github.com/axios/axios/issues/5521)) ([96d336f](https://github.com/axios/axios/commit/96d336f527619f21da012fe1f117eeb53e5a2120))
+* **serializer:** fixed serialization of array-like objects; ([#5518](https://github.com/axios/axios/issues/5518)) ([08104c0](https://github.com/axios/axios/commit/08104c028c0f9353897b1b6691d74c440fd0c32d))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+27/-8 (#5521 #5518 )")
+
+# [1.3.0](https://github.com/axios/axios/compare/v1.2.6...v1.3.0) (2023-01-31)
+
+
+### Bug Fixes
+
+* **headers:** fixed & optimized clear method; ([#5507](https://github.com/axios/axios/issues/5507)) ([9915635](https://github.com/axios/axios/commit/9915635c69d0ab70daca5738488421f67ca60959))
+* **http:** add zlib headers if missing ([#5497](https://github.com/axios/axios/issues/5497)) ([65e8d1e](https://github.com/axios/axios/commit/65e8d1e28ce829f47a837e45129730e541950d3c))
+
+
+### Features
+
+* **fomdata:** added support for spec-compliant FormData & Blob types; ([#5316](https://github.com/axios/axios/issues/5316)) ([6ac574e](https://github.com/axios/axios/commit/6ac574e00a06731288347acea1e8246091196953))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+352/-67 (#5514 #5512 #5510 #5509 #5508 #5316 #5507 )")
+- <img src="https://avatars.githubusercontent.com/u/35015993?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ItsNotGoodName](https://github.com/ItsNotGoodName "+43/-2 (#5497 )")
+
 ## [1.2.6](https://github.com/axios/axios/compare/v1.2.5...v1.2.6) (2023-01-28)
 
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.2](https://github.com/axios/axios/compare/v1.3.1...v1.3.2) (2023-02-03)
+
+
+### Bug Fixes
+
+* **http:** treat http://localhost as base URL for relative paths to avoid `ERR_INVALID_URL` error; ([#5528](https://github.com/axios/axios/issues/5528)) ([128d56f](https://github.com/axios/axios/commit/128d56f4a0fb8f5f2ed6e0dd80bc9225fee9538c))
+* **http:** use explicit import instead of TextEncoder global; ([#5530](https://github.com/axios/axios/issues/5530)) ([6b3c305](https://github.com/axios/axios/commit/6b3c305fc40c56428e0afabedc6f4d29c2830f6f))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+2/-1 (#5530 #5528 )")
+
 ## [1.3.1](https://github.com/axios/axios/compare/v1.3.0...v1.3.1) (2023-02-01)
 
 

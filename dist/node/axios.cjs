@@ -1,4 +1,4 @@
-// Axios v1.3.1 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.2 Copyright (c) 2023 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -1948,7 +1948,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.3.1";
+const VERSION = "1.3.2";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -2288,7 +2288,7 @@ const readBlob$1 = readBlob;
 
 const BOUNDARY_ALPHABET = utils.ALPHABET.ALPHA_DIGIT + '-_';
 
-const textEncoder = new TextEncoder();
+const textEncoder = new util.TextEncoder();
 
 const CRLF = '\r\n';
 const CRLF_BYTES = textEncoder.encode(CRLF);
@@ -2577,7 +2577,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
 
     // Parse url
     const fullPath = buildFullPath(config.baseURL, config.url);
-    const parsed = new URL(fullPath);
+    const parsed = new URL(fullPath, 'http://localhost');
     const protocol = parsed.protocol || supportedProtocols[0];
 
     if (protocol === 'data:') {

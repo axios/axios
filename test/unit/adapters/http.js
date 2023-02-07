@@ -821,6 +821,34 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support config.maxHeaderSize', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/', {maxHeaderSize: 1234})
+        .then(function (res) {
+          assert.equal(res.request?.maxHeaderSize, 1234, 'maxHeaderSize equals default')
+          done();
+        }).catch(done);
+    })
+  })
+
+  it('maxHeaderSize shoudl be undefined', function (done) {
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      axios.get('http://localhost:4444/')
+        .then(function (res) {
+          assert.equal(res.request?.maxHeaderSize, undefined, 'maxHeaderSize is undefined when not set')
+          done();
+        }).catch(done);
+    })
+  })
+
   describe('streams', function(){
     it('should support streams', function (done) {
       server = http.createServer(function (req, res) {

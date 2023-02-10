@@ -146,6 +146,20 @@ describe('module', function () {
         await exec(`npm test --prefix ${pkgPath}`, {});
       });
     });
+
+    describe('Adapters ESM', () => {
+      const pkgPath = path.join(__dirname, './adapters-esm');
+
+      after(async () => {
+        await remove(path.join(pkgPath, './node_modules'));
+      });
+
+      it('should be able to be loaded with import', async function () {
+        this.timeout(30000);
+
+        await exec(`npm test --prefix ${pkgPath}`);
+      });
+    });
   });
 
   describe('typings', () => {

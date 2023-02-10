@@ -18,6 +18,10 @@
         "default": "./index.js"
       }
     },
+    "./adapters": {
+      "types": "./lib/adapters/adapters.d.ts",
+      "default": "./lib/adapters/adapters.js"
+    },
     "./package.json": "./package.json"
   },
   "type": "module",

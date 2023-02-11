@@ -1,16 +1,19 @@
-name: "Publish on merge"
+name: Publish
 on:
   pull_request:
     types:
       - closed
     branches:
       - main
+      - 'v**'
+  workflow_dispatch:
 jobs:
   publish:
-    if: github.event.pull_request.merged == true && github.event.pull_request.head.label == 'axios:release'
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.head.label == 'axios:release')
     runs-on: ubuntu-latest
     steps:
       - name: "Release PR info"
+        if: github.event_name != 'workflow_dispatch'
         run: echo "PR ${{ github.event.number }}"
       - uses: actions/checkout@v3
       - name: git config

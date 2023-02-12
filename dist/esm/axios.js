@@ -1,4 +1,4 @@
-// Axios v1.2.0 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.3.2 Copyright (c) 2023 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -280,7 +280,11 @@ function findKey(obj, key) {
   return null;
 }
 
-const _global = typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self;
+const _global = (() => {
+  /*eslint no-undef:0*/
+  if (typeof globalThis !== "undefined") return globalThis;
+  return typeof self !== "undefined" ? self : (typeof window !== 'undefined' ? window : global)
+})();
 
 const isContextDefined = (context) => !isUndefined(context) && context !== _global;
 
@@ -511,7 +515,7 @@ const matchAll = (regExp, str) => {
 const isHTMLForm = kindOfTest('HTMLFormElement');
 
 const toCamelCase = str => {
-  return str.toLowerCase().replace(/[_-\s]([a-z\d])(\w*)/g,
+  return str.toLowerCase().replace(/[-_\s]([a-z\d])(\w*)/g,
     function replacer(m, p1, p2) {
       return p1.toUpperCase() + p2;
     }
@@ -595,6 +599,37 @@ const toFiniteNumber = (value, defaultValue) => {
   return Number.isFinite(value) ? value : defaultValue;
 };
 
+const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+
+const DIGIT = '0123456789';
+
+const ALPHABET = {
+  DIGIT,
+  ALPHA,
+  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+};
+
+const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
+  let str = '';
+  const {length} = alphabet;
+  while (size--) {
+    str += alphabet[Math.random() * length|0];
+  }
+
+  return str;
+};
+
+/**
+ * If the thing is a FormData object, return true, otherwise return false.
+ *
+ * @param {unknown} thing - The thing to check.
+ *
+ * @returns {boolean}
+ */
+function isSpecCompliantForm(thing) {
+  return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator]);
+}
+
 const toJSONObject = (obj) => {
   const stack = new Array(10);
 
@@ -672,6 +707,9 @@ const utils = {
   findKey,
   global: _global,
   isContextDefined,
+  ALPHABET,
+  generateString,
+  isSpecCompliantForm,
   toJSONObject
 };
 
@@ -770,10 +808,8 @@ AxiosError$1.from = (error, code, config, request, response, customProps) => {
   return axiosError;
 };
 
-/* eslint-env browser */
-var browser = typeof self == 'object' ? self.FormData : window.FormData;
-
-const FormData$2 = browser;
+// eslint-disable-next-line strict
+const httpAdapter = null;
 
 /**
  * Determines if the given thing is a array or js object.
@@ -831,17 +867,6 @@ const predicates = utils.toFlatObject(utils, {}, null, function filter(prop) {
 });
 
 /**
- * If the thing is a FormData object, return true, otherwise return false.
- *
- * @param {unknown} thing - The thing to check.
- *
- * @returns {boolean}
- */
-function isSpecCompliant(thing) {
-  return thing && utils.isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator];
-}
-
-/**
  * Convert a data object to FormData
  *
  * @param {Object} obj
@@ -870,7 +895,7 @@ function toFormData$1(obj, formData, options) {
   }
 
   // eslint-disable-next-line no-param-reassign
-  formData = formData || new (FormData$2 || FormData)();
+  formData = formData || new (FormData)();
 
   // eslint-disable-next-line no-param-reassign
   options = utils.toFlatObject(options, {
@@ -888,7 +913,7 @@ function toFormData$1(obj, formData, options) {
   const dots = options.dots;
   const indexes = options.indexes;
   const _Blob = options.Blob || typeof Blob !== 'undefined' && Blob;
-  const useBlob = _Blob && isSpecCompliant(formData);
+  const useBlob = _Blob && utils.isSpecCompliantForm(formData);
 
   if (!utils.isFunction(visitor)) {
     throw new TypeError('visitor must be a function');
@@ -933,7 +958,7 @@ function toFormData$1(obj, formData, options) {
         value = JSON.stringify(value);
       } else if (
         (utils.isArray(value) && isFlatArray(value)) ||
-        (utils.isFileList(value) || utils.endsWith(key, '[]') && (arr = utils.toArray(value))
+        ((utils.isFileList(value) || utils.endsWith(key, '[]')) && (arr = utils.toArray(value))
         )) {
         // eslint-disable-next-line no-param-reassign
         key = removeBrackets(key);
@@ -1217,6 +1242,25 @@ const isStandardBrowserEnv = (() => {
   return typeof window !== 'undefined' && typeof document !== 'undefined';
 })();
 
+/**
+ * Determine if we're running in a standard browser webWorker environment
+ *
+ * Although the `isStandardBrowserEnv` method indicates that
+ * `allows axios to run in a web worker`, the WebWorker will still be
+ * filtered out due to its judgment standard
+ * `typeof window !== 'undefined' && typeof document !== 'undefined'`.
+ * This leads to a problem when axios post `FormData` in webWorker
+ */
+ const isStandardBrowserWebWorkerEnv = (() => {
+  return (
+    typeof WorkerGlobalScope !== 'undefined' &&
+    // eslint-disable-next-line no-undef
+    self instanceof WorkerGlobalScope &&
+    typeof self.importScripts === 'function'
+  );
+})();
+
+
 const platform = {
   isBrowser: true,
   classes: {
@@ -1225,6 +1269,7 @@ const platform = {
     Blob
   },
   isStandardBrowserEnv,
+  isStandardBrowserWebWorkerEnv,
   protocols: ['http', 'https', 'file', 'blob', 'url', 'data']
 };
 
@@ -1675,7 +1720,7 @@ class AxiosHeaders$1 {
     if (header) {
       const key = utils.findKey(this, header);
 
-      return !!(key && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+      return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
     }
 
     return false;
@@ -1708,8 +1753,20 @@ class AxiosHeaders$1 {
     return deleted;
   }
 
-  clear() {
-    return Object.keys(this).forEach(this.delete.bind(this));
+  clear(matcher) {
+    const keys = Object.keys(this);
+    let i = keys.length;
+    let deleted = false;
+
+    while (i--) {
+      const key = keys[i];
+      if(!matcher || matchHeaderValue(this, this[key], key, matcher)) {
+        delete this[key];
+        deleted = true;
+      }
+    }
+
+    return deleted;
   }
 
   normalize(format) {
@@ -1800,7 +1857,7 @@ class AxiosHeaders$1 {
   }
 }
 
-AxiosHeaders$1.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent']);
+AxiosHeaders$1.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
 
 utils.freezeMethods(AxiosHeaders$1.prototype);
 utils.freezeMethods(AxiosHeaders$1);
@@ -1852,9 +1909,6 @@ function CanceledError$1(message, config, request) {
 utils.inherits(CanceledError$1, AxiosError$1, {
   __CANCEL__: true
 });
-
-// eslint-disable-next-line strict
-const httpAdapter = null;
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -2089,7 +2143,7 @@ function speedometer(samplesCount, min) {
 
     const passed = startedAt && now - startedAt;
 
-    return  passed ? Math.round(bytesCount * 1000 / passed) : undefined;
+    return passed ? Math.round(bytesCount * 1000 / passed) : undefined;
   };
 }
 
@@ -2140,7 +2194,7 @@ const xhrAdapter = isXHRAdapterSupported && function (config) {
       }
     }
 
-    if (utils.isFormData(requestData) && platform.isStandardBrowserEnv) {
+    if (utils.isFormData(requestData) && (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv)) {
       requestHeaders.setContentType(false); // Let the browser set it
     }
 
@@ -2168,7 +2222,7 @@ const xhrAdapter = isXHRAdapterSupported && function (config) {
       const responseHeaders = AxiosHeaders$2.from(
         'getAllResponseHeaders' in request && request.getAllResponseHeaders()
       );
-      const responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+      const responseData = !responseType || responseType === 'text' || responseType === 'json' ?
         request.responseText : request.response;
       const response = {
         data: responseData,
@@ -2395,7 +2449,7 @@ function throwIfCancellationRequested(config) {
   }
 
   if (config.signal && config.signal.aborted) {
-    throw new CanceledError$1();
+    throw new CanceledError$1(null, config);
   }
 }
 
@@ -2466,7 +2520,7 @@ const headersToObject = (thing) => thing instanceof AxiosHeaders$2 ? thing.toJSO
  *
  * @returns {Object} New object resulting from merging config2 to config1
  */
-function mergeConfig(config1, config2) {
+function mergeConfig$1(config1, config2) {
   // eslint-disable-next-line no-param-reassign
   config2 = config2 || {};
   const config = {};
@@ -2556,7 +2610,7 @@ function mergeConfig(config1, config2) {
   return config;
 }
 
-const VERSION$1 = "1.2.0";
+const VERSION$1 = "1.3.2";
 
 const validators$1 = {};
 
@@ -2681,7 +2735,7 @@ class Axios$1 {
       config = configOrUrl || {};
     }
 
-    config = mergeConfig(this.defaults, config);
+    config = mergeConfig$1(this.defaults, config);
 
     const {transitional, paramsSerializer, headers} = config;
 
@@ -2791,7 +2845,7 @@ class Axios$1 {
   }
 
   getUri(config) {
-    config = mergeConfig(this.defaults, config);
+    config = mergeConfig$1(this.defaults, config);
     const fullPath = buildFullPath(config.baseURL, config.url);
     return buildURL(fullPath, config.params, config.paramsSerializer);
   }
@@ -2801,7 +2855,7 @@ class Axios$1 {
 utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
   /*eslint func-names:0*/
   Axios$1.prototype[method] = function(url, config) {
-    return this.request(mergeConfig(config || {}, {
+    return this.request(mergeConfig$1(config || {}, {
       method,
       url,
       data: (config || {}).data
@@ -2814,7 +2868,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
   function generateHTTPMethod(isForm) {
     return function httpMethod(url, data, config) {
-      return this.request(mergeConfig(config || {}, {
+      return this.request(mergeConfig$1(config || {}, {
         method,
         headers: isForm ? {
           'Content-Type': 'multipart/form-data'
@@ -2988,6 +3042,78 @@ function isAxiosError$1(payload) {
   return utils.isObject(payload) && (payload.isAxiosError === true);
 }
 
+const HttpStatusCode$1 = {
+  Continue: 100,
+  SwitchingProtocols: 101,
+  Processing: 102,
+  EarlyHints: 103,
+  Ok: 200,
+  Created: 201,
+  Accepted: 202,
+  NonAuthoritativeInformation: 203,
+  NoContent: 204,
+  ResetContent: 205,
+  PartialContent: 206,
+  MultiStatus: 207,
+  AlreadyReported: 208,
+  ImUsed: 226,
+  MultipleChoices: 300,
+  MovedPermanently: 301,
+  Found: 302,
+  SeeOther: 303,
+  NotModified: 304,
+  UseProxy: 305,
+  Unused: 306,
+  TemporaryRedirect: 307,
+  PermanentRedirect: 308,
+  BadRequest: 400,
+  Unauthorized: 401,
+  PaymentRequired: 402,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  NotAcceptable: 406,
+  ProxyAuthenticationRequired: 407,
+  RequestTimeout: 408,
+  Conflict: 409,
+  Gone: 410,
+  LengthRequired: 411,
+  PreconditionFailed: 412,
+  PayloadTooLarge: 413,
+  UriTooLong: 414,
+  UnsupportedMediaType: 415,
+  RangeNotSatisfiable: 416,
+  ExpectationFailed: 417,
+  ImATeapot: 418,
+  MisdirectedRequest: 421,
+  UnprocessableEntity: 422,
+  Locked: 423,
+  FailedDependency: 424,
+  TooEarly: 425,
+  UpgradeRequired: 426,
+  PreconditionRequired: 428,
+  TooManyRequests: 429,
+  RequestHeaderFieldsTooLarge: 431,
+  UnavailableForLegalReasons: 451,
+  InternalServerError: 500,
+  NotImplemented: 501,
+  BadGateway: 502,
+  ServiceUnavailable: 503,
+  GatewayTimeout: 504,
+  HttpVersionNotSupported: 505,
+  VariantAlsoNegotiates: 506,
+  InsufficientStorage: 507,
+  LoopDetected: 508,
+  NotExtended: 510,
+  NetworkAuthenticationRequired: 511,
+};
+
+Object.entries(HttpStatusCode$1).forEach(([key, value]) => {
+  HttpStatusCode$1[value] = key;
+});
+
+const HttpStatusCode$2 = HttpStatusCode$1;
+
 /**
  * Create an instance of Axios
  *
@@ -3007,7 +3133,7 @@ function createInstance(defaultConfig) {
 
   // Factory for creating new instances
   instance.create = function create(instanceConfig) {
-    return createInstance(mergeConfig(defaultConfig, instanceConfig));
+    return createInstance(mergeConfig$1(defaultConfig, instanceConfig));
   };
 
   return instance;
@@ -3042,9 +3168,14 @@ axios.spread = spread$1;
 // Expose isAxiosError
 axios.isAxiosError = isAxiosError$1;
 
+// Expose mergeConfig
+axios.mergeConfig = mergeConfig$1;
+
 axios.AxiosHeaders = AxiosHeaders$2;
 
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
+
+axios.HttpStatusCode = HttpStatusCode$2;
 
 axios.default = axios;
 
@@ -3067,8 +3198,10 @@ const {
   spread,
   toFormData,
   AxiosHeaders,
-  formToJSON
+  HttpStatusCode,
+  formToJSON,
+  mergeConfig
 } = axios$1;
 
-export { Axios, AxiosError, AxiosHeaders, Cancel, CancelToken, CanceledError, VERSION, all, axios$1 as default, formToJSON, isAxiosError, isCancel, spread, toFormData };
+export { Axios, AxiosError, AxiosHeaders, Cancel, CancelToken, CanceledError, HttpStatusCode, VERSION, all, axios$1 as default, formToJSON, isAxiosError, isCancel, mergeConfig, spread, toFormData };
 //# sourceMappingURL=axios.js.map

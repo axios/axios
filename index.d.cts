@@ -1,34 +1,27 @@
 type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
-type RawAxiosHeaders = Record<string, AxiosHeaderValue>;
 
-type MethodsHeaders = {
-  [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
-};
-
-interface CommonHeaders  {
-  common: AxiosHeaders;
+interface RawAxiosHeaders {
+  [key: string]: AxiosHeaderValue;
 }
+
+type MethodsHeaders = Partial<{
+  [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
+} & {common: AxiosHeaders}>;
 
 type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
 
-type AxiosHeaderSetter = (value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher) => AxiosHeaders;
+type CommonRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent'| 'Content-Encoding' | 'Authorization';
 
-type AxiosHeaderGetter = ((parser?: RegExp) => RegExpExecArray | null) |
-    ((matcher?: AxiosHeaderMatcher) => AxiosHeaderValue);
+type ContentType = AxiosHeaderValue | 'text/html' | 'text/plain' | 'multipart/form-data' | 'application/json' | 'application/x-www-form-urlencoded' | 'application/octet-stream';
 
-type AxiosHeaderTester = (matcher?: AxiosHeaderMatcher) => boolean;
-
-type MaxUploadRate = number;
-
-type MaxDownloadRate = number;
-
-type Milliseconds = number;
+type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
 
 declare class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders,
-      defaultHeaders?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders
   );
+
+  [key: string]: any;
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
@@ -40,9 +33,11 @@ declare class AxiosHeaders {
 
   delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
 
-  clear(): boolean;
+  clear(matcher?: AxiosHeaderMatcher): boolean;
 
   normalize(format: boolean): AxiosHeaders;
+
+  concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
 
   toJSON(asStrings?: boolean): RawAxiosHeaders;
 
@@ -50,37 +45,51 @@ declare class AxiosHeaders {
 
   static accessor(header: string | string[]): AxiosHeaders;
 
-  setContentType: AxiosHeaderSetter;
-  getContentType: AxiosHeaderGetter;
-  hasContentType: AxiosHeaderTester;
+  static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
 
-  setContentLength: AxiosHeaderSetter;
-  getContentLength: AxiosHeaderGetter;
-  hasContentLength: AxiosHeaderTester;
+  setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getContentType(parser?: RegExp): RegExpExecArray | null;
+  getContentType(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasContentType(matcher?: AxiosHeaderMatcher): boolean;
 
-  setAccept: AxiosHeaderSetter;
-  getAccept: AxiosHeaderGetter;
-  hasAccept: AxiosHeaderTester;
+  setContentLength(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getContentLength(parser?: RegExp): RegExpExecArray | null;
+  getContentLength(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasContentLength(matcher?: AxiosHeaderMatcher): boolean;
 
-  setUserAgent: AxiosHeaderSetter;
-  getUserAgent: AxiosHeaderGetter;
-  hasUserAgent: AxiosHeaderTester;
+  setAccept(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getAccept(parser?: RegExp): RegExpExecArray | null;
+  getAccept(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasAccept(matcher?: AxiosHeaderMatcher): boolean;
 
-  setContentEncoding: AxiosHeaderSetter;
-  getContentEncoding: AxiosHeaderGetter;
-  hasContentEncoding: AxiosHeaderTester;
+  setUserAgent(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getUserAgent(parser?: RegExp): RegExpExecArray | null;
+  getUserAgent(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
+
+  setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getContentEncoding(parser?: RegExp): RegExpExecArray | null;
+  getContentEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
+
+  setAuthorization(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getAuthorization(parser?: RegExp): RegExpExecArray | null;
+  getAuthorization(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasAuthorization(matcher?: AxiosHeaderMatcher): boolean;
+
+  [Symbol.iterator](): IterableIterator<[string, AxiosHeaderValue]>;
 }
 
 declare class AxiosError<T = unknown, D = any> extends Error {
   constructor(
       message?: string,
       code?: string,
-      config?: axios.AxiosRequestConfig<D>,
+      config?: axios.InternalAxiosRequestConfig<D>,
       request?: any,
       response?: axios.AxiosResponse<T, D>
   );
 
-  config?: axios.AxiosRequestConfig<D>;
+  config?: axios.InternalAxiosRequestConfig<D>;
   code?: string;
   request?: any;
   response?: axios.AxiosResponse<T, D>;
@@ -109,7 +118,7 @@ declare class Axios {
   constructor(config?: axios.AxiosRequestConfig);
   defaults: axios.AxiosDefaults;
   interceptors: {
-    request: axios.AxiosInterceptorManager<axios.AxiosRequestConfig>;
+    request: axios.AxiosInterceptorManager<axios.InternalAxiosRequestConfig>;
     response: axios.AxiosInterceptorManager<axios.AxiosResponse>;
   };
   getUri(config?: axios.AxiosRequestConfig): string;
@@ -197,26 +206,34 @@ type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 declare namespace axios {
   type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
 
-  type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders>;
-
-  type AxiosRequestHeaders = Partial<RawAxiosHeaders & MethodsHeaders & CommonHeaders> & AxiosHeaders;
-
-  type RawAxiosResponseHeaders = Partial<Record<string, string> & {
-    "set-cookie"?: string[]
+  type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & {
+    [Key in CommonRequestHeadersList]: AxiosHeaderValue;
+  } & {
+    'Content-Type': ContentType
   }>;
+
+  type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
+
+  type RawCommonResponseHeaders = {
+    [Key in CommonResponseHeadersList]: AxiosHeaderValue;
+  } & {
+    "set-cookie": string[];
+  };
+
+  type RawAxiosResponseHeaders = Partial<RawAxiosHeaders & RawCommonResponseHeaders>;
 
   type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;
 
   interface AxiosRequestTransformer {
-    (this: AxiosRequestConfig, data: any, headers: AxiosRequestHeaders): any;
+    (this: InternalAxiosRequestConfig, data: any, headers: AxiosRequestHeaders): any;
   }
 
   interface AxiosResponseTransformer {
-    (this: AxiosRequestConfig, data: any, headers: AxiosResponseHeaders, status?: number): any;
+    (this: InternalAxiosRequestConfig, data: any, headers: AxiosResponseHeaders, status?: number): any;
   }
 
   interface AxiosAdapter {
-    (config: AxiosRequestConfig): AxiosPromise;
+    (config: InternalAxiosRequestConfig): AxiosPromise;
   }
 
   interface AxiosBasicCredentials {
@@ -321,6 +338,12 @@ declare namespace axios {
     serialize?: CustomParamsSerializer;
   }
 
+  type MaxUploadRate = number;
+
+  type MaxDownloadRate = number;
+
+  type BrowserProgressEvent = any;
+
   interface AxiosProgressEvent {
     loaded: number;
     total?: number;
@@ -330,7 +353,14 @@ declare namespace axios {
     estimated?: number;
     upload?: boolean;
     download?: boolean;
+    event?: BrowserProgressEvent;
   }
+
+  type Milliseconds = number;
+
+  type AxiosAdapterName = 'xhr' | 'http' | string;
+
+  type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
   interface AxiosRequestConfig<D = any> {
     url?: string;
@@ -338,14 +368,14 @@ declare namespace axios {
     baseURL?: string;
     transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
-    headers?: RawAxiosRequestHeaders;
+    headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
     params?: any;
     paramsSerializer?: ParamsSerializerOptions;
     data?: D;
     timeout?: Milliseconds;
     timeoutErrorMessage?: string;
     withCredentials?: boolean;
-    adapter?: AxiosAdapter;
+    adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
     auth?: AxiosBasicCredentials;
     responseType?: ResponseType;
     responseEncoding?: responseEncoding | string;
@@ -374,6 +404,13 @@ declare namespace axios {
     formSerializer?: FormSerializerOptions;
   }
 
+  // Alias
+  type RawAxiosRequestConfig<D = any> = AxiosRequestConfig<D>;
+
+  interface InternalAxiosRequestConfig<D = any> extends AxiosRequestConfig {
+    headers: AxiosRequestHeaders;
+  }
+
   interface HeadersDefaults {
     common: RawAxiosRequestHeaders;
     delete: RawAxiosRequestHeaders;
@@ -393,7 +430,7 @@ declare namespace axios {
   }
 
   interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
-    headers?: RawAxiosRequestHeaders | Partial<HeadersDefaults>;
+    headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   }
 
   interface AxiosResponse<T = any, D = any>  {
@@ -401,7 +438,7 @@ declare namespace axios {
     status: number;
     statusText: string;
     headers: RawAxiosResponseHeaders | AxiosResponseHeaders;
-    config: AxiosRequestConfig<D>;
+    config: InternalAxiosRequestConfig<D>;
     request?: any;
   }
 
@@ -437,7 +474,7 @@ declare namespace axios {
 
   interface AxiosInterceptorOptions {
     synchronous?: boolean;
-    runWhen?: (config: AxiosRequestConfig) => boolean;
+    runWhen?: (config: InternalAxiosRequestConfig) => boolean;
   }
 
   type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
@@ -486,6 +523,7 @@ declare namespace axios {
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+    AxiosHeaders: typeof AxiosHeaders;
   }
 }
 

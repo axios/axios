@@ -49,7 +49,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TYPE_ARG: ${{ fromJSON('{"auto":"", "patch":"--patch", "minor":"--minor", "major":"--major"}')[github.event.inputs.type] }}
-          BETA_ARG: ${{ github.event.inputs.beta == true && '--preRelease=beta' || '' }}
-          NPM_ARG: ${{ github.event.inputs.npm == false && '--no-npm' || '' }}
-          DRY_ARG: ${{ github.event.inputs.dry == true && '--dry-run' || '' }}
-        run: npm run release -- --ci --verbose $NPM_ARG $TYPE_ARG $BETA_ARG $DRY_ARG
+          BETA_ARG: ${{ github.event.inputs.beta == 'true' && '--preRelease=beta' || '' }}
+          DRY_ARG: ${{ github.event.inputs.dry == 'true' && '--dry-run' || '' }}
+        run: npm run release -- --ci --verbose $TYPE_ARG $BETA_ARG $DRY_ARG
+      - name: npm-release
+        if: ${{ github.event.inputs.dry == 'false' && github.event.inputs.npm == 'true' }}
+        run: npm publish

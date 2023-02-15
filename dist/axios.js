@@ -1,4 +1,4 @@
-// Axios v1.2.1 Copyright (c) 2022 Matt Zabriskie and contributors
+// Axios v1.3.3 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -367,7 +367,11 @@
     }
     return null;
   }
-  var _global = typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self;
+  var _global = function () {
+    /*eslint no-undef:0*/
+    if (typeof globalThis !== "undefined") return globalThis;
+    return typeof self !== "undefined" ? self : typeof window !== 'undefined' ? window : global;
+  }();
   var isContextDefined = function isContextDefined(context) {
     return !isUndefined(context) && context !== _global;
   };
@@ -594,7 +598,7 @@
   /* Checking if the kindOfTest function returns true when passed an HTMLFormElement. */
   var isHTMLForm = kindOfTest('HTMLFormElement');
   var toCamelCase = function toCamelCase(str) {
-    return str.toLowerCase().replace(/[_-\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
+    return str.toLowerCase().replace(/[-_\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
       return p1.toUpperCase() + p2;
     });
   };
@@ -666,6 +670,34 @@
     value = +value;
     return Number.isFinite(value) ? value : defaultValue;
   };
+  var ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+  var DIGIT = '0123456789';
+  var ALPHABET = {
+    DIGIT: DIGIT,
+    ALPHA: ALPHA,
+    ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+  };
+  var generateString = function generateString() {
+    var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 16;
+    var alphabet = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ALPHABET.ALPHA_DIGIT;
+    var str = '';
+    var length = alphabet.length;
+    while (size--) {
+      str += alphabet[Math.random() * length | 0];
+    }
+    return str;
+  };
+
+  /**
+   * If the thing is a FormData object, return true, otherwise return false.
+   *
+   * @param {unknown} thing - The thing to check.
+   *
+   * @returns {boolean}
+   */
+  function isSpecCompliantForm(thing) {
+    return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator]);
+  }
   var toJSONObject = function toJSONObject(obj) {
     var stack = new Array(10);
     var visit = function visit(source, i) {
@@ -735,6 +767,9 @@
     findKey: findKey,
     global: _global,
     isContextDefined: isContextDefined,
+    ALPHABET: ALPHABET,
+    generateString: generateString,
+    isSpecCompliantForm: isSpecCompliantForm,
     toJSONObject: toJSONObject
   };
 
@@ -813,9 +848,8 @@
     return axiosError;
   };
 
-  /* eslint-env browser */
-  var browser = (typeof self === "undefined" ? "undefined" : _typeof(self)) == 'object' ? self.FormData : window.FormData;
-  var FormData$2 = browser;
+  // eslint-disable-next-line strict
+  var httpAdapter = null;
 
   /**
    * Determines if the given thing is a array or js object.
@@ -872,17 +906,6 @@
   });
 
   /**
-   * If the thing is a FormData object, return true, otherwise return false.
-   *
-   * @param {unknown} thing - The thing to check.
-   *
-   * @returns {boolean}
-   */
-  function isSpecCompliant(thing) {
-    return thing && utils.isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator];
-  }
-
-  /**
    * Convert a data object to FormData
    *
    * @param {Object} obj
@@ -911,7 +934,7 @@
     }
 
     // eslint-disable-next-line no-param-reassign
-    formData = formData || new (FormData$2 || FormData)();
+    formData = formData || new (FormData)();
 
     // eslint-disable-next-line no-param-reassign
     options = utils.toFlatObject(options, {
@@ -928,7 +951,7 @@
     var dots = options.dots;
     var indexes = options.indexes;
     var _Blob = options.Blob || typeof Blob !== 'undefined' && Blob;
-    var useBlob = _Blob && isSpecCompliant(formData);
+    var useBlob = _Blob && utils.isSpecCompliantForm(formData);
     if (!utils.isFunction(visitor)) {
       throw new TypeError('visitor must be a function');
     }
@@ -964,7 +987,7 @@
           key = metaTokens ? key : key.slice(0, -2);
           // eslint-disable-next-line no-param-reassign
           value = JSON.stringify(value);
-        } else if (utils.isArray(value) && isFlatArray(value) || utils.isFileList(value) || utils.endsWith(key, '[]') && (arr = utils.toArray(value))) {
+        } else if (utils.isArray(value) && isFlatArray(value) || (utils.isFileList(value) || utils.endsWith(key, '[]')) && (arr = utils.toArray(value))) {
           // eslint-disable-next-line no-param-reassign
           key = removeBrackets(key);
           arr.forEach(function each(el, index) {
@@ -1186,7 +1209,7 @@
 
   var URLSearchParams$1 = typeof URLSearchParams !== 'undefined' ? URLSearchParams : AxiosURLSearchParams;
 
-  var FormData$1 = FormData;
+  var FormData$1 = typeof FormData !== 'undefined' ? FormData : null;
 
   /**
    * Determine if we're running in a standard browser environment
@@ -1223,7 +1246,9 @@
    * This leads to a problem when axios post `FormData` in webWorker
    */
   var isStandardBrowserWebWorkerEnv = function () {
-    return typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope && typeof self.importScripts === 'function';
+    return typeof WorkerGlobalScope !== 'undefined' &&
+    // eslint-disable-next-line no-undef
+    self instanceof WorkerGlobalScope && typeof self.importScripts === 'function';
   }();
   var platform = {
     isBrowser: true,
@@ -1513,9 +1538,12 @@
   function isValidHeaderName(str) {
     return /^[-_a-zA-Z]+$/.test(str.trim());
   }
-  function matchHeaderValue(context, value, header, filter) {
+  function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
     if (utils.isFunction(filter)) {
       return filter.call(this, value, header);
+    }
+    if (isHeaderNameFilter) {
+      value = header;
     }
     if (!utils.isString(value)) return;
     if (utils.isString(filter)) {
@@ -1604,7 +1632,7 @@
         header = normalizeHeader(header);
         if (header) {
           var key = utils.findKey(this, header);
-          return !!(key && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+          return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
         }
         return false;
       }
@@ -1632,8 +1660,18 @@
       }
     }, {
       key: "clear",
-      value: function clear() {
-        return Object.keys(this).forEach(this["delete"].bind(this));
+      value: function clear(matcher) {
+        var keys = Object.keys(this);
+        var i = keys.length;
+        var deleted = false;
+        while (i--) {
+          var key = keys[i];
+          if (!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
+            delete this[key];
+            deleted = true;
+          }
+        }
+        return deleted;
       }
     }, {
       key: "normalize",
@@ -1732,7 +1770,7 @@
     }]);
     return AxiosHeaders;
   }(Symbol.iterator, Symbol.toStringTag);
-  AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent']);
+  AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
   utils.freezeMethods(AxiosHeaders.prototype);
   utils.freezeMethods(AxiosHeaders);
   var AxiosHeaders$1 = AxiosHeaders;
@@ -1778,9 +1816,6 @@
   utils.inherits(CanceledError, AxiosError, {
     __CANCEL__: true
   });
-
-  // eslint-disable-next-line strict
-  var httpAdapter = null;
 
   /**
    * Resolve or reject a Promise based on response status.
@@ -2391,7 +2426,7 @@
     return config;
   }
 
-  var VERSION = "1.2.1";
+  var VERSION = "1.3.3";
 
   var validators$1 = {};
 
@@ -2783,6 +2818,79 @@
     return utils.isObject(payload) && payload.isAxiosError === true;
   }
 
+  var HttpStatusCode = {
+    Continue: 100,
+    SwitchingProtocols: 101,
+    Processing: 102,
+    EarlyHints: 103,
+    Ok: 200,
+    Created: 201,
+    Accepted: 202,
+    NonAuthoritativeInformation: 203,
+    NoContent: 204,
+    ResetContent: 205,
+    PartialContent: 206,
+    MultiStatus: 207,
+    AlreadyReported: 208,
+    ImUsed: 226,
+    MultipleChoices: 300,
+    MovedPermanently: 301,
+    Found: 302,
+    SeeOther: 303,
+    NotModified: 304,
+    UseProxy: 305,
+    Unused: 306,
+    TemporaryRedirect: 307,
+    PermanentRedirect: 308,
+    BadRequest: 400,
+    Unauthorized: 401,
+    PaymentRequired: 402,
+    Forbidden: 403,
+    NotFound: 404,
+    MethodNotAllowed: 405,
+    NotAcceptable: 406,
+    ProxyAuthenticationRequired: 407,
+    RequestTimeout: 408,
+    Conflict: 409,
+    Gone: 410,
+    LengthRequired: 411,
+    PreconditionFailed: 412,
+    PayloadTooLarge: 413,
+    UriTooLong: 414,
+    UnsupportedMediaType: 415,
+    RangeNotSatisfiable: 416,
+    ExpectationFailed: 417,
+    ImATeapot: 418,
+    MisdirectedRequest: 421,
+    UnprocessableEntity: 422,
+    Locked: 423,
+    FailedDependency: 424,
+    TooEarly: 425,
+    UpgradeRequired: 426,
+    PreconditionRequired: 428,
+    TooManyRequests: 429,
+    RequestHeaderFieldsTooLarge: 431,
+    UnavailableForLegalReasons: 451,
+    InternalServerError: 500,
+    NotImplemented: 501,
+    BadGateway: 502,
+    ServiceUnavailable: 503,
+    GatewayTimeout: 504,
+    HttpVersionNotSupported: 505,
+    VariantAlsoNegotiates: 506,
+    InsufficientStorage: 507,
+    LoopDetected: 508,
+    NotExtended: 510,
+    NetworkAuthenticationRequired: 511
+  };
+  Object.entries(HttpStatusCode).forEach(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+      key = _ref2[0],
+      value = _ref2[1];
+    HttpStatusCode[value] = key;
+  });
+  var HttpStatusCode$1 = HttpStatusCode;
+
   /**
    * Create an instance of Axios
    *
@@ -2845,6 +2953,7 @@
   axios.formToJSON = function (thing) {
     return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
   };
+  axios.HttpStatusCode = HttpStatusCode$1;
   axios["default"] = axios;
 
   return axios;

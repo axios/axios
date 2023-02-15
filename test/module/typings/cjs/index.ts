@@ -276,19 +276,19 @@ axios.create({
 // Interceptors
 
 const requestInterceptorId: number = axios.interceptors.request.use(
-    (config: axios.AxiosRequestConfig) => config,
+    (config: axios.InternalAxiosRequestConfig) => config,
     (error: any) => Promise.reject(error)
 );
 
 axios.interceptors.request.eject(requestInterceptorId);
 
 axios.interceptors.request.use(
-    (config: axios.AxiosRequestConfig) => Promise.resolve(config),
+    (config: axios.InternalAxiosRequestConfig) => Promise.resolve(config),
     (error: any) => Promise.reject(error)
 );
 
-axios.interceptors.request.use((config: axios.AxiosRequestConfig) => config);
-axios.interceptors.request.use((config: axios.AxiosRequestConfig) => Promise.resolve(config));
+axios.interceptors.request.use((config: axios.InternalAxiosRequestConfig) => config);
+axios.interceptors.request.use((config: axios.InternalAxiosRequestConfig) => Promise.resolve(config));
 
 const responseInterceptorId: number = axios.interceptors.response.use(
     (response: axios.AxiosResponse) => response,
@@ -301,6 +301,13 @@ axios.interceptors.response.use(
     (response: axios.AxiosResponse) => Promise.resolve(response),
     (error: any) => Promise.reject(error)
 );
+
+axios.interceptors.request.use(req => {
+  // https://github.com/axios/axios/issues/5415
+  req.headers.set('foo', 'bar');
+  req.headers['Content-Type'] = 123;
+  return req;
+});
 
 const voidRequestInterceptorId = axios.interceptors.request.use(
     // @ts-expect-error -- Must return an axios.AxiosRequestConfig (or throw)
@@ -323,7 +330,7 @@ axios.interceptors.response.clear();
 
 // Adapters
 
-const adapter: axios.AxiosAdapter = (config: axios.AxiosRequestConfig) => {
+const adapter: axios.AxiosAdapter = (config: axios.InternalAxiosRequestConfig) => {
   const response: axios.AxiosResponse = {
     data: { foo: 'bar' },
     status: 200,
@@ -441,3 +448,62 @@ axios.get('/user', {
     console.log(e.rate);
   }
 });
+
+// AxiosHeaders
+
+// iterator
+
+const headers = new axios.AxiosHeaders({foo: "bar"})
+
+for (const [header, value] of headers) {
+  console.log(header, value);
+}
+
+// index signature
+
+(()=>{
+  const headers = new axios.AxiosHeaders({x:1});
+
+  headers.y = 2;
+})();
+
+
+// AxiosRequestHeaders
+
+(()=>{
+  const headers:axios.AxiosRequestHeaders = new axios.AxiosHeaders({x:1});
+
+  headers.y = 2;
+
+  headers.get('x');
+})();
+
+// AxiosHeaders instance assigment
+
+{
+  const requestInterceptorId: number = axios.interceptors.request.use(
+      async (config) => {
+        config.headers.Accept ="foo";
+        config.headers.setAccept("foo");
+        config.headers = new axios.AxiosHeaders({x:1});
+        config.headers.foo = "1";
+        config.headers.set('bar', '2');
+        config.headers.set({myHeader: "myValue"})
+        config.headers = new axios.AxiosHeaders({myHeader: "myValue"});
+        config.headers = {...config.headers} as axios.AxiosRequestHeaders;
+        return config;
+      },
+      (error: any) => Promise.reject(error)
+  );
+}
+
+{
+  const config: axios.AxiosRequestConfig = {headers: new axios.AxiosHeaders({foo: 1})};
+
+  axios.get('', {
+    headers: {
+      bar: 2,
+      ...config.headers
+    }
+  });
+}

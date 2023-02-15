@@ -236,6 +236,26 @@ describe('AxiosHeaders', function () {
     });
   });
 
+  describe('clear', ()=> {
+    it('should clear all headers', () => {
+      const headers = new AxiosHeaders({x: 1, y:2});
+
+      headers.clear();
+
+      assert.deepStrictEqual({...headers.toJSON()}, {});
+    });
+
+    it('should clear matching headers if a matcher was specified', () => {
+      const headers = new AxiosHeaders({foo: 1, 'x-foo': 2, bar: 3});
+
+      assert.deepStrictEqual({...headers.toJSON()}, {foo: '1', 'x-foo': '2', bar: '3'});
+
+      headers.clear(/^x-/);
+
+      assert.deepStrictEqual({...headers.toJSON()}, {foo: '1', bar: '3'});
+    });
+  });
+
   describe('toJSON', function () {
     it('should return headers object with original headers case', function () {
       const headers = new AxiosHeaders({

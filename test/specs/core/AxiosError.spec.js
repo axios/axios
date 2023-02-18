@@ -1,5 +1,6 @@
 import AxiosError from '../../../lib/core/AxiosError';
 
+
 describe('core::AxiosError', function() {
   it('should create an Error with message, config, code, request, response, stack and isAxiosError', function() {
     const request = { path: '/foo' };
@@ -47,5 +48,12 @@ describe('core::AxiosError', function() {
       const error = new Error('Boom!');
       expect(AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError).toBeTruthy();
     });
+  });
+
+  it('should be a native error as checked by the NodeJS `isNativeError` function', async function (){
+    if((typeof process !== 'undefined') && (process.release.name === 'node')){
+      let {isNativeError} = require('node:util/types');
+      expect(isNativeError(new AxiosError("My Axios Error"))).toBeTruthy();
+    }
   });
 });

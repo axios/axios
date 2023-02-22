@@ -1,4 +1,4 @@
-// Axios v1.2.6 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.3 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -598,7 +598,7 @@
   /* Checking if the kindOfTest function returns true when passed an HTMLFormElement. */
   var isHTMLForm = kindOfTest('HTMLFormElement');
   var toCamelCase = function toCamelCase(str) {
-    return str.toLowerCase().replace(/[_-\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
+    return str.toLowerCase().replace(/[-_\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
       return p1.toUpperCase() + p2;
     });
   };
@@ -670,6 +670,34 @@
     value = +value;
     return Number.isFinite(value) ? value : defaultValue;
   };
+  var ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+  var DIGIT = '0123456789';
+  var ALPHABET = {
+    DIGIT: DIGIT,
+    ALPHA: ALPHA,
+    ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+  };
+  var generateString = function generateString() {
+    var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 16;
+    var alphabet = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ALPHABET.ALPHA_DIGIT;
+    var str = '';
+    var length = alphabet.length;
+    while (size--) {
+      str += alphabet[Math.random() * length | 0];
+    }
+    return str;
+  };
+
+  /**
+   * If the thing is a FormData object, return true, otherwise return false.
+   *
+   * @param {unknown} thing - The thing to check.
+   *
+   * @returns {boolean}
+   */
+  function isSpecCompliantForm(thing) {
+    return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator]);
+  }
   var toJSONObject = function toJSONObject(obj) {
     var stack = new Array(10);
     var visit = function visit(source, i) {
@@ -739,6 +767,9 @@
     findKey: findKey,
     global: _global,
     isContextDefined: isContextDefined,
+    ALPHABET: ALPHABET,
+    generateString: generateString,
+    isSpecCompliantForm: isSpecCompliantForm,
     toJSONObject: toJSONObject
   };
 
@@ -817,9 +848,8 @@
     return axiosError;
   };
 
-  /* eslint-env browser */
-  var browser = (typeof self === "undefined" ? "undefined" : _typeof(self)) == 'object' ? self.FormData : window.FormData;
-  var FormData$2 = browser;
+  // eslint-disable-next-line strict
+  var httpAdapter = null;
 
   /**
    * Determines if the given thing is a array or js object.
@@ -876,17 +906,6 @@
   });
 
   /**
-   * If the thing is a FormData object, return true, otherwise return false.
-   *
-   * @param {unknown} thing - The thing to check.
-   *
-   * @returns {boolean}
-   */
-  function isSpecCompliant(thing) {
-    return thing && utils.isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator];
-  }
-
-  /**
    * Convert a data object to FormData
    *
    * @param {Object} obj
@@ -915,7 +934,7 @@
     }
 
     // eslint-disable-next-line no-param-reassign
-    formData = formData || new (FormData$2 || FormData)();
+    formData = formData || new (FormData)();
 
     // eslint-disable-next-line no-param-reassign
     options = utils.toFlatObject(options, {
@@ -932,7 +951,7 @@
     var dots = options.dots;
     var indexes = options.indexes;
     var _Blob = options.Blob || typeof Blob !== 'undefined' && Blob;
-    var useBlob = _Blob && isSpecCompliant(formData);
+    var useBlob = _Blob && utils.isSpecCompliantForm(formData);
     if (!utils.isFunction(visitor)) {
       throw new TypeError('visitor must be a function');
     }
@@ -968,7 +987,7 @@
           key = metaTokens ? key : key.slice(0, -2);
           // eslint-disable-next-line no-param-reassign
           value = JSON.stringify(value);
-        } else if (utils.isArray(value) && isFlatArray(value) || utils.isFileList(value) || utils.endsWith(key, '[]') && (arr = utils.toArray(value))) {
+        } else if (utils.isArray(value) && isFlatArray(value) || (utils.isFileList(value) || utils.endsWith(key, '[]')) && (arr = utils.toArray(value))) {
           // eslint-disable-next-line no-param-reassign
           key = removeBrackets(key);
           arr.forEach(function each(el, index) {
@@ -1190,7 +1209,7 @@
 
   var URLSearchParams$1 = typeof URLSearchParams !== 'undefined' ? URLSearchParams : AxiosURLSearchParams;
 
-  var FormData$1 = FormData;
+  var FormData$1 = typeof FormData !== 'undefined' ? FormData : null;
 
   /**
    * Determine if we're running in a standard browser environment
@@ -1519,9 +1538,12 @@
   function isValidHeaderName(str) {
     return /^[-_a-zA-Z]+$/.test(str.trim());
   }
-  function matchHeaderValue(context, value, header, filter) {
+  function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
     if (utils.isFunction(filter)) {
       return filter.call(this, value, header);
+    }
+    if (isHeaderNameFilter) {
+      value = header;
     }
     if (!utils.isString(value)) return;
     if (utils.isString(filter)) {
@@ -1610,7 +1632,7 @@
         header = normalizeHeader(header);
         if (header) {
           var key = utils.findKey(this, header);
-          return !!(key && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+          return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
         }
         return false;
       }
@@ -1638,8 +1660,18 @@
       }
     }, {
       key: "clear",
-      value: function clear() {
-        return Object.keys(this).forEach(this["delete"].bind(this));
+      value: function clear(matcher) {
+        var keys = Object.keys(this);
+        var i = keys.length;
+        var deleted = false;
+        while (i--) {
+          var key = keys[i];
+          if (!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
+            delete this[key];
+            deleted = true;
+          }
+        }
+        return deleted;
       }
     }, {
       key: "normalize",
@@ -1784,9 +1816,6 @@
   utils.inherits(CanceledError, AxiosError, {
     __CANCEL__: true
   });
-
-  // eslint-disable-next-line strict
-  var httpAdapter = null;
 
   /**
    * Resolve or reject a Promise based on response status.
@@ -2397,7 +2426,7 @@
     return config;
   }
 
-  var VERSION = "1.2.6";
+  var VERSION = "1.3.3";
 
   var validators$1 = {};
 

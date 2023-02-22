@@ -1576,6 +1576,10 @@ describe('supports http with nodejs', function () {
       it('should allow passing FormData', function (done) {
         var form = new FormDataLegacy();
         var file1 = Buffer.from('foo', 'utf8');
+        const image = path.resolve(__dirname, './axios.png');
+        const fileStream = fs.createReadStream(image);
+
+        const stat = fs.statSync(image);
 
         form.append('foo', "bar");
         form.append('file1', file1, {
@@ -1584,8 +1588,12 @@ describe('supports http with nodejs', function () {
           contentType: 'image/jpeg'
         });
 
+        form.append('fileStream', fileStream);
+
         server = http.createServer(function (req, res) {
           var receivedForm = new formidable.IncomingForm();
+
+          assert.ok(req.rawHeaders.find(header => header.toLowerCase() === 'content-length'));
 
           receivedForm.parse(req, function (err, fields, files) {
             if (err) {
@@ -1608,6 +1616,10 @@ describe('supports http with nodejs', function () {
             assert.strictEqual(res.data.files.file1.mimetype, 'image/jpeg');
             assert.strictEqual(res.data.files.file1.originalFilename, 'temp/bar.jpg');
             assert.strictEqual(res.data.files.file1.size, 3);
+
+            assert.strictEqual(res.data.files.fileStream.mimetype, 'image/png');
+            assert.strictEqual(res.data.files.fileStream.originalFilename, 'axios.png');
+            assert.strictEqual(res.data.files.fileStream.size, stat.size);
 
             done();
           }).catch(done);
@@ -2087,4 +2099,8 @@ describe('supports http with nodejs', function () {
       }
     });
   })
+
+  it('should properly handle synchronous errors inside the adapter', function () {
+    return assert.rejects(() => axios.get('http://192.168.0.285'), /Invalid URL/);
+  });
 });

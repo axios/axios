@@ -1,4 +1,4 @@
-// Axios v1.3.3 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.4 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1211,6 +1211,8 @@
 
   var FormData$1 = typeof FormData !== 'undefined' ? FormData : null;
 
+  var Blob$1 = typeof Blob !== 'undefined' ? Blob : null;
+
   /**
    * Determine if we're running in a standard browser environment
    *
@@ -1255,7 +1257,7 @@
     classes: {
       URLSearchParams: URLSearchParams$1,
       FormData: FormData$1,
-      Blob: Blob
+      Blob: Blob$1
     },
     isStandardBrowserEnv: isStandardBrowserEnv,
     isStandardBrowserWebWorkerEnv: isStandardBrowserWebWorkerEnv,
@@ -2426,7 +2428,7 @@
     return config;
   }
 
-  var VERSION = "1.3.3";
+  var VERSION = "1.3.4";
 
   var validators$1 = {};
 

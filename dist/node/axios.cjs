@@ -1,4 +1,4 @@
-// Axios v1.3.2 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.3 Copyright (c) 2023 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -1581,9 +1581,13 @@ function isValidHeaderName(str) {
   return /^[-_a-zA-Z]+$/.test(str.trim());
 }
 
-function matchHeaderValue(context, value, header, filter) {
+function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
   if (utils.isFunction(filter)) {
     return filter.call(this, value, header);
+  }
+
+  if (isHeaderNameFilter) {
+    value = header;
   }
 
   if (!utils.isString(value)) return;
@@ -1729,7 +1733,7 @@ class AxiosHeaders {
 
     while (i--) {
       const key = keys[i];
-      if(!matcher || matchHeaderValue(this, this[key], key, matcher)) {
+      if(!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
         delete this[key];
         deleted = true;
       }
@@ -1948,7 +1952,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.3.2";
+const VERSION = "1.3.3";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -2658,7 +2662,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
       if (!headers.hasContentLength()) {
         try {
           const knownLength = await util__default["default"].promisify(data.getLength).call(data);
-          headers.setContentLength(knownLength);
+          Number.isFinite(knownLength) && knownLength >= 0 && headers.setContentLength(knownLength);
           /*eslint no-empty:0*/
         } catch (e) {
         }

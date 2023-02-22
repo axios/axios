@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.3](https://github.com/axios/axios/compare/v1.3.2...v1.3.3) (2023-02-13)
+
+
+### Bug Fixes
+
+* **formdata:** added a check to make sure the FormData class is available in the browser's global scope; ([#5545](https://github.com/axios/axios/issues/5545)) ([a6dfa72](https://github.com/axios/axios/commit/a6dfa72010db5ad52db8bd13c0f98e537e8fd05d))
+* **formdata:** fixed setting NaN as Content-Length for form payload in some cases; ([#5535](https://github.com/axios/axios/issues/5535)) ([c19f7bf](https://github.com/axios/axios/commit/c19f7bf770f90ae8307f4ea3104f227056912da1))
+* **headers:** fixed the filtering logic of the clear method; ([#5542](https://github.com/axios/axios/issues/5542)) ([ea87ebf](https://github.com/axios/axios/commit/ea87ebfe6d1699af072b9e7cd40faf8f14b0ab93))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+11/-7 (#5545 #5535 #5542 )")
+- <img src="https://avatars.githubusercontent.com/u/19842213?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [陈若枫](https://github.com/ruofee "+2/-2 (#5467 )")
+
 ## [1.3.2](https://github.com/axios/axios/compare/v1.3.1...v1.3.2) (2023-02-03)
 
 

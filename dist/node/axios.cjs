@@ -1,4 +1,4 @@
-// Axios v1.2.6 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.3 Copyright (c) 2023 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -6,6 +6,7 @@ const url = require('url');
 const proxyFromEnv = require('proxy-from-env');
 const http = require('http');
 const https = require('https');
+const util = require('util');
 const followRedirects = require('follow-redirects');
 const zlib = require('zlib');
 const stream = require('stream');
@@ -17,6 +18,7 @@ const FormData__default = /*#__PURE__*/_interopDefaultLegacy(FormData$1);
 const url__default = /*#__PURE__*/_interopDefaultLegacy(url);
 const http__default = /*#__PURE__*/_interopDefaultLegacy(http);
 const https__default = /*#__PURE__*/_interopDefaultLegacy(https);
+const util__default = /*#__PURE__*/_interopDefaultLegacy(util);
 const followRedirects__default = /*#__PURE__*/_interopDefaultLegacy(followRedirects);
 const zlib__default = /*#__PURE__*/_interopDefaultLegacy(zlib);
 const stream__default = /*#__PURE__*/_interopDefaultLegacy(stream);
@@ -538,7 +540,7 @@ const matchAll = (regExp, str) => {
 const isHTMLForm = kindOfTest('HTMLFormElement');
 
 const toCamelCase = str => {
-  return str.toLowerCase().replace(/[_-\s]([a-z\d])(\w*)/g,
+  return str.toLowerCase().replace(/[-_\s]([a-z\d])(\w*)/g,
     function replacer(m, p1, p2) {
       return p1.toUpperCase() + p2;
     }
@@ -622,6 +624,37 @@ const toFiniteNumber = (value, defaultValue) => {
   return Number.isFinite(value) ? value : defaultValue;
 };
 
+const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+
+const DIGIT = '0123456789';
+
+const ALPHABET = {
+  DIGIT,
+  ALPHA,
+  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+};
+
+const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
+  let str = '';
+  const {length} = alphabet;
+  while (size--) {
+    str += alphabet[Math.random() * length|0];
+  }
+
+  return str;
+};
+
+/**
+ * If the thing is a FormData object, return true, otherwise return false.
+ *
+ * @param {unknown} thing - The thing to check.
+ *
+ * @returns {boolean}
+ */
+function isSpecCompliantForm(thing) {
+  return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator]);
+}
+
 const toJSONObject = (obj) => {
   const stack = new Array(10);
 
@@ -699,6 +732,9 @@ const utils = {
   findKey,
   global: _global,
   isContextDefined,
+  ALPHABET,
+  generateString,
+  isSpecCompliantForm,
   toJSONObject
 };
 
@@ -853,17 +889,6 @@ const predicates = utils.toFlatObject(utils, {}, null, function filter(prop) {
 });
 
 /**
- * If the thing is a FormData object, return true, otherwise return false.
- *
- * @param {unknown} thing - The thing to check.
- *
- * @returns {boolean}
- */
-function isSpecCompliant(thing) {
-  return thing && utils.isFunction(thing.append) && thing[Symbol.toStringTag] === 'FormData' && thing[Symbol.iterator];
-}
-
-/**
  * Convert a data object to FormData
  *
  * @param {Object} obj
@@ -910,7 +935,7 @@ function toFormData(obj, formData, options) {
   const dots = options.dots;
   const indexes = options.indexes;
   const _Blob = options.Blob || typeof Blob !== 'undefined' && Blob;
-  const useBlob = _Blob && isSpecCompliant(formData);
+  const useBlob = _Blob && utils.isSpecCompliantForm(formData);
 
   if (!utils.isFunction(visitor)) {
     throw new TypeError('visitor must be a function');
@@ -955,7 +980,7 @@ function toFormData(obj, formData, options) {
         value = JSON.stringify(value);
       } else if (
         (utils.isArray(value) && isFlatArray(value)) ||
-        (utils.isFileList(value) || utils.endsWith(key, '[]') && (arr = utils.toArray(value))
+        ((utils.isFileList(value) || utils.endsWith(key, '[]')) && (arr = utils.toArray(value))
         )) {
         // eslint-disable-next-line no-param-reassign
         key = removeBrackets(key);
@@ -1556,9 +1581,13 @@ function isValidHeaderName(str) {
   return /^[-_a-zA-Z]+$/.test(str.trim());
 }
 
-function matchHeaderValue(context, value, header, filter) {
+function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
   if (utils.isFunction(filter)) {
     return filter.call(this, value, header);
+  }
+
+  if (isHeaderNameFilter) {
+    value = header;
   }
 
   if (!utils.isString(value)) return;
@@ -1664,7 +1693,7 @@ class AxiosHeaders {
     if (header) {
       const key = utils.findKey(this, header);
 
-      return !!(key && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+      return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
     }
 
     return false;
@@ -1697,8 +1726,20 @@ class AxiosHeaders {
     return deleted;
   }
 
-  clear() {
-    return Object.keys(this).forEach(this.delete.bind(this));
+  clear(matcher) {
+    const keys = Object.keys(this);
+    let i = keys.length;
+    let deleted = false;
+
+    while (i--) {
+      const key = keys[i];
+      if(!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
+        delete this[key];
+        deleted = true;
+      }
+    }
+
+    return deleted;
   }
 
   normalize(format) {
@@ -1911,7 +1952,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.2.6";
+const VERSION = "1.3.3";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -2233,6 +2274,154 @@ class AxiosTransformStream extends stream__default["default"].Transform{
 
 const AxiosTransformStream$1 = AxiosTransformStream;
 
+const {asyncIterator} = Symbol;
+
+const readBlob = async function* (blob) {
+  if (blob.stream) {
+    yield* blob.stream();
+  } else if (blob.arrayBuffer) {
+    yield await blob.arrayBuffer();
+  } else if (blob[asyncIterator]) {
+    yield* blob[asyncIterator]();
+  } else {
+    yield blob;
+  }
+};
+
+const readBlob$1 = readBlob;
+
+const BOUNDARY_ALPHABET = utils.ALPHABET.ALPHA_DIGIT + '-_';
+
+const textEncoder = new util.TextEncoder();
+
+const CRLF = '\r\n';
+const CRLF_BYTES = textEncoder.encode(CRLF);
+const CRLF_BYTES_COUNT = 2;
+
+class FormDataPart {
+  constructor(name, value) {
+    const {escapeName} = this.constructor;
+    const isStringValue = utils.isString(value);
+
+    let headers = `Content-Disposition: form-data; name="${escapeName(name)}"${
+      !isStringValue && value.name ? `; filename="${escapeName(value.name)}"` : ''
+    }${CRLF}`;
+
+    if (isStringValue) {
+      value = textEncoder.encode(String(value).replace(/\r?\n|\r\n?/g, CRLF));
+    } else {
+      headers += `Content-Type: ${value.type || "application/octet-stream"}${CRLF}`;
+    }
+
+    this.headers = textEncoder.encode(headers + CRLF);
+
+    this.contentLength = isStringValue ? value.byteLength : value.size;
+
+    this.size = this.headers.byteLength + this.contentLength + CRLF_BYTES_COUNT;
+
+    this.name = name;
+    this.value = value;
+  }
+
+  async *encode(){
+    yield this.headers;
+
+    const {value} = this;
+
+    if(utils.isTypedArray(value)) {
+      yield value;
+    } else {
+      yield* readBlob$1(value);
+    }
+
+    yield CRLF_BYTES;
+  }
+
+  static escapeName(name) {
+      return String(name).replace(/[\r\n"]/g, (match) => ({
+        '\r' : '%0D',
+        '\n' : '%0A',
+        '"' : '%22',
+      }[match]));
+  }
+}
+
+const formDataToStream = (form, headersHandler, options) => {
+  const {
+    tag = 'form-data-boundary',
+    size = 25,
+    boundary = tag + '-' + utils.generateString(size, BOUNDARY_ALPHABET)
+  } = options || {};
+
+  if(!utils.isFormData(form)) {
+    throw TypeError('FormData instance required');
+  }
+
+  if (boundary.length < 1 || boundary.length > 70) {
+    throw Error('boundary must be 10-70 characters long')
+  }
+
+  const boundaryBytes = textEncoder.encode('--' + boundary + CRLF);
+  const footerBytes = textEncoder.encode('--' + boundary + '--' + CRLF + CRLF);
+  let contentLength = footerBytes.byteLength;
+
+  const parts = Array.from(form.entries()).map(([name, value]) => {
+    const part = new FormDataPart(name, value);
+    contentLength += part.size;
+    return part;
+  });
+
+  contentLength += boundaryBytes.byteLength * parts.length;
+
+  contentLength = utils.toFiniteNumber(contentLength);
+
+  const computedHeaders = {
+    'Content-Type': `multipart/form-data; boundary=${boundary}`
+  };
+
+  if (Number.isFinite(contentLength)) {
+    computedHeaders['Content-Length'] = contentLength;
+  }
+
+  headersHandler && headersHandler(computedHeaders);
+
+  return stream.Readable.from((async function *() {
+    for(const part of parts) {
+      yield boundaryBytes;
+      yield* part.encode();
+    }
+
+    yield footerBytes;
+  })());
+};
+
+const formDataToStream$1 = formDataToStream;
+
+class ZlibHeaderTransformStream extends stream__default["default"].Transform {
+  __transform(chunk, encoding, callback) {
+    this.push(chunk);
+    callback();
+  }
+
+  _transform(chunk, encoding, callback) {
+    if (chunk.length !== 0) {
+      this._transform = this.__transform;
+
+      // Add Default Compression headers if no zlib headers are present
+      if (chunk[0] !== 120) { // Hex: 78
+        const header = Buffer.alloc(2);
+        header[0] = 120; // Hex: 78
+        header[1] = 156; // Hex: 9C 
+        this.push(header, encoding);
+      }
+    }
+
+    this.__transform(chunk, encoding, callback);
+  }
+}
+
+const ZlibHeaderTransformStream$1 = ZlibHeaderTransformStream;
+
 const zlibOptions = {
   flush: zlib__default["default"].constants.Z_SYNC_FLUSH,
   finishFlush: zlib__default["default"].constants.Z_SYNC_FLUSH
@@ -2327,7 +2516,8 @@ const isHttpAdapterSupported = typeof process !== 'undefined' && utils.kindOf(pr
 
 /*eslint consistent-return:0*/
 const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
-  return new Promise(function dispatchHttpRequest(resolvePromise, rejectPromise) {
+  /*eslint no-async-promise-executor:0*/
+  return new Promise(async function dispatchHttpRequest(resolvePromise, rejectPromise) {
     let data = config.data;
     const responseType = config.responseType;
     const responseEncoding = config.responseEncoding;
@@ -2391,7 +2581,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
 
     // Parse url
     const fullPath = buildFullPath(config.baseURL, config.url);
-    const parsed = new URL(fullPath);
+    const parsed = new URL(fullPath, 'http://localhost');
     const protocol = parsed.protocol || supportedProtocols[0];
 
     if (protocol === 'data:') {
@@ -2418,7 +2608,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
         convertedData = convertedData.toString(responseEncoding);
 
         if (!responseEncoding || responseEncoding === 'utf8') {
-          data = utils.stripBOM(convertedData);
+          convertedData = utils.stripBOM(convertedData);
         }
       } else if (responseType === 'stream') {
         convertedData = stream__default["default"].Readable.from(convertedData);
@@ -2455,9 +2645,32 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
     let maxUploadRate = undefined;
     let maxDownloadRate = undefined;
 
-    // support for https://www.npmjs.com/package/form-data api
-    if (utils.isFormData(data) && utils.isFunction(data.getHeaders)) {
+    // support for spec compliant FormData objects
+    if (utils.isSpecCompliantForm(data)) {
+      const userBoundary = headers.getContentType(/boundary=([-_\w\d]{10,70})/i);
+
+      data = formDataToStream$1(data, (formHeaders) => {
+        headers.set(formHeaders);
+      }, {
+        tag: `axios-${VERSION}-boundary`,
+        boundary: userBoundary && userBoundary[1] || undefined
+      });
+      // support for https://www.npmjs.com/package/form-data api
+    } else if (utils.isFormData(data) && utils.isFunction(data.getHeaders)) {
       headers.set(data.getHeaders());
+
+      if (!headers.hasContentLength()) {
+        try {
+          const knownLength = await util__default["default"].promisify(data.getLength).call(data);
+          Number.isFinite(knownLength) && knownLength >= 0 && headers.setContentLength(knownLength);
+          /*eslint no-empty:0*/
+        } catch (e) {
+        }
+      }
+    } else if (utils.isBlob(data)) {
+      data.size && headers.setContentType(data.type || 'application/octet-stream');
+      headers.setContentLength(data.size || 0);
+      data = stream__default["default"].Readable.from(readBlob$1(data));
     } else if (data && !utils.isStream(data)) {
       if (Buffer.isBuffer(data)) ; else if (utils.isArrayBuffer(data)) {
         data = Buffer.from(new Uint8Array(data));
@@ -2472,7 +2685,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
       }
 
       // Add Content-Length header if data exists
-      headers.set('Content-Length', data.length, false);
+      headers.setContentLength(data.length, false);
 
       if (config.maxBodyLength > -1 && data.length > config.maxBodyLength) {
         return reject(new AxiosError(
@@ -2636,7 +2849,15 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
         case 'x-gzip':
         case 'compress':
         case 'x-compress':
+          // add the unzipper to the body stream processing pipeline
+          streams.push(zlib__default["default"].createUnzip(zlibOptions));
+
+          // remove the content-encoding in order to not confuse downstream operations
+          delete res.headers['content-encoding'];
+          break;
         case 'deflate':
+          streams.push(new ZlibHeaderTransformStream$1());
+
           // add the unzipper to the body stream processing pipeline
           streams.push(zlib__default["default"].createUnzip(zlibOptions));
 

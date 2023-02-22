@@ -2099,4 +2099,8 @@ describe('supports http with nodejs', function () {
       }
     });
   })
+
+  it('should properly handle synchronous errors inside the adapter', function () {
+    return assert.rejects(() => axios.get('http://192.168.0.285'), /Invalid URL/);
+  });
 });

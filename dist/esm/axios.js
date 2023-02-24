@@ -1,4 +1,4 @@
-// Axios v1.3.3 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.4 Copyright (c) 2023 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -1212,6 +1212,8 @@ const URLSearchParams$1 = typeof URLSearchParams !== 'undefined' ? URLSearchPara
 
 const FormData$1 = typeof FormData !== 'undefined' ? FormData : null;
 
+const Blob$1 = typeof Blob !== 'undefined' ? Blob : null;
+
 /**
  * Determine if we're running in a standard browser environment
  *
@@ -1266,7 +1268,7 @@ const platform = {
   classes: {
     URLSearchParams: URLSearchParams$1,
     FormData: FormData$1,
-    Blob
+    Blob: Blob$1
   },
   isStandardBrowserEnv,
   isStandardBrowserWebWorkerEnv,
@@ -2614,7 +2616,7 @@ function mergeConfig$1(config1, config2) {
   return config;
 }
 
-const VERSION$1 = "1.3.3";
+const VERSION$1 = "1.3.4";
 
 const validators$1 = {};
 

@@ -30,7 +30,7 @@ jobs:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: git config

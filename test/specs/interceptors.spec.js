@@ -32,7 +32,7 @@ describe('interceptors', function () {
       config.headers.test = 'added by interceptor';
       expect(asyncFlag).toBe(true);
       return config;
-    }, null, { synchronous: false });
+    }, null, ()=>{},{ synchronous: false });
 
     axios('/foo');
     asyncFlag = true;
@@ -49,7 +49,7 @@ describe('interceptors', function () {
       config.headers.test = 'added by synchronous interceptor';
       expect(asyncFlag).toBe(false);
       return config;
-    }, null, { synchronous: true });
+    }, null,()=>{} ,{ synchronous: true });
 
     axios('/foo');
     asyncFlag = true;
@@ -72,7 +72,7 @@ describe('interceptors', function () {
       config.headers.test = 'added by synchronous interceptor';
       expect(asyncFlag).toBe(true);
       return config;
-    }, null, { synchronous: true });
+    }, null, ()=>{},{ synchronous: true });
 
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by the async interceptor';
@@ -98,7 +98,7 @@ describe('interceptors', function () {
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'special get headers';
       return config;
-    }, null, { runWhen: onGetCall });
+    }, null, ()=>{},{ runWhen: onGetCall });
 
     axios('/foo');
 
@@ -115,7 +115,7 @@ describe('interceptors', function () {
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'special get headers';
       return config;
-    }, null, { runWhen: onPostCall });
+    }, null, ()=>{},{ runWhen: onPostCall });
 
     axios('/foo');
 
@@ -134,13 +134,13 @@ describe('interceptors', function () {
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'special get headers';
       return config;
-    }, null, { synchronous: false, runWhen: onPostCall });
+    }, null, ()=>{},{ synchronous: false, runWhen: onPostCall });
 
     axios.interceptors.request.use(function (config) {
       config.headers.sync = 'hello world';
       expect(asyncFlag).toBe(false);
       return config;
-    }, null, { synchronous: true });
+    }, null, ()=>{},{ synchronous: true });
 
     axios('/foo');
     asyncFlag = true
@@ -157,7 +157,7 @@ describe('interceptors', function () {
     const error = new Error('deadly error');
     axios.interceptors.request.use(function () {
       throw error;
-    }, rejectedSpy, { synchronous: true });
+    }, rejectedSpy, ()=>{},{ synchronous: true });
 
     axios('/foo').catch(done);
 
@@ -517,13 +517,13 @@ describe('interceptors', function () {
     const asyncIntercept = axios.interceptors.request.use(function (config) {
       config.headers.async = 'async it!';
       return config;
-    }, null, { synchronous: false });
+    }, null, ()=>{},{ synchronous: false });
 
     const syncIntercept = axios.interceptors.request.use(function (config) {
       config.headers.sync = 'hello world';
       expect(asyncFlag).toBe(false);
       return config;
-    }, null, { synchronous: true });
+    }, null, ()=>{},{ synchronous: true });
 
 
     axios.interceptors.request.eject(asyncIntercept);

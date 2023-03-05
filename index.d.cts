@@ -478,7 +478,7 @@ declare namespace axios {
   }
 
   interface AxiosInterceptorManager<V> {
-    use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+    use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, onFinished?: () => void, options?: AxiosInterceptorOptions): number;
     eject(id: number): void;
     clear(): void;
   }

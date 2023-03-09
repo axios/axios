@@ -1,4 +1,4 @@
-// Axios v1.3.1 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.4 Copyright (c) 2023 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -1210,7 +1210,9 @@ const transitionalDefaults = {
 
 const URLSearchParams$1 = typeof URLSearchParams !== 'undefined' ? URLSearchParams : AxiosURLSearchParams;
 
-const FormData$1 = FormData;
+const FormData$1 = typeof FormData !== 'undefined' ? FormData : null;
+
+const Blob$1 = typeof Blob !== 'undefined' ? Blob : null;
 
 /**
  * Determine if we're running in a standard browser environment
@@ -1266,7 +1268,7 @@ const platform = {
   classes: {
     URLSearchParams: URLSearchParams$1,
     FormData: FormData$1,
-    Blob
+    Blob: Blob$1
   },
   isStandardBrowserEnv,
   isStandardBrowserWebWorkerEnv,
@@ -1612,9 +1614,13 @@ function isValidHeaderName(str) {
   return /^[-_a-zA-Z]+$/.test(str.trim());
 }
 
-function matchHeaderValue(context, value, header, filter) {
+function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
   if (utils.isFunction(filter)) {
     return filter.call(this, value, header);
+  }
+
+  if (isHeaderNameFilter) {
+    value = header;
   }
 
   if (!utils.isString(value)) return;
@@ -1760,7 +1766,7 @@ class AxiosHeaders$1 {
 
     while (i--) {
       const key = keys[i];
-      if(!matcher || matchHeaderValue(this, this[key], key, matcher)) {
+      if(!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
         delete this[key];
         deleted = true;
       }
@@ -2610,7 +2616,7 @@ function mergeConfig$1(config1, config2) {
   return config;
 }
 
-const VERSION$1 = "1.3.1";
+const VERSION$1 = "1.3.4";
 
 const validators$1 = {};
 

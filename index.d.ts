@@ -1,5 +1,7 @@
 // TypeScript Version: 4.1
-type AxiosHeaders = Record<string, string | string[] | number | boolean>;
+type HeaderValue = string | string[] | number | boolean;
+
+type AxiosHeaders = Record<string, HeaderValue | Record<Method & CommonHeaders, HeaderValue>>;
 
 type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
@@ -109,7 +111,7 @@ export interface SerializerOptions {
   visitor?: SerializerVisitor;
   dots?: boolean;
   metaTokens?: boolean;
-  indexes?: boolean;
+  indexes?: boolean | null;
 }
 
 // tslint:disable-next-line

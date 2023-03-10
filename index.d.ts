@@ -423,6 +423,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
 }
 
 export class CanceledError<T> extends AxiosError<T> {
+  readonly name: "CanceledError";
 }
 
 export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
@@ -516,7 +517,7 @@ export function isAxiosError<T = any, D = any>(payload: any): payload is AxiosEr
 
 export function spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
 
-export function isCancel(value: any): value is Cancel;
+export function isCancel(value: any): value is CanceledError<any>;
 
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 

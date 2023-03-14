@@ -544,7 +544,7 @@ These are the available config options for making requests. Only the `url` is re
   // Using the insecure parser should be avoided.
   // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
-  insecureHTTPParser: undefined // default
+  insecureHTTPParser: undefined, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {

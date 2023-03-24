@@ -1,0 +1,84 @@
+name: Release PR
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        type: choice
+        description: Choose release type
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+        default: auto
+      beta:
+        type: boolean
+        description: Prerelease
+        default: false
+jobs:
+  releaseIt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+      - run: npm install
+      - name: Prepare release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TYPE_ARG: ${{ fromJSON('{"auto":"", "patch":"--patch", "minor":"--minor", "major":"--major"}')[github.event.inputs.type] }}
+          BETA_ARG: ${{ github.event.inputs.beta == 'true' && '--preRelease=beta' || '' }}
+        run: npm run release -- --ci --verbose --no-git.push --no-git.commit --no-git.tag --no-github $TYPE_ARG $BETA_ARG $DRY_ARG
+      - name: Show git status
+        if: failure()
+        run: git status && git diff
+      - name: Add contributors list to CHANGELOG.md
+        run: npm run release:changelog:fix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
+      - name: Extract release notes
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v1
+      - name: Generate PR body
+        id: body
+        uses: mathiasvr/command-output@v1
+        with:
+          run: node ./bin/pr.js
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v4
+        id: cpr
+        with:
+          branch: release
+          delete-branch: true
+          commit-message: 'chore(release): v${{ steps.package-version.outputs.current-version}}'
+          title: '[Release] v${{ steps.package-version.outputs.current-version}}'
+          body: |
+            ${{ steps.body.outputs.stdout }}
+            ## Release notes:
+            ${{ steps.extract-release-notes.outputs.release_notes }}
+          labels: |
+            release
+            automated pr
+          signoff: false
+          #team-reviewers: |
+          #  owners
+          #  maintainers
+          #assignees: jasonsaayman
+          #reviewers: jasonsaayman
+          draft: false
+      - name: Show PR link
+        if: ${{ steps.cpr.outputs.pull-request-url }}
+        run: |
+          echo "Axios Release v${{ steps.package-version.outputs.current-version}}' pull request - ${{ steps.cpr.outputs.pull-request-url }}"

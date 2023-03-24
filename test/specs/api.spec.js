@@ -50,6 +50,10 @@ describe('static api', function () {
   it('should have isAxiosError properties', function () {
     expect(typeof axios.isAxiosError).toEqual('function');
   });
+
+  it('should have mergeConfig properties', function () {
+    expect(typeof axios.mergeConfig).toEqual('function');
+  });
 });
 
 describe('instance api', function () {

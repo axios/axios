@@ -18,7 +18,9 @@
         "default": "./index.js"
       }
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./dist/browser/axios.cjs": "./dist/browser/axios.cjs",
+    "./dist/node/axios.cjs": "./dist/node/axios.cjs"
   },
   "type": "module",
   "types": "index.d.ts",

@@ -525,10 +525,11 @@ describe('requests', function () {
   });
 
   it('should validate full url before request', function (done) {
-    return axios.get('/foo', {
-        baseURL: undefined
-    }).catch(function (error) {
-        expect(error.message).toBe("Invalid URL");
+    const someConfigObject = {};
+    const opts = { url: someConfigObject.accidentallyNotExistingProperty };
+
+    return axios(opts).catch(function (error) {
+      expect(error.message).toBe("Invalid URL");
     });
   });
 });

@@ -523,4 +523,12 @@ describe('requests', function () {
         expect(error.message).toEqual('Unsupported protocol ftp:')
       })
   });
+
+  it('should validate full url before request', function (done) {
+    return axios.get('/foo', {
+        baseURL: undefined
+    }).catch(function (error) {
+        expect(error.message).toBe("Invalid URL");
+    });
+  });
 });

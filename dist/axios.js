@@ -1,4 +1,4 @@
-// Axios v1.3.4 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.5 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1537,9 +1537,9 @@
     }
     return tokens;
   }
-  function isValidHeaderName(str) {
-    return /^[-_a-zA-Z]+$/.test(str.trim());
-  }
+  var isValidHeaderName = function isValidHeaderName(str) {
+    return /^[-_a-zA-Z0-9^`|~,!#$%&'*+.]+$/.test(str.trim());
+  };
   function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
     if (utils.isFunction(filter)) {
       return filter.call(this, value, header);
@@ -2428,7 +2428,7 @@
     return config;
   }
 
-  var VERSION = "1.3.4";
+  var VERSION = "1.3.5";
 
   var validators$1 = {};
 
@@ -2555,11 +2555,17 @@
             clarifyTimeoutError: validators.transitional(validators["boolean"])
           }, false);
         }
-        if (paramsSerializer !== undefined) {
-          validator.assertOptions(paramsSerializer, {
-            encode: validators["function"],
-            serialize: validators["function"]
-          }, true);
+        if (paramsSerializer != null) {
+          if (utils.isFunction(paramsSerializer)) {
+            config.paramsSerializer = {
+              serialize: paramsSerializer
+            };
+          } else {
+            validator.assertOptions(paramsSerializer, {
+              encode: validators["function"],
+              serialize: validators["function"]
+            }, true);
+          }
         }
 
         // Set config.method

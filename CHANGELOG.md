@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.3.5](https://github.com/axios/axios/compare/v1.3.4...v1.3.5) (2023-04-05)
+
+
+### Bug Fixes
+
+* **headers:** fixed isValidHeaderName to support full list of allowed characters; ([#5584](https://github.com/axios/axios/issues/5584)) ([e7decef](https://github.com/axios/axios/commit/e7decef6a99f4627e27ed9ea5b00ce8e201c3841))
+* **params:** re-added the ability to set the function as `paramsSerializer` config; ([#5633](https://github.com/axios/axios/issues/5633)) ([a56c866](https://github.com/axios/axios/commit/a56c8661209d5ce5a645a05f294a0e08a6c1f6b3))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+28/-10 (#5633 #5584 )")
+
+## [1.3.4](https://github.com/axios/axios/compare/v1.3.3...v1.3.4) (2023-02-22)
+
+
+### Bug Fixes
+
+* **blob:** added a check to make sure the Blob class is available in the browser's global scope; ([#5548](https://github.com/axios/axios/issues/5548)) ([3772c8f](https://github.com/axios/axios/commit/3772c8fe74112a56e3e9551f894d899bc3a9443a))
+* **http:** fixed regression bug when handling synchronous errors inside the adapter; ([#5564](https://github.com/axios/axios/issues/5564)) ([a3b246c](https://github.com/axios/axios/commit/a3b246c9de5c3bc4b5a742e15add55b375479451))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+38/-26 (#5564 )")
+- <img src="https://avatars.githubusercontent.com/u/19550000?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [lcysgsg](https://github.com/lcysgsg "+4/-0 (#5548 )")
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-0 (#5444 )")
+
+## [1.3.3](https://github.com/axios/axios/compare/v1.3.2...v1.3.3) (2023-02-13)
+
+
+### Bug Fixes
+
+* **formdata:** added a check to make sure the FormData class is available in the browser's global scope; ([#5545](https://github.com/axios/axios/issues/5545)) ([a6dfa72](https://github.com/axios/axios/commit/a6dfa72010db5ad52db8bd13c0f98e537e8fd05d))
+* **formdata:** fixed setting NaN as Content-Length for form payload in some cases; ([#5535](https://github.com/axios/axios/issues/5535)) ([c19f7bf](https://github.com/axios/axios/commit/c19f7bf770f90ae8307f4ea3104f227056912da1))
+* **headers:** fixed the filtering logic of the clear method; ([#5542](https://github.com/axios/axios/issues/5542)) ([ea87ebf](https://github.com/axios/axios/commit/ea87ebfe6d1699af072b9e7cd40faf8f14b0ab93))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+11/-7 (#5545 #5535 #5542 )")
+- <img src="https://avatars.githubusercontent.com/u/19842213?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [陈若枫](https://github.com/ruofee "+2/-2 (#5467 )")
+
 ## [1.3.2](https://github.com/axios/axios/compare/v1.3.1...v1.3.2) (2023-02-03)
 
 

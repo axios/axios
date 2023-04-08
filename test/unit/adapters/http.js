@@ -2099,4 +2099,22 @@ describe('supports http with nodejs', function () {
       }
     });
   })
+
+  it('should properly handle synchronous errors inside the adapter', function () {
+    return assert.rejects(() => axios.get('http://192.168.0.285'), /Invalid URL/);
+  });
+
+  it('should support function as paramsSerializer value', async () => {
+    server = await startHTTPServer((req, res) => res.end(req.url));
+
+    const {data} = await axios.post(LOCAL_SERVER_URL, 'test', {
+      params: {
+        x: 1
+      },
+      paramsSerializer: () => 'foo',
+      maxRedirects: 0
+    });
+
+    assert.strictEqual(data, '/?foo');
+  });
 });

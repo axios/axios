@@ -72,9 +72,9 @@ jobs:
             release
             automated pr
           signoff: false
-          team-reviewers: |
-            owners
-            maintainers
+          #team-reviewers: |
+          #  owners
+          #  maintainers
           #assignees: jasonsaayman
           #reviewers: jasonsaayman
           draft: false

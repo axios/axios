@@ -69,13 +69,13 @@ describe('interceptors', function () {
     });
 
     axios.interceptors.request.use(function (config) {
-      config.headers.test = 'added by synchronous interceptor';
+      config.headers.test = 'added by the async interceptor';
       expect(asyncFlag).toBe(true);
       return config;
     }, null, { synchronous: true });
 
     axios.interceptors.request.use(function (config) {
-      config.headers.test = 'added by the async interceptor';
+      config.headers.test = 'added by synchronous interceptor';
       expect(asyncFlag).toBe(true);
       return config;
     });
@@ -87,6 +87,31 @@ describe('interceptors', function () {
       expect(request.requestHeaders.foo).toBe('uh oh, async');
       /* request interceptors have a reversed execution order */
       expect(request.requestHeaders.test).toBe('added by synchronous interceptor');
+      done();
+    });
+  });
+
+  it('should execute request interceptor in order', function (done) {
+    let sequence = '';
+    axios.interceptors.request.use(function (config) {
+      sequence += '1';
+      return config;
+    });
+
+    axios.interceptors.request.use(function (config) {
+      sequence += '2';
+      return config;
+    });
+
+    axios.interceptors.request.use(function (config) {
+      sequence += '3';
+      return config;
+    });
+
+    axios('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(sequence).toBe('123');
       done();
     });
   });

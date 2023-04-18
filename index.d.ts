@@ -311,7 +311,7 @@ export interface AxiosRequestConfig<D = any> {
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
   params?: any;
-  paramsSerializer?: ParamsSerializerOptions;
+  paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
   data?: D;
   timeout?: Milliseconds;
   timeoutErrorMessage?: string;
@@ -331,6 +331,7 @@ export interface AxiosRequestConfig<D = any> {
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
   beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
   socketPath?: string | null;
+  transport?: any;
   httpAgent?: any;
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;

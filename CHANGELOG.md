@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.6](https://github.com/axios/axios/compare/v1.3.5...v1.3.6) (2023-04-19)
+
+
+### Bug Fixes
+
+* **types:** added transport to RawAxiosRequestConfig ([#5445](https://github.com/axios/axios/issues/5445)) ([6f360a2](https://github.com/axios/axios/commit/6f360a2531d8d70363fd9becef6a45a323f170e2))
+* **utils:** make isFormData detection logic stricter to avoid unnecessary calling of the `toString` method on the target; ([#5661](https://github.com/axios/axios/issues/5661)) ([aa372f7](https://github.com/axios/axios/commit/aa372f7306295dfd1100c1c2c77ce95c95808e76))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+48/-10 (#5665 #5661 #5663 )")
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+2/-0 (#5445 )")
+
 ## [1.3.5](https://github.com/axios/axios/compare/v1.3.4...v1.3.5) (2023-04-05)
 
 

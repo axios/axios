@@ -1,4 +1,4 @@
-// Axios v1.3.5 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.3.6 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -283,8 +283,10 @@
    * @returns {boolean} True if value is an FormData, otherwise false
    */
   var isFormData = function isFormData(thing) {
-    var pattern = '[object FormData]';
-    return thing && (typeof FormData === 'function' && thing instanceof FormData || toString.call(thing) === pattern || isFunction(thing.toString) && thing.toString() === pattern);
+    var kind;
+    return thing && (typeof FormData === 'function' && thing instanceof FormData || isFunction(thing.append) && ((kind = kindOf(thing)) === 'formdata' ||
+    // detect form-data instance
+    kind === 'object' && isFunction(thing.toString) && thing.toString() === '[object FormData]'));
   };
 
   /**
@@ -2428,7 +2430,7 @@
     return config;
   }
 
-  var VERSION = "1.3.5";
+  var VERSION = "1.3.6";
 
   var validators$1 = {};
 

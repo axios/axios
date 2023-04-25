@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -25,7 +25,7 @@
   "scripts": {
     "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:dtslint && npm run test:exports",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
-    "test:dtslint": "node bin/ssl_hotfix.js dtslint",
+    "test:dtslint": "dtslint --localTs node_modules/typescript/lib",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
     "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
     "test:karma": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",

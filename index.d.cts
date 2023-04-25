@@ -403,6 +403,9 @@ declare namespace axios {
       FormData?: new (...args: any[]) => object;
     };
     formSerializer?: FormSerializerOptions;
+    family?: 4 | 6 | undefined;
+    lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: string, family: number) => void) => void) |
+        ((hostname: string, options: object) => Promise<[address: string, family: number] | string>);
   }
 
   // Alias

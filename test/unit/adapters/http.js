@@ -1983,5 +1983,24 @@ describe('supports http with nodejs', function () {
 
       assert.strictEqual(data, payload);
     });
+
+    it('should support custom DNS lookup function that returns only IP address (async)', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: async (hostname, opt) =>  {
+          isCalled = true;
+          return '127.0.0.1';
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
   });
 });

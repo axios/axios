@@ -20,11 +20,13 @@
     },
     "./unsafe/*": "./lib/*",
     "./unsafe/core/settle.js": "./lib/core/settle.js",
+    "./unsafe/core/buildFullPath.js": "./lib/core/buildFullPath.js",
     "./unsafe/helpers/isAbsoluteURL.js": "./lib/helpers/isAbsoluteURL.js",
     "./unsafe/helpers/buildURL.js": "./lib/helpers/buildURL.js",
     "./unsafe/helpers/combineURLs.js": "./lib/helpers/combineURLs.js",
     "./unsafe/adapters/http.js": "./lib/adapters/http.js",
     "./unsafe/adapters/xhr.js": "./lib/adapters/xhr.js",
+    "./unsafe/utils.js": "./lib/utils.js",
     "./package.json": "./package.json"
   },
   "type": "module",

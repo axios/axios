@@ -18,6 +18,7 @@
         "default": "./index.js"
       }
     },
+    "./unsafe/*.js": "./lib/*.js",
     "./package.json": "./package.json"
   },
   "type": "module",

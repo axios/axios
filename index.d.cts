@@ -370,7 +370,7 @@ declare namespace axios {
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
     headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
     params?: any;
-    paramsSerializer?: ParamsSerializerOptions;
+    paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
     data?: D;
     timeout?: Milliseconds;
     timeoutErrorMessage?: string;
@@ -390,6 +390,7 @@ declare namespace axios {
     maxRate?: number | [MaxUploadRate, MaxDownloadRate];
     beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
     socketPath?: string | null;
+    transport?: any;
     httpAgent?: any;
     httpsAgent?: any;
     proxy?: AxiosProxyConfig | false;
@@ -402,6 +403,9 @@ declare namespace axios {
       FormData?: new (...args: any[]) => object;
     };
     formSerializer?: FormSerializerOptions;
+    family?: 4 | 6 | undefined;
+    lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: string, family: number) => void) => void) |
+        ((hostname: string, options: object) => Promise<[address: string, family: number] | string>);
   }
 
   // Alias

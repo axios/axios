@@ -1,5 +1,30 @@
 # Changelog
 
+# [1.4.0](https://github.com/axios/axios/compare/v1.3.6...v1.4.0) (2023-04-27)
+
+
+### Bug Fixes
+
+* **formdata:** add `multipart/form-data` content type for FormData payload on custom client environments; ([#5678](https://github.com/axios/axios/issues/5678)) ([bbb61e7](https://github.com/axios/axios/commit/bbb61e70cb1185adfb1cbbb86eaf6652c48d89d1))
+* **package:** export package internals with unsafe path prefix; ([#5677](https://github.com/axios/axios/issues/5677)) ([df38c94](https://github.com/axios/axios/commit/df38c949f26414d88ba29ec1e353c4d4f97eaf09))
+
+
+### Features
+
+* **dns:** added support for a custom lookup function; ([#5339](https://github.com/axios/axios/issues/5339)) ([2701911](https://github.com/axios/axios/commit/2701911260a1faa5cc5e1afe437121b330a3b7bb))
+* **types:** export `AxiosHeaderValue` type. ([#5525](https://github.com/axios/axios/issues/5525)) ([726f1c8](https://github.com/axios/axios/commit/726f1c8e00cffa0461a8813a9bdcb8f8b9d762cf))
+
+
+### Performance Improvements
+
+* **merge-config:** optimize mergeConfig performance by avoiding duplicate key visits; ([#5679](https://github.com/axios/axios/issues/5679)) ([e6f7053](https://github.com/axios/axios/commit/e6f7053bf1a3e87cf1f9da8677e12e3fe829d68e))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+151/-16 (#5684 #5339 #5679 #5678 #5677 )")
+- <img src="https://avatars.githubusercontent.com/u/47537704?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Arthur Fiorette](https://github.com/arthurfiorette "+19/-19 (#5525 )")
+- <img src="https://avatars.githubusercontent.com/u/43876655?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [PIYUSH NEGI](https://github.com/npiyush97 "+2/-18 (#5670 )")
+
 ## [1.3.6](https://github.com/axios/axios/compare/v1.3.5...v1.3.6) (2023-04-19)
 
 

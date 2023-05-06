@@ -464,6 +464,10 @@ These are the available config options for making requests. Only the `url` is re
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
   maxBodyLength: 2000,
 
+  // `maxHeaderSize` optionally overrides the value of --max-http-header-size for requests received by this server, 
+  // i.e. the  maximum length of request headers in bytes. Default: 16384 (16 KiB).
+  maxHeaderSize: 20000
+
   // `validateStatus` defines whether to resolve or reject the promise for a given
   // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
   // or `undefined`), the promise will be resolved; otherwise, the promise will be

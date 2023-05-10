@@ -1,4 +1,4 @@
-// Axios v1.3.6 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.4.0 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -722,6 +722,10 @@
     };
     return visit(obj, 0);
   };
+  var isAsyncFn = kindOfTest('AsyncFunction');
+  var isThenable = function isThenable(thing) {
+    return thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing["catch"]);
+  };
   var utils = {
     isArray: isArray,
     isArrayBuffer: isArrayBuffer,
@@ -772,7 +776,9 @@
     ALPHABET: ALPHABET,
     generateString: generateString,
     isSpecCompliantForm: isSpecCompliantForm,
-    toJSONObject: toJSONObject
+    toJSONObject: toJSONObject,
+    isAsyncFn: isAsyncFn,
+    isThenable: isThenable
   };
 
   /**
@@ -2061,8 +2067,12 @@
           config.signal.removeEventListener('abort', onCanceled);
         }
       }
-      if (utils.isFormData(requestData) && (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv)) {
-        requestHeaders.setContentType(false); // Let the browser set it
+      if (utils.isFormData(requestData)) {
+        if (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv) {
+          requestHeaders.setContentType(false); // Let the browser set it
+        } else {
+          requestHeaders.setContentType('multipart/form-data;', false); // mobile/desktop app frameworks
+        }
       }
 
       var request = new XMLHttpRequest();
@@ -2422,7 +2432,7 @@
         return mergeDeepProperties(headersToObject(a), headersToObject(b), true);
       }
     };
-    utils.forEach(Object.keys(config1).concat(Object.keys(config2)), function computeConfigValue(prop) {
+    utils.forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
       var merge = mergeMap[prop] || mergeDeepProperties;
       var configValue = merge(config1[prop], config2[prop], prop);
       utils.isUndefined(configValue) && merge !== mergeDirectKeys || (config[prop] = configValue);
@@ -2430,7 +2440,7 @@
     return config;
   }
 
-  var VERSION = "1.3.6";
+  var VERSION = "1.4.0";
 
   var validators$1 = {};
 

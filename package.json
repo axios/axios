@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.3.5",
+  "version": "1.4.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -18,6 +18,15 @@
         "default": "./index.js"
       }
     },
+    "./unsafe/*": "./lib/*",
+    "./unsafe/core/settle.js": "./lib/core/settle.js",
+    "./unsafe/core/buildFullPath.js": "./lib/core/buildFullPath.js",
+    "./unsafe/helpers/isAbsoluteURL.js": "./lib/helpers/isAbsoluteURL.js",
+    "./unsafe/helpers/buildURL.js": "./lib/helpers/buildURL.js",
+    "./unsafe/helpers/combineURLs.js": "./lib/helpers/combineURLs.js",
+    "./unsafe/adapters/http.js": "./lib/adapters/http.js",
+    "./unsafe/adapters/xhr.js": "./lib/adapters/xhr.js",
+    "./unsafe/utils.js": "./lib/utils.js",
     "./package.json": "./package.json"
   },
   "type": "module",
@@ -25,10 +34,11 @@
   "scripts": {
     "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:dtslint && npm run test:exports",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
-    "test:dtslint": "node bin/ssl_hotfix.js dtslint",
+    "test:dtslint": "dtslint --localTs node_modules/typescript/lib",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
     "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
     "test:karma": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
+    "test:karma:firefox": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: Browsers=Firefox karma start karma.conf.cjs --single-run",
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
@@ -122,8 +132,7 @@
     "stream-throttle": "^0.1.3",
     "string-replace-async": "^3.0.2",
     "terser-webpack-plugin": "^4.2.3",
-    "typescript": "^4.8.4",
-    "url-search-params": "^0.10.0"
+    "typescript": "^4.8.4"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/helpers/null.js",

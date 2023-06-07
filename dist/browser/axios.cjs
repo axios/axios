@@ -2486,15 +2486,15 @@ function dispatchRequest(config) {
 
   config.headers = AxiosHeaders$1.from(config.headers);
 
+  if (['post', 'put', 'patch'].indexOf(config.method) !== -1) {
+    config.headers.setContentType('application/x-www-form-urlencoded', false);
+  }
+
   // Transform request data
   config.data = transformData.call(
     config,
     config.transformRequest
   );
-
-  if (['post', 'put', 'patch'].indexOf(config.method) !== -1) {
-    config.headers.setContentType('application/x-www-form-urlencoded', false);
-  }
 
   const adapter = adapters.getAdapter(config.adapter || defaults$1.adapter);
 

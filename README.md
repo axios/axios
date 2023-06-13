@@ -1,14 +1,14 @@
 <h1 align="center">
-   <b>
-        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
-    </b>
+  <b>
+    <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+  </b>
 </h1>
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 
 <p align="center">
-    <a href="https://axios-http.com/"><b>Website</b></a> •
-    <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
+  <a href="https://axios-http.com/"><b>Website</b></a> •
+  <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
 </p>
 
 <div align="center">
@@ -24,9 +24,6 @@
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
-
-
-
 
 </div>
 

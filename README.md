@@ -1,6 +1,6 @@
 <h1 align="center">
   <b>
-    <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+    <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" alt="axios" /></a>
   </b>
 </h1>
 

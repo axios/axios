@@ -1,0 +1,7 @@
+{
+  "markdown.extension.toc.levels": "1..3",
+  "markdown.extension.toc.updateOnSave": true,
+  "markdown.extension.toc.omittedFromToc": {
+    "README.md": ["## Table of Contents"]
+  }
+}

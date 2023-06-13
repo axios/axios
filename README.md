@@ -132,7 +132,7 @@ You can also use the default export, since the named export is just a re-export 
 import axios from 'axios';
 
 console.log(axios.isCancel('something'));
-````
+```
 
 If you use `require` for importing, **only default export is available**:
 
@@ -214,8 +214,8 @@ async function getUser() {
 }
 ```
 
-> **Note** `async/await` is part of ECMAScript 2017 and is not supported in Internet
-> Explorer and older browsers, so use with caution.
+> **Note**
+> `async/await` is part of ECMAScript 2017 and is not supported in Internet Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
 
@@ -252,9 +252,14 @@ Promise.all([getUserAccount(), getUserPermissions()])
 
 ## axios API
 
-Requests can be made by passing the relevant config to `axios`.
+Requests can be made with `axios(url[, config])`.
 
-##### axios(config)
+```js
+// Send a GET request (default method)
+axios('/user/12345');
+```
+
+The URL can also be passed as part of the config to `axios(config)`.
 
 ```js
 // Send a POST request
@@ -280,36 +285,23 @@ axios({
   });
 ```
 
-##### axios(url[, config])
-
-```js
-// Send a GET request (default method)
-axios('/user/12345');
-```
-
 ### Request method aliases
 
 For convenience, aliases have been provided for all common request methods.
 
-##### axios.request(config)
+```js
+axios.request(config)
+axios.get(url[, config])
+axios.delete(url[, config])
+axios.head(url[, config])
+axios.options(url[, config])
+axios.post(url[, data[, config]])
+axios.put(url[, data[, config]])
+axios.patch(url[, data[, config]])
+```
 
-##### axios.get(url[, config])
-
-##### axios.delete(url[, config])
-
-##### axios.head(url[, config])
-
-##### axios.options(url[, config])
-
-##### axios.post(url[, data[, config]])
-
-##### axios.put(url[, data[, config]])
-
-##### axios.patch(url[, data[, config]])
-
-###### NOTE
-
-When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
+> **Note**
+> When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
 ### Concurrency (👎 deprecated)
 
@@ -317,14 +309,16 @@ Please use `Promise.all` to replace the below functions.
 
 Helper functions for dealing with concurrent requests.
 
+```js
 axios.all(iterable)
 axios.spread(callback)
+```
 
 ### Creating an instance
 
 You can create a new instance of axios with a custom config.
 
-##### axios.create([config])
+#### axios.create([config])
 
 ```js
 const instance = axios.create({
@@ -338,23 +332,17 @@ const instance = axios.create({
 
 The available instance methods are listed below. The specified config will be merged with the instance config.
 
-##### axios#request(config)
-
-##### axios#get(url[, config])
-
-##### axios#delete(url[, config])
-
-##### axios#head(url[, config])
-
-##### axios#options(url[, config])
-
-##### axios#post(url[, data[, config]])
-
-##### axios#put(url[, data[, config]])
-
-##### axios#patch(url[, data[, config]])
-
-##### axios#getUri([config])
+```js
+axios#request(config)
+axios#get(url[, config])
+axios#delete(url[, config])
+axios#head(url[, config])
+axios#options(url[, config])
+axios#post(url[, data[, config]])
+axios#put(url[, data[, config]])
+axios#patch(url[, data[, config]])
+axios#getUri([config])
+```
 
 ## Request Config
 
@@ -508,7 +496,7 @@ These are the available config options for making requests. Only the `url` is re
   // Only either `socketPath` or `proxy` can be specified.
   // If both are specified, `socketPath` is used.
   socketPath: null, // default
-  
+
   // `transport` determines the transport method that will be used to make the request. If defined, it will be used. Otherwise, if `maxRedirects` is 0, the default `http` or `https` library will be used, depending on the protocol specified in `protocol`. Otherwise, the `httpFollow` or `httpsFollow` library will be used, again depending on the protocol, which can handle redirects.
   transport: undefined, // default
 
@@ -552,7 +540,7 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
   // `insecureHTTPParser` boolean.
   // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
@@ -560,7 +548,7 @@ These are the available config options for making requests. Only the `url` is re
   // Using the insecure parser should be avoided.
   // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
-  insecureHTTPParser: undefined // default
+  insecureHTTPParser: undefined, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
@@ -850,7 +838,7 @@ controller.abort()
 You can also cancel a request using a *CancelToken*.
 
 > The axios cancel token API is based on the withdrawn [cancellable promises proposal](https://github.com/tc39/proposal-cancelable-promises).
-
+>
 > This API is deprecated since v0.22.0 and shouldn't be used in new projects
 
 You can create a cancel token using the `CancelToken.source` factory as shown below:
@@ -896,16 +884,17 @@ axios.get('/user/12345', {
 cancel();
 ```
 
-> **Note:** you can cancel several requests with the same cancel token/abort controller.
+> **Note**
+> You can cancel several requests with the same cancel token/abort controller.
 > If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make a real request.
-
+>
 > During the transition period, you can use both cancellation APIs, even for the same request:
 
 ## Using `application/x-www-form-urlencoded` format
 
 ### URLSearchParams
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, and [Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
 const params = new URLSearchParams({ foo: 'bar' });
@@ -984,7 +973,7 @@ The server will handle it as:
     'users[1][name]': 'Thomas',
     'users[1][surname]': 'Anderson'
   }
-````
+```
 
 If your backend body-parser (like `body-parser` of `express.js`) supports nested objects decoding, you will get the same object on the server-side automatically
 
@@ -1071,16 +1060,11 @@ Axios FormData serializer supports some special endings to perform the following
 
 FormData serializer supports additional options via `config.formSerializer: object` property to handle rare cases:
 
-- `visitor: Function` - user-defined visitor function that will be called recursively to serialize the data object
-to a `FormData` object by following custom rules.
-
+- `visitor: Function` - user-defined visitor function that will be called recursively to serialize the data object to a `FormData` object by following custom rules.
 - `dots: boolean = false` - use dot notation instead of brackets to serialize arrays and objects;
-
 - `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key.
-The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
-
+  The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
 - `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
-
   - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
   - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
@@ -1201,7 +1185,7 @@ will be submitted as the following JSON object:
     "age": "value2"
   }
 }
-````
+```
 
 Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
 
@@ -1228,13 +1212,13 @@ await axios.post(url, data, {
       loaded: number;
       total?: number;
       progress?: number;
-      bytes: number; 
+      bytes: number;
       estimated?: number;
       rate?: number; // download speed in bytes
       download: true; // download sign
     }*/
   }
-});  
+});
 ```
 
 You can also track stream upload/download progress in node.js:
@@ -1244,18 +1228,18 @@ const {data} = await axios.post(SERVER_URL, readableStream, {
    onUploadProgress: ({progress}) => {
      console.log((progress * 100).toFixed(2));
    },
-  
+
    headers: {
     'Content-Length': contentLength
    },
 
    maxRedirects: 0 // avoid buffering the entire stream
 });
-````
+```
 
-> **Note:**
+> **Note**
 > Capturing FormData upload progress is currently not currently supported in node.js environments.
-
+>
 > **⚠️ Warning**
 > It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the **node.js** environment,
 > as follow-redirects package will buffer the entire stream in RAM without following the "backpressure" algorithm.
@@ -1269,14 +1253,14 @@ const {data} = await axios.post(LOCAL_SERVER_URL, myBuffer, {
   onUploadProgress: ({progress, rate}) => {
     console.log(`Upload [${(progress*100).toFixed(2)}%]: ${(rate / 1024).toFixed(2)}KB/s`)
   },
-   
+
   maxRate: [100 * 1024], // 100KB/s limit
 });
 ```
 
 ## SemVer
 
-Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
+axios follows the [Semantic Versioning Specification](https://semver.org/). Until it reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
 
 ## Promises
 

@@ -99,25 +99,25 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 Using npm:
 
 ```bash
-$ npm install axios
+npm install axios
 ```
 
 Using bower:
 
 ```bash
-$ bower install axios
+bower install axios
 ```
 
 Using yarn:
 
 ```bash
-$ yarn add axios
+yarn add axios
 ```
 
 Using pnpm:
 
 ```bash
-$ pnpm add axios
+pnpm add axios
 ```
 
 Once the package is installed, you can import the library using `import` or `require` approach:
@@ -292,18 +292,27 @@ axios('/user/12345');
 For convenience, aliases have been provided for all common request methods.
 
 ##### axios.request(config)
+
 ##### axios.get(url[, config])
+
 ##### axios.delete(url[, config])
+
 ##### axios.head(url[, config])
+
 ##### axios.options(url[, config])
+
 ##### axios.post(url[, data[, config]])
+
 ##### axios.put(url[, data[, config]])
+
 ##### axios.patch(url[, data[, config]])
 
 ###### NOTE
+
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
 ### Concurrency (👎 deprecated)
+
 Please use `Promise.all` to replace the below functions.
 
 Helper functions for dealing with concurrent requests.
@@ -330,13 +339,21 @@ const instance = axios.create({
 The available instance methods are listed below. The specified config will be merged with the instance config.
 
 ##### axios#request(config)
+
 ##### axios#get(url[, config])
+
 ##### axios#delete(url[, config])
+
 ##### axios#head(url[, config])
+
 ##### axios#options(url[, config])
+
 ##### axios#post(url[, data[, config]])
+
 ##### axios#put(url[, data[, config]])
+
 ##### axios#patch(url[, data[, config]])
+
 ##### axios#getUri([config])
 
 ## Request Config
@@ -705,6 +722,7 @@ axios.interceptors.request.eject(myInterceptor);
 ```
 
 You can also clear all interceptors for requests or responses.
+
 ```js
 const instance = axios.create();
 instance.interceptors.request.use(function () {/*...*/});
@@ -752,14 +770,15 @@ axios.interceptors.request.use(function (config) {
 
 Given you add multiple response interceptors
 and when the response was fulfilled
+
 - then each interceptor is executed
 - then they are executed in the order they were added
 - then only the last interceptor's result is returned
 - then every interceptor receives the result of its predecessor
 - and when the fulfillment-interceptor throws
-    - then the following fulfillment-interceptor is not called
-    - then the following rejection-interceptor is called
-    - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
+  - then the following fulfillment-interceptor is not called
+  - then the following rejection-interceptor is called
+  - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
 
 Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
 
@@ -886,7 +905,7 @@ cancel();
 
 ### URLSearchParams
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [ Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
 const params = new URLSearchParams({ foo: 'bar' });
@@ -1062,9 +1081,9 @@ The back-end body-parser could potentially use this meta-information to automati
 
 - `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
 
-    - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
-    - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
-    - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
+  - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
+  - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
+  - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
 
 Let's say we have an object like this one:
 
@@ -1190,7 +1209,7 @@ Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
 
 Axios supports both browser and node environments to capture request upload/download progress.
 
-```js    
+```js
 await axios.post(url, data, {
   onUploadProgress: function (axiosProgressEvent) {
     /*{
@@ -1240,7 +1259,6 @@ const {data} = await axios.post(SERVER_URL, readableStream, {
 > **⚠️ Warning**
 > It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the **node.js** environment,
 > as follow-redirects package will buffer the entire stream in RAM without following the "backpressure" algorithm.
-
 
 ## 🆕 Rate limiting
 
@@ -1295,13 +1313,12 @@ You can use Gitpod, an online IDE(which is free for Open Source) for contributin
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/main/examples/server.js)
 
-
 ## Resources
 
-* [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
-* [Ecosystem](https://github.com/axios/axios/blob/v1.x/ECOSYSTEM.md)
-* [Contributing Guide](https://github.com/axios/axios/blob/v1.x/CONTRIBUTING.md)
-* [Code of Conduct](https://github.com/axios/axios/blob/v1.x/CODE_OF_CONDUCT.md)
+- [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
+- [Ecosystem](https://github.com/axios/axios/blob/v1.x/ECOSYSTEM.md)
+- [Contributing Guide](https://github.com/axios/axios/blob/v1.x/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/axios/axios/blob/v1.x/CODE_OF_CONDUCT.md)
 
 ## Credits
 

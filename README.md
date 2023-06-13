@@ -29,46 +29,48 @@
 
 ## Table of Contents
 
-  - [Features](#features)
-  - [Browser Support](#browser-support)
-  - [Installing](#installing)
-    - [Package manager](#package-manager)
-    - [CDN](#cdn)
-  - [Example](#example)
-  - [Axios API](#axios-api)
+- [Features](#features)
+- [Browser Support](#browser-support)
+- [Installing](#installing)
+  - [Package manager](#package-manager)
+  - [CDN](#cdn)
+- [Example](#example)
+- [axios API](#axios-api)
   - [Request method aliases](#request-method-aliases)
-  - [Concurrency 👎](#concurrency-deprecated)
+  - [Concurrency (👎 deprecated)](#concurrency--deprecated)
   - [Creating an instance](#creating-an-instance)
   - [Instance methods](#instance-methods)
-  - [Request Config](#request-config)
-  - [Response Schema](#response-schema)
-  - [Config Defaults](#config-defaults)
-    - [Global axios defaults](#global-axios-defaults)
-    - [Custom instance defaults](#custom-instance-defaults)
-    - [Config order of precedence](#config-order-of-precedence)
-  - [Interceptors](#interceptors)
-    - [Multiple Interceptors](#multiple-interceptors)
-  - [Handling Errors](#handling-errors)
-  - [Cancellation](#cancellation)
-    - [AbortController](#abortcontroller)
-    - [CancelToken 👎](#canceltoken-deprecated)
-  - [Using application/x-www-form-urlencoded format](#using-applicationx-www-form-urlencoded-format)
-    - [URLSearchParams](#urlsearchparams)
-    - [Query string](#query-string-older-browsers)
-    - [🆕 Automatic serialization](#-automatic-serialization-to-urlsearchparams)
-  - [Using multipart/form-data format](#using-multipartform-data-format)
-    - [FormData](#formdata)
-    - [🆕 Automatic serialization](#-automatic-serialization-to-formdata)
-  - [Files Posting](#files-posting)
-  - [HTML Form Posting](#-html-form-posting-browser)
-  - [🆕 Progress capturing](#-progress-capturing)
-  - [🆕 Rate limiting](#-progress-capturing)
-  - [Semver](#semver)
-  - [Promises](#promises)
-  - [TypeScript](#typescript)
-  - [Resources](#resources)
-  - [Credits](#credits)
-  - [License](#license)
+- [Request Config](#request-config)
+- [Response Schema](#response-schema)
+- [Config Defaults](#config-defaults)
+  - [Global axios defaults](#global-axios-defaults)
+  - [Custom instance defaults](#custom-instance-defaults)
+  - [Config order of precedence](#config-order-of-precedence)
+- [Interceptors](#interceptors)
+  - [Multiple Interceptors](#multiple-interceptors)
+- [Handling Errors](#handling-errors)
+- [Cancellation](#cancellation)
+  - [AbortController](#abortcontroller)
+  - [CancelToken (👎 deprecated)](#canceltoken--deprecated)
+- [Using `application/x-www-form-urlencoded` format](#using-applicationx-www-form-urlencoded-format)
+  - [URLSearchParams](#urlsearchparams)
+  - [Query string (older browsers)](#query-string-older-browsers)
+  - [Older Node.js versions](#older-nodejs-versions)
+  - [🆕 Automatic serialization to URLSearchParams](#-automatic-serialization-to-urlsearchparams)
+- [Using `multipart/form-data` format](#using-multipartform-data-format)
+  - [FormData](#formdata)
+  - [🆕 Automatic serialization to FormData](#-automatic-serialization-to-formdata)
+- [Files Posting](#files-posting)
+- [🆕 HTML Form Posting (browser)](#-html-form-posting-browser)
+- [🆕 Progress capturing](#-progress-capturing)
+- [🆕 Rate limiting](#-rate-limiting)
+- [SemVer](#semver)
+- [Promises](#promises)
+- [TypeScript](#typescript)
+- [Online one-click setup](#online-one-click-setup)
+- [Resources](#resources)
+- [Credits](#credits)
+- [License](#license)
 
 ## Features
 
@@ -301,7 +303,7 @@ For convenience, aliases have been provided for all common request methods.
 ###### NOTE
 When using the alias methods `url`, `method`, and `data` properties don't need to be specified in config.
 
-### Concurrency (Deprecated)
+### Concurrency (👎 deprecated)
 Please use `Promise.all` to replace the below functions.
 
 Helper functions for dealing with concurrent requests.
@@ -824,7 +826,7 @@ axios.get('/foo/bar', {
 controller.abort()
 ```
 
-### CancelToken `👎deprecated`
+### CancelToken (👎 deprecated)
 
 You can also cancel a request using a *CancelToken*.
 
@@ -892,7 +894,7 @@ params.append('extraparam', 'value');
 axios.post('/foo', params);
 ```
 
-### Query string (Older browsers)
+### Query string (older browsers)
 
 For compatibility with very old browsers, there is a [polyfill](https://github.com/WebReflection/url-search-params) available (make sure to polyfill the global environment).
 
@@ -1254,7 +1256,7 @@ const {data} = await axios.post(LOCAL_SERVER_URL, myBuffer, {
 });
 ```
 
-## Semver
+## SemVer
 
 Until axios reaches a `1.0` release, breaking changes will be released with a new minor version. For example `0.5.1`, and `0.5.4` will have the same API, but `0.6.0` will have breaking changes.
 

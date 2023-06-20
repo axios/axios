@@ -58,6 +58,16 @@ const LOCAL_SERVER_URL = 'http://localhost:4444';
 
 const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
+/**
+ * Starts an HTTP server with the given options.
+ * @param {Object} options - The options for the server.
+ * @param {Function} options.handler - The request handler function.
+ * @param {boolean} [options.useBuffering=false] - Whether to use buffering for the request.
+ * @param {number} [options.rate=undefined] - The rate limit for the server.
+ * @param {number} [options.port=4444] - The port to listen on.
+ * @returns {Promise} A promise that resolves with the server instance.
+ * @remarks If no options are provided, the server will listen on port 4444 and use a default request handler.
+ */
 function startHTTPServer(options) {
 
   const {handler, useBuffering = false, rate = undefined, port = 4444} = typeof options === 'function' ? {
@@ -110,6 +120,13 @@ const handleFormData = (req) => {
   });
 }
 
+/**
+ * Generates a readable stream of data chunks.
+ * @param {number} [length=1048576] - The total length of the stream in bytes.
+ * @param {number} [chunkSize=10240] - The size of each chunk in bytes.
+ * @param {number} [sleep=50] - The time to wait in milliseconds between each chunk.
+ * @returns {stream.Readable} - A readable stream of data chunks.
+ */
 function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sleep = 50) {
   return stream.Readable.from(async function* (){
     let dataLength = 0;

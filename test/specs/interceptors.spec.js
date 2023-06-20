@@ -341,6 +341,13 @@ describe('interceptors', function () {
 
     describe('and when the response was fulfilled', function () {
 
+      /**
+       * Sends a request to '/foo' using axios and sets the response to a variable. Then, uses getAjaxRequest() to simulate a response with status 200 and responseText 'OK'. After a 100ms timeout, calls the provided expectation function with the response as a parameter.
+       *
+       * @param {function} expectation - The function to be called with the response as a parameter.
+       *
+       * @remarks This function is dependent on the axios and getAjaxRequest() functions being available in the global scope.
+       */
       function fireRequestAndExpect(expectation) {
         let response;
         axios('/foo').then(function(data) {
@@ -413,6 +420,14 @@ describe('interceptors', function () {
 
       describe('and when the fulfillment-interceptor throws', function () {
 
+        /**
+         * Sends a request to '/foo' using axios and catches any errors.
+         * Then, uses getAjaxRequest() to retrieve the request and responds with a status of 200 and responseText of 'OK'.
+         * After a 100ms timeout, calls the provided expectation function.
+         *
+         * @param {Function} expectation - The function to be called after the request is made and responded to.
+         * @remarks This function does not handle the result of the axios request.
+         */
         function fireRequestCatchAndExpect(expectation) {
           axios('/foo').catch(function(data) {
             // dont handle result

@@ -1,5 +1,13 @@
 const {AxiosHeaders} = axios;
 
+/**
+ * Checks if the given key-value pair exists in the headers object. If the key exists, the function checks if the value matches the given value. If the key does not exist, the function throws an error or checks if the value is undefined.
+ * @param {object} headers - The headers object to search through.
+ * @param {string} key - The key to search for in the headers object.
+ * @param {*} val - The value to compare against the value of the key in the headers object.
+ * @throws {Error} - If the key is not found in the headers object and the value is not undefined.
+ * @remarks - This function is commonly used in testing scenarios to check if a specific header value exists in an HTTP response.
+ */
 function testHeaderValue(headers, key, val) {
   let found = false;
 

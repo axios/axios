@@ -1,3 +1,8 @@
+/**
+ * Handles a POST request and sends a 200 response with a JSON content type.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ */
 export default function (req, res) {
   
   req.on('data', function (chunk) {

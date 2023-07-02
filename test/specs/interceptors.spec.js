@@ -60,13 +60,32 @@ describe('interceptors', function () {
     });
   });
 
-  it('should execute asynchronously when not all interceptors are explicitly flagged as synchronous', function (done) {
+  it('should execute synchronous interceptors added after async interceptors synchronously', function (done) {
     let asyncFlag = false;
+
     axios.interceptors.request.use(function (config) {
-      config.headers.foo = 'uh oh, async';
+      config.headers.test = 'added by async interceptor';
       expect(asyncFlag).toBe(true);
       return config;
     });
+
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by synchronous interceptor';
+      expect(asyncFlag).toBe(false);
+      return config;
+    }, null, { synchronous: true });
+
+    axios('/foo');
+    asyncFlag = true;
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders.test).toBe('added by async interceptor');
+      done();
+    });
+  });
+
+  it('should execute synchronous interceptors added before async interceptors asynchronously', function (done) {
+    let asyncFlag = false;
 
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by synchronous interceptor';
@@ -75,7 +94,7 @@ describe('interceptors', function () {
     }, null, { synchronous: true });
 
     axios.interceptors.request.use(function (config) {
-      config.headers.test = 'added by the async interceptor';
+      config.headers.test = 'added by async interceptor';
       expect(asyncFlag).toBe(true);
       return config;
     });
@@ -84,8 +103,6 @@ describe('interceptors', function () {
     asyncFlag = true;
 
     getAjaxRequest().then(function (request) {
-      expect(request.requestHeaders.foo).toBe('uh oh, async');
-      /* request interceptors have a reversed execution order */
       expect(request.requestHeaders.test).toBe('added by synchronous interceptor');
       done();
     });

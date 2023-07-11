@@ -1287,10 +1287,10 @@ describe('supports http with nodejs', function () {
         });
 
       }).listen(4000, function () {
-        process.env.http_proxy = 'http://user:pass@localhost:4000/';
+        process.env.http_proxy = 'http://user%3F:pass%3F@localhost:4000/';
 
         axios.get('http://localhost:4444/').then(function (res) {
-          var base64 = Buffer.from('user:pass', 'utf8').toString('base64');
+          var base64 = Buffer.from('user?:pass?', 'utf8').toString('base64');
           assert.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy set by process.env.http_proxy');
           done();
         }).catch(done);

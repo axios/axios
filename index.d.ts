@@ -274,10 +274,22 @@ export interface CustomParamsSerializer {
   (params: Record<string, any>, options?: ParamsSerializerOptions): string;
 }
 
-export interface ParamsSerializerOptions extends SerializerOptions {
-  encode?: ParamEncoder;
-  serialize?: CustomParamsSerializer;
+interface ParamsSerializerOptionsEncodeOnly extends SerializerOptions {
+  encode: ParamEncoder;
+  serialize?: never;
 }
+
+interface ParamsSerializerOptionsSerializeOnly extends SerializerOptions {
+  encode?: never;
+  serialize: CustomParamsSerializer;
+}
+
+interface ParamsSerializerOptionsSerializeBothNone extends SerializerOptions {
+  encode?: never;
+  serialize?: never;
+}
+
+export type ParamsSerializerOptions = ParamsSerializerOptionsEncodeOnly | ParamsSerializerOptionsSerializeOnly | ParamsSerializerOptionsSerializeBothNone
 
 type MaxUploadRate = number;
 

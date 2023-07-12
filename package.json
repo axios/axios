@@ -27,7 +27,7 @@
     "./unsafe/adapters/http.js": "./lib/adapters/http.js",
     "./unsafe/adapters/xhr.js": "./lib/adapters/xhr.js",
     "./unsafe/utils.js": "./lib/utils.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
     "./dist/browser/axios.cjs": "./dist/browser/axios.cjs",
     "./dist/node/axios.cjs": "./dist/node/axios.cjs"
   },

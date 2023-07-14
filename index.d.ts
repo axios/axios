@@ -16,7 +16,7 @@ export interface AxiosProxyConfig {
   port: number;
   auth?: {
     username: string;
-    password:string;
+    password: string;
   };
   protocol?: string;
 }

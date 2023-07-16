@@ -513,6 +513,7 @@ These are the available config options for making requests. Only the `url` is re
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
   // If the proxy server uses HTTPS, then you must set the protocol to `https`.
+  // If you are using a custom https agent, you must handle SSL tunneling yourself.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',

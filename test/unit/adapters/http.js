@@ -997,6 +997,31 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should support SSL tunneling through proxy', function (done) {
+    proxy = http.createServer();
+    proxy.on('connect', function (req, socket) {
+      const host = req.url.split(':')[0];
+      const port = parseInt(req.url.split(':')[1], 10);
+      const targetSocket = net.connect(port, host);
+      targetSocket.on('connect', function () {
+        socket.write('HTTP/1.1 200 Connection Established\n\n');
+        socket.pipe(targetSocket);
+        targetSocket.pipe(socket);
+      })
+    });
+    proxy.listen(4000, function () {
+      axios.get('https://www.google.com', {
+        proxy: {
+          host: 'localhost',
+          port: 4000,
+        },
+      }).then(function (res) {
+        assert.ok(res.data, 'should tunnel ssl through proxy');
+        done();
+      }).catch(done);
+    });
+  });
+
   it('should not pass through disabled proxy', function (done) {
     // set the env variable
     process.env.http_proxy = 'http://does-not-exists.example.com:4242/';

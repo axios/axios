@@ -167,7 +167,7 @@ Using unpkg CDN:
 
 ## Example
 
-> **Note** CommonJS usage
+> **Note**: CommonJS usage  
 > In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js

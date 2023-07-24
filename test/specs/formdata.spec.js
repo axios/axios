@@ -1,6 +1,6 @@
 
 describe('FormData', function() {
-  it('should allow FormData posting', function () {
+  it('should allow FormData posting', function (done) {
     return axios.postForm('http://httpbin.org/post', {
       a: 'foo',
       b: 'bar'
@@ -9,6 +9,7 @@ describe('FormData', function() {
         a: 'foo',
         b: 'bar'
       });
+      done();
     });
   });
 })

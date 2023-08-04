@@ -516,6 +516,8 @@ export function toFormData(sourceObj: object, targetFormData?: GenericFormData, 
 
 export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
 
+export function mergeConfig(config1: CreateAxiosDefaults, config2?: CreateAxiosDefaults): CreateAxiosDefaults;
+
 export function isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
 
 export function spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
@@ -538,6 +540,7 @@ export interface AxiosStatic extends AxiosInstance {
   isAxiosError: typeof isAxiosError;
   toFormData: typeof toFormData;
   formToJSON: typeof formToJSON;
+  mergeConfig: typeof mergeConfig;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
 }

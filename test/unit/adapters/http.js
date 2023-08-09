@@ -263,6 +263,35 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should destroy the request when timeout', function (done) {
+
+    server = http.createServer(function (req, res) {
+      setTimeout(function () {
+        res.end();
+      }, 1000);
+    }).listen(4444, function () {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+        timeout: 250,
+        timeoutErrorMessage: 'oops, timeout',
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.strictEqual(success, false, 'request should not succeed');
+        assert.strictEqual(failure, true, 'request should fail');
+        assert.strictEqual(error.request.destroyed, true);
+        done();
+      }, 300);
+    });
+  });
+
   it('should allow passing JSON', function (done) {
     var data = {
       firstName: 'Fred',

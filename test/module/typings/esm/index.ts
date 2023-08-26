@@ -655,3 +655,17 @@ for (const [header, value] of headers) {
     }
   });
 }
+
+// lookup
+axios.get('/user', {
+  lookup: (hostname: string, opt: object, cb: (err: Error | null, address: string, family: number) => void) => {
+    cb(null, '127.0.0.1', 4);
+  }
+});
+
+// lookup async
+axios.get('/user', {
+  lookup: (hostname: string, opt: object) => {
+    return ['127.0.0.1', 4];
+  }
+});

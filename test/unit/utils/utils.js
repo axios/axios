@@ -22,6 +22,37 @@ describe('utils', function (){
       });
       assert.equal(utils.isFormData(new FormData()), true);
     });
+
+    it('should not call toString method on built-in objects instances', () => {
+      const buf = Buffer.from('123');
+
+      buf.toString = () => assert.fail('should not be called');
+
+      assert.equal(utils.isFormData(buf), false);
+    });
+
+    it('should not call toString method on built-in objects instances, even if append method exists', () => {
+      const buf = Buffer.from('123');
+
+      buf.append = () => {};
+
+      buf.toString = () => assert.fail('should not be called');
+
+      assert.equal(utils.isFormData(buf), false);
+    });
+
+    it('should detect custom FormData instances by toStringTag signature and append method presence', () => {
+      class FormData {
+        append(){
+
+        }
+
+        get [Symbol.toStringTag]() {
+          return 'FormData';
+        }
+      }
+      assert.equal(utils.isFormData(new FormData()), true);
+    });
   });
 
   describe('toJSON', function (){

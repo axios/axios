@@ -18,6 +18,8 @@
         "default": "./index.js"
       }
     },
+    "./lib/adapters/http.js": "./lib/adapters/http.js",
+    "./lib/adapters/xhr.js": "./lib/adapters/xhr.js",
     "./unsafe/*": "./lib/*",
     "./unsafe/core/settle.js": "./lib/core/settle.js",
     "./unsafe/core/buildFullPath.js": "./lib/core/buildFullPath.js",

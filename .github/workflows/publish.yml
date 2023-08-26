@@ -11,6 +11,9 @@ jobs:
   publish:
     if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.head.label == 'axios:release')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: "Release PR info"
         if: github.event_name != 'workflow_dispatch'
@@ -22,7 +25,7 @@ jobs:
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - name: get-npm-version
@@ -50,6 +53,6 @@ jobs:
             ${{ steps.extract-release-notes.outputs.release_notes }}
       ############# NPM RELEASE ##############
       - name: Publish the release to NPM
-        run: npm publish
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

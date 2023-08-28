@@ -24,6 +24,7 @@ describe('instance', function () {
         'getUri',
         'isAxiosError',
         'mergeConfig',
+        'getAdapter',
         'VERSION',
         'default',
         'toFormData',

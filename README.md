@@ -215,7 +215,7 @@ async function getUser() {
 }
 ```
 
-> **Note** `async/await` is part of ECMAScript 2017 and is not supported in Internet
+> **Note**: `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
@@ -764,6 +764,36 @@ and when the response was fulfilled
 
 Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
 
+## Error Types
+
+There are many different axios error messages that can appear that can provide basic information about the specifics of the error and where opportunities may lie in debugging.
+
+The general structure of axios errors is as follows:
+| Property  | Definition  |
+| -------- | ----------  |
+| message  | A quick summary of the error message and the status it failed with. |
+| name     | This defines where the error originated from. For axios, it will always be an 'AxiosError'. |
+| stack    | Provides the stack trace of the error. | 
+| config   | An axios config object with specific instance configurations defined by the user from when the request was made |
+| code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.  |
+| status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings. 
+
+Below is a list of potential axios identified error
+| Code  |  Definition   |
+| -------- | ----------  |
+| ERR_BAD_OPTION_VALUE | Invalid or unsupported value provided in axios configuration. |
+| ERR_BAD_OPTION | Invalid option provided in axios configuration. |
+| ECONNABORTED | Request timed out due to exceeding timeout specified in axios configuration. |
+| ETIMEDOUT | Request timed out due to exceeding default axios timelimit. |
+| ERR_NETWORK | Network-related issue.
+| ERR_FR_TOO_MANY_REDIRECTS | Request is redirected too many times; exceeds max redirects specified in axios configuration.
+| ERR_DEPRECATED | Deprecated feature or method used in axios. 
+| ERR_BAD_RESPONSE | Response cannot be parsed properly or is in an unexpected format. 
+| ERR_BAD_REQUEST | Requested has unexpected format or missing required parameters. |
+| ERR_CANCELED | Feature or method is canceled explicitly by the user.   
+| ERR_NOT_SUPPORT | Feature or method not supported in the current axios environment. 
+| ERR_INVALID_URL | Invalid URL provided for axios request.
+
 ## Handling Errors
 
 the default behavior is to reject every response that returns with a status code that falls out of the range of 2xx and treat it as an error.
@@ -931,8 +961,7 @@ axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
-> **Note**
-> The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
+> **Note**: The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
 
 ### 🆕 Automatic serialization to URLSearchParams
 
@@ -1048,8 +1077,7 @@ Axios FormData serializer supports some special endings to perform the following
 - `{}` - serialize the value with JSON.stringify
 - `[]` - unwrap the array-like object as separate fields with the same key
 
-> **Note**
-> unwrap/expand operation will be used by default on arrays and FileList objects
+> **Note**: unwrap/expand operation will be used by default on arrays and FileList objects
 
 FormData serializer supports additional options via `config.formSerializer: object` property to handle rare cases:
 

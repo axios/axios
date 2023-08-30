@@ -1,4 +1,4 @@
-// Axios v1.4.0 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.5.0 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -625,8 +625,9 @@
     var descriptors = Object.getOwnPropertyDescriptors(obj);
     var reducedDescriptors = {};
     forEach(descriptors, function (descriptor, name) {
-      if (reducer(descriptor, name, obj) !== false) {
-        reducedDescriptors[name] = descriptor;
+      var ret;
+      if ((ret = reducer(descriptor, name, obj)) !== false) {
+        reducedDescriptors[name] = ret || descriptor;
       }
     });
     Object.defineProperties(obj, reducedDescriptors);
@@ -1361,10 +1362,6 @@
     return null;
   }
 
-  var DEFAULT_CONTENT_TYPE = {
-    'Content-Type': undefined
-  };
-
   /**
    * It takes a string, tries to parse it, and if it fails, it returns the stringified version
    * of the input
@@ -1390,7 +1387,7 @@
   }
   var defaults = {
     transitional: transitionalDefaults,
-    adapter: ['xhr', 'http'],
+    adapter: platform.isNode ? 'http' : 'xhr',
     transformRequest: [function transformRequest(data, headers) {
       var contentType = headers.getContentType() || '';
       var hasJSONContentType = contentType.indexOf('application/json') > -1;
@@ -1471,15 +1468,13 @@
     },
     headers: {
       common: {
-        'Accept': 'application/json, text/plain, */*'
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': undefined
       }
     }
   };
-  utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+  utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch'], function (method) {
     defaults.headers[method] = {};
-  });
-  utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-    defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
   });
   var defaults$1 = defaults;
 
@@ -1781,7 +1776,20 @@
     return AxiosHeaders;
   }(Symbol.iterator, Symbol.toStringTag);
   AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
-  utils.freezeMethods(AxiosHeaders.prototype);
+
+  // reserved names hotfix
+  utils.reduceDescriptors(AxiosHeaders.prototype, function (_ref3, key) {
+    var value = _ref3.value;
+    var mapped = key[0].toUpperCase() + key.slice(1); // map `set` => `Set`
+    return {
+      get: function get() {
+        return value;
+      },
+      set: function set(headerValue) {
+        this[mapped] = headerValue;
+      }
+    };
+  });
   utils.freezeMethods(AxiosHeaders);
   var AxiosHeaders$1 = AxiosHeaders;
 
@@ -2440,7 +2448,7 @@
     return config;
   }
 
-  var VERSION = "1.4.0";
+  var VERSION = "1.5.0";
 
   var validators$1 = {};
 
@@ -2582,11 +2590,10 @@
 
         // Set config.method
         config.method = (config.method || this.defaults.method || 'get').toLowerCase();
-        var contextHeaders;
 
         // Flatten headers
-        contextHeaders = headers && utils.merge(headers.common, headers[config.method]);
-        contextHeaders && utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch', 'common'], function (method) {
+        var contextHeaders = headers && utils.merge(headers.common, headers[config.method]);
+        headers && utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch', 'common'], function (method) {
           delete headers[method];
         });
         config.headers = AxiosHeaders$1.concat(contextHeaders, headers);
@@ -2973,6 +2980,7 @@
   axios.formToJSON = function (thing) {
     return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
   };
+  axios.getAdapter = adapters.getAdapter;
   axios.HttpStatusCode = HttpStatusCode$1;
   axios["default"] = axios;
 

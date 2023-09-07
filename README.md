@@ -167,7 +167,7 @@ Using unpkg CDN:
 
 ## Example
 
-> **Note** CommonJS usage
+> **Note**: CommonJS usage  
 > In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js
@@ -215,7 +215,7 @@ async function getUser() {
 }
 ```
 
-> **Note** `async/await` is part of ECMAScript 2017 and is not supported in Internet
+> **Note**: `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
 
 Performing a `POST` request
@@ -967,8 +967,7 @@ axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 
 You can also use the [`qs`](https://github.com/ljharb/qs) library.
 
-> **Note**
-> The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
+> **Note**: The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
 
 ### 🆕 Automatic serialization to URLSearchParams
 
@@ -1084,8 +1083,7 @@ Axios FormData serializer supports some special endings to perform the following
 - `{}` - serialize the value with JSON.stringify
 - `[]` - unwrap the array-like object as separate fields with the same key
 
-> **Note**
-> unwrap/expand operation will be used by default on arrays and FileList objects
+> **Note**: unwrap/expand operation will be used by default on arrays and FileList objects
 
 FormData serializer supports additional options via `config.formSerializer: object` property to handle rare cases:
 

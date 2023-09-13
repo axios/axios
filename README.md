@@ -167,7 +167,7 @@ Using unpkg CDN:
 
 ## Example
 
-> **Note** CommonJS usage
+> **Note**: CommonJS usage  
 > In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
 
 ```js
@@ -384,12 +384,18 @@ These are the available config options for making requests. Only the `url` is re
   params: {
     ID: 12345
   },
-
-  // `paramsSerializer` is an optional config in charge of serializing `params`
+  
+  // `paramsSerializer` is an optional config that allows you to customize serializing `params`. 
   paramsSerializer: {
-    encode?: (param: string): string => { /* Do custom ops here and return transformed string */ }, // custom encoder function; sends Key/Values in an iterative fashion
-    serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ), // mimic pre 1.x behavior and send entire params object to a custom serializer func. Allows consumer to control how params are serialized.
-    indexes: false // array indexes format (null - no brackets, false (default) - empty brackets, true - brackets with indexes)
+
+    //Custom encoder function which sends key/value pairs in an iterative fashion.
+    encode?: (param: string): string => { /* Do custom operations here and return transformed string */ }, 
+    
+    // Custom serializer function for the entire parameter. Allows user to mimic pre 1.x behaviour.
+    serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ), 
+    
+    //Configuration for formatting array indexes in the params. 
+    indexes: false // Three available options: (1) indexes: null (leads to no brackets), (2) (default) indexes: false (leads to empty brackets), (3) indexes: true (leads to brackets with indexes).    
   },
 
   // `data` is the data to be sent as the request body

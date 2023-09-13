@@ -119,10 +119,7 @@ export interface AxiosBasicCredentials {
 export interface AxiosProxyConfig {
   host: string;
   port: number;
-  auth?: {
-    username: string;
-    password: string;
-  };
+  auth?: AxiosBasicCredentials;
   protocol?: string;
 }
 

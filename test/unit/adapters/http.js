@@ -654,12 +654,12 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should provides a default User-Agent header', function (done) {
+  it('should provide a default User-Agent header', function (done) {
     server = http.createServer(function (req, res) {
       res.end(req.headers['user-agent']);
     }).listen(4444, function () {
       axios.get('http://localhost:4444/').then(function (res) {
-        assert.ok(/^axios\/[\d.]+[-]?[a-z]*[.]?[\d]+$/.test(res.data), `User-Agent header does not match: ${res.data}`);
+        assert.ok(/^axios\/[\d.]+[-]?[a-z]*[.]?[\d]+([-][a-z0-9].*)?$/.test(res.data), `User-Agent header does not match: ${res.data}`);
         done();
       }).catch(done);
     });

@@ -1,0 +1,5 @@
+name = "axios-worker"
+workers_dev = true
+compatibility_date = "2022-12-17"
+main = "axios-worker.mjs"
+

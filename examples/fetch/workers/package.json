@@ -1,0 +1,12 @@
+{
+  "name": "axios-worker-sample",
+  "type": "module",
+  "main": "axios-worker.mjs",
+  "module": "axios-worker.mjs",
+  "dependencies": {
+    "axios": "file:../../../"
+  },
+  "devDependencies": {
+    "wrangler": "^2.6.2"
+  }
+}

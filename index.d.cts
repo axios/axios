@@ -2,9 +2,25 @@ interface RawAxiosHeaders {
   [key: string]: axios.AxiosHeaderValue;
 }
 
+type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
+
 type MethodsHeaders = Partial<{
   [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
 } & {common: AxiosHeaders}>;
+
+interface CommonHeaders  {
+  common: AxiosHeaders;
+}
+
+type FetchOptions = Omit<Omit<Omit<RequestInit, "body">, "headers">, "window">;
+
+type FetchURL = URL;
+
+type FetchRequest = Request;
+
+type FetchInput = FetchURL | FetchRequest | string;
+
+type AxiosRequestFetchInputs = FetchURL | FetchRequest | string;
 
 type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
 
@@ -120,17 +136,17 @@ declare class Axios {
     response: axios.AxiosInterceptorManager<axios.AxiosResponse>;
   };
   getUri(config?: axios.AxiosRequestConfig): string;
-  request<T = any, R = axios.AxiosResponse<T>, D = any>(config: axios.AxiosRequestConfig<D>): Promise<R>;
-  get<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  delete<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  head<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  options<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  post<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  put<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  patch<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  postForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  putForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
-  patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  request<T = any, R = axios.AxiosResponse<T>, D = any>(url: axios.AxiosRequestConfig<D> | AxiosRequestFetchInputs): Promise<R>;
+  get<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  postForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  putForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+  patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
 }
 
 declare enum HttpStatusCode {
@@ -355,12 +371,17 @@ declare namespace axios {
 
   type Milliseconds = number;
 
-  type AxiosAdapterName = 'xhr' | 'http' | string;
+  type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
   type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
+  interface Fetcher {
+    (input: FetchInput, init?: FetchOptions): Promise<Response>;
+  }
+
   interface AxiosRequestConfig<D = any> {
-    url?: string;
+    url?: string | FetchURL;
+    parsedUrl?: FetchURL;
     method?: Method | string;
     baseURL?: string;
     transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
@@ -373,6 +394,8 @@ declare namespace axios {
     timeoutErrorMessage?: string;
     withCredentials?: boolean;
     adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
+    fetcher?: Fetcher;
+    fetchOptions?: FetchOptions;
     auth?: AxiosBasicCredentials;
     responseType?: ResponseType;
     responseEncoding?: responseEncoding | string;
@@ -506,7 +529,7 @@ declare namespace axios {
   }
 
   interface AxiosStatic extends AxiosInstance {
-    create(config?: CreateAxiosDefaults): AxiosInstance;
+    create(configOrUrlOrRequest?: CreateAxiosDefaults | AxiosRequestFetchInputs, config?: CreateAxiosDefaults): AxiosInstance;
     Cancel: CancelStatic;
     CancelToken: CancelTokenStatic;
     Axios: typeof Axios;
@@ -522,6 +545,7 @@ declare namespace axios {
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
     getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
+    FetchAdapter: AxiosAdapter;
   }
 }
 

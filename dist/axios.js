@@ -5,14 +5,335 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.axios = factory());
 })(this, (function () { 'use strict';
 
+  function _regeneratorRuntime() {
+    _regeneratorRuntime = function () {
+      return exports;
+    };
+    var exports = {},
+      Op = Object.prototype,
+      hasOwn = Op.hasOwnProperty,
+      $Symbol = "function" == typeof Symbol ? Symbol : {},
+      iteratorSymbol = $Symbol.iterator || "@@iterator",
+      asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator",
+      toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+    function define(obj, key, value) {
+      return Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: !0,
+        configurable: !0,
+        writable: !0
+      }), obj[key];
+    }
+    try {
+      define({}, "");
+    } catch (err) {
+      define = function (obj, key, value) {
+        return obj[key] = value;
+      };
+    }
+    function wrap(innerFn, outerFn, self, tryLocsList) {
+      var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator,
+        generator = Object.create(protoGenerator.prototype),
+        context = new Context(tryLocsList || []);
+      return generator._invoke = function (innerFn, self, context) {
+        var state = "suspendedStart";
+        return function (method, arg) {
+          if ("executing" === state) throw new Error("Generator is already running");
+          if ("completed" === state) {
+            if ("throw" === method) throw arg;
+            return doneResult();
+          }
+          for (context.method = method, context.arg = arg;;) {
+            var delegate = context.delegate;
+            if (delegate) {
+              var delegateResult = maybeInvokeDelegate(delegate, context);
+              if (delegateResult) {
+                if (delegateResult === ContinueSentinel) continue;
+                return delegateResult;
+              }
+            }
+            if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) {
+              if ("suspendedStart" === state) throw state = "completed", context.arg;
+              context.dispatchException(context.arg);
+            } else "return" === context.method && context.abrupt("return", context.arg);
+            state = "executing";
+            var record = tryCatch(innerFn, self, context);
+            if ("normal" === record.type) {
+              if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue;
+              return {
+                value: record.arg,
+                done: context.done
+              };
+            }
+            "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg);
+          }
+        };
+      }(innerFn, self, context), generator;
+    }
+    function tryCatch(fn, obj, arg) {
+      try {
+        return {
+          type: "normal",
+          arg: fn.call(obj, arg)
+        };
+      } catch (err) {
+        return {
+          type: "throw",
+          arg: err
+        };
+      }
+    }
+    exports.wrap = wrap;
+    var ContinueSentinel = {};
+    function Generator() {}
+    function GeneratorFunction() {}
+    function GeneratorFunctionPrototype() {}
+    var IteratorPrototype = {};
+    define(IteratorPrototype, iteratorSymbol, function () {
+      return this;
+    });
+    var getProto = Object.getPrototypeOf,
+      NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+    NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype);
+    var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype);
+    function defineIteratorMethods(prototype) {
+      ["next", "throw", "return"].forEach(function (method) {
+        define(prototype, method, function (arg) {
+          return this._invoke(method, arg);
+        });
+      });
+    }
+    function AsyncIterator(generator, PromiseImpl) {
+      function invoke(method, arg, resolve, reject) {
+        var record = tryCatch(generator[method], generator, arg);
+        if ("throw" !== record.type) {
+          var result = record.arg,
+            value = result.value;
+          return value && "object" == typeof value && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) {
+            invoke("next", value, resolve, reject);
+          }, function (err) {
+            invoke("throw", err, resolve, reject);
+          }) : PromiseImpl.resolve(value).then(function (unwrapped) {
+            result.value = unwrapped, resolve(result);
+          }, function (error) {
+            return invoke("throw", error, resolve, reject);
+          });
+        }
+        reject(record.arg);
+      }
+      var previousPromise;
+      this._invoke = function (method, arg) {
+        function callInvokeWithMethodAndArg() {
+          return new PromiseImpl(function (resolve, reject) {
+            invoke(method, arg, resolve, reject);
+          });
+        }
+        return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg();
+      };
+    }
+    function maybeInvokeDelegate(delegate, context) {
+      var method = delegate.iterator[context.method];
+      if (undefined === method) {
+        if (context.delegate = null, "throw" === context.method) {
+          if (delegate.iterator.return && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method)) return ContinueSentinel;
+          context.method = "throw", context.arg = new TypeError("The iterator does not provide a 'throw' method");
+        }
+        return ContinueSentinel;
+      }
+      var record = tryCatch(method, delegate.iterator, context.arg);
+      if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel;
+      var info = record.arg;
+      return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel);
+    }
+    function pushTryEntry(locs) {
+      var entry = {
+        tryLoc: locs[0]
+      };
+      1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry);
+    }
+    function resetTryEntry(entry) {
+      var record = entry.completion || {};
+      record.type = "normal", delete record.arg, entry.completion = record;
+    }
+    function Context(tryLocsList) {
+      this.tryEntries = [{
+        tryLoc: "root"
+      }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0);
+    }
+    function values(iterable) {
+      if (iterable) {
+        var iteratorMethod = iterable[iteratorSymbol];
+        if (iteratorMethod) return iteratorMethod.call(iterable);
+        if ("function" == typeof iterable.next) return iterable;
+        if (!isNaN(iterable.length)) {
+          var i = -1,
+            next = function next() {
+              for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next;
+              return next.value = undefined, next.done = !0, next;
+            };
+          return next.next = next;
+        }
+      }
+      return {
+        next: doneResult
+      };
+    }
+    function doneResult() {
+      return {
+        value: undefined,
+        done: !0
+      };
+    }
+    return GeneratorFunction.prototype = GeneratorFunctionPrototype, define(Gp, "constructor", GeneratorFunctionPrototype), define(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) {
+      var ctor = "function" == typeof genFun && genFun.constructor;
+      return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name));
+    }, exports.mark = function (genFun) {
+      return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun;
+    }, exports.awrap = function (arg) {
+      return {
+        __await: arg
+      };
+    }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
+      return this;
+    }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) {
+      void 0 === PromiseImpl && (PromiseImpl = Promise);
+      var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl);
+      return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) {
+        return result.done ? result.value : iter.next();
+      });
+    }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () {
+      return this;
+    }), define(Gp, "toString", function () {
+      return "[object Generator]";
+    }), exports.keys = function (object) {
+      var keys = [];
+      for (var key in object) keys.push(key);
+      return keys.reverse(), function next() {
+        for (; keys.length;) {
+          var key = keys.pop();
+          if (key in object) return next.value = key, next.done = !1, next;
+        }
+        return next.done = !0, next;
+      };
+    }, exports.values = values, Context.prototype = {
+      constructor: Context,
+      reset: function (skipTempReset) {
+        if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined);
+      },
+      stop: function () {
+        this.done = !0;
+        var rootRecord = this.tryEntries[0].completion;
+        if ("throw" === rootRecord.type) throw rootRecord.arg;
+        return this.rval;
+      },
+      dispatchException: function (exception) {
+        if (this.done) throw exception;
+        var context = this;
+        function handle(loc, caught) {
+          return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught;
+        }
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i],
+            record = entry.completion;
+          if ("root" === entry.tryLoc) return handle("end");
+          if (entry.tryLoc <= this.prev) {
+            var hasCatch = hasOwn.call(entry, "catchLoc"),
+              hasFinally = hasOwn.call(entry, "finallyLoc");
+            if (hasCatch && hasFinally) {
+              if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0);
+              if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc);
+            } else if (hasCatch) {
+              if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0);
+            } else {
+              if (!hasFinally) throw new Error("try statement without catch or finally");
+              if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc);
+            }
+          }
+        }
+      },
+      abrupt: function (type, arg) {
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i];
+          if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) {
+            var finallyEntry = entry;
+            break;
+          }
+        }
+        finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null);
+        var record = finallyEntry ? finallyEntry.completion : {};
+        return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record);
+      },
+      complete: function (record, afterLoc) {
+        if ("throw" === record.type) throw record.arg;
+        return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel;
+      },
+      finish: function (finallyLoc) {
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i];
+          if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel;
+        }
+      },
+      catch: function (tryLoc) {
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i];
+          if (entry.tryLoc === tryLoc) {
+            var record = entry.completion;
+            if ("throw" === record.type) {
+              var thrown = record.arg;
+              resetTryEntry(entry);
+            }
+            return thrown;
+          }
+        }
+        throw new Error("illegal catch attempt");
+      },
+      delegateYield: function (iterable, resultName, nextLoc) {
+        return this.delegate = {
+          iterator: values(iterable),
+          resultName: resultName,
+          nextLoc: nextLoc
+        }, "next" === this.method && (this.arg = undefined), ContinueSentinel;
+      }
+    }, exports;
+  }
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
-    return _typeof = "function" === typeof Symbol && "symbol" === typeof Symbol.iterator ? function (obj) {
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
       return typeof obj;
     } : function (obj) {
-      return obj && "function" === typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
     }, _typeof(obj);
+  }
+  function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+      var info = gen[key](arg);
+      var value = info.value;
+    } catch (error) {
+      reject(error);
+      return;
+    }
+    if (info.done) {
+      resolve(value);
+    } else {
+      Promise.resolve(value).then(_next, _throw);
+    }
+  }
+  function _asyncToGenerator(fn) {
+    return function () {
+      var self = this,
+        args = arguments;
+      return new Promise(function (resolve, reject) {
+        var gen = fn.apply(self, args);
+        function _next(value) {
+          asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+        }
+        function _throw(err) {
+          asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+        }
+        _next(undefined);
+      });
+    };
   }
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -82,6 +403,57 @@
   function _nonIterableRest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
+  function _createForOfIteratorHelper(o, allowArrayLike) {
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+    if (!it) {
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+        var F = function () {};
+        return {
+          s: F,
+          n: function () {
+            if (i >= o.length) return {
+              done: true
+            };
+            return {
+              done: false,
+              value: o[i++]
+            };
+          },
+          e: function (e) {
+            throw e;
+          },
+          f: F
+        };
+      }
+      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+    }
+    var normalCompletion = true,
+      didErr = false,
+      err;
+    return {
+      s: function () {
+        it = it.call(o);
+      },
+      n: function () {
+        var step = it.next();
+        normalCompletion = step.done;
+        return step;
+      },
+      e: function (e) {
+        didErr = true;
+        err = e;
+      },
+      f: function () {
+        try {
+          if (!normalCompletion && it.return != null) it.return();
+        } finally {
+          if (didErr) throw err;
+        }
+      }
+    };
+  }
 
   function bind(fn, thisArg) {
     return function wrap() {
@@ -119,14 +491,6 @@
    * @returns {boolean} True if value is an Array, otherwise false
    */
   var isArray = Array.isArray;
-
-  /**
-   * Determine if a value is undefined
-   *
-   * @param {*} val The value to test
-   *
-   * @returns {boolean} True if the value is undefined, otherwise false
-   */
   var isUndefined = typeOfTest('undefined');
 
   /**
@@ -606,12 +970,13 @@
   };
 
   /* Creating a function that will check if an object has a property. */
-  var hasOwnProperty = function (_ref4) {
+  var _hasOwnProperty = function (_ref4) {
     var hasOwnProperty = _ref4.hasOwnProperty;
     return function (obj, prop) {
       return hasOwnProperty.call(obj, prop);
     };
   }(Object.prototype);
+  var hasOwnProp = _hasOwnProperty;
 
   /**
    * Determine if a value is a RegExp object
@@ -762,8 +1127,8 @@
     forEachEntry: forEachEntry,
     matchAll: matchAll,
     isHTMLForm: isHTMLForm,
-    hasOwnProperty: hasOwnProperty,
-    hasOwnProp: hasOwnProperty,
+    hasOwnProperty: _hasOwnProperty,
+    hasOwnProp: _hasOwnProperty,
     // an alias to avoid ESLint no-prototype-builtins detection
     reduceDescriptors: reduceDescriptors,
     freezeMethods: freezeMethods,
@@ -857,8 +1222,7 @@
     return axiosError;
   };
 
-  // eslint-disable-next-line strict
-  var httpAdapter = null;
+  var FormData$1 = typeof FormData !== 'undefined' ? FormData : null;
 
   /**
    * Determines if the given thing is a array or js object.
@@ -943,7 +1307,7 @@
     }
 
     // eslint-disable-next-line no-param-reassign
-    formData = formData || new (FormData)();
+    formData = formData || new (FormData$1 || FormData)();
 
     // eslint-disable-next-line no-param-reassign
     options = utils.toFlatObject(options, {
@@ -1218,9 +1582,14 @@
 
   var URLSearchParams$1 = typeof URLSearchParams !== 'undefined' ? URLSearchParams : AxiosURLSearchParams;
 
-  var FormData$1 = typeof FormData !== 'undefined' ? FormData : null;
-
   var Blob$1 = typeof Blob !== 'undefined' ? Blob : null;
+
+  // In browser environments, we directly use the native Fetch API implementation, attached at `window`.
+
+  var FetchHeaders = window.Headers;
+  var FetchRequest = window.Request;
+  var FetchResponse = window.Response;
+  var fetcher = window.fetch;
 
   /**
    * Determine if we're running in a standard browser environment
@@ -1263,10 +1632,20 @@
   }();
   var platform = {
     isBrowser: true,
+    isGenericJs: true,
+    // browser is a superset of generic JS
+    knownAdapters: ['xhr', 'fetch'],
+    defaultFetchOptions: {
+      cache: 'default',
+      redirect: 'follow'
+    },
     classes: {
       URLSearchParams: URLSearchParams$1,
       FormData: FormData$1,
-      Blob: Blob$1
+      Blob: Blob$1,
+      Request: FetchRequest,
+      Response: FetchResponse,
+      Headers: FetchHeaders
     },
     isStandardBrowserEnv: isStandardBrowserEnv,
     isStandardBrowserWebWorkerEnv: isStandardBrowserWebWorkerEnv,
@@ -1387,7 +1766,7 @@
   }
   var defaults = {
     transitional: transitionalDefaults,
-    adapter: platform.isNode ? 'http' : 'xhr',
+    adapter: platform.knownAdapters || ['xhr', 'http', 'fetch'],
     transformRequest: [function transformRequest(data, headers) {
       var contentType = headers.getContentType() || '';
       var hasJSONContentType = contentType.indexOf('application/json') > -1;
@@ -1471,7 +1850,12 @@
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': undefined
       }
-    }
+    },
+    fetcher: null,
+    fetchOptions: platform.defaultFetchOptions || {
+      redirect: 'follow'
+    },
+    parsedUrl: null
   };
   utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch'], function (method) {
     defaults.headers[method] = {};
@@ -1835,6 +2219,9 @@
     __CANCEL__: true
   });
 
+  // eslint-disable-next-line strict
+  var httpAdapter = null;
+
   /**
    * Resolve or reject a Promise based on response status.
    *
@@ -1909,6 +2296,36 @@
   }
 
   /**
+   * Trim `n` slashes from the start or `end` of a `subject` string.
+   *
+   * @param {!string} subject String to trim slashes from.
+   * @param {boolean=} opt_end Whether to trim from the end of the string. If not passed or passed as `false`, the start
+   *   of the string is inspected instead.
+   * @return {!string} String with slashes trimmed from either the start or end of the string.
+   */
+  function trimSlashes(subject, opt_end) {
+    var originalLength = subject.length;
+    var getSubjectChar = function getSubjectChar() {
+      return subject.charAt(opt_end === true ? subject.length - 1 : 0);
+    };
+    var trimOne = function trimOne() {
+      return subject = opt_end === true ? subject.slice(0, subject.length - 1) : subject.slice(1);
+    };
+    var _char = getSubjectChar();
+    var iterations = 0;
+    while (_char === '/') {
+      iterations++;
+      trimOne();
+      _char = getSubjectChar();
+      if (iterations > originalLength) {
+        break; // shouldn't infinite loop, but this protection guarantees it won't look past the length of the string
+      }
+    }
+
+    return subject;
+  }
+
+  /**
    * Creates a new URL by combining the specified URLs
    *
    * @param {string} baseURL The base URL
@@ -1917,7 +2334,75 @@
    * @returns {string} The combined URL
    */
   function combineURLs(baseURL, relativeURL) {
-    return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL;
+    var combined = relativeURL ? (baseURL.charAt(baseURL.length - 1) === '/' ? trimSlashes(baseURL, true) : baseURL) + '/' + (relativeURL.charAt(0) === '/' ? trimSlashes(relativeURL) : relativeURL) : baseURL;
+
+    // corner case: if one of the original URLs has multiple slashes which do not reside at the end (for the `baseURL`) or
+    // at the start (for the `relativeURL`), we sanitize them here. avoidance of regex is deliberate, in order to avoid
+    // polynomial runtime complexity.
+    //
+    // since the `baseURL` and `relativeURL` are guaranteed not to have such artifacts at the end, or beginning,
+    // respectively (by `trimSlashes`), we only need to do a quick check for the presence of a double-slash. if there is
+    // none present, we can bail and return the combined URL.
+    //
+    // See more: CWE-1333, CWE-400, CWE-730 (https://cwe.mitre.org/index.html)
+    //
+    // since Axios only supports a limited set of protocols on each platform, we can safely predict where the protocol
+    // specifier will be. Then, we can scan the inverse range for any double-slashes. If there is no protocol present (as
+    // is the case for relative URLs), we can simply scan the string.
+    //
+    // the full suite of supported protocol prefixes across all platforms is:
+    // `['http', 'https', 'file', 'blob', 'url', 'data']`
+    //
+    // these are all either three, four, or five characters long (in the lone case of `https`). we use these offsets to
+    // probe for the protocol string, without iterating, and then proceed as above.
+    var protocolMinimumOffset = 3 + 1; // 3 character minimum + 1 to arrive at `:`
+    var protocolMaximumOffset = 5 + 1; // 5 character maximum + 1 to arrive at `:`
+    var combinedLength = combined.length;
+    var offset = Math.min(combinedLength, protocolMaximumOffset + 2);
+    var sub = combined;
+
+    /* eslint-disable */
+    var protocolPosition = -1;
+
+    // if the combined URLs are shorter than the minimum, there is no protocol by definition, and the URLs are both
+    // relative (and both very small). because we want the offset of the protocol separator, we return `-1` to
+    // indicate it was not found, or `1` to continue processing (we don't know where it is yet).
+    if (!(combinedLength < protocolMinimumOffset)) {
+      // now that we know it's at least as long as the minimum, we can safely slice and check for the protocol tail. the
+      // length of the string can still be less than the maximum offset + 2, though, so we take the minimum of that and
+      // the length of the combined string to prevent overflows. at the same time, we assign the smaller search string to
+      // the subject, so that we don't have to slice it again, and OR-it to the next step.
+      protocolPosition = ((sub = sub.slice(0, offset)) || sub).includes('://') ?
+      // we've found the protocol separator; return the start position. since we may have sliced the search space,
+      // there may or may not be an offset to apply. otherwise, we just return -1 to indicate it was not found (i.e.
+      // in the case of a relative base URL. since the `indexOf` returns the start of the string, we add `3` to
+      // include the protocol separator itself.
+      sub.indexOf('://') + offset + 3 : -1;
+    }
+
+    // use the above metric to calculate the minimum search space for double-slashes which need to be sanitized.
+    var doubleSlashSearch = protocolPosition === -1 ? combined : combined.slice(protocolPosition);
+
+    // check for double slashes in the target search space. if found, build the return value character by character,
+    // dropping repeated slashes as we go.
+    if (doubleSlashSearch.includes('//')) {
+      var previous = '';
+      var charIndex = 0;
+      var charsTotal = doubleSlashSearch.length;
+      var sanitized = '';
+      while (charIndex < charsTotal) {
+        var _char2 = doubleSlashSearch.charAt(charIndex);
+        if (_char2 === '/' && previous === '/') ; else {
+          sanitized += _char2;
+        }
+        previous = _char2;
+        charIndex++;
+      }
+
+      // finally, if we trimmed the protocol from the search space, we need to combine it again before we return.
+      return protocolPosition === -1 ? "".concat(combined.slice(0, protocolPosition)).concat(sanitized) : sanitized;
+    }
+    return combined;
   }
 
   /**
@@ -2246,11 +2731,385 @@
     });
   };
 
+  var AbortController$1 = AbortController;
+
+  var defaultFetchResponseType = 'json';
+  var plainMime = 'text/plain';
+  var contentTypeHeader = 'Content-Type';
+  var contentLengthHeader = 'Content-Length';
+  var transferEncodingHeader = 'Transfer-Encoding';
+  var textLikeContentTypes = new Set([plainMime, 'text/html', 'text/xml', 'text/css', 'text/javascript', 'application/xml', 'application/xhtml+xml', 'application/javascript']);
+  var knownNoBodyResponseStatuses = new Set([204, 205, 304]);
+  var debugLog = function debugLog(msg) {
+    {
+      var _console;
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+      (_console = console).log.apply(_console, ['[axios:fetch] ', msg].concat(args));
+    }
+  };
+  var fetchAssert = function fetchAssert(definition) {
+    {
+      definition(function (condition, message) {
+        console.assert(condition, message);
+      });
+    }
+  };
+  function patchDecodeJson(response) {
+    response.json = /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.t0 = JSON;
+              _context.next = 3;
+              return response.text();
+            case 3:
+              _context.t1 = _context.sent.trim();
+              return _context.abrupt("return", _context.t0.parse.call(_context.t0, _context.t1));
+            case 5:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+    return response;
+  }
+  var handlerFactory = function handlerFactory(response) {
+    return {
+      'text': response.text,
+      'form': response.formData,
+      'blob': response.blob,
+      'json': function jsonShim() {
+        return patchDecodeJson(response).json();
+      }
+    };
+  };
+  var selectHandlerFromConfig = function selectHandlerFromConfig(config, handlers) {
+    var handler = handlers[config.responseType] || null;
+    debugLog('handler from: config', config.responseType, handler);
+    return handler;
+  };
+  var selectHandlerFromContentType = function selectHandlerFromContentType(config, handlers, contentType) {
+    var resolvedContentType =
+    // if it's a text-like content type, resolve it as text/plain
+    textLikeContentTypes.has(contentType) ? plainMime : contentType;
+    var handler = {
+      'application/json': handlers['json'],
+      'text/plain': handlers['text']
+    }[resolvedContentType] || null;
+    debugLog('handler from: content-type', config.responseType, handler);
+    return handler;
+  };
+  function isResponseEligibleForBody(response) {
+    // status cannot be present in `knownNoBodyResponseStatuses` in order to have a parse-able body. additionally, the
+    // response shouldn't be an opaque redirect; those should be handed directly back to the developer.
+    return !knownNoBodyResponseStatuses.has(response.status);
+  }
+  function processResponseBody(config, response, responseHeaders) {
+    var hasBody = false;
+    var handler = null;
+    var handlers = handlerFactory(response);
+
+    // case: non-chunked body with `content-length` header, and...
+    // case: chunked body with a `transfer-encoding` header
+    var hasContentType = responseHeaders.has(contentTypeHeader);
+    if (responseHeaders.has(contentLengthHeader) || responseHeaders.has(transferEncodingHeader)) {
+      var hasKnownLength = responseHeaders.has(contentLengthHeader);
+      var contentType = responseHeaders.get(contentTypeHeader);
+      if (hasKnownLength) {
+        debugLog('body has known length', responseHeaders.get(contentLengthHeader));
+
+        // the response has a content-length, and therefore a known response size.
+        hasBody = +(responseHeaders.get(contentLengthHeader) || 0) > 0;
+      } else {
+        debugLog('body is chunked');
+
+        // the response has a transfer-encoding header indicating a chunked (streamed) response.
+        hasBody = true;
+      }
+      if (hasBody) {
+        // if we have detected a body, select a handler to consume the body based on config, or fall-back to the
+        // content-type to resolve a value. if all else fails, the data is considered raw data and made available via a
+        // raw `Blob`.
+        handler = config.responseType ? selectHandlerFromConfig(config, handlers) : null;
+        if (config.responseType) {
+          debugLog('resolved handler from config: ', handler);
+        }
+        if (hasContentType && handler == null) {
+          // trim any charset specified
+          var cleanedContentType = contentType.includes(';') ? contentType.split(';')[0] : contentType;
+          handler = selectHandlerFromContentType(config, handlers, cleanedContentType);
+          debugLog('resolved handler from content-type: ', handler);
+        }
+        if (handler == null) {
+          debugLog('no handler found: falling back to `blob`');
+
+          // if we get this far, it means there wasn't a handler specified via configuration, and we couldn't easily
+          // resolve a handler for a text-type via the content-type. we'll have to fall back to a `Blob`.
+          handler = handlers['blob'] || null;
+        }
+      }
+    }
+    return [hasBody, handler];
+  }
+  function dispatchFetch(config, resolve, reject) {
+    debugLog('invoked');
+    var abortController = new AbortController$1();
+    var signal = abortController.signal;
+    var body = config.data;
+    var method = config.method.toUpperCase();
+    var responseType = config.responseType;
+    var requestHeaders = AxiosHeaders$1.from(config.headers).normalize();
+    var fullPath = buildFullPath(config.baseURL, config.url);
+
+    // safely parse into `URL`, or use existing/cached URL via config. skip this step for relative URLs, which do not
+    // parse into `URL` objects because they do not encapsulate origin info. make sure to let protocol-relative URLs
+    // through, though, which are considered absolute.
+    var parsedUrl = config.parsedUrl;
+    if (!parsedUrl && !(fullPath.startsWith('/') && !fullPath.startsWith('//'))) {
+      try {
+        // we are unable to parse the URL if it (1) is a relative URL, or (2) is a malformed URL to begin with. to avoid
+        // #1 causing an error, we can make an attempt here to use the current window origin as a relative base; this will
+        // only work in browsers, though, so we need to be careful to check that we have an origin in the first place.
+        if (platform.isStandardBrowserEnv) {
+          // origin = `https://domain.com` (protocol + host + port if non-standard)
+          // fullPath = `/foo/bar` (relative path)
+          // `fullPath = https://domain.com/foo/bar`
+          fullPath = window.location.origin + fullPath;
+        }
+        parsedUrl = new URL(fullPath);
+      } catch (urlParseErr) {
+        console.error('[axios:fetch] URL parse error: ', urlParseErr);
+        reject(urlParseErr);
+        return;
+      }
+    }
+    var fetchOptions = config.fetchOptions || {};
+
+    // bail early if protocol is unsupported
+    var protocol = parseProtocol(fullPath);
+    if (protocol && platform.protocols.indexOf(protocol) === -1) {
+      reject(new AxiosError('Unsupported protocol ' + protocol + ':', AxiosError.ERR_BAD_REQUEST, config));
+      return;
+    }
+
+    // if we're posting form data, let the browser control the content type
+    if (isFormData(body) && platform.isStandardBrowserEnv) {
+      requestHeaders.setContentType(false);
+    }
+
+    // HTTP basic authentication
+    if (config.auth) {
+      var username = config.auth.username || '';
+      var password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : '';
+      requestHeaders.set('Authorization', 'Basic ' + btoa(username + ':' + password));
+    }
+
+    // honor XHR `withCredentials` as fetch `mode:cors`
+    if (!isUndefined(config.withCredentials)) {
+      fetchOptions.mode = 'cors';
+    }
+    var req;
+    var fetchHandle;
+    var onCanceled;
+    if (config.cancelToken || config.signal) {
+      // eslint-disable-next-line func-names
+      onCanceled = function onCanceled(cancel) {
+        if (!fetchHandle) {
+          // already canceled
+          return;
+        }
+        reject(!cancel || cancel.type ? new CanceledError(null, config, req) : cancel);
+        abortController.abort();
+        fetchHandle = null;
+      };
+      config.cancelToken && config.cancelToken.subscribe(onCanceled);
+      if (config.signal) {
+        config.signal.aborted ? onCanceled() : config.signal.addEventListener('abort', onCanceled);
+      }
+    }
+
+    // prep request headers
+    var serializedHeaders = requestHeaders.toJSON(true);
+    var headers = new FetchHeaders();
+    Object.entries(serializedHeaders).forEach(function (_ref2) {
+      var _ref3 = _slicedToArray(_ref2, 2),
+        key = _ref3[0],
+        value = _ref3[1];
+      headers.set(key, value); // already merged
+    });
+
+    debugLog('fetch headers', Object.fromEntries(headers.entries()));
+
+    // body-less requests should not have content-type or content-length headers
+    body === undefined && (headers["delete"](contentTypeHeader) || headers["delete"](contentLengthHeader));
+    debugLog("request: ".concat(method, " ").concat(parsedUrl ? parsedUrl.toString() : fullPath, " (has body: ").concat(!!body, ")"));
+    debugLog("finalized headers", Object.fromEntries(headers.entries()));
+
+    // prep HTTP request
+    req = new FetchRequest(parsedUrl || fullPath, {
+      method: method,
+      headers: headers,
+      body: body
+    });
+
+    // mount responseType to request if it is not the default
+    if (responseType && responseType !== defaultFetchResponseType) {
+      req.responseType = config.responseType;
+    }
+
+    // @TODO(sgammon): upload/download progress events
+
+    function done() {
+      if (config.cancelToken && onCanceled) {
+        config.cancelToken.unsubscribe(onCanceled);
+      }
+      if (config.signal && onCanceled) {
+        config.signal.removeEventListener('abort', onCanceled);
+      }
+    }
+    var cleanup = function cleanup() {
+      debugLog('cleanup');
+      fetchHandle = null;
+    };
+    var continueChain = function continueChain(response) {
+      return settle(function _resolve(value) {
+        resolve(value);
+        done();
+      }, function _reject(err) {
+        reject(err);
+        done();
+      }, response);
+    };
+
+    // success handler: translates a `Response` to an axios response
+    var handleResponse = function handleResponse(response) {
+      if (!fetchHandle) {
+        debugLog('fetch cancelled; dropping response');
+        return; // canceled
+      }
+
+      debugLog('response status =', response.status, response.statusText);
+
+      // begin preparing the response
+      debugLog('raw headers', Object.fromEntries(response.headers.entries()));
+      var responseHeaders = AxiosHeaders$1.from(Object.fromEntries(response.headers.entries()));
+      debugLog('headers', responseHeaders);
+      var hasBody = false;
+      var handler = null;
+      var eligibleForBody = isResponseEligibleForBody(response);
+      debugLog('eligible for body =', eligibleForBody);
+      if (eligibleForBody) {
+        var _processResponseBody = processResponseBody(config, response, responseHeaders);
+        var _processResponseBody2 = _slicedToArray(_processResponseBody, 2);
+        hasBody = _processResponseBody2[0];
+        handler = _processResponseBody2[1];
+      }
+      debugLog('response has body =', hasBody);
+      var synthesizedResponse = {
+        status: response.status,
+        statusText: response.statusText,
+        headers: responseHeaders,
+        request: req,
+        fetchResponse: response,
+        config: config
+      };
+      if (!handler) {
+        if (hasBody) {
+          console.warn('axios-fetch: response has a body, but no handler could be resolved.');
+        }
+        debugLog('nohandler');
+        continueChain(synthesizedResponse);
+        cleanup(); // done
+      } else {
+        debugLog('handler', config.responseType || defaultFetchResponseType, handler);
+        try {
+          // dispatch data handler if found (`text`, `json`, or `blob`)
+          fetchAssert(function (t) {
+            return t(typeof handler === 'function', "handler should be a function if resolved");
+          });
+          debugLog('decode');
+          return handler.apply(response).then(function (data) {
+            debugLog('data');
+
+            // continue processing with merged-in data
+            return continueChain(Object.assign(synthesizedResponse, {
+              data: data
+            }));
+          }, reject);
+        } catch (err) {
+          console.error('axios-fetch: error while decoding response data', err);
+          debugLog('error', err);
+          reject(err);
+        } finally {
+          cleanup();
+        }
+      }
+    };
+    var handleError = function handleError(err) {
+      debugLog('error', err);
+      reject(err);
+    };
+    debugLog('fire');
+
+    // fire the request
+    fetchHandle = (config.fetcher || fetcher)(req, Object.assign({}, fetchOptions, {
+      signal: signal
+    })).then(handleResponse, handleError);
+    return fetchHandle;
+  }
+  function configFromURL(url, config) {
+    config = config || {};
+    if (!isUndefined(url) && !isUndefined(URL) && url instanceof URL) {
+      config.url = url.toString();
+    }
+    return config;
+  }
+  function isRequest(thing) {
+    if (platform.isNode) {
+      return thing instanceof FetchRequest;
+    } else if (platform.isStandardBrowserEnv) {
+      return thing instanceof window.Request;
+    } else {
+      return thing instanceof FetchRequest;
+    }
+  }
+  function configFromRequest(request, config) {
+    config = config || {};
+    if (!isUndefined(request)) {
+      if (isString(request.url)) {
+        config.url = request.url;
+      }
+      // if (isString(request.method)) {
+      //   config.method = request.method;
+      // }
+      // if (request.headers.length > 0) {
+      //   config.headers = Object.fromEntries(request.headers.entries());
+      // }
+      // TODO(sgammon): full support for entire axios config
+    }
+
+    return config;
+  }
+  function fetchAdapter(config) {
+    return new Promise(function (accept, reject) {
+      try {
+        return dispatchFetch(config, accept, reject);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
   var knownAdapters = {
     http: httpAdapter,
-    xhr: xhrAdapter
+    xhr: xhrAdapter,
+    fetch: fetchAdapter
   };
-  utils.forEach(knownAdapters, function (fn, value) {
+  forEach(knownAdapters, function (fn, value) {
     if (fn) {
       try {
         Object.defineProperty(fn, 'name', {
@@ -2266,14 +3125,14 @@
   });
   var adapters = {
     getAdapter: function getAdapter(adapters) {
-      adapters = utils.isArray(adapters) ? adapters : [adapters];
+      adapters = isArray(adapters) ? adapters : [adapters];
       var _adapters = adapters,
         length = _adapters.length;
       var nameOrAdapter;
       var adapter;
       for (var i = 0; i < length; i++) {
         nameOrAdapter = adapters[i];
-        if (adapter = utils.isString(nameOrAdapter) ? knownAdapters[nameOrAdapter.toLowerCase()] : nameOrAdapter) {
+        if (adapter = isString(nameOrAdapter) ? knownAdapters[nameOrAdapter.toLowerCase()] : nameOrAdapter) {
           break;
         }
       }
@@ -2281,9 +3140,9 @@
         if (adapter === false) {
           throw new AxiosError("Adapter ".concat(nameOrAdapter, " is not supported by the environment"), 'ERR_NOT_SUPPORT');
         }
-        throw new Error(utils.hasOwnProp(knownAdapters, nameOrAdapter) ? "Adapter '".concat(nameOrAdapter, "' is not available in the build") : "Unknown adapter '".concat(nameOrAdapter, "'"));
+        throw new Error(hasOwnProp(knownAdapters, nameOrAdapter) ? "Adapter '".concat(nameOrAdapter, "' is not available in the build") : "Unknown adapter '".concat(nameOrAdapter, "'"));
       }
-      if (!utils.isFunction(adapter)) {
+      if (!isFunction(adapter)) {
         throw new TypeError('adapter is not a function');
       }
       return adapter;
@@ -2392,6 +3251,54 @@
     }
 
     // eslint-disable-next-line consistent-return
+    function wrappedStringifiable(getter, types) {
+      return function (a, b) {
+        var value = getter(a, b);
+        if (!utils.isUndefined(value)) {
+          var _iterator = _createForOfIteratorHelper(types),
+            _step;
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var type = _step.value;
+              if (value instanceof type) {
+                return value.toString();
+              }
+            }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
+          }
+          return value;
+        }
+      };
+    }
+
+    // eslint-disable-next-line consistent-return
+    function wrappedTypeFactory(getter, types) {
+      return function (a, b) {
+        var value = getter(a, b);
+        if (!utils.isUndefined(value)) {
+          var _iterator2 = _createForOfIteratorHelper(types),
+            _step2;
+          try {
+            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+              var type = _step2.value;
+              if (value instanceof type) {
+                return type(value);
+              }
+            }
+          } catch (err) {
+            _iterator2.e(err);
+          } finally {
+            _iterator2.f();
+          }
+          return value;
+        }
+      };
+    }
+
+    // eslint-disable-next-line consistent-return
     function defaultToConfig2(a, b) {
       if (!utils.isUndefined(b)) {
         return getMergedValue(undefined, b);
@@ -2409,7 +3316,7 @@
       }
     }
     var mergeMap = {
-      url: valueFromConfig2,
+      url: wrappedStringifiable(valueFromConfig2, [URL]),
       method: valueFromConfig2,
       data: valueFromConfig2,
       baseURL: defaultToConfig2,
@@ -2421,6 +3328,8 @@
       withCredentials: defaultToConfig2,
       adapter: defaultToConfig2,
       responseType: defaultToConfig2,
+      fetcher: defaultToConfig2,
+      fetchOptions: defaultToConfig2,
       xsrfCookieName: defaultToConfig2,
       xsrfHeaderName: defaultToConfig2,
       onUploadProgress: defaultToConfig2,
@@ -2438,7 +3347,8 @@
       validateStatus: mergeDirectKeys,
       headers: function headers(a, b) {
         return mergeDeepProperties(headersToObject(a), headersToObject(b), true);
-      }
+      },
+      parsedUrl: wrappedTypeFactory(defaultToConfig2, [URL])
     };
     utils.forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
       var merge = mergeMap[prop] || mergeDeepProperties;
@@ -2448,7 +3358,7 @@
     return config;
   }
 
-  var VERSION = "1.5.0";
+  var VERSION = "1.5.0-fetch";
 
   var validators$1 = {};
 
@@ -2560,6 +3470,10 @@
         if (typeof configOrUrl === 'string') {
           config = config || {};
           config.url = configOrUrl;
+        } else if (!utils.isUndefined(URL) && configOrUrl instanceof URL) {
+          config = configFromURL(configOrUrl, config);
+        } else if (isRequest(configOrUrl)) {
+          config = configFromRequest(configOrUrl, config);
         } else {
           config = configOrUrl || {};
         }
@@ -2940,8 +3854,17 @@
     });
 
     // Factory for creating new instances
-    instance.create = function create(instanceConfig) {
-      return createInstance(mergeConfig(defaultConfig, instanceConfig));
+    instance.create = function create(instanceConfigOrUrlOrRequest, instanceConfig) {
+      instanceConfig = instanceConfig || instanceConfigOrUrlOrRequest || {};
+
+      // handles the case of a raw `URL` or `Request` object being passed into the `axios` constructor. we translate it to
+      // an axios configuration, preserving any additional config properties passed in the second parameter (optional).
+      if (instanceConfigOrUrlOrRequest instanceof URL) {
+        instanceConfig = configFromURL(instanceConfigOrUrlOrRequest, instanceConfig);
+      } else if (isRequest(instanceConfigOrUrlOrRequest)) {
+        instanceConfig = configFromRequest(instanceConfigOrUrlOrRequest, instanceConfig);
+      }
+      return createInstance(mergeConfig(defaultConfig, instanceConfig || instanceConfigOrUrlOrRequest));
     };
     return instance;
   }
@@ -2982,6 +3905,7 @@
   };
   axios.getAdapter = adapters.getAdapter;
   axios.HttpStatusCode = HttpStatusCode$1;
+  axios.FetchAdapter = fetchAdapter;
   axios["default"] = axios;
 
   return axios;

@@ -3,23 +3,111 @@
   "version": "1.5.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
+  "type": "module",
+  "types": "index.d.ts",
+  "typings": "./index.d.ts",
+  "jsdelivr": "dist/axios.min.js",
+  "unpkg": "dist/axios.min.js",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=12",
+    "deno": ">=1",
+    "bun": ">=0.3.0"
+  },
+  "imports": {
+    "#platform": {
+      "browser": "./lib/platform/node/browser.js",
+      "node": "./lib/platform/node/index.js",
+      "default": "./lib/platform/generic/index.js"
+    },
+    "#httpAdapter": {
+      "node": "./lib/adapters/http.js",
+      "default": "./lib/helpers/null.js"
+    },
+    "#xhrAdapter": {
+      "browser": "./lib/adapters/xhr.js",
+      "default": "./lib/helpers/null.js"
+    },
+    "#abortController": {
+      "node": "./lib/platform/node/classes/AbortController.js",
+      "browser": "./lib/platform/browser/classes/AbortController.js",
+      "default": "./lib/platform/generic/classes/AbortController.js"
+    },
+    "#formData": {
+      "node": "./lib/platform/node/classes/FormData.js",
+      "deno": "./lib/platform/generic/classes/FormData.js",
+      "browser": "./lib/platform/browser/classes/FormData.js",
+      "default": "./lib/platform/generic/classes/FormData.js"
+    },
+    "#fetchApi": {
+      "node": "./lib/platform/node/classes/FetchAPI.js",
+      "deno": "./lib/platform/generic/classes/FetchAPI.js",
+      "browser": "./lib/platform/browser/classes/FetchAPI.js",
+      "default": "./lib/platform/generic/classes/FetchAPI.js"
+    },
+    "#fetchTests": {
+      "browser": "./test/fetch/browser/fetch.browser.spec.js",
+      "deno": "./test/fetch/deno/fetch.deno.spec.js",
+      "default": "./test/fetch/generic/fetch.generic.spec.js"
+    },
+    "#testing": {
+      "default": "./test/abstract.esm.mjs"
+    }
+  },
   "exports": {
     ".": {
       "types": {
+        "deno": "./index.generic.d.ts",
+        "generic": "./index.generic.d.ts",
+        "modern": "./index.generic.d.ts",
         "require": "./index.d.cts",
         "default": "./index.d.ts"
       },
+      "deno": {
+        "debug": "./dist/generic/axios.mjs",
+        "default": "./dist/generic/axios.min.mjs"
+      },
+      "generic": {
+        "debug": "./dist/generic/axios.mjs",
+        "default": "./dist/generic/axios.min.mjs"
+      },
+      "node": {
+        "modern": "./dist/generic/axios.min.mjs",
+        "require": "./dist/node/axios.cjs",
+        "default": "./index.js"
+      },
       "browser": {
+        "modern": "./dist/generic/axios.min.mjs",
         "require": "./dist/browser/axios.cjs",
         "default": "./index.js"
       },
       "default": {
+        "modern": "./dist/generic/axios.min.mjs",
         "require": "./dist/node/axios.cjs",
         "default": "./index.js"
       }
     },
-    "./lib/adapters/http.js": "./lib/adapters/http.js",
-    "./lib/adapters/xhr.js": "./lib/adapters/xhr.js",
+    "./generic": {
+      "debug": "./dist/generic/axios.mjs",
+      "default": "./dist/generic/axios.min.mjs"
+    },
+    "./generic/axios.mjs": {
+      "default": "./dist/generic/axios.mjs"
+    },
+    "./generic/axios.min.mjs": {
+      "debug": "./dist/generic/axios.mjs",
+      "default": "./dist/generic/axios.min.mjs"
+    },
+    "./lib/platform/node/index.js": {
+      "node": "./lib/platform/node/index.js",
+      "deno": "./lib/platform/generic/index.js",
+      "browser": "./lib/platform/browser/index.js",
+      "default": "./lib/platform/generic/index.js"
+    },
+    "./lib/adapters/http.js": {
+      "node": "./lib/adapters/http.js",
+      "default": "./lib/helpers/null.js"
+    },
     "./unsafe/*": "./lib/*",
     "./unsafe/core/settle.js": "./lib/core/settle.js",
     "./unsafe/core/buildFullPath.js": "./lib/core/buildFullPath.js",
@@ -31,16 +119,20 @@
     "./unsafe/utils.js": "./lib/utils.js",
     "./package.json": "./package.json"
   },
-  "type": "module",
-  "types": "index.d.ts",
   "scripts": {
-    "test": "npm run test:eslint && npm run test:mocha && npm run test:karma && npm run test:dtslint && npm run test:exports",
+    "test": "npm run test:eslint && npm run test:mocha && HEADLESS=true npm run test:browser && npm run test:dtslint && npm run test:exports",
+    "test:all": "npm run test:node && npm run test:deno && npm run test:workers && HEADLESS=true npm run test:browser:modern",
+    "test:node": "npm run test",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
     "test:dtslint": "dtslint --localTs node_modules/typescript/lib",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
+    "test:deno": "deno test test/fetch/deno/fetch.deno.spec.js",
     "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
-    "test:karma": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
+    "test:workers": "echo \"Workers test not implemented yet.\"",
+    "test:karma": "npm run test:browser",
     "test:karma:firefox": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: Browsers=Firefox karma start karma.conf.cjs --single-run",
+    "test:browser": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: karma start karma.conf.cjs --single-run",
+    "test:browser:modern": "node bin/ssl_hotfix.js wtr test/fetch/generic/harness.html test/**/*.spec.mjs --playwright --browsers chromium firefox webkit",
     "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
     "test:build:version": "node ./bin/check-build-version.js",
     "start": "node ./sandbox/server.js",
@@ -60,7 +152,10 @@
     "release:beta": "release-it --preRelease=beta",
     "release:no-npm": "release-it --no-npm",
     "release:changelog:fix": "node ./bin/injectContributorsList.js && git add CHANGELOG.md",
-    "release": "release-it"
+    "release": "release-it",
+    "sizes": "sleep 1 && npm run sizes:gzip && npm run sizes:brotli && du -h dist/*/*.{mjs,cjs,js,gz,br}",
+    "sizes:gzip": "find dist -name \"*.*js\" -exec gzip --best -k {} \\;",
+    "sizes:brotli": "find dist -name \"*.*js\" -exec brotli --best -k {} \\;"
   },
   "repository": {
     "type": "git",
@@ -84,12 +179,17 @@
     "@babel/preset-env": "^7.18.2",
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-conventional": "^17.3.0",
+    "@esm-bundle/chai": "^4.3.4-fix.0",
     "@release-it/conventional-changelog": "^5.1.1",
+    "@rollup/plugin-alias": "^4.0.2",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-multi-entry": "^4.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
+    "@rollup/plugin-terser": "^0.1.0",
+    "@web/test-runner": "^0.15.0",
+    "@web/test-runner-playwright": "^0.9.0",
     "abortcontroller-polyfill": "^1.7.3",
     "auto-changelog": "^2.4.0",
     "body-parser": "^1.20.0",
@@ -113,6 +213,7 @@
     "jasmine-core": "^2.4.1",
     "karma": "^6.3.17",
     "karma-chrome-launcher": "^3.1.1",
+    "karma-coverage": "^2.2.0",
     "karma-firefox-launcher": "^2.1.2",
     "karma-jasmine": "^1.1.1",
     "karma-jasmine-ajax": "^0.1.13",
@@ -123,27 +224,41 @@
     "karma-sourcemap-loader": "^0.3.8",
     "minimist": "^1.2.7",
     "mocha": "^10.0.0",
-    "multer": "^1.4.4",
+    "mock-xmlhttprequest": "^8.1.0",
+    "multer": "1.4.5-lts.1",
     "pretty-bytes": "^6.0.0",
     "release-it": "^15.5.1",
     "rollup": "^2.67.0",
+    "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-bundle-size": "^1.0.3",
-    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-copy": "^3.4.0",
     "sinon": "^4.5.0",
     "stream-throttle": "^0.1.3",
     "string-replace-async": "^3.0.2",
     "terser-webpack-plugin": "^4.2.3",
-    "typescript": "^4.8.4"
+    "terser": "^5.19.4",
+    "typescript": "^4.8.4",
+    "url-search-params": "^0.10.0",
+    "whatwg-fetch": "^3.6.2"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/helpers/null.js",
+    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js",
     "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
-    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js"
+    "./lib/platform/generic/index.js": "./lib/platform/browser/index.js"
   },
-  "jsdelivr": "dist/axios.min.js",
-  "unpkg": "dist/axios.min.js",
-  "typings": "./index.d.ts",
+  "optionalDependencies": {
+    "cross-fetch": "^3.1.5",
+    "events": "^3.3.0",
+    "inherits": "^2.0.4",
+    "node-abort-controller": "^3.0.1",
+    "path": "^0.12.7",
+    "readable-stream": "^4.2.0",
+    "url": "^0.11.0",
+    "web-streams-polyfill": "^3.2.1",
+    "node-abort-controller": "^3.0.1"
+  },
   "dependencies": {
     "follow-redirects": "^1.15.0",
     "form-data": "^4.0.0",
@@ -152,7 +267,33 @@
   "bundlesize": [
     {
       "path": "./dist/axios.min.js",
-      "threshold": "5kB"
+      "threshold": "16kB",
+      "compression": "gzip"
+    },
+    {
+      "path": "./dist/axios.min.js",
+      "threshold": "15kB",
+      "compression": "brotli"
+    },
+    {
+      "path": "./dist/generic/axios.mjs",
+      "threshold": "24kB",
+      "compression": "gzip"
+    },
+    {
+      "path": "./dist/generic/axios.mjs",
+      "threshold": "24kB",
+      "compression": "brotli"
+    },
+    {
+      "path": "./dist/generic/axios.min.mjs",
+      "threshold": "10kB",
+      "compression": "gzip"
+    },
+    {
+      "path": "./dist/generic/axios.min.mjs",
+      "threshold": "10kB",
+      "compression": "brotli"
     }
   ],
   "contributors": [
@@ -170,7 +311,6 @@
     "Yasu Flores (https://github.com/yasuf)",
     "Ben Carp (https://github.com/carpben)"
   ],
-  "sideEffects": false,
   "release-it": {
     "git": {
       "commitMessage": "chore(release): v${version}",

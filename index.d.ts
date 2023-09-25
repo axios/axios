@@ -5,6 +5,18 @@ interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;
 }
 
+type FetchOptions = Omit<Omit<Omit<RequestInit, "body">, "headers">, "window">;
+
+type FetchURL = URL;
+
+type FetchRequest = Request;
+
+type FetchInput = FetchURL | FetchRequest | string;
+
+interface CommonHeaders {
+  common: AxiosHeaders;
+}
+
 type MethodsHeaders = Partial<{
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 } & {common: AxiosHeaders}>;
@@ -296,12 +308,17 @@ export interface AxiosProgressEvent {
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'xhr' | 'http' | string;
+type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
+export interface Fetcher {
+  (input: FetchInput, init?: FetchOptions): Promise<Response>;
+}
+
 export interface AxiosRequestConfig<D = any> {
-  url?: string;
+  url?: string | FetchURL;
+  parsedUrl?: FetchURL;
   method?: Method | string;
   baseURL?: string;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
@@ -314,6 +331,8 @@ export interface AxiosRequestConfig<D = any> {
   timeoutErrorMessage?: string;
   withCredentials?: boolean;
   adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
+  fetcher?: Fetcher;
+  fetchOptions?: FetchOptions;
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
   responseEncoding?: responseEncoding | string;
@@ -467,6 +486,8 @@ export interface AxiosInterceptorManager<V> {
   clear(): void;
 }
 
+type AxiosRequestFetchInputs = FetchURL | FetchRequest | string;
+
 export class Axios {
   constructor(config?: AxiosRequestConfig);
   defaults: AxiosDefaults;
@@ -475,17 +496,17 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
-  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  postForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  putForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
-  patchForm<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D> | AxiosRequestFetchInputs): Promise<R>;
+  get<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: AxiosRequestConfig<D>): Promise<R>;
+  delete<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: AxiosRequestConfig<D>): Promise<R>;
+  head<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: AxiosRequestConfig<D>): Promise<R>;
+  options<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  postForm<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  putForm<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  patchForm<T = any, R = AxiosResponse<T>, D = any>(url: AxiosRequestFetchInputs, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {
@@ -524,7 +545,7 @@ export function isCancel(value: any): value is Cancel;
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 
 export interface AxiosStatic extends AxiosInstance {
-  create(config?: CreateAxiosDefaults): AxiosInstance;
+  create(configOrUrlOrRequest?: CreateAxiosDefaults | AxiosRequestFetchInputs, config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;
@@ -540,6 +561,7 @@ export interface AxiosStatic extends AxiosInstance {
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
+  FetchAdapter: AxiosAdapter;
 }
 
 declare const axios: AxiosStatic;

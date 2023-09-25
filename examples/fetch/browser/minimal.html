@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head>
+  <title>axios - fetch example</title>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+</head>
+<body class="container">
+<h2>Check the console!</h2>
+</body>
+<script src="https://axios.elide.dev/axios/1.2.1-fetch/beta1/axios.min.js"></script>
+<script>
+  axios.get("https://httpbin.org/json", {adapter: 'fetch'}).then(function (response) {
+    console.log("data from response: ", JSON.stringify(response.data));
+  });
+</script>
+</html>

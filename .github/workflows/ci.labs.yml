@@ -1,0 +1,61 @@
+name: 'CI: Labs'
+
+on:
+  push:
+    branches: '**'
+  pull_request:
+    branches: '**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        engine: [deno]
+        version: [v1.x]
+        mode: [labs]
+        include:
+          - engine: deno
+            version: v1.x
+          - engine: node
+            version: 19.x
+            mode: labs
+          - engine: bun
+            version: 0.3.0
+            mode: labs
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      ## --- Runtime Setup
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        if: ${{ matrix.engine == 'node' }}
+        with:
+          node-version: ${{ matrix.version }}
+          cache: npm
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        if: ${{ matrix.engine == 'deno' }}
+        with:
+          deno-version: ${{ matrix.version }}
+      - name: Setup Bun
+        uses: antongolub/action-setup-bun@v1
+        if: ${{ matrix.engine == 'bun' }}
+        with:
+          bun-version: ${{ matrix.version }}
+
+      ## --- Build + Test
+
+      - run: npm install
+      - run: npm run build
+        if: ${{ matrix.engine == 'deno' }}
+      - run: npm run test:${{ matrix.engine }}
+        continue-on-error: ${{ matrix.mode == 'labs' }}

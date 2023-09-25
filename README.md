@@ -76,6 +76,8 @@
 ## Features
 
 - Make [XMLHttpRequests](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) from the browser
+- Make [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) requests from the browser, node.js, or pure-JS
+  runtimes like Workers, Deno, Bun, etc.
 - Make [http](https://nodejs.org/api/http.html) requests from node.js
 - Supports the [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
 - Intercept request and response
@@ -163,6 +165,23 @@ Using unpkg CDN:
 
 ```html
 <script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
+```
+
+### Pure JS environments
+
+Using Axios in **Deno**:
+```js
+import axios from "https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/generic/axios.min.mjs";
+```
+
+Using in CloudFlare Workers, Bun, and other environments which support the Fetch API:
+```js
+{npm|pnpm|yarn} install axios
+```
+
+Then:
+```js
+import axios from "axios/generic";
 ```
 
 ## Example
@@ -286,6 +305,9 @@ axios({
 ```js
 // Send a GET request (default method)
 axios('/user/12345');
+
+// You can also use a `URL` object
+axios(new URL('https://example.com/user/12345'));
 ```
 
 ### Request method aliases
@@ -346,7 +368,8 @@ These are the available config options for making requests. Only the `url` is re
 
 ```js
 {
-  // `url` is the server URL that will be used for the request
+  // `url` is the server URL that will be used for the request. you can
+  // also pass `new URL(...)`, in environments that support it.
   url: '/user',
 
   // `method` is the request method to be used when making the request
@@ -537,6 +560,114 @@ These are the available config options for making requests. Only the `url` is re
 
   // an alternative way to cancel Axios requests using AbortController
   signal: new AbortController().signal,
+
+  // pre-parsed URL, to avoid re-parsing the URL when using the fetch adapter.
+  // optional.
+  parsedUrl: new URL('...'),
+
+  // fetch implementation to use. defaults to the native fetch implementation for
+  // the active platform, or falls back to a polyfill (`whatwg-fetch`), or a cross-
+  // platform polyfill (`cross-fetch`).
+  fetcher: fetch,
+
+  // options passed to the underlying `fetch` implementation; only active when
+  // `adapter` is set to `{adapter: 'fetch'}` or `{adapter: axios.FetchAdapter}`.
+  // default values below are for `fetch` implementation in browsers. certain fetch
+  // implementations may require different or limited options.
+  //
+  // see MDN for more information (`options` parameter):
+  // https://developer.mozilla.org/en-US/docs/Web/API/Request/Request
+  fetchOptions: {
+    // the general request mode to apply to an operation. options are:
+    // - `cors` (default): allow cross-origin requests.
+    // - `no-cors`: do not allow cross-origin requests.
+    // - `same-origin`: only allow requests to the same origin.
+    //
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/mode
+    mode: 'cors',
+
+    // should the user's credentials and cookies be sent with the request? options are:
+    // - `same-origin` (default): only send for same-origin requests.
+    // - `include`: include credentials for all requests.
+    // - `omit`: do not send credentials.
+    //
+    // DANGER: Be careful with this property. Setting the request to `include` can expose
+    // users to serious privacy and security risks. Make sure the origins you are exchanging
+    // data with use HTTPS and are covered by other strong security practices.
+    //
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
+    credentials: 'same-origin',
+
+    // allow caching of fetched responses? options are:
+    // - `default` (default): default environment behavior. in browsers, caching
+    //   is typically enabled for GET requests that are marked cacheable.
+    // - `no-store`: do not store responses in cache.
+    // - `reload`: fetch from server and update cache.
+    // - `no-cache`: fetch from server and do not update cache.
+    // - `force-cache`: use cache if available, otherwise fetch from server and
+    //    update the cache.
+    // - `only-if-cached`: use cache if available, otherwise fail. this mode can
+    //   only be used when `mode` is set to `same-origin`.
+    //
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/cache
+    cache: 'default',
+
+    // follow redirects returned in fetch calls? options are:
+    // - `follow` (default): follow redirects
+    // - `error`: reject with an error
+    // - `manual`: handle redirects manually
+    //
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/redirect
+    redirect: 'follow',
+
+    // what referrer, if any, should be sent with requests? options are:
+    // - `about:client` (default): anonymized referrer is sent.
+    // - `no-referrer`: no referrer is sent.
+    // - `client`: full referrer is sent.
+    // - `<url>`: a custom URL value can be set and sent.
+    //
+    // See also: `referrerPolicy`.
+    //
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/referrer
+    referrer: 'about:client',
+
+    // what policy should be applied when deciding whether to send a referrer? options are:
+    // - `strict-origin-when-cross-origin` (default): send the origin, path, and querystring
+    //    when performing same-origin requests. For cross-origin requests, send only the origin.
+    //    The referrer is never sent to non-secure origins in this mode.
+    // - `no-referrer-when-downgrade`: send referrer only when navigating to a more or
+    //   equivalently secure origin.
+    // - `no-referrer`: never send a referrer.
+    // - `origin`: send the origin only.
+    // - `origin-when-cross-origin`: send only the origin when interacting with a different origin.
+    // - `same-origin`: send the referrer only when interacting with same-origin endpoints.
+    // - `strict-origin`: send the origin only when the protocol level stays the same.
+    // - `unsafe-url`: send the full referrer URL unconditionally to all origins.
+    //
+    // See also: https://developer.mozilla.org/en-US/docs/Web/API/Request/referrerPolicy
+    referrerPolicy: 'strict-origin-when-cross-origin',
+
+    // should an integrity value be applied and checked for the request? options are:
+    // - no value (default): no integrity is checked.
+    // - `<hash-algorithm>-<base64-value>`: integrity is checked using the specified algorithm.
+    //   for example, `sha256-<hash>`.
+    //
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/integrity
+    integrity: 'sha256-<base64-encoded-hash>',
+
+    // should the connection to the server be kept alive? options are:
+    // - true (default): keep the connection alive.
+    // - false: close the connection after the request is complete.
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/Request
+    keepalive: true,
+
+    // an `AbortSignal` object which can be used to communicate with or abort the request;
+    // if both this property and the main config `signal` property are set, this property
+    // takes precedence.
+    //
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/API/Request/signal
+    signal: new AbortController().signal
+  },
 
   // `decompress` indicates whether or not the response body should be decompressed
   // automatically. If set to `true` will also remove the 'content-encoding' header

@@ -119,10 +119,7 @@ export interface AxiosBasicCredentials {
 export interface AxiosProxyConfig {
   host: string;
   port: number;
-  auth?: {
-    username: string;
-    password: string;
-  };
+  auth?: AxiosBasicCredentials;
   protocol?: string;
 }
 
@@ -512,6 +509,8 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+export function getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
+
 export function toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
 
 export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
@@ -538,6 +537,7 @@ export interface AxiosStatic extends AxiosInstance {
   isAxiosError: typeof isAxiosError;
   toFormData: typeof toFormData;
   formToJSON: typeof formToJSON;
+  getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
 }

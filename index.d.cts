@@ -244,10 +244,7 @@ declare namespace axios {
   interface AxiosProxyConfig {
     host: string;
     port: number;
-    auth?: {
-      username: string;
-      password: string;
-    };
+    auth?: AxiosBasicCredentials;
     protocol?: string;
   }
 
@@ -523,6 +520,7 @@ declare namespace axios {
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+    getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -18,6 +18,8 @@
         "default": "./index.js"
       }
     },
+    "./lib/adapters/http.js": "./lib/adapters/http.js",
+    "./lib/adapters/xhr.js": "./lib/adapters/xhr.js",
     "./unsafe/*": "./lib/*",
     "./unsafe/core/settle.js": "./lib/core/settle.js",
     "./unsafe/core/buildFullPath.js": "./lib/core/buildFullPath.js",

@@ -1270,7 +1270,7 @@ const {data} = await axios.post(SERVER_URL, readableStream, {
 ````
 
 > **Note:**
-> Capturing FormData upload progress is currently not currently supported in node.js environments.
+> Capturing FormData upload progress is not currently supported in node.js environments.
 
 > **⚠️ Warning**
 > It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the **node.js** environment,

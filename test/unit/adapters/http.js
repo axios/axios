@@ -2121,6 +2121,34 @@ describe('supports http with nodejs', function () {
     assert.strictEqual(data, '/?foo');
   });
 
+  it('should propagate stack', function (done) {
+
+    server = http.createServer(function (req, res) {
+      res.statusCode = 400;
+      res.end();
+    }).listen(4444, function testStack() {
+      var success = false, failure = false;
+      var error;
+
+      axios.get('http://localhost:4444/', {
+      }).then(function (res) {
+        success = true;
+      }).catch(function (err) {
+        error = err;
+        failure = true;
+      });
+
+      setTimeout(function () {
+        assert.equal(success, false, 'request should not succeed');
+        assert.equal(failure, true, 'request should fail');
+        assert.equal(error.message, 'Request failed with status code 400');
+        assert.match(error.stack, / at settle /);
+        assert.match(error.stack, / at Server.testStack /);
+        done();
+      }, 300);
+    });
+  });  
+
   describe('DNS', function() {
     it('should support custom DNS lookup function', async function () {
       server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);

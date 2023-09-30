@@ -14,6 +14,14 @@ describe('core::AxiosError', function() {
     expect(error.isAxiosError).toBe(true);
     expect(error.stack).toBeDefined();
   });
+
+  it('should merge config.stack', function testConfigStack() {
+    const error = new AxiosError('Boom!', 'ESOMETHING', { stack: 'something different' }, null, null);
+    expect(error instanceof Error).toBe(true);
+    expect(error.stack).toContain('testConfigStack');
+    expect(error.stack).toContain('something different');
+  });
+
   it('should create an Error that can be serialized to JSON', function() {
     // Attempting to serialize request and response results in
     //    TypeError: Converting circular structure to JSON

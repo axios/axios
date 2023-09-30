@@ -160,7 +160,7 @@ describe('requests', function () {
     });
   });
 
-  it('should reject when validateStatus returns false', function (done) {
+  it('should reject when validateStatus returns false', function testShouldRejectWhenValidateStatusReturnsFalse(done) {
     const resolveSpy = jasmine.createSpy('resolve');
     const rejectSpy = jasmine.createSpy('reject');
 
@@ -179,11 +179,15 @@ describe('requests', function () {
         expect(reason.config.method).toBe('get');
         expect(reason.config.url).toBe('/foo');
         expect(reason.response.status).toBe(500);
+        expect(reason.stack).toContain(' at settle ');
+        expect(reason.stack).toContain(' at joeSentMe');
+        expect(reason.stack).toContain(' at UserContext.testShouldRejectWhenValidateStatusReturnsFalse ');
+        console.log(reason.stack)
 
         done();
       });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(function joeSentMe(request) {
       request.respondWith({
         status: 500
       });

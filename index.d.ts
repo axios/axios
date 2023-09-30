@@ -13,10 +13,9 @@ type AxiosHeaderMatcher = string | RegExp | ((this: AxiosHeaders, value: string,
 
 type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: string) => any;
 
-
 export class AxiosHeaders {
   constructor(
-    headers?: RawAxiosHeaders | AxiosHeaders | string
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;

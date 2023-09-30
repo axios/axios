@@ -18,7 +18,7 @@ type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 
 
 declare class AxiosHeaders {
   constructor(
-    headers?: RawAxiosHeaders | AxiosHeaders | string
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;

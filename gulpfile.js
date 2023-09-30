@@ -25,8 +25,8 @@ const bower = gulp.task('bower', async function () {
     'license',
     'keywords'
   ];
-
-  for (let i = 0, l = fields.length; i < l; i++) {
+ var i=0,l;
+  for (i ,l = fields.length; i < l; i++) {
     const field = fields[i];
     bower[field] = npm[field];
   }

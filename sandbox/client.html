@@ -1,88 +1,192 @@
 <!doctype html>
 <html>
+
 <head>
   <title>AXIOS | Sandbox</title>
-  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
   <style type="text/css">
-    pre {
-      min-height: 39px;
-      overflow: auto;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
     }
-    .header{
-      display: flex;
-      flex-direction: row;
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
     }
-    .box{
-     display: grid;
+
+    .header {
+      background-color: #f5f5f5;
+      color: #000;
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 36px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      transform: translateY(-10px);
+    }
+
+    .logo {
+      display: inline-block;
+    }
+
+    .logo img {
+      width: 130px;
+      height: 60px;
+    }
+
+    .header img {
+      width: 130px;
+      height: 60px;
+    }
+
+    .header h1 {
+      margin-left: 10px;
+    }
+
+    .box {
+      display: grid;
       grid-template-columns: 1fr 1fr;
       grid-gap: 25px;
     }
+
     @media screen and (max-width: 1000px) {
       .box {
         grid-template-columns: 1fr;
       }
     }
-      
+
+    .well {
+      background-color: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .box > .well{
+      max-height: 600px;
+      min-width: 300px;
+    }
+
+    h3 {
+      margin-top: 0;
+    }
+
+    form {
+      margin: 0;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    textarea {
+      min-height: 100px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    pre {
+      min-height: 39px;
+      max-width: 700px;
+      overflow: auto;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 10px;
+    }
+
+    .response pre {
+        color: #f8f8f2;
+        background-color: #272822;
+    }
   </style>
 </head>
+
 <body class="container">
-<div class="header">
-  <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="130" height="60">
-   
-  <h1> &nbsp;| Sandbox</h1>
-</div>
+  <div class="header">
+    <div class="logo">
+      <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="130" height="60">
+    </div>
+    <h1>Sandbox</h1>
+  </div>
 
   <div class="box">
     <div class="well">
-    <h3>Input</h3>
-    <form role="form" onsubmit="return false;">
-      <div class="form-group">
-        <label for="url">URL</label>
-        <input id="url" type="url" class="form-control" placeholder="/api"/>
-      </div>
-      <div class="form-group">
-        <label for="method">Method</label>
-        <select id="method" class="form-control">
-          <option value="GET">GET</option>
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="DELETE">DELETE</option>
-          <option value="HEAD">HEAD</option>
-          <option value="PATCH">PATCH</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="params">Params</label>
-        <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group" style="display: none;">
-        <label for="data">Data</label>
-        <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group">
-        <label for="headers">Headers</label>
-        <textarea id="headers" class="form-control" placeholder='{"X-Requested-With": "XMLHttpRequest"}'></textarea>
-      </div>
-      <button id="submit" type="submit" class="btn btn-primary">Send Request</button>
-    </form>
-  </div>
+      <h3>Input</h3>
+      <form role="form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="url">URL</label>
+          <input id="url" type="url" class="form-control" placeholder="/api" />
+        </div>
+        <div class="form-group">
+          <label for="method">Method</label>
+          <select id="method" class="form-control">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="HEAD">HEAD</option>
+            <option value="PATCH">PATCH</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="params">Params</label>
+          <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
+        </div>
+        <div class="form-group" style="display: none;">
+          <label for="data">Data</label>
+          <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
+        </div>
+        <div class="form-group">
+          <label for="headers">Headers</label>
+          <textarea id="headers" class="form-control" placeholder='{"X-Requested-With": "XMLHttpRequest"}'></textarea>
+        </div>
+        <button id="submit" type="submit" class="btn btn-primary">Send Request</button>
+      </form>
+    </div>
 
-  <div class="response">
-    <div class="well">
-    <h3>Request</h3>
-    <pre id="request">No Data</pre>
-  </div>
+    <div class="response">
+      <div class="well">
+        <h3>Request</h3>
+        <pre id="request">No Data</pre>
+      </div>
 
-  <div class="well">
-    <h3>Response</h3>
-    <pre id="response">No Data</pre>
-  </div>
+      <div class="well">
+        <h3>Response</h3>
+        <pre id="response">No Data</pre>
+      </div>
 
-  <div class="well">
-    <h3>Error</h3>
-    <pre id="error">None</pre>
-  </div>
-</div>
+      <div class="well">
+        <h3>Error</h3>
+        <pre id="error">None</pre>
+      </div>
+    </div>
   </div>
 
   <script src="/axios.js"></script>
@@ -91,7 +195,7 @@
       // Just for you IE8
       if (typeof Array.prototype.indexOf === 'undefined') {
         Array.prototype.indexOf = function (item) {
-          for (var i=0, l=this.length; i<l; i++) {
+          for (var i = 0, l = this.length; i < l; i++) {
             if (this[i] === item) {
               return i;
             }
@@ -201,4 +305,5 @@
     })();
   </script>
 </body>
+
 </html>

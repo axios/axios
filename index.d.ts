@@ -9,22 +9,24 @@ type MethodsHeaders = Partial<{
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 } & {common: AxiosHeaders}>;
 
-type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
+type AxiosHeaderMatcher = string | RegExp | ((this: AxiosHeaders, value: string, name: string) => boolean);
+
+type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: string) => any;
 
 export class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
+  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
-  get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
+  get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 
-  has(header: string, matcher?: true | AxiosHeaderMatcher): boolean;
+  has(header: string, matcher?: AxiosHeaderMatcher): boolean;
 
   delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
 

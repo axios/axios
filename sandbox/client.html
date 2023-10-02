@@ -1,204 +1,235 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-  <title>AXIOS | Sandbox</title>
-  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
-  <style type="text/css">
-    pre {
-      min-height: 39px;
-      overflow: auto;
-    }
-    .header{
-      display: flex;
-      flex-direction: row;
-    }
-    .box{
-     display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 25px;
-    }
-    @media screen and (max-width: 1000px) {
+  <head>
+    <title>AXIOS | Sandbox</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <style type="text/css">
+      pre {
+        min-height: 39px;
+        overflow: auto;
+      }
+      .header {
+        display: flex;
+        flex-direction: row;
+      }
       .box {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 25px;
       }
-    }
-      
-  </style>
-</head>
-<body class="container">
-<div class="header">
-  <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="130" height="60">
-   
-  <h1> &nbsp;| Sandbox</h1>
-</div>
+      .form-control {
+        width: 500px;
+      }
 
-  <div class="box">
-    <div class="well">
-    <h3>Input</h3>
-    <form role="form" onsubmit="return false;">
-      <div class="form-group">
-        <label for="url">URL</label>
-        <input id="url" type="url" class="form-control" placeholder="/api"/>
-      </div>
-      <div class="form-group">
-        <label for="method">Method</label>
-        <select id="method" class="form-control">
-          <option value="GET">GET</option>
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="DELETE">DELETE</option>
-          <option value="HEAD">HEAD</option>
-          <option value="PATCH">PATCH</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="params">Params</label>
-        <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group" style="display: none;">
-        <label for="data">Data</label>
-        <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group">
-        <label for="headers">Headers</label>
-        <textarea id="headers" class="form-control" placeholder='{"X-Requested-With": "XMLHttpRequest"}'></textarea>
-      </div>
-      <button id="submit" type="submit" class="btn btn-primary">Send Request</button>
-    </form>
-  </div>
+      @media screen and (max-width: 1000px) {
+        .box {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="container">
+    <div class="header">
+      <img
+        src="https://axios-http.com/assets/logo.svg"
+        alt="axios"
+        width="130"
+        height="60"
+      />
 
-  <div class="response">
-    <div class="well">
-    <h3>Request</h3>
-    <pre id="request">No Data</pre>
-  </div>
+      <h1>&nbsp;| Sandbox</h1>
+    </div>
 
-  <div class="well">
-    <h3>Response</h3>
-    <pre id="response">No Data</pre>
-  </div>
+    <div class="box">
+      <div class="well">
+        <h3>Input</h3>
+        <form role="form" onsubmit="return false;">
+          <div class="form-group">
+            <label for="url">URL</label>
+            <input
+              id="url"
+              type="url"
+              class="form-control"
+              placeholder="/api"
+            />
+          </div>
+          <div class="form-group">
+            <label for="method">Method</label>
+            <select id="method" class="form-control">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="DELETE">DELETE</option>
+              <option value="HEAD">HEAD</option>
+              <option value="PATCH">PATCH</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="params">Params</label>
+            <textarea
+              id="params"
+              class="form-control"
+              placeholder='{"foo": "bar", "baz": 123.45}'
+            ></textarea>
+          </div>
+          <div class="form-group" style="display: none">
+            <label for="data">Data</label>
+            <textarea
+              id="data"
+              class="form-control"
+              placeholder='{"foo": "bar", "baz": 123.45}'
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="headers">Headers</label>
+            <textarea
+              id="headers"
+              class="form-control"
+              placeholder='{"X-Requested-With": "XMLHttpRequest"}'
+            ></textarea>
+          </div>
+          <button id="submit" type="submit" class="btn btn-primary">
+            Send Request
+          </button>
+        </form>
+      </div>
 
-  <div class="well">
-    <h3>Error</h3>
-    <pre id="error">None</pre>
-  </div>
-</div>
-  </div>
+      <div class="response">
+        <div class="well">
+          <h3>Request</h3>
+          <pre id="request">No Data</pre>
+        </div>
 
-  <script src="/axios.js"></script>
-  <script>
-    (function () {
-      // Just for you IE8
-      if (typeof Array.prototype.indexOf === 'undefined') {
-        Array.prototype.indexOf = function (item) {
-          for (var i=0, l=this.length; i<l; i++) {
-            if (this[i] === item) {
-              return i;
+        <div class="well">
+          <h3>Response</h3>
+          <pre id="response">No Data</pre>
+        </div>
+
+        <div class="well">
+          <h3>Error</h3>
+          <pre id="error">None</pre>
+        </div>
+      </div>
+    </div>
+
+    <script src="/axios.js"></script>
+    <script>
+      (function () {
+        // Just for you IE8
+        if (typeof Array.prototype.indexOf === "undefined") {
+          Array.prototype.indexOf = function (item) {
+            for (var i = 0, l = this.length; i < l; i++) {
+              if (this[i] === item) {
+                return i;
+              }
             }
+            return -1;
+          };
+        }
+
+        var url = document.getElementById("url");
+        var method = document.getElementById("method");
+        var params = document.getElementById("params");
+        var data = document.getElementById("data");
+        var headers = document.getElementById("headers");
+        var submit = document.getElementById("submit");
+        var request = document.getElementById("request");
+        var response = document.getElementById("response");
+        var error = document.getElementById("error");
+
+        function acceptsData(method) {
+          return ["PATCH", "POST", "PUT"].indexOf(method) > -1;
+        }
+
+        function getUrl() {
+          return url.value.length === 0 ? "/api" : url.value;
+        }
+
+        function getParams() {
+          return params.value.length === 0 ? null : JSON.parse(params.value);
+        }
+
+        function getData() {
+          return data.value.length === 0 ? null : JSON.parse(data.value);
+        }
+
+        function getHeaders() {
+          return headers.value.length === 0 ? null : JSON.parse(headers.value);
+        }
+
+        function syncWithLocalStorage() {
+          method.value = localStorage.getItem("method") || "GET";
+          params.value = localStorage.getItem("params") || "";
+          data.value = localStorage.getItem("data") || "";
+          headers.value = localStorage.getItem("headers") || "";
+        }
+
+        function syncParamsAndData() {
+          switch (method.value) {
+            case "PATCH":
+            case "POST":
+            case "PUT":
+              params.parentNode.style.display = "none";
+              data.parentNode.style.display = "";
+              break;
+            default:
+              params.parentNode.style.display = "";
+              data.parentNode.style.display = "none";
+              break;
           }
-          return -1;
         }
-      }
 
-      var url = document.getElementById('url');
-      var method = document.getElementById('method');
-      var params = document.getElementById('params');
-      var data = document.getElementById('data');
-      var headers = document.getElementById('headers');
-      var submit = document.getElementById('submit');
-      var request = document.getElementById('request');
-      var response = document.getElementById('response');
-      var error = document.getElementById('error');
+        submit.onclick = function () {
+          var options = {
+            url: getUrl(),
+            params: !acceptsData(method.value) ? getParams() : undefined,
+            data: acceptsData(method.value) ? getData() : undefined,
+            method: method.value,
+            headers: getHeaders(),
+          };
 
-      function acceptsData(method) {
-        return ['PATCH', 'POST', 'PUT'].indexOf(method) > -1;
-      }
+          request.innerHTML = JSON.stringify(options, null, 2);
 
-      function getUrl() {
-        return url.value.length === 0 ? '/api' : url.value;
-      }
-
-      function getParams() {
-        return params.value.length === 0 ? null : JSON.parse(params.value);
-      }
-
-      function getData() {
-        return data.value.length === 0 ? null : JSON.parse(data.value);
-      }
-
-      function getHeaders() {
-        return headers.value.length === 0 ? null : JSON.parse(headers.value);
-      }
-
-      function syncWithLocalStorage() {
-        method.value = localStorage.getItem('method') || 'GET';
-        params.value = localStorage.getItem('params') || '';
-        data.value = localStorage.getItem('data') || '';
-        headers.value = localStorage.getItem('headers') || '';
-      }
-
-      function syncParamsAndData() {
-        switch (method.value) {
-          case 'PATCH':
-          case 'POST':
-          case 'PUT':
-            params.parentNode.style.display = 'none';
-            data.parentNode.style.display = '';
-            break;
-          default:
-            params.parentNode.style.display = '';
-            data.parentNode.style.display = 'none';
-            break;
-        }
-      }
-
-      submit.onclick = function () {
-        var options = {
-          url: getUrl(),
-          params: !acceptsData(method.value) ? getParams() : undefined,
-          data: acceptsData(method.value) ? getData() : undefined,
-          method: method.value,
-          headers: getHeaders()
+          axios(options)
+            .then(function (res) {
+              response.innerHTML = JSON.stringify(res.data, null, 2);
+              error.innerHTML = "None";
+            })
+            .catch(function (res) {
+              error.innerHTML = JSON.stringify(res.toJSON(), null, 2);
+              console.error("Axios caught an error from request", res.toJSON());
+              response.innerHTML = JSON.stringify(res.data, null, 2);
+            });
         };
 
-        request.innerHTML = JSON.stringify(options, null, 2);
+        url.onchange = function () {
+          localStorage.setItem("url", url.value);
+        };
 
-        axios(options)
-          .then(function (res) {
-            response.innerHTML = JSON.stringify(res.data, null, 2);
-            error.innerHTML = "None";
-          })
-          .catch(function (res) {
-            error.innerHTML = JSON.stringify(res.toJSON(), null, 2)
-            console.error('Axios caught an error from request', res.toJSON());
-            response.innerHTML = JSON.stringify(res.data, null, 2);
-          });
-      };
+        method.onchange = function () {
+          localStorage.setItem("method", method.value);
+          syncParamsAndData();
+        };
 
-      url.onchange = function () {
-        localStorage.setItem('url', url.value);
-      };
+        params.onchange = function () {
+          localStorage.setItem("params", params.value);
+        };
 
-      method.onchange = function () {
-        localStorage.setItem('method', method.value);
+        data.onchange = function () {
+          localStorage.setItem("data", data.value);
+        };
+
+        headers.onchange = function () {
+          localStorage.setItem("headers", headers.value);
+        };
+
+        syncWithLocalStorage();
         syncParamsAndData();
-      };
-
-      params.onchange = function () {
-        localStorage.setItem('params', params.value);
-      };
-
-      data.onchange = function () {
-        localStorage.setItem('data', data.value);
-      };
-
-      headers.onchange = function () {
-        localStorage.setItem('headers', headers.value);
-      };
-
-      syncWithLocalStorage();
-      syncParamsAndData();
-    })();
-  </script>
-</body>
+      })();
+    </script>
+  </body>
 </html>

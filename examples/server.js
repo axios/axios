@@ -128,7 +128,13 @@ server = http.createServer(function (req, res) {
   // Process server request
   else if (new RegExp('(' + dirs.join('|') + ')\/server').test(url)) {
     if (fs.existsSync(path.join(__dirname, url + '.js'))) {
-      require(path.join(__dirname, url + '.js'))(req, res);
+      // require(path.join(__dirname, url + '.js'))(req, res);
+      import(path.join(__dirname ,url + ".js"))
+      .then((module)=>
+      {
+        let importedFunction = module.default;
+        importedFunction(req,res);
+      })
     } else {
       send404(res);
     }

@@ -18,11 +18,10 @@
       grid-gap: 25px;
     }
     .response {
-      overflow-y: auto; /* Add this to enable vertical scrolling if the content is too long */
-      max-height: 500px; /* Set a maximum height for the response box */
+      overflow-y: auto; 
+      max-height: 500px; 
      
       flex-direction: row;
-      /* Reverse the order of child elements in the column direction */
     }
     @media screen and (max-width: 1000px) {
       .box {
@@ -30,10 +29,10 @@
         grid-gap: 15px;
       }
       .response {
-        max-height: none; /* Remove the max-height on smaller screens */
-        flex-direction: column; /* Restore the column direction on smaller screens */
-      }
+        max-height: none; 
+        flex-direction: column; 
     }
+  }
   </style>
 </head>
 <body class="container">
@@ -188,11 +187,9 @@
           response.innerHTML = JSON.stringify(res.data, null, 2);
         });
 
-      // Adjust layout after sending the request
-      //document.querySelector('.box').classList.add('full-width');
+      
     };
 
-    // ... (Your existing code)
   
 
 

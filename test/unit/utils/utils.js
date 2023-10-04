@@ -61,9 +61,10 @@ describe('utils', function (){
       const source = {x:1, y:2, obj};
       source.circular1 = source;
       obj.a[1] = obj;
+      obj.b = new Set(['a', 'b'])
 
       assert.deepStrictEqual(utils.toJSONObject(source), {
-        x: 1, y:2, obj: {a: [0]}
+        x: 1, y:2, obj: {a: [0], b: ['a', 'b']}
       });
     });
 

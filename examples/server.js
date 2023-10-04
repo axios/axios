@@ -132,9 +132,9 @@ server = http.createServer(function (req, res) {
       import(path.join(__dirname ,url + ".js"))
       .then((module)=>
       {
-        let importedFunction = module.default;
-        importedFunction(req,res);
+        module.default(req,res);
       })
+      .catch(()=> send404(res));
     } else {
       send404(res);
     }

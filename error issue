@@ -1,0 +1,10 @@
+const groupname = "Group Name 23";
+const participants = ["905510.....@c.us"];  // Add participant phone numbers
+
+try {
+  // Create the group
+  const result = await client.createGroup(groupname, participants);
+  console.log('Group created:', result);
+} catch (error) {
+  console.error('Error creating group:', error);
+}

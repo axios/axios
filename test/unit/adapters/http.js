@@ -1401,12 +1401,15 @@ describe('supports http with nodejs', function () {
       source.cancel('Operation has been canceled.');
     }).listen(4444, function () {
       assert.rejects(
-        axios.get('http://localhost:4444/', {
-          cancelToken: source.token
-        }),
+        async function findMeInStackTrace() {
+          await axios.get('http://localhost:4444/', {
+            cancelToken: source.token
+          })
+        },
         function (thrown) {
           assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
           assert.equal(thrown.message, 'Operation has been canceled.');
+          assert.match(thrown.stack, /findMeInStackTrace/);
           return true;
         },
       ).then(done).catch(done);

@@ -432,6 +432,23 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  it('should attach stack trace when awaiting', function (done) {
+    server = http.createServer(function (req, res) {
+      res.statusCode = 400;
+      res.end();
+    }).listen(4444, function () {
+        assert.rejects(
+            async function findMeInStackTrace() {
+              await axios.head('http://localhost:4444/one')
+            },
+            function (err) {
+              assert.match(err.stack, /findMeInStackTrace/);
+              return true;
+            }
+        ).then(done).catch(done);
+    });
+  });
+
   it('should preserve the HTTP verb on redirect', function (done) {
     server = http.createServer(function (req, res) {
       if (req.method.toLowerCase() !== "head") {
@@ -1383,13 +1400,16 @@ describe('supports http with nodejs', function () {
       // call cancel() when the request has been sent, but a response has not been received
       source.cancel('Operation has been canceled.');
     }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        cancelToken: source.token
-      }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
-        assert.equal(thrown.message, 'Operation has been canceled.');
-        done();
-      });
+      assert.rejects(
+        axios.get('http://localhost:4444/', {
+          cancelToken: source.token
+        }),
+        function (thrown) {
+          assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
+          assert.equal(thrown.message, 'Operation has been canceled.');
+          return true;
+        },
+      ).then(done).catch(done);
     });
   });
 

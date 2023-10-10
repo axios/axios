@@ -31,6 +31,7 @@ const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 import getStream from 'get-stream';
+import {maybeAsync} from "@babel/core/lib/gensync-utils/async.js";
 
 function setTimeoutAsync(ms) {
   return new Promise(resolve=> setTimeout(resolve, ms));
@@ -432,7 +433,7 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should attach stack trace when awaiting', function (done) {
+  it('should wrap HTTP errors and keep stack', function (done) {
     server = http.createServer(function (req, res) {
       res.statusCode = 400;
       res.end();
@@ -442,10 +443,36 @@ describe('supports http with nodejs', function () {
               await axios.head('http://localhost:4444/one')
             },
             function (err) {
-              assert.match(err.stack, /findMeInStackTrace/);
+              assert.equal(err.name, 'AxiosError')
+              assert.equal(err.isAxiosError, true)
+              const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+              assert.equal(matches.length, 1, err.stack)
               return true;
             }
         ).then(done).catch(done);
+    });
+  });
+
+  it('should wrap interceptor errors and keep stack', function (done) {
+    const axiosInstance = axios.create();
+    axiosInstance.interceptors.request.use((res) => {
+      throw new Error('from request interceptor')
+    });
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      assert.rejects(
+          async function findMeInStackTrace() {
+            await axiosInstance.get('http://localhost:4444/one')
+          },
+          function (err) {
+            assert.equal(err.name, 'Error')
+            assert.equal(err.message, 'from request interceptor')
+            const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+            assert.equal(matches.length, 1, err.stack)
+            return true;
+          }
+      ).then(done).catch(done);
     });
   });
 

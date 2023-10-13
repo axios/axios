@@ -34,6 +34,16 @@ const bower = gulp.task('bower', async function () {
   await fs.writeFile('bower.json', JSON.stringify(bower, null, 2));
 });
 
+/**
+ * Retrieves contributors for a given GitHub repository.
+ * @async
+ * @function
+ * @param {string} user - The GitHub username of the repository owner.
+ * @param {string} repo - The name of the repository.
+ * @param {number} [maxCount=1] - The maximum number of contributors to retrieve.
+ * @returns {Promise<Array<Object>>} An array of contributor objects, each containing information about the contributor and their GitHub profile.
+ * @throws {Error} If there is an issue retrieving the contributors or their profiles.
+ */
 async function getContributors(user, repo, maxCount = 1) {
   const contributors = (await axios.get(
     `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/contributors`,

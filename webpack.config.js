@@ -1,5 +1,10 @@
 var config = {};
 
+/**
+ * Generates a configuration object for webpack based on the provided name.
+ * @param {string} name - The name of the configuration.
+ * @returns {Object} - The generated configuration object.
+ */
 function generateConfig(name) {
   var compress = name.indexOf('min') > -1;
   var config = {

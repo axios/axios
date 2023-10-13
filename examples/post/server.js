@@ -1,3 +1,8 @@
+/**
+ * Handles a POST request by receiving data from the request body and sending it back as a JSON response.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ */
 export default function (req, res) {
   let data = '';
 

@@ -19,6 +19,11 @@ window.getAjaxRequest = (function () {
     });
   }
 
+  /**
+   * Attempts to get an AJAX request using a recursive setTimeout function with an increasing delay based on the number of attempts made. If the maximum number of attempts is reached, the function rejects with an error message.
+   * @param {Function} resolve - The function to call when the request is successfully retrieved.
+   * @param {Function} reject - The function to call when the maximum number of attempts is reached and the request cannot be retrieved.
+   */
   function attemptGettingAjaxRequest(resolve, reject) {
     const delay = attempts * attempts * ATTEMPT_DELAY_FACTOR;
 

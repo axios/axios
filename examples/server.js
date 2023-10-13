@@ -10,6 +10,11 @@ let dirs;
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * Returns an array of directories within the specified root directory.
+ * @param {string} root - The root directory to search for directories in.
+ * @returns {string[]} - An array of directory names within the specified root directory.
+ */
 function listDirs(root) {
   const files = fs.readdirSync(root);
   const dirs = [];
@@ -27,6 +32,10 @@ function listDirs(root) {
   return dirs;
 }
 
+/**
+ * Returns a string containing an HTML template for displaying a list of links based on the directories in the 'dirs' array.
+ * @returns {string} HTML template string
+ */
 function getIndexTemplate() {
   const links = dirs.map(function (dir) {
     const url = '/' + dir;

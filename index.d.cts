@@ -85,7 +85,7 @@ declare class AxiosError<T = unknown, D = any> extends Error {
       message?: string,
       code?: string,
       config?: axios.InternalAxiosRequestConfig<D>,
-      request?: any,
+      request?: axios.AxiosRequestConfig,
       response?: axios.AxiosResponse<T, D>
   );
 

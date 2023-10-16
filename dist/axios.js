@@ -1,4 +1,4 @@
-// Axios v1.4.0 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.5.1 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -625,8 +625,9 @@
     var descriptors = Object.getOwnPropertyDescriptors(obj);
     var reducedDescriptors = {};
     forEach(descriptors, function (descriptor, name) {
-      if (reducer(descriptor, name, obj) !== false) {
-        reducedDescriptors[name] = descriptor;
+      var ret;
+      if ((ret = reducer(descriptor, name, obj)) !== false) {
+        reducedDescriptors[name] = ret || descriptor;
       }
     });
     Object.defineProperties(obj, reducedDescriptors);
@@ -1361,10 +1362,6 @@
     return null;
   }
 
-  var DEFAULT_CONTENT_TYPE = {
-    'Content-Type': undefined
-  };
-
   /**
    * It takes a string, tries to parse it, and if it fails, it returns the stringified version
    * of the input
@@ -1471,15 +1468,13 @@
     },
     headers: {
       common: {
-        'Accept': 'application/json, text/plain, */*'
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': undefined
       }
     }
   };
-  utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+  utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch'], function (method) {
     defaults.headers[method] = {};
-  });
-  utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-    defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
   });
   var defaults$1 = defaults;
 
@@ -1781,7 +1776,20 @@
     return AxiosHeaders;
   }(Symbol.iterator, Symbol.toStringTag);
   AxiosHeaders.accessor(['Content-Type', 'Content-Length', 'Accept', 'Accept-Encoding', 'User-Agent', 'Authorization']);
-  utils.freezeMethods(AxiosHeaders.prototype);
+
+  // reserved names hotfix
+  utils.reduceDescriptors(AxiosHeaders.prototype, function (_ref3, key) {
+    var value = _ref3.value;
+    var mapped = key[0].toUpperCase() + key.slice(1); // map `set` => `Set`
+    return {
+      get: function get() {
+        return value;
+      },
+      set: function set(headerValue) {
+        this[mapped] = headerValue;
+      }
+    };
+  });
   utils.freezeMethods(AxiosHeaders);
   var AxiosHeaders$1 = AxiosHeaders;
 
@@ -2067,14 +2075,17 @@
           config.signal.removeEventListener('abort', onCanceled);
         }
       }
+      var contentType;
       if (utils.isFormData(requestData)) {
         if (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv) {
           requestHeaders.setContentType(false); // Let the browser set it
-        } else {
-          requestHeaders.setContentType('multipart/form-data;', false); // mobile/desktop app frameworks
+        } else if (!requestHeaders.getContentType(/^\s*multipart\/form-data/)) {
+          requestHeaders.setContentType('multipart/form-data'); // mobile/desktop app frameworks
+        } else if (utils.isString(contentType = requestHeaders.getContentType())) {
+          // fix semicolon duplication issue for ReactNative FormData implementation
+          requestHeaders.setContentType(contentType.replace(/^\s*(multipart\/form-data);+/, '$1'));
         }
       }
-
       var request = new XMLHttpRequest();
 
       // HTTP basic authentication
@@ -2256,6 +2267,12 @@
       });
     }
   });
+  var renderReason = function renderReason(reason) {
+    return "- ".concat(reason);
+  };
+  var isResolvedHandle = function isResolvedHandle(adapter) {
+    return utils.isFunction(adapter) || adapter === null || adapter === false;
+  };
   var adapters = {
     getAdapter: function getAdapter(adapters) {
       adapters = utils.isArray(adapters) ? adapters : [adapters];
@@ -2263,20 +2280,31 @@
         length = _adapters.length;
       var nameOrAdapter;
       var adapter;
+      var rejectedReasons = {};
       for (var i = 0; i < length; i++) {
         nameOrAdapter = adapters[i];
-        if (adapter = utils.isString(nameOrAdapter) ? knownAdapters[nameOrAdapter.toLowerCase()] : nameOrAdapter) {
+        var id = void 0;
+        adapter = nameOrAdapter;
+        if (!isResolvedHandle(nameOrAdapter)) {
+          adapter = knownAdapters[(id = String(nameOrAdapter)).toLowerCase()];
+          if (adapter === undefined) {
+            throw new AxiosError("Unknown adapter '".concat(id, "'"));
+          }
+        }
+        if (adapter) {
           break;
         }
+        rejectedReasons[id || '#' + i] = adapter;
       }
       if (!adapter) {
-        if (adapter === false) {
-          throw new AxiosError("Adapter ".concat(nameOrAdapter, " is not supported by the environment"), 'ERR_NOT_SUPPORT');
-        }
-        throw new Error(utils.hasOwnProp(knownAdapters, nameOrAdapter) ? "Adapter '".concat(nameOrAdapter, "' is not available in the build") : "Unknown adapter '".concat(nameOrAdapter, "'"));
-      }
-      if (!utils.isFunction(adapter)) {
-        throw new TypeError('adapter is not a function');
+        var reasons = Object.entries(rejectedReasons).map(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2),
+            id = _ref2[0],
+            state = _ref2[1];
+          return "adapter ".concat(id, " ") + (state === false ? 'is not supported by the environment' : 'is not available in the build');
+        });
+        var s = length ? reasons.length > 1 ? 'since :\n' + reasons.map(renderReason).join('\n') : ' ' + renderReason(reasons[0]) : 'as no adapter specified';
+        throw new AxiosError("There is no suitable adapter to dispatch the request " + s, 'ERR_NOT_SUPPORT');
       }
       return adapter;
     },
@@ -2440,7 +2468,7 @@
     return config;
   }
 
-  var VERSION = "1.4.0";
+  var VERSION = "1.5.1";
 
   var validators$1 = {};
 
@@ -2582,11 +2610,10 @@
 
         // Set config.method
         config.method = (config.method || this.defaults.method || 'get').toLowerCase();
-        var contextHeaders;
 
         // Flatten headers
-        contextHeaders = headers && utils.merge(headers.common, headers[config.method]);
-        contextHeaders && utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch', 'common'], function (method) {
+        var contextHeaders = headers && utils.merge(headers.common, headers[config.method]);
+        headers && utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch', 'common'], function (method) {
           delete headers[method];
         });
         config.headers = AxiosHeaders$1.concat(contextHeaders, headers);
@@ -2973,6 +3000,7 @@
   axios.formToJSON = function (thing) {
     return formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
   };
+  axios.getAdapter = adapters.getAdapter;
   axios.HttpStatusCode = HttpStatusCode$1;
   axios["default"] = axios;
 

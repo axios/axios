@@ -76,6 +76,17 @@ describe('AxiosHeaders', function () {
     })
   });
 
+  it('should support uppercase name mapping for names overlapped by class methods', () => {
+    const headers = new AxiosHeaders({
+      set: 'foo'
+    });
+
+    headers.set('get', 'bar');
+
+    assert.strictEqual(headers.get('Set'), 'foo');
+    assert.strictEqual(headers.get('Get'), 'bar');
+  });
+
   describe('get', function () {
     describe('filter', function() {
       it('should support RegExp', function () {

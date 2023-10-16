@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.5.1](https://github.com/axios/axios/compare/v1.5.0...v1.5.1) (2023-09-26)
+
+
+### Bug Fixes
+
+* **adapters:** improved adapters loading logic to have clear error messages; ([#5919](https://github.com/axios/axios/issues/5919)) ([e410779](https://github.com/axios/axios/commit/e4107797a7a1376f6209fbecfbbce73d3faa7859))
+* **formdata:** fixed automatic addition of the `Content-Type` header for FormData in non-browser environments; ([#5917](https://github.com/axios/axios/issues/5917)) ([bc9af51](https://github.com/axios/axios/commit/bc9af51b1886d1b3529617702f2a21a6c0ed5d92))
+* **headers:** allow `content-encoding` header to handle case-insensitive values ([#5890](https://github.com/axios/axios/issues/5890)) ([#5892](https://github.com/axios/axios/issues/5892)) ([4c89f25](https://github.com/axios/axios/commit/4c89f25196525e90a6e75eda9cb31ae0a2e18acd))
+* **types:** removed duplicated code ([9e62056](https://github.com/axios/axios/commit/9e6205630e1c9cf863adf141c0edb9e6d8d4b149))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+89/-18 (#5919 #5917 )")
+- <img src="https://avatars.githubusercontent.com/u/110460234?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [David Dallas](https://github.com/DavidJDallas "+11/-5 ()")
+- <img src="https://avatars.githubusercontent.com/u/71556073?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sean Sattler](https://github.com/fb-sean "+2/-8 ()")
+- <img src="https://avatars.githubusercontent.com/u/4294069?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Mustafa Ateş Uzun](https://github.com/0o001 "+4/-4 ()")
+- <img src="https://avatars.githubusercontent.com/u/132928043?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Przemyslaw Motacki](https://github.com/sfc-gh-pmotacki "+2/-1 (#5892 )")
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+1/-1 ()")
+
+# [1.5.0](https://github.com/axios/axios/compare/v1.4.0...v1.5.0) (2023-08-26)
+
+
+### Bug Fixes
+
+* **adapter:** make adapter loading error more clear by using platform-specific adapters explicitly ([#5837](https://github.com/axios/axios/issues/5837)) ([9a414bb](https://github.com/axios/axios/commit/9a414bb6c81796a95c6c7fe668637825458e8b6d))
+* **dns:** fixed `cacheable-lookup` integration; ([#5836](https://github.com/axios/axios/issues/5836)) ([b3e327d](https://github.com/axios/axios/commit/b3e327dcc9277bdce34c7ef57beedf644b00d628))
+* **headers:** added support for setting header names that overlap with class methods; ([#5831](https://github.com/axios/axios/issues/5831)) ([d8b4ca0](https://github.com/axios/axios/commit/d8b4ca0ea5f2f05efa4edfe1e7684593f9f68273))
+* **headers:** fixed common Content-Type header merging; ([#5832](https://github.com/axios/axios/issues/5832)) ([8fda276](https://github.com/axios/axios/commit/8fda2766b1e6bcb72c3fabc146223083ef13ce17))
+
+
+### Features
+
+* export getAdapter function ([#5324](https://github.com/axios/axios/issues/5324)) ([ca73eb8](https://github.com/axios/axios/commit/ca73eb878df0ae2dace81fe3a7f1fb5986231bf1))
+* **export:** export adapters without `unsafe` prefix ([#5839](https://github.com/axios/axios/issues/5839)) ([1601f4a](https://github.com/axios/axios/commit/1601f4a27a81ab47fea228f1e244b2c4e3ce28bf))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+66/-29 (#5839 #5837 #5836 #5832 #5831 )")
+- <img src="https://avatars.githubusercontent.com/u/102841186?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [夜葬](https://github.com/geekact "+42/-0 (#5324 )")
+- <img src="https://avatars.githubusercontent.com/u/65978976?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jonathan Budiman](https://github.com/JBudiman00 "+30/-0 (#5788 )")
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-5 (#5791 )")
+
 # [1.4.0](https://github.com/axios/axios/compare/v1.3.6...v1.4.0) (2023-04-27)
 
 

@@ -302,6 +302,15 @@ type AxiosAdapterName = 'xhr' | 'http' | string;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
+export type AddressFamily = 4 | 6 | undefined;
+
+export interface LookupAddressEntry {
+  address: string;
+  family?: AddressFamily;
+}
+
+export type LookupAddress = string | LookupAddressEntry;
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
@@ -343,9 +352,9 @@ export interface AxiosRequestConfig<D = any> {
     FormData?: new (...args: any[]) => object;
   };
   formSerializer?: FormSerializerOptions;
-  family?: 4 | 6 | undefined;
-  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: string, family: number) => void) => void) |
-      ((hostname: string, options: object) => Promise<[address: string, family: number] | string>);
+  family?: AddressFamily;
+  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
+      ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
 }
 
 // Alias

@@ -2122,7 +2122,7 @@ describe('supports http with nodejs', function () {
   });
 
   describe('DNS', function() {
-    it('should support custom DNS lookup function', async function () {
+    it('should support a custom DNS lookup function', async function () {
       server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
 
       const payload = 'test';
@@ -2141,7 +2141,26 @@ describe('supports http with nodejs', function () {
       assert.strictEqual(data, payload);
     });
 
-    it('should support custom DNS lookup function (async)', async function () {
+    it('should support a custom DNS lookup function with address entry passing', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: (hostname, opt, cb) =>  {
+          isCalled = true;
+          cb(null, {address: '127.0.0.1', family: 4});
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function (async)', async function () {
       server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
 
       const payload = 'test';
@@ -2160,7 +2179,26 @@ describe('supports http with nodejs', function () {
       assert.strictEqual(data, payload);
     });
 
-    it('should support custom DNS lookup function that returns only IP address (async)', async function () {
+    it('should support a custom DNS lookup function with address entry (async)', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: async (hostname, opt) =>  {
+          isCalled = true;
+          return {address: '127.0.0.1', family: 4};
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function that returns only IP address (async)', async function () {
       server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
 
       const payload = 'test';

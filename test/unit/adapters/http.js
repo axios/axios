@@ -412,8 +412,7 @@ describe('supports http with nodejs', function () {
         host: targetUrl.hostname,
         port: targetUrl.port,
         path: targetUrl.path,
-        method: req.method,
-        agent: new http.Agent({keepAlive: false})
+        method: req.method
       };
 
       const request = http.get(opts, function (response) {

@@ -58,14 +58,15 @@ const LOCAL_SERVER_URL = 'http://localhost:4444';
 
 const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
-function startHTTPServer(options) {
+function startHTTPServer(handlerOrOptions, options) {
 
-  const {handler, useBuffering = false, rate = undefined, port = 4444} = typeof options === 'function' ? {
-    handler: options
-  } : options || {};
+  const {handler, useBuffering = false, rate = undefined, port = 4444, keepAlive = 1000} =
+    Object.assign(typeof handlerOrOptions === 'function' ? {
+      handler: handlerOrOptions
+    } : handlerOrOptions || {}, options);
 
   return new Promise((resolve, reject) => {
-    http.createServer(handler || async function (req, res) {
+    const server = http.createServer(handler || async function (req, res) {
       try {
         req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
@@ -93,7 +94,19 @@ function startHTTPServer(options) {
     }).listen(port, function (err) {
       err ? reject(err) : resolve(this);
     });
+
+    server.keepAliveTimeout = keepAlive;
   });
+}
+
+const stopHTTPServer = async (server) => {
+  if (server) {
+    if (typeof server.closeAllConnections === 'function') {
+      server.closeAllConnections();
+    }
+
+    await new Promise(resolve => server.close(resolve));
+  }
 }
 
 const handleFormData = (req) => {
@@ -131,16 +144,16 @@ function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sle
 }
 
 describe('supports http with nodejs', function () {
+  before(function () {
+    this.timeout(5000);
+  });
 
-  afterEach(function () {
-    if (server) {
-      server.close();
-      server = null;
-    }
-    if (proxy) {
-      proxy.close();
-      proxy = null;
-    }
+  afterEach(async function () {
+    await Promise.all([stopHTTPServer(server), stopHTTPServer(proxy)]);
+
+    server = null;
+    proxy = null;
+
     delete process.env.http_proxy;
     delete process.env.https_proxy;
     delete process.env.no_proxy;
@@ -382,53 +395,58 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support beforeRedirect and proxy with redirect', function (done) {
-    var requestCount = 0;
-    var totalRedirectCount = 5;
-    server = http.createServer(function (req, res) {
+  it('should support beforeRedirect and proxy with redirect', async () => {
+    let requestCount = 0;
+    let totalRedirectCount = 5;
+
+    server = await startHTTPServer(function (req, res) {
       requestCount += 1;
       if (requestCount <= totalRedirectCount) {
         res.setHeader('Location', 'http://localhost:4444');
         res.writeHead(302);
       }
       res.end();
-    }).listen(4444, function () {
-      var proxyUseCount = 0;
-      proxy = http.createServer(function (request, response) {
-        proxyUseCount += 1;
-        var parsed = url.parse(request.url);
-        var opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
-        };
+    }, {port: 4444});
 
-        http.get(opts, function (res) {
-          response.writeHead(res.statusCode, res.headers);
-          res.on('data', function (data) {
-            response.write(data)
-          });
-          res.on('end', function () {
-            response.end();
-          });
-        });
-      }).listen(4000, function () {
-        var configBeforeRedirectCount = 0;
-        axios.get('http://localhost:4444/', {
-          proxy: {
-            host: 'localhost',
-            port: 4000
-          },
-          maxRedirects: totalRedirectCount,
-          beforeRedirect: function (options) {
-            configBeforeRedirectCount += 1;
-          }
-        }).then(function (res) {
-          assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
-          assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
-          done();
-        }).catch(done);
+    let proxyUseCount = 0;
+    proxy = await startHTTPServer(function (req, res) {
+      proxyUseCount += 1;
+      const targetUrl = new URL(req.url, 'http://' + req.headers.host);
+      const opts = {
+        host: targetUrl.hostname,
+        port: targetUrl.port,
+        path: targetUrl.path,
+        method: req.method,
+        agent: new http.Agent({keepAlive: false})
+      };
+
+      const request = http.get(opts, function (response) {
+        res.writeHead(response.statusCode, response.headers);
+        stream.pipeline(response, res, () => {});
       });
+
+      request.on('error', (err) => {
+        console.warn('request error', err);
+        res.statusCode = 500;
+        res.end();
+      })
+
+    }, {port: 4000});
+
+    let configBeforeRedirectCount = 0;
+
+    await axios.get('http://localhost:4444/', {
+      proxy: {
+        host: 'localhost',
+        port: 4000
+      },
+      maxRedirects: totalRedirectCount,
+      beforeRedirect: function (options) {
+        configBeforeRedirectCount += 1;
+      }
+    }).then(function (res) {
+      assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
+      assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
     });
   });
 
@@ -666,31 +684,18 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support max content length', function (done) {
-    var str = Array(100000).join('ж');
-
-    server = http.createServer(function (req, res) {
+  it('should support max content length', async function () {
+    server = await startHTTPServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end(str);
-    }).listen(4444, function () {
-      var success = false, failure = false, error;
+      res.end(Array(5000).join('#'));
+    }, {port: 4444});
 
-      axios.get('http://localhost:4444/', {
-        maxContentLength: 2000
-      }).then(function (res) {
-        success = true;
-      }).catch(function (err) {
-        error = err;
-        failure = true;
-      });
-
-      setTimeout(function () {
-        assert.equal(success, false, 'request should not succeed');
-        assert.equal(failure, true, 'request should fail');
-        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
-        done();
-      }, 100);
-    });
+    await assert.rejects(() => {
+      return axios.get('http://localhost:4444/', {
+        maxContentLength: 2000,
+        maxRedirects: 0
+      })
+    },/maxContentLength size of 2000 exceeded/);
   });
 
   it('should support max content length for redirected', function (done) {
@@ -711,7 +716,7 @@ describe('supports http with nodejs', function () {
       var success = false, failure = false, error;
 
       axios.get('http://localhost:4444/one', {
-        maxContentLength: 2000
+        maxContentLength: 2000,
       }).then(function (res) {
         success = true;
       }).catch(function (err) {

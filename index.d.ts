@@ -517,7 +517,7 @@ export function isAxiosError<T = any, D = any>(payload: any): payload is AxiosEr
 
 export function spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
 
-export function isCancel(value: any): value is CanceledError<any>;
+export function isCancel<T = any>(value: any): value is CanceledError<T>;
 
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 

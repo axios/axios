@@ -1,0 +1,10 @@
+
+  body {
+      overflow: hidden; /* Disable scrolling */
+      margin: 0; /* Remove default margin */
+    }
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }

@@ -1,4 +1,4 @@
-// Axios v1.5.1 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.6.0 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -2187,7 +2187,8 @@
       // Specifically not if we're in a web worker, or react-native.
       if (platform.isStandardBrowserEnv) {
         // Add xsrf header
-        var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
+        // regarding CVE-2023-45857 config.withCredentials condition was removed temporarily
+        var xsrfValue = isURLSameOrigin(fullPath) && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
         if (xsrfValue) {
           requestHeaders.set(config.xsrfHeaderName, xsrfValue);
         }
@@ -2468,7 +2469,7 @@
     return config;
   }
 
-  var VERSION = "1.5.1";
+  var VERSION = "1.6.0";
 
   var validators$1 = {};
 

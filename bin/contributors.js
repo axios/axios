@@ -201,8 +201,12 @@ const renderPRsList = async (tag, template, {comments_threshold= 5, awesome_thre
 
       pr.messages = [];
 
-      if (body && (match = /```+changelog(.+)?```/gms.exec(body)) && match[1]) {
-        pr.messages.push(match[1]);
+      if (body) {
+        const reg = /```+changelog\n*(.+?)?\n*```/gms;
+
+        while((match = reg.exec(body))) {
+          match[1] && pr.messages.push(match[1]);
+        }
       }
     }
   }

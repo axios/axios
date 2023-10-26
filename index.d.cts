@@ -1,7 +1,5 @@
-type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
-
 interface RawAxiosHeaders {
-  [key: string]: AxiosHeaderValue;
+  [key: string]: axios.AxiosHeaderValue;
 }
 
 type MethodsHeaders = Partial<{
@@ -10,26 +8,28 @@ type MethodsHeaders = Partial<{
 
 type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
 
+type AxiosHeaderParser = (this: AxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
+
 type CommonRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent'| 'Content-Encoding' | 'Authorization';
 
-type ContentType = AxiosHeaderValue | 'text/html' | 'text/plain' | 'multipart/form-data' | 'application/json' | 'application/x-www-form-urlencoded' | 'application/octet-stream';
+type ContentType = axios.AxiosHeaderValue | 'text/html' | 'text/plain' | 'multipart/form-data' | 'application/json' | 'application/x-www-form-urlencoded' | 'application/octet-stream';
 
 type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
 
 declare class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;
 
-  set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
+  set(headerName?: string, value?: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
-  get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
+  get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
 
-  has(header: string, matcher?: true | AxiosHeaderMatcher): boolean;
+  has(header: string, matcher?: AxiosHeaderMatcher): boolean;
 
   delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
 
@@ -49,35 +49,35 @@ declare class AxiosHeaders {
 
   setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentType(parser?: RegExp): RegExpExecArray | null;
-  getContentType(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getContentType(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasContentType(matcher?: AxiosHeaderMatcher): boolean;
 
-  setContentLength(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  setContentLength(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentLength(parser?: RegExp): RegExpExecArray | null;
-  getContentLength(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getContentLength(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasContentLength(matcher?: AxiosHeaderMatcher): boolean;
 
-  setAccept(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  setAccept(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getAccept(parser?: RegExp): RegExpExecArray | null;
-  getAccept(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getAccept(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasAccept(matcher?: AxiosHeaderMatcher): boolean;
 
-  setUserAgent(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  setUserAgent(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getUserAgent(parser?: RegExp): RegExpExecArray | null;
-  getUserAgent(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getUserAgent(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
 
-  setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  setContentEncoding(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentEncoding(parser?: RegExp): RegExpExecArray | null;
-  getContentEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getContentEncoding(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
-  setAuthorization(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  setAuthorization(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getAuthorization(parser?: RegExp): RegExpExecArray | null;
-  getAuthorization(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getAuthorization(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasAuthorization(matcher?: AxiosHeaderMatcher): boolean;
 
-  [Symbol.iterator](): IterableIterator<[string, AxiosHeaderValue]>;
+  [Symbol.iterator](): IterableIterator<[string, axios.AxiosHeaderValue]>;
 }
 
 declare class AxiosError<T = unknown, D = any> extends Error {
@@ -214,6 +214,8 @@ declare namespace axios {
 
   type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 
+  type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
+
   type RawCommonResponseHeaders = {
     [Key in CommonResponseHeadersList]: AxiosHeaderValue;
   } & {
@@ -244,10 +246,7 @@ declare namespace axios {
   interface AxiosProxyConfig {
     host: string;
     port: number;
-    auth?: {
-      username: string;
-      password: string;
-    };
+    auth?: AxiosBasicCredentials;
     protocol?: string;
   }
 
@@ -362,6 +361,15 @@ declare namespace axios {
 
   type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
+  type AddressFamily = 4 | 6 | undefined;
+
+  interface LookupAddressEntry {
+    address: string;
+    family?: AddressFamily;
+  }
+
+  type LookupAddress = string | LookupAddressEntry;
+
   interface AxiosRequestConfig<D = any> {
     url?: string;
     method?: Method | string;
@@ -370,7 +378,7 @@ declare namespace axios {
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
     headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
     params?: any;
-    paramsSerializer?: ParamsSerializerOptions;
+    paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
     data?: D;
     timeout?: Milliseconds;
     timeoutErrorMessage?: string;
@@ -390,6 +398,7 @@ declare namespace axios {
     maxRate?: number | [MaxUploadRate, MaxDownloadRate];
     beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
     socketPath?: string | null;
+    transport?: any;
     httpAgent?: any;
     httpsAgent?: any;
     proxy?: AxiosProxyConfig | false;
@@ -402,6 +411,9 @@ declare namespace axios {
       FormData?: new (...args: any[]) => object;
     };
     formSerializer?: FormSerializerOptions;
+    family?: AddressFamily;
+    lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
+        ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
   }
 
   // Alias
@@ -519,6 +531,7 @@ declare namespace axios {
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+    getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
   }
 }

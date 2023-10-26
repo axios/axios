@@ -67,7 +67,7 @@ describe('xsrf', function () {
     });
   });
 
-  it('should set xsrf header for cross origin when using withCredentials', function (done) {
+  it('should not set xsrf header for cross origin when using withCredentials', function (done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
     axios('http://example.com/', {
@@ -75,7 +75,7 @@ describe('xsrf', function () {
     });
 
     getAjaxRequest().then(function (request) {
-      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual('12345');
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
       done();
     });
   });

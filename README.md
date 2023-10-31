@@ -454,7 +454,7 @@ These are the available config options for making requests. Only the `url` is re
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
     
   // `undefined` (default) - set XSRF header only for the same origin requests
-  withXSRFToken: false | true | undefined,
+  withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
   // `onUploadProgress` allows handling of progress events for uploads
   // browser & node.js

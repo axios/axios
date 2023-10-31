@@ -80,33 +80,67 @@ describe('xsrf', function () {
     });
   });
 
-  it('should set xsrf header for cross origin when withXSRFToken = true', function (done) {
-    const token = '12345';
+  describe('withXSRFToken option', function(){
 
-    document.cookie = axios.defaults.xsrfCookieName + '=' + token;
+    it('should set xsrf header for cross origin when withXSRFToken = true', function (done) {
+      const token = '12345';
 
-    axios('http://example.com/', {
-      withXSRFToken: true
+      document.cookie = axios.defaults.xsrfCookieName + '=' + token;
+
+      axios('http://example.com/', {
+        withXSRFToken: true
+      });
+
+      getAjaxRequest().then(function (request) {
+        expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(token);
+        done();
+      });
     });
 
-    getAjaxRequest().then(function (request) {
-      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(token);
-      done();
+    it('should not set xsrf header for the same origin when withXSRFToken = false', function (done) {
+      const token = '12345';
+
+      document.cookie = axios.defaults.xsrfCookieName + '=' + token;
+
+      axios('/foo', {
+        withXSRFToken: false
+      });
+
+      getAjaxRequest().then(function (request) {
+        expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+        done();
+      });
     });
-  });
 
-  it('should not set xsrf header for the same origin when withXSRFToken = false', function (done) {
-    const token = '12345';
+    it('should not set xsrf header for the same origin when withXSRFToken = false', function (done) {
+      const token = '12345';
 
-    document.cookie = axios.defaults.xsrfCookieName + '=' + token;
+      document.cookie = axios.defaults.xsrfCookieName + '=' + token;
 
-    axios('/foo', {
-      withXSRFToken: false
+      axios('/foo', {
+        withXSRFToken: false
+      });
+
+      getAjaxRequest().then(function (request) {
+        expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+        done();
+      });
     });
 
-    getAjaxRequest().then(function (request) {
-      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
-      done();
+    it('should support function resolver', (done) => {
+      const token = '12345';
+
+      document.cookie = axios.defaults.xsrfCookieName + '=' + token;
+
+      axios('/foo', {
+        withXSRFToken: (config) => config.userFlag === 'yes',
+        userFlag: 'yes'
+      });
+
+      getAjaxRequest().then(function (request) {
+        expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(token);
+        done();
+      });
     });
   });
 });

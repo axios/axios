@@ -1,4 +1,4 @@
-// Axios v1.5.0 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.6.0 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1387,7 +1387,7 @@
   }
   var defaults = {
     transitional: transitionalDefaults,
-    adapter: platform.isNode ? 'http' : 'xhr',
+    adapter: ['xhr', 'http'],
     transformRequest: [function transformRequest(data, headers) {
       var contentType = headers.getContentType() || '';
       var hasJSONContentType = contentType.indexOf('application/json') > -1;
@@ -2075,14 +2075,17 @@
           config.signal.removeEventListener('abort', onCanceled);
         }
       }
+      var contentType;
       if (utils.isFormData(requestData)) {
         if (platform.isStandardBrowserEnv || platform.isStandardBrowserWebWorkerEnv) {
           requestHeaders.setContentType(false); // Let the browser set it
-        } else {
-          requestHeaders.setContentType('multipart/form-data;', false); // mobile/desktop app frameworks
+        } else if (!requestHeaders.getContentType(/^\s*multipart\/form-data/)) {
+          requestHeaders.setContentType('multipart/form-data'); // mobile/desktop app frameworks
+        } else if (utils.isString(contentType = requestHeaders.getContentType())) {
+          // fix semicolon duplication issue for ReactNative FormData implementation
+          requestHeaders.setContentType(contentType.replace(/^\s*(multipart\/form-data);+/, '$1'));
         }
       }
-
       var request = new XMLHttpRequest();
 
       // HTTP basic authentication
@@ -2184,7 +2187,8 @@
       // Specifically not if we're in a web worker, or react-native.
       if (platform.isStandardBrowserEnv) {
         // Add xsrf header
-        var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
+        // regarding CVE-2023-45857 config.withCredentials condition was removed temporarily
+        var xsrfValue = isURLSameOrigin(fullPath) && config.xsrfCookieName && cookies.read(config.xsrfCookieName);
         if (xsrfValue) {
           requestHeaders.set(config.xsrfHeaderName, xsrfValue);
         }
@@ -2264,6 +2268,12 @@
       });
     }
   });
+  var renderReason = function renderReason(reason) {
+    return "- ".concat(reason);
+  };
+  var isResolvedHandle = function isResolvedHandle(adapter) {
+    return utils.isFunction(adapter) || adapter === null || adapter === false;
+  };
   var adapters = {
     getAdapter: function getAdapter(adapters) {
       adapters = utils.isArray(adapters) ? adapters : [adapters];
@@ -2271,20 +2281,31 @@
         length = _adapters.length;
       var nameOrAdapter;
       var adapter;
+      var rejectedReasons = {};
       for (var i = 0; i < length; i++) {
         nameOrAdapter = adapters[i];
-        if (adapter = utils.isString(nameOrAdapter) ? knownAdapters[nameOrAdapter.toLowerCase()] : nameOrAdapter) {
+        var id = void 0;
+        adapter = nameOrAdapter;
+        if (!isResolvedHandle(nameOrAdapter)) {
+          adapter = knownAdapters[(id = String(nameOrAdapter)).toLowerCase()];
+          if (adapter === undefined) {
+            throw new AxiosError("Unknown adapter '".concat(id, "'"));
+          }
+        }
+        if (adapter) {
           break;
         }
+        rejectedReasons[id || '#' + i] = adapter;
       }
       if (!adapter) {
-        if (adapter === false) {
-          throw new AxiosError("Adapter ".concat(nameOrAdapter, " is not supported by the environment"), 'ERR_NOT_SUPPORT');
-        }
-        throw new Error(utils.hasOwnProp(knownAdapters, nameOrAdapter) ? "Adapter '".concat(nameOrAdapter, "' is not available in the build") : "Unknown adapter '".concat(nameOrAdapter, "'"));
-      }
-      if (!utils.isFunction(adapter)) {
-        throw new TypeError('adapter is not a function');
+        var reasons = Object.entries(rejectedReasons).map(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2),
+            id = _ref2[0],
+            state = _ref2[1];
+          return "adapter ".concat(id, " ") + (state === false ? 'is not supported by the environment' : 'is not available in the build');
+        });
+        var s = length ? reasons.length > 1 ? 'since :\n' + reasons.map(renderReason).join('\n') : ' ' + renderReason(reasons[0]) : 'as no adapter specified';
+        throw new AxiosError("There is no suitable adapter to dispatch the request " + s, 'ERR_NOT_SUPPORT');
       }
       return adapter;
     },
@@ -2448,7 +2469,7 @@
     return config;
   }
 
-  var VERSION = "1.5.0";
+  var VERSION = "1.6.0";
 
   var validators$1 = {};
 

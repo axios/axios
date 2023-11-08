@@ -27,7 +27,7 @@ export default class GithubAPI {
     return (await this.axios.post(`/issues/${issue}/comments`, {body})).data;
   }
 
-  async getComments(issue, {desc = false, per_page= 100, page = 1}) {
+  async getComments(issue, {desc = false, per_page= 100, page = 1} = {}) {
     return (await this.axios.get(`/issues/${issue}/comments`, {params: {direction: desc ? 'desc' : 'asc', per_page, page}})).data;
   }
 
@@ -40,11 +40,11 @@ export default class GithubAPI {
   }
 
   async appendLabels(issue, labels) {
-    return (await this.axios.post(`issues/${issue}/labels`, {labels})).data;
+    return (await this.axios.post(`/issues/${issue}/labels`, {labels})).data;
   }
 
   async getUser(user) {
-    return (await this.axios.get(`users/${user}`)).data;
+    return (await githubAxios.get(`/users/${user}`)).data;
   }
 
   async isCollaborator(user) {

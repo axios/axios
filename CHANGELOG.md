@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.1](https://github.com/axios/axios/compare/v1.6.0...v1.6.1) (2023-11-08)
+
+
+### Bug Fixes
+
+* **formdata:** fixed content-type header normalization for non-standard browser environments; ([#6056](https://github.com/axios/axios/issues/6056)) ([dd465ab](https://github.com/axios/axios/commit/dd465ab22bbfa262c6567be6574bf46a057d5288))
+* **platform:** fixed emulated browser detection in node.js environment; ([#6055](https://github.com/axios/axios/issues/6055)) ([3dc8369](https://github.com/axios/axios/commit/3dc8369e505e32a4e12c22f154c55fd63ac67fbb))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+432/-65 (#6059 #6056 #6055 )")
+- <img src="https://avatars.githubusercontent.com/u/3982806?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Fabian Meyer](https://github.com/meyfa "+5/-2 (#5835 )")
+
 # [1.6.0](https://github.com/axios/axios/compare/v1.5.1...v1.6.0) (2023-10-26)
 
 

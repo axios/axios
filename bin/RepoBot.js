@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import {colorize} from "./helpers/colorize.js";
 import {getReleaseInfo} from "./contributors.js";
 
-const normalizeTag = (tag) => tag.replace(/^v/, '');
+const normalizeTag = (tag) => tag ? 'v' + tag.replace(/^v/, '') : '';
 
 class RepoBot {
   constructor(options) {
@@ -29,7 +29,17 @@ class RepoBot {
   }
 
   async notifyPRPublished(id, tag) {
-    const pr = await this.github.getPR(id);
+    let pr;
+
+    try {
+      pr = await this.github.getPR(id);
+    } catch (err) {
+      if(err.response?.status === 404) {
+        throw new Error(`PR #${id} not found (404)`);
+      }
+
+      throw err;
+    }
 
     tag = normalizeTag(tag);
 
@@ -41,7 +51,7 @@ class RepoBot {
       return false
     }
 
-    await this.github.appendLabels(id, ['v' + tag]);
+    await this.github.appendLabels(id, [tag]);
 
     if (isBot || labels.find(({name}) => name === 'automated pr') || (await this.github.isCollaborator(login))) {
       return false;
@@ -56,7 +66,7 @@ class RepoBot {
       author,
       release: {
         tag,
-        url: `https://github.com/${this.owner}/${this.repo}/releases/tag/v${tag}`
+        url: `https://github.com/${this.owner}/${this.repo}/releases/tag/${tag}`
       }
     });
 
@@ -64,6 +74,8 @@ class RepoBot {
   }
 
   async notifyPublishedPRs(tag) {
+    tag = normalizeTag(tag);
+
     const release = await getReleaseInfo(tag);
 
     if (!release) {
@@ -80,9 +92,9 @@ class RepoBot {
       try {
         console.log(colorize()`${i++}) Notify PR #${pr.id}`)
         const result = await this.notifyPRPublished(pr.id, tag);
-        console.log(result ? 'OK' : 'Skipped');
+        console.log('✔️', result ? 'Label, comment' : 'Label');
       } catch (err) {
-        console.warn(colorize('green', 'red')`  Failed notify PR ${pr.id}: ${err.message}`);
+        console.warn(colorize('green', 'red')`❌ Failed notify PR ${pr.id}: ${err.message}`);
       }
     }
   }

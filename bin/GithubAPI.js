@@ -105,6 +105,18 @@ export default class GithubAPI {
     } catch (e) {
     }
   }
+
+  static async getLatestTag() {
+    try{
+      const {stdout} = await exec(`git for-each-ref refs/tags --sort=-taggerdate --format='%(refname)' --count=1`);
+
+      return stdout.split('/').pop();
+    } catch (e) {}
+  }
+
+  static normalizeTag(tag){
+    return tag ? 'v' + tag.replace(/^v/, '') : '';
+  }
 }
 
 const {prototype} = GithubAPI;

@@ -1,4 +1,4 @@
-import axios from "./githubAPI.js";
+import axios from "./githubAxios.js";
 import util from "util";
 import cp from "child_process";
 import Handlebars from "handlebars";
@@ -6,6 +6,8 @@ import fs from "fs/promises";
 import {colorize} from "./helpers/colorize.js";
 
 const exec = util.promisify(cp.exec);
+
+const ONE_MB = 1024 * 1024;
 
 const removeExtraLineBreaks = (str) => str.replace(/(?:\r\n|\r|\n){3,}/gm, '\r\n\r\n');
 
@@ -108,7 +110,11 @@ const getReleaseInfo = ((releaseCache) => async (tag) => {
       version ? '--starting-version ' + version + ' --ending-version ' + version : ''
     } --stdout --commit-limit false --template json`;
 
-  const release = JSON.parse((await exec(command)).stdout)[0];
+  console.log(command);
+
+  const {stdout} = await exec(command, {maxBuffer: 10 * ONE_MB});
+
+  const release = JSON.parse(stdout)[0];
 
   if(release) {
     const authors = {};
@@ -229,6 +235,7 @@ const getTagRef = async (tag) => {
 
 export {
   renderContributorsList,
+  getReleaseInfo,
   renderPRsList,
   getTagRef
 }

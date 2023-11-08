@@ -53,3 +53,6 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      ###### NOTIFY & TAG published PRs ######
+      - name: Notify and tag published PRs
+        run: node ./bin/actions/notify_published.js --tag v${{ steps.package-version.outputs.current-version }}

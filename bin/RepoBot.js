@@ -4,8 +4,18 @@ import Handlebars from "handlebars";
 import fs from "fs/promises";
 import {colorize} from "./helpers/colorize.js";
 import {getReleaseInfo} from "./contributors.js";
+import path from "path";
+import {fileURLToPath} from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const NOTIFY_PR_TEMPLATE = path.resolve(__dirname, '../templates/pr_published.hbs');
 
 const normalizeTag = (tag) => tag ? 'v' + tag.replace(/^v/, '') : '';
+
+const GITHUB_BOT_LOGIN = 'github-actions[bot]';
+
+const skipCollaboratorPRs = true;
 
 class RepoBot {
   constructor(options) {
@@ -15,7 +25,7 @@ class RepoBot {
     } = options || {};
 
     this.templates = Object.assign({
-      published: '../templates/pr_published.hbs'
+      published: NOTIFY_PR_TEMPLATE
     }, templates);
 
     this.github = api || new GithubAPI(owner, repo);
@@ -53,7 +63,18 @@ class RepoBot {
 
     await this.github.appendLabels(id, [tag]);
 
-    if (isBot || labels.find(({name}) => name === 'automated pr') || (await this.github.isCollaborator(login))) {
+    if (isBot || labels.find(({name}) => name === 'automated pr') || (skipCollaboratorPRs && await this.github.isCollaborator(login))) {
+      return false;
+    }
+
+    const comments = await this.github.getComments(id, {desc: true});
+
+    const comment = comments.find(
+      ({body, user}) => user.login === GITHUB_BOT_LOGIN && body.indexOf('published in') >= 0
+    )
+
+    if (comment) {
+      console.log(colorize()`Release comment [${comment.html_url}] already exists in #${pr.id}`);
       return false;
     }
 

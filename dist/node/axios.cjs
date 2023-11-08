@@ -1,4 +1,4 @@
-// Axios v1.6.1 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.6.2 Copyright (c) 2023 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -2019,7 +2019,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.6.1";
+const VERSION = "1.6.2";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);

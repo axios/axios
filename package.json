@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -121,6 +121,7 @@
     "karma-sauce-launcher": "^4.3.6",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.8",
+    "memoizee": "^0.4.15",
     "minimist": "^1.2.7",
     "mocha": "^10.0.0",
     "multer": "^1.4.4",

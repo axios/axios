@@ -3,8 +3,16 @@ name: 'CI'
 on:
   push:
     branches: '**'
+    paths-ignore:
+      - '**.md'
+      - 'sandbox/**'
+      - 'examples/**'
   pull_request:
     branches: '**'
+    paths-ignore:
+      - '**.md'
+      - 'sandbox/**'
+      - 'examples/**'
 
 permissions:
   contents: read

@@ -399,6 +399,9 @@ These are the available config options for making requests. Only the `url` is re
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
+  // `undefined` (default) - set XSRF header only for the same origin requests
+  withXSRFToken: boolean | undefined | ((config: AxiosRequestConfig) => boolean | undefined),
+
   // `onUploadProgress` allows handling of progress events for uploads
   // browser only
   onUploadProgress: function (progressEvent) {

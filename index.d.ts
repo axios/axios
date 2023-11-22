@@ -355,6 +355,7 @@ export interface AxiosRequestConfig<D = any> {
   family?: AddressFamily;
   lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
       ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
+  withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
 }
 
 // Alias

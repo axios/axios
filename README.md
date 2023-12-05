@@ -687,8 +687,11 @@ instance.get('/longRequest', {
 You can intercept requests or responses before they are handled by `then` or `catch`.
 
 ```js
+
+const instance = axios.create();
+
 // Add a request interceptor
-axios.interceptors.request.use(function (config) {
+instance.interceptors.request.use(function (config) {
     // Do something before request is sent
     return config;
   }, function (error) {
@@ -697,7 +700,7 @@ axios.interceptors.request.use(function (config) {
   });
 
 // Add a response interceptor
-axios.interceptors.response.use(function (response) {
+instance.interceptors.response.use(function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
     return response;
@@ -711,7 +714,8 @@ axios.interceptors.response.use(function (response) {
 If you need to remove an interceptor later you can.
 
 ```js
-const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+const instance = axios.create();
+const myInterceptor = instance.interceptors.request.use(function () {/*...*/});
 axios.interceptors.request.eject(myInterceptor);
 ```
 

@@ -450,18 +450,18 @@ describe('supports http with nodejs', function () {
       res.statusCode = 400;
       res.end();
     }).listen(4444, function () {
-        assert.rejects(
-            async function findMeInStackTrace() {
-              await axios.head('http://localhost:4444/one')
-            },
-            function (err) {
-              assert.equal(err.name, 'AxiosError')
-              assert.equal(err.isAxiosError, true)
-              const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
-              assert.equal(matches.length, 1, err.stack)
-              return true;
-            }
-        ).then(done).catch(done);
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axios.head('http://localhost:4444/one')
+        },
+        function (err) {
+          assert.equal(err.name, 'AxiosError')
+          assert.equal(err.isAxiosError, true)
+          const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+          assert.equal(matches.length, 1, err.stack)
+          return true;
+        }
+    ).then(done).catch(done);
     });
   });
 
@@ -473,17 +473,17 @@ describe('supports http with nodejs', function () {
     server = http.createServer(function (req, res) {
       res.end();
     }).listen(4444, function () {
-      assert.rejects(
-          async function findMeInStackTrace() {
-            await axiosInstance.get('http://localhost:4444/one')
-          },
-          function (err) {
-            assert.equal(err.name, 'Error')
-            assert.equal(err.message, 'from request interceptor')
-            const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
-            assert.equal(matches.length, 1, err.stack)
-            return true;
-          }
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axiosInstance.get('http://localhost:4444/one')
+        },
+        function (err) {
+          assert.equal(err.name, 'Error')
+          assert.equal(err.message, 'from request interceptor')
+          const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+          assert.equal(matches.length, 1, err.stack)
+          return true;
+        }
       ).then(done).catch(done);
     });
   });
@@ -1426,11 +1426,11 @@ describe('supports http with nodejs', function () {
       // call cancel() when the request has been sent, but a response has not been received
       source.cancel('Operation has been canceled.');
     }).listen(4444, function () {
-      assert.rejects(
+      void assert.rejects(
         async function findMeInStackTrace() {
           await axios.get('http://localhost:4444/', {
             cancelToken: source.token
-          })
+          });
         },
         function (thrown) {
           assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');

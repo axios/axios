@@ -31,7 +31,6 @@ const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 import getStream from 'get-stream';
-import {maybeAsync} from "@babel/core/lib/gensync-utils/async.js";
 
 function setTimeoutAsync(ms) {
   return new Promise(resolve=> setTimeout(resolve, ms));

@@ -2216,5 +2216,19 @@ describe('supports http with nodejs', function () {
 
       assert.strictEqual(data, payload);
     });
+
+    it('should handle errors in a custom DNS lookup function', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      const error = new Error('test');
+
+      await assert.rejects(() => axios.post(`http://fake-name.axios:4444`, payload,{
+          lookup: async (hostname, opt) =>  {
+              throw error;
+          }
+      }), error);
+    });
   });
 });

@@ -503,7 +503,11 @@ These are the available config options for making requests. Only the `url` is re
   // If both are specified, `socketPath` is used.
   socketPath: null, // default
   
-  // `transport` determines the transport method that will be used to make the request. If defined, it will be used. Otherwise, if `maxRedirects` is 0, the default `http` or `https` library will be used, depending on the protocol specified in `protocol`. Otherwise, the `httpFollow` or `httpsFollow` library will be used, again depending on the protocol, which can handle redirects.
+  // `transport` determines the transport method that will be used to make the request.
+  // If defined, it will be used. Otherwise, if `maxRedirects` is 0,
+  // the default `http` or `https` library will be used, depending on the protocol specified in `protocol`.
+  // Otherwise, the `httpFollow` or `httpsFollow` library will be used, again depending on the protocol,
+  // which can handle redirects.
   transport: undefined, // default
 
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http

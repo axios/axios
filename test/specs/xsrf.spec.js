@@ -69,11 +69,12 @@ describe('xsrf', function() {
     });
   });
 
-  it('should set xsrf header for cross origin when using withCredentials', function(done) {
+  it('should set xsrf header for cross origin when using withCredentials and withXSRFToken', function(done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
     axios('http://example.com/', {
-      withCredentials: true
+      withCredentials: true,
+      withXSRFToken: true
     });
 
     getAjaxRequest().then(function(request) {

@@ -178,10 +178,24 @@ describe('defaults', function () {
     const instance = axios.create();
     axios.defaults.baseURL = 'http://example.org/';
 
+    instance.get('/foo/users');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo/users');
+      done();
+    });
+  });
+
+  it('should resistent to ReDoS attack', function (done) {
+    const instance = axios.create();
+    const start = performance.now();
+    instance.defaults.baseURL = '/'.repeat(100000) + 'bar/';
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo');
+      const elapsedTimeMs = performance.now() - start;
+      expect(elapsedTimeMs).toBeLessThan(5);
+      expect(request.url).toBe('bar/foo');
       done();
     });
   });

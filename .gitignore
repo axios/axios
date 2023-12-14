@@ -1,13 +1,49 @@
-*.iml
-.idea
-.tscache
-.DS_Store
-node_modules/
+# Logs
+logs/
+*.log
+
+# Compiled output
+dist/
+build/
+*.bundle.js
+
+# Dependency directories
+jspm_packages/
+typings/
+
+# Optional: IDE settings
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optional: package manager configuration
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Optional: build process
+gulpfile.js
+gulpfile.ts
+
+# Optional: coverage directory used by tools like istanbul
 coverage/
-test/typescript/axios.js*
-sauce_connect.log
-test/module/**/package-lock.json
-backup/
-/.husky/
+
+# Optional: dotenv environment variable file
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Optional: Backup and temporary files
+*.bak
+*.tmp
+
+# Optional: Husky Git hooks configuration
+.husky/
+
+# Optional: Configuration files
 .npmrc
-.env
+.babelrc

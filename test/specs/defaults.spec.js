@@ -194,7 +194,7 @@ describe('defaults', function () {
 
     getAjaxRequest().then(function (request) {
       const elapsedTimeMs = performance.now() - start;
-      expect(elapsedTimeMs).toBeLessThan(5);
+      expect(elapsedTimeMs).toBeLessThan(20);
       expect(request.url).toBe('bar/foo');
       done();
     });

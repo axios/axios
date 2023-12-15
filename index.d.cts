@@ -498,7 +498,7 @@ declare namespace axios {
       fulfilled: ((value: V) => V | Promise<V>) | null;
       rejected: ((error: any) => any) | null;
       synchronous: boolean;
-      runWhen: (config: InternalAxiosRequestConfig) => boolean;
+      runWhen: (config: InternalAxiosRequestConfig) => boolean | null;
     }>;
   }
 

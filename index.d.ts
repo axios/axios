@@ -477,6 +477,12 @@ export interface AxiosInterceptorManager<V> {
   use(onFulfilled?: ((value: V) => V | Promise<V>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
   clear(): void;
+  handlers: Array<{
+    fulfilled: ((value: V) => V | Promise<V>) | null;
+    rejected: ((error: any) => any) | null;
+    synchronous: boolean;
+    runWhen: (config: InternalAxiosRequestConfig) => boolean;
+  }>;
 }
 
 export class Axios {

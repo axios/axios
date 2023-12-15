@@ -494,6 +494,12 @@ declare namespace axios {
     use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
     eject(id: number): void;
     clear(): void;
+    handlers: Array<{
+      fulfilled: ((value: V) => V | Promise<V>) | null;
+      rejected: ((error: any) => any) | null;
+      synchronous: boolean;
+      runWhen: (config: InternalAxiosRequestConfig) => boolean;
+    }>;
   }
 
   interface AxiosInstance extends Axios {

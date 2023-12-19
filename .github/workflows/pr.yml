@@ -57,7 +57,7 @@ jobs:
         with:
           run: node ./bin/pr.js
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         id: cpr
         with:
           branch: release

@@ -18,7 +18,7 @@ jobs:
       - name: "Release PR info"
         if: github.event_name != 'workflow_dispatch'
         run: echo "PR ${{ github.event.number }}"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: git config
         run: |
           git config user.name "${GITHUB_ACTOR}"

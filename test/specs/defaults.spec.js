@@ -189,13 +189,13 @@ describe('defaults', function () {
   it('should resistent to ReDoS attack', function (done) {
     const instance = axios.create();
     const start = performance.now();
-    instance.defaults.baseURL = '/'.repeat(100000) + 'bar/';
+    instance.defaults.baseURL = '///foo' + '/'.repeat(100000) + 'bar////////';
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
       const elapsedTimeMs = performance.now() - start;
       expect(elapsedTimeMs).toBeLessThan(20);
-      expect(request.url).toBe('bar/foo');
+      expect(request.url).toBe('/foo/bar/foo');
       done();
     });
   });

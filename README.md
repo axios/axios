@@ -1,8 +1,17 @@
-<h1 align="center">
-   <b>
-        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
-    </b>
-</h1>
+<div align="center">
+   <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+</div>
+
+<h3 align="center">
+   A special thanks to your headline sponsors
+   <br><br>
+</h3>
+
+<div align="center">
+   <a href="https://runalloy.com?utm_source=github&utm_medium=referral&utm_campaign=121423_axios"><img style="width:20rem" src="https://github.com/axios/axios/assets/4814473/d50a6cbb-bbe7-4e70-9e1a-f698c6cdc437" /></a>
+   <br><br>
+</div>
+
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 
@@ -546,7 +555,7 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
   // `insecureHTTPParser` boolean.
   // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
@@ -554,7 +563,7 @@ These are the available config options for making requests. Only the `url` is re
   // Using the insecure parser should be avoided.
   // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
-  insecureHTTPParser: undefined // default
+  insecureHTTPParser: undefined, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {

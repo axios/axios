@@ -1,8 +1,17 @@
-<h1 align="center">
-   <b>
-        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
-    </b>
-</h1>
+<div align="center">
+   <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+</div>
+
+<h3 align="center">
+   A special thanks to your headline sponsors
+   <br><br>
+</h3>
+
+<div align="center">
+   <a href="https://runalloy.com?utm_source=github&utm_medium=referral&utm_campaign=121423_axios"><img style="width:20rem" src="https://github.com/axios/axios/assets/4814473/d50a6cbb-bbe7-4e70-9e1a-f698c6cdc437" /></a>
+   <br><br>
+</div>
+
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 

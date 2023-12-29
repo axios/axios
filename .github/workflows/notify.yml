@@ -9,6 +9,9 @@ on:
   #  types: [ notify ]
   release:
     types: [ published ]
+    branches:
+      - main
+      - 'v**'
   workflow_dispatch:
     inputs:
       tag:

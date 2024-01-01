@@ -1,4 +1,4 @@
-// Axios v1.6.2 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.6.3 Copyright (c) 2023 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1959,7 +1959,7 @@
    * @returns {string} The combined URL
    */
   function combineURLs(baseURL, relativeURL) {
-    return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL;
+    return relativeURL ? baseURL.replace(/\/?\/$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL;
   }
 
   /**
@@ -2519,7 +2519,7 @@
     return config;
   }
 
-  var VERSION = "1.6.2";
+  var VERSION = "1.6.3";
 
   var validators$1 = {};
 

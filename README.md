@@ -24,8 +24,8 @@
   <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
     <picture>
       <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
-      <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
-      <img width="200px" src="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4" />
+      <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142">
+      <img width="200px" src="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142" />
     </picture>
   </a>
    <p align="center">API-first authentication, authorization, and fraud prevention</p>

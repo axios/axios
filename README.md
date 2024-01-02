@@ -1,8 +1,45 @@
-<h1 align="center">
-   <b>
-        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
-    </b>
-</h1>
+<h3 align="center">
+   Platinum sponsors
+   <br>
+</h3>
+
+<div align="center">
+   <a href="https://runalloy.com?utm_source=github&utm_medium=referral&utm_campaign=121423_axios">
+      <picture>
+         <source width="400px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/f6067247-7eba-4069-852a-ab1bb85b1780">
+         <source width="400px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10">
+         <img width="400px" src="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10" />
+       </picture>
+   </a>
+   <p>Alloy is the integration development platform that makes it simple and <br>fast for SaaS companies to launch critical user-facing integrations.</p>
+   <br><br>
+</div>
+
+<h3 align="center">
+   Gold sponsors
+   <br><br>
+</h3>
+
+<div align="center">
+  <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
+    <picture>
+      <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
+      <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142">
+      <img width="200px" src="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142" />
+    </picture>
+  </a>
+   <p align="center">API-first authentication, authorization, and fraud prevention</p>
+   <p align="center">
+       <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=website-link&utm_campaign=axios-http"><b>Website</b></a> •
+       <a href="https://stytch.com/docs?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=docs-link&utm_campaign=axios-http"><b>Documentation</b></a> • <a href="https://github.com/stytchauth/stytch-node?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=node-sdk&utm_campaign=axios-http"><b>Node.js Backend SDK</b></a>
+   </p>
+</div>
+     
+
+<br><br>
+<div align="center">
+   <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+</div>
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 

@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.6.2",
+  "version": "1.6.4",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -146,7 +146,7 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "^1.15.0",
+    "follow-redirects": "^1.15.4",
     "form-data": "^4.0.0",
     "proxy-from-env": "^1.1.0"
   },

@@ -11,7 +11,12 @@
          <img width="400px" src="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10" />
        </picture>
    </a>
-   <p>Alloy is the integration development platform that makes it simple and <br>fast for SaaS companies to launch critical user-facing integrations.</p>
+   
+   <p align="center">Alloy is the integration development platform that makes it simple and <br>fast for SaaS companies to launch critical user-facing integrations.</p>
+   <p align="center">
+      <a href="https://runalloy.com/signup?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Sign up free</b></a> •
+      <a href="https://docs.runalloy.com/docs?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Documentation</b></a>
+   </p>
    <br><br>
 </div>
 

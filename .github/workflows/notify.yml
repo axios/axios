@@ -1,0 +1,51 @@
+name: notify
+
+on:
+  #workflow_run:
+  #  workflows: ["publish"]
+  #  types:
+  #    - completed
+  #repository_dispatch:
+  #  types: [ notify ]
+  #release:
+  #  types: [published]
+  # branches:
+  #    - main
+  #    - 'v**'
+  #push:
+  #  tags:
+  #    - 'v[0-9]+.[0-9]+.[0-9]+'
+  #  branches:
+  #    - main
+  #    - 'v**'
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: false
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    #if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      #- name: Dump GitHub context
+      #  env:
+      #    GITHUB_CONTEXT: ${{ toJson(github) }}
+      #  run: echo "$GITHUB_CONTEXT"
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+      - run: npm ci
+      - name: Notify published PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ./bin/actions/notify_published.js --tag ${{ github.event.inputs.tag || github.event.release.tag_name }}

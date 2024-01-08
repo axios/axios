@@ -1,8 +1,50 @@
-<h1 align="center">
-   <b>
-        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
-    </b>
-</h1>
+<h3 align="center">
+   Platinum sponsors
+   <br>
+</h3>
+
+<div align="center">
+   <a href="https://runalloy.com?utm_source=github&utm_medium=referral&utm_campaign=121423_axios">
+      <picture>
+         <source width="400px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/f6067247-7eba-4069-852a-ab1bb85b1780">
+         <source width="400px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10">
+         <img width="400px" src="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10" />
+       </picture>
+   </a>
+   
+   <p align="center">Alloy is the integration development platform that makes it simple and <br>fast for SaaS companies to launch critical user-facing integrations.</p>
+   <p align="center">
+      <a href="https://runalloy.com/signup?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Sign up free</b></a> •
+      <a href="https://docs.runalloy.com/docs?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Documentation</b></a>
+   </p>
+   <br><br>
+</div>
+
+<h3 align="center">
+   Gold sponsors
+   <br><br>
+</h3>
+
+<div align="center">
+  <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
+    <picture>
+      <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
+      <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142">
+      <img width="200px" src="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142" />
+    </picture>
+  </a>
+   <p align="center">API-first authentication, authorization, and fraud prevention</p>
+   <p align="center">
+       <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=website-link&utm_campaign=axios-http"><b>Website</b></a> •
+       <a href="https://stytch.com/docs?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=docs-link&utm_campaign=axios-http"><b>Documentation</b></a> • <a href="https://github.com/stytchauth/stytch-node?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=node-sdk&utm_campaign=axios-http"><b>Node.js Backend SDK</b></a>
+   </p>
+</div>
+     
+
+<br><br>
+<div align="center">
+   <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+</div>
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 
@@ -66,6 +108,7 @@
   - [HTML Form Posting](#-html-form-posting-browser)
   - [🆕 Progress capturing](#-progress-capturing)
   - [🆕 Rate limiting](#-progress-capturing)
+  - [🆕 AxiosHeaders](#-axiosheaders)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -451,6 +494,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
+    
+  // `undefined` (default) - set XSRF header only for the same origin requests
+  withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
   // `onUploadProgress` allows handling of progress events for uploads
   // browser & node.js
@@ -542,7 +588,7 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
   // `insecureHTTPParser` boolean.
   // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
@@ -550,7 +596,7 @@ These are the available config options for making requests. Only the `url` is re
   // Using the insecure parser should be avoided.
   // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
-  insecureHTTPParser: undefined // default
+  insecureHTTPParser: undefined, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
@@ -1270,7 +1316,7 @@ const {data} = await axios.post(SERVER_URL, readableStream, {
 ````
 
 > **Note:**
-> Capturing FormData upload progress is currently not currently supported in node.js environments.
+> Capturing FormData upload progress is not currently supported in node.js environments.
 
 > **⚠️ Warning**
 > It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the **node.js** environment,
@@ -1290,6 +1336,260 @@ const {data} = await axios.post(LOCAL_SERVER_URL, myBuffer, {
   maxRate: [100 * 1024], // 100KB/s limit
 });
 ```
+
+## 🆕 AxiosHeaders
+
+Axios has its own `AxiosHeaders` class to manipulate headers using a Map-like API that guarantees caseless work.
+Although HTTP is case-insensitive in headers, Axios will retain the case of the original header for stylistic reasons
+and for a workaround when servers mistakenly consider the header's case.
+The old approach of directly manipulating headers object is still available, but deprecated and not recommended for future usage.
+
+### Working with headers
+
+An AxiosHeaders object instance can contain different types of internal values. that control setting and merging logic.
+The final headers object with string values is obtained by Axios by calling the `toJSON` method.
+
+> Note: By JSON here we mean an object consisting only of string values intended to be sent over the network.
+
+The header value can be one of the following types:
+- `string` - normal string value that will be sent to the server
+- `null` - skip header when rendering to JSON
+- `false` - skip header when rendering to JSON, additionally indicates that `set` method must be called with `rewrite` option set to `true`
+  to overwrite this value (Axios uses this internally to allow users to opt out of installing certain headers like `User-Agent` or `Content-Type`)
+- `undefined` - value is not set
+
+> Note: The header value is considered set if it is not equal to undefined.
+
+The headers object is always initialized inside interceptors and transformers:
+
+```ts
+  axios.interceptors.request.use((request: InternalAxiosRequestConfig) => {
+      request.headers.set('My-header', 'value');
+
+      request.headers.set({
+        "My-set-header1": "my-set-value1",
+        "My-set-header2": "my-set-value2"
+      });
+      
+      request.headers.set('User-Agent', false); // disable subsequent setting the header by Axios
+
+      request.headers.setContentType('text/plain');
+    
+      request.headers['My-set-header2'] = 'newValue' // direct access is deprecated
+    
+      return request;
+    }
+  );
+````
+
+You can iterate over an `AxiosHeaders` instance using a `for...of` statement:
+
+````js
+const headers = new AxiosHeaders({
+  foo: '1',
+  bar: '2',
+  baz: '3'
+});
+
+for(const [header, value] of headers) {
+  console.log(header, value);
+}
+
+// foo 1
+// bar 2
+// baz 3
+````
+
+### new AxiosHeaders(headers?)
+
+Constructs a new `AxiosHeaders` instance. 
+
+```
+constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
+```
+
+If the headers object is a string, it will be parsed as RAW HTTP headers.
+
+````js
+const headers = new AxiosHeaders(`
+Host: www.bing.com
+User-Agent: curl/7.54.0
+Accept: */*`);
+
+console.log(headers);
+
+// Object [AxiosHeaders] {
+//   host: 'www.bing.com',
+//   'user-agent': 'curl/7.54.0',
+//   accept: '*/*'
+// }
+````
+
+### AxiosHeaders#set
+
+```ts
+set(headerName, value: Axios, rewrite?: boolean);
+set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean);
+set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
+```
+
+The `rewrite` argument controls the overwriting behavior:
+- `false` - do not overwrite if header's value is set (is not `undefined`)
+- `undefined` (default) - overwrite the header unless its value is set to `false`
+- `true` - rewrite anyway
+
+The option can also accept a user-defined function that determines whether the value should be overwritten or not.
+
+Returns `this`.
+
+### AxiosHeaders#get(header)
+
+```
+  get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
+  get(headerName: string, parser: RegExp): RegExpExecArray | null;
+````
+
+Returns the internal value of the header. It can take an extra argument to parse the header's value with `RegExp.exec`,
+matcher function or internal key-value parser.
+
+```ts
+const headers = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary=Asrf456BGe4h'
+});
+
+console.log(headers.get('Content-Type')); 
+// multipart/form-data; boundary=Asrf456BGe4h
+
+console.log(headers.get('Content-Type', true)); // parse key-value pairs from a string separated with \s,;= delimiters:
+// [Object: null prototype] {
+//   'multipart/form-data': undefined,
+//    boundary: 'Asrf456BGe4h'
+// }
+
+
+console.log(headers.get('Content-Type', (value, name, headers) => {
+  return String(value).replace(/a/g, 'ZZZ');
+}));
+// multipZZZrt/form-dZZZtZZZ; boundZZZry=Asrf456BGe4h
+
+console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
+// boundary=Asrf456BGe4h
+
+```
+
+Returns the value of the header.
+
+### AxiosHeaders#has(header, matcher?)
+
+```
+has(header: string, matcher?: AxiosHeaderMatcher): boolean;
+```
+
+Returns `true` if the header is set (has no `undefined` value).
+
+### AxiosHeaders#delete(header, matcher?)
+
+```
+delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
+```
+
+Returns `true` if at least one header has been removed.
+
+### AxiosHeaders#clear(matcher?)
+
+```
+clear(matcher?: AxiosHeaderMatcher): boolean;
+```
+
+Removes all headers. 
+Unlike the `delete` method matcher, this optional matcher will be used to match against the header name rather than the value.
+
+```ts
+const headers = new AxiosHeaders({
+  'foo': '1',
+  'x-foo': '2',
+  'x-bar': '3',
+});
+
+console.log(headers.clear(/^x-/)); // true
+
+console.log(headers.toJSON()); // [Object: null prototype] { foo: '1' }
+```
+
+Returns `true` if at least one header has been cleared.
+
+### AxiosHeaders#normalize(format);
+
+If the headers object was changed directly, it can have duplicates with the same name but in different cases.
+This method normalizes the headers object by combining duplicate keys into one.
+Axios uses this method internally after calling each interceptor.
+Set `format` to true for converting headers name to lowercase and capitalize the initial letters (`cOntEnt-type` => `Content-Type`)
+
+```js
+const headers = new AxiosHeaders({
+  'foo': '1',
+});
+
+headers.Foo = '2';
+headers.FOO = '3';
+
+console.log(headers.toJSON()); // [Object: null prototype] { foo: '1', Foo: '2', FOO: '3' }
+console.log(headers.normalize().toJSON()); // [Object: null prototype] { foo: '3' }
+console.log(headers.normalize(true).toJSON()); // [Object: null prototype] { Foo: '3' }
+```
+
+Returns `this`.
+
+### AxiosHeaders#concat(...targets)
+
+```
+concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
+```
+
+Merges the instance with targets into a new `AxiosHeaders` instance. If the target is a string, it will be parsed as RAW HTTP headers.
+
+Returns a new `AxiosHeaders` instance.
+
+### AxiosHeaders#toJSON(asStrings?)
+
+````
+toJSON(asStrings?: boolean): RawAxiosHeaders;
+````
+
+Resolve all internal headers values into a new null prototype object. 
+Set `asStrings` to true to resolve arrays as a string containing all elements, separated by commas.
+
+### AxiosHeaders.from(thing?)
+
+````
+from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
+````
+
+Returns a new `AxiosHeaders` instance created from the raw headers passed in,
+or simply returns the given headers object if it's an `AxiosHeaders` instance.
+
+### AxiosHeaders.concat(...targets)
+
+````
+concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
+````
+
+Returns a new `AxiosHeaders` instance created by merging the target objects.
+
+### Shortcuts
+
+The following shortcuts are available:
+
+- `setContentType`, `getContentType`, `hasContentType`
+
+- `setContentLength`, `getContentLength`, `hasContentLength`
+
+- `setAccept`, `getAccept`, `hasAccept`
+
+- `setUserAgent`, `getUserAgent`, `hasUserAgent`
+
+- `setContentEncoding`, `getContentEncoding`, `hasContentEncoding`
+
 
 ## Semver
 

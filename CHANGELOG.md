@@ -1,5 +1,137 @@
 # Changelog
 
+## [1.6.5](https://github.com/axios/axios/compare/v1.6.4...v1.6.5) (2024-01-05)
+
+
+### Bug Fixes
+
+* **ci:** refactor notify action as a job of publish action; ([#6176](https://github.com/axios/axios/issues/6176)) ([0736f95](https://github.com/axios/axios/commit/0736f95ce8776366dc9ca569f49ba505feb6373c))
+* **dns:** fixed lookup error handling; ([#6175](https://github.com/axios/axios/issues/6175)) ([f4f2b03](https://github.com/axios/axios/commit/f4f2b039dd38eb4829e8583caede4ed6d2dd59be))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+41/-6 (#6176 #6175 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+6/-1 ()")
+
+## [1.6.4](https://github.com/axios/axios/compare/v1.6.3...v1.6.4) (2024-01-03)
+
+
+### Bug Fixes
+
+* **security:** fixed formToJSON prototype pollution vulnerability; ([#6167](https://github.com/axios/axios/issues/6167)) ([3c0c11c](https://github.com/axios/axios/commit/3c0c11cade045c4412c242b5727308cff9897a0e))
+* **security:** fixed security vulnerability in follow-redirects ([#6163](https://github.com/axios/axios/issues/6163)) ([75af1cd](https://github.com/axios/axios/commit/75af1cdff5b3a6ca3766d3d3afbc3115bb0811b8))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+34/-6 ()")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+34/-3 (#6172 #6167 )")
+- <img src="https://avatars.githubusercontent.com/u/1402060?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Guy Nesher](https://github.com/gnesher "+10/-10 (#6163 )")
+
+## [1.6.3](https://github.com/axios/axios/compare/v1.6.2...v1.6.3) (2023-12-26)
+
+
+### Bug Fixes
+
+* Regular Expression Denial of Service (ReDoS) ([#6132](https://github.com/axios/axios/issues/6132)) ([5e7ad38](https://github.com/axios/axios/commit/5e7ad38fb0f819fceb19fb2ee5d5d38f56aa837d))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+15/-6 (#6145 )")
+- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini "+17/-2 (#6132 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+3/-0 (#6084 )")
+
+## [1.6.2](https://github.com/axios/axios/compare/v1.6.1...v1.6.2) (2023-11-14)
+
+
+### Features
+
+* **withXSRFToken:** added withXSRFToken option as a workaround to achieve the old `withCredentials` behavior; ([#6046](https://github.com/axios/axios/issues/6046)) ([cff9967](https://github.com/axios/axios/commit/cff996779b272a5e94c2b52f5503ccf668bc42dc))
+
+### PRs
+- feat(withXSRFToken): added withXSRFToken option as a workaround to achieve the old &#x60;withCredentials&#x60; behavior; ( [#6046](https://api.github.com/repos/axios/axios/pulls/6046) )
+```
+
+📢 This PR added &#x27;withXSRFToken&#x27; option as a replacement for old withCredentials behaviour. 
+You should now use withXSRFToken along with withCredential to get the old behavior.
+This functionality is considered as a fix.
+```
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+271/-146 (#6081 #6080 #6079 #6078 #6046 #6064 #6063 )")
+- <img src="https://avatars.githubusercontent.com/u/79681367?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ng Choon Khon (CK)](https://github.com/ckng0221 "+4/-4 (#6073 )")
+- <img src="https://avatars.githubusercontent.com/u/9162827?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Muhammad Noman](https://github.com/mnomanmemon "+2/-2 (#6048 )")
+
+## [1.6.1](https://github.com/axios/axios/compare/v1.6.0...v1.6.1) (2023-11-08)
+
+
+### Bug Fixes
+
+* **formdata:** fixed content-type header normalization for non-standard browser environments; ([#6056](https://github.com/axios/axios/issues/6056)) ([dd465ab](https://github.com/axios/axios/commit/dd465ab22bbfa262c6567be6574bf46a057d5288))
+* **platform:** fixed emulated browser detection in node.js environment; ([#6055](https://github.com/axios/axios/issues/6055)) ([3dc8369](https://github.com/axios/axios/commit/3dc8369e505e32a4e12c22f154c55fd63ac67fbb))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+432/-65 (#6059 #6056 #6055 )")
+- <img src="https://avatars.githubusercontent.com/u/3982806?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Fabian Meyer](https://github.com/meyfa "+5/-2 (#5835 )")
+
+### PRs
+- feat(withXSRFToken): added withXSRFToken option as a workaround to achieve the old &#x60;withCredentials&#x60; behavior; ( [#6046](https://api.github.com/repos/axios/axios/pulls/6046) )
+```
+
+📢 This PR added &#x27;withXSRFToken&#x27; option as a replacement for old withCredentials behaviour. 
+You should now use withXSRFToken along with withCredential to get the old behavior.
+This functionality is considered as a fix.
+```
+
+# [1.6.0](https://github.com/axios/axios/compare/v1.5.1...v1.6.0) (2023-10-26)
+
+
+### Bug Fixes
+
+* **CSRF:** fixed CSRF vulnerability CVE-2023-45857 ([#6028](https://github.com/axios/axios/issues/6028)) ([96ee232](https://github.com/axios/axios/commit/96ee232bd3ee4de2e657333d4d2191cd389e14d0))
+* **dns:** fixed lookup function decorator to work properly in node v20; ([#6011](https://github.com/axios/axios/issues/6011)) ([5aaff53](https://github.com/axios/axios/commit/5aaff532a6b820bb9ab6a8cd0f77131b47e2adb8))
+* **types:** fix AxiosHeaders types; ([#5931](https://github.com/axios/axios/issues/5931)) ([a1c8ad0](https://github.com/axios/axios/commit/a1c8ad008b3c13d53e135bbd0862587fb9d3fc09))
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+449/-114 (#6032 #6021 #6011 #5932 #5931 )")
+- <img src="https://avatars.githubusercontent.com/u/63700910?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Valentin Panov](https://github.com/valentin-panov "+4/-4 (#6028 )")
+- <img src="https://avatars.githubusercontent.com/u/76877078?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rinku Chaudhari](https://github.com/therealrinku "+1/-1 (#5889 )")
+
+## [1.5.1](https://github.com/axios/axios/compare/v1.5.0...v1.5.1) (2023-09-26)
+
+
+### Bug Fixes
+
+* **adapters:** improved adapters loading logic to have clear error messages; ([#5919](https://github.com/axios/axios/issues/5919)) ([e410779](https://github.com/axios/axios/commit/e4107797a7a1376f6209fbecfbbce73d3faa7859))
+* **formdata:** fixed automatic addition of the `Content-Type` header for FormData in non-browser environments; ([#5917](https://github.com/axios/axios/issues/5917)) ([bc9af51](https://github.com/axios/axios/commit/bc9af51b1886d1b3529617702f2a21a6c0ed5d92))
+* **headers:** allow `content-encoding` header to handle case-insensitive values ([#5890](https://github.com/axios/axios/issues/5890)) ([#5892](https://github.com/axios/axios/issues/5892)) ([4c89f25](https://github.com/axios/axios/commit/4c89f25196525e90a6e75eda9cb31ae0a2e18acd))
+* **types:** removed duplicated code ([9e62056](https://github.com/axios/axios/commit/9e6205630e1c9cf863adf141c0edb9e6d8d4b149))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+89/-18 (#5919 #5917 )")
+- <img src="https://avatars.githubusercontent.com/u/110460234?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [David Dallas](https://github.com/DavidJDallas "+11/-5 ()")
+- <img src="https://avatars.githubusercontent.com/u/71556073?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sean Sattler](https://github.com/fb-sean "+2/-8 ()")
+- <img src="https://avatars.githubusercontent.com/u/4294069?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Mustafa Ateş Uzun](https://github.com/0o001 "+4/-4 ()")
+- <img src="https://avatars.githubusercontent.com/u/132928043?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Przemyslaw Motacki](https://github.com/sfc-gh-pmotacki "+2/-1 (#5892 )")
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+1/-1 ()")
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 # [1.5.0](https://github.com/axios/axios/compare/v1.4.0...v1.5.0) (2023-08-26)
 
 
@@ -22,6 +154,13 @@
 - <img src="https://avatars.githubusercontent.com/u/102841186?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [夜葬](https://github.com/geekact "+42/-0 (#5324 )")
 - <img src="https://avatars.githubusercontent.com/u/65978976?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jonathan Budiman](https://github.com/JBudiman00 "+30/-0 (#5788 )")
 - <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-5 (#5791 )")
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 # [1.4.0](https://github.com/axios/axios/compare/v1.3.6...v1.4.0) (2023-04-27)
 
@@ -48,6 +187,13 @@
 - <img src="https://avatars.githubusercontent.com/u/47537704?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Arthur Fiorette](https://github.com/arthurfiorette "+19/-19 (#5525 )")
 - <img src="https://avatars.githubusercontent.com/u/43876655?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [PIYUSH NEGI](https://github.com/npiyush97 "+2/-18 (#5670 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.3.6](https://github.com/axios/axios/compare/v1.3.5...v1.3.6) (2023-04-19)
 
 
@@ -61,6 +207,13 @@
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+48/-10 (#5665 #5661 #5663 )")
 - <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+2/-0 (#5445 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.3.5](https://github.com/axios/axios/compare/v1.3.4...v1.3.5) (2023-04-05)
 
 
@@ -72,6 +225,13 @@
 ### Contributors to this release
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+28/-10 (#5633 #5584 )")
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 ## [1.3.4](https://github.com/axios/axios/compare/v1.3.3...v1.3.4) (2023-02-22)
 
@@ -87,6 +247,13 @@
 - <img src="https://avatars.githubusercontent.com/u/19550000?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [lcysgsg](https://github.com/lcysgsg "+4/-0 (#5548 )")
 - <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-0 (#5444 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.3.3](https://github.com/axios/axios/compare/v1.3.2...v1.3.3) (2023-02-13)
 
 
@@ -101,6 +268,13 @@
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+11/-7 (#5545 #5535 #5542 )")
 - <img src="https://avatars.githubusercontent.com/u/19842213?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [陈若枫](https://github.com/ruofee "+2/-2 (#5467 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.3.2](https://github.com/axios/axios/compare/v1.3.1...v1.3.2) (2023-02-03)
 
 
@@ -113,6 +287,13 @@
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+2/-1 (#5530 #5528 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.3.1](https://github.com/axios/axios/compare/v1.3.0...v1.3.1) (2023-02-01)
 
 
@@ -124,6 +305,13 @@
 ### Contributors to this release
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+27/-8 (#5521 #5518 )")
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 # [1.3.0](https://github.com/axios/axios/compare/v1.2.6...v1.3.0) (2023-01-31)
 
@@ -143,6 +331,13 @@
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+352/-67 (#5514 #5512 #5510 #5509 #5508 #5316 #5507 )")
 - <img src="https://avatars.githubusercontent.com/u/35015993?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ItsNotGoodName](https://github.com/ItsNotGoodName "+43/-2 (#5497 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.2.6](https://github.com/axios/axios/compare/v1.2.5...v1.2.6) (2023-01-28)
 
 
@@ -155,6 +350,13 @@
 
 - ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+24/-9 (#5503 #5502 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.2.5](https://github.com/axios/axios/compare/v1.2.4...v1.2.5) (2023-01-26)
 
 
@@ -166,6 +368,13 @@
 
 - ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+82/-54 (#5499 )")
 - ![avatar](https://avatars.githubusercontent.com/u/20516159?v&#x3D;4&amp;s&#x3D;16) [Elliot Ford](https://github.com/EFord36 "+1/-1 (#5462 )")
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 ## [1.2.4](https://github.com/axios/axios/compare/v1.2.3...v1.2.4) (2023-01-22)
 
@@ -180,6 +389,13 @@
 - ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+242/-108 (#5486 #5482 )")
 - ![avatar](https://avatars.githubusercontent.com/u/9430821?v&#x3D;4&amp;s&#x3D;16) [Daniel Hillmann](https://github.com/hilleer "+1/-1 (#5478 )")
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.2.3](https://github.com/axios/axios/compare/1.2.2...1.2.3) (2023-01-10)
 
 
@@ -190,6 +406,13 @@
 ### Contributors to this release
 
 - ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+938/-442 (#5456 #5455 #5453 #5451 #5449 #5447 #5446 #5443 #5442 #5439 #5420 )")
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 ## [1.2.2] - 2022-12-29
 
@@ -244,6 +467,13 @@
 - [wenzheng](https://github.com/0x30)
 - [Ivan Barsukov](https://github.com/ovarn)
 - [Arthur Fiorette](https://github.com/arthurfiorette)
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 ## [1.2.0] - 2022-11-10
 
@@ -311,6 +541,13 @@
 - [AZM](https://github.com/aziyatali)
 - [relbns](https://github.com/relbns)
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.1.3] - 2022-10-15
 
 ### Added
@@ -345,6 +582,13 @@
 - [littledian](https://github.com/littledian)
 - [ChronosMasterOfAllTime](https://github.com/ChronosMasterOfAllTime)
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.1.2] - 2022-10-07
 
 ### Fixed
@@ -355,6 +599,13 @@
 
 - [Jason Saayman](https://github.com/jasonsaayman)
 
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
+
 ## [1.1.1] - 2022-10-07
 
 ### Fixed
@@ -364,6 +615,13 @@
 ### Contributors to this release
 
 - [Jason Saayman](https://github.com/jasonsaayman)
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 ## [1.1.0] - 2022-10-06
 
@@ -383,6 +641,13 @@
 - [shingo.sasaki](https://github.com/s-sasaki-0529)
 - [Ivan Pepelko](https://github.com/ivanpepelko)
 - [Richard Kořínek](https://github.com/risa)
+
+### PRs
+- CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+```
+
+⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
+```
 
 ## [1.0.0] - 2022-10-04
 

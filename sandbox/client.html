@@ -1,39 +1,87 @@
 <!doctype html>
 <html>
 <head>
-  <title>AXIOS | Sandbox</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>axios</title>
   <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans&family=Roboto&family=Young+Serif&display=swap" rel="stylesheet">
   <style type="text/css">
-    pre {
-      min-height: 39px;
-      overflow: auto;
+    *{
+      margin: 0;
+      padding: 0;
     }
-    .header{
-      display: flex;
-      flex-direction: row;
+    .container{
+    max-width: 700px;
+    padding: 0px 20px;
+    margin: auto;
     }
-    .box{
-     display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 25px;
+    .container >h1{
+      font-size: 28px;
+      color: rgb(0, 0, 255);
+    font-weight: bold;
+    font-family: 'Young Serif', serif;
+    margin: 10px 0px;
     }
-    @media screen and (max-width: 1000px) {
-      .box {
-        grid-template-columns: 1fr;
-      }
+    .well h3{
+      font-size: 25px;
+      margin: 8px 0px;
+      font-weight: bold;
     }
-      
+    .form .form-group{
+      width: 100%;
+    }
+    .form-group label{
+      display: block;
+    font-size: 18px;
+    margin: 10px 0px;
+    font-weight: bold;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .form-group input ,.form-group select{
+    outline: none;
+    font-size: 16px;
+    padding: 5px;
+    width: 90%;
+    }
+  .form-group textarea{
+    font-size: 16px;
+    padding: 5px;
+    width: 90%;
+  }
+  .container button{
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 8px;
+    border-radius: 9px;
+    color: white;
+    background: black;
+    margin: 10px 0px;
+  }
+  .container button:hover{
+    background: #5f2e2e;
+  }
+    .form 
+    /* @media only screen and (max-width:800px) {
+      .form{
+  
+      }  
+    }
+    @media only screen and (max-width:500px) {
+      .form{
+  
+      }  
+    } */
   </style>
 </head>
-<body class="container">
-<div class="header">
-  <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="130" height="60">
-   
-  <h1> &nbsp;| Sandbox</h1>
-</div>
-
-  <div class="box">
-    <div class="well">
+<body>
+<div  class="container">
+  <h1>AXIOS</h1>
+  <div class="well">
     <h3>Input</h3>
     <form role="form" onsubmit="return false;">
       <div class="form-group">
@@ -67,8 +115,7 @@
     </form>
   </div>
 
-  <div class="response">
-    <div class="well">
+  <div class="well">
     <h3>Request</h3>
     <pre id="request">No Data</pre>
   </div>
@@ -83,7 +130,6 @@
     <pre id="error">None</pre>
   </div>
 </div>
-  </div>
 
   <script src="/axios.js"></script>
   <script>

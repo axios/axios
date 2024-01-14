@@ -53,6 +53,9 @@ function toleranceRange(positive, negative) {
   }
 }
 
+const nodeVersion = process.versions.node.split('.').map(v => parseInt(v, 10));
+const nodeMajorVersion = nodeVersion[0];
+
 var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
@@ -447,6 +450,10 @@ describe('supports http with nodejs', function () {
   });
 
   it('should wrap HTTP errors and keep stack', function (done) {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
     server = http.createServer(function (req, res) {
       res.statusCode = 400;
       res.end();
@@ -467,6 +474,10 @@ describe('supports http with nodejs', function () {
   });
 
   it('should wrap interceptor errors and keep stack', function (done) {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
     const axiosInstance = axios.create();
     axiosInstance.interceptors.request.use((res) => {
       throw new Error('from request interceptor')
@@ -1436,7 +1447,9 @@ describe('supports http with nodejs', function () {
         function (thrown) {
           assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
           assert.equal(thrown.message, 'Operation has been canceled.');
-          assert.match(thrown.stack, /findMeInStackTrace/);
+          if (node.nodeMajorVersion > 12) {
+            assert.match(thrown.stack, /findMeInStackTrace/);
+          }
           return true;
         },
       ).then(done).catch(done);

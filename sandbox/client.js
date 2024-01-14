@@ -6,15 +6,24 @@ const BODY = {
   baz: 1234
 };
 
-function handleSuccess(data) { console.log(data); }
-function handleFailure(data) { console.log('error', data); }
 
 // GET
-axios.get(URL, { params: BODY })
-  .then(handleSuccess)
-  .catch(handleFailure);
+
+  axios.get(URL, {params:BODY})
+  .then((data)=>{
+    console.log(data);
+  })
+  .catch((error)=>{
+    console.log(error);
+  })
+
 
 // POST
+
 axios.post(URL, BODY)
-  .then(handleSuccess)
-  .catch(handleFailure);
+  .then((data)=>{
+    console.log(data);
+  })
+  .catch((error)=>{
+    console.log(error);
+  })

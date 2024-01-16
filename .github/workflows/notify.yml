@@ -12,12 +12,12 @@ on:
   # branches:
   #    - main
   #    - 'v**'
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-    branches:
-      - main
-      - 'v**'
+  #push:
+  #  tags:
+  #    - 'v[0-9]+.[0-9]+.[0-9]+'
+  #  branches:
+  #    - main
+  #    - 'v**'
 
   workflow_dispatch:
     inputs:

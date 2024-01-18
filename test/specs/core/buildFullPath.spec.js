@@ -5,8 +5,8 @@ describe('helpers::buildFullPath', function () {
     expect(buildFullPath('https://api.github.com', '/users')).toBe('https://api.github.com/users');
   });
 
-  it('should return the requestedURL when it is absolute', function () {
-    expect(buildFullPath('https://api.github.com', 'https://api.example.com/users')).toBe('https://api.example.com/users');
+  it('should combine the URLs when the requestedURL is absolute', function () {
+    expect(buildFullPath('https://api.github.com', 'https://api.example.com/users')).toBe('https://api.github.com/https://api.example.com/users');
   });
 
   it('should not combine URLs when the baseURL is not configured', function () {

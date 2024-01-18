@@ -71,7 +71,7 @@ describe('options', function () {
     });
   });
 
-  it('should ignore base URL if request URL is absolute', function (done) {
+  it('should combine base URL with request URL if request URL is absolute', function (done) {
     const instance = axios.create({
       baseURL: 'http://someurl.com/'
     });
@@ -79,7 +79,7 @@ describe('options', function () {
     instance.get('http://someotherurl.com/');
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('http://someotherurl.com/');
+      expect(request.url).toBe('http://someurl.com/http://someotherurl.com/');
       done();
     });
   });

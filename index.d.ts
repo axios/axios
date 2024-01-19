@@ -165,6 +165,7 @@ export interface AxiosRequestConfig<D = any> {
     FormData?: new (...args: any[]) => object;
   };
   formSerializer?: FormSerializerOptions;
+  withXSRFToken?: boolean | ((config: AxiosRequestConfig) => boolean | undefined);
 }
 
 export interface HeadersDefaults {

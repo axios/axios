@@ -395,10 +395,15 @@ These are the available config options for making requests. Only the `url` is re
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute.
+  // `baseURL` will be prepended to `url` unless `url` is absolute and option `allowAbsoluteUrls` is set to false.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
+
+  // `allowAbsoluteUrls` determines whether or not absolute URLs will override a configured `baseUrl`.
+  // When set to true (default), absolute values for `url` will override `baseUrl`.
+  // When set to false, absolute values for `url` will always be prepended by `baseUrl`.
+  allowAbsoluteUrls: true,
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'

@@ -1,4 +1,4 @@
-// Axios v1.6.3 Copyright (c) 2023 Matt Zabriskie and contributors
+// Axios v1.6.5 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1387,6 +1387,7 @@
   function formDataToJSON(formData) {
     function buildPath(path, value, target, index) {
       var name = path[index++];
+      if (name === '__proto__') return true;
       var isNumericKey = Number.isFinite(+name);
       var isLast = index >= path.length;
       name = !name && utils$1.isArray(target) ? target.length : name;
@@ -2519,7 +2520,7 @@
     return config;
   }
 
-  var VERSION = "1.6.3";
+  var VERSION = "1.6.5";
 
   var validators$1 = {};
 

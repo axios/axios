@@ -9,6 +9,7 @@ import util from 'util';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import {lookup} from 'dns';
 let server, proxy;
 import AxiosError from '../../../lib/core/AxiosError.js';
 import FormDataLegacy from 'form-data';
@@ -385,7 +386,7 @@ describe('supports http with nodejs', function () {
           }
         }
       }).catch(function (error) {
-        assert.equal(error.message, 'Provided path is not allowed');
+        assert.equal(error.message, 'Redirected request failed: Provided path is not allowed');
         done();
       }).catch(done);
     });
@@ -2215,6 +2216,14 @@ describe('supports http with nodejs', function () {
       assert.ok(isCalled);
 
       assert.strictEqual(data, payload);
+    });
+
+    it('should handle errors', () => {
+      return assert.rejects(async () => {
+        await axios.get('https://no-such-domain-987654.com', {
+          lookup
+        });
+      }, /ENOTFOUND/);
     });
   });
 });

@@ -1447,7 +1447,7 @@ describe('supports http with nodejs', function () {
         function (thrown) {
           assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
           assert.equal(thrown.message, 'Operation has been canceled.');
-          if (node.nodeMajorVersion > 12) {
+          if (nodeMajorVersion > 12) {
             assert.match(thrown.stack, /findMeInStackTrace/);
           }
           return true;

@@ -9,22 +9,24 @@ type MethodsHeaders = Partial<{
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 } & {common: AxiosHeaders}>;
 
-type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
+type AxiosHeaderMatcher = string | RegExp | ((this: AxiosHeaders, value: string, name: string) => boolean);
+
+type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: string) => any;
 
 export class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
+  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
-  get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
+  get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 
-  has(header: string, matcher?: true | AxiosHeaderMatcher): boolean;
+  has(header: string, matcher?: AxiosHeaderMatcher): boolean;
 
   delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
 
@@ -119,10 +121,7 @@ export interface AxiosBasicCredentials {
 export interface AxiosProxyConfig {
   host: string;
   port: number;
-  auth?: {
-    username: string;
-    password: string;
-  };
+  auth?: AxiosBasicCredentials;
   protocol?: string;
 }
 
@@ -303,6 +302,15 @@ type AxiosAdapterName = 'xhr' | 'http' | string;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
+export type AddressFamily = 4 | 6 | undefined;
+
+export interface LookupAddressEntry {
+  address: string;
+  family?: AddressFamily;
+}
+
+export type LookupAddress = string | LookupAddressEntry;
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
@@ -344,9 +352,10 @@ export interface AxiosRequestConfig<D = any> {
     FormData?: new (...args: any[]) => object;
   };
   formSerializer?: FormSerializerOptions;
-  family?: 4 | 6 | undefined;
-  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: string, family: number) => void) => void) |
-      ((hostname: string, options: object) => Promise<[address: string, family: number] | string>);
+  family?: AddressFamily;
+  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
+      ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
+  withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
 }
 
 // Alias
@@ -512,6 +521,8 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+export function getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
+
 export function toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
 
 export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
@@ -538,6 +549,7 @@ export interface AxiosStatic extends AxiosInstance {
   isAxiosError: typeof isAxiosError;
   toFormData: typeof toFormData;
   formToJSON: typeof formToJSON;
+  getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
 }

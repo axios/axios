@@ -381,8 +381,8 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3,
-        beforeRedirect: function (options) {
-          if (options.path === '/foo') {
+        beforeRedirect: function (options, responseDetails) {
+          if (options.path === '/foo' && responseDetails.headers.location === '/foo') {
             throw new Error(
               'Provided path is not allowed'
             );

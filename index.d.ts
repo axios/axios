@@ -337,7 +337,7 @@ export interface AxiosRequestConfig<D = any> {
   maxBodyLength?: number;
   maxRedirects?: number;
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-  beforeRedirect?: (options: Record<string, any>, responseDetails: { headers: Record<string, string> }) => void;
+  beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
   socketPath?: string | null;
   transport?: any;
   httpAgent?: any;

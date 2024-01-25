@@ -1,4 +1,4 @@
-// Axios v1.6.6 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.6.7 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1774,9 +1774,6 @@
       }
       var isFormData = utils$1.isFormData(data);
       if (isFormData) {
-        if (!hasJSONContentType) {
-          return data;
-        }
         return hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data;
       }
       if (utils$1.isArrayBuffer(data) || utils$1.isBuffer(data) || utils$1.isStream(data) || utils$1.isFile(data) || utils$1.isBlob(data)) {
@@ -2841,7 +2838,7 @@
     return config;
   }
 
-  var VERSION = "1.6.6";
+  var VERSION = "1.6.7";
 
   var validators$1 = {};
 
@@ -2949,7 +2946,7 @@
       key: "request",
       value: function () {
         var _request2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(configOrUrl, config) {
-          var dummy;
+          var dummy, stack;
           return _regeneratorRuntime().wrap(function _callee$(_context) {
             while (1) {
               switch (_context.prev = _context.next) {
@@ -2962,20 +2959,20 @@
                 case 6:
                   _context.prev = 6;
                   _context.t0 = _context["catch"](0);
-                  dummy = {};
-                  if (Error.captureStackTrace) {
-                    Error.captureStackTrace(dummy);
-                  } else {
-                    dummy.stack = new Error().stack;
-                  }
-                  // slice off the Error: ... line
-                  dummy.stack = dummy.stack.replace(/^.+\n/, '');
-                  // match without the 2 top stack lines
-                  if (!_context.t0.stack.endsWith(dummy.stack.replace(/^.+\n.+\n/, ''))) {
-                    _context.t0.stack += '\n' + dummy.stack;
+                  if (_context.t0 instanceof Error) {
+                    Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : dummy = new Error();
+
+                    // slice off the Error: ... line
+                    stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
+                    if (!_context.t0.stack) {
+                      _context.t0.stack = stack;
+                      // match without the 2 top stack lines
+                    } else if (stack && !String(_context.t0.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
+                      _context.t0.stack += '\n' + stack;
+                    }
                   }
                   throw _context.t0;
-                case 13:
+                case 10:
                 case "end":
                   return _context.stop();
               }

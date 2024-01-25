@@ -449,28 +449,29 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should wrap HTTP errors and keep stack', function (done) {
+  it('should wrap HTTP errors and keep stack', async function () {
     if (nodeMajorVersion <= 12) {
       this.skip(); // node 12 support for async stack traces appears lacking
       return;
     }
-    server = http.createServer(function (req, res) {
+
+    server = await startHTTPServer((req, res) => {
       res.statusCode = 400;
       res.end();
-    }).listen(4444, function () {
-      void assert.rejects(
-        async function findMeInStackTrace() {
-          await axios.head('http://localhost:4444/one')
-        },
-        function (err) {
-          assert.equal(err.name, 'AxiosError')
-          assert.equal(err.isAxiosError, true)
-          const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
-          assert.equal(matches.length, 1, err.stack)
-          return true;
-        }
-    ).then(done).catch(done);
     });
+
+    return assert.rejects(
+      async function findMeInStackTrace() {
+        await axios.head('http://localhost:4444/one')
+      },
+      function (err) {
+        assert.equal(err.name, 'AxiosError')
+        assert.equal(err.isAxiosError, true)
+        const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+        assert.equal(matches.length, 1, err.stack)
+        return true;
+      }
+    )
   });
 
   it('should wrap interceptor errors and keep stack', function (done) {

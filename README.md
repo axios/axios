@@ -395,7 +395,7 @@ These are the available config options for making requests. Only the `url` is re
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute and option `allowAbsoluteUrls` is set to false.
+  // `baseURL` will be prepended to `url` unless `url` is absolute and option `allowAbsoluteUrls` is set to true.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',

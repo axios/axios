@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "node bin/ssl_hotfix.js grunt test && node bin/ssl_hotfix.js dtslint",
+    "test": "node bin/ssl_hotfix.js grunt test && node bin/ssl_hotfix.js dtslint --localTs node_modules/typescript/lib",
     "start": "node ./sandbox/server.js",
     "preversion": "grunt version && npm test",
     "build": "cross-env NODE_ENV=production grunt build",

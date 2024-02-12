@@ -1582,9 +1582,6 @@
       var isFormData = utils.isFormData(data);
 
       if (isFormData) {
-        if (!hasJSONContentType) {
-          return data;
-        }
         return hasJSONContentType ? JSON.stringify(formDataToJSON_1(data)) : data;
       }
 
@@ -2040,6 +2037,10 @@
         clarifyTimeoutError: validators.transitional(validators.boolean)
       }, false);
     }
+
+    var paramsSerializer = config.paramsSerializer;
+
+    utils.isFunction(paramsSerializer) && (config.paramsSerializer = {serialize: paramsSerializer});
 
     // filter out skipped interceptors
     var requestInterceptorChain = [];

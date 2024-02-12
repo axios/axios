@@ -9,9 +9,10 @@ import util from 'util';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import {lookup} from 'dns';
 let server, proxy;
 import AxiosError from '../../../lib/core/AxiosError.js';
-import FormData from 'form-data';
+import FormDataLegacy from 'form-data';
 import formidable from 'formidable';
 import express from 'express';
 import multer from 'multer';
@@ -21,6 +22,11 @@ import {Throttle} from 'stream-throttle';
 import devNull from 'dev-null';
 import {AbortController} from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import {__setProxy} from "../../../lib/adapters/http.js";
+import {FormData as FormDataPolyfill, Blob as BlobPolyfill, File as FilePolyfill} from 'formdata-node';
+
+const FormDataSpecCompliant = typeof FormData !== 'undefined' ? FormData : FormDataPolyfill;
+const BlobSpecCompliant = typeof Blob !== 'undefined' ? Blob : BlobPolyfill;
+const FileSpecCompliant = typeof File !== 'undefined' ? File : FilePolyfill;
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,6 +39,10 @@ function setTimeoutAsync(ms) {
 
 const pipelineAsync = util.promisify(stream.pipeline);
 const finishedAsync = util.promisify(stream.finished);
+const gzip = util.promisify(zlib.gzip);
+const deflate = util.promisify(zlib.deflate);
+const deflateRaw = util.promisify(zlib.deflateRaw);
+const brotliCompress = util.promisify(zlib.brotliCompress);
 
 function toleranceRange(positive, negative) {
   const p = (1 + 1 / positive);
@@ -43,13 +53,24 @@ function toleranceRange(positive, negative) {
   }
 }
 
+const nodeVersion = process.versions.node.split('.').map(v => parseInt(v, 10));
+const nodeMajorVersion = nodeVersion[0];
+
 var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
-function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = {}) {
+const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
+
+function startHTTPServer(handlerOrOptions, options) {
+
+  const {handler, useBuffering = false, rate = undefined, port = 4444, keepAlive = 1000} =
+    Object.assign(typeof handlerOrOptions === 'function' ? {
+      handler: handlerOrOptions
+    } : handlerOrOptions || {}, options);
+
   return new Promise((resolve, reject) => {
-    http.createServer(async function (req, res) {
+    const server = http.createServer(handler || async function (req, res) {
       try {
         req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
@@ -77,6 +98,32 @@ function startHTTPServer({useBuffering= false, rate = undefined, port = 4444} = 
     }).listen(port, function (err) {
       err ? reject(err) : resolve(this);
     });
+
+    server.keepAliveTimeout = keepAlive;
+  });
+}
+
+const stopHTTPServer = async (server, timeout = 10000) => {
+  if (server) {
+    if (typeof server.closeAllConnections === 'function') {
+      server.closeAllConnections();
+    }
+
+    await Promise.race([new Promise(resolve => server.close(resolve)), setTimeoutAsync(timeout)]);
+  }
+}
+
+const handleFormData = (req) => {
+  return new Promise((resolve, reject) => {
+    const form = new formidable.IncomingForm();
+
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        return reject(err);
+      }
+
+      resolve({fields, files});
+    });
   });
 }
 
@@ -101,16 +148,12 @@ function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sle
 }
 
 describe('supports http with nodejs', function () {
+  afterEach(async function () {
+    await Promise.all([stopHTTPServer(server), stopHTTPServer(proxy)]);
 
-  afterEach(function () {
-    if (server) {
-      server.close();
-      server = null;
-    }
-    if (proxy) {
-      proxy.close();
-      proxy = null;
-    }
+    server = null;
+    proxy = null;
+
     delete process.env.http_proxy;
     delete process.env.https_proxy;
     delete process.env.no_proxy;
@@ -338,67 +381,123 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3,
-        beforeRedirect: function (options) {
-          if (options.path === '/foo') {
+        beforeRedirect: function (options, responseDetails) {
+          if (options.path === '/foo' && responseDetails.headers.location === '/foo') {
             throw new Error(
               'Provided path is not allowed'
             );
           }
         }
       }).catch(function (error) {
-        assert.equal(error.message, 'Provided path is not allowed');
+        assert.equal(error.message, 'Redirected request failed: Provided path is not allowed');
         done();
       }).catch(done);
     });
   });
 
-  it('should support beforeRedirect and proxy with redirect', function (done) {
-    var requestCount = 0;
-    var totalRedirectCount = 5;
-    server = http.createServer(function (req, res) {
+  it('should support beforeRedirect and proxy with redirect', async () => {
+    let requestCount = 0;
+    let totalRedirectCount = 5;
+
+    server = await startHTTPServer(function (req, res) {
       requestCount += 1;
       if (requestCount <= totalRedirectCount) {
         res.setHeader('Location', 'http://localhost:4444');
         res.writeHead(302);
       }
       res.end();
-    }).listen(4444, function () {
-      var proxyUseCount = 0;
-      proxy = http.createServer(function (request, response) {
-        proxyUseCount += 1;
-        var parsed = url.parse(request.url);
-        var opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
-        };
+    }, {port: 4444});
 
-        http.get(opts, function (res) {
-          response.writeHead(res.statusCode, res.headers);
-          res.on('data', function (data) {
-            response.write(data)
-          });
-          res.on('end', function () {
-            response.end();
-          });
-        });
-      }).listen(4000, function () {
-        var configBeforeRedirectCount = 0;
-        axios.get('http://localhost:4444/', {
-          proxy: {
-            host: 'localhost',
-            port: 4000
-          },
-          maxRedirects: totalRedirectCount,
-          beforeRedirect: function (options) {
-            configBeforeRedirectCount += 1;
-          }
-        }).then(function (res) {
-          assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
-          assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
-          done();
-        }).catch(done);
+    let proxyUseCount = 0;
+    proxy = await startHTTPServer(function (req, res) {
+      proxyUseCount += 1;
+      const targetUrl = new URL(req.url, 'http://' + req.headers.host);
+      const opts = {
+        host: targetUrl.hostname,
+        port: targetUrl.port,
+        path: targetUrl.path,
+        method: req.method
+      };
+
+      const request = http.get(opts, function (response) {
+        res.writeHead(response.statusCode, response.headers);
+        stream.pipeline(response, res, () => {});
       });
+
+      request.on('error', (err) => {
+        console.warn('request error', err);
+        res.statusCode = 500;
+        res.end();
+      })
+
+    }, {port: 4000});
+
+    let configBeforeRedirectCount = 0;
+
+    await axios.get('http://localhost:4444/', {
+      proxy: {
+        host: 'localhost',
+        port: 4000
+      },
+      maxRedirects: totalRedirectCount,
+      beforeRedirect: function (options) {
+        configBeforeRedirectCount += 1;
+      }
+    }).then(function (res) {
+      assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
+      assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
+    });
+  });
+
+  it('should wrap HTTP errors and keep stack', async function () {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
+
+    server = await startHTTPServer((req, res) => {
+      res.statusCode = 400;
+      res.end();
+    });
+
+    return assert.rejects(
+      async function findMeInStackTrace() {
+        await axios.head('http://localhost:4444/one')
+      },
+      function (err) {
+        assert.equal(err.name, 'AxiosError')
+        assert.equal(err.isAxiosError, true)
+        const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+        assert.equal(matches.length, 1, err.stack)
+        return true;
+      }
+    )
+  });
+
+  it('should wrap interceptor errors and keep stack', function (done) {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
+    const axiosInstance = axios.create();
+    axiosInstance.interceptors.request.use((res) => {
+      throw new Error('from request interceptor')
+    });
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axiosInstance.get('http://localhost:4444/one')
+        },
+        function (err) {
+          assert.equal(err.name, 'Error')
+          assert.equal(err.message, 'from request interceptor')
+          const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+          assert.equal(matches.length, 1, err.stack)
+          return true;
+        }
+      ).then(done).catch(done);
     });
   });
 
@@ -426,58 +525,136 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support transparent gunzip', function (done) {
-    var data = {
-      firstName: 'Fred',
-      lastName: 'Flintstone',
-      emailAddr: 'fred@example.com'
-    };
+  describe('compression', async () => {
+    it('should support transparent gunzip', function (done) {
+      var data = {
+        firstName: 'Fred',
+        lastName: 'Flintstone',
+        emailAddr: 'fred@example.com'
+      };
 
-    zlib.gzip(JSON.stringify(data), function (err, zipped) {
+      zlib.gzip(JSON.stringify(data), function (err, zipped) {
 
-      server = http.createServer(function (req, res) {
+        server = http.createServer(function (req, res) {
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function () {
+          axios.get('http://localhost:4444/').then(function (res) {
+            assert.deepEqual(res.data, data);
+            done();
+          }).catch(done);
+        });
+      });
+    });
+
+    it('should support gunzip error handling', async () => {
+      server = await startHTTPServer((req, res) => {
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function () {
-        axios.get('http://localhost:4444/').then(function (res) {
-          assert.deepEqual(res.data, data);
-          done();
-        }).catch(done);
+        res.end('invalid response');
+      });
+
+      await assert.rejects(async () => {
+        await axios.get(LOCAL_SERVER_URL);
+      })
+    });
+
+    it('should support disabling automatic decompression of response data', function(done) {
+      var data = 'Test data';
+
+      zlib.gzip(data, function(err, zipped) {
+        server = http.createServer(function(req, res) {
+          res.setHeader('Content-Type', 'text/html;charset=utf-8');
+          res.setHeader('Content-Encoding', 'gzip');
+          res.end(zipped);
+        }).listen(4444, function() {
+          axios.get('http://localhost:4444/', {
+            decompress: false,
+            responseType: 'arraybuffer'
+
+          }).then(function(res) {
+            assert.equal(res.data.toString('base64'), zipped.toString('base64'));
+            done();
+          }).catch(done);
+        });
       });
     });
-  });
 
-  it('should support gunzip error handling', function (done) {
-    server = http.createServer(function (req, res) {
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Encoding', 'gzip');
-      res.end('invalid response');
-    }).listen(4444, function () {
-      axios.get('http://localhost:4444/').catch(function (error) {
-        done();
-      }).catch(done);
-    });
-  });
+    describe('algorithms', ()=> {
+      const responseBody ='str';
 
-  it('should support disabling automatic decompression of response data', function(done) {
-    var data = 'Test data';
+      for (const [typeName, zipped] of Object.entries({
+        gzip: gzip(responseBody),
+        GZIP: gzip(responseBody),
+        compress: gzip(responseBody),
+        deflate: deflate(responseBody),
+        'deflate-raw': deflateRaw(responseBody),
+        br: brotliCompress(responseBody)
+      })) {
+        const type = typeName.split('-')[0];
 
-    zlib.gzip(data, function(err, zipped) {
-      server = http.createServer(function(req, res) {
-        res.setHeader('Content-Type', 'text/html;charset=utf-8');
-        res.setHeader('Content-Encoding', 'gzip');
-        res.end(zipped);
-      }).listen(4444, function() {
-        axios.get('http://localhost:4444/', {
-          decompress: false,
-          responseType: 'arraybuffer'
+        describe(`${typeName} decompression`, async () => {
+          it(`should support decompression`, async () => {
+            server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.end(await zipped);
+            });
 
-        }).then(function(res) {
-          assert.equal(res.data.toString('base64'), zipped.toString('base64'));
-          done();
-        }).catch(done);
-      });
+            const {data} = await axios.get(LOCAL_SERVER_URL);
+
+            assert.strictEqual(data, responseBody);
+          });
+
+          it(`should not fail if response content-length header is missing (${type})`, async () => {
+            server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.removeHeader('Content-Length');
+              res.end(await zipped);
+            });
+
+            const {data} = await axios.get(LOCAL_SERVER_URL);
+
+            assert.strictEqual(data, responseBody);
+          });
+
+          it('should not fail with chunked responses (without Content-Length header)', async () => {
+            server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.setHeader('Transfer-Encoding', 'chunked');
+              res.removeHeader('Content-Length');
+              res.write(await zipped);
+              res.end();
+            });
+
+            const {data} = await axios.get(LOCAL_SERVER_URL);
+
+            assert.strictEqual(data, responseBody);
+          });
+
+          it('should not fail with an empty response without content-length header (Z_BUF_ERROR)', async () => {
+            server = await startHTTPServer((req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.removeHeader('Content-Length');
+              res.end();
+            });
+
+            const {data} = await axios.get(LOCAL_SERVER_URL);
+
+            assert.strictEqual(data, '');
+          });
+
+          it('should not fail with an empty response with content-length header (Z_BUF_ERROR)', async () => {
+            server = await startHTTPServer((req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.end();
+            });
+
+            await axios.get(LOCAL_SERVER_URL);
+          });
+        });
+      }
+
     });
   });
 
@@ -558,31 +735,18 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support max content length', function (done) {
-    var str = Array(100000).join('ж');
-
-    server = http.createServer(function (req, res) {
+  it('should support max content length', async function () {
+    server = await startHTTPServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end(str);
-    }).listen(4444, function () {
-      var success = false, failure = false, error;
+      res.end(Array(5000).join('#'));
+    }, {port: 4444});
 
-      axios.get('http://localhost:4444/', {
-        maxContentLength: 2000
-      }).then(function (res) {
-        success = true;
-      }).catch(function (err) {
-        error = err;
-        failure = true;
-      });
-
-      setTimeout(function () {
-        assert.equal(success, false, 'request should not succeed');
-        assert.equal(failure, true, 'request should fail');
-        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
-        done();
-      }, 100);
-    });
+    await assert.rejects(() => {
+      return axios.get('http://localhost:4444/', {
+        maxContentLength: 2000,
+        maxRedirects: 0
+      })
+    },/maxContentLength size of 2000 exceeded/);
   });
 
   it('should support max content length for redirected', function (done) {
@@ -603,7 +767,7 @@ describe('supports http with nodejs', function () {
       var success = false, failure = false, error;
 
       axios.get('http://localhost:4444/one', {
-        maxContentLength: 2000
+        maxContentLength: 2000,
       }).then(function (res) {
         success = true;
       }).catch(function (err) {
@@ -1275,13 +1439,21 @@ describe('supports http with nodejs', function () {
       // call cancel() when the request has been sent, but a response has not been received
       source.cancel('Operation has been canceled.');
     }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        cancelToken: source.token
-      }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
-        assert.equal(thrown.message, 'Operation has been canceled.');
-        done();
-      });
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axios.get('http://localhost:4444/', {
+            cancelToken: source.token
+          });
+        },
+        function (thrown) {
+          assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
+          assert.equal(thrown.message, 'Operation has been canceled.');
+          if (nodeMajorVersion > 12) {
+            assert.match(thrown.stack, /findMeInStackTrace/);
+          }
+          return true;
+        },
+      ).then(done).catch(done);
     });
   });
 
@@ -1467,44 +1639,97 @@ describe('supports http with nodejs', function () {
   });
 
   describe('FormData', function () {
-    it('should allow passing FormData', function (done) {
-      var form = new FormData();
-      var file1 = Buffer.from('foo', 'utf8');
+    describe('form-data instance (https://www.npmjs.com/package/form-data)', (done) => {
+      it('should allow passing FormData', function (done) {
+        var form = new FormDataLegacy();
+        var file1 = Buffer.from('foo', 'utf8');
+        const image = path.resolve(__dirname, './axios.png');
+        const fileStream = fs.createReadStream(image);
 
-      form.append('foo', "bar");
-      form.append('file1', file1, {
-        filename: 'bar.jpg',
-        filepath: 'temp/bar.jpg',
-        contentType: 'image/jpeg'
+        const stat = fs.statSync(image);
+
+        form.append('foo', "bar");
+        form.append('file1', file1, {
+          filename: 'bar.jpg',
+          filepath: 'temp/bar.jpg',
+          contentType: 'image/jpeg'
+        });
+
+        form.append('fileStream', fileStream);
+
+        server = http.createServer(function (req, res) {
+          var receivedForm = new formidable.IncomingForm();
+
+          assert.ok(req.rawHeaders.find(header => header.toLowerCase() === 'content-length'));
+
+          receivedForm.parse(req, function (err, fields, files) {
+            if (err) {
+              return done(err);
+            }
+
+            res.end(JSON.stringify({
+              fields: fields,
+              files: files
+            }));
+          });
+        }).listen(4444, function () {
+          axios.post('http://localhost:4444/', form, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }).then(function (res) {
+            assert.deepStrictEqual(res.data.fields, {foo: 'bar'});
+
+            assert.strictEqual(res.data.files.file1.mimetype, 'image/jpeg');
+            assert.strictEqual(res.data.files.file1.originalFilename, 'temp/bar.jpg');
+            assert.strictEqual(res.data.files.file1.size, 3);
+
+            assert.strictEqual(res.data.files.fileStream.mimetype, 'image/png');
+            assert.strictEqual(res.data.files.fileStream.originalFilename, 'axios.png');
+            assert.strictEqual(res.data.files.fileStream.size, stat.size);
+
+            done();
+          }).catch(done);
+        });
       });
+    });
 
-      server = http.createServer(function (req, res) {
-        var receivedForm = new formidable.IncomingForm();
-
-        receivedForm.parse(req, function (err, fields, files) {
-          if (err) {
-            return done(err);
-          }
+    describe('SpecCompliant FormData', (done) => {
+      it('should allow passing FormData', async function () {
+        server = await startHTTPServer(async (req, res) => {
+          const {fields, files} = await handleFormData(req);
 
           res.end(JSON.stringify({
-            fields: fields,
-            files: files
+            fields,
+            files
           }));
         });
-      }).listen(4444, function () {
-        axios.post('http://localhost:4444/', form, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }).then(function (res) {
-          assert.deepStrictEqual(res.data.fields, {foo: 'bar'});
 
-          assert.strictEqual(res.data.files.file1.mimetype, 'image/jpeg');
-          assert.strictEqual(res.data.files.file1.originalFilename, 'temp/bar.jpg');
-          assert.strictEqual(res.data.files.file1.size, 3);
+        const form = new FormDataSpecCompliant();
 
-          done();
-        }).catch(done);
+        const blobContent = 'blob-content';
+
+        const blob = new BlobSpecCompliant([blobContent], {type: 'image/jpeg'})
+
+        form.append('foo1', 'bar1');
+        form.append('foo2', 'bar2');
+
+        form.append('file1', blob);
+
+        const {data} = await axios.post(LOCAL_SERVER_URL, form, {
+          maxRedirects: 0
+        });
+
+        assert.deepStrictEqual(data.fields, {foo1: 'bar1' ,'foo2': 'bar2'});
+
+        assert.deepStrictEqual(typeof data.files.file1, 'object');
+
+        const {size, mimetype, originalFilename} = data.files.file1;
+
+        assert.deepStrictEqual(
+          {size, mimetype, originalFilename},
+          {mimetype: 'image/jpeg', originalFilename: 'blob', size: Buffer.from(blobContent).byteLength}
+        );
       });
     });
 
@@ -1544,6 +1769,24 @@ describe('supports http with nodejs', function () {
           }, done)
         });
       });
+    });
+  });
+
+  describe('Blob', function () {
+    it('should support Blob', async () => {
+      server = await startHTTPServer(async (req, res) => {
+        res.end(await getStream(req));
+      });
+
+      const blobContent = 'blob-content';
+
+      const blob = new BlobSpecCompliant([blobContent], {type: 'image/jpeg'})
+
+      const {data} = await axios.post(LOCAL_SERVER_URL, blob, {
+        maxRedirects: 0
+      });
+
+      assert.deepStrictEqual(data, blobContent);
     });
   });
 
@@ -1886,7 +2129,6 @@ describe('supports http with nodejs', function () {
     });
   });
 
-
   describe('request aborting', function() {
     it('should be able to abort the response stream', async function () {
       server = await startHTTPServer({
@@ -1924,4 +2166,127 @@ describe('supports http with nodejs', function () {
       }
     });
   })
+
+  it('should properly handle synchronous errors inside the adapter', function () {
+    return assert.rejects(() => axios.get('http://192.168.0.285'), /Invalid URL/);
+  });
+
+  it('should support function as paramsSerializer value', async () => {
+    server = await startHTTPServer((req, res) => res.end(req.url));
+
+    const {data} = await axios.post(LOCAL_SERVER_URL, 'test', {
+      params: {
+        x: 1
+      },
+      paramsSerializer: () => 'foo',
+      maxRedirects: 0
+    });
+
+    assert.strictEqual(data, '/?foo');
+  });
+
+  describe('DNS', function() {
+    it('should support a custom DNS lookup function', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: (hostname, opt, cb) =>  {
+          isCalled = true;
+          cb(null, '127.0.0.1', 4);
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function with address entry passing', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: (hostname, opt, cb) =>  {
+          isCalled = true;
+          cb(null, {address: '127.0.0.1', family: 4});
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function (async)', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: async (hostname, opt) =>  {
+          isCalled = true;
+          return ['127.0.0.1', 4];
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function with address entry (async)', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: async (hostname, opt) =>  {
+          isCalled = true;
+          return {address: '127.0.0.1', family: 4};
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function that returns only IP address (async)', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: async (hostname, opt) =>  {
+          isCalled = true;
+          return '127.0.0.1';
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should handle errors', () => {
+      return assert.rejects(async () => {
+        await axios.get('https://no-such-domain-987654.com', {
+          lookup
+        });
+      }, /ENOTFOUND/);
+    });
+  });
 });

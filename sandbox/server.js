@@ -11,7 +11,7 @@ function pipeFileToResponse(res, file, type) {
     });
   }
 
-  fs.createReadStream(path.join(__dirname, file)).pipe(res);
+  fs.createReadStream(path.join(path.resolve() ,'sandbox', file)).pipe(res);
 }
 
 server = http.createServer(function (req, res) {
@@ -30,8 +30,8 @@ server = http.createServer(function (req, res) {
     pipeFileToResponse(res, './client.html');
   } else if (pathname === '/axios.js') {
     pipeFileToResponse(res, '../dist/axios.js', 'text/javascript');
-  } else if (pathname === '/axios.map') {
-    pipeFileToResponse(res, '../dist/axios.map', 'text/javascript');
+  } else if (pathname === '/axios.js.map') {
+    pipeFileToResponse(res, '../dist/axios.js.map', 'text/javascript');
   } else if (pathname === '/api') {
     let status;
     let result;

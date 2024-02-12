@@ -35,7 +35,7 @@ describe('core::AxiosError', function() {
       const request = { path: '/foo' };
       const response = { status: 200, data: { foo: 'bar' } };
 
-      const axiosError = AxiosError.from(error, 'ESOMETHING', { foo: 'bar' },  request, response);
+      const axiosError = AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }, request, response);
       expect(axiosError.config).toEqual({ foo: 'bar' });
       expect(axiosError.code).toBe('ESOMETHING');
       expect(axiosError.request).toBe(request);

@@ -1,14 +1,9 @@
 {
   "compilerOptions": {
-    "module": "es2015",
+    "module": "node16",
     "lib": ["dom", "es2015"],
     "types": [],
-    "moduleResolution": "node",
     "strict": true,
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "axios": ["."]
-    }
+    "noEmit": true
   }
 }

@@ -1,0 +1,21 @@
+{
+  "name": "esm-typings-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test:types": "tsc --noEmit",
+    "test": "npm i --no-save --no-package-lock && tsc -v && npm run test:types"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^18.11.3",
+    "axios": "file:../../../.."
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}

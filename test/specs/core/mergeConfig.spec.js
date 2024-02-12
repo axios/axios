@@ -1,5 +1,6 @@
 import defaults from '../../../lib/defaults';
 import mergeConfig from '../../../lib/core/mergeConfig';
+import {AxiosHeaders} from "../../../index.js";
 
 describe('core::mergeConfig', function() {
   it('should accept undefined for second argument', function() {
@@ -99,6 +100,27 @@ describe('core::mergeConfig', function() {
     expect(merged.nestedConfig.propertyOnDefaultConfig).toEqual(true);
     expect(merged.nestedConfig.propertyOnRequestConfig).toEqual(true);
   });
+
+  describe('headers', ()=> {
+    it('should allow merging with AxiosHeaders instances', () => {
+      const merged = mergeConfig({
+        headers: new AxiosHeaders({
+          x: 1,
+          y: 2
+        })
+      }, {
+        headers: new AxiosHeaders({
+          X: 1,
+          Y: 2
+        })
+      });
+      expect(merged.headers).toEqual({
+        x: '1',
+        y: '2'
+      });
+    });
+  });
+
 
   describe('valueFromConfig2Keys', function() {
     const config1 = {url: '/foo', method: 'post', data: {a: 3}};

@@ -270,7 +270,7 @@ declare namespace axios {
     | 'text'
     | 'stream';
 
-  type responseEncoding =
+  type ResponseEncoding =
     | 'ascii' | 'ASCII'
     | 'ansi' | 'ANSI'
     | 'binary' | 'BINARY'
@@ -386,7 +386,7 @@ declare namespace axios {
     adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
     auth?: AxiosBasicCredentials;
     responseType?: ResponseType;
-    responseEncoding?: responseEncoding | string;
+    responseEncoding?: ResponseEncoding | string;
     xsrfCookieName?: string;
     xsrfHeaderName?: string;
     onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;

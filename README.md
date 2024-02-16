@@ -199,13 +199,13 @@ const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundl
 Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 ## Example

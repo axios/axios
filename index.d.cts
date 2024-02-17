@@ -462,7 +462,7 @@ declare namespace axios {
   }
 
   interface Cancel {
-    message: string | undefined;
+    __CANCEL__: true;
   }
 
   interface Canceler {

@@ -473,10 +473,26 @@ export interface AxiosInterceptorOptions {
   runWhen?: (config: InternalAxiosRequestConfig) => boolean;
 }
 
+export interface AxiosInterceptorFulfilledHandler<T> {
+  (value: T): T | Promise<T>;
+}
+
+export interface AxiosInterceptorRejectedHandler {
+  (error: any): any
+}
+
+export interface AxiosInterceptorHandler<T> {
+  fulfilled: AxiosInterceptorFulfilledHandler<T>;
+  rejected?: AxiosInterceptorRejectedHandler;
+  synchronous: boolean;
+  runWhen: (config: AxiosRequestConfig) => boolean | null;
+}
+
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: ((value: V) => V | Promise<V>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions): number;
+  use<T = V>(onFulfilled?: AxiosInterceptorFulfilledHandler<T>, onRejected?: AxiosInterceptorRejectedHandler, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
   clear(): void;
+  handlers: AxiosInterceptorHandler<V>[];
 }
 
 export class Axios {

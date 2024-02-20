@@ -490,10 +490,26 @@ declare namespace axios {
     runWhen?: (config: InternalAxiosRequestConfig) => boolean;
   }
 
-  interface AxiosInterceptorManager<V> {
-    use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+  interface AxiosInterceptorFulfilledHandler<T> {
+    (value: T): T | Promise<T>;
+  }
+
+  interface AxiosInterceptorRejectedHandler {
+    (error: any): any
+  }
+
+  interface AxiosInterceptorHandler<T> {
+    fulfilled: AxiosInterceptorFulfilledHandler<T>;
+    rejected?: AxiosInterceptorRejectedHandler;
+    synchronous: boolean;
+    runWhen: (config: AxiosRequestConfig) => boolean | null;
+  }
+
+  export interface AxiosInterceptorManager<V> {
+    use<T = V>(onFulfilled?: AxiosInterceptorFulfilledHandler<T>, onRejected?: AxiosInterceptorRejectedHandler, options?: AxiosInterceptorOptions): number;
     eject(id: number): void;
     clear(): void;
+    handlers: AxiosInterceptorHandler<V>[];
   }
 
   interface AxiosInstance extends Axios {

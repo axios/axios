@@ -80,4 +80,15 @@ describe('utils', function (){
       assert.strictEqual(JSON.stringify(jsonObject), JSON.stringify({x: 1, y:2, obj: {ok: 1}}))
     });
   });
+
+  describe('utils::isNull', function() {
+    it('should return true for the value null and false for non-null values', function () {
+      assert.strictEqual(true, utils.isNull(null));
+      assert.strictEqual(false, utils.isNull(undefined));
+      assert.strictEqual(false, utils.isNull(true));
+      assert.strictEqual(false, utils.isNull(false));
+      assert.strictEqual(false, utils.isNull(0));
+      assert.strictEqual(false, utils.isNull('null'));
+    });
+  });
 });

@@ -64,7 +64,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/axios/axios.git"
+    "url": "https://github.com/ych5680/axios_ych.git"
   },
   "keywords": [
     "xhr",
@@ -76,9 +76,9 @@
   "author": "Matt Zabriskie",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/axios/axios/issues"
+    "url": "https://github.com/ych5680/axios_ych/issues"
   },
-  "homepage": "https://axios-http.com",
+  "homepage": "https://github.com/ych5680/axios_ych",
   "devDependencies": {
     "@babel/core": "^7.23.9",
     "@babel/preset-env": "^7.23.9",

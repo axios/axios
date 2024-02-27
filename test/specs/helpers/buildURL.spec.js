@@ -67,13 +67,13 @@ describe('helpers::buildURL', function () {
   it('should support custom serialize function', function () {
     var params = {
       x: 1
-    }
+    };
 
     var options = {
-      serialize: (thisParams, thisOptions) => {
+      serialize: function (thisParams, thisOptions) {
         expect(thisParams).toEqual(params);
         expect(thisOptions).toEqual(options);
-        return 'rendered'
+        return 'rendered';
       }
     };
 

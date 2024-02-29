@@ -599,4 +599,54 @@ describe('interceptors', function () {
 
     expect(instance.interceptors.response.handlers.length).toBe(0);
   });
+
+  it('should handler the error in the same request interceptors', function (done) {
+    const rejectedSpy1 = jasmine.createSpy('rejectedSpy1');
+    const rejectedSpy2 = jasmine.createSpy('rejectedSpy2');
+    const error1 = new Error('deadly error 1');
+    const error2 = new Error('deadly error 2');
+    axios.interceptors.request.use(function () {
+      throw error1;
+    }, rejectedSpy1);
+
+    axios.interceptors.request.use(function () {
+      throw error2;
+    }, rejectedSpy2);
+
+    axios('/foo').finally(function () {
+      expect(rejectedSpy1).toHaveBeenCalledWith(error1);
+      expect(rejectedSpy2).toHaveBeenCalledWith(error2);
+      done();
+    });
+  });
+
+  it('should handler the error in the same response interceptors', function (done) {
+    const rejectedSpy1 = jasmine.createSpy('rejectedSpy1');
+    const rejectedSpy2 = jasmine.createSpy('rejectedSpy2');
+    const error1 = new Error('deadly error 1');
+    const error2 = new Error('deadly error 2');
+    axios.interceptors.response.use(function () {
+      throw error1;
+    }, rejectedSpy1);
+
+    axios.interceptors.response.use(function () {
+      throw error2;
+    }, rejectedSpy2);
+
+    axios('/foo');
+
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: 'OK'
+      });
+
+      setTimeout(function () {
+        expect(rejectedSpy1).toHaveBeenCalledWith(error1);
+        expect(rejectedSpy2).toHaveBeenCalledWith(error2);
+        done();
+      }, 100);
+    });
+  });
 });

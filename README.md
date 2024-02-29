@@ -788,6 +788,13 @@ axios.interceptors.request.use(function (config) {
 }, null, { synchronous: true });
 ```
 
+You can iterate over all the registered interceptors.
+
+```js
+axios.interceptors.request.use(function () {/*...*/})
+axios.interceptors.request.forEach(function ({ fulfilled, rejected, synchronous, runWhen }) {/*...*/})
+```
+
 If you want to execute a particular interceptor based on a runtime check,
 you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
 of `runWhen` is `false`. The function will be called with the config

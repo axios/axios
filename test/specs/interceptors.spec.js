@@ -613,7 +613,9 @@ describe('interceptors', function () {
       throw error2;
     }, rejectedSpy2);
 
-    axios('/foo').finally(function () {
+    axios('/foo').catch();
+
+    getAjaxRequest().then(function () {
       expect(rejectedSpy1).toHaveBeenCalledWith(error1);
       expect(rejectedSpy2).toHaveBeenCalledWith(error2);
       done();
@@ -635,7 +637,6 @@ describe('interceptors', function () {
 
     axios('/foo');
 
-
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
@@ -647,6 +648,27 @@ describe('interceptors', function () {
         expect(rejectedSpy2).toHaveBeenCalledWith(error2);
         done();
       }, 100);
+    });
+  });
+
+  it('should skip the modification of config in the interceptors throwing error', function (done) {
+    const rejectedSpy = jasmine.createSpy('rejectedSpy');
+    const error = new Error('deadly error');
+
+    axios.interceptors.request.use(function (config) {
+      config.headers.test = 'added by interceptor';
+    });
+
+    axios.interceptors.request.use(function () {
+      throw error;
+    }, rejectedSpy);
+
+    axios('/foo').catch();
+
+    getAjaxRequest().then(function (request) {
+      expect(rejectedSpy).toHaveBeenCalledWith(error);
+      expect(request.requestHeaders.test).toBe('added by interceptor');
+      done();
     });
   });
 });

@@ -123,6 +123,7 @@ export interface AxiosProxyConfig {
   port: number;
   auth?: AxiosBasicCredentials;
   protocol?: string;
+  servername?: string;
 }
 
 export enum HttpStatusCode {

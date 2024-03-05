@@ -95,6 +95,6 @@ jobs:
             *-Findings-List.sarif
 
       # Uploads the findings into the GitHub code scanning alert section using the upload-sarif action
-      - uses: github/codeql-action/upload-sarif@v2
+      - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: Xanitizer-Findings-List.sarif

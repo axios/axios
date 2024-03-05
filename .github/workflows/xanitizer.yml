@@ -57,7 +57,7 @@ jobs:
     steps:
       # Check out the repository
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Set up the correct Java version for your project
       # Please comment out, if your project does not contain Java source code.

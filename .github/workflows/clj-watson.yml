@@ -32,7 +32,7 @@ jobs:
       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Dependency scan
         uses: clj-holmes/clj-watson-action@39b8ed306f2c125860cf6e69b6939363689f998c

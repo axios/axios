@@ -8,21 +8,31 @@
       min-height: 39px;
       overflow: auto;
     }
-    .header{
+    .header {
       display: flex;
       flex-direction: row;
     }
-    .box{
-     display: grid;
+    .box {
+      display: grid;
       grid-template-columns: 1fr 1fr;
       grid-gap: 25px;
+    }
+    .response {
+      overflow-y: auto; 
+      max-height: 500px; 
+     
+      flex-direction: row;
     }
     @media screen and (max-width: 1000px) {
       .box {
         grid-template-columns: 1fr;
+        grid-gap: 15px;
       }
+      .response {
+        max-height: none; 
+        flex-direction: column; 
     }
-      
+  }
   </style>
 </head>
 <body class="container">
@@ -69,20 +79,20 @@
 
   <div class="response">
     <div class="well">
-    <h3>Request</h3>
-    <pre id="request">No Data</pre>
-  </div>
+      <h3>Request</h3>
+      <pre id="request">No Data</pre>
+    </div>
 
-  <div class="well">
-    <h3>Response</h3>
-    <pre id="response">No Data</pre>
-  </div>
+    <div class="well">
+      <h3>Response</h3>
+      <pre id="response">No Data</pre>
+    </div>
 
-  <div class="well">
-    <h3>Error</h3>
-    <pre id="error">None</pre>
+    <div class="well">
+      <h3>Error</h3>
+      <pre id="error">None</pre>
+    </div>
   </div>
-</div>
   </div>
 
   <script src="/axios.js"></script>
@@ -152,28 +162,38 @@
         }
       }
 
-      submit.onclick = function () {
-        var options = {
-          url: getUrl(),
-          params: !acceptsData(method.value) ? getParams() : undefined,
-          data: acceptsData(method.value) ? getData() : undefined,
-          method: method.value,
-          headers: getHeaders()
-        };
+     
+    // ... (Your existing code)
 
-        request.innerHTML = JSON.stringify(options, null, 2);
-
-        axios(options)
-          .then(function (res) {
-            response.innerHTML = JSON.stringify(res.data, null, 2);
-            error.innerHTML = "None";
-          })
-          .catch(function (res) {
-            error.innerHTML = JSON.stringify(res.toJSON(), null, 2)
-            console.error('Axios caught an error from request', res.toJSON());
-            response.innerHTML = JSON.stringify(res.data, null, 2);
-          });
+    submit.onclick = function () {
+      var options = {
+        url: getUrl(),
+        params: !acceptsData(method.value) ? getParams() : undefined,
+        data: acceptsData(method.value) ? getData() : undefined,
+        method: method.value,
+        headers: getHeaders()
       };
+
+      request.innerHTML = JSON.stringify(options, null, 2);
+
+      axios(options)
+        .then(function (res) {
+          response.innerHTML = JSON.stringify(res.data, null, 2);
+          error.innerHTML = "None";
+        })
+        .catch(function (res) {
+          error.innerHTML = JSON.stringify(res.toJSON(), null, 2);
+          console.error('Axios caught an error from request', res.toJSON());
+          response.innerHTML = JSON.stringify(res.data, null, 2);
+        });
+
+      
+    };
+
+  
+
+
+
 
       url.onchange = function () {
         localStorage.setItem('url', url.value);

@@ -128,6 +128,7 @@ export interface CustomParamsSerializer {
 
 export interface ParamsSerializerOptions extends SerializerOptions {
   encode?: ParamEncoder;
+  serialize?: CustomParamsSerializer
 }
 
 export interface AxiosRequestConfig<D = any> {

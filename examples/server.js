@@ -79,7 +79,7 @@ function pipeFileToResponse(res, file, type) {
 dirs = listDirs(__dirname);
 
 server = http.createServer(function (req, res) {
-  let url = req.url;
+  let reqUrl = req.url;
 
   // Process axios itself
   if (/axios\.min\.js$/.test(url)) {
@@ -127,8 +127,8 @@ server = http.createServer(function (req, res) {
 
   // Process server request
   else if (new RegExp('(' + dirs.join('|') + ')\/server').test(url)) {
-    if (fs.existsSync(path.join(__dirname, url + '.js'))) {
-      require(path.join(__dirname, url + '.js'))(req, res);
+    if (fs.existsSync(path.join(__dirname, reqUrl + '.js'))) {
+      require(path.join(__dirname, reqUrl + '.js'))(req, res);
     } else {
       send404(res);
     }

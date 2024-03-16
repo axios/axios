@@ -1,4 +1,4 @@
-// Axios v1.6.7 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.6.8 Copyright (c) 2024 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -2551,7 +2551,7 @@ function dispatchRequest(config) {
   });
 }
 
-const headersToObject = (thing) => thing instanceof AxiosHeaders$2 ? thing.toJSON() : thing;
+const headersToObject = (thing) => thing instanceof AxiosHeaders$2 ? { ...thing } : thing;
 
 /**
  * Config-specific merge-function which creates a new config-object
@@ -2653,7 +2653,7 @@ function mergeConfig$1(config1, config2) {
   return config;
 }
 
-const VERSION$1 = "1.6.7";
+const VERSION$1 = "1.6.8";
 
 const validators$1 = {};
 

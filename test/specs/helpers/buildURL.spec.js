@@ -13,6 +13,20 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=bar');
   });
 
+  it("should support not skipping nulls in params", function () {
+    expect(
+      buildURL(
+        "/foo",
+        {
+          foo: "bar",
+          isUndefined: undefined,
+          isNull: null,
+        },
+        { skipNulls: false }
+      )
+    ).toEqual("/foo?foo=bar&isNull=");
+  });
+
   it('should support sending raw params to custom serializer func', function () {
         const serializer = sinon.stub();
         const params = { foo: "bar" };
@@ -52,6 +66,18 @@ describe('helpers::buildURL', function () {
     expect(buildURL('/foo', {
       foo: ['bar', 'baz', null, undefined]
     })).toEqual('/foo?foo[]=bar&foo[]=baz');
+  });
+
+  it("should support not skipping nulls in array params", function () {
+    expect(
+      buildURL(
+        "/foo",
+        {
+          foo: ["bar", "baz", null, undefined],
+        },
+        { skipNulls: false }
+      )
+    ).toEqual("/foo?foo[]=bar&foo[]=baz&foo[]=");
   });
 
   it('should support special char params', function () {

@@ -48,6 +48,6 @@ jobs:
         authHeader: ${{ secrets.CONTRAST_AUTH_HEADER }}
     #Upload the results to GitHub
     - name: Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: results.sarif # The file name must be 'results.sarif', as this is what the Github Action will output

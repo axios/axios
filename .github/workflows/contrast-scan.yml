@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     # check out project
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     # Since Contrast Scan is designed to run against your deployable artifact, the steps to build your artifact should go here.
     # -name: Build Project
     # ...

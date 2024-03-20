@@ -1,0 +1,30 @@
+name: NPM Tag
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+      tag:
+        required: true
+        default: "latest"
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+      ############# TAG RELEASE ##############
+      - name: Tag release
+        run: npm dist-tag add axios@${{ github.event.inputs.version }} ${{ github.event.inputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}

@@ -47,4 +47,25 @@ describe('formDataToJSON', function () {
       foo: ['1', '2']
     });
   });
+
+  it('should resist prototype pollution CVE', () => {
+    const formData = new FormData();
+
+    formData.append('foo[0]', '1');
+    formData.append('foo[1]', '2');
+    formData.append('__proto__.x', 'hack');
+    formData.append('constructor.prototype.y', 'value');
+
+    expect(formDataToJSON(formData)).toEqual({
+      foo: ['1', '2'],
+      constructor: {
+        prototype: {
+          y: 'value'
+        }
+      }
+    });
+
+    expect({}.x).toEqual(undefined);
+    expect({}.y).toEqual(undefined);
+  });
 });

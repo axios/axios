@@ -30,7 +30,8 @@ describe('instance', function () {
         'toFormData',
         'formToJSON',
         'AxiosHeaders',
-        'HttpStatusCode'
+        'HttpStatusCode',
+        'HttpRequestMethods'
       ].indexOf(prop) > -1) {
         continue;
       }

@@ -1,5 +1,5 @@
 // TypeScript Version: 4.7
-export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
+export type AxiosHeaderValue = AxiosHeaders | string & {} | string[] | number | boolean | null;
 
 interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;
@@ -298,7 +298,7 @@ export interface AxiosProgressEvent {
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'xhr' | 'http' | string;
+type AxiosAdapterName = 'xhr' | 'http' | string  & {};
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
@@ -313,7 +313,7 @@ export type LookupAddress = string | LookupAddressEntry;
 
 export interface AxiosRequestConfig<D = any> {
   url?: string;
-  method?: Method | string;
+  method?: Method | string & {};
   baseURL?: string;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
@@ -327,7 +327,7 @@ export interface AxiosRequestConfig<D = any> {
   adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
-  responseEncoding?: responseEncoding | string;
+  responseEncoding?: responseEncoding | string & {};
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;

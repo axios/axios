@@ -9,6 +9,10 @@
         "require": "./index.d.cts",
         "default": "./index.d.ts"
       },
+      "bun": {
+        "require": "./dist/node/axios.cjs",
+        "default": "./index.js"
+      },
       "browser": {
         "require": "./dist/browser/axios.cjs",
         "default": "./index.js"

@@ -74,6 +74,8 @@ export class AxiosHeaders {
   getAuthorization(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasAuthorization(matcher?: AxiosHeaderMatcher): boolean;
 
+  getSetCookie(): string[];
+
   [Symbol.iterator](): IterableIterator<[string, AxiosHeaderValue]>;
 }
 

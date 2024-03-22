@@ -1291,8 +1291,8 @@ describe('supports http with nodejs', function () {
       }).then(function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
-        assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
-        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
+        assert.strictEqual(error.code, 'ECONNABORTED');
+        assert.strictEqual(error.message, 'response stream aborted');
         done();
       }).catch(done);
     });

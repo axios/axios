@@ -48,4 +48,16 @@ describe('core::AxiosError', function() {
       expect(AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError).toBeTruthy();
     });
   });
+
+  it('should be a native error as checked by the NodeJS `isNativeError` function', async function (){
+    if((typeof process !== 'undefined') && (process.release.name === 'node')){
+      let {isNativeError} = require('node:util/types');
+      expect(isNativeError(new AxiosError("My Axios Error"))).toBeTruthy();
+    }
+  });
+
+  it('should create an error using one of the static class properties as an error code', async function (){
+    const myError = new AxiosError("My Axios Error", AxiosError.ECONNABORTED);
+    expect(myError.code).toEqual(AxiosError.ECONNABORTED);
+  });
 });

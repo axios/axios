@@ -26,12 +26,12 @@ describe('adapters', function () {
 
   it('should detect adapter unavailable status', function () {
     adapters.adapters['testadapter'] = null;
-    assert.throws(()=> adapters.getAdapter('testAdapter'), /is not available in the build/)
+    assert.throws(() => adapters.getAdapter('testAdapter'), /is not available in the build/)
   });
 
   it('should detect adapter unsupported status', function () {
     adapters.adapters['testadapter'] = false;
-    assert.throws(()=> adapters.getAdapter('testAdapter'), /is not supported by the environment/)
+    assert.throws(() => adapters.getAdapter('testAdapter'), /is not supported by the environment/)
   });
 
   it('should pick suitable adapter from the list', function () {

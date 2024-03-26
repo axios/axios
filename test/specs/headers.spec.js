@@ -135,7 +135,7 @@ describe('headers', function () {
     });
   });
 
-  it('should allow an AxiosHeaders instance to be used as the value of the headers option', async ()=> {
+  it('should allow an AxiosHeaders instance to be used as the value of the headers option', async () => {
     const instance = axios.create({
       headers: new AxiosHeaders({
         xFoo: 'foo',

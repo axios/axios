@@ -138,12 +138,12 @@ describe('AxiosHeaders', function () {
 
         headers.set('foo', 'bar=value1');
 
-        assert.strictEqual(headers.has('foo', (value, header, headers)=> {
+        assert.strictEqual(headers.has('foo', (value, header, headers) => {
           assert.strictEqual(value, 'bar=value1');
           assert.strictEqual(header, 'foo');
           return true;
         }), true);
-        assert.strictEqual(headers.has('foo', ()=> false), false);
+        assert.strictEqual(headers.has('foo', () => false), false);
       });
 
       it('should support string pattern', function () {
@@ -216,7 +216,7 @@ describe('AxiosHeaders', function () {
 
         headers.set('foo', 'bar=value1');
 
-        headers.delete('foo', (value, header)=> {
+        headers.delete('foo', (value, header) => {
           assert.strictEqual(value, 'bar=value1');
           assert.strictEqual(header, 'foo');
           return false;
@@ -224,7 +224,7 @@ describe('AxiosHeaders', function () {
 
         assert.strictEqual(headers.has('foo'), true);
 
-        assert.strictEqual(headers.delete('foo', ()=> true), true);
+        assert.strictEqual(headers.delete('foo', () => true), true);
 
         assert.strictEqual(headers.has('foo'), false);
       });
@@ -247,7 +247,7 @@ describe('AxiosHeaders', function () {
     });
   });
 
-  describe('clear', ()=> {
+  describe('clear', () => {
     it('should clear all headers', () => {
       const headers = new AxiosHeaders({x: 1, y:2});
 

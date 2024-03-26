@@ -101,7 +101,7 @@ describe('core::mergeConfig', function() {
     expect(merged.nestedConfig.propertyOnRequestConfig).toEqual(true);
   });
 
-  describe('headers', ()=> {
+  describe('headers', () => {
     it('should allow merging with AxiosHeaders instances', () => {
       const merged = mergeConfig({
         headers: new AxiosHeaders({

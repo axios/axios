@@ -194,7 +194,7 @@ const renderPRsList = async (tag, template, {comments_threshold= 5, awesome_thre
   for(const merge of release.merges) {
     const pr = await getIssueById(merge.id);
 
-    if (pr && pr.labels.find(({name})=> name === label)) {
+    if (pr && pr.labels.find(({name}) => name === label)) {
       const {reactions, body} = pr;
       prs[pr.number] = pr;
       pr.isHot = pr.comments > comments_threshold;

@@ -318,7 +318,7 @@ describe('supports http with nodejs', function () {
     var str = 'test response';
 
     server = http.createServer(function (req, res) {
-      var parsed = url.parse(req.url);
+      var parsed = new URL(req.url, 'http://example.com');
 
       if (parsed.pathname === '/one') {
         res.setHeader('Location', '/two');
@@ -509,7 +509,7 @@ describe('supports http with nodejs', function () {
         return;
       }
 
-      var parsed = url.parse(req.url);
+      var parsed = new URL(req.url, 'http://example.com');
       if (parsed.pathname === '/one') {
         res.setHeader('Location', '/two');
         res.statusCode = 302;
@@ -753,7 +753,7 @@ describe('supports http with nodejs', function () {
     var str = Array(100000).join('ж');
 
     server = http.createServer(function (req, res) {
-      var parsed = url.parse(req.url);
+      var parsed = new URL(req.url, 'http://example.com');
 
       if (parsed.pathname === '/two') {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -974,7 +974,7 @@ describe('supports http with nodejs', function () {
       res.end('12345');
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1017,7 +1017,7 @@ describe('supports http with nodejs', function () {
       res.end('12345');
     }).listen(4444, function () {
       proxy = https.createServer(options, function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1077,7 +1077,7 @@ describe('supports http with nodejs', function () {
       res.end('4567');
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1118,7 +1118,7 @@ describe('supports http with nodejs', function () {
       res.end('12345');
     }).listen(4444, function () {
       proxy = https.createServer(options, function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1164,7 +1164,7 @@ describe('supports http with nodejs', function () {
       res.end();
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         if (parsed.pathname === '/redirected') {
           response.statusCode = 200;
           response.end();
@@ -1208,7 +1208,7 @@ describe('supports http with nodejs', function () {
       res.end('4567');
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1245,7 +1245,7 @@ describe('supports http with nodejs', function () {
       res.end('4567');
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1281,7 +1281,7 @@ describe('supports http with nodejs', function () {
       res.end();
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1324,7 +1324,7 @@ describe('supports http with nodejs', function () {
       res.end();
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,
@@ -1360,7 +1360,7 @@ describe('supports http with nodejs', function () {
       res.end();
     }).listen(4444, function () {
       proxy = http.createServer(function (request, response) {
-        var parsed = url.parse(request.url);
+        var parsed = new URL(request.url);
         var opts = {
           host: parsed.hostname,
           port: parsed.port,

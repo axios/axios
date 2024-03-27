@@ -13,4 +13,4 @@ export default function (req, res) {
     res.write(JSON.stringify(data));
     res.end();
   });
-};
+}

@@ -31,4 +31,4 @@ export default function (req, res) {
   });
   res.write(JSON.stringify(people));
   res.end();
-};
+}

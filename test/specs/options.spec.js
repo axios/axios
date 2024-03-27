@@ -1,5 +1,3 @@
-import AxiosHeaders from "../../lib/core/AxiosHeaders.js";
-
 describe('options', function () {
   beforeEach(function () {
     jasmine.Ajax.install();

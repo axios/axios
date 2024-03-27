@@ -1,6 +1,6 @@
 export default function (req, res) {
   
-  req.on('data', function (chunk) {
+  req.on('data', function () {
   });
 
   req.on('end', function () {
@@ -10,4 +10,4 @@ export default function (req, res) {
     });
     res.end();
   });
-};
+}

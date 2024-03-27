@@ -27,7 +27,7 @@ describe('progress events', function () {
 
     axios('/foo', { onUploadProgress: progressSpy } );
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(function () {
       // Jasmine AJAX doesn't trigger upload events. Waiting for upstream fix
       // expect(progressSpy).toHaveBeenCalled();
       done();
@@ -80,7 +80,7 @@ describe('progress events', function () {
 
     instance.get('/foo');
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(function () {
       // expect(progressSpy).toHaveBeenCalled();
       done();
     });

@@ -1,5 +1,4 @@
 import defaults from '../../lib/defaults';
-import utils from '../../lib/utils';
 import AxiosHeaders from '../../lib/core/AxiosHeaders';
 
 describe('defaults', function () {

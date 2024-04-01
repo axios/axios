@@ -90,8 +90,8 @@
 
 ## Table of Contents
 
-  - [Features](#features)
-  - [Browser Support](#browser-support)
+  - [Features 🚀](#features)
+  - [Browser Support ❤️](#browser-support)
   - [Installing](#installing)
     - [Package manager](#package-manager)
     - [CDN](#cdn)
@@ -126,7 +126,7 @@
   - [🆕 Rate limiting](#-progress-capturing)
   - [🆕 AxiosHeaders](#-axiosheaders)
   - [Semver](#semver)
-  - [Promises](#promises)
+  - [Promises 🤞](#promises)
   - [TypeScript](#typescript)
   - [Resources](#resources)
   - [Credits](#credits)
@@ -281,6 +281,7 @@ Performing a `POST` request
 
 ```js
 axios.post('/user', {
+// post DATA in JSON format
     firstName: 'Fred',
     lastName: 'Flintstone'
   })

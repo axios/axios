@@ -187,7 +187,7 @@ export function getFetch() {
 
 export function setupMockFetch(fetchPolyfill, target) {
     if (fetchStubbed) {
-        throw new Error('Cannot install fetch mock: already active.');
+        return;
     }
     fetchStubbed = true;
     fetchQueue = [];

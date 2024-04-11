@@ -142,5 +142,44 @@ describe('xsrf', function () {
         done();
       });
     });
+
+    describe('origins', () => {
+      it('should respect origin config', function () {
+        const token = '12345';
+
+        document.cookie = axios.defaults.xsrfCookieName + '=' + token;
+
+        axios('http://example.com', {
+          origins: {
+            'http://example.com': {
+              withXSRFToken: true
+            }
+          }
+        });
+
+        return getAjaxRequest().then(function (request) {
+          expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(token);
+        });
+      });
+    });
+
+    it('should have priority over origins config', function () {
+      const token = '12345';
+
+      document.cookie = axios.defaults.xsrfCookieName + '=' + token;
+
+      axios('http://example.com', {
+        withXSRFToken: false,
+        origins: {
+          'http://example.com': {
+            withXSRFToken: true
+          }
+        }
+      });
+
+      return getAjaxRequest().then(function (request) {
+        expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+      });
+    });
   });
 });

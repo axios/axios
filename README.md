@@ -647,7 +647,22 @@ These are the available config options for making requests. Only the `url` is re
   maxRate: [
     100 * 1024, // 100KB/s upload limit,
     100 * 1024  // 100KB/s download limit
-  ]
+  ],
+    
+  origins: {
+    'mysite.com': { // not including subdomains
+      withCredentials: true,
+      withXSRFToken: true
+    },
+    'profile|shop.mysite.com': {},
+    '*.mysite.com': {},
+    '**.mysite.com': {
+      withXSRFToken: true
+    }, // for all subdomains
+    'https://**': { // for all https requests
+      withCredentials: true
+    }
+  }  
 }
 ```
 

@@ -126,7 +126,7 @@
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
     "test:dtslint": "dtslint --localTs node_modules/typescript/lib",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
-    "test:deno": "deno test test/fetch/deno/fetch.deno.spec.js",
+    "test:deno": "deno test --allow-read test/fetch/deno/fetch.deno.spec.js",
     "test:bun": "bun --bun test/fetch/bun/fetch.bun.spec.js",
     "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
     "test:workers": "echo \"Workers test not implemented yet.\"",

@@ -50,7 +50,7 @@ function doAssertExists(ctx, ...args) {
     return assertExists(...args);
 }
 
-fetchTest.setupFetchTest(
+await fetchTest.setupFetchTest(
     "deno",
     axios,
     _axios,

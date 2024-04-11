@@ -19,7 +19,9 @@ const setupFetchTest = (
     withMockFetch,
     fetchConfigurator,
     getFetch,
-    testImports = [],
+    testImports = [
+        './abstract/fetch.basic.spec.mjs'
+    ],
 ) => async (
     suiteDescriber,
     caseDescriber,

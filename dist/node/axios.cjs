@@ -1,4 +1,4 @@
-// Axios v1.6.6 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.6.8 Copyright (c) 2024 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -10,7 +10,7 @@ const util = require('util');
 const followRedirects = require('follow-redirects');
 const zlib = require('zlib');
 const stream = require('stream');
-const EventEmitter = require('events');
+const events = require('events');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -22,7 +22,6 @@ const util__default = /*#__PURE__*/_interopDefaultLegacy(util);
 const followRedirects__default = /*#__PURE__*/_interopDefaultLegacy(followRedirects);
 const zlib__default = /*#__PURE__*/_interopDefaultLegacy(zlib);
 const stream__default = /*#__PURE__*/_interopDefaultLegacy(stream);
-const EventEmitter__default = /*#__PURE__*/_interopDefaultLegacy(EventEmitter);
 
 function bind(fn, thisArg) {
   return function wrap() {
@@ -1454,9 +1453,6 @@ const defaults = {
     const isFormData = utils$1.isFormData(data);
 
     if (isFormData) {
-      if (!hasJSONContentType) {
-        return data;
-      }
       return hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data;
     }
 
@@ -2022,7 +2018,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.6.6";
+const VERSION = "1.6.8";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -2665,7 +2661,7 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
     }
 
     // temporary internal emitter until the AxiosRequest class will be implemented
-    const emitter = new EventEmitter__default["default"]();
+    const emitter = new events.EventEmitter();
 
     const onFinished = () => {
       if (config.cancelToken) {
@@ -3655,7 +3651,7 @@ function dispatchRequest(config) {
   });
 }
 
-const headersToObject = (thing) => thing instanceof AxiosHeaders$1 ? thing.toJSON() : thing;
+const headersToObject = (thing) => thing instanceof AxiosHeaders$1 ? { ...thing } : thing;
 
 /**
  * Config-specific merge-function which creates a new config-object
@@ -3874,17 +3870,20 @@ class Axios {
     try {
       return await this._request(configOrUrl, config);
     } catch (err) {
-      const dummy = {};
-      if (Error.captureStackTrace) {
-        Error.captureStackTrace(dummy);
-      } else {
-        dummy.stack = new Error().stack;
-      }
-      // slice off the Error: ... line
-      dummy.stack = dummy.stack.replace(/^.+\n/, '');
-      // match without the 2 top stack lines
-      if (!err.stack.endsWith(dummy.stack.replace(/^.+\n.+\n/, ''))) {
-        err.stack += '\n' + dummy.stack;
+      if (err instanceof Error) {
+        let dummy;
+
+        Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : (dummy = new Error());
+
+        // slice off the Error: ... line
+        const stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
+
+        if (!err.stack) {
+          err.stack = stack;
+          // match without the 2 top stack lines
+        } else if (stack && !String(err.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
+          err.stack += '\n' + stack;
+        }
       }
 
       throw err;

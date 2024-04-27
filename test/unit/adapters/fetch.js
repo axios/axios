@@ -319,7 +319,7 @@ describe('supports fetch with nodejs', function () {
 
       await assert.rejects(async () => {
         await data.pipeTo(makeEchoStream());
-      }, /AbortError/);
+      }, /^(AbortError|CanceledError):/);
     });
   });
 

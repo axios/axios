@@ -4,7 +4,8 @@ import {terser} from "rollup-plugin-terser";
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
 import autoExternal from 'rollup-plugin-auto-external';
-import bundleSize from 'rollup-plugin-bundle-size'
+import bundleSize from 'rollup-plugin-bundle-size';
+import aliasPlugin from '@rollup/plugin-alias';
 import path from 'path';
 
 const lib = require("./package.json");
@@ -13,7 +14,7 @@ const name = "axios";
 const namedInput = './index.js';
 const defaultInput = './lib/axios.js';
 
-const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) => {
+const buildConfig = ({es5, browser = true, minifiedVersion = true, alias, ...config}) => {
   const {file} = config.output;
   const ext = path.extname(file);
   const basename = path.basename(file, ext);
@@ -29,9 +30,13 @@ const buildConfig = ({es5, browser = true, minifiedVersion = true, ...config}) =
       file: `${path.dirname(file)}/${basename}.${(minified ? ['min', ...extArr] : extArr).join('.')}`
     },
     plugins: [
+      aliasPlugin({
+        entries: alias || []
+      }),
       json(),
       resolve({browser}),
       commonjs(),
+
       minified && terser(),
       minified && bundleSize(),
       ...(es5 ? [babel({
@@ -69,6 +74,21 @@ export default async () => {
         banner
       }
     }),
+    // browser ESM bundle for CDN with fetch adapter only
+    // Downsizing from 12.97 kB (gzip) to 12.23 kB (gzip)
+/*    ...buildConfig({
+      input: namedInput,
+      output: {
+        file: `dist/esm/${outputFileName}-fetch.js`,
+        format: "esm",
+        preferConst: true,
+        exports: "named",
+        banner
+      },
+      alias: [
+        { find: './xhr.js', replacement: '../helpers/null.js' }
+      ]
+    }),*/
 
     // Browser UMD bundle for CDN
     ...buildConfig({

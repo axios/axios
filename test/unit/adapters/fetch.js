@@ -171,6 +171,8 @@ describe('supports fetch with nodejs', function () {
           responseType: 'text'
         });
 
+        await setTimeoutAsync(500);
+
         assert.strictEqual(data, content);
 
         assert.deepStrictEqual(samples, Array.from(function* () {
@@ -243,6 +245,8 @@ describe('supports fetch with nodejs', function () {
           responseType: 'text',
           maxRedirects: 0
         });
+
+        await setTimeoutAsync(500);
 
         assert.strictEqual(data, content);
 

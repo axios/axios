@@ -15,7 +15,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x, 20.x]
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 21.x]
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v3

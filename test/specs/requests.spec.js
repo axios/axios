@@ -501,7 +501,7 @@ describe('requests', function () {
 
   it('should support HTTPS protocol', function (done) {
     let response;
-    axios.get('https://www.github.com')
+    axios.get('https://www.google.com')
       .then(function (res) {
         response = res
       })

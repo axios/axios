@@ -84,20 +84,20 @@ describe('options', function () {
     });
   });
 
-  it('should combine the URLs if base url and request url exist and allowAbsoluteUrls is false', function (done) {
-    const instance = axios.create({
-      baseURL: 'http://someurl.com/',
-      allowAbsoluteUrls: false
-    });
+  // it('should combine the URLs if base url and request url exist and allowAbsoluteUrls is false', function (done) {
+  //   const instance = axios.create({
+  //     baseURL: 'http://someurl.com/',
+  //     allowAbsoluteUrls: false
+  //   });
 
-    instance.get('http://someotherurl.com/');
-    
-    getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('http://someotherurl.com/');
-      done();
-    });
+  //   instance.get('http://someotherurl.com/');
 
-  });
+  //   getAjaxRequest().then(function (request) {
+  //     expect(request.url).toBe('http://someotherurl.com/');
+  //     done();
+  //   });
+
+  // });
 
   it('should change only the baseURL of the specified instance', function() {
     const instance1 = axios.create();

@@ -2530,14 +2530,19 @@ var xhrAdapter = isXHRAdapterSupported && function (config) {
       request.responseType = _config.responseType;
     }
 
+    let progressUpdateTicksRate = undefined;
+    if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
+      progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
+    }
+
     // Handle progress if needed
     if (typeof _config.onDownloadProgress === 'function') {
-      request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true));
+      request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true, progressUpdateTicksRate));
     }
 
     // Not all browsers support upload events
     if (typeof _config.onUploadProgress === 'function' && request.upload) {
-      request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress));
+      request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress, progressUpdateTicksRate));
     }
 
     if (_config.cancelToken || _config.signal) {
@@ -2769,6 +2774,11 @@ var fetchAdapter = async (config) => {
   };
 
   try {
+    let progressUpdateTicksRate = undefined;
+    if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
+      progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
+    }
+
     if (onUploadProgress && supportsRequestStreams && method !== 'get' && method !== 'head') {
       let requestContentLength = await resolveBodyLength(headers, data);
 
@@ -2786,7 +2796,7 @@ var fetchAdapter = async (config) => {
 
       data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
         requestContentLength,
-        progressEventReducer(onUploadProgress)
+        progressEventReducer(onUploadProgress, false, progressUpdateTicksRate)
       ));
     }
 
@@ -2820,7 +2830,7 @@ var fetchAdapter = async (config) => {
       response = new Response(
         trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(
           responseContentLength,
-          progressEventReducer(onDownloadProgress, true)
+          progressEventReducer(onDownloadProgress, true, progressUpdateTicksRate)
         ), isStreamResponse && onFinish),
         options
       );

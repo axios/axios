@@ -334,6 +334,7 @@ export interface AxiosRequestConfig<D = any> {
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
   onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void;
+  progressUpdateIntervalMs?: number;
   maxContentLength?: number;
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;

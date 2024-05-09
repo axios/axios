@@ -2835,6 +2835,11 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
 
     const contentLength = utils$1.toFiniteNumber(headers.getContentLength());
 
+    let progressUpdateTicksRate = undefined;
+    if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
+      progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
+    }
+
     if (utils$1.isArray(maxRate)) {
       maxUploadRate = maxRate[0];
       maxDownloadRate = maxRate[1];
@@ -2849,7 +2854,8 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
 
       data = stream__default["default"].pipeline([data, new AxiosTransformStream$1({
         length: contentLength,
-        maxRate: utils$1.toFiniteNumber(maxUploadRate)
+        maxRate: utils$1.toFiniteNumber(maxUploadRate),
+        ticksRate: progressUpdateTicksRate,
       })], utils$1.noop);
 
       onUploadProgress && data.on('progress', progress => {
@@ -2958,7 +2964,8 @@ const httpAdapter = isHttpAdapterSupported && function httpAdapter(config) {
       if (onDownloadProgress) {
         const transformStream = new AxiosTransformStream$1({
           length: utils$1.toFiniteNumber(responseLength),
-          maxRate: utils$1.toFiniteNumber(maxDownloadRate)
+          maxRate: utils$1.toFiniteNumber(maxDownloadRate),
+          ticksRate: progressUpdateTicksRate,
         });
 
         onDownloadProgress && transformStream.on('progress', progress => {
@@ -3599,14 +3606,19 @@ const xhrAdapter = isXHRAdapterSupported && function (config) {
       request.responseType = _config.responseType;
     }
 
+    let progressUpdateTicksRate = undefined;
+    if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
+      progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
+    }
+
     // Handle progress if needed
     if (typeof _config.onDownloadProgress === 'function') {
-      request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true));
+      request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true, progressUpdateTicksRate));
     }
 
     // Not all browsers support upload events
     if (typeof _config.onUploadProgress === 'function' && request.upload) {
-      request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress));
+      request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress, progressUpdateTicksRate));
     }
 
     if (_config.cancelToken || _config.signal) {
@@ -3850,6 +3862,11 @@ const fetchAdapter = isFetchSupported && (async (config) => {
   };
 
   try {
+    let progressUpdateTicksRate = undefined;
+    if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
+      progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
+    }
+
     if (onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head') {
       let requestContentLength = await resolveBodyLength(headers, data);
 
@@ -3867,7 +3884,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
 
       data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
         requestContentLength,
-        progressEventReducer(onUploadProgress)
+        progressEventReducer(onUploadProgress, false, progressUpdateTicksRate)
       ));
     }
 
@@ -3901,7 +3918,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
       response = new Response(
         trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(
           responseContentLength,
-          progressEventReducer(onDownloadProgress, true)
+          progressEventReducer(onDownloadProgress, true, progressUpdateTicksRate)
         ), isStreamResponse && onFinish),
         options
       );

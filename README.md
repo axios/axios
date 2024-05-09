@@ -529,6 +529,10 @@ These are the available config options for making requests. Only the `url` is re
     // Do whatever you want with the Axios progress event
   },
 
+  // `progressUpdateIntervalMs` controls the frequency in milliseconds of download and upload progress events
+  // browser & node.js
+  progressUpdateIntervalMs: 100
+
   // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
   maxContentLength: 2000,
 

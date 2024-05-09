@@ -2978,15 +2978,19 @@
       if (responseType && responseType !== 'json') {
         request.responseType = _config.responseType;
       }
+      var progressUpdateTicksRate = undefined;
+      if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
+        progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
+      }
 
       // Handle progress if needed
       if (typeof _config.onDownloadProgress === 'function') {
-        request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true));
+        request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true, progressUpdateTicksRate));
       }
 
       // Not all browsers support upload events
       if (typeof _config.onUploadProgress === 'function' && request.upload) {
-        request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress));
+        request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress, progressUpdateTicksRate));
       }
       if (_config.cancelToken || _config.signal) {
         // Handle cancellation
@@ -3328,7 +3332,7 @@
   }();
   var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref4, _ref5, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData;
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref4, _ref5, composedSignal, stopTimeout, finished, request, onFinish, progressUpdateTicksRate, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData;
       return _regeneratorRuntime().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
@@ -3342,13 +3346,17 @@
               finished = true;
             };
             _context3.prev = 4;
+            progressUpdateTicksRate = undefined;
+            if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
+              progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
+            }
             if (!(onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head')) {
-              _context3.next = 12;
+              _context3.next = 14;
               break;
             }
-            _context3.next = 8;
+            _context3.next = 10;
             return resolveBodyLength(headers, data);
-          case 8:
+          case 10:
             requestContentLength = _context3.sent;
             _request = new Request(url, {
               method: method,
@@ -3358,8 +3366,8 @@
             if (utils$1.isFormData(data) && (contentTypeHeader = _request.headers.get('content-type'))) {
               headers.setContentType(contentTypeHeader);
             }
-            data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress)));
-          case 12:
+            data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress, false, progressUpdateTicksRate)));
+          case 14:
             if (!utils$1.isString(withCredentials)) {
               withCredentials = withCredentials ? 'cors' : 'omit';
             }
@@ -3371,9 +3379,9 @@
               duplex: "half",
               withCredentials: withCredentials
             }));
-            _context3.next = 16;
+            _context3.next = 18;
             return fetch(request);
-          case 16:
+          case 18:
             response = _context3.sent;
             isStreamResponse = responseType === 'stream' || responseType === 'response';
             if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
@@ -3382,16 +3390,16 @@
                 options[prop] = response[prop];
               });
               responseContentLength = utils$1.toFiniteNumber(response.headers.get('content-length'));
-              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(responseContentLength, progressEventReducer(onDownloadProgress, true)), isStreamResponse && onFinish), options);
+              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(responseContentLength, progressEventReducer(onDownloadProgress, true, progressUpdateTicksRate)), isStreamResponse && onFinish), options);
             }
             responseType = responseType || 'text';
-            _context3.next = 22;
+            _context3.next = 24;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
-          case 22:
+          case 24:
             responseData = _context3.sent;
             !isStreamResponse && onFinish();
             stopTimeout && stopTimeout();
-            _context3.next = 27;
+            _context3.next = 29;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
                 data: responseData,
@@ -3402,26 +3410,26 @@
                 request: request
               });
             });
-          case 27:
+          case 29:
             return _context3.abrupt("return", _context3.sent);
-          case 30:
-            _context3.prev = 30;
+          case 32:
+            _context3.prev = 32;
             _context3.t0 = _context3["catch"](4);
             onFinish();
             if (!(_context3.t0 && _context3.t0.name === 'TypeError' && /fetch/i.test(_context3.t0.message))) {
-              _context3.next = 35;
+              _context3.next = 37;
               break;
             }
             throw Object.assign(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request), {
               cause: _context3.t0.cause || _context3.t0
             });
-          case 35:
+          case 37:
             throw AxiosError.from(_context3.t0, _context3.t0 && _context3.t0.code, config, request);
-          case 36:
+          case 38:
           case "end":
             return _context3.stop();
         }
-      }, _callee3, null, [[4, 30]]);
+      }, _callee3, null, [[4, 32]]);
     }));
     return function (_x4) {
       return _ref3.apply(this, arguments);

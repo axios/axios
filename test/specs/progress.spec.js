@@ -52,6 +52,36 @@ describe('progress events', function () {
     });
   });
 
+  it('should throttle the progress handlers based on the progress update interval', function (done) {
+    const downloadProgressSpy = jasmine.createSpy('downloadProgress');
+    const uploadProgressSpy = jasmine.createSpy('uploadProgress');
+
+    axios('/foo', {
+      onDownloadProgress: downloadProgressSpy,
+      onUploadProgress: uploadProgressSpy,
+      progressUpdateIntervalMs: 100
+    });
+
+
+    getAjaxRequest().then(function (request) {
+      jasmine.clock().install();
+
+      request.eventBus.trigger('progress');
+      request.eventBus.trigger('progress');
+      expect(downloadProgressSpy).toHaveBeenCalledTimes(1);
+      // expect(uploadProgressSpy).toHaveBeenCalledTimes(1);
+      jasmine.clock().tick(99);
+      expect(downloadProgressSpy).toHaveBeenCalledTimes(1);
+      // expect(uploadProgressSpy).toHaveBeenCalledTimes(1);
+      jasmine.clock().tick(1);
+      expect(downloadProgressSpy).toHaveBeenCalledTimes(2);
+      // expect(uploadProgressSpy).toHaveBeenCalledTimes(2);
+
+      jasmine.clock().uninstall();
+      done();
+    });
+  });
+
   it('should add a download progress handler from instance config', function (done) {
     const progressSpy = jasmine.createSpy('progress');
 
@@ -105,6 +135,36 @@ describe('progress events', function () {
         responseText: '{"foo": "bar"}'
       });
       expect(downloadProgressSpy).toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should throttle the progress handlers based on the progress update interval from an instance config', function (done) {
+    const downloadProgressSpy = jasmine.createSpy('downloadProgress');
+    const uploadProgressSpy = jasmine.createSpy('uploadProgress');
+    const instance = axios.create({
+      onDownloadProgress: downloadProgressSpy,
+      onUploadProgress: uploadProgressSpy,
+      progressUpdateIntervalMs: 100
+    });
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      jasmine.clock().install();
+
+      request.eventBus.trigger('progress');
+      request.eventBus.trigger('progress');
+      expect(downloadProgressSpy).toHaveBeenCalledTimes(1);
+      // expect(uploadProgressSpy).toHaveBeenCalledTimes(1);
+      jasmine.clock().tick(99);
+      expect(downloadProgressSpy).toHaveBeenCalledTimes(1);
+      // expect(uploadProgressSpy).toHaveBeenCalledTimes(1);
+      jasmine.clock().tick(1);
+      expect(downloadProgressSpy).toHaveBeenCalledTimes(2);
+      // expect(uploadProgressSpy).toHaveBeenCalledTimes(2);
+
+      jasmine.clock().uninstall();
       done();
     });
   });

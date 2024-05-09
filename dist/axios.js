@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.0 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.0-beta.1 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -3230,7 +3230,8 @@
     };
   };
   var isFetchSupported = typeof fetch !== 'undefined';
-  var supportsRequestStreams = isFetchSupported && function () {
+  var isReadableStreamSupported = isFetchSupported && typeof ReadableStream !== 'undefined';
+  var supportsRequestStream = isReadableStreamSupported && function () {
     var duplexAccessed = false;
     var hasContentType = new Request(platform.origin, {
       body: new ReadableStream(),
@@ -3243,18 +3244,27 @@
     return duplexAccessed && !hasContentType;
   }();
   var DEFAULT_CHUNK_SIZE = 64 * 1024;
+  var supportsResponseStream = isReadableStreamSupported && !!function () {
+    try {
+      return utils$1.isReadableStream(new Response('').body);
+    } catch (err) {
+      // return undefined
+    }
+  }();
   var resolvers = {
-    stream: function stream(res) {
+    stream: supportsResponseStream && function (res) {
       return res.body;
     }
   };
-  isFetchSupported && ['text', 'arrayBuffer', 'blob', 'formData'].forEach(function (type) {
-    return [resolvers[type] = utils$1.isFunction(Response.prototype[type]) ? function (res) {
-      return res[type]();
-    } : function (_, config) {
-      throw new AxiosError("Response type ".concat(type, " is not supported"), AxiosError.ERR_NOT_SUPPORT, config);
-    }];
-  });
+  isFetchSupported && function (res) {
+    ['text', 'arrayBuffer', 'blob', 'formData', 'stream'].forEach(function (type) {
+      !resolvers[type] && (resolvers[type] = utils$1.isFunction(res[type]) ? function (res) {
+        return res[type]();
+      } : function (_, config) {
+        throw new AxiosError("Response type '".concat(type, "' is not supported"), AxiosError.ERR_NOT_SUPPORT, config);
+      });
+    });
+  }(new Response());
   var getBodyLength = /*#__PURE__*/function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(body) {
       return _regeneratorRuntime().wrap(function _callee$(_context) {
@@ -3320,9 +3330,9 @@
       return _ref2.apply(this, arguments);
     };
   }();
-  var fetchAdapter = ( /*#__PURE__*/(function () {
+  var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref4, _ref5, composedSignal, stopTimeout, finished, request, onFinish, progressUpdateTicksRate, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData, code;
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref4, _ref5, composedSignal, stopTimeout, finished, request, onFinish, progressUpdateTicksRate, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData;
       return _regeneratorRuntime().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
@@ -3340,7 +3350,7 @@
             if (utils$1.isNumber(config.progressUpdateIntervalMs)) {
               progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
             }
-            if (!(onUploadProgress && supportsRequestStreams && method !== 'get' && method !== 'head')) {
+            if (!(onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head')) {
               _context3.next = 14;
               break;
             }
@@ -3374,7 +3384,7 @@
           case 18:
             response = _context3.sent;
             isStreamResponse = responseType === 'stream' || responseType === 'response';
-            if (onDownloadProgress || isStreamResponse) {
+            if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
               options = {};
               Object.getOwnPropertyNames(response).forEach(function (prop) {
                 options[prop] = response[prop];
@@ -3406,11 +3416,15 @@
             _context3.prev = 32;
             _context3.t0 = _context3["catch"](4);
             onFinish();
-            code = _context3.t0.code;
-            if (_context3.t0.name === 'NetworkError') {
-              code = AxiosError.ERR_NETWORK;
+            if (!(_context3.t0 && _context3.t0.name === 'TypeError' && /fetch/i.test(_context3.t0.message))) {
+              _context3.next = 37;
+              break;
             }
-            throw AxiosError.from(_context3.t0, code, config, request);
+            throw Object.assign(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request), {
+              cause: _context3.t0.cause || _context3.t0
+            });
+          case 37:
+            throw AxiosError.from(_context3.t0, _context3.t0 && _context3.t0.code, config, request);
           case 38:
           case "end":
             return _context3.stop();
@@ -3420,7 +3434,7 @@
     return function (_x4) {
       return _ref3.apply(this, arguments);
     };
-  })());
+  }());
 
   var knownAdapters = {
     http: httpAdapter,
@@ -3539,7 +3553,7 @@
     });
   }
 
-  var VERSION = "1.7.0-beta.0";
+  var VERSION = "1.7.0-beta.1";
 
   var validators$1 = {};
 
@@ -3664,11 +3678,15 @@
 
                   // slice off the Error: ... line
                   stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
-                  if (!_context.t0.stack) {
-                    _context.t0.stack = stack;
-                    // match without the 2 top stack lines
-                  } else if (stack && !String(_context.t0.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
-                    _context.t0.stack += '\n' + stack;
+                  try {
+                    if (!_context.t0.stack) {
+                      _context.t0.stack = stack;
+                      // match without the 2 top stack lines
+                    } else if (stack && !String(_context.t0.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
+                      _context.t0.stack += '\n' + stack;
+                    }
+                  } catch (e) {
+                    // ignore the case where "stack" is an un-writable property
                   }
                 }
                 throw _context.t0;

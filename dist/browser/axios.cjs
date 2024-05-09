@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.0 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.0-beta.1 Copyright (c) 2024 Matt Zabriskie and contributors
 'use strict';
 
 function bind(fn, thisArg) {
@@ -2686,8 +2686,9 @@ const fetchProgressDecorator = (total, fn) => {
 };
 
 const isFetchSupported = typeof fetch !== 'undefined';
+const isReadableStreamSupported = isFetchSupported && typeof ReadableStream !== 'undefined';
 
-const supportsRequestStreams = isFetchSupported && (() => {
+const supportsRequestStream = isReadableStreamSupported && (() => {
   let duplexAccessed = false;
 
   const hasContentType = new Request(platform.origin, {
@@ -2704,15 +2705,26 @@ const supportsRequestStreams = isFetchSupported && (() => {
 
 const DEFAULT_CHUNK_SIZE = 64 * 1024;
 
+const supportsResponseStream = isReadableStreamSupported && !!(()=> {
+  try {
+    return utils$1.isReadableStream(new Response('').body);
+  } catch(err) {
+    // return undefined
+  }
+})();
+
 const resolvers = {
-  stream: (res) => res.body
+  stream: supportsResponseStream && ((res) => res.body)
 };
 
-isFetchSupported && ['text', 'arrayBuffer', 'blob', 'formData'].forEach(type => [
-  resolvers[type] = utils$1.isFunction(Response.prototype[type]) ? (res) => res[type]() : (_, config) => {
-    throw new AxiosError(`Response type ${type} is not supported`, AxiosError.ERR_NOT_SUPPORT, config);
-  }
-]);
+isFetchSupported && (((res) => {
+  ['text', 'arrayBuffer', 'blob', 'formData', 'stream'].forEach(type => {
+    !resolvers[type] && (resolvers[type] = utils$1.isFunction(res[type]) ? (res) => res[type]() :
+      (_, config) => {
+        throw new AxiosError(`Response type '${type}' is not supported`, AxiosError.ERR_NOT_SUPPORT, config);
+      });
+  });
+})(new Response));
 
 const getBodyLength = async (body) => {
   if(utils$1.isBlob(body)) {
@@ -2742,7 +2754,7 @@ const resolveBodyLength = async (headers, body) => {
   return length == null ? getBodyLength(body) : length;
 };
 
-var fetchAdapter = async (config) => {
+var fetchAdapter = isFetchSupported && (async (config) => {
   let {
     url,
     method,
@@ -2779,7 +2791,7 @@ var fetchAdapter = async (config) => {
       progressUpdateTicksRate = 1000 / config.progressUpdateIntervalMs;
     }
 
-    if (onUploadProgress && supportsRequestStreams && method !== 'get' && method !== 'head') {
+    if (onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head') {
       let requestContentLength = await resolveBodyLength(headers, data);
 
       let _request = new Request(url, {
@@ -2818,7 +2830,7 @@ var fetchAdapter = async (config) => {
 
     const isStreamResponse = responseType === 'stream' || responseType === 'response';
 
-    if (onDownloadProgress || isStreamResponse) {
+    if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
       const options = {};
 
       Object.getOwnPropertyNames(response).forEach(prop => {
@@ -2857,15 +2869,18 @@ var fetchAdapter = async (config) => {
   } catch (err) {
     onFinish();
 
-    let {code} = err;
-
-    if (err.name === 'NetworkError') {
-      code = AxiosError.ERR_NETWORK;
+    if (err && err.name === 'TypeError' && /fetch/i.test(err.message)) {
+      throw Object.assign(
+        new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request),
+        {
+          cause: err.cause || err
+        }
+      )
     }
 
-    throw AxiosError.from(err, code, config, request);
+    throw AxiosError.from(err, err && err.code, config, request);
   }
-};
+});
 
 const knownAdapters = {
   http: httpAdapter,
@@ -3014,7 +3029,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION = "1.7.0-beta.0";
+const VERSION = "1.7.0-beta.1";
 
 const validators$1 = {};
 
@@ -3140,12 +3155,15 @@ class Axios {
 
         // slice off the Error: ... line
         const stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
-
-        if (!err.stack) {
-          err.stack = stack;
-          // match without the 2 top stack lines
-        } else if (stack && !String(err.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
-          err.stack += '\n' + stack;
+        try {
+          if (!err.stack) {
+            err.stack = stack;
+            // match without the 2 top stack lines
+          } else if (stack && !String(err.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
+            err.stack += '\n' + stack;
+          }
+        } catch (e) {
+          // ignore the case where "stack" is an un-writable property
         }
       }
 

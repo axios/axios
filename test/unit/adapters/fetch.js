@@ -370,4 +370,14 @@ describe('supports fetch with nodejs', function () {
 
     assert.strictEqual(data, '/?test=1&foo=1&bar=2');
   });
+
+  it('should handle fetch failed error as an AxiosError with ERR_NETWORK code', async () => {
+    try{
+      await fetchAxios('http://notExistsUrl.in.nowhere');
+      assert.fail('should fail');
+    } catch (err) {
+      assert.strictEqual(String(err), 'AxiosError: Network Error');
+      assert.strictEqual(err.cause && err.cause.code, 'ENOTFOUND');
+    }
+  });
 });

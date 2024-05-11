@@ -1,5 +1,31 @@
 # Changelog
 
+# [1.7.0-beta.1](https://github.com/axios/axios/compare/v1.7.0-beta.0...v1.7.0-beta.1) (2024-05-07)
+
+
+### Bug Fixes
+
+* **core/axios:** handle un-writable error stack ([#6362](https://github.com/axios/axios/issues/6362)) ([81e0455](https://github.com/axios/axios/commit/81e0455b7b57fbaf2be16a73ebe0e6591cc6d8f9))
+* **fetch:** fix cases when ReadableStream or Response.body are not available; ([#6377](https://github.com/axios/axios/issues/6377)) ([d1d359d](https://github.com/axios/axios/commit/d1d359da347704e8b28d768e61515a3e96c5b072))
+* **fetch:** treat fetch-related TypeError as an AxiosError.ERR_NETWORK error; ([#6380](https://github.com/axios/axios/issues/6380)) ([bb5f9a5](https://github.com/axios/axios/commit/bb5f9a5ab768452de9e166dc28d0ffc234245ef1))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/16711696?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Alexandre ABRIOUX](https://github.com/alexandre-abrioux "+56/-6 (#6362 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+42/-17 (#6380 #6377 )")
+
+# [1.7.0-beta.0](https://github.com/axios/axios/compare/v1.6.8...v1.7.0-beta.0) (2024-04-28)
+
+
+### Features
+
+* **adapter:** add fetch adapter; ([#6371](https://github.com/axios/axios/issues/6371)) ([a3ff99b](https://github.com/axios/axios/commit/a3ff99b59d8ec2ab5dd049e68c043617a4072e42))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+1015/-127 (#6371 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+30/-14 ()")
+
 ## [1.6.8](https://github.com/axios/axios/compare/v1.6.7...v1.6.8) (2024-03-15)
 
 

@@ -1,6 +1,7 @@
-interface RawAxiosHeaders {
+// tslint:disable-next-line:interface-over-type-literal
+type RawAxiosHeaders = {
   [key: string]: axios.AxiosHeaderValue;
-}
+};
 
 type MethodsHeaders = Partial<{
   [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;

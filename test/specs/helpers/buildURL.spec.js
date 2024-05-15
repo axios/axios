@@ -7,9 +7,13 @@ describe('helpers::buildURL', function () {
   });
 
   it('should support params', function () {
-    expect(buildURL('/foo', {
-      foo: 'bar'
-    })).toEqual('/foo?foo=bar');
+    expect(
+      buildURL("/foo", {
+        foo: "bar",
+        isUndefined: undefined,
+        isNull: null,
+      })
+    ).toEqual("/foo?foo=bar");
   });
 
   it('should support object params', function () {
@@ -29,9 +33,11 @@ describe('helpers::buildURL', function () {
   });
 
   it('should support array params', function () {
-    expect(buildURL('/foo', {
-      foo: ['bar', 'baz']
-    })).toEqual('/foo?foo[]=bar&foo[]=baz');
+    expect(
+      buildURL("/foo", {
+        foo: ["bar", "baz", null, undefined],
+      })
+    ).toEqual("/foo?foo[]=bar&foo[]=baz");
   });
 
   it('should support special char params', function () {

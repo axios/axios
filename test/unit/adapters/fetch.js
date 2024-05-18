@@ -380,4 +380,17 @@ describe('supports fetch with nodejs', function () {
       assert.strictEqual(err.cause && err.cause.code, 'ENOTFOUND');
     }
   });
+
+  it('should get response headers', async () => {
+    server = await startHTTPServer((req, res) => {
+      res.setHeader('foo', 'bar');
+      res.end(req.url)
+    });
+
+    const {headers} = await fetchAxios.get('/', {
+      responseType: 'stream'
+    });
+
+    assert.strictEqual(headers.get('foo'), 'bar');
+  });
 });

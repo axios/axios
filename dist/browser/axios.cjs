@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.1 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.0-beta.2 Copyright (c) 2024 Matt Zabriskie and contributors
 'use strict';
 
 function bind(fn, thisArg) {
@@ -2722,6 +2722,10 @@ isFetchSupported && (((res) => {
 })(new Response));
 
 const getBodyLength = async (body) => {
+  if (body == null) {
+    return 0;
+  }
+
   if(utils$1.isBlob(body)) {
     return body.size;
   }
@@ -2780,12 +2784,15 @@ var fetchAdapter = isFetchSupported && (async (config) => {
     finished = true;
   };
 
-  try {
-    if (onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head') {
-      let requestContentLength = await resolveBodyLength(headers, data);
+  let requestContentLength;
 
+  try {
+    if (
+      onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head' &&
+      (requestContentLength = await resolveBodyLength(headers, data)) !== 0
+    ) {
       let _request = new Request(url, {
-        method,
+        method: 'POST',
         body: data,
         duplex: "half"
       });
@@ -2796,10 +2803,12 @@ var fetchAdapter = isFetchSupported && (async (config) => {
         headers.setContentType(contentTypeHeader);
       }
 
-      data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
-        requestContentLength,
-        progressEventReducer(onUploadProgress)
-      ));
+      if (_request.body) {
+        data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
+          requestContentLength,
+          progressEventReducer(onUploadProgress)
+        ));
+      }
     }
 
     if (!utils$1.isString(withCredentials)) {
@@ -2809,7 +2818,7 @@ var fetchAdapter = isFetchSupported && (async (config) => {
     request = new Request(url, {
       ...fetchOptions,
       signal: composedSignal,
-      method,
+      method: method.toUpperCase(),
       headers: headers.normalize().toJSON(),
       body: data,
       duplex: "half",
@@ -2823,7 +2832,7 @@ var fetchAdapter = isFetchSupported && (async (config) => {
     if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
       const options = {};
 
-      Object.getOwnPropertyNames(response).forEach(prop => {
+      ['status', 'statusText', 'headers'].forEach(prop => {
         options[prop] = response[prop];
       });
 
@@ -3019,7 +3028,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION = "1.7.0-beta.1";
+const VERSION = "1.7.0-beta.2";
 
 const validators$1 = {};
 

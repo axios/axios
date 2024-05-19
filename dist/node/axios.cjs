@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.2 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.0 Copyright (c) 2024 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -2035,7 +2035,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.7.0-beta.2";
+const VERSION = "1.7.0";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -3896,7 +3896,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
 
     let response = await fetch(request);
 
-    const isStreamResponse = responseType === 'stream' || responseType === 'response';
+    const isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
 
     if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
       const options = {};

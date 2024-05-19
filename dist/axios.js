@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.2 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.0 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -3390,7 +3390,7 @@
             return fetch(request);
           case 19:
             response = _context3.sent;
-            isStreamResponse = responseType === 'stream' || responseType === 'response';
+            isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
             if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
               options = {};
               ['status', 'statusText', 'headers'].forEach(function (prop) {
@@ -3560,7 +3560,7 @@
     });
   }
 
-  var VERSION = "1.7.0-beta.2";
+  var VERSION = "1.7.0";
 
   var validators$1 = {};
 

@@ -1,5 +1,16 @@
 # Changelog
 
+# [1.7.0](https://github.com/axios/axios/compare/v1.7.0-beta.2...v1.7.0) (2024-05-19)
+
+
+### Bug Fixes
+
+* **fetch:** fixed a possible memory leak in the AbortController for the stream response if the ReadableStream is not supported; ([#6406](https://github.com/axios/axios/issues/6406)) ([e62099b](https://github.com/axios/axios/commit/e62099bc8b640acf47fba639366bbcd3bf87f831))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+31/-2 (#6407 #6406 )")
+
 # [1.7.0-beta.2](https://github.com/axios/axios/compare/v1.7.0-beta.1...v1.7.0-beta.2) (2024-05-19)
 
 

@@ -25,20 +25,36 @@
    <br><br>
 </h3>
 
-<div align="center">
-  <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
-    <picture>
-      <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
-      <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142">
-      <img width="200px" src="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142" />
-    </picture>
-  </a>
-   <p align="center">API-first authentication, authorization, and fraud prevention</p>
-   <p align="center">
-       <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=website-link&utm_campaign=axios-http"><b>Website</b></a> •
-       <a href="https://stytch.com/docs?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=docs-link&utm_campaign=axios-http"><b>Documentation</b></a> • <a href="https://github.com/stytchauth/stytch-node?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=node-sdk&utm_campaign=axios-http"><b>Node.js Backend SDK</b></a>
-   </p>
-</div>
+<table border="0">
+   <td align="center">
+     <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
+       <picture>
+         <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
+         <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142">
+         <img width="200px" src="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142" />
+       </picture>
+     </a>
+      <p align="center">API-first authentication, authorization, and fraud prevention</p>
+      <p align="center">
+          <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=website-link&utm_campaign=axios-http"><b>Website</b></a> •
+          <a href="https://stytch.com/docs?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=docs-link&utm_campaign=axios-http"><b>Documentation</b></a> • <a href="https://github.com/stytchauth/stytch-node?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=node-sdk&utm_campaign=axios-http"><b>Node.js Backend SDK</b></a>
+      </p>
+   </td>
+   <td align="center">
+     <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
+       <picture>
+         <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/79f572f3-9d57-488d-80cc-58d674bb98d8">
+         <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/18b51893-c4b4-4557-b263-74c2b3de84ab">
+         <img width="200px" src="https://github.com/axios/axios/assets/4814473/18b51893-c4b4-4557-b263-74c2b3de84ab" />
+       </picture>
+     </a>
+      <p align="center">Drag-and-drop authentication, authorization, and identity management</p>
+      <p align="center">
+          <a href="https://www.descope.com/?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Website</b></a> •
+          <a href="https://docs.descope.com/?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Documentation</b></a> • <a href="https://www.descope.com/community?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Community</b></a>
+      </p>
+   </td>
+</table>
      
 
 <br><br>
@@ -199,13 +215,13 @@ const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundl
 Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 ## Example
@@ -487,6 +503,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
+  // options are: 'ascii', 'ASCII', 'ansi', 'ANSI', 'binary', 'BINARY', 'base64', 'BASE64', 'base64url',
+  // 'BASE64URL', 'hex', 'HEX', 'latin1', 'LATIN1', 'ucs-2', 'UCS-2', 'ucs2', 'UCS2', 'utf-8', 'UTF-8',
+  // 'utf8', 'UTF8', 'utf16le', 'UTF16LE'
   responseEncoding: 'utf8', // default
 
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token

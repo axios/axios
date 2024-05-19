@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.1 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.0-beta.2 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -3266,39 +3266,45 @@
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
-            if (!utils$1.isBlob(body)) {
+            if (!(body == null)) {
               _context.next = 2;
               break;
             }
-            return _context.abrupt("return", body.size);
+            return _context.abrupt("return", 0);
           case 2:
-            if (!utils$1.isSpecCompliantForm(body)) {
-              _context.next = 6;
+            if (!utils$1.isBlob(body)) {
+              _context.next = 4;
               break;
             }
-            _context.next = 5;
-            return new Request(body).arrayBuffer();
-          case 5:
-            return _context.abrupt("return", _context.sent.byteLength);
-          case 6:
-            if (!utils$1.isArrayBufferView(body)) {
+            return _context.abrupt("return", body.size);
+          case 4:
+            if (!utils$1.isSpecCompliantForm(body)) {
               _context.next = 8;
               break;
             }
-            return _context.abrupt("return", body.byteLength);
+            _context.next = 7;
+            return new Request(body).arrayBuffer();
+          case 7:
+            return _context.abrupt("return", _context.sent.byteLength);
           case 8:
+            if (!utils$1.isArrayBufferView(body)) {
+              _context.next = 10;
+              break;
+            }
+            return _context.abrupt("return", body.byteLength);
+          case 10:
             if (utils$1.isURLSearchParams(body)) {
               body = body + '';
             }
             if (!utils$1.isString(body)) {
-              _context.next = 13;
+              _context.next = 15;
               break;
             }
-            _context.next = 12;
+            _context.next = 14;
             return new TextEncoder().encode(body);
-          case 12:
+          case 14:
             return _context.abrupt("return", _context.sent.byteLength);
-          case 13:
+          case 15:
           case "end":
             return _context.stop();
         }
@@ -3342,56 +3348,65 @@
               finished = true;
             };
             _context3.prev = 4;
-            if (!(onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head')) {
-              _context3.next = 12;
+            _context3.t0 = onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head';
+            if (!_context3.t0) {
+              _context3.next = 11;
               break;
             }
-            _context3.next = 8;
+            _context3.next = 9;
             return resolveBodyLength(headers, data);
-          case 8:
-            requestContentLength = _context3.sent;
+          case 9:
+            _context3.t1 = requestContentLength = _context3.sent;
+            _context3.t0 = _context3.t1 !== 0;
+          case 11:
+            if (!_context3.t0) {
+              _context3.next = 15;
+              break;
+            }
             _request = new Request(url, {
-              method: method,
+              method: 'POST',
               body: data,
               duplex: "half"
             });
             if (utils$1.isFormData(data) && (contentTypeHeader = _request.headers.get('content-type'))) {
               headers.setContentType(contentTypeHeader);
             }
-            data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress)));
-          case 12:
+            if (_request.body) {
+              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress)));
+            }
+          case 15:
             if (!utils$1.isString(withCredentials)) {
               withCredentials = withCredentials ? 'cors' : 'omit';
             }
             request = new Request(url, _objectSpread2(_objectSpread2({}, fetchOptions), {}, {
               signal: composedSignal,
-              method: method,
+              method: method.toUpperCase(),
               headers: headers.normalize().toJSON(),
               body: data,
               duplex: "half",
               withCredentials: withCredentials
             }));
-            _context3.next = 16;
+            _context3.next = 19;
             return fetch(request);
-          case 16:
+          case 19:
             response = _context3.sent;
             isStreamResponse = responseType === 'stream' || responseType === 'response';
             if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
               options = {};
-              Object.getOwnPropertyNames(response).forEach(function (prop) {
+              ['status', 'statusText', 'headers'].forEach(function (prop) {
                 options[prop] = response[prop];
               });
               responseContentLength = utils$1.toFiniteNumber(response.headers.get('content-length'));
               response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(responseContentLength, progressEventReducer(onDownloadProgress, true)), isStreamResponse && onFinish), options);
             }
             responseType = responseType || 'text';
-            _context3.next = 22;
+            _context3.next = 25;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
-          case 22:
+          case 25:
             responseData = _context3.sent;
             !isStreamResponse && onFinish();
             stopTimeout && stopTimeout();
-            _context3.next = 27;
+            _context3.next = 30;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
                 data: responseData,
@@ -3402,26 +3417,26 @@
                 request: request
               });
             });
-          case 27:
-            return _context3.abrupt("return", _context3.sent);
           case 30:
-            _context3.prev = 30;
-            _context3.t0 = _context3["catch"](4);
+            return _context3.abrupt("return", _context3.sent);
+          case 33:
+            _context3.prev = 33;
+            _context3.t2 = _context3["catch"](4);
             onFinish();
-            if (!(_context3.t0 && _context3.t0.name === 'TypeError' && /fetch/i.test(_context3.t0.message))) {
-              _context3.next = 35;
+            if (!(_context3.t2 && _context3.t2.name === 'TypeError' && /fetch/i.test(_context3.t2.message))) {
+              _context3.next = 38;
               break;
             }
             throw Object.assign(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request), {
-              cause: _context3.t0.cause || _context3.t0
+              cause: _context3.t2.cause || _context3.t2
             });
-          case 35:
-            throw AxiosError.from(_context3.t0, _context3.t0 && _context3.t0.code, config, request);
-          case 36:
+          case 38:
+            throw AxiosError.from(_context3.t2, _context3.t2 && _context3.t2.code, config, request);
+          case 39:
           case "end":
             return _context3.stop();
         }
-      }, _callee3, null, [[4, 30]]);
+      }, _callee3, null, [[4, 33]]);
     }));
     return function (_x4) {
       return _ref3.apply(this, arguments);
@@ -3545,7 +3560,7 @@
     });
   }
 
-  var VERSION = "1.7.0-beta.1";
+  var VERSION = "1.7.0-beta.2";
 
   var validators$1 = {};
 

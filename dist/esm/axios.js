@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.2 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.0 Copyright (c) 2024 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -2825,7 +2825,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
 
     let response = await fetch(request);
 
-    const isStreamResponse = responseType === 'stream' || responseType === 'response';
+    const isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
 
     if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
       const options = {};
@@ -3026,7 +3026,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION$1 = "1.7.0-beta.2";
+const VERSION$1 = "1.7.0";
 
 const validators$1 = {};
 

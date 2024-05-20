@@ -1,4 +1,4 @@
-// Axios v1.7.0 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.1 Copyright (c) 2024 Matt Zabriskie and contributors
 'use strict';
 
 function bind(fn, thisArg) {
@@ -2633,16 +2633,14 @@ const streamChunk = function* (chunk, chunkSize) {
   }
 };
 
-const encoder = new TextEncoder();
-
-const readBytes = async function* (iterable, chunkSize) {
+const readBytes = async function* (iterable, chunkSize, encode) {
   for await (const chunk of iterable) {
-    yield* streamChunk(ArrayBuffer.isView(chunk) ? chunk : (await encoder.encode(String(chunk))), chunkSize);
+    yield* streamChunk(ArrayBuffer.isView(chunk) ? chunk : (await encode(String(chunk))), chunkSize);
   }
 };
 
-const trackStream = (stream, chunkSize, onProgress, onFinish) => {
-  const iterator = readBytes(stream, chunkSize);
+const trackStream = (stream, chunkSize, onProgress, onFinish, encode) => {
+  const iterator = readBytes(stream, chunkSize, encode);
 
   let bytes = 0;
 
@@ -2682,6 +2680,12 @@ const fetchProgressDecorator = (total, fn) => {
 
 const isFetchSupported = typeof fetch !== 'undefined';
 const isReadableStreamSupported = isFetchSupported && typeof ReadableStream !== 'undefined';
+
+// used only inside the fetch adapter
+const encodeText = isFetchSupported && (typeof TextEncoder !== 'undefined' ?
+    ((encoder) => (str) => encoder.encode(str))(new TextEncoder()) :
+    async (str) => new Uint8Array(await new Response(str).arrayBuffer())
+);
 
 const supportsRequestStream = isReadableStreamSupported && (() => {
   let duplexAccessed = false;
@@ -2743,7 +2747,7 @@ const getBodyLength = async (body) => {
   }
 
   if(utils$1.isString(body)) {
-    return (await new TextEncoder().encode(body)).byteLength;
+    return (await encodeText(body)).byteLength;
   }
 };
 
@@ -2807,7 +2811,7 @@ var fetchAdapter = isFetchSupported && (async (config) => {
         data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
           requestContentLength,
           progressEventReducer(onUploadProgress)
-        ));
+        ), null, encodeText);
       }
     }
 
@@ -2842,7 +2846,7 @@ var fetchAdapter = isFetchSupported && (async (config) => {
         trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(
           responseContentLength,
           progressEventReducer(onDownloadProgress, true)
-        ), isStreamResponse && onFinish),
+        ), isStreamResponse && onFinish, encodeText),
         options
       );
     }
@@ -3028,7 +3032,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION = "1.7.0";
+const VERSION = "1.7.1";
 
 const validators$1 = {};
 

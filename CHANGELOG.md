@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.7.1](https://github.com/axios/axios/compare/v1.7.0...v1.7.1) (2024-05-20)
+
+
+### Bug Fixes
+
+* **fetch:** fixed ReferenceError issue when TextEncoder is not available in the environment; ([#6410](https://github.com/axios/axios/issues/6410)) ([733f15f](https://github.com/axios/axios/commit/733f15fe5bd2d67e1fadaee82e7913b70d45dc5e))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+14/-9 (#6410 )")
+
 # [1.7.0](https://github.com/axios/axios/compare/v1.7.0-beta.2...v1.7.0) (2024-05-19)
 
 

@@ -1,4 +1,4 @@
-// Axios v1.7.1 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.2 Copyright (c) 2024 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -2676,11 +2676,11 @@ const fetchProgressDecorator = (total, fn) => {
   }));
 };
 
-const isFetchSupported = typeof fetch !== 'undefined';
-const isReadableStreamSupported = isFetchSupported && typeof ReadableStream !== 'undefined';
+const isFetchSupported = typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
+const isReadableStreamSupported = isFetchSupported && typeof ReadableStream === 'function';
 
 // used only inside the fetch adapter
-const encodeText = isFetchSupported && (typeof TextEncoder !== 'undefined' ?
+const encodeText = isFetchSupported && (typeof TextEncoder === 'function' ?
     ((encoder) => (str) => encoder.encode(str))(new TextEncoder()) :
     async (str) => new Uint8Array(await new Response(str).arrayBuffer())
 );
@@ -3030,7 +3030,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION$1 = "1.7.1";
+const VERSION$1 = "1.7.2";
 
 const validators$1 = {};
 

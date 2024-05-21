@@ -1,4 +1,4 @@
-// Axios v1.7.1 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.2 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -3224,11 +3224,11 @@
       });
     };
   };
-  var isFetchSupported = typeof fetch !== 'undefined';
-  var isReadableStreamSupported = isFetchSupported && typeof ReadableStream !== 'undefined';
+  var isFetchSupported = typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
+  var isReadableStreamSupported = isFetchSupported && typeof ReadableStream === 'function';
 
   // used only inside the fetch adapter
-  var encodeText = isFetchSupported && (typeof TextEncoder !== 'undefined' ? function (encoder) {
+  var encodeText = isFetchSupported && (typeof TextEncoder === 'function' ? function (encoder) {
     return function (str) {
       return encoder.encode(str);
     };
@@ -3586,7 +3586,7 @@
     });
   }
 
-  var VERSION = "1.7.1";
+  var VERSION = "1.7.2";
 
   var validators$1 = {};
 

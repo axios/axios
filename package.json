@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -160,8 +160,8 @@
   "contributors": [
     "Matt Zabriskie (https://github.com/mzabriskie)",
     "Nick Uraltsev (https://github.com/nickuraltsev)",
-    "Jay (https://github.com/jasonsaayman)",
     "Dmitriy Mozgovoy (https://github.com/DigitalBrainJS)",
+    "Jay (https://github.com/jasonsaayman)",
     "Emily Morehouse (https://github.com/emilyemorehouse)",
     "Rubén Norte (https://github.com/rubennorte)",
     "Justin Beckwith (https://github.com/JustinBeckwith)",

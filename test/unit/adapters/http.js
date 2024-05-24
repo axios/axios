@@ -1532,4 +1532,24 @@ describe('supports http with nodejs', function () {
       }).catch(done);
     });
   });
+
+  it('should support function as paramsSerializer value', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end('ok');
+    }).listen(4444, function () {
+      var data;
+
+      axios.post('http://localhost:4444', 'test', {
+        params: {
+          x: 1
+        },
+        paramsSerializer: () => 'foo',
+        maxRedirects: 0,
+      }).then(function (res) {
+        assert.strictEqual(res.request.path, '/?foo');
+        data = res;
+        done()
+      }).catch(done);
+    });
+  });
 });

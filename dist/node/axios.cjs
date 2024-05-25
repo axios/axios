@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.1 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.2 Copyright (c) 2024 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');
@@ -2035,7 +2035,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-const VERSION = "1.7.0-beta.1";
+const VERSION = "1.7.2";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -3702,16 +3702,14 @@ const streamChunk = function* (chunk, chunkSize) {
   }
 };
 
-const encoder = new TextEncoder();
-
-const readBytes = async function* (iterable, chunkSize) {
+const readBytes = async function* (iterable, chunkSize, encode) {
   for await (const chunk of iterable) {
-    yield* streamChunk(ArrayBuffer.isView(chunk) ? chunk : (await encoder.encode(String(chunk))), chunkSize);
+    yield* streamChunk(ArrayBuffer.isView(chunk) ? chunk : (await encode(String(chunk))), chunkSize);
   }
 };
 
-const trackStream = (stream, chunkSize, onProgress, onFinish) => {
-  const iterator = readBytes(stream, chunkSize);
+const trackStream = (stream, chunkSize, onProgress, onFinish, encode) => {
+  const iterator = readBytes(stream, chunkSize, encode);
 
   let bytes = 0;
 
@@ -3749,8 +3747,14 @@ const fetchProgressDecorator = (total, fn) => {
   }));
 };
 
-const isFetchSupported = typeof fetch !== 'undefined';
-const isReadableStreamSupported = isFetchSupported && typeof ReadableStream !== 'undefined';
+const isFetchSupported = typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
+const isReadableStreamSupported = isFetchSupported && typeof ReadableStream === 'function';
+
+// used only inside the fetch adapter
+const encodeText = isFetchSupported && (typeof TextEncoder === 'function' ?
+    ((encoder) => (str) => encoder.encode(str))(new TextEncoder()) :
+    async (str) => new Uint8Array(await new Response(str).arrayBuffer())
+);
 
 const supportsRequestStream = isReadableStreamSupported && (() => {
   let duplexAccessed = false;
@@ -3791,6 +3795,10 @@ isFetchSupported && (((res) => {
 })(new Response));
 
 const getBodyLength = async (body) => {
+  if (body == null) {
+    return 0;
+  }
+
   if(utils$1.isBlob(body)) {
     return body.size;
   }
@@ -3808,7 +3816,7 @@ const getBodyLength = async (body) => {
   }
 
   if(utils$1.isString(body)) {
-    return (await new TextEncoder().encode(body)).byteLength;
+    return (await encodeText(body)).byteLength;
   }
 };
 
@@ -3849,12 +3857,15 @@ const fetchAdapter = isFetchSupported && (async (config) => {
     finished = true;
   };
 
-  try {
-    if (onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head') {
-      let requestContentLength = await resolveBodyLength(headers, data);
+  let requestContentLength;
 
+  try {
+    if (
+      onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head' &&
+      (requestContentLength = await resolveBodyLength(headers, data)) !== 0
+    ) {
       let _request = new Request(url, {
-        method,
+        method: 'POST',
         body: data,
         duplex: "half"
       });
@@ -3865,10 +3876,12 @@ const fetchAdapter = isFetchSupported && (async (config) => {
         headers.setContentType(contentTypeHeader);
       }
 
-      data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
-        requestContentLength,
-        progressEventReducer(onUploadProgress)
-      ));
+      if (_request.body) {
+        data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
+          requestContentLength,
+          progressEventReducer(onUploadProgress)
+        ), null, encodeText);
+      }
     }
 
     if (!utils$1.isString(withCredentials)) {
@@ -3878,7 +3891,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
     request = new Request(url, {
       ...fetchOptions,
       signal: composedSignal,
-      method,
+      method: method.toUpperCase(),
       headers: headers.normalize().toJSON(),
       body: data,
       duplex: "half",
@@ -3887,12 +3900,12 @@ const fetchAdapter = isFetchSupported && (async (config) => {
 
     let response = await fetch(request);
 
-    const isStreamResponse = responseType === 'stream' || responseType === 'response';
+    const isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
 
     if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
       const options = {};
 
-      Object.getOwnPropertyNames(response).forEach(prop => {
+      ['status', 'statusText', 'headers'].forEach(prop => {
         options[prop] = response[prop];
       });
 
@@ -3902,7 +3915,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
         trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(
           responseContentLength,
           progressEventReducer(onDownloadProgress, true)
-        ), isStreamResponse && onFinish),
+        ), isStreamResponse && onFinish, encodeText),
         options
       );
     }

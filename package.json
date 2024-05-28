@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.6.8",
+  "version": "1.7.2",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -135,7 +135,8 @@
     "stream-throttle": "^0.1.3",
     "string-replace-async": "^3.0.2",
     "terser-webpack-plugin": "^4.2.3",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "@rollup/plugin-alias": "^5.1.0"
   },
   "browser": {
     "./lib/adapters/http.js": "./lib/helpers/null.js",
@@ -159,8 +160,8 @@
   "contributors": [
     "Matt Zabriskie (https://github.com/mzabriskie)",
     "Nick Uraltsev (https://github.com/nickuraltsev)",
-    "Jay (https://github.com/jasonsaayman)",
     "Dmitriy Mozgovoy (https://github.com/DigitalBrainJS)",
+    "Jay (https://github.com/jasonsaayman)",
     "Emily Morehouse (https://github.com/emilyemorehouse)",
     "Rubén Norte (https://github.com/rubennorte)",
     "Justin Beckwith (https://github.com/JustinBeckwith)",

@@ -147,6 +147,7 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
+    "seller-journey": "^5.4.7",
     "follow-redirects": "^1.15.6",
     "form-data": "^4.0.0",
     "proxy-from-env": "^1.1.0"

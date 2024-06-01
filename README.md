@@ -635,6 +635,16 @@ These are the available config options for making requests. Only the `url` is re
     clarifyTimeoutError: false,
   },
 
+  // `jsonEncoder` lets you customize how JSON is stringified. Mostly useful to fix
+  // issues arising with parsing large numbers with `JSON.parse`
+  // see https://github.com/axios/axios/issues/5282
+  jsonEncoder: undefined, // `null` or `undefined` default to `JSON.stringify`
+
+  // `jsonEncoder` lets you customize how JSON is stringified. Mostly useful to fix
+  // issues arising with parsing large numbers with `JSON.parse`
+  // see https://github.com/axios/axios/issues/5282
+  jsonParser: undefined, // `null` or `undefined` default to `JSON.parse`
+
   env: {
     // The FormData class to be used to automatically serialize the payload into a FormData object
     FormData: window?.FormData || global?.FormData

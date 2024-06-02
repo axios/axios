@@ -1,6 +1,6 @@
 # Changelog
 
-# [1.7.0-beta.0](https://github.com/axios/axios/compare/v1.6.8...v1.7.0-beta.0) (2024-04-28)
+# [1.7.0-beta.0](https://github.com/axios /axios/compare/v1.6.8...v1.7.0-beta.0) (2024-04-28)
 
 
 ### Features

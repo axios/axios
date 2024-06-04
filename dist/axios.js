@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.0 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.2 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -3085,9 +3085,8 @@
       }
     }, streamChunk);
   });
-  var encoder = new TextEncoder();
   var readBytes = /*#__PURE__*/function () {
-    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize) {
+    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize, encode) {
       var _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, chunk;
       return _regeneratorRuntime().wrap(function _callee$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
@@ -3117,7 +3116,7 @@
             break;
           case 15:
             _context2.next = 17;
-            return _awaitAsyncGenerator(encoder.encode(String(chunk)));
+            return _awaitAsyncGenerator(encode(String(chunk)));
           case 17:
             _context2.t3 = _context2.sent;
           case 18:
@@ -3165,12 +3164,12 @@
         }
       }, _callee, null, [[2, 29, 33, 43], [34,, 38, 42]]);
     }));
-    return function readBytes(_x, _x2) {
+    return function readBytes(_x, _x2, _x3) {
       return _ref.apply(this, arguments);
     };
   }();
-  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish) {
-    var iterator = readBytes(stream, chunkSize);
+  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish, encode) {
+    var iterator = readBytes(stream, chunkSize, encode);
     var bytes = 0;
     return new ReadableStream({
       type: 'bytes',
@@ -3225,8 +3224,36 @@
       });
     };
   };
-  var isFetchSupported = typeof fetch !== 'undefined';
-  var supportsRequestStreams = isFetchSupported && function () {
+  var isFetchSupported = typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
+  var isReadableStreamSupported = isFetchSupported && typeof ReadableStream === 'function';
+
+  // used only inside the fetch adapter
+  var encodeText = isFetchSupported && (typeof TextEncoder === 'function' ? function (encoder) {
+    return function (str) {
+      return encoder.encode(str);
+    };
+  }(new TextEncoder()) : ( /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(str) {
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            _context.t0 = Uint8Array;
+            _context.next = 3;
+            return new Response(str).arrayBuffer();
+          case 3:
+            _context.t1 = _context.sent;
+            return _context.abrupt("return", new _context.t0(_context.t1));
+          case 5:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return function (_x) {
+      return _ref.apply(this, arguments);
+    };
+  }()));
+  var supportsRequestStream = isReadableStreamSupported && function () {
     var duplexAccessed = false;
     var hasContentType = new Request(platform.origin, {
       body: new ReadableStream(),
@@ -3239,149 +3266,173 @@
     return duplexAccessed && !hasContentType;
   }();
   var DEFAULT_CHUNK_SIZE = 64 * 1024;
+  var supportsResponseStream = isReadableStreamSupported && !!function () {
+    try {
+      return utils$1.isReadableStream(new Response('').body);
+    } catch (err) {
+      // return undefined
+    }
+  }();
   var resolvers = {
-    stream: function stream(res) {
+    stream: supportsResponseStream && function (res) {
       return res.body;
     }
   };
-  isFetchSupported && ['text', 'arrayBuffer', 'blob', 'formData'].forEach(function (type) {
-    return [resolvers[type] = utils$1.isFunction(Response.prototype[type]) ? function (res) {
-      return res[type]();
-    } : function (_, config) {
-      throw new AxiosError("Response type ".concat(type, " is not supported"), AxiosError.ERR_NOT_SUPPORT, config);
-    }];
-  });
+  isFetchSupported && function (res) {
+    ['text', 'arrayBuffer', 'blob', 'formData', 'stream'].forEach(function (type) {
+      !resolvers[type] && (resolvers[type] = utils$1.isFunction(res[type]) ? function (res) {
+        return res[type]();
+      } : function (_, config) {
+        throw new AxiosError("Response type '".concat(type, "' is not supported"), AxiosError.ERR_NOT_SUPPORT, config);
+      });
+    });
+  }(new Response());
   var getBodyLength = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(body) {
-      return _regeneratorRuntime().wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(body) {
+      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
           case 0:
-            if (!utils$1.isBlob(body)) {
-              _context.next = 2;
+            if (!(body == null)) {
+              _context2.next = 2;
               break;
             }
-            return _context.abrupt("return", body.size);
+            return _context2.abrupt("return", 0);
           case 2:
+            if (!utils$1.isBlob(body)) {
+              _context2.next = 4;
+              break;
+            }
+            return _context2.abrupt("return", body.size);
+          case 4:
             if (!utils$1.isSpecCompliantForm(body)) {
-              _context.next = 6;
+              _context2.next = 8;
               break;
             }
-            _context.next = 5;
+            _context2.next = 7;
             return new Request(body).arrayBuffer();
-          case 5:
-            return _context.abrupt("return", _context.sent.byteLength);
-          case 6:
+          case 7:
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 8:
             if (!utils$1.isArrayBufferView(body)) {
-              _context.next = 8;
+              _context2.next = 10;
               break;
             }
-            return _context.abrupt("return", body.byteLength);
-          case 8:
+            return _context2.abrupt("return", body.byteLength);
+          case 10:
             if (utils$1.isURLSearchParams(body)) {
               body = body + '';
             }
             if (!utils$1.isString(body)) {
-              _context.next = 13;
+              _context2.next = 15;
               break;
             }
-            _context.next = 12;
-            return new TextEncoder().encode(body);
-          case 12:
-            return _context.abrupt("return", _context.sent.byteLength);
-          case 13:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee);
-    }));
-    return function getBodyLength(_x) {
-      return _ref.apply(this, arguments);
-    };
-  }();
-  var resolveBodyLength = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(headers, body) {
-      var length;
-      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            length = utils$1.toFiniteNumber(headers.getContentLength());
-            return _context2.abrupt("return", length == null ? getBodyLength(body) : length);
-          case 2:
+            _context2.next = 14;
+            return encodeText(body);
+          case 14:
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 15:
           case "end":
             return _context2.stop();
         }
       }, _callee2);
     }));
-    return function resolveBodyLength(_x2, _x3) {
+    return function getBodyLength(_x2) {
       return _ref2.apply(this, arguments);
     };
   }();
-  var fetchAdapter = ( /*#__PURE__*/(function () {
-    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref4, _ref5, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData, code;
+  var resolveBodyLength = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(headers, body) {
+      var length;
       return _regeneratorRuntime().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
+            length = utils$1.toFiniteNumber(headers.getContentLength());
+            return _context3.abrupt("return", length == null ? getBodyLength(body) : length);
+          case 2:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3);
+    }));
+    return function resolveBodyLength(_x3, _x4) {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(config) {
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref5, _ref6, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData;
+      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
             _resolveConfig = resolveConfig(config), url = _resolveConfig.url, method = _resolveConfig.method, data = _resolveConfig.data, signal = _resolveConfig.signal, cancelToken = _resolveConfig.cancelToken, timeout = _resolveConfig.timeout, onDownloadProgress = _resolveConfig.onDownloadProgress, onUploadProgress = _resolveConfig.onUploadProgress, responseType = _resolveConfig.responseType, headers = _resolveConfig.headers, _resolveConfig$withCr = _resolveConfig.withCredentials, withCredentials = _resolveConfig$withCr === void 0 ? 'same-origin' : _resolveConfig$withCr, fetchOptions = _resolveConfig.fetchOptions;
             responseType = responseType ? (responseType + '').toLowerCase() : 'text';
-            _ref4 = signal || cancelToken || timeout ? composeSignals$1([signal, cancelToken], timeout) : [], _ref5 = _slicedToArray(_ref4, 2), composedSignal = _ref5[0], stopTimeout = _ref5[1];
+            _ref5 = signal || cancelToken || timeout ? composeSignals$1([signal, cancelToken], timeout) : [], _ref6 = _slicedToArray(_ref5, 2), composedSignal = _ref6[0], stopTimeout = _ref6[1];
             onFinish = function onFinish() {
               !finished && setTimeout(function () {
                 composedSignal && composedSignal.unsubscribe();
               });
               finished = true;
             };
-            _context3.prev = 4;
-            if (!(onUploadProgress && supportsRequestStreams && method !== 'get' && method !== 'head')) {
-              _context3.next = 12;
+            _context4.prev = 4;
+            _context4.t0 = onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head';
+            if (!_context4.t0) {
+              _context4.next = 11;
               break;
             }
-            _context3.next = 8;
+            _context4.next = 9;
             return resolveBodyLength(headers, data);
-          case 8:
-            requestContentLength = _context3.sent;
+          case 9:
+            _context4.t1 = requestContentLength = _context4.sent;
+            _context4.t0 = _context4.t1 !== 0;
+          case 11:
+            if (!_context4.t0) {
+              _context4.next = 15;
+              break;
+            }
             _request = new Request(url, {
-              method: method,
+              method: 'POST',
               body: data,
               duplex: "half"
             });
             if (utils$1.isFormData(data) && (contentTypeHeader = _request.headers.get('content-type'))) {
               headers.setContentType(contentTypeHeader);
             }
-            data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress)));
-          case 12:
+            if (_request.body) {
+              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress)), null, encodeText);
+            }
+          case 15:
             if (!utils$1.isString(withCredentials)) {
               withCredentials = withCredentials ? 'cors' : 'omit';
             }
             request = new Request(url, _objectSpread2(_objectSpread2({}, fetchOptions), {}, {
               signal: composedSignal,
-              method: method,
+              method: method.toUpperCase(),
               headers: headers.normalize().toJSON(),
               body: data,
               duplex: "half",
               withCredentials: withCredentials
             }));
-            _context3.next = 16;
+            _context4.next = 19;
             return fetch(request);
-          case 16:
-            response = _context3.sent;
-            isStreamResponse = responseType === 'stream' || responseType === 'response';
-            if (onDownloadProgress || isStreamResponse) {
+          case 19:
+            response = _context4.sent;
+            isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
+            if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
               options = {};
-              Object.getOwnPropertyNames(response).forEach(function (prop) {
+              ['status', 'statusText', 'headers'].forEach(function (prop) {
                 options[prop] = response[prop];
               });
               responseContentLength = utils$1.toFiniteNumber(response.headers.get('content-length'));
-              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(responseContentLength, progressEventReducer(onDownloadProgress, true)), isStreamResponse && onFinish), options);
+              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(responseContentLength, progressEventReducer(onDownloadProgress, true)), isStreamResponse && onFinish, encodeText), options);
             }
             responseType = responseType || 'text';
-            _context3.next = 22;
+            _context4.next = 25;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
-          case 22:
-            responseData = _context3.sent;
+          case 25:
+            responseData = _context4.sent;
             !isStreamResponse && onFinish();
             stopTimeout && stopTimeout();
-            _context3.next = 27;
+            _context4.next = 30;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
                 data: responseData,
@@ -3392,27 +3443,31 @@
                 request: request
               });
             });
-          case 27:
-            return _context3.abrupt("return", _context3.sent);
           case 30:
-            _context3.prev = 30;
-            _context3.t0 = _context3["catch"](4);
+            return _context4.abrupt("return", _context4.sent);
+          case 33:
+            _context4.prev = 33;
+            _context4.t2 = _context4["catch"](4);
             onFinish();
-            code = _context3.t0.code;
-            if (_context3.t0.name === 'NetworkError') {
-              code = AxiosError.ERR_NETWORK;
+            if (!(_context4.t2 && _context4.t2.name === 'TypeError' && /fetch/i.test(_context4.t2.message))) {
+              _context4.next = 38;
+              break;
             }
-            throw AxiosError.from(_context3.t0, code, config, request);
-          case 36:
+            throw Object.assign(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request), {
+              cause: _context4.t2.cause || _context4.t2
+            });
+          case 38:
+            throw AxiosError.from(_context4.t2, _context4.t2 && _context4.t2.code, config, request);
+          case 39:
           case "end":
-            return _context3.stop();
+            return _context4.stop();
         }
-      }, _callee3, null, [[4, 30]]);
+      }, _callee4, null, [[4, 33]]);
     }));
-    return function (_x4) {
-      return _ref3.apply(this, arguments);
+    return function (_x5) {
+      return _ref4.apply(this, arguments);
     };
-  })());
+  }());
 
   var knownAdapters = {
     http: httpAdapter,
@@ -3531,7 +3586,7 @@
     });
   }
 
-  var VERSION = "1.7.0-beta.0";
+  var VERSION = "1.7.2";
 
   var validators$1 = {};
 
@@ -3656,11 +3711,15 @@
 
                   // slice off the Error: ... line
                   stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
-                  if (!_context.t0.stack) {
-                    _context.t0.stack = stack;
-                    // match without the 2 top stack lines
-                  } else if (stack && !String(_context.t0.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
-                    _context.t0.stack += '\n' + stack;
+                  try {
+                    if (!_context.t0.stack) {
+                      _context.t0.stack = stack;
+                      // match without the 2 top stack lines
+                    } else if (stack && !String(_context.t0.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
+                      _context.t0.stack += '\n' + stack;
+                    }
+                  } catch (e) {
+                    // ignore the case where "stack" is an un-writable property
                   }
                 }
                 throw _context.t0;

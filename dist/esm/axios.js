@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.0 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.2 Copyright (c) 2024 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -2631,16 +2631,14 @@ const streamChunk = function* (chunk, chunkSize) {
   }
 };
 
-const encoder = new TextEncoder();
-
-const readBytes = async function* (iterable, chunkSize) {
+const readBytes = async function* (iterable, chunkSize, encode) {
   for await (const chunk of iterable) {
-    yield* streamChunk(ArrayBuffer.isView(chunk) ? chunk : (await encoder.encode(String(chunk))), chunkSize);
+    yield* streamChunk(ArrayBuffer.isView(chunk) ? chunk : (await encode(String(chunk))), chunkSize);
   }
 };
 
-const trackStream = (stream, chunkSize, onProgress, onFinish) => {
-  const iterator = readBytes(stream, chunkSize);
+const trackStream = (stream, chunkSize, onProgress, onFinish, encode) => {
+  const iterator = readBytes(stream, chunkSize, encode);
 
   let bytes = 0;
 
@@ -2678,9 +2676,16 @@ const fetchProgressDecorator = (total, fn) => {
   }));
 };
 
-const isFetchSupported = typeof fetch !== 'undefined';
+const isFetchSupported = typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
+const isReadableStreamSupported = isFetchSupported && typeof ReadableStream === 'function';
 
-const supportsRequestStreams = isFetchSupported && (() => {
+// used only inside the fetch adapter
+const encodeText = isFetchSupported && (typeof TextEncoder === 'function' ?
+    ((encoder) => (str) => encoder.encode(str))(new TextEncoder()) :
+    async (str) => new Uint8Array(await new Response(str).arrayBuffer())
+);
+
+const supportsRequestStream = isReadableStreamSupported && (() => {
   let duplexAccessed = false;
 
   const hasContentType = new Request(platform.origin, {
@@ -2697,17 +2702,32 @@ const supportsRequestStreams = isFetchSupported && (() => {
 
 const DEFAULT_CHUNK_SIZE = 64 * 1024;
 
+const supportsResponseStream = isReadableStreamSupported && !!(()=> {
+  try {
+    return utils$1.isReadableStream(new Response('').body);
+  } catch(err) {
+    // return undefined
+  }
+})();
+
 const resolvers = {
-  stream: (res) => res.body
+  stream: supportsResponseStream && ((res) => res.body)
 };
 
-isFetchSupported && ['text', 'arrayBuffer', 'blob', 'formData'].forEach(type => [
-  resolvers[type] = utils$1.isFunction(Response.prototype[type]) ? (res) => res[type]() : (_, config) => {
-    throw new AxiosError$1(`Response type ${type} is not supported`, AxiosError$1.ERR_NOT_SUPPORT, config);
-  }
-]);
+isFetchSupported && (((res) => {
+  ['text', 'arrayBuffer', 'blob', 'formData', 'stream'].forEach(type => {
+    !resolvers[type] && (resolvers[type] = utils$1.isFunction(res[type]) ? (res) => res[type]() :
+      (_, config) => {
+        throw new AxiosError$1(`Response type '${type}' is not supported`, AxiosError$1.ERR_NOT_SUPPORT, config);
+      });
+  });
+})(new Response));
 
 const getBodyLength = async (body) => {
+  if (body == null) {
+    return 0;
+  }
+
   if(utils$1.isBlob(body)) {
     return body.size;
   }
@@ -2725,7 +2745,7 @@ const getBodyLength = async (body) => {
   }
 
   if(utils$1.isString(body)) {
-    return (await new TextEncoder().encode(body)).byteLength;
+    return (await encodeText(body)).byteLength;
   }
 };
 
@@ -2735,7 +2755,7 @@ const resolveBodyLength = async (headers, body) => {
   return length == null ? getBodyLength(body) : length;
 };
 
-const fetchAdapter = async (config) => {
+const fetchAdapter = isFetchSupported && (async (config) => {
   let {
     url,
     method,
@@ -2766,12 +2786,15 @@ const fetchAdapter = async (config) => {
     finished = true;
   };
 
-  try {
-    if (onUploadProgress && supportsRequestStreams && method !== 'get' && method !== 'head') {
-      let requestContentLength = await resolveBodyLength(headers, data);
+  let requestContentLength;
 
+  try {
+    if (
+      onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head' &&
+      (requestContentLength = await resolveBodyLength(headers, data)) !== 0
+    ) {
       let _request = new Request(url, {
-        method,
+        method: 'POST',
         body: data,
         duplex: "half"
       });
@@ -2782,10 +2805,12 @@ const fetchAdapter = async (config) => {
         headers.setContentType(contentTypeHeader);
       }
 
-      data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
-        requestContentLength,
-        progressEventReducer(onUploadProgress)
-      ));
+      if (_request.body) {
+        data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(
+          requestContentLength,
+          progressEventReducer(onUploadProgress)
+        ), null, encodeText);
+      }
     }
 
     if (!utils$1.isString(withCredentials)) {
@@ -2795,7 +2820,7 @@ const fetchAdapter = async (config) => {
     request = new Request(url, {
       ...fetchOptions,
       signal: composedSignal,
-      method,
+      method: method.toUpperCase(),
       headers: headers.normalize().toJSON(),
       body: data,
       duplex: "half",
@@ -2804,12 +2829,12 @@ const fetchAdapter = async (config) => {
 
     let response = await fetch(request);
 
-    const isStreamResponse = responseType === 'stream' || responseType === 'response';
+    const isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
 
-    if (onDownloadProgress || isStreamResponse) {
+    if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
       const options = {};
 
-      Object.getOwnPropertyNames(response).forEach(prop => {
+      ['status', 'statusText', 'headers'].forEach(prop => {
         options[prop] = response[prop];
       });
 
@@ -2819,7 +2844,7 @@ const fetchAdapter = async (config) => {
         trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(
           responseContentLength,
           progressEventReducer(onDownloadProgress, true)
-        ), isStreamResponse && onFinish),
+        ), isStreamResponse && onFinish, encodeText),
         options
       );
     }
@@ -2845,15 +2870,18 @@ const fetchAdapter = async (config) => {
   } catch (err) {
     onFinish();
 
-    let {code} = err;
-
-    if (err.name === 'NetworkError') {
-      code = AxiosError$1.ERR_NETWORK;
+    if (err && err.name === 'TypeError' && /fetch/i.test(err.message)) {
+      throw Object.assign(
+        new AxiosError$1('Network Error', AxiosError$1.ERR_NETWORK, config, request),
+        {
+          cause: err.cause || err
+        }
+      )
     }
 
-    throw AxiosError$1.from(err, code, config, request);
+    throw AxiosError$1.from(err, err && err.code, config, request);
   }
-};
+});
 
 const knownAdapters = {
   http: httpAdapter,
@@ -3002,7 +3030,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION$1 = "1.7.0-beta.0";
+const VERSION$1 = "1.7.2";
 
 const validators$1 = {};
 
@@ -3128,12 +3156,15 @@ class Axios$1 {
 
         // slice off the Error: ... line
         const stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
-
-        if (!err.stack) {
-          err.stack = stack;
-          // match without the 2 top stack lines
-        } else if (stack && !String(err.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
-          err.stack += '\n' + stack;
+        try {
+          if (!err.stack) {
+            err.stack = stack;
+            // match without the 2 top stack lines
+          } else if (stack && !String(err.stack).endsWith(stack.replace(/^.+\n.+\n/, ''))) {
+            err.stack += '\n' + stack;
+          }
+        } catch (e) {
+          // ignore the case where "stack" is an un-writable property
         }
       }
 

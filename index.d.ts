@@ -724,6 +724,8 @@ export function mergeConfig<D = any>(
   config2: AxiosRequestConfig<D>
 ): AxiosRequestConfig<D>;
 
+export function create(config?: CreateAxiosDefaults): AxiosInstance;
+
 export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;

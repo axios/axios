@@ -58,6 +58,10 @@ describe('static api', function () {
   it('should have getAdapter properties', function () {
     expect(typeof axios.getAdapter).toEqual('function');
   });
+  
+  it('should have create properties', function () {
+    expect(typeof axios.create).toEqual('function');
+  });
 });
 
 describe('instance api', function () {

@@ -488,7 +488,7 @@ These are the available config options for making requests. Only the `url` is re
   },
   // Also, you can set the name of the built-in adapter, or provide an array with their names
   // to choose the first available in the environment
-  adapter: 'xhr' // 'fetch' | 'http' | ['xhr', 'http', 'fetch']
+  adapter: 'xhr', // 'fetch' | 'http' | ['xhr', 'http', 'fetch']
 
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing

@@ -22,7 +22,8 @@ const config: AxiosRequestConfig = {
   params: { id: 12345 },
   paramsSerializer: {
     indexes: true,
-    encode: (value) => value
+    encode: (value) => value,
+    serialize: (value, options) => String(value)
   },
   data: { foo: 'bar' },
   timeout: 10000,

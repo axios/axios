@@ -1,4 +1,4 @@
-// axios v0.28.0 Copyright (c) 2024 Matt Zabriskie
+// axios v0.28.1 Copyright (c) 2024 Matt Zabriskie
 var bind = function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -869,12 +869,20 @@ var buildURL = function buildURL(url, params, options) {
 
   var _encode = options && options.encode || encode;
 
-  var serializerParams = utils.isURLSearchParams(params) ?
-    params.toString() :
-    new AxiosURLSearchParams_1(params, options).toString(_encode);
+  var serializeFn = options && options.serialize;
 
-  if (serializerParams) {
-    url += (url.indexOf('?') === -1 ? '?' : '&') + serializerParams;
+  var serializedParams;
+
+  if (serializeFn) {
+    serializedParams = serializeFn(params, options);
+  } else {
+    serializedParams = utils.isURLSearchParams(params) ?
+      params.toString() :
+      new AxiosURLSearchParams_1(params, options).toString(_encode);
+  }
+
+  if (serializedParams) {
+    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
   }
 
   return url;
@@ -1489,7 +1497,7 @@ var xhr = function xhrAdapter(config) {
         if (!request) {
           return;
         }
-        reject(!cancel || cancel.type ? new CanceledError_1(null, config, req) : cancel);
+        reject(!cancel || cancel.type ? new CanceledError_1(null, config, request) : cancel);
         request.abort();
         request = null;
       };
@@ -1893,7 +1901,7 @@ var mergeConfig = function mergeConfig(config1, config2) {
 };
 
 var data = {
-  "version": "0.28.0"
+  "version": "0.28.1"
 };
 
 var VERSION = data.version;
@@ -2033,6 +2041,13 @@ Axios.prototype.request = function request(configOrUrl, config) {
   }
 
   var paramsSerializer = config.paramsSerializer;
+
+  if (paramsSerializer !== undefined) {
+    validator.assertOptions(paramsSerializer, {
+      encode: validators.function,
+      serialize: validators.function
+    }, true);
+  }
 
   utils.isFunction(paramsSerializer) && (config.paramsSerializer = {serialize: paramsSerializer});
 

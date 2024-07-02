@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.28.1](https://github.com/axios/axios/compare/v0.28.0...v0.28.1) (2024-03-24)
+
+## Release notes:
+### Bug Fixes
+
+* fix(backport): custom params serializer support (#6263)
+* fix(backport): uncaught ReferenceError `req` is not defined (#6307)
+
 ## [0.28.0](https://github.com/axios/axios/compare/v0.27.2...v0.28.0) (2024-02-12)
 
 ## Release notes:

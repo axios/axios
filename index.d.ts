@@ -209,7 +209,8 @@ export type ResponseType =
     | 'document'
     | 'json'
     | 'text'
-    | 'stream';
+    | 'stream'
+    | 'formdata';
 
 export type responseEncoding =
     | 'ascii' | 'ASCII'
@@ -294,11 +295,12 @@ export interface AxiosProgressEvent {
   upload?: boolean;
   download?: boolean;
   event?: BrowserProgressEvent;
+  lengthComputable: boolean;
 }
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'xhr' | 'http' | string;
+type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
@@ -356,6 +358,7 @@ export interface AxiosRequestConfig<D = any> {
   lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
       ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+  fetchOptions?: Record<string, any>;
 }
 
 // Alias

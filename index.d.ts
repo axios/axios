@@ -538,7 +538,7 @@ export function isCancel(value: any): value is Cancel;
 
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 
-export function mergeConfig<D = any>(config1: AxiosRequestConfig<any>, config2?: AxiosRequestConfig<D>): AxiosRequestConfig<D>;
+export function mergeConfig<D = any>(config1: AxiosRequestConfig, config2?: AxiosRequestConfig<D>): AxiosRequestConfig<D>;
 
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;

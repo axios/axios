@@ -71,6 +71,33 @@ describe('options', function () {
     });
   });
 
+  it('should also accept baseUrl', function (done) {
+    const instance = axios.create({
+      baseUrl: 'http://example.com/'
+    });
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.com/foo');
+      done();
+    });
+  });
+
+  it('should prefer baseURL to baseUrl', function (done) {
+    const instance = axios.create({
+      baseURL: 'http://example.com/',
+      baseUrl: 'http://example.org/'
+    });
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://example.com/foo');
+      done();
+    });
+  });
+
   it('should ignore base URL if request URL is absolute', function (done) {
     const instance = axios.create({
       baseURL: 'http://someurl.com/'

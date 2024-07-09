@@ -71,7 +71,9 @@ describe('options', function () {
     });
   });
 
-  it('should also accept baseUrl', function (done) {
+  it('should warn about baseUrl', function (done) {
+    spyOn(window.console, 'warn');
+
     const instance = axios.create({
       baseUrl: 'http://example.com/'
     });
@@ -79,21 +81,8 @@ describe('options', function () {
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('http://example.com/foo');
-      done();
-    });
-  });
-
-  it('should prefer baseURL to baseUrl', function (done) {
-    const instance = axios.create({
-      baseURL: 'http://example.com/',
-      baseUrl: 'http://example.org/'
-    });
-
-    instance.get('/foo');
-
-    getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('http://example.com/foo');
+      expect(window.console.warn).toHaveBeenCalledWith('baseUrl is likely a misspelling of baseURL');
+      expect(request.url).toBe('/foo');
       done();
     });
   });

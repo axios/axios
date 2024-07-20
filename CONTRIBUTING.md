@@ -20,9 +20,9 @@ Please update the [docs](README.md) accordingly so that there are no discrepanci
 
 ## Developing
 
-- `grunt test` run the jasmine and mocha tests
-- `grunt build` run webpack and bundle the source
-- `grunt version` prepare the code for release
+- `npm run test` run the jasmine and mocha tests
+- `npm run build` run webpack and bundle the source
+- `npm run version` prepare the code for release
 
 Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
 

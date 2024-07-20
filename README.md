@@ -1,8 +1,66 @@
-<h1 align="center">
-   <b>
-        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
-    </b>
-</h1>
+<h3 align="center">
+   Platinum sponsors
+   <br>
+</h3>
+
+<div align="center">
+   <a href="https://runalloy.com?utm_source=github&utm_medium=referral&utm_campaign=121423_axios">
+      <picture>
+         <source width="400px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/f6067247-7eba-4069-852a-ab1bb85b1780">
+         <source width="400px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10">
+         <img width="400px" src="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10" />
+       </picture>
+   </a>
+   
+   <p align="center">Alloy is the integration development platform that makes it simple and <br>fast for SaaS companies to launch critical user-facing integrations.</p>
+   <p align="center">
+      <a href="https://runalloy.com/signup?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Sign up free</b></a> •
+      <a href="https://docs.runalloy.com/docs?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Documentation</b></a>
+   </p>
+   <br><br>
+</div>
+
+<h3 align="center">
+   Gold sponsors
+   <br><br>
+</h3>
+
+<table border="0">
+   <td align="center">
+     <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
+       <picture>
+         <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
+         <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142">
+         <img width="200px" src="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142" />
+       </picture>
+     </a>
+      <p align="center">API-first authentication, authorization, and fraud prevention</p>
+      <p align="center">
+          <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=website-link&utm_campaign=axios-http"><b>Website</b></a> •
+          <a href="https://stytch.com/docs?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=docs-link&utm_campaign=axios-http"><b>Documentation</b></a> • <a href="https://github.com/stytchauth/stytch-node?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=node-sdk&utm_campaign=axios-http"><b>Node.js Backend SDK</b></a>
+      </p>
+   </td>
+   <td align="center">
+     <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
+       <picture>
+         <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/79f572f3-9d57-488d-80cc-58d674bb98d8">
+         <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/18b51893-c4b4-4557-b263-74c2b3de84ab">
+         <img width="200px" src="https://github.com/axios/axios/assets/4814473/18b51893-c4b4-4557-b263-74c2b3de84ab" />
+       </picture>
+     </a>
+      <p align="center">Drag-and-drop authentication, authorization, and identity management</p>
+      <p align="center">
+          <a href="https://www.descope.com/?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Website</b></a> •
+          <a href="https://docs.descope.com/?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Documentation</b></a> • <a href="https://www.descope.com/community?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Community</b></a>
+      </p>
+   </td>
+</table>
+     
+
+<br><br>
+<div align="center">
+   <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+</div>
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 
@@ -67,6 +125,7 @@
   - [🆕 Progress capturing](#-progress-capturing)
   - [🆕 Rate limiting](#-progress-capturing)
   - [🆕 AxiosHeaders](#-axiosheaders)
+  - [🔥 Fetch adapter](#-fetch-adapter)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -157,13 +216,13 @@ const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundl
 Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 ## Example
@@ -423,10 +482,13 @@ These are the available config options for making requests. Only the `url` is re
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
-  // Return a promise and supply a valid response (see lib/adapters/README.md).
+  // Return a promise and supply a valid response (see lib/adapters/README.md)
   adapter: function (config) {
     /* ... */
   },
+  // Also, you can set the name of the built-in adapter, or provide an array with their names
+  // to choose the first available in the environment
+  adapter: 'xhr' // 'fetch' | 'http' | ['xhr', 'http', 'fetch']
 
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing
@@ -445,6 +507,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
+  // options are: 'ascii', 'ASCII', 'ansi', 'ANSI', 'binary', 'BINARY', 'base64', 'BASE64', 'base64url',
+  // 'BASE64URL', 'hex', 'HEX', 'latin1', 'LATIN1', 'ucs-2', 'UCS-2', 'ucs2', 'UCS2', 'utf-8', 'UTF-8',
+  // 'utf8', 'UTF8', 'utf16le', 'UTF16LE'
   responseEncoding: 'utf8', // default
 
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
@@ -452,6 +517,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
+    
+  // `undefined` (default) - set XSRF header only for the same origin requests
+  withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
   // `onUploadProgress` allows handling of progress events for uploads
   // browser & node.js
@@ -543,7 +611,7 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
   // `insecureHTTPParser` boolean.
   // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
@@ -551,7 +619,7 @@ These are the available config options for making requests. Only the `url` is re
   // Using the insecure parser should be avoided.
   // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
-  insecureHTTPParser: undefined // default
+  insecureHTTPParser: undefined, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
@@ -1225,6 +1293,7 @@ Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
 ## 🆕 Progress capturing
 
 Axios supports both browser and node environments to capture request upload/download progress.
+The frequency of progress events is forced to be limited to `3` times per second.
 
 ```js    
 await axios.post(url, data, {
@@ -1545,6 +1614,30 @@ The following shortcuts are available:
 
 - `setContentEncoding`, `getContentEncoding`, `hasContentEncoding`
 
+## 🔥 Fetch adapter
+
+Fetch adapter was introduced in `v1.7.0`. By default, it will be used if `xhr` and `http` adapters are not available in the build,
+or not supported by the environment.
+To use it by default, it must be selected explicitly:
+
+```js
+const {data} = axios.get(url, {
+  adapter: 'fetch' // by default ['xhr', 'http', 'fetch']
+})
+```
+
+You can create a separate instance for this:
+
+```js
+const fetchAxios = axios.create({
+  adapter: 'fetch'
+});
+
+const {data} = fetchAxios.get(url);
+```
+
+The adapter supports the same functionality as `xhr` adapter, **including upload and download progress capturing**. 
+Also, it supports additional response types such as `stream` and `formdata` (if supported by the environment).
 
 ## Semver
 

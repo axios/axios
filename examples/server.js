@@ -4,9 +4,11 @@ import http from 'http';
 import minimist from 'minimist';
 import url from "url";
 const argv = minimist(process.argv.slice(2));
+const argv = minimist(process.argv.slice(2));
 let server;
 let dirs;
 
+const __filename = url.fileURLToPath(import.meta.url);
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

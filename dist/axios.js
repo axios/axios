@@ -1,4 +1,4 @@
-// Axios v1.7.0-beta.2 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.3 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1320,6 +1320,34 @@
   var isThenable = function isThenable(thing) {
     return thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing["catch"]);
   };
+
+  // original code
+  // https://github.com/DigitalBrainJS/AxiosPromise/blob/16deab13710ec09779922131f3fa5954320f83ab/lib/utils.js#L11-L34
+
+  var _setImmediate = function (setImmediateSupported, postMessageSupported) {
+    if (setImmediateSupported) {
+      return setImmediate;
+    }
+    return postMessageSupported ? function (token, callbacks) {
+      _global.addEventListener("message", function (_ref5) {
+        var source = _ref5.source,
+          data = _ref5.data;
+        if (source === _global && data === token) {
+          callbacks.length && callbacks.shift()();
+        }
+      }, false);
+      return function (cb) {
+        callbacks.push(cb);
+        _global.postMessage(token, "*");
+      };
+    }("axios@".concat(Math.random()), []) : function (cb) {
+      return setTimeout(cb);
+    };
+  }(typeof setImmediate === 'function', isFunction(_global.postMessage));
+  var asap = typeof queueMicrotask !== 'undefined' ? queueMicrotask.bind(_global) : typeof process !== 'undefined' && process.nextTick || _setImmediate;
+
+  // *********************
+
   var utils$1 = {
     isArray: isArray,
     isArrayBuffer: isArrayBuffer,
@@ -1376,7 +1404,9 @@
     isSpecCompliantForm: isSpecCompliantForm,
     toJSONObject: toJSONObject,
     isAsyncFn: isAsyncFn,
-    isThenable: isThenable
+    isThenable: isThenable,
+    setImmediate: _setImmediate,
+    asap: asap
   };
 
   /**
@@ -2528,30 +2558,43 @@
   function throttle(fn, freq) {
     var timestamp = 0;
     var threshold = 1000 / freq;
-    var timer = null;
-    return function throttled() {
-      var _arguments = arguments;
-      var force = this === true;
-      var now = Date.now();
-      if (force || now - timestamp > threshold) {
-        if (timer) {
-          clearTimeout(timer);
-          timer = null;
-        }
-        timestamp = now;
-        return fn.apply(null, arguments);
+    var lastArgs;
+    var timer;
+    var invoke = function invoke(args) {
+      var now = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Date.now();
+      timestamp = now;
+      lastArgs = null;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
       }
-      if (!timer) {
-        timer = setTimeout(function () {
-          timer = null;
-          timestamp = Date.now();
-          return fn.apply(null, _arguments);
-        }, threshold - (now - timestamp));
+      fn.apply(null, args);
+    };
+    var throttled = function throttled() {
+      var now = Date.now();
+      var passed = now - timestamp;
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+      if (passed >= threshold) {
+        invoke(args, now);
+      } else {
+        lastArgs = args;
+        if (!timer) {
+          timer = setTimeout(function () {
+            timer = null;
+            invoke(lastArgs);
+          }, threshold - passed);
+        }
       }
     };
+    var flush = function flush() {
+      return lastArgs && invoke(lastArgs);
+    };
+    return [throttled, flush];
   }
 
-  var progressEventReducer = (function (listener, isDownloadStream) {
+  var progressEventReducer = function progressEventReducer(listener, isDownloadStream) {
     var freq = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 3;
     var bytesNotified = 0;
     var _speedometer = speedometer(50, 250);
@@ -2562,7 +2605,7 @@
       var rate = _speedometer(progressBytes);
       var inRange = loaded <= total;
       bytesNotified = loaded;
-      var data = {
+      var data = _defineProperty({
         loaded: loaded,
         total: total,
         progress: total ? loaded / total : undefined,
@@ -2571,11 +2614,30 @@
         estimated: rate && total && inRange ? (total - loaded) / rate : undefined,
         event: e,
         lengthComputable: total != null
-      };
-      data[isDownloadStream ? 'download' : 'upload'] = true;
+      }, isDownloadStream ? 'download' : 'upload', true);
       listener(data);
     }, freq);
-  });
+  };
+  var progressEventDecorator = function progressEventDecorator(total, throttled) {
+    var lengthComputable = total != null;
+    return [function (loaded) {
+      return throttled[0]({
+        lengthComputable: lengthComputable,
+        total: total,
+        loaded: loaded
+      });
+    }, throttled[1]];
+  };
+  var asyncDecorator = function asyncDecorator(fn) {
+    return function () {
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+      return utils$1.asap(function () {
+        return fn.apply(void 0, args);
+      });
+    };
+  };
 
   var isURLSameOrigin = platform.hasStandardBrowserEnv ?
   // Standard browser envs have full support of the APIs needed to test
@@ -2861,15 +2923,18 @@
       var _config = resolveConfig(config);
       var requestData = _config.data;
       var requestHeaders = AxiosHeaders$1.from(_config.headers).normalize();
-      var responseType = _config.responseType;
+      var responseType = _config.responseType,
+        onUploadProgress = _config.onUploadProgress,
+        onDownloadProgress = _config.onDownloadProgress;
       var onCanceled;
+      var uploadThrottled, downloadThrottled;
+      var flushUpload, flushDownload;
       function done() {
-        if (_config.cancelToken) {
-          _config.cancelToken.unsubscribe(onCanceled);
-        }
-        if (_config.signal) {
-          _config.signal.removeEventListener('abort', onCanceled);
-        }
+        flushUpload && flushUpload(); // flush events
+        flushDownload && flushDownload(); // flush events
+
+        _config.cancelToken && _config.cancelToken.unsubscribe(onCanceled);
+        _config.signal && _config.signal.removeEventListener('abort', onCanceled);
       }
       var request = new XMLHttpRequest();
       request.open(_config.method.toUpperCase(), _config.url, true);
@@ -2930,7 +2995,7 @@
         if (!request) {
           return;
         }
-        reject(new AxiosError('Request aborted', AxiosError.ECONNABORTED, _config, request));
+        reject(new AxiosError('Request aborted', AxiosError.ECONNABORTED, config, request));
 
         // Clean up request
         request = null;
@@ -2940,7 +3005,7 @@
       request.onerror = function handleError() {
         // Real errors are hidden from us by the browser
         // onerror should only fire if it's a network error
-        reject(new AxiosError('Network Error', AxiosError.ERR_NETWORK, _config, request));
+        reject(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request));
 
         // Clean up request
         request = null;
@@ -2953,7 +3018,7 @@
         if (_config.timeoutErrorMessage) {
           timeoutErrorMessage = _config.timeoutErrorMessage;
         }
-        reject(new AxiosError(timeoutErrorMessage, transitional.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED, _config, request));
+        reject(new AxiosError(timeoutErrorMessage, transitional.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED, config, request));
 
         // Clean up request
         request = null;
@@ -2980,13 +3045,22 @@
       }
 
       // Handle progress if needed
-      if (typeof _config.onDownloadProgress === 'function') {
-        request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true));
+      if (onDownloadProgress) {
+        var _progressEventReducer = progressEventReducer(onDownloadProgress, true);
+        var _progressEventReducer2 = _slicedToArray(_progressEventReducer, 2);
+        downloadThrottled = _progressEventReducer2[0];
+        flushDownload = _progressEventReducer2[1];
+        request.addEventListener('progress', downloadThrottled);
       }
 
       // Not all browsers support upload events
-      if (typeof _config.onUploadProgress === 'function' && request.upload) {
-        request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress));
+      if (onUploadProgress && request.upload) {
+        var _progressEventReducer3 = progressEventReducer(onUploadProgress);
+        var _progressEventReducer4 = _slicedToArray(_progressEventReducer3, 2);
+        uploadThrottled = _progressEventReducer4[0];
+        flushUpload = _progressEventReducer4[1];
+        request.upload.addEventListener('progress', uploadThrottled);
+        request.upload.addEventListener('loadend', flushUpload);
       }
       if (_config.cancelToken || _config.signal) {
         // Handle cancellation
@@ -3085,9 +3159,8 @@
       }
     }, streamChunk);
   });
-  var encoder = new TextEncoder();
   var readBytes = /*#__PURE__*/function () {
-    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize) {
+    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize, encode) {
       var _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, chunk;
       return _regeneratorRuntime().wrap(function _callee$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
@@ -3117,7 +3190,7 @@
             break;
           case 15:
             _context2.next = 17;
-            return _awaitAsyncGenerator(encoder.encode(String(chunk)));
+            return _awaitAsyncGenerator(encode(String(chunk)));
           case 17:
             _context2.t3 = _context2.sent;
           case 18:
@@ -3165,47 +3238,64 @@
         }
       }, _callee, null, [[2, 29, 33, 43], [34,, 38, 42]]);
     }));
-    return function readBytes(_x, _x2) {
+    return function readBytes(_x, _x2, _x3) {
       return _ref.apply(this, arguments);
     };
   }();
-  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish) {
-    var iterator = readBytes(stream, chunkSize);
+  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish, encode) {
+    var iterator = readBytes(stream, chunkSize, encode);
     var bytes = 0;
+    var done;
+    var _onFinish = function _onFinish(e) {
+      if (!done) {
+        done = true;
+        onFinish && onFinish(e);
+      }
+    };
     return new ReadableStream({
-      type: 'bytes',
       pull: function pull(controller) {
         return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-          var _yield$iterator$next, done, value, len;
+          var _yield$iterator$next, _done, value, len, loadedBytes;
           return _regeneratorRuntime().wrap(function _callee2$(_context3) {
             while (1) switch (_context3.prev = _context3.next) {
               case 0:
-                _context3.next = 2;
+                _context3.prev = 0;
+                _context3.next = 3;
                 return iterator.next();
-              case 2:
+              case 3:
                 _yield$iterator$next = _context3.sent;
-                done = _yield$iterator$next.done;
+                _done = _yield$iterator$next.done;
                 value = _yield$iterator$next.value;
-                if (!done) {
-                  _context3.next = 9;
+                if (!_done) {
+                  _context3.next = 10;
                   break;
                 }
+                _onFinish();
                 controller.close();
-                onFinish();
                 return _context3.abrupt("return");
-              case 9:
+              case 10:
                 len = value.byteLength;
-                onProgress && onProgress(bytes += len);
+                if (onProgress) {
+                  loadedBytes = bytes += len;
+                  onProgress(loadedBytes);
+                }
                 controller.enqueue(new Uint8Array(value));
-              case 12:
+                _context3.next = 19;
+                break;
+              case 15:
+                _context3.prev = 15;
+                _context3.t0 = _context3["catch"](0);
+                _onFinish(_context3.t0);
+                throw _context3.t0;
+              case 19:
               case "end":
                 return _context3.stop();
             }
-          }, _callee2);
+          }, _callee2, null, [[0, 15]]);
         }))();
       },
       cancel: function cancel(reason) {
-        onFinish(reason);
+        _onFinish(reason);
         return iterator["return"]();
       }
     }, {
@@ -3213,21 +3303,46 @@
     });
   };
 
-  var fetchProgressDecorator = function fetchProgressDecorator(total, fn) {
-    var lengthComputable = total != null;
-    return function (loaded) {
-      return setTimeout(function () {
-        return fn({
-          lengthComputable: lengthComputable,
-          total: total,
-          loaded: loaded
-        });
-      });
+  var isFetchSupported = typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
+  var isReadableStreamSupported = isFetchSupported && typeof ReadableStream === 'function';
+
+  // used only inside the fetch adapter
+  var encodeText = isFetchSupported && (typeof TextEncoder === 'function' ? function (encoder) {
+    return function (str) {
+      return encoder.encode(str);
     };
+  }(new TextEncoder()) : ( /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(str) {
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            _context.t0 = Uint8Array;
+            _context.next = 3;
+            return new Response(str).arrayBuffer();
+          case 3:
+            _context.t1 = _context.sent;
+            return _context.abrupt("return", new _context.t0(_context.t1));
+          case 5:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return function (_x) {
+      return _ref.apply(this, arguments);
+    };
+  }()));
+  var test = function test(fn) {
+    try {
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+      return !!fn.apply(void 0, args);
+    } catch (e) {
+      return false;
+    }
   };
-  var isFetchSupported = typeof fetch !== 'undefined';
-  var isReadableStreamSupported = isFetchSupported && typeof ReadableStream !== 'undefined';
-  var supportsRequestStream = isReadableStreamSupported && function () {
+  var supportsRequestStream = isReadableStreamSupported && test(function () {
     var duplexAccessed = false;
     var hasContentType = new Request(platform.origin, {
       body: new ReadableStream(),
@@ -3238,15 +3353,11 @@
       }
     }).headers.has('Content-Type');
     return duplexAccessed && !hasContentType;
-  }();
+  });
   var DEFAULT_CHUNK_SIZE = 64 * 1024;
-  var supportsResponseStream = isReadableStreamSupported && !!function () {
-    try {
-      return utils$1.isReadableStream(new Response('').body);
-    } catch (err) {
-      // return undefined
-    }
-  }();
+  var supportsResponseStream = isReadableStreamSupported && test(function () {
+    return utils$1.isReadableStream(new Response('').body);
+  });
   var resolvers = {
     stream: supportsResponseStream && function (res) {
       return res.body;
@@ -3262,105 +3373,105 @@
     });
   }(new Response());
   var getBodyLength = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(body) {
-      return _regeneratorRuntime().wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(body) {
+      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
           case 0:
             if (!(body == null)) {
-              _context.next = 2;
+              _context2.next = 2;
               break;
             }
-            return _context.abrupt("return", 0);
+            return _context2.abrupt("return", 0);
           case 2:
             if (!utils$1.isBlob(body)) {
-              _context.next = 4;
+              _context2.next = 4;
               break;
             }
-            return _context.abrupt("return", body.size);
+            return _context2.abrupt("return", body.size);
           case 4:
             if (!utils$1.isSpecCompliantForm(body)) {
-              _context.next = 8;
+              _context2.next = 8;
               break;
             }
-            _context.next = 7;
+            _context2.next = 7;
             return new Request(body).arrayBuffer();
           case 7:
-            return _context.abrupt("return", _context.sent.byteLength);
+            return _context2.abrupt("return", _context2.sent.byteLength);
           case 8:
-            if (!utils$1.isArrayBufferView(body)) {
-              _context.next = 10;
+            if (!(utils$1.isArrayBufferView(body) || utils$1.isArrayBuffer(body))) {
+              _context2.next = 10;
               break;
             }
-            return _context.abrupt("return", body.byteLength);
+            return _context2.abrupt("return", body.byteLength);
           case 10:
             if (utils$1.isURLSearchParams(body)) {
               body = body + '';
             }
             if (!utils$1.isString(body)) {
-              _context.next = 15;
+              _context2.next = 15;
               break;
             }
-            _context.next = 14;
-            return new TextEncoder().encode(body);
+            _context2.next = 14;
+            return encodeText(body);
           case 14:
-            return _context.abrupt("return", _context.sent.byteLength);
+            return _context2.abrupt("return", _context2.sent.byteLength);
           case 15:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee);
-    }));
-    return function getBodyLength(_x) {
-      return _ref.apply(this, arguments);
-    };
-  }();
-  var resolveBodyLength = /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(headers, body) {
-      var length;
-      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            length = utils$1.toFiniteNumber(headers.getContentLength());
-            return _context2.abrupt("return", length == null ? getBodyLength(body) : length);
-          case 2:
           case "end":
             return _context2.stop();
         }
       }, _callee2);
     }));
-    return function resolveBodyLength(_x2, _x3) {
+    return function getBodyLength(_x2) {
       return _ref2.apply(this, arguments);
     };
   }();
-  var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref4, _ref5, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData;
+  var resolveBodyLength = /*#__PURE__*/function () {
+    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(headers, body) {
+      var length;
       return _regeneratorRuntime().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
+            length = utils$1.toFiniteNumber(headers.getContentLength());
+            return _context3.abrupt("return", length == null ? getBodyLength(body) : length);
+          case 2:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3);
+    }));
+    return function resolveBodyLength(_x3, _x4) {
+      return _ref3.apply(this, arguments);
+    };
+  }();
+  var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(config) {
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref5, _ref6, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, response, isStreamResponse, options, responseContentLength, _ref7, _ref8, _onProgress, _flush, responseData;
+      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
             _resolveConfig = resolveConfig(config), url = _resolveConfig.url, method = _resolveConfig.method, data = _resolveConfig.data, signal = _resolveConfig.signal, cancelToken = _resolveConfig.cancelToken, timeout = _resolveConfig.timeout, onDownloadProgress = _resolveConfig.onDownloadProgress, onUploadProgress = _resolveConfig.onUploadProgress, responseType = _resolveConfig.responseType, headers = _resolveConfig.headers, _resolveConfig$withCr = _resolveConfig.withCredentials, withCredentials = _resolveConfig$withCr === void 0 ? 'same-origin' : _resolveConfig$withCr, fetchOptions = _resolveConfig.fetchOptions;
             responseType = responseType ? (responseType + '').toLowerCase() : 'text';
-            _ref4 = signal || cancelToken || timeout ? composeSignals$1([signal, cancelToken], timeout) : [], _ref5 = _slicedToArray(_ref4, 2), composedSignal = _ref5[0], stopTimeout = _ref5[1];
+            _ref5 = signal || cancelToken || timeout ? composeSignals$1([signal, cancelToken], timeout) : [], _ref6 = _slicedToArray(_ref5, 2), composedSignal = _ref6[0], stopTimeout = _ref6[1];
             onFinish = function onFinish() {
               !finished && setTimeout(function () {
                 composedSignal && composedSignal.unsubscribe();
               });
               finished = true;
             };
-            _context3.prev = 4;
-            _context3.t0 = onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head';
-            if (!_context3.t0) {
-              _context3.next = 11;
+            _context4.prev = 4;
+            _context4.t0 = onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head';
+            if (!_context4.t0) {
+              _context4.next = 11;
               break;
             }
-            _context3.next = 9;
+            _context4.next = 9;
             return resolveBodyLength(headers, data);
           case 9:
-            _context3.t1 = requestContentLength = _context3.sent;
-            _context3.t0 = _context3.t1 !== 0;
+            _context4.t1 = requestContentLength = _context4.sent;
+            _context4.t0 = _context4.t1 !== 0;
           case 11:
-            if (!_context3.t0) {
-              _context3.next = 15;
+            if (!_context4.t0) {
+              _context4.next = 15;
               break;
             }
             _request = new Request(url, {
@@ -3372,11 +3483,12 @@
               headers.setContentType(contentTypeHeader);
             }
             if (_request.body) {
-              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress)));
+              _progressEventDecorat = progressEventDecorator(requestContentLength, progressEventReducer(asyncDecorator(onUploadProgress))), _progressEventDecorat2 = _slicedToArray(_progressEventDecorat, 2), onProgress = _progressEventDecorat2[0], flush = _progressEventDecorat2[1];
+              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush, encodeText);
             }
           case 15:
             if (!utils$1.isString(withCredentials)) {
-              withCredentials = withCredentials ? 'cors' : 'omit';
+              withCredentials = withCredentials ? 'include' : 'omit';
             }
             request = new Request(url, _objectSpread2(_objectSpread2({}, fetchOptions), {}, {
               signal: composedSignal,
@@ -3384,29 +3496,33 @@
               headers: headers.normalize().toJSON(),
               body: data,
               duplex: "half",
-              withCredentials: withCredentials
+              credentials: withCredentials
             }));
-            _context3.next = 19;
+            _context4.next = 19;
             return fetch(request);
           case 19:
-            response = _context3.sent;
-            isStreamResponse = responseType === 'stream' || responseType === 'response';
+            response = _context4.sent;
+            isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
             if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
               options = {};
               ['status', 'statusText', 'headers'].forEach(function (prop) {
                 options[prop] = response[prop];
               });
               responseContentLength = utils$1.toFiniteNumber(response.headers.get('content-length'));
-              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(responseContentLength, progressEventReducer(onDownloadProgress, true)), isStreamResponse && onFinish), options);
+              _ref7 = onDownloadProgress && progressEventDecorator(responseContentLength, progressEventReducer(asyncDecorator(onDownloadProgress), true)) || [], _ref8 = _slicedToArray(_ref7, 2), _onProgress = _ref8[0], _flush = _ref8[1];
+              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, _onProgress, function () {
+                _flush && _flush();
+                isStreamResponse && onFinish();
+              }, encodeText), options);
             }
             responseType = responseType || 'text';
-            _context3.next = 25;
+            _context4.next = 25;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
           case 25:
-            responseData = _context3.sent;
+            responseData = _context4.sent;
             !isStreamResponse && onFinish();
             stopTimeout && stopTimeout();
-            _context3.next = 30;
+            _context4.next = 30;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
                 data: responseData,
@@ -3418,28 +3534,28 @@
               });
             });
           case 30:
-            return _context3.abrupt("return", _context3.sent);
+            return _context4.abrupt("return", _context4.sent);
           case 33:
-            _context3.prev = 33;
-            _context3.t2 = _context3["catch"](4);
+            _context4.prev = 33;
+            _context4.t2 = _context4["catch"](4);
             onFinish();
-            if (!(_context3.t2 && _context3.t2.name === 'TypeError' && /fetch/i.test(_context3.t2.message))) {
-              _context3.next = 38;
+            if (!(_context4.t2 && _context4.t2.name === 'TypeError' && /fetch/i.test(_context4.t2.message))) {
+              _context4.next = 38;
               break;
             }
             throw Object.assign(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request), {
-              cause: _context3.t2.cause || _context3.t2
+              cause: _context4.t2.cause || _context4.t2
             });
           case 38:
-            throw AxiosError.from(_context3.t2, _context3.t2 && _context3.t2.code, config, request);
+            throw AxiosError.from(_context4.t2, _context4.t2 && _context4.t2.code, config, request);
           case 39:
           case "end":
-            return _context3.stop();
+            return _context4.stop();
         }
-      }, _callee3, null, [[4, 33]]);
+      }, _callee4, null, [[4, 33]]);
     }));
-    return function (_x4) {
-      return _ref3.apply(this, arguments);
+    return function (_x5) {
+      return _ref4.apply(this, arguments);
     };
   }());
 
@@ -3560,7 +3676,7 @@
     });
   }
 
-  var VERSION = "1.7.0-beta.2";
+  var VERSION = "1.7.3";
 
   var validators$1 = {};
 

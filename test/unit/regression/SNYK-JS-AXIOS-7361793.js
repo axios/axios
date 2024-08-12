@@ -32,7 +32,8 @@ describe('Server-Side Request Forgery (SSRF)', () => {
             baseURL: 'http://localhost:' + String(GOOD_PORT),
         });
 
-        //userId = '12345';
+        // Good payload would be `userId = '12345'`
+        // Malicious payload is as below.
         const userId = '/localhost:' + String(BAD_PORT);
 
         const response = await ssrfAxios.get(`/${userId}`)

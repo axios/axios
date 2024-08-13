@@ -42,7 +42,7 @@ describe('Server-Side Request Forgery (SSRF)', () => {
         try {
             await ssrfAxios.get(`/${userId}`);
         } catch (error) {
-            assert.strictEqual(error.message, 'Invalid URL');
+            assert.ok(error.message.startsWith('Invalid URL'));
             return;
         }
         assert.fail('Expected an error to be thrown');

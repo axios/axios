@@ -5,8 +5,8 @@ import axios from '../../../index.js';
 import http from 'http';
 import assert from 'assert';
 
-const GOOD_PORT = 4666
-const BAD_PORT = 4667
+const GOOD_PORT = 4666;
+const BAD_PORT = 4667;
 
 describe('Server-Side Request Forgery (SSRF)', () => {
     let goodServer, badServer;
@@ -14,11 +14,11 @@ describe('Server-Side Request Forgery (SSRF)', () => {
     beforeEach(() => {
         goodServer = http.createServer(function (req, res) {
             res.write('good');
-            res.end()
+            res.end();
         }).listen(GOOD_PORT);
         badServer = http.createServer(function (req, res) {
             res.write('bad');
-            res.end()
+            res.end();
         }).listen(BAD_PORT);
     })
 
@@ -36,10 +36,10 @@ describe('Server-Side Request Forgery (SSRF)', () => {
         // Malicious payload is as below.
         const userId = '/localhost:' + String(BAD_PORT);
 
-        const response = await ssrfAxios.get(`/${userId}`)
-        assert.strictEqual(response.data, 'good')
+        const response = await ssrfAxios.get(`/${userId}`);
+        assert.strictEqual(response.data, 'good');
         assert.strictEqual(response.config.baseURL, 'http://localhost:' + String(GOOD_PORT));
         assert.strictEqual(response.config.url, '//localhost:' + String(BAD_PORT));
         assert.strictEqual(response.request.res.responseUrl, 'http://localhost:4666/localhost:4667');
-    })
+    });
 });

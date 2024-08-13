@@ -40,6 +40,6 @@ describe('Server-Side Request Forgery (SSRF)', () => {
         assert.strictEqual(response.data, 'good');
         assert.strictEqual(response.config.baseURL, 'http://localhost:' + String(GOOD_PORT));
         assert.strictEqual(response.config.url, '//localhost:' + String(BAD_PORT));
-        assert.strictEqual(response.request.res.responseUrl, 'http://localhost:4666/localhost:4667');
+        assert.strictEqual(response.request.res.responseUrl, 'http://localhost:' + String(GOOD_PORT) + '/localhost:' + String(BAD_PORT));
     });
 });

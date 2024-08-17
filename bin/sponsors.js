@@ -60,4 +60,4 @@ const updateReadmeSponsors = async (url, path, marker = '<!--<div>marker</div>--
   if (newContent !== false) {
     await exec(`echo "content=${newContent}" >> $GITHUB_OUTPUT`);
   }
-})('https://spontaneous-creponne-3ff312.netlify.app//data/sponsors.md');
+})('https://spontaneous-creponne-3ff312.netlify.app/data/sponsors.md');

@@ -28,7 +28,7 @@ jobs:
         id: sponsors
         run: node ./bin/sponsors.js
       - name: Notify status
-        if: ${{ steps.sponsors.outputs.changed }}
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
         run: |
           echo "Sponsor block has changed. Creating PR with updates..."
       - name: Read sponsors.md file content
@@ -39,7 +39,7 @@ jobs:
           echo "::set-output name=file_content::$FILE_CONTENT"
         shell: bash
       - name: Create pull request
-        if: ${{ steps.sponsors.outputs.changed }}
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
         uses: peter-evans/create-pull-request@v6
         id: cpr
         with:
@@ -62,7 +62,7 @@ jobs:
           #reviewers: jasonsaayman
           draft: false
       - name: Show PR link
-        if: ${{ steps.sponsors.outputs.changed }}
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
         run: |
           echo "Sponsor block has changed. Creating PR..."
           echo "Axios Release v${{ steps.package-version.outputs.current-version}}' pull request - ${{ steps.cpr.outputs.pull-request-url }}"

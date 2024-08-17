@@ -34,13 +34,13 @@ jobs:
       - name: Read sponsors.md file content
         id: read_file
         run: |
-          FILE_CONTENT=$(cat ./temp/sponsors.md)
-          echo "File content: $FILE_CONTENT"
-          echo "::set-output name=file_content::$FILE_CONTENT"
+          echo 'CONTENT<<EOF' >> $GITHUB_OUTPUT
+          cat ./temp/sponsors.md >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
         shell: bash
       - name: Echo
         run: |
-          echo "${{ steps.read_file.outputs.file_content }}"
+          echo "${{ steps.read_file.outputs.CONTENT }}"
       - name: Create pull request
         if: ${{ steps.sponsors.outputs.changed == 'true'}}
         uses: peter-evans/create-pull-request@v6

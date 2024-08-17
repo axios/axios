@@ -35,7 +35,7 @@ jobs:
         id: read_file
         run: |
           echo 'CONTENT<<EOF' >> $GITHUB_ENV
-          cat README.md >> $GITHUB_ENV
+          cat ./temp/sponsors.md >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
         shell: bash
       - name: Echo

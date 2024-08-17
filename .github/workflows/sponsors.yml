@@ -40,7 +40,7 @@ jobs:
         shell: bash
       - name: Echo
         run: |
-          echo $CONTENT
+          echo "$CONTENT"
       - name: Create pull request
         if: ${{ steps.sponsors.outputs.changed == 'true'}}
         uses: peter-evans/create-pull-request@v6
@@ -52,7 +52,7 @@ jobs:
           title: '[Chore] Update sponsor block'
           body: |
             **New sponsor block update:**
-            $CONTENT
+            ${{ env.CONTENT }}
           labels: |
             readme
             automated pr

@@ -24,7 +24,7 @@ jobs:
           node-version: 16
           cache: npm
       - run: npm ci
-      - name: Generate PR
+      - name: Check sponsors updates
         id: sponsors
         run: node ./bin/sponsors.js
       - name: Notify status

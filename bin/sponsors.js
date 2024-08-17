@@ -54,7 +54,7 @@ const updateReadmeSponsors = async (url, path, marker = '<!--<div>marker</div>--
 };
 
 (async(url) => {
-  const newContent = await updateReadmeSponsors(url, './Readme.md');
+  const newContent = await updateReadmeSponsors(url, './README.md');
 
   await exec(`echo "tag=${newContent ? 'true' : 'false'}" >> $GITHUB_OUTPUT`);
   if (newContent !== false) {

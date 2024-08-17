@@ -34,9 +34,11 @@ jobs:
       - name: Read sponsors.md file content
         id: read_file
         run: |
-          echo 'CONTENT<<EOF' >> $GITHUB_OUTPUT
-          cat ./temp/sponsors.md >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          {
+            echo 'CONTENT<<EOF'
+            cat ./temp/sponsors.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
         shell: bash
       - name: Echo
         run: |

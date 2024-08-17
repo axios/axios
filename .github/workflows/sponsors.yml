@@ -38,7 +38,7 @@ jobs:
             echo 'CONTENT<<EOF'
             cat ./temp/sponsors.md
             echo EOF
-          } >> $GITHUB_OUTPUT
+          } >> "$GITHUB_ENV"
         shell: bash
       - name: Echo
         run: |

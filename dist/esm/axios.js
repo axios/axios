@@ -1,4 +1,4 @@
-// Axios v1.7.3 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.4 Copyright (c) 2024 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -3106,7 +3106,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION$1 = "1.7.3";
+const VERSION$1 = "1.7.4";
 
 const validators$1 = {};
 

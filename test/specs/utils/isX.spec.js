@@ -1,16 +1,9 @@
-var utils = require('../../../lib/utils');
-var Stream = require('stream');
+import utils from '../../../lib/utils';
 
 describe('utils::isX', function () {
   it('should validate Array', function () {
     expect(utils.isArray([])).toEqual(true);
     expect(utils.isArray({length: 5})).toEqual(false);
-  });
-
-  it('should validate Buffer', function () {
-    expect(utils.isBuffer(Buffer.from('a'))).toEqual(true);
-    expect(utils.isBuffer(null)).toEqual(false);
-    expect(utils.isBuffer(undefined)).toEqual(false);
   });
 
   it('should validate ArrayBuffer', function () {
@@ -68,13 +61,13 @@ describe('utils::isX', function () {
     expect(utils.isFunction('function')).toEqual(false);
   });
 
-  it('should validate Stream', function () {
-    expect(utils.isStream(new Stream.Readable())).toEqual(true);
-    expect(utils.isStream({ foo: 'bar' })).toEqual(false);
-  });
-
   it('should validate URLSearchParams', function () {
     expect(utils.isURLSearchParams(new URLSearchParams())).toEqual(true);
     expect(utils.isURLSearchParams('foo=1&bar=2')).toEqual(false);
+  });
+
+  it('should validate TypedArray instance', function () {
+    expect(utils.isTypedArray(new Uint8Array([1, 2, 3]))).toEqual(true);
+    expect(utils.isTypedArray([1, 2, 3])).toEqual(false);
   });
 });

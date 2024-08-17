@@ -1,3 +1,4 @@
+
 describe('static api', function () {
   it('should have request method helpers', function () {
     expect(typeof axios.request).toEqual('function');
@@ -11,7 +12,7 @@ describe('static api', function () {
   });
 
   it('should have promise method helpers', function () {
-    var promise = axios();
+    const promise = axios('/test');
 
     expect(typeof promise.then).toEqual('function');
     expect(typeof promise.catch).toEqual('function');
@@ -36,19 +37,31 @@ describe('static api', function () {
     expect(typeof axios.create).toEqual('function');
   });
 
-  it('should have Cancel, CancelToken, and isCancel properties', function () {
+  it('should have CanceledError, CancelToken, and isCancel properties', function () {
     expect(typeof axios.Cancel).toEqual('function');
     expect(typeof axios.CancelToken).toEqual('function');
     expect(typeof axios.isCancel).toEqual('function');
   });
 
+  it('should have getUri method', function() {
+    expect(typeof axios.getUri).toEqual('function');
+  });
+
   it('should have isAxiosError properties', function () {
     expect(typeof axios.isAxiosError).toEqual('function');
+  });
+
+  it('should have mergeConfig properties', function () {
+    expect(typeof axios.mergeConfig).toEqual('function');
+  });
+
+  it('should have getAdapter properties', function () {
+    expect(typeof axios.getAdapter).toEqual('function');
   });
 });
 
 describe('instance api', function () {
-  var instance = axios.create();
+  const instance = axios.create();
 
   it('should have request methods', function () {
     expect(typeof instance.request).toEqual('function');

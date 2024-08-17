@@ -1,10 +1,13 @@
-name: ci
+name: 'CI'
 
 on:
   push:
-    branches: [master]
+    branches: '**'
   pull_request:
-    branches: [master]
+    branches: '**'
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -12,13 +15,39 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 21.x]
+      fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup node
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
         with:
-          node-version: ${{ matrix.node }}
-      - run: npm install
+          persist-credentials: true
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+      - name: Check changes
+        id: changed-ignored
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            **.md
+            sandbox/**
+            examples/**
+            .github/**
+            templates/**
+            bin/**
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+        if: steps.changed-ignored.outputs.only_modified == 'false'
+      - run: npm ci
+        if: steps.changed-ignored.outputs.only_modified == 'false'
       - run: npm test
+        if: steps.changed-ignored.outputs.only_modified == 'false'

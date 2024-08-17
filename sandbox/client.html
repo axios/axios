@@ -1,19 +1,39 @@
 <!doctype html>
 <html>
 <head>
-  <title>axios</title>
+  <title>AXIOS | Sandbox</title>
   <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
   <style type="text/css">
     pre {
       min-height: 39px;
       overflow: auto;
     }
+    .header{
+      display: flex;
+      flex-direction: row;
+    }
+    .box{
+     display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 25px;
+    }
+    @media screen and (max-width: 1000px) {
+      .box {
+        grid-template-columns: 1fr;
+      }
+    }
+      
   </style>
 </head>
 <body class="container">
-  <h1>axios</h1>
+<div class="header">
+  <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="130" height="60">
+   
+  <h1> &nbsp;| Sandbox</h1>
+</div>
 
-  <div class="well">
+  <div class="box">
+    <div class="well">
     <h3>Input</h3>
     <form role="form" onsubmit="return false;">
       <div class="form-group">
@@ -47,7 +67,8 @@
     </form>
   </div>
 
-  <div class="well">
+  <div class="response">
+    <div class="well">
     <h3>Request</h3>
     <pre id="request">No Data</pre>
   </div>
@@ -60,6 +81,8 @@
   <div class="well">
     <h3>Error</h3>
     <pre id="error">None</pre>
+  </div>
+</div>
   </div>
 
   <script src="/axios.js"></script>

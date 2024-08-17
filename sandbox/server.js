@@ -1,8 +1,8 @@
-var fs = require('fs');
-var url = require('url');
-var path = require('path');
-var http = require('http');
-var server;
+import fs from 'fs';
+import url from 'url';
+import path from 'path';
+import http from 'http';
+let server;
 
 function pipeFileToResponse(res, file, type) {
   if (type) {
@@ -11,14 +11,14 @@ function pipeFileToResponse(res, file, type) {
     });
   }
 
-  fs.createReadStream(path.join(__dirname, file)).pipe(res);
+  fs.createReadStream(path.join(path.resolve() ,'sandbox', file)).pipe(res);
 }
 
 server = http.createServer(function (req, res) {
   req.setEncoding('utf8');
 
-  var parsed = url.parse(req.url, true);
-  var pathname = parsed.pathname;
+  const parsed = url.parse(req.url, true);
+  let pathname = parsed.pathname;
 
   console.log('[' + new Date() + ']', req.method, pathname);
 
@@ -30,12 +30,12 @@ server = http.createServer(function (req, res) {
     pipeFileToResponse(res, './client.html');
   } else if (pathname === '/axios.js') {
     pipeFileToResponse(res, '../dist/axios.js', 'text/javascript');
-  } else if (pathname === '/axios.map') {
-    pipeFileToResponse(res, '../dist/axios.map', 'text/javascript');
+  } else if (pathname === '/axios.js.map') {
+    pipeFileToResponse(res, '../dist/axios.js.map', 'text/javascript');
   } else if (pathname === '/api') {
-    var status;
-    var result;
-    var data = '';
+    let status;
+    let result;
+    let data = '';
 
     req.on('data', function (chunk) {
       data += chunk;

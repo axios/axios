@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "node16",
+    "lib": ["dom", "es2015"],
+    "types": [],
+    "strict": true,
+    "noEmit": true
+  }
+}

@@ -1,3 +1,5 @@
+import AxiosError from "../../lib/core/AxiosError";
+
 describe('transform', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -8,7 +10,7 @@ describe('transform', function () {
   });
 
   it('should transform JSON to string', function (done) {
-    var data = {
+    const data = {
       foo: 'bar'
     };
 
@@ -21,7 +23,7 @@ describe('transform', function () {
   });
 
   it('should transform string to JSON', function (done) {
-    var response;
+    let response;
 
     axios('/foo').then(function (data) {
       response = data;
@@ -43,7 +45,7 @@ describe('transform', function () {
 
   it('should throw a SyntaxError if JSON parsing failed and responseType is "json" if silentJSONParsing is false',
     function (done) {
-      var thrown;
+      let thrown;
 
       axios({
         url: '/foo',
@@ -64,6 +66,7 @@ describe('transform', function () {
         setTimeout(function () {
           expect(thrown).toBeTruthy();
           expect(thrown.name).toContain('SyntaxError');
+          expect(thrown.code).toEqual(AxiosError.ERR_BAD_RESPONSE);
           done();
         }, 100);
       });
@@ -71,7 +74,7 @@ describe('transform', function () {
   );
 
   it('should send data as JSON if request content-type is application/json', function (done) {
-    var response;
+    let response;
 
     axios.post('/foo', 123, {headers: {'Content-Type': 'application/json'}}).then(function (_response) {
       response = _response;
@@ -95,7 +98,7 @@ describe('transform', function () {
   });
 
   it('should not assume JSON if responseType is not `json`', function (done) {
-    var response;
+    let response;
 
     axios.get('/foo', {
       responseType: 'text',
@@ -108,7 +111,7 @@ describe('transform', function () {
       done(err);
     });
 
-    var rawData = '{"x":1}';
+    const rawData = '{"x":1}';
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
@@ -125,7 +128,7 @@ describe('transform', function () {
   });
 
   it('should override default transform', function (done) {
-    var data = {
+    const data = {
       foo: 'bar'
     };
 
@@ -142,7 +145,7 @@ describe('transform', function () {
   });
 
   it('should allow an Array of transformers', function (done) {
-    var data = {
+    const data = {
       foo: 'bar'
     };
 
@@ -161,7 +164,7 @@ describe('transform', function () {
   });
 
   it('should allowing mutating headers', function (done) {
-    var token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36);
+    const token = Math.floor(Math.random() * Math.pow(2, 64)).toString(36);
 
     axios('/foo', {
       transformRequest: function (data, headers) {
@@ -171,6 +174,26 @@ describe('transform', function () {
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders['X-Authorization']).toEqual(token);
+      done();
+    });
+  });
+
+  it('should normalize \'content-type\' header when using a custom transformRequest', function (done) {
+    const data = {
+      foo: 'bar'
+    };
+
+    axios.post('/foo', data, {
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      transformRequest: [
+        function () {
+          return 'aa=44'
+        }
+      ]
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders['Content-Type']).toEqual('application/x-www-form-urlencoded');
       done();
     });
   });

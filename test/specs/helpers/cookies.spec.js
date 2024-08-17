@@ -1,9 +1,9 @@
-var cookies = require('../../../lib/helpers/cookies');
+import cookies from '../../../lib/helpers/cookies';
 
 describe('helpers::cookies', function () {
   afterEach(function () {
     // Remove all the cookies
-    var expires = Date.now() - (60 * 60 * 24 * 7);
+    const expires = Date.now() - (60 * 60 * 24 * 7);
     document.cookie.split(';').map(function (cookie) {
       return cookie.split('=')[0];
     }).forEach(function (name) {

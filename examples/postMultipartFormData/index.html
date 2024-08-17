@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+  <head>
+    <title>axios - post example</title>
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+    <style>
+      .postSubmission {
+        margin-top: 40px;
+
+        /* white-space: pre-line; */
+      }
+      .checkNetwork {
+        margin-bottom: 10px;
+      }
+      .text-strong {
+        font-weight: 700;
+      }
+      .hidden {
+        display: none; 
+      }
+    </style>
+
+  </head>
+  <body class="container">
+    <h1>Post multipart/form-data</h1>
+
+    <form role="form" class="form" onsubmit="return false;">
+      <div class="form-group">
+        <label for="data">someString</label>
+        <input id="someString" type="text"></input>
+      </div>
+      <div class="form-group">
+        <label for="data">someNumber</label>
+        <input id="someNumber" type="number"></input>
+      </div>
+      <div class="form-group">
+        <label for="data">someSamllFile</label>
+        <input id="someSamllFile" type="file"></input>
+      </div>
+      <div class="form-group">
+        <label for="data">nested.someString</label>
+        <input id="nested.someString"  type="text"></input>
+      </div>
+      <div>
+        <input type="radio" name="format" value="formData"
+               checked>
+        <label for="huey">Pass to Axios as FormData</label>
+      </div>
+      <div>
+        <input type="radio"  name="format" value="json"
+               checked>
+        <label for="huey">Pass to Axios as json. Let Axios convert to form data</label>
+      </div>
+      <button id="post" type="button" class="btn btn-primary">POST</button>
+    </form>
+
+    <div class="postSubmission">
+
+      <div id="checkNetwork" class="checkNetwork hidden">
+        <span class="text-strong">Check devtools to see details of request sent, and content of FormData. </span><br/>
+        In Chromium check: devtools -> network tab -> request to "server" -> payload tab
+      </div>
+
+
+      <div id="errorOutput" class="text-danger">
+      </div>
+
+    </div>
+
+    <script src="/axios.min.js"></script>
+    <script>
+      (function () {
+        
+        document.getElementById('post').onclick = function () {
+          document.getElementById("checkNetwork").classList.remove("hidden")
+
+          var someString = document.getElementById('someString').value;
+          var someNumber = document.getElementById('someNumber').valueAsNumber;
+          var files = Array.from(document.getElementById('someSamllFile').files)
+          var nestedString = document.getElementById('nested.someString').value;
+          var passAsFormData = document.querySelector('input[name="format"]:checked').value==="formData";
+
+          var data = passAsFormData? new FormData() : {}
+
+          function addValueToData(key, val, isValDefined){
+            if (!isValDefined){
+              return 
+            }
+
+            if(passAsFormData){
+              data.append(key, val)
+            } else {
+
+              var keys = key.split(".")
+              if (keys.length===1){
+                data[key] = val
+              } else {
+                data[keys[0]]={
+                  [keys[1]]: val
+                }
+              }
+            }
+
+          }
+
+          addValueToData("someString", someString, someString.length)
+          addValueToData("someNumber", someNumber, !isNaN(someNumber))
+          if (files.length){
+            addValueToData("someSmallFile", files[0], true)
+          }
+          addValueToData("nested.someString", nestedString, nestedString.length)
+
+          var errorOutput = document.getElementById("errorOutput")
+
+          axios({
+            url: '/postMultipartFormData/server', 
+            data: data, 
+            method: "post",
+            headers: { "Content-Type": "multipart/form-data" },
+          })
+            .then(function (res) {
+              errorOutput.innerHTML = "";
+            })
+            .catch(function (err) {
+              errorOutput.innerHTML = err.message;
+            });
+        };
+      })();
+    </script>
+  </body>
+</html>

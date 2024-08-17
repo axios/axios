@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+See your console
+<script src="../../dist/axios.js"></script>
+<script>
+    const data = new Int8Array(10 * 1024 * 1024);
+
+    data.fill(123);
+
+    console.log('Starting...');
+
+    (async() => {
+        await axios.post('http://httpbin.org/post', data, {
+            adapter: 'xhr',
+            onUploadProgress: (e) => console.log('xhr upload', e),
+            onDownloadProgress: (e) => console.log('xhr download', e),
+        }).then(data=> {
+            console.log(`Done: `, data);
+        }).catch(e => console.warn('xhr', e));
+
+        await axios.post('https://httpbin.org/post', data, {
+            adapter: 'fetch',
+            onUploadProgress: (e) => console.log('fetch upload', e),
+            onDownloadProgress: (e) => console.log('fetch download', e)
+        }).then(data=> {
+            console.log(`Done: `, data);
+        }).catch(e => console.warn('fetch', e));
+    })();
+
+</script>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
-# Security Policy
+# Reporting a Vulnerability
 
-## Reporting a Vulnerability
+If you discover a security vulnerability in axios please disclose it via [our huntr page](https://huntr.dev/repos/axios/axios/). Bounty eligibility, CVE assignment, response times and past reports are all there.
 
-Please report security issues to jasonsaayman@gmail.com
+
+Thank you for improving the security of axios.

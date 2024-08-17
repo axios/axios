@@ -1,0 +1,46 @@
+name: '✨ Feature Request'
+description: Suggest an idea or feature.
+labels: ['feature']
+body:
+  - type: markdown
+    attributes:
+      value: 'Please read and follow the instructions before submitting an issue:'
+  - type: markdown
+    attributes:
+      value: |
+        - Read all our documentation, especially the [README](https://github.com/axios/axios/blob/master/README.md). It may contain information that helps you solve your issue.
+        - Ensure your issue isn't already [reported](https://github.com/axios/axios/issues?utf8=%E2%9C%93&q=is%3Aissue).
+        - If you aren't sure that the issue is caused by Axios or you just need help, please use [Stack Overflow](https://stackoverflow.com/questions/tagged/axios) or [our chat](https://gitter.im/mzabriskie/axios).
+  - type: markdown
+    attributes:
+      value: '⚠️👆 Feel free to these instructions before submitting the issue 👆⚠️'
+  - type: textarea
+    id: description
+    attributes:
+      label: 'Is your feature request related to a problem? Please describe.'
+      description: A clear and concise description of what the problem is.
+      placeholder: I'm always frustrated when [...]
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+    validations:
+      required: false
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Describe alternatives you've considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 'Additional context/Screenshots'
+      description: Add any other context or screenshots about the feature request here.
+      render: bash
+    validations:
+      required: false

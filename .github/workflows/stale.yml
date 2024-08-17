@@ -6,10 +6,13 @@ on:
 
 jobs:
   stale:
+    permissions:
+      issues: write  # for actions/stale to close stale issues
+      pull-requests: write  # for actions/stale to close stale PRs
     runs-on: ubuntu-latest
     steps:
       - name: Close Stale Issues
-        uses: actions/stale@v3
+        uses: actions/stale@v7
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: |

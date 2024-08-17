@@ -1,5 +1,5 @@
-var CancelToken = require('../../../lib/cancel/CancelToken');
-var Cancel = require('../../../lib/cancel/Cancel');
+import CancelToken from '../../../lib/cancel/CancelToken';
+import CanceledError from '../../../lib/cancel/CanceledError';
 
 describe('CancelToken', function() {
   describe('constructor', function() {
@@ -17,30 +17,30 @@ describe('CancelToken', function() {
   });
 
   describe('reason', function() {
-    it('returns a Cancel if cancellation has been requested', function() {
-      var cancel;
-      var token = new CancelToken(function(c) {
+    it('returns a CanceledError if cancellation has been requested', function() {
+      let cancel;
+      const token = new CancelToken(function(c) {
         cancel = c;
       });
       cancel('Operation has been canceled.');
-      expect(token.reason).toEqual(jasmine.any(Cancel));
+      expect(token.reason).toEqual(jasmine.any(CanceledError));
       expect(token.reason.message).toBe('Operation has been canceled.');
     });
 
     it('returns undefined if cancellation has not been requested', function() {
-      var token = new CancelToken(function() {});
+      const token = new CancelToken(function() {});
       expect(token.reason).toBeUndefined();
     });
   });
 
   describe('promise', function() {
     it('returns a Promise that resolves when cancellation is requested', function(done) {
-      var cancel;
-      var token = new CancelToken(function(c) {
+      let cancel;
+      const token = new CancelToken(function(c) {
         cancel = c;
       });
       token.promise.then(function onFulfilled(value) {
-        expect(value).toEqual(jasmine.any(Cancel));
+        expect(value).toEqual(jasmine.any(CanceledError));
         expect(value.message).toBe('Operation has been canceled.');
         done();
       });
@@ -50,9 +50,9 @@ describe('CancelToken', function() {
 
   describe('throwIfRequested', function() {
     it('throws if cancellation has been requested', function() {
-      // Note: we cannot use expect.toThrowError here as Cancel does not inherit from Error
-      var cancel;
-      var token = new CancelToken(function(c) {
+      // Note: we cannot use expect.toThrowError here as CanceledError does not inherit from Error
+      let cancel;
+      const token = new CancelToken(function(c) {
         cancel = c;
       });
       cancel('Operation has been canceled.');
@@ -60,27 +60,27 @@ describe('CancelToken', function() {
         token.throwIfRequested();
         fail('Expected throwIfRequested to throw.');
       } catch (thrown) {
-        if (!(thrown instanceof Cancel)) {
-          fail('Expected throwIfRequested to throw a Cancel, but it threw ' + thrown + '.');
+        if (!(thrown instanceof CanceledError)) {
+          fail('Expected throwIfRequested to throw a CanceledError, but it threw ' + thrown + '.');
         }
         expect(thrown.message).toBe('Operation has been canceled.');
       }
     });
 
     it('does not throw if cancellation has not been requested', function() {
-      var token = new CancelToken(function() {});
+      const token = new CancelToken(function() {});
       token.throwIfRequested();
     });
   });
 
   describe('source', function() {
     it('returns an object containing token and cancel function', function() {
-      var source = CancelToken.source();
+      const source = CancelToken.source();
       expect(source.token).toEqual(jasmine.any(CancelToken));
       expect(source.cancel).toEqual(jasmine.any(Function));
       expect(source.token.reason).toBeUndefined();
       source.cancel('Operation has been canceled.');
-      expect(source.token.reason).toEqual(jasmine.any(Cancel));
+      expect(source.token.reason).toEqual(jasmine.any(CanceledError));
       expect(source.token.reason.message).toBe('Operation has been canceled.');
     });
   });

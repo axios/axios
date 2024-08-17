@@ -31,6 +31,13 @@ jobs:
         if: ${{ steps.sponsors.outputs.changed }}
         run: |
           echo "Sponsor block has changed. Creating PR with updates..."
+      - name: Read sponsors.md file content
+        id: read_file
+        run: |
+          FILE_CONTENT=$(cat ./temp/sponsors.md)
+          echo "File content: $FILE_CONTENT"
+          echo "::set-output name=file_content::$FILE_CONTENT"
+        shell: bash
       - name: Create pull request
         if: ${{ steps.sponsors.outputs.changed }}
         uses: peter-evans/create-pull-request@v6
@@ -42,7 +49,7 @@ jobs:
           title: '[Chore] Update sponsor block'
           body: |
             **New sponsor block update:**
-            {{ steps.sponsors.outputs.content }}
+            {{ steps.read_file.outputs.file_content }}
           labels: |
             readme
             automated pr

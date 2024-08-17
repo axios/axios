@@ -49,7 +49,7 @@ jobs:
           title: '[Chore] Update sponsor block'
           body: |
             **New sponsor block update:**
-            {{ steps.read_file.outputs.file_content }}
+            ${{ steps.read_file.outputs.file_content }}
           labels: |
             readme
             automated pr

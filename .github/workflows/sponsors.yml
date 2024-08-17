@@ -34,15 +34,13 @@ jobs:
       - name: Read sponsors.md file content
         id: read_file
         run: |
-          {
-            echo 'CONTENT<<EOF'
-            cat ./temp/sponsors.md
-            echo EOF
-          } >> "$GITHUB_ENV"
+          echo 'CONTENT<<EOF' >> $GITHUB_ENV
+          cat README.md >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
         shell: bash
       - name: Echo
         run: |
-          echo "${{ steps.read_file.outputs.CONTENT }}"
+          echo $CONTENT
       - name: Create pull request
         if: ${{ steps.sponsors.outputs.changed == 'true'}}
         uses: peter-evans/create-pull-request@v6
@@ -54,7 +52,7 @@ jobs:
           title: '[Chore] Update sponsor block'
           body: |
             **New sponsor block update:**
-            ${{ steps.read_file.outputs.file_content }}
+            $CONTENT
           labels: |
             readme
             automated pr

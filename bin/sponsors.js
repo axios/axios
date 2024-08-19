@@ -56,9 +56,9 @@ const updateReadmeSponsors = async (url, path, marker = '<!--<div>marker</div>--
 (async(url) => {
   const newContent = await updateReadmeSponsors(url, './README.md');
 
-  await exec(`echo "tag=${newContent ? 'true' : 'false'}" >> $GITHUB_OUTPUT`);
+  await exec(`echo "changed=${newContent ? 'true' : 'false'}" >> $GITHUB_OUTPUT`);
   if (newContent !== false) {
     await fs.mkdir('./temp').catch(() => {});
     await fs.writeFile('./temp/sponsors.md', newContent);
   }
-})('https://spontaneous-creponne-3ff312.netlify.app/data/sponsors.md');
+})('https://axios-http.com/data/sponsors.md');

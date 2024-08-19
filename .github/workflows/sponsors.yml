@@ -28,18 +28,21 @@ jobs:
         id: sponsors
         run: node ./bin/sponsors.js
       - name: Notify status
-        if: ${{ steps.sponsors.outputs.changed }}
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
         run: |
           echo "Sponsor block has changed. Creating PR with updates..."
       - name: Read sponsors.md file content
         id: read_file
         run: |
-          FILE_CONTENT=$(cat ./temp/sponsors.md)
-          echo "File content: $FILE_CONTENT"
-          echo "::set-output name=file_content::$FILE_CONTENT"
+          echo 'CONTENT<<EOF' >> $GITHUB_ENV
+          cat ./temp/sponsors.md >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
         shell: bash
+      - name: Echo
+        run: |
+          echo "$CONTENT"
       - name: Create pull request
-        if: ${{ steps.sponsors.outputs.changed }}
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
         uses: peter-evans/create-pull-request@v6
         id: cpr
         with:
@@ -49,7 +52,7 @@ jobs:
           title: '[Chore] Update sponsor block'
           body: |
             **New sponsor block update:**
-            {{ steps.read_file.outputs.file_content }}
+            ${{ env.CONTENT }}
           labels: |
             readme
             automated pr
@@ -62,7 +65,7 @@ jobs:
           #reviewers: jasonsaayman
           draft: false
       - name: Show PR link
-        if: ${{ steps.sponsors.outputs.changed }}
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
         run: |
           echo "Sponsor block has changed. Creating PR..."
           echo "Axios Release v${{ steps.package-version.outputs.current-version}}' pull request - ${{ steps.cpr.outputs.pull-request-url }}"

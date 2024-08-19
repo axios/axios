@@ -61,4 +61,4 @@ const updateReadmeSponsors = async (url, path, marker = '<!--<div>marker</div>--
     await fs.mkdir('./temp').catch(() => {});
     await fs.writeFile('./temp/sponsors.md', newContent);
   }
-})('https://spontaneous-creponne-3ff312.netlify.app/data/sponsors.md');
+})('https://axios-http.com/data/sponsors.md');

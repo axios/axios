@@ -32,6 +32,7 @@ jobs:
         run: |
           echo "Sponsor block has changed. Creating PR with updates..."
       - name: Read sponsors.md file content
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
         id: read_file
         run: |
           echo 'CONTENT<<EOF' >> $GITHUB_ENV

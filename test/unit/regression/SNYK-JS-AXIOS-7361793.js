@@ -4,7 +4,6 @@
 import axios from '../../../index.js';
 import http from 'http';
 import assert from 'assert';
-import utils from '../../../lib/utils.js';
 import platform from '../../../lib/platform/index.js';
 
 
@@ -52,17 +51,18 @@ describe('Server-Side Request Forgery (SSRF)', () => {
         let hasBrowserEnv, origin;
 
         before(() => {
-            hasBrowserEnv = utils.hasBrowserEnv;
+            assert.ok(platform.hasBrowserEnv !== undefined);
+            hasBrowserEnv = platform.hasBrowserEnv;
             origin = platform.origin;
-            utils.hasBrowserEnv = true;
+            platform.hasBrowserEnv = true;
             platform.origin = 'http://localhost:' + String(GOOD_PORT);
         });
         after(() => {
-            utils.hasBrowserEnv = hasBrowserEnv;
+            platform.hasBrowserEnv = hasBrowserEnv;
             platform.origin = origin;
         });
         it('should fetch in client-side mode', async () => {
-            utils.hasBrowserEnv = true;
+            platform.hasBrowserEnv = true;
             const ssrfAxios = axios.create({
                 baseURL: 'http://localhost:' + String(GOOD_PORT),
             });

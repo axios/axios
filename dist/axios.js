@@ -1,4 +1,4 @@
-// Axios v1.7.4 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.5 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1432,7 +1432,10 @@
     code && (this.code = code);
     config && (this.config = config);
     request && (this.request = request);
-    response && (this.response = response);
+    if (response) {
+      this.response = response;
+      this.status = response.status ? response.status : null;
+    }
   }
   utils$1.inherits(AxiosError, Error, {
     toJSON: function toJSON() {
@@ -1451,7 +1454,7 @@
         // Axios
         config: utils$1.toJSONObject(this.config),
         code: this.code,
-        status: this.response && this.response.status ? this.response.status : null
+        status: this.status
       };
     }
   });
@@ -1860,6 +1863,7 @@
   };
 
   var hasBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined';
+  var _navigator = (typeof navigator === "undefined" ? "undefined" : _typeof(navigator)) === 'object' && navigator || undefined;
 
   /**
    * Determine if we're running in a standard browser environment
@@ -1878,9 +1882,7 @@
    *
    * @returns {boolean}
    */
-  var hasStandardBrowserEnv = function (product) {
-    return hasBrowserEnv && ['ReactNative', 'NativeScript', 'NS'].indexOf(product) < 0;
-  }(typeof navigator !== 'undefined' && navigator.product);
+  var hasStandardBrowserEnv = hasBrowserEnv && (!_navigator || ['ReactNative', 'NativeScript', 'NS'].indexOf(_navigator.product) < 0);
 
   /**
    * Determine if we're running in a standard browser webWorker environment
@@ -1903,6 +1905,7 @@
     hasBrowserEnv: hasBrowserEnv,
     hasStandardBrowserWebWorkerEnv: hasStandardBrowserWebWorkerEnv,
     hasStandardBrowserEnv: hasStandardBrowserEnv,
+    navigator: _navigator,
     origin: origin
   });
 
@@ -2643,7 +2646,7 @@
   // Standard browser envs have full support of the APIs needed to test
   // whether the request URL is of the same origin as current location.
   function standardBrowserEnv() {
-    var msie = /(msie|trident)/i.test(navigator.userAgent);
+    var msie = platform.navigator && /(msie|trident)/i.test(platform.navigator.userAgent);
     var urlParsingNode = document.createElement('a');
     var originURL;
 
@@ -3445,7 +3448,7 @@
   }();
   var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref5, _ref6, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, response, isStreamResponse, options, responseContentLength, _ref7, _ref8, _onProgress, _flush, responseData;
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref5, _ref6, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, isCredentialsSupported, response, isStreamResponse, options, responseContentLength, _ref7, _ref8, _onProgress, _flush, responseData;
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) switch (_context4.prev = _context4.next) {
           case 0:
@@ -3490,17 +3493,21 @@
             if (!utils$1.isString(withCredentials)) {
               withCredentials = withCredentials ? 'include' : 'omit';
             }
+
+            // Cloudflare Workers throws when credentials are defined
+            // see https://github.com/cloudflare/workerd/issues/902
+            isCredentialsSupported = "credentials" in Request.prototype;
             request = new Request(url, _objectSpread2(_objectSpread2({}, fetchOptions), {}, {
               signal: composedSignal,
               method: method.toUpperCase(),
               headers: headers.normalize().toJSON(),
               body: data,
               duplex: "half",
-              credentials: withCredentials
+              credentials: isCredentialsSupported ? withCredentials : undefined
             }));
-            _context4.next = 19;
+            _context4.next = 20;
             return fetch(request);
-          case 19:
+          case 20:
             response = _context4.sent;
             isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
             if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
@@ -3516,13 +3523,13 @@
               }, encodeText), options);
             }
             responseType = responseType || 'text';
-            _context4.next = 25;
+            _context4.next = 26;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
-          case 25:
+          case 26:
             responseData = _context4.sent;
             !isStreamResponse && onFinish();
             stopTimeout && stopTimeout();
-            _context4.next = 30;
+            _context4.next = 31;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
                 data: responseData,
@@ -3533,26 +3540,26 @@
                 request: request
               });
             });
-          case 30:
+          case 31:
             return _context4.abrupt("return", _context4.sent);
-          case 33:
-            _context4.prev = 33;
+          case 34:
+            _context4.prev = 34;
             _context4.t2 = _context4["catch"](4);
             onFinish();
             if (!(_context4.t2 && _context4.t2.name === 'TypeError' && /fetch/i.test(_context4.t2.message))) {
-              _context4.next = 38;
+              _context4.next = 39;
               break;
             }
             throw Object.assign(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request), {
               cause: _context4.t2.cause || _context4.t2
             });
-          case 38:
-            throw AxiosError.from(_context4.t2, _context4.t2 && _context4.t2.code, config, request);
           case 39:
+            throw AxiosError.from(_context4.t2, _context4.t2 && _context4.t2.code, config, request);
+          case 40:
           case "end":
             return _context4.stop();
         }
-      }, _callee4, null, [[4, 33]]);
+      }, _callee4, null, [[4, 34]]);
     }));
     return function (_x5) {
       return _ref4.apply(this, arguments);
@@ -3676,7 +3683,7 @@
     });
   }
 
-  var VERSION = "1.7.4";
+  var VERSION = "1.7.5";
 
   var validators$1 = {};
 

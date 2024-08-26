@@ -72,4 +72,9 @@ describe('core::AxiosError', function() {
       expect(json.myCustomProperty).toBe('myCustomValue')
     });
   });
+
+  it('should have status property when response was passed to the constructor', () => {
+      const err = new AxiosError('test', 'foo', {}, {}, {status: 400});
+      expect(err.status).toBe(400);
+  });
 });

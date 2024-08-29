@@ -2,9 +2,17 @@ name: 'CI'
 
 on:
   push:
-    branches: '**'
+    branches:
+      - '*'
+      - '*/*'
+      - '**'
+      - '!sponsors'
   pull_request:
-    branches: '**'
+    branches:
+      - '*'
+      - '*/*'
+      - '**'
+      - '!sponsors'
 
 permissions:
   contents: read

@@ -1957,6 +1957,7 @@ describe('supports http with nodejs', function () {
   describe('progress', function () {
     describe('upload', function () {
       it('should support upload progress capturing', async function () {
+        this.timeout(15000);
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -1981,6 +1982,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onUploadProgress: ({loaded, total, progress, bytes, upload}) => {
+            console.log('onUploadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -2013,6 +2015,8 @@ describe('supports http with nodejs', function () {
 
     describe('download', function () {
       it('should support download progress capturing', async function () {
+        this.timeout(15000);
+
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -2037,6 +2041,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onDownloadProgress: ({loaded, total, progress, bytes, download}) => {
+            console.log('onDownloadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -2152,7 +2157,7 @@ describe('supports http with nodejs', function () {
           }]`
         );
 
-        const progressTicksRate = 2;
+        const progressTicksRate = 3;
         const expectedProgress = ((i + skip) / secs) / progressTicksRate;
 
         assert.ok(

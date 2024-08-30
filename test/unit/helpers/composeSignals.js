@@ -2,6 +2,12 @@ import assert from 'assert';
 import composeSignals from '../../../lib/helpers/composeSignals.js';
 
 describe('helpers::composeSignals', () => {
+  before(function () {
+    if (typeof AbortController !== 'function') {
+      this.skip();
+    }
+  });
+
   it('should abort when any of the signals abort', () => {
     let called;
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.7.6](https://github.com/axios/axios/compare/v1.7.5...v1.7.6) (2024-08-30)
+
+
+### Bug Fixes
+
+* **fetch:** fix content length calculation for FormData payload; ([#6524](https://github.com/axios/axios/issues/6524)) ([085f568](https://github.com/axios/axios/commit/085f56861a83e9ac02c140ad9d68dac540dfeeaa))
+* **fetch:** optimize signals composing logic; ([#6582](https://github.com/axios/axios/issues/6582)) ([df9889b](https://github.com/axios/axios/commit/df9889b83c2cc37e9e6189675a73ab70c60f031f))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+98/-46 (#6582 )")
+- <img src="https://avatars.githubusercontent.com/u/3534453?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jacques Germishuys](https://github.com/jacquesg "+5/-1 (#6524 )")
+- <img src="https://avatars.githubusercontent.com/u/53894505?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [kuroino721](https://github.com/kuroino721 "+3/-1 (#6575 )")
+
 ## [1.7.5](https://github.com/axios/axios/compare/v1.7.4...v1.7.5) (2024-08-23)
 
 

@@ -1,4 +1,4 @@
-// Axios v1.7.4 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.6 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1432,7 +1432,10 @@
     code && (this.code = code);
     config && (this.config = config);
     request && (this.request = request);
-    response && (this.response = response);
+    if (response) {
+      this.response = response;
+      this.status = response.status ? response.status : null;
+    }
   }
   utils$1.inherits(AxiosError, Error, {
     toJSON: function toJSON() {
@@ -1451,7 +1454,7 @@
         // Axios
         config: utils$1.toJSONObject(this.config),
         code: this.code,
-        status: this.response && this.response.status ? this.response.status : null
+        status: this.status
       };
     }
   });
@@ -1860,6 +1863,7 @@
   };
 
   var hasBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined';
+  var _navigator = (typeof navigator === "undefined" ? "undefined" : _typeof(navigator)) === 'object' && navigator || undefined;
 
   /**
    * Determine if we're running in a standard browser environment
@@ -1878,9 +1882,7 @@
    *
    * @returns {boolean}
    */
-  var hasStandardBrowserEnv = function (product) {
-    return hasBrowserEnv && ['ReactNative', 'NativeScript', 'NS'].indexOf(product) < 0;
-  }(typeof navigator !== 'undefined' && navigator.product);
+  var hasStandardBrowserEnv = hasBrowserEnv && (!_navigator || ['ReactNative', 'NativeScript', 'NS'].indexOf(_navigator.product) < 0);
 
   /**
    * Determine if we're running in a standard browser webWorker environment
@@ -1903,6 +1905,7 @@
     hasBrowserEnv: hasBrowserEnv,
     hasStandardBrowserWebWorkerEnv: hasStandardBrowserWebWorkerEnv,
     hasStandardBrowserEnv: hasStandardBrowserEnv,
+    navigator: _navigator,
     origin: origin
   });
 
@@ -2643,7 +2646,7 @@
   // Standard browser envs have full support of the APIs needed to test
   // whether the request URL is of the same origin as current location.
   function standardBrowserEnv() {
-    var msie = /(msie|trident)/i.test(navigator.userAgent);
+    var msie = platform.navigator && /(msie|trident)/i.test(platform.navigator.userAgent);
     var urlParsingNode = document.createElement('a');
     var originURL;
 
@@ -3090,38 +3093,42 @@
   };
 
   var composeSignals = function composeSignals(signals, timeout) {
-    var controller = new AbortController();
-    var aborted;
-    var onabort = function onabort(cancel) {
-      if (!aborted) {
-        aborted = true;
-        unsubscribe();
-        var err = cancel instanceof Error ? cancel : this.reason;
-        controller.abort(err instanceof AxiosError ? err : new CanceledError(err instanceof Error ? err.message : err));
-      }
-    };
-    var timer = timeout && setTimeout(function () {
-      onabort(new AxiosError("timeout ".concat(timeout, " of ms exceeded"), AxiosError.ETIMEDOUT));
-    }, timeout);
-    var unsubscribe = function unsubscribe() {
-      if (signals) {
-        timer && clearTimeout(timer);
+    var _signals = signals = signals ? signals.filter(Boolean) : [],
+      length = _signals.length;
+    if (timeout || length) {
+      var controller = new AbortController();
+      var aborted;
+      var onabort = function onabort(reason) {
+        if (!aborted) {
+          aborted = true;
+          unsubscribe();
+          var err = reason instanceof Error ? reason : this.reason;
+          controller.abort(err instanceof AxiosError ? err : new CanceledError(err instanceof Error ? err.message : err));
+        }
+      };
+      var timer = timeout && setTimeout(function () {
         timer = null;
-        signals.forEach(function (signal) {
-          signal && (signal.removeEventListener ? signal.removeEventListener('abort', onabort) : signal.unsubscribe(onabort));
-        });
-        signals = null;
-      }
-    };
-    signals.forEach(function (signal) {
-      return signal && signal.addEventListener && signal.addEventListener('abort', onabort);
-    });
-    var signal = controller.signal;
-    signal.unsubscribe = unsubscribe;
-    return [signal, function () {
-      timer && clearTimeout(timer);
-      timer = null;
-    }];
+        onabort(new AxiosError("timeout ".concat(timeout, " of ms exceeded"), AxiosError.ETIMEDOUT));
+      }, timeout);
+      var unsubscribe = function unsubscribe() {
+        if (signals) {
+          timer && clearTimeout(timer);
+          timer = null;
+          signals.forEach(function (signal) {
+            signal.unsubscribe ? signal.unsubscribe(onabort) : signal.removeEventListener('abort', onabort);
+          });
+          signals = null;
+        }
+      };
+      signals.forEach(function (signal) {
+        return signal.addEventListener('abort', onabort);
+      });
+      var signal = controller.signal;
+      signal.unsubscribe = function () {
+        return utils$1.asap(unsubscribe);
+      };
+      return signal;
+    }
   };
   var composeSignals$1 = composeSignals;
 
@@ -3374,6 +3381,7 @@
   }(new Response());
   var getBodyLength = /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(body) {
+      var _request;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
@@ -3390,32 +3398,36 @@
             return _context2.abrupt("return", body.size);
           case 4:
             if (!utils$1.isSpecCompliantForm(body)) {
-              _context2.next = 8;
+              _context2.next = 9;
               break;
             }
-            _context2.next = 7;
-            return new Request(body).arrayBuffer();
-          case 7:
-            return _context2.abrupt("return", _context2.sent.byteLength);
+            _request = new Request(platform.origin, {
+              method: 'POST',
+              body: body
+            });
+            _context2.next = 8;
+            return _request.arrayBuffer();
           case 8:
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 9:
             if (!(utils$1.isArrayBufferView(body) || utils$1.isArrayBuffer(body))) {
-              _context2.next = 10;
+              _context2.next = 11;
               break;
             }
             return _context2.abrupt("return", body.byteLength);
-          case 10:
+          case 11:
             if (utils$1.isURLSearchParams(body)) {
               body = body + '';
             }
             if (!utils$1.isString(body)) {
-              _context2.next = 15;
+              _context2.next = 16;
               break;
             }
-            _context2.next = 14;
+            _context2.next = 15;
             return encodeText(body);
-          case 14:
-            return _context2.abrupt("return", _context2.sent.byteLength);
           case 15:
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 16:
           case "end":
             return _context2.stop();
         }
@@ -3445,18 +3457,15 @@
   }();
   var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref5, _ref6, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, response, isStreamResponse, options, responseContentLength, _ref7, _ref8, _onProgress, _flush, responseData;
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, composedSignal, request, unsubscribe, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, isCredentialsSupported, response, isStreamResponse, options, responseContentLength, _ref5, _ref6, _onProgress, _flush, responseData;
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) switch (_context4.prev = _context4.next) {
           case 0:
             _resolveConfig = resolveConfig(config), url = _resolveConfig.url, method = _resolveConfig.method, data = _resolveConfig.data, signal = _resolveConfig.signal, cancelToken = _resolveConfig.cancelToken, timeout = _resolveConfig.timeout, onDownloadProgress = _resolveConfig.onDownloadProgress, onUploadProgress = _resolveConfig.onUploadProgress, responseType = _resolveConfig.responseType, headers = _resolveConfig.headers, _resolveConfig$withCr = _resolveConfig.withCredentials, withCredentials = _resolveConfig$withCr === void 0 ? 'same-origin' : _resolveConfig$withCr, fetchOptions = _resolveConfig.fetchOptions;
             responseType = responseType ? (responseType + '').toLowerCase() : 'text';
-            _ref5 = signal || cancelToken || timeout ? composeSignals$1([signal, cancelToken], timeout) : [], _ref6 = _slicedToArray(_ref5, 2), composedSignal = _ref6[0], stopTimeout = _ref6[1];
-            onFinish = function onFinish() {
-              !finished && setTimeout(function () {
-                composedSignal && composedSignal.unsubscribe();
-              });
-              finished = true;
+            composedSignal = composeSignals$1([signal, cancelToken && cancelToken.toAbortSignal()], timeout);
+            unsubscribe = composedSignal && composedSignal.unsubscribe && function () {
+              composedSignal.unsubscribe();
             };
             _context4.prev = 4;
             _context4.t0 = onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head';
@@ -3490,38 +3499,41 @@
             if (!utils$1.isString(withCredentials)) {
               withCredentials = withCredentials ? 'include' : 'omit';
             }
+
+            // Cloudflare Workers throws when credentials are defined
+            // see https://github.com/cloudflare/workerd/issues/902
+            isCredentialsSupported = "credentials" in Request.prototype;
             request = new Request(url, _objectSpread2(_objectSpread2({}, fetchOptions), {}, {
               signal: composedSignal,
               method: method.toUpperCase(),
               headers: headers.normalize().toJSON(),
               body: data,
               duplex: "half",
-              credentials: withCredentials
+              credentials: isCredentialsSupported ? withCredentials : undefined
             }));
-            _context4.next = 19;
+            _context4.next = 20;
             return fetch(request);
-          case 19:
+          case 20:
             response = _context4.sent;
             isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
-            if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
+            if (supportsResponseStream && (onDownloadProgress || isStreamResponse && unsubscribe)) {
               options = {};
               ['status', 'statusText', 'headers'].forEach(function (prop) {
                 options[prop] = response[prop];
               });
               responseContentLength = utils$1.toFiniteNumber(response.headers.get('content-length'));
-              _ref7 = onDownloadProgress && progressEventDecorator(responseContentLength, progressEventReducer(asyncDecorator(onDownloadProgress), true)) || [], _ref8 = _slicedToArray(_ref7, 2), _onProgress = _ref8[0], _flush = _ref8[1];
+              _ref5 = onDownloadProgress && progressEventDecorator(responseContentLength, progressEventReducer(asyncDecorator(onDownloadProgress), true)) || [], _ref6 = _slicedToArray(_ref5, 2), _onProgress = _ref6[0], _flush = _ref6[1];
               response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, _onProgress, function () {
                 _flush && _flush();
-                isStreamResponse && onFinish();
+                unsubscribe && unsubscribe();
               }, encodeText), options);
             }
             responseType = responseType || 'text';
-            _context4.next = 25;
+            _context4.next = 26;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
-          case 25:
+          case 26:
             responseData = _context4.sent;
-            !isStreamResponse && onFinish();
-            stopTimeout && stopTimeout();
+            !isStreamResponse && unsubscribe && unsubscribe();
             _context4.next = 30;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
@@ -3538,7 +3550,7 @@
           case 33:
             _context4.prev = 33;
             _context4.t2 = _context4["catch"](4);
-            onFinish();
+            unsubscribe && unsubscribe();
             if (!(_context4.t2 && _context4.t2.name === 'TypeError' && /fetch/i.test(_context4.t2.message))) {
               _context4.next = 38;
               break;
@@ -3676,7 +3688,7 @@
     });
   }
 
-  var VERSION = "1.7.4";
+  var VERSION = "1.7.6";
 
   var validators$1 = {};
 
@@ -4056,6 +4068,20 @@
         if (index !== -1) {
           this._listeners.splice(index, 1);
         }
+      }
+    }, {
+      key: "toAbortSignal",
+      value: function toAbortSignal() {
+        var _this = this;
+        var controller = new AbortController();
+        var abort = function abort(err) {
+          controller.abort(err);
+        };
+        this.subscribe(abort);
+        controller.signal.unsubscribe = function () {
+          return _this.unsubscribe(abort);
+        };
+        return controller.signal;
       }
 
       /**

@@ -1,4 +1,4 @@
-// Axios v1.7.6 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.7 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -3167,7 +3167,7 @@
     }, streamChunk);
   });
   var readBytes = /*#__PURE__*/function () {
-    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize, encode) {
+    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize) {
       var _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, chunk;
       return _regeneratorRuntime().wrap(function _callee$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
@@ -3175,82 +3175,111 @@
             _iteratorAbruptCompletion = false;
             _didIteratorError = false;
             _context2.prev = 2;
-            _iterator = _asyncIterator(iterable);
+            _iterator = _asyncIterator(readStream(iterable));
           case 4:
             _context2.next = 6;
             return _awaitAsyncGenerator(_iterator.next());
           case 6:
             if (!(_iteratorAbruptCompletion = !(_step = _context2.sent).done)) {
-              _context2.next = 27;
+              _context2.next = 12;
               break;
             }
             chunk = _step.value;
-            _context2.t0 = _asyncGeneratorDelegate;
-            _context2.t1 = _asyncIterator;
-            _context2.t2 = streamChunk;
-            if (!ArrayBuffer.isView(chunk)) {
-              _context2.next = 15;
-              break;
-            }
-            _context2.t3 = chunk;
-            _context2.next = 18;
-            break;
-          case 15:
-            _context2.next = 17;
-            return _awaitAsyncGenerator(encode(String(chunk)));
-          case 17:
-            _context2.t3 = _context2.sent;
-          case 18:
-            _context2.t4 = _context2.t3;
-            _context2.t5 = chunkSize;
-            _context2.t6 = (0, _context2.t2)(_context2.t4, _context2.t5);
-            _context2.t7 = (0, _context2.t1)(_context2.t6);
-            _context2.t8 = _awaitAsyncGenerator;
-            return _context2.delegateYield((0, _context2.t0)(_context2.t7, _context2.t8), "t9", 24);
-          case 24:
+            return _context2.delegateYield(_asyncGeneratorDelegate(_asyncIterator(streamChunk(chunk, chunkSize))), "t0", 9);
+          case 9:
             _iteratorAbruptCompletion = false;
             _context2.next = 4;
             break;
-          case 27:
-            _context2.next = 33;
+          case 12:
+            _context2.next = 18;
             break;
-          case 29:
-            _context2.prev = 29;
-            _context2.t10 = _context2["catch"](2);
+          case 14:
+            _context2.prev = 14;
+            _context2.t1 = _context2["catch"](2);
             _didIteratorError = true;
-            _iteratorError = _context2.t10;
-          case 33:
-            _context2.prev = 33;
-            _context2.prev = 34;
+            _iteratorError = _context2.t1;
+          case 18:
+            _context2.prev = 18;
+            _context2.prev = 19;
             if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-              _context2.next = 38;
+              _context2.next = 23;
               break;
             }
-            _context2.next = 38;
+            _context2.next = 23;
             return _awaitAsyncGenerator(_iterator["return"]());
-          case 38:
-            _context2.prev = 38;
+          case 23:
+            _context2.prev = 23;
             if (!_didIteratorError) {
-              _context2.next = 41;
+              _context2.next = 26;
               break;
             }
             throw _iteratorError;
-          case 41:
-            return _context2.finish(38);
-          case 42:
-            return _context2.finish(33);
-          case 43:
+          case 26:
+            return _context2.finish(23);
+          case 27:
+            return _context2.finish(18);
+          case 28:
           case "end":
             return _context2.stop();
         }
-      }, _callee, null, [[2, 29, 33, 43], [34,, 38, 42]]);
+      }, _callee, null, [[2, 14, 18, 28], [19,, 23, 27]]);
     }));
-    return function readBytes(_x, _x2, _x3) {
+    return function readBytes(_x, _x2) {
       return _ref.apply(this, arguments);
     };
   }();
-  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish, encode) {
-    var iterator = readBytes(stream, chunkSize, encode);
+  var readStream = /*#__PURE__*/function () {
+    var _ref2 = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(stream) {
+      var reader, _yield$_awaitAsyncGen, done, value;
+      return _regeneratorRuntime().wrap(function _callee2$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            if (!stream[Symbol.asyncIterator]) {
+              _context3.next = 3;
+              break;
+            }
+            return _context3.delegateYield(_asyncGeneratorDelegate(_asyncIterator(stream)), "t0", 2);
+          case 2:
+            return _context3.abrupt("return");
+          case 3:
+            reader = stream.getReader();
+            _context3.prev = 4;
+          case 5:
+            _context3.next = 7;
+            return _awaitAsyncGenerator(reader.read());
+          case 7:
+            _yield$_awaitAsyncGen = _context3.sent;
+            done = _yield$_awaitAsyncGen.done;
+            value = _yield$_awaitAsyncGen.value;
+            if (!done) {
+              _context3.next = 12;
+              break;
+            }
+            return _context3.abrupt("break", 16);
+          case 12:
+            _context3.next = 14;
+            return value;
+          case 14:
+            _context3.next = 5;
+            break;
+          case 16:
+            _context3.prev = 16;
+            _context3.next = 19;
+            return _awaitAsyncGenerator(reader.cancel());
+          case 19:
+            return _context3.finish(16);
+          case 20:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee2, null, [[4,, 16, 20]]);
+    }));
+    return function readStream(_x3) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish) {
+    var iterator = readBytes(stream, chunkSize);
     var bytes = 0;
     var done;
     var _onFinish = function _onFinish(e) {
@@ -3261,25 +3290,25 @@
     };
     return new ReadableStream({
       pull: function pull(controller) {
-        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
           var _yield$iterator$next, _done, value, len, loadedBytes;
-          return _regeneratorRuntime().wrap(function _callee2$(_context3) {
-            while (1) switch (_context3.prev = _context3.next) {
+          return _regeneratorRuntime().wrap(function _callee3$(_context4) {
+            while (1) switch (_context4.prev = _context4.next) {
               case 0:
-                _context3.prev = 0;
-                _context3.next = 3;
+                _context4.prev = 0;
+                _context4.next = 3;
                 return iterator.next();
               case 3:
-                _yield$iterator$next = _context3.sent;
+                _yield$iterator$next = _context4.sent;
                 _done = _yield$iterator$next.done;
                 value = _yield$iterator$next.value;
                 if (!_done) {
-                  _context3.next = 10;
+                  _context4.next = 10;
                   break;
                 }
                 _onFinish();
                 controller.close();
-                return _context3.abrupt("return");
+                return _context4.abrupt("return");
               case 10:
                 len = value.byteLength;
                 if (onProgress) {
@@ -3287,18 +3316,18 @@
                   onProgress(loadedBytes);
                 }
                 controller.enqueue(new Uint8Array(value));
-                _context3.next = 19;
+                _context4.next = 19;
                 break;
               case 15:
-                _context3.prev = 15;
-                _context3.t0 = _context3["catch"](0);
-                _onFinish(_context3.t0);
-                throw _context3.t0;
+                _context4.prev = 15;
+                _context4.t0 = _context4["catch"](0);
+                _onFinish(_context4.t0);
+                throw _context4.t0;
               case 19:
               case "end":
-                return _context3.stop();
+                return _context4.stop();
             }
-          }, _callee2, null, [[0, 15]]);
+          }, _callee3, null, [[0, 15]]);
         }))();
       },
       cancel: function cancel(reason) {
@@ -3493,7 +3522,7 @@
             }
             if (_request.body) {
               _progressEventDecorat = progressEventDecorator(requestContentLength, progressEventReducer(asyncDecorator(onUploadProgress))), _progressEventDecorat2 = _slicedToArray(_progressEventDecorat, 2), onProgress = _progressEventDecorat2[0], flush = _progressEventDecorat2[1];
-              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush, encodeText);
+              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
             }
           case 15:
             if (!utils$1.isString(withCredentials)) {
@@ -3526,7 +3555,7 @@
               response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, _onProgress, function () {
                 _flush && _flush();
                 unsubscribe && unsubscribe();
-              }, encodeText), options);
+              }), options);
             }
             responseType = responseType || 'text';
             _context4.next = 26;
@@ -3688,7 +3717,7 @@
     });
   }
 
-  var VERSION = "1.7.6";
+  var VERSION = "1.7.7";
 
   var validators$1 = {};
 

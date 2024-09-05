@@ -557,6 +557,7 @@ export interface AxiosStatic extends AxiosInstance {
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
+  mergeConfig: typeof mergeConfig;
 }
 
 declare const axios: AxiosStatic;

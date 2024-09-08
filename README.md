@@ -1,62 +1,12 @@
-<h3 align="center">
-   Platinum sponsors
-   <br>
-</h3>
 
-<div align="center">
-   <a href="https://runalloy.com?utm_source=github&utm_medium=referral&utm_campaign=121423_axios">
-      <picture>
-         <source width="400px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/f6067247-7eba-4069-852a-ab1bb85b1780">
-         <source width="400px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10">
-         <img width="400px" src="https://github.com/axios/axios/assets/4814473/75c37f4d-36e6-44f5-a068-3edd77c00a10" />
-       </picture>
-   </a>
-   
-   <p align="center">Alloy is the integration development platform that makes it simple and <br>fast for SaaS companies to launch critical user-facing integrations.</p>
-   <p align="center">
-      <a href="https://runalloy.com/signup?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Sign up free</b></a> •
-      <a href="https://docs.runalloy.com/docs?utm_source=github&utm_medium=referral&utm_campaign=11823_axios"><b>Documentation</b></a>
-   </p>
-   <br><br>
-</div>
+<h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/buy-instagram-followers-buzzoid?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="62px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/buy-instagram-followers-buzzoid.png" alt="Buzzoid - Buy Instagram Followers"/> </a> <p align="center" title="At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#x27;s #1 IG service since 2012.">At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rate...</p> <p align="center"> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http" style="padding: 10px; display: inline-block"> <picture> <source width="200px" height="38px" media="(prefers-color-scheme: dark)" srcset="/assets/sponsors/stytch_white.png"> <img width="200px" height="38px" src="https://axios-http.com/assets/sponsors/stytch.png" alt="Stytch"/> </picture> </a> <p align="center" title="API-first authentication, authorization, and fraud prevention">API-first authentication, authorization, and fraud prevention</p> <p align="center"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http"><b>Website</b></a> | <a href="https://stytch.com/docs?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;docs-link&amp;utm_campaign&#x3D;axios-http"><b>Documentation</b></a> | <a href="https://github.com/stytchauth/stytch-node?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;node-sdk&amp;utm_campaign&#x3D;axios-http"><b>Node.js</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> </p>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>Documentation</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>Community</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://route4me.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <picture> <source width="200px" height="51px" media="(prefers-color-scheme: dark)" srcset="/assets/sponsors/route4me_white.png"> <img width="200px" height="51px" src="https://axios-http.com/assets/sponsors/route4me.png" alt="Route4Me"/> </picture> </a> <p align="center" title="Best Route Planning And Route Optimization Software">Best Route Planning And Route Optimization Software</p> <p align="center"> <a href="https://route4me.com/platform/route-optimization-software"><b>Explore</b></a> | <a href="https://route4me.com/platform/marketplace/pricing"><b>Free Trial</b></a> | <a href="https://route4me.com/contact"><b>Contact</b></a> </p>
+</td></tr></table>
 
-<h3 align="center">
-   Gold sponsors
-   <br><br>
-</h3>
-
-<table border="0">
-   <td align="center">
-     <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
-       <picture>
-         <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/538d715a-13c7-4668-ae7d-37a4548423f4">
-         <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142">
-         <img width="200px" src="https://github.com/axios/axios/assets/4814473/b6a9a7bc-9fb1-4b9b-909f-1b4bee1fd142" />
-       </picture>
-     </a>
-      <p align="center">API-first authentication, authorization, and fraud prevention</p>
-      <p align="center">
-          <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=website-link&utm_campaign=axios-http"><b>Website</b></a> •
-          <a href="https://stytch.com/docs?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=docs-link&utm_campaign=axios-http"><b>Documentation</b></a> • <a href="https://github.com/stytchauth/stytch-node?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=node-sdk&utm_campaign=axios-http"><b>Node.js Backend SDK</b></a>
-      </p>
-   </td>
-   <td align="center">
-     <a href="https://stytch.com?utm_source=oss-sponsorship&utm_medium=paid_sponsorship&utm_content=logo&utm_campaign=axios-http">
-       <picture>
-         <source width="200px" media="(prefers-color-scheme: dark)" srcset="https://github.com/axios/axios/assets/4814473/79f572f3-9d57-488d-80cc-58d674bb98d8">
-         <source width="200px" media="(prefers-color-scheme: light)" srcset="https://github.com/axios/axios/assets/4814473/18b51893-c4b4-4557-b263-74c2b3de84ab">
-         <img width="200px" src="https://github.com/axios/axios/assets/4814473/18b51893-c4b4-4557-b263-74c2b3de84ab" />
-       </picture>
-     </a>
-      <p align="center">Drag-and-drop authentication, authorization, and identity management</p>
-      <p align="center">
-          <a href="https://www.descope.com/?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Website</b></a> •
-          <a href="https://docs.descope.com/?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Documentation</b></a> • <a href="https://www.descope.com/community?utm_source=axios&utm_medium=referral&utm_campaign=axios-oss-sponsorship"><b>Community</b></a>
-      </p>
-   </td>
-</table>
-     
-
+<!--<div>marker</div>-->
 <br><br>
 <div align="center">
    <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>

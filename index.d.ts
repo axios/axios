@@ -477,7 +477,7 @@ export interface AxiosInterceptorOptions {
 }
 
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: ((value: V) => V | Promise<V>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions): number;
+  use<T = V>(onFulfilled?: ((value: V) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions): number;
   eject(id: number): void;
   clear(): void;
 }

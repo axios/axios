@@ -1,4 +1,4 @@
-// Axios v1.7.5 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.7 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -3093,38 +3093,42 @@
   };
 
   var composeSignals = function composeSignals(signals, timeout) {
-    var controller = new AbortController();
-    var aborted;
-    var onabort = function onabort(cancel) {
-      if (!aborted) {
-        aborted = true;
-        unsubscribe();
-        var err = cancel instanceof Error ? cancel : this.reason;
-        controller.abort(err instanceof AxiosError ? err : new CanceledError(err instanceof Error ? err.message : err));
-      }
-    };
-    var timer = timeout && setTimeout(function () {
-      onabort(new AxiosError("timeout ".concat(timeout, " of ms exceeded"), AxiosError.ETIMEDOUT));
-    }, timeout);
-    var unsubscribe = function unsubscribe() {
-      if (signals) {
-        timer && clearTimeout(timer);
+    var _signals = signals = signals ? signals.filter(Boolean) : [],
+      length = _signals.length;
+    if (timeout || length) {
+      var controller = new AbortController();
+      var aborted;
+      var onabort = function onabort(reason) {
+        if (!aborted) {
+          aborted = true;
+          unsubscribe();
+          var err = reason instanceof Error ? reason : this.reason;
+          controller.abort(err instanceof AxiosError ? err : new CanceledError(err instanceof Error ? err.message : err));
+        }
+      };
+      var timer = timeout && setTimeout(function () {
         timer = null;
-        signals.forEach(function (signal) {
-          signal && (signal.removeEventListener ? signal.removeEventListener('abort', onabort) : signal.unsubscribe(onabort));
-        });
-        signals = null;
-      }
-    };
-    signals.forEach(function (signal) {
-      return signal && signal.addEventListener && signal.addEventListener('abort', onabort);
-    });
-    var signal = controller.signal;
-    signal.unsubscribe = unsubscribe;
-    return [signal, function () {
-      timer && clearTimeout(timer);
-      timer = null;
-    }];
+        onabort(new AxiosError("timeout ".concat(timeout, " of ms exceeded"), AxiosError.ETIMEDOUT));
+      }, timeout);
+      var unsubscribe = function unsubscribe() {
+        if (signals) {
+          timer && clearTimeout(timer);
+          timer = null;
+          signals.forEach(function (signal) {
+            signal.unsubscribe ? signal.unsubscribe(onabort) : signal.removeEventListener('abort', onabort);
+          });
+          signals = null;
+        }
+      };
+      signals.forEach(function (signal) {
+        return signal.addEventListener('abort', onabort);
+      });
+      var signal = controller.signal;
+      signal.unsubscribe = function () {
+        return utils$1.asap(unsubscribe);
+      };
+      return signal;
+    }
   };
   var composeSignals$1 = composeSignals;
 
@@ -3163,7 +3167,7 @@
     }, streamChunk);
   });
   var readBytes = /*#__PURE__*/function () {
-    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize, encode) {
+    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize) {
       var _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, chunk;
       return _regeneratorRuntime().wrap(function _callee$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
@@ -3171,82 +3175,111 @@
             _iteratorAbruptCompletion = false;
             _didIteratorError = false;
             _context2.prev = 2;
-            _iterator = _asyncIterator(iterable);
+            _iterator = _asyncIterator(readStream(iterable));
           case 4:
             _context2.next = 6;
             return _awaitAsyncGenerator(_iterator.next());
           case 6:
             if (!(_iteratorAbruptCompletion = !(_step = _context2.sent).done)) {
-              _context2.next = 27;
+              _context2.next = 12;
               break;
             }
             chunk = _step.value;
-            _context2.t0 = _asyncGeneratorDelegate;
-            _context2.t1 = _asyncIterator;
-            _context2.t2 = streamChunk;
-            if (!ArrayBuffer.isView(chunk)) {
-              _context2.next = 15;
-              break;
-            }
-            _context2.t3 = chunk;
-            _context2.next = 18;
-            break;
-          case 15:
-            _context2.next = 17;
-            return _awaitAsyncGenerator(encode(String(chunk)));
-          case 17:
-            _context2.t3 = _context2.sent;
-          case 18:
-            _context2.t4 = _context2.t3;
-            _context2.t5 = chunkSize;
-            _context2.t6 = (0, _context2.t2)(_context2.t4, _context2.t5);
-            _context2.t7 = (0, _context2.t1)(_context2.t6);
-            _context2.t8 = _awaitAsyncGenerator;
-            return _context2.delegateYield((0, _context2.t0)(_context2.t7, _context2.t8), "t9", 24);
-          case 24:
+            return _context2.delegateYield(_asyncGeneratorDelegate(_asyncIterator(streamChunk(chunk, chunkSize))), "t0", 9);
+          case 9:
             _iteratorAbruptCompletion = false;
             _context2.next = 4;
             break;
-          case 27:
-            _context2.next = 33;
+          case 12:
+            _context2.next = 18;
             break;
-          case 29:
-            _context2.prev = 29;
-            _context2.t10 = _context2["catch"](2);
+          case 14:
+            _context2.prev = 14;
+            _context2.t1 = _context2["catch"](2);
             _didIteratorError = true;
-            _iteratorError = _context2.t10;
-          case 33:
-            _context2.prev = 33;
-            _context2.prev = 34;
+            _iteratorError = _context2.t1;
+          case 18:
+            _context2.prev = 18;
+            _context2.prev = 19;
             if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-              _context2.next = 38;
+              _context2.next = 23;
               break;
             }
-            _context2.next = 38;
+            _context2.next = 23;
             return _awaitAsyncGenerator(_iterator["return"]());
-          case 38:
-            _context2.prev = 38;
+          case 23:
+            _context2.prev = 23;
             if (!_didIteratorError) {
-              _context2.next = 41;
+              _context2.next = 26;
               break;
             }
             throw _iteratorError;
-          case 41:
-            return _context2.finish(38);
-          case 42:
-            return _context2.finish(33);
-          case 43:
+          case 26:
+            return _context2.finish(23);
+          case 27:
+            return _context2.finish(18);
+          case 28:
           case "end":
             return _context2.stop();
         }
-      }, _callee, null, [[2, 29, 33, 43], [34,, 38, 42]]);
+      }, _callee, null, [[2, 14, 18, 28], [19,, 23, 27]]);
     }));
-    return function readBytes(_x, _x2, _x3) {
+    return function readBytes(_x, _x2) {
       return _ref.apply(this, arguments);
     };
   }();
-  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish, encode) {
-    var iterator = readBytes(stream, chunkSize, encode);
+  var readStream = /*#__PURE__*/function () {
+    var _ref2 = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(stream) {
+      var reader, _yield$_awaitAsyncGen, done, value;
+      return _regeneratorRuntime().wrap(function _callee2$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            if (!stream[Symbol.asyncIterator]) {
+              _context3.next = 3;
+              break;
+            }
+            return _context3.delegateYield(_asyncGeneratorDelegate(_asyncIterator(stream)), "t0", 2);
+          case 2:
+            return _context3.abrupt("return");
+          case 3:
+            reader = stream.getReader();
+            _context3.prev = 4;
+          case 5:
+            _context3.next = 7;
+            return _awaitAsyncGenerator(reader.read());
+          case 7:
+            _yield$_awaitAsyncGen = _context3.sent;
+            done = _yield$_awaitAsyncGen.done;
+            value = _yield$_awaitAsyncGen.value;
+            if (!done) {
+              _context3.next = 12;
+              break;
+            }
+            return _context3.abrupt("break", 16);
+          case 12:
+            _context3.next = 14;
+            return value;
+          case 14:
+            _context3.next = 5;
+            break;
+          case 16:
+            _context3.prev = 16;
+            _context3.next = 19;
+            return _awaitAsyncGenerator(reader.cancel());
+          case 19:
+            return _context3.finish(16);
+          case 20:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee2, null, [[4,, 16, 20]]);
+    }));
+    return function readStream(_x3) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish) {
+    var iterator = readBytes(stream, chunkSize);
     var bytes = 0;
     var done;
     var _onFinish = function _onFinish(e) {
@@ -3257,25 +3290,25 @@
     };
     return new ReadableStream({
       pull: function pull(controller) {
-        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
           var _yield$iterator$next, _done, value, len, loadedBytes;
-          return _regeneratorRuntime().wrap(function _callee2$(_context3) {
-            while (1) switch (_context3.prev = _context3.next) {
+          return _regeneratorRuntime().wrap(function _callee3$(_context4) {
+            while (1) switch (_context4.prev = _context4.next) {
               case 0:
-                _context3.prev = 0;
-                _context3.next = 3;
+                _context4.prev = 0;
+                _context4.next = 3;
                 return iterator.next();
               case 3:
-                _yield$iterator$next = _context3.sent;
+                _yield$iterator$next = _context4.sent;
                 _done = _yield$iterator$next.done;
                 value = _yield$iterator$next.value;
                 if (!_done) {
-                  _context3.next = 10;
+                  _context4.next = 10;
                   break;
                 }
                 _onFinish();
                 controller.close();
-                return _context3.abrupt("return");
+                return _context4.abrupt("return");
               case 10:
                 len = value.byteLength;
                 if (onProgress) {
@@ -3283,18 +3316,18 @@
                   onProgress(loadedBytes);
                 }
                 controller.enqueue(new Uint8Array(value));
-                _context3.next = 19;
+                _context4.next = 19;
                 break;
               case 15:
-                _context3.prev = 15;
-                _context3.t0 = _context3["catch"](0);
-                _onFinish(_context3.t0);
-                throw _context3.t0;
+                _context4.prev = 15;
+                _context4.t0 = _context4["catch"](0);
+                _onFinish(_context4.t0);
+                throw _context4.t0;
               case 19:
               case "end":
-                return _context3.stop();
+                return _context4.stop();
             }
-          }, _callee2, null, [[0, 15]]);
+          }, _callee3, null, [[0, 15]]);
         }))();
       },
       cancel: function cancel(reason) {
@@ -3377,6 +3410,7 @@
   }(new Response());
   var getBodyLength = /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(body) {
+      var _request;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
@@ -3393,32 +3427,36 @@
             return _context2.abrupt("return", body.size);
           case 4:
             if (!utils$1.isSpecCompliantForm(body)) {
-              _context2.next = 8;
+              _context2.next = 9;
               break;
             }
-            _context2.next = 7;
-            return new Request(body).arrayBuffer();
-          case 7:
-            return _context2.abrupt("return", _context2.sent.byteLength);
+            _request = new Request(platform.origin, {
+              method: 'POST',
+              body: body
+            });
+            _context2.next = 8;
+            return _request.arrayBuffer();
           case 8:
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 9:
             if (!(utils$1.isArrayBufferView(body) || utils$1.isArrayBuffer(body))) {
-              _context2.next = 10;
+              _context2.next = 11;
               break;
             }
             return _context2.abrupt("return", body.byteLength);
-          case 10:
+          case 11:
             if (utils$1.isURLSearchParams(body)) {
               body = body + '';
             }
             if (!utils$1.isString(body)) {
-              _context2.next = 15;
+              _context2.next = 16;
               break;
             }
-            _context2.next = 14;
+            _context2.next = 15;
             return encodeText(body);
-          case 14:
-            return _context2.abrupt("return", _context2.sent.byteLength);
           case 15:
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 16:
           case "end":
             return _context2.stop();
         }
@@ -3448,18 +3486,15 @@
   }();
   var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref5, _ref6, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, isCredentialsSupported, response, isStreamResponse, options, responseContentLength, _ref7, _ref8, _onProgress, _flush, responseData;
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, composedSignal, request, unsubscribe, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, isCredentialsSupported, response, isStreamResponse, options, responseContentLength, _ref5, _ref6, _onProgress, _flush, responseData;
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) switch (_context4.prev = _context4.next) {
           case 0:
             _resolveConfig = resolveConfig(config), url = _resolveConfig.url, method = _resolveConfig.method, data = _resolveConfig.data, signal = _resolveConfig.signal, cancelToken = _resolveConfig.cancelToken, timeout = _resolveConfig.timeout, onDownloadProgress = _resolveConfig.onDownloadProgress, onUploadProgress = _resolveConfig.onUploadProgress, responseType = _resolveConfig.responseType, headers = _resolveConfig.headers, _resolveConfig$withCr = _resolveConfig.withCredentials, withCredentials = _resolveConfig$withCr === void 0 ? 'same-origin' : _resolveConfig$withCr, fetchOptions = _resolveConfig.fetchOptions;
             responseType = responseType ? (responseType + '').toLowerCase() : 'text';
-            _ref5 = signal || cancelToken || timeout ? composeSignals$1([signal, cancelToken], timeout) : [], _ref6 = _slicedToArray(_ref5, 2), composedSignal = _ref6[0], stopTimeout = _ref6[1];
-            onFinish = function onFinish() {
-              !finished && setTimeout(function () {
-                composedSignal && composedSignal.unsubscribe();
-              });
-              finished = true;
+            composedSignal = composeSignals$1([signal, cancelToken && cancelToken.toAbortSignal()], timeout);
+            unsubscribe = composedSignal && composedSignal.unsubscribe && function () {
+              composedSignal.unsubscribe();
             };
             _context4.prev = 4;
             _context4.t0 = onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head';
@@ -3487,7 +3522,7 @@
             }
             if (_request.body) {
               _progressEventDecorat = progressEventDecorator(requestContentLength, progressEventReducer(asyncDecorator(onUploadProgress))), _progressEventDecorat2 = _slicedToArray(_progressEventDecorat, 2), onProgress = _progressEventDecorat2[0], flush = _progressEventDecorat2[1];
-              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush, encodeText);
+              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
             }
           case 15:
             if (!utils$1.isString(withCredentials)) {
@@ -3510,26 +3545,25 @@
           case 20:
             response = _context4.sent;
             isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
-            if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
+            if (supportsResponseStream && (onDownloadProgress || isStreamResponse && unsubscribe)) {
               options = {};
               ['status', 'statusText', 'headers'].forEach(function (prop) {
                 options[prop] = response[prop];
               });
               responseContentLength = utils$1.toFiniteNumber(response.headers.get('content-length'));
-              _ref7 = onDownloadProgress && progressEventDecorator(responseContentLength, progressEventReducer(asyncDecorator(onDownloadProgress), true)) || [], _ref8 = _slicedToArray(_ref7, 2), _onProgress = _ref8[0], _flush = _ref8[1];
+              _ref5 = onDownloadProgress && progressEventDecorator(responseContentLength, progressEventReducer(asyncDecorator(onDownloadProgress), true)) || [], _ref6 = _slicedToArray(_ref5, 2), _onProgress = _ref6[0], _flush = _ref6[1];
               response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, _onProgress, function () {
                 _flush && _flush();
-                isStreamResponse && onFinish();
-              }, encodeText), options);
+                unsubscribe && unsubscribe();
+              }), options);
             }
             responseType = responseType || 'text';
             _context4.next = 26;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
           case 26:
             responseData = _context4.sent;
-            !isStreamResponse && onFinish();
-            stopTimeout && stopTimeout();
-            _context4.next = 31;
+            !isStreamResponse && unsubscribe && unsubscribe();
+            _context4.next = 30;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
                 data: responseData,
@@ -3540,26 +3574,26 @@
                 request: request
               });
             });
-          case 31:
+          case 30:
             return _context4.abrupt("return", _context4.sent);
-          case 34:
-            _context4.prev = 34;
+          case 33:
+            _context4.prev = 33;
             _context4.t2 = _context4["catch"](4);
-            onFinish();
+            unsubscribe && unsubscribe();
             if (!(_context4.t2 && _context4.t2.name === 'TypeError' && /fetch/i.test(_context4.t2.message))) {
-              _context4.next = 39;
+              _context4.next = 38;
               break;
             }
             throw Object.assign(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request), {
               cause: _context4.t2.cause || _context4.t2
             });
-          case 39:
+          case 38:
             throw AxiosError.from(_context4.t2, _context4.t2 && _context4.t2.code, config, request);
-          case 40:
+          case 39:
           case "end":
             return _context4.stop();
         }
-      }, _callee4, null, [[4, 34]]);
+      }, _callee4, null, [[4, 33]]);
     }));
     return function (_x5) {
       return _ref4.apply(this, arguments);
@@ -3683,7 +3717,7 @@
     });
   }
 
-  var VERSION = "1.7.5";
+  var VERSION = "1.7.7";
 
   var validators$1 = {};
 
@@ -4063,6 +4097,20 @@
         if (index !== -1) {
           this._listeners.splice(index, 1);
         }
+      }
+    }, {
+      key: "toAbortSignal",
+      value: function toAbortSignal() {
+        var _this = this;
+        var controller = new AbortController();
+        var abort = function abort(err) {
+          controller.abort(err);
+        };
+        this.subscribe(abort);
+        controller.signal.unsubscribe = function () {
+          return _this.unsubscribe(abort);
+        };
+        return controller.signal;
       }
 
       /**

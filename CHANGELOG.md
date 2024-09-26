@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.7.7](https://github.com/axios/axios/compare/v1.7.6...v1.7.7) (2024-08-31)
+
+
+### Bug Fixes
+
+* **fetch:** fix stream handling in Safari by fallback to using a stream reader instead of an async iterator; ([#6584](https://github.com/axios/axios/issues/6584)) ([d198085](https://github.com/axios/axios/commit/d1980854fee1765cd02fa0787adf5d6e34dd9dcf))
+* **http:** fixed support for IPv6 literal strings in url ([#5731](https://github.com/axios/axios/issues/5731)) ([364993f](https://github.com/axios/axios/commit/364993f0d8bc6e0e06f76b8a35d2d0a35cab054c))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/10539109?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rishi556](https://github.com/Rishi556 "+39/-1 (#5731 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+27/-7 (#6584 )")
+
+## [1.7.6](https://github.com/axios/axios/compare/v1.7.5...v1.7.6) (2024-08-30)
+
+
+### Bug Fixes
+
+* **fetch:** fix content length calculation for FormData payload; ([#6524](https://github.com/axios/axios/issues/6524)) ([085f568](https://github.com/axios/axios/commit/085f56861a83e9ac02c140ad9d68dac540dfeeaa))
+* **fetch:** optimize signals composing logic; ([#6582](https://github.com/axios/axios/issues/6582)) ([df9889b](https://github.com/axios/axios/commit/df9889b83c2cc37e9e6189675a73ab70c60f031f))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+98/-46 (#6582 )")
+- <img src="https://avatars.githubusercontent.com/u/3534453?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jacques Germishuys](https://github.com/jacquesg "+5/-1 (#6524 )")
+- <img src="https://avatars.githubusercontent.com/u/53894505?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [kuroino721](https://github.com/kuroino721 "+3/-1 (#6575 )")
+
 ## [1.7.5](https://github.com/axios/axios/compare/v1.7.4...v1.7.5) (2024-08-23)
 
 

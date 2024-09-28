@@ -71,6 +71,22 @@ describe('options', function () {
     });
   });
 
+  it('should warn about baseUrl', function (done) {
+    spyOn(window.console, 'warn');
+
+    const instance = axios.create({
+      baseUrl: 'http://example.com/'
+    });
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(window.console.warn).toHaveBeenCalledWith('baseUrl is likely a misspelling of baseURL');
+      expect(request.url).toBe('/foo');
+      done();
+    });
+  });
+
   it('should ignore base URL if request URL is absolute', function (done) {
     const instance = axios.create({
       baseURL: 'http://someurl.com/'

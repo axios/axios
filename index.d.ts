@@ -489,6 +489,7 @@ export class Axios {
     request: AxiosInterceptorManager<InternalAxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
+  create(config?: CreateAxiosDefaults): AxiosInstance;
   getUri(config?: AxiosRequestConfig): string;
   request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
   get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
@@ -541,7 +542,6 @@ export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 export function mergeConfig<D = any>(config1: AxiosRequestConfig<D>, config2: AxiosRequestConfig<D>): AxiosRequestConfig<D>;
 
 export interface AxiosStatic extends AxiosInstance {
-  create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;

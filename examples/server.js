@@ -75,11 +75,17 @@ function pipeFileToResponse(res, file, type) {
   fs.createReadStream(path.join(__dirname, file)).pipe(res);
 }
 
+// Sanitize URL
+function sanitizeUrl(reqUrl) {
+  return path.normalize(reqUrl).replace(/^(\.\.(\/|\\|$))+/, '');
+}
+
 
 dirs = listDirs(__dirname);
 
 server = http.createServer(function (req, res) {
-  let url = req.url;
+  //URL Sanitization
+ let sanitizedUrl = sanitizeUrl(req.url);
 
   // Process axios itself
   if (/axios\.min\.js$/.test(url)) {

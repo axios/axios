@@ -98,7 +98,7 @@
             width="200px"
             height="52px"
             media="(prefers-color-scheme: dark)"
-            srcset="/assets/sponsors/descope_white.png"
+            srcset="https://axios-http.com/assets/sponsors/descope_white.png"
           />
           <img
             width="200px"

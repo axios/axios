@@ -1,0 +1,31 @@
+function performSearch() {
+    const query = document.getElementById('search').value.toLowerCase();
+    const sponsors = document.querySelectorAll('table td');  
+    sponsors.forEach(sponsor => {
+      const text = sponsor.innerText.toLowerCase();
+      if (text.includes(query)) {
+        sponsor.style.display = 'table-cell';  
+      } else {
+        sponsor.style.display = 'none'; 
+      }
+    });
+  }
+  function filterByLanguage() {
+    const selectedLanguage = document.getElementById('language').value;
+    const sponsors = document.querySelectorAll('table td');
+  
+    sponsors.forEach(sponsor => {
+      const sponsorLanguage = sponsor.dataset.language; 
+      if (selectedLanguage === 'all' || sponsorLanguage === selectedLanguage) {
+        sponsor.style.display = 'table-cell';  
+      } else {
+        sponsor.style.display = 'none';  
+      }
+    });
+  }
+
+  
+  function explore() {
+    window.location.href = 'tutorial.html';
+  }
+  

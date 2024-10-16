@@ -2,7 +2,7 @@ import axios from "../../index";
 
 function validateInvalidCharacterError(error) {
   expect(/character/i.test(error.message)).toEqual(true);
-};
+}
 
 describe('basicAuth', function () {
   // Validate an invalid character error
@@ -67,7 +67,7 @@ describe('basicAuth', function () {
         username: 'Aladßç£☃din',
         password: 'open sesame'
       }
-    }).then(function (response) {
+    }).then(function () {
       done(new Error('Should not succeed to make a HTTP Basic auth request with non-latin1 chars in credentials.'));
     }).catch(function (error) {
       validateInvalidCharacterError(error);

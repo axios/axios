@@ -50,7 +50,7 @@ describe('xsrf', function () {
       xsrfCookieName: null
     });
 
-    getAjaxRequest().then(function (request) {
+    getAjaxRequest().then(function () {
       expect(cookies.read).not.toHaveBeenCalled();
       done();
     });

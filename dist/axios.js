@@ -3860,7 +3860,7 @@
             }
           }, _callee, this, [[0, 6]]);
         }));
-        function request(_x, _x2) {
+        function request() {
           return _request2.apply(this, arguments);
         }
         return request;

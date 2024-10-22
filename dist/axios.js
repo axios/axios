@@ -1753,6 +1753,9 @@
       serializedParams = utils$1.isURLSearchParams(params) ? params.toString() : new AxiosURLSearchParams(params, options).toString(_encode);
     }
     if (serializedParams) {
+      if(typeof url === 'object' && url instanceof URL){
+        url = url.toString()
+      }
       var hashmarkIndex = url.indexOf("#");
       if (hashmarkIndex !== -1) {
         url = url.slice(0, hashmarkIndex);

@@ -3756,6 +3756,13 @@
       return validator ? validator(value, opt, opts) : true;
     };
   };
+  validators$1.spelling = function spelling(correctSpelling) {
+    return function (value, opt) {
+      // eslint-disable-next-line no-console
+      console.warn("".concat(opt, " is likely a misspelling of ").concat(correctSpelling));
+      return true;
+    };
+  };
 
   /**
    * Assert object's properties type
@@ -3838,7 +3845,8 @@
                 _context.prev = 6;
                 _context.t0 = _context["catch"](0);
                 if (_context.t0 instanceof Error) {
-                  Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : dummy = new Error();
+                  dummy = {};
+                  Error.captureStackTrace ? Error.captureStackTrace(dummy) : dummy = new Error();
 
                   // slice off the Error: ... line
                   stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
@@ -3900,6 +3908,10 @@
             }, true);
           }
         }
+        validator.assertOptions(config, {
+          baseUrl: validators.spelling('baseURL'),
+          withXsrfToken: validators.spelling('withXSRFToken')
+        }, true);
 
         // Set config.method
         config.method = (config.method || this.defaults.method || 'get').toLowerCase();

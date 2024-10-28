@@ -153,6 +153,12 @@ const axios = require('axios');
 console.log(axios.isCancel('something'));
 ```
 
+For some bundlers and some ES6 linter's you may need to do the following:
+
+```js
+import { default as axios } from 'axios';
+```
+
 For cases where something went wrong when trying to import a module into a custom or legacy environment,
 you can try importing the module package directly:
 

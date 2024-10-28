@@ -209,7 +209,8 @@ export type ResponseType =
     | 'document'
     | 'json'
     | 'text'
-    | 'stream';
+    | 'stream'
+    | 'formdata';
 
 export type responseEncoding =
     | 'ascii' | 'ASCII'
@@ -294,11 +295,12 @@ export interface AxiosProgressEvent {
   upload?: boolean;
   download?: boolean;
   event?: BrowserProgressEvent;
+  lengthComputable: boolean;
 }
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'xhr' | 'http' | string;
+type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
@@ -337,7 +339,7 @@ export interface AxiosRequestConfig<D = any> {
   maxBodyLength?: number;
   maxRedirects?: number;
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-  beforeRedirect?: (options: Record<string, any>, responseDetails: { headers: Record<string, string> }) => void;
+  beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
   socketPath?: string | null;
   transport?: any;
   httpAgent?: any;
@@ -357,6 +359,7 @@ export interface AxiosRequestConfig<D = any> {
       ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
   parseReviver?: (this: any, key: string, value: any) => any;
+  fetchOptions?: Record<string, any>;
 }
 
 // Alias
@@ -536,6 +539,8 @@ export function isCancel(value: any): value is Cancel;
 
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 
+export function mergeConfig<D = any>(config1: AxiosRequestConfig<D>, config2: AxiosRequestConfig<D>): AxiosRequestConfig<D>;
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
@@ -553,6 +558,7 @@ export interface AxiosStatic extends AxiosInstance {
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
+  mergeConfig: typeof mergeConfig;
 }
 
 declare const axios: AxiosStatic;

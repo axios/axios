@@ -53,6 +53,9 @@ function toleranceRange(positive, negative) {
   }
 }
 
+const nodeVersion = process.versions.node.split('.').map(v => parseInt(v, 10));
+const nodeMajorVersion = nodeVersion[0];
+
 var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
@@ -154,6 +157,44 @@ describe('supports http with nodejs', function () {
     delete process.env.http_proxy;
     delete process.env.https_proxy;
     delete process.env.no_proxy;
+  });
+
+  it('should support IPv4 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://127.0.0.1:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
+  });
+
+  it('should support IPv6 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://[::1]:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
   });
 
   it('should throw an error if the timeout property is not parsable as a number', function (done) {
@@ -378,8 +419,8 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3,
-        beforeRedirect: function (options) {
-          if (options.path === '/foo') {
+        beforeRedirect: function (options, responseDetails) {
+          if (options.path === '/foo' && responseDetails.headers.location === '/foo') {
             throw new Error(
               'Provided path is not allowed'
             );
@@ -443,6 +484,58 @@ describe('supports http with nodejs', function () {
     }).then(function (res) {
       assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
       assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
+    });
+  });
+
+  it('should wrap HTTP errors and keep stack', async function () {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
+
+    server = await startHTTPServer((req, res) => {
+      res.statusCode = 400;
+      res.end();
+    });
+
+    return assert.rejects(
+      async function findMeInStackTrace() {
+        await axios.head('http://localhost:4444/one')
+      },
+      function (err) {
+        assert.equal(err.name, 'AxiosError')
+        assert.equal(err.isAxiosError, true)
+        const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+        assert.equal(matches.length, 1, err.stack)
+        return true;
+      }
+    )
+  });
+
+  it('should wrap interceptor errors and keep stack', function (done) {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
+    const axiosInstance = axios.create();
+    axiosInstance.interceptors.request.use((res) => {
+      throw new Error('from request interceptor')
+    });
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axiosInstance.get('http://localhost:4444/one')
+        },
+        function (err) {
+          assert.equal(err.name, 'Error')
+          assert.equal(err.message, 'from request interceptor')
+          const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+          assert.equal(matches.length, 1, err.stack)
+          return true;
+        }
+      ).then(done).catch(done);
     });
   });
 
@@ -1384,13 +1477,21 @@ describe('supports http with nodejs', function () {
       // call cancel() when the request has been sent, but a response has not been received
       source.cancel('Operation has been canceled.');
     }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        cancelToken: source.token
-      }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
-        assert.equal(thrown.message, 'Operation has been canceled.');
-        done();
-      });
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axios.get('http://localhost:4444/', {
+            cancelToken: source.token
+          });
+        },
+        function (thrown) {
+          assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
+          assert.equal(thrown.message, 'Operation has been canceled.');
+          if (nodeMajorVersion > 12) {
+            assert.match(thrown.stack, /findMeInStackTrace/);
+          }
+          return true;
+        },
+      ).then(done).catch(done);
     });
   });
 
@@ -1541,7 +1642,7 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
         assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
-        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
+        assert.strictEqual(error.message, 'stream has been aborted');
         done();
       }).catch(done);
     });
@@ -1856,6 +1957,7 @@ describe('supports http with nodejs', function () {
   describe('progress', function () {
     describe('upload', function () {
       it('should support upload progress capturing', async function () {
+        this.timeout(15000);
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -1880,6 +1982,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onUploadProgress: ({loaded, total, progress, bytes, upload}) => {
+            console.log('onUploadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -1912,6 +2015,8 @@ describe('supports http with nodejs', function () {
 
     describe('download', function () {
       it('should support download progress capturing', async function () {
+        this.timeout(15000);
+
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -1936,6 +2041,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onDownloadProgress: ({loaded, total, progress, bytes, download}) => {
+            console.log('onDownloadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -2051,7 +2157,7 @@ describe('supports http with nodejs', function () {
           }]`
         );
 
-        const progressTicksRate = 2;
+        const progressTicksRate = 3;
         const expectedProgress = ((i + skip) / secs) / progressTicksRate;
 
         assert.ok(

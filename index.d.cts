@@ -493,10 +493,18 @@ declare namespace axios {
     runWhen?: (config: InternalAxiosRequestConfig) => boolean;
   }
 
+  interface AxiosInterceptorHandler<V> {
+    fulfilled?: (value: V) => V | Promise<V>;
+    rejected?: (error: any) => any;
+    synchronous: boolean;
+    runWhen: ((config: InternalAxiosRequestConfig) => boolean) | null;
+  }
+
   interface AxiosInterceptorManager<V> {
     use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
     eject(id: number): void;
     clear(): void;
+    forEach(callback: (handler: AxiosInterceptorHandler<V>) => void): void;
   }
 
   interface AxiosInstance extends Axios {

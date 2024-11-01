@@ -1,93 +1,59 @@
 import gulp from 'gulp';
 import fs from 'fs-extra';
 import axios from './bin/githubAxios.js';
-import minimist from 'minimist'
+import minimist from 'minimist';
 
 const argv = minimist(process.argv.slice(2));
 
-  gulp.task('default', async function(){
-  console.log('hello!');
-});
+// Task to clear the dist directory
+gulp.task('clear', async () => fs.emptyDir('./dist/'));
 
-const clear = gulp.task('clear', async function() {
-  await fs.emptyDir('./dist/')
-});
-
-const bower = gulp.task('bower', async function () {
-  const npm = JSON.parse(await fs.readFile('package.json'));
-  const bower = JSON.parse(await fs.readFile('bower.json'));
-
-  const fields = [
-    'name',
-    'description',
-    'version',
-    'homepage',
-    'license',
-    'keywords'
-  ];
-
-  for (let i = 0, l = fields.length; i < l; i++) {
-    const field = fields[i];
+// Task to update bower.json based on package.json
+gulp.task('bower', async () => {
+  const npm = await fs.readJson('package.json');
+  const bower = await fs.readJson('bower.json');
+  ['name', 'description', 'version', 'homepage', 'license', 'keywords'].forEach(field => {
     bower[field] = npm[field];
-  }
-
-  await fs.writeFile('bower.json', JSON.stringify(bower, null, 2));
+  });
+  await fs.writeJson('bower.json', bower, { spaces: 2 });
 });
 
+// Fetch contributors from GitHub
 async function getContributors(user, repo, maxCount = 1) {
-  const contributors = (await axios.get(
-    `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/contributors`,
-    { params: { per_page: maxCount } }
-  )).data;
-
-  return Promise.all(contributors.map(async (contributor)=> {
-    return {...contributor, ...(await axios.get(
-      `https://api.github.com/users/${encodeURIComponent(contributor.login)}`
-    )).data};
-  }))
+  const contributors = (await axios.get(`https://api.github.com/repos/${user}/${repo}/contributors`, { params: { per_page: maxCount } })).data;
+  return Promise.all(contributors.map(async contributor => ({
+    ...contributor,
+    ...(await axios.get(`https://api.github.com/users/${contributor.login}`)).data
+  })));
 }
 
-const packageJSON = gulp.task('package', async function () {
-  const CONTRIBUTION_THRESHOLD = 3;
-
-  const npm = JSON.parse(await fs.readFile('package.json'));
-
+// Task to update package.json with contributors
+gulp.task('package', async () => {
+  const npm = await fs.readJson('package.json');
   try {
     const contributors = await getContributors('axios', 'axios', 15);
-
     npm.contributors = contributors
-      .filter(
-        ({type, contributions}) => type.toLowerCase() === 'user' && contributions >= CONTRIBUTION_THRESHOLD
-      )
-      .map(({login, name, url}) => `${name || login} (https://github.com/${login})`);
-
-    await fs.writeFile('package.json', JSON.stringify(npm, null, 2));
+      .filter(({ type, contributions }) => type.toLowerCase() === 'user' && contributions >= 3)
+      .map(({ login, name }) => `${name || login} (https://github.com/${login})`);
+    await fs.writeJson('package.json', npm, { spaces: 2 });
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response && err.response.status === 403) {
-      throw Error(`GitHub API Error: ${err.response.data && err.response.data.message}`);
+    if (axios.isAxiosError(err) && err.response.status === 403) {
+      throw new Error(`GitHub API Error: ${err.response.data.message}`);
     }
     throw err;
   }
 });
 
-const env = gulp.task('env', async function () {
-  var npm = JSON.parse(await fs.readFile('package.json'));
-
+// Task to write environment variables
+gulp.task('env', async () => {
+  const npm = await fs.readJson('package.json');
   const envFilePath = './lib/env/data.js';
-
-  await fs.writeFile(envFilePath, Object.entries({
-    VERSION: (argv.bump || npm.version).replace(/^v/, '')
-  }).map(([key, value]) => {
-    return `export const ${key} = ${JSON.stringify(value)};`
-  }).join('\n'));
+  const content = `export const VERSION = ${JSON.stringify((argv.bump || npm.version).replace(/^v/, ''))};`;
+  await fs.writeFile(envFilePath, content);
 });
 
-const version = gulp.series('bower', 'env', 'package');
+// Version task: runs bower, env, and package
+gulp.task('version', gulp.series('bower', 'env', 'package'));
 
-export {
-  bower,
-  env,
-  clear,
-  version,
-  packageJSON
-}
+// Default task
+gulp.task('default', () => console.log('hello!'));

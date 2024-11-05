@@ -86,7 +86,7 @@
       </p>
     </td>
     <td align="center" width="33.333333333333336%">
-      <a href="https://www.famety.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"
+      <a href="https://www.famety.com/buy-tiktok-likes?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"
         style="padding: 10px; display: inline-block">
         <picture>
           <source width="70px" height="70px" media="(prefers-color-scheme: dark)"
@@ -104,7 +104,7 @@
       </p>
       <p align="center">
         <a
-          href="https://www.famety.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>www.famety.com</b></a> 
+          href="https://www.famety.com/buy-tiktok-likes?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>www.famety.com</b></a> 
       </p>
     </td>
     <td align="center" width="33.333333333333336%">

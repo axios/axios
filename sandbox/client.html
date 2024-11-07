@@ -13,9 +13,16 @@
       flex-direction: row;
     }
     .box{
-     display: grid;
+      display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-gap: 25px;
+      grid-gap: 50px;
+      margin-top: 13px;
+    }
+    .word {
+      width: 500px;
+      overflow-wrap: break-word;  
+      word-wrap: break-word; 
+      word-break: break-word;
     }
     @media screen and (max-width: 1000px) {
       .box {
@@ -75,7 +82,7 @@
 
   <div class="well">
     <h3>Response</h3>
-    <pre id="response">No Data</pre>
+    <pre id="response" class="word">No Data</pre>
   </div>
 
   <div class="well">

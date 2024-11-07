@@ -1,88 +1,88 @@
 <!doctype html>
 <html>
+
 <head>
   <title>AXIOS | Sandbox</title>
-  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+  <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
   <style type="text/css">
     pre {
       min-height: 39px;
       overflow: auto;
     }
-    .header{
+
+    .header {
       display: flex;
       flex-direction: row;
     }
-    .box{
-     display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 25px;
+
+    .box {
+      display: block;
     }
-    @media screen and (max-width: 1000px) {
-      .box {
-        grid-template-columns: 1fr;
-      }
+
+    .response {
+      margin-top: 1rem;
     }
-      
   </style>
 </head>
+
 <body class="container">
-<div class="header">
-  <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="130" height="60">
-   
-  <h1> &nbsp;| Sandbox</h1>
-</div>
+  <div class="header">
+    <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="130" height="60">
+
+    <h1> &nbsp;| Sandbox</h1>
+  </div>
 
   <div class="box">
     <div class="well">
-    <h3>Input</h3>
-    <form role="form" onsubmit="return false;">
-      <div class="form-group">
-        <label for="url">URL</label>
-        <input id="url" type="url" class="form-control" placeholder="/api"/>
-      </div>
-      <div class="form-group">
-        <label for="method">Method</label>
-        <select id="method" class="form-control">
-          <option value="GET">GET</option>
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="DELETE">DELETE</option>
-          <option value="HEAD">HEAD</option>
-          <option value="PATCH">PATCH</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="params">Params</label>
-        <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group" style="display: none;">
-        <label for="data">Data</label>
-        <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group">
-        <label for="headers">Headers</label>
-        <textarea id="headers" class="form-control" placeholder='{"X-Requested-With": "XMLHttpRequest"}'></textarea>
-      </div>
-      <button id="submit" type="submit" class="btn btn-primary">Send Request</button>
-    </form>
-  </div>
+      <h3>Input</h3>
+      <form role="form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="url">URL</label>
+          <input id="url" type="url" class="form-control" placeholder="/api" />
+        </div>
+        <div class="form-group">
+          <label for="method">Method</label>
+          <select id="method" class="form-control">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="HEAD">HEAD</option>
+            <option value="PATCH">PATCH</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="params">Params</label>
+          <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
+        </div>
+        <div class="form-group" style="display: none;">
+          <label for="data">Data</label>
+          <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
+        </div>
+        <div class="form-group">
+          <label for="headers">Headers</label>
+          <textarea id="headers" class="form-control" placeholder='{"X-Requested-With": "XMLHttpRequest"}'></textarea>
+        </div>
+        <button id="submit" type="submit" class="btn btn-primary">Send Request</button>
+      </form>
+    </div>
 
-  <div class="response">
-    <div class="well">
-    <h3>Request</h3>
-    <pre id="request">No Data</pre>
-  </div>
+    <div class="response">
+      <div class="well">
+        <h3>Request</h3>
+        <pre id="request">No Data</pre>
+      </div>
 
-  <div class="well">
-    <h3>Response</h3>
-    <pre id="response">No Data</pre>
-  </div>
+      <div class="well">
+        <h3>Response</h3>
+        <pre id="response">No Data</pre>
+      </div>
 
-  <div class="well">
-    <h3>Error</h3>
-    <pre id="error">None</pre>
-  </div>
-</div>
+      <div class="well">
+        <h3>Error</h3>
+        <pre id="error">None</pre>
+      </div>
+    </div>
   </div>
 
   <script src="/axios.js"></script>
@@ -91,7 +91,7 @@
       // Just for you IE8
       if (typeof Array.prototype.indexOf === 'undefined') {
         Array.prototype.indexOf = function (item) {
-          for (var i=0, l=this.length; i<l; i++) {
+          for (var i = 0, l = this.length; i < l; i++) {
             if (this[i] === item) {
               return i;
             }
@@ -201,4 +201,5 @@
     })();
   </script>
 </body>
+
 </html>

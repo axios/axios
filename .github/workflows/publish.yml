@@ -42,6 +42,10 @@ jobs:
         id: tag_version
         with:
           tag: "v${{ steps.package-version.outputs.current-version }}"
+      ############# RESOLVE NPM TAG ##############
+      - name: NPM TAG
+        id: 'npm_tag'
+        run: node ./bin/resolveNPMTag.js
       ############# GITHUB RELEASE ##############
       - name: "Create a GitHub release v${{ steps.package-version.outputs.current-version }}"
         uses: ncipollo/release-action@v1
@@ -53,7 +57,7 @@ jobs:
             ${{ steps.extract-release-notes.outputs.release_notes }}
       ############# NPM RELEASE ##############
       - name: Publish the release to NPM
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --tag ${{ steps.npm_tag.outputs.tag || 'latest' }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
   notify:

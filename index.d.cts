@@ -272,7 +272,8 @@ declare namespace axios {
     | 'document'
     | 'json'
     | 'text'
-    | 'stream';
+    | 'stream'
+    | 'formdata';
 
   type responseEncoding =
     | 'ascii' | 'ASCII'
@@ -357,11 +358,12 @@ declare namespace axios {
     upload?: boolean;
     download?: boolean;
     event?: BrowserProgressEvent;
+    lengthComputable: boolean;
   }
 
   type Milliseconds = number;
 
-  type AxiosAdapterName = 'xhr' | 'http' | string;
+  type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
   type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
@@ -419,6 +421,7 @@ declare namespace axios {
     lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
         ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
     withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+    fetchOptions?: Record<string, any>;
   }
 
   // Alias
@@ -494,8 +497,12 @@ declare namespace axios {
     runWhen?: (config: InternalAxiosRequestConfig) => boolean;
   }
 
+  type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+
+  type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+
   interface AxiosInterceptorManager<V> {
-    use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+    use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
     eject(id: number): void;
     clear(): void;
   }

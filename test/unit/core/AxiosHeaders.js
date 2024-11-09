@@ -326,6 +326,7 @@ describe('AxiosHeaders', function () {
 
       assert.strictEqual(headers.getContentType(), 'application/json');
       assert.strictEqual(headers.getContentLength(), '100');
+      assert.strictEqual(headers.getContentEncoding(), undefined);
       assert.strictEqual(headers.getAccept(), '*/*');
       assert.strictEqual(headers.getAcceptEncoding(), 'gzip deflate');
       assert.strictEqual(headers.getUserAgent(), undefined);

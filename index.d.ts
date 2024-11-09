@@ -59,6 +59,11 @@ export class AxiosHeaders {
   getAccept(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasAccept(matcher?: AxiosHeaderMatcher): boolean;
 
+  setAcceptEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getAcceptEncoding(parser?: RegExp): RegExpExecArray | null;
+  getAcceptEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
+
   setUserAgent(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getUserAgent(parser?: RegExp): RegExpExecArray | null;
   getUserAgent(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;

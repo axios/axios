@@ -315,6 +315,27 @@ describe('AxiosHeaders', function () {
       assert.strictEqual(typeof headers.hasFoo, 'function');
       assert.strictEqual(headers.hasFoo(), true);
     });
+
+    it('should support accessors for common headers by default', function () {
+      const headers = new AxiosHeaders({
+        'content-type': 'application/json',
+        'Content-Length': '100',
+        'Accept': '*/*',
+        'Accept-encoding': 'gzip deflate',
+      });
+
+      assert.strictEqual(headers.getContentType(), 'application/json');
+      assert.strictEqual(headers.getContentLength(), '100');
+      assert.strictEqual(headers.getAccept(), '*/*');
+      assert.strictEqual(headers.getAcceptEncoding(), 'gzip deflate');
+      assert.strictEqual(headers.getUserAgent(), undefined);
+      assert.strictEqual(headers.getAuthorization(), undefined);
+
+      headers.setUserAgent('Axios');
+      headers.setUserAgent('Axios2', false);
+      assert.strictEqual(headers.getUserAgent(), 'Axios');
+      assert.strictEqual(headers.hasUserAgent('Axios'), true);
+    });
   });
 
   it('should be caseless', function () {

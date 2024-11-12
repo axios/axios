@@ -11,7 +11,7 @@ jobs:
   sponsors:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: git config
@@ -19,7 +19,7 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
           cache: npm
@@ -44,7 +44,7 @@ jobs:
           echo "$CONTENT"
       - name: Create pull request
         if: ${{ steps.sponsors.outputs.changed == 'true'}}
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         id: cpr
         with:
           branch: sponsors

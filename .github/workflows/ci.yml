@@ -32,7 +32,7 @@ jobs:
           persist-credentials: true
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v45
       - name: List all changed files
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
@@ -40,7 +40,7 @@ jobs:
           done
       - name: Check changes
         id: changed-ignored
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v45
         with:
           files: |
             **.md

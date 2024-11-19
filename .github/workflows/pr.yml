@@ -19,7 +19,7 @@ jobs:
   releaseIt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: git config
@@ -27,7 +27,7 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
           cache: npm
@@ -50,14 +50,14 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@main
       - name: Extract release notes
         id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v1
+        uses: ffurrer2/extract-release-notes@v2
       - name: Generate PR body
         id: body
         uses: mathiasvr/command-output@v1
         with:
           run: node ./bin/pr.js
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         id: cpr
         with:
           branch: release

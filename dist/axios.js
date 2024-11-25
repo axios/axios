@@ -1,4 +1,4 @@
-// Axios v1.7.7 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.8 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1735,7 +1735,7 @@
    *
    * @param {string} url The base of the url (e.g., http://www.google.com)
    * @param {object} [params] The params to be appended
-   * @param {?object} options
+   * @param {?(object|Function)} options
    *
    * @returns {string} The formatted url
    */
@@ -1745,6 +1745,11 @@
       return url;
     }
     var _encode = options && options.encode || encode;
+    if (utils$1.isFunction(options)) {
+      options = {
+        serialize: options
+      };
+    }
     var serializeFn = options && options.serialize;
     var serializedParams;
     if (serializeFn) {
@@ -2642,60 +2647,14 @@
     };
   };
 
-  var isURLSameOrigin = platform.hasStandardBrowserEnv ?
-  // Standard browser envs have full support of the APIs needed to test
-  // whether the request URL is of the same origin as current location.
-  function standardBrowserEnv() {
-    var msie = platform.navigator && /(msie|trident)/i.test(platform.navigator.userAgent);
-    var urlParsingNode = document.createElement('a');
-    var originURL;
-
-    /**
-    * Parse a URL to discover its components
-    *
-    * @param {String} url The URL to be parsed
-    * @returns {Object}
-    */
-    function resolveURL(url) {
-      var href = url;
-      if (msie) {
-        // IE needs attribute set twice to normalize properties
-        urlParsingNode.setAttribute('href', href);
-        href = urlParsingNode.href;
-      }
-      urlParsingNode.setAttribute('href', href);
-
-      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-      return {
-        href: urlParsingNode.href,
-        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-        host: urlParsingNode.host,
-        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-        hostname: urlParsingNode.hostname,
-        port: urlParsingNode.port,
-        pathname: urlParsingNode.pathname.charAt(0) === '/' ? urlParsingNode.pathname : '/' + urlParsingNode.pathname
-      };
-    }
-    originURL = resolveURL(window.location.href);
-
-    /**
-    * Determine if a URL shares the same origin as the current location
-    *
-    * @param {String} requestURL The URL to test
-    * @returns {boolean} True if URL shares the same origin, otherwise false
-    */
-    return function isURLSameOrigin(requestURL) {
-      var parsed = utils$1.isString(requestURL) ? resolveURL(requestURL) : requestURL;
-      return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
+  var isURLSameOrigin = platform.hasStandardBrowserEnv ? function (origin, isMSIE) {
+    return function (url) {
+      url = new URL(url, platform.origin);
+      return origin.protocol === url.protocol && origin.host === url.host && (isMSIE || origin.port === url.port);
     };
-  }() :
-  // Non standard browser envs (web workers, react-native) lack needed support.
-  function nonStandardBrowserEnv() {
-    return function isURLSameOrigin() {
-      return true;
-    };
-  }();
+  }(new URL(platform.origin), platform.navigator && /(msie|trident)/i.test(platform.navigator.userAgent)) : function () {
+    return true;
+  };
 
   var cookies = platform.hasStandardBrowserEnv ?
   // Standard browser envs support document.cookie
@@ -2785,7 +2744,7 @@
     // eslint-disable-next-line no-param-reassign
     config2 = config2 || {};
     var config = {};
-    function getMergedValue(target, source, caseless) {
+    function getMergedValue(target, source, prop, caseless) {
       if (utils$1.isPlainObject(target) && utils$1.isPlainObject(source)) {
         return utils$1.merge.call({
           caseless: caseless
@@ -2799,11 +2758,11 @@
     }
 
     // eslint-disable-next-line consistent-return
-    function mergeDeepProperties(a, b, caseless) {
+    function mergeDeepProperties(a, b, prop, caseless) {
       if (!utils$1.isUndefined(b)) {
-        return getMergedValue(a, b, caseless);
+        return getMergedValue(a, b, prop, caseless);
       } else if (!utils$1.isUndefined(a)) {
-        return getMergedValue(undefined, a, caseless);
+        return getMergedValue(undefined, a, prop, caseless);
       }
     }
 
@@ -2860,8 +2819,8 @@
       socketPath: defaultToConfig2,
       responseEncoding: defaultToConfig2,
       validateStatus: mergeDirectKeys,
-      headers: function headers(a, b) {
-        return mergeDeepProperties(headersToObject(a), headersToObject(b), true);
+      headers: function headers(a, b, prop) {
+        return mergeDeepProperties(headersToObject(a), headersToObject(b), prop, true);
       }
     };
     utils$1.forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
@@ -3717,7 +3676,7 @@
     });
   }
 
-  var VERSION = "1.7.7";
+  var VERSION = "1.7.8";
 
   var validators$1 = {};
 
@@ -3754,6 +3713,13 @@
         console.warn(formatMessage(opt, ' has been deprecated since v' + version + ' and will be removed in the near future'));
       }
       return validator ? validator(value, opt, opts) : true;
+    };
+  };
+  validators$1.spelling = function spelling(correctSpelling) {
+    return function (value, opt) {
+      // eslint-disable-next-line no-console
+      console.warn("".concat(opt, " is likely a misspelling of ").concat(correctSpelling));
+      return true;
     };
   };
 
@@ -3838,7 +3804,8 @@
                 _context.prev = 6;
                 _context.t0 = _context["catch"](0);
                 if (_context.t0 instanceof Error) {
-                  Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : dummy = new Error();
+                  dummy = {};
+                  Error.captureStackTrace ? Error.captureStackTrace(dummy) : dummy = new Error();
 
                   // slice off the Error: ... line
                   stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
@@ -3900,6 +3867,10 @@
             }, true);
           }
         }
+        validator.assertOptions(config, {
+          baseUrl: validators.spelling('baseURL'),
+          withXsrfToken: validators.spelling('withXSRFToken')
+        }, true);
 
         // Set config.method
         config.method = (config.method || this.defaults.method || 'get').toLowerCase();

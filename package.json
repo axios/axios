@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {
@@ -163,12 +163,12 @@
     "Dmitriy Mozgovoy (https://github.com/DigitalBrainJS)",
     "Jay (https://github.com/jasonsaayman)",
     "Emily Morehouse (https://github.com/emilyemorehouse)",
-    "Rubén Norte (https://github.com/rubennorte)",
     "Justin Beckwith (https://github.com/JustinBeckwith)",
+    "Rubén Norte (https://github.com/rubennorte)",
     "Martti Laine (https://github.com/codeclown)",
     "Xianming Zhong (https://github.com/chinesedfan)",
-    "Rikki Gibson (https://github.com/RikkiGibson)",
     "Remco Haszing (https://github.com/remcohaszing)",
+    "Rikki Gibson (https://github.com/RikkiGibson)",
     "Yasu Flores (https://github.com/yasuf)",
     "Ben Carp (https://github.com/carpben)"
   ],

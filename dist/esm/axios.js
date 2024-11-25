@@ -1,4 +1,4 @@
-// Axios v1.7.6 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.7 Copyright (c) 2024 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -2697,14 +2697,34 @@ const streamChunk = function* (chunk, chunkSize) {
   }
 };
 
-const readBytes = async function* (iterable, chunkSize, encode) {
-  for await (const chunk of iterable) {
-    yield* streamChunk(ArrayBuffer.isView(chunk) ? chunk : (await encode(String(chunk))), chunkSize);
+const readBytes = async function* (iterable, chunkSize) {
+  for await (const chunk of readStream(iterable)) {
+    yield* streamChunk(chunk, chunkSize);
   }
 };
 
-const trackStream = (stream, chunkSize, onProgress, onFinish, encode) => {
-  const iterator = readBytes(stream, chunkSize, encode);
+const readStream = async function* (stream) {
+  if (stream[Symbol.asyncIterator]) {
+    yield* stream;
+    return;
+  }
+
+  const reader = stream.getReader();
+  try {
+    for (;;) {
+      const {done, value} = await reader.read();
+      if (done) {
+        break;
+      }
+      yield value;
+    }
+  } finally {
+    await reader.cancel();
+  }
+};
+
+const trackStream = (stream, chunkSize, onProgress, onFinish) => {
+  const iterator = readBytes(stream, chunkSize);
 
   let bytes = 0;
   let done;
@@ -2884,7 +2904,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
           progressEventReducer(asyncDecorator(onUploadProgress))
         );
 
-        data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush, encodeText);
+        data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
       }
     }
 
@@ -2927,7 +2947,7 @@ const fetchAdapter = isFetchSupported && (async (config) => {
         trackStream(response.body, DEFAULT_CHUNK_SIZE, onProgress, () => {
           flush && flush();
           unsubscribe && unsubscribe();
-        }, encodeText),
+        }),
         options
       );
     }
@@ -3111,7 +3131,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION$1 = "1.7.6";
+const VERSION$1 = "1.7.7";
 
 const validators$1 = {};
 

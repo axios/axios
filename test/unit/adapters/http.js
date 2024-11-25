@@ -159,6 +159,44 @@ describe('supports http with nodejs', function () {
     delete process.env.no_proxy;
   });
 
+  it('should support IPv4 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://127.0.0.1:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
+  });
+
+  it('should support IPv6 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://[::1]:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
+  });
+
   it('should throw an error if the timeout property is not parsable as a number', function (done) {
 
     server = http.createServer(function (req, res) {
@@ -1604,7 +1642,7 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
         assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
-        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
+        assert.strictEqual(error.message, 'stream has been aborted');
         done();
       }).catch(done);
     });

@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.7.9](https://github.com/axios/axios/compare/v1.7.8...v1.7.9) (2024-12-04)
+
+
+### Reverts
+
+* Revert "fix(types): export CJS types from ESM (#6218)" (#6729) ([c44d2f2](https://github.com/axios/axios/commit/c44d2f2316ad289b38997657248ba10de11deb6c)), closes [#6218](https://github.com/axios/axios/issues/6218) [#6729](https://github.com/axios/axios/issues/6729)
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+596/-108 (#6729 )")
+
 ## [1.7.8](https://github.com/axios/axios/compare/v1.7.7...v1.7.8) (2024-11-25)
 
 

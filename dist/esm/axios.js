@@ -1,4 +1,4 @@
-// Axios v1.7.8 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.9 Copyright (c) 2024 Matt Zabriskie and contributors
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -3087,7 +3087,7 @@ function dispatchRequest(config) {
   });
 }
 
-const VERSION$1 = "1.7.8";
+const VERSION$1 = "1.7.9";
 
 const validators$1 = {};
 

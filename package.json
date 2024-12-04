@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "index.js",
   "exports": {

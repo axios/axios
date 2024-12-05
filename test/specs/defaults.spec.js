@@ -177,10 +177,22 @@ describe('defaults', function () {
     var instance = axios.create();
     axios.defaults.baseURL = 'http://example.org/';
 
+    instance.get('/foo/users');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo/users');
+      done();
+    });
+  });
+
+  it('should resistent to ReDoS attack', function (done) {
+    const instance = axios.create();
+    const slashes = '/'.repeat(100000);
+    instance.defaults.baseURL = '/' + slashes + 'bar/';
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo');
+      expect(request.url).toBe('/' + slashes + 'bar/foo');
       done();
     });
   });

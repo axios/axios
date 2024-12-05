@@ -265,7 +265,7 @@ describe('supports http with nodejs', function () {
           }
         }
       }).catch(function (error) {
-        assert.equal(error.message, 'Provided path is not allowed');
+        assert.equal(error.message, 'Redirected request failed: Provided path is not allowed');
         done();
       }).catch(done);
     });
@@ -1529,6 +1529,26 @@ describe('supports http with nodejs', function () {
           assert.strictEqual(str, '123');
           done();
         });
+      }).catch(done);
+    });
+  });
+
+  it('should support function as paramsSerializer value', function (done) {
+    server = http.createServer(function (req, res) {
+      res.end('ok');
+    }).listen(4444, function () {
+      var data;
+
+      axios.post('http://localhost:4444', 'test', {
+        params: {
+          x: 1
+        },
+        paramsSerializer: () => 'foo',
+        maxRedirects: 0,
+      }).then(function (res) {
+        assert.strictEqual(res.request.path, '/?foo');
+        data = res;
+        done()
       }).catch(done);
     });
   });

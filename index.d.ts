@@ -122,8 +122,13 @@ export interface ParamEncoder {
   (value: any, defaultEncoder: (value: any) => any): any;
 }
 
+export interface CustomParamsSerializer {
+  (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+}
+
 export interface ParamsSerializerOptions extends SerializerOptions {
   encode?: ParamEncoder;
+  serialize?: CustomParamsSerializer;
 }
 
 export interface AxiosRequestConfig<D = any> {
@@ -134,7 +139,7 @@ export interface AxiosRequestConfig<D = any> {
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: AxiosRequestHeaders;
   params?: any;
-  paramsSerializer?: ParamsSerializerOptions;
+  paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
   data?: D;
   timeout?: number;
   timeoutErrorMessage?: string;
@@ -165,6 +170,7 @@ export interface AxiosRequestConfig<D = any> {
     FormData?: new (...args: any[]) => object;
   };
   formSerializer?: FormSerializerOptions;
+  withXSRFToken?: boolean | ((config: AxiosRequestConfig) => boolean | undefined);
 }
 
 export interface HeadersDefaults {

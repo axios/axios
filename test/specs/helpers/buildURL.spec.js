@@ -7,9 +7,13 @@ describe('helpers::buildURL', function () {
   });
 
   it('should support params', function () {
-    expect(buildURL('/foo', {
-      foo: 'bar'
-    })).toEqual('/foo?foo=bar');
+    expect(
+      buildURL("/foo", {
+        foo: "bar",
+        isUndefined: undefined,
+        isNull: null,
+      })
+    ).toEqual("/foo?foo=bar");
   });
 
   it('should support object params', function () {
@@ -29,9 +33,11 @@ describe('helpers::buildURL', function () {
   });
 
   it('should support array params', function () {
-    expect(buildURL('/foo', {
-      foo: ['bar', 'baz']
-    })).toEqual('/foo?foo[]=bar&foo[]=baz');
+    expect(
+      buildURL("/foo", {
+        foo: ["bar", "baz", null, undefined],
+      })
+    ).toEqual("/foo?foo[]=bar&foo[]=baz");
   });
 
   it('should support special char params', function () {
@@ -62,5 +68,21 @@ describe('helpers::buildURL', function () {
 
   it('should support URLSearchParams', function () {
     expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
+  });
+
+  it('should support custom serialize function', function () {
+    var params = {
+      x: 1
+    };
+
+    var options = {
+      serialize: function (thisParams, thisOptions) {
+        expect(thisParams).toEqual(params);
+        expect(thisOptions).toEqual(options);
+        return 'rendered';
+      }
+    };
+
+    expect(buildURL('/foo', params, options)).toEqual('/foo?rendered');
   });
 });

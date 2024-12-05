@@ -16,10 +16,11 @@ import axios, {
   ParamsSerializerOptions,
   toFormData,
   formToJSON,
+  getAdapter,
   all,
   isCancel,
   isAxiosError,
-  spread
+  spread, AddressFamily
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -570,6 +571,33 @@ axios.get('/user', {
   adapter: ['xhr', 'http']
 });
 
+
+{
+  // getAdapter
+
+  getAdapter(axios.create().defaults.adapter);
+  getAdapter(undefined);
+  getAdapter([]);
+  getAdapter(['xhr']);
+  getAdapter([adapter]);
+  getAdapter(['xhr', 'http']);
+  getAdapter([adapter, 'xhr']);
+  getAdapter([adapter, adapter]);
+  getAdapter('xhr');
+  getAdapter(adapter);
+  const _: AxiosAdapter = getAdapter('xhr');
+  const __: AxiosAdapter = getAdapter(['xhr']);
+
+  // @ts-expect-error
+  getAdapter();
+  // @ts-expect-error
+  getAdapter(123);
+  // @ts-expect-error
+  getAdapter([123]);
+  // @ts-expect-error
+  getAdapter('xhr', 'http');
+}
+
 // AxiosHeaders
 
 // iterator
@@ -616,3 +644,28 @@ for (const [header, value] of headers) {
       (error: any) => Promise.reject(error)
   );
 }
+
+{
+  const config: AxiosRequestConfig = {headers: new AxiosHeaders({foo: 1})};
+
+  axios.get('', {
+    headers: {
+      bar: 2,
+      ...config.headers
+    }
+  });
+}
+
+// lookup
+axios.get('/user', {
+  lookup: (hostname: string, opt: object, cb: (err: Error | null, address: string, family: AddressFamily) => void) => {
+    cb(null, '127.0.0.1', 4);
+  }
+});
+
+// lookup async
+axios.get('/user', {
+  lookup: (hostname: string, opt: object) => {
+    return ['127.0.0.1', 4];
+  }
+});

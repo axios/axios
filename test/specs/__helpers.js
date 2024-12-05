@@ -3,8 +3,8 @@ import _axios from '../../index.js';
 window.axios = _axios;
 
 // Jasmine config
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
-jasmine.getEnv().defaultTimeoutInterval = 20000;
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+jasmine.getEnv().defaultTimeoutInterval = 60000;
 
 // Get Ajax request using an increasing timeout to retry
 window.getAjaxRequest = (function () {

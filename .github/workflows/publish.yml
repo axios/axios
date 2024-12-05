@@ -1,0 +1,84 @@
+name: Publish
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - 'v**'
+  workflow_dispatch:
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.head.label == 'axios:release')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: "Release PR info"
+        if: github.event_name != 'workflow_dispatch'
+        run: echo "PR ${{ github.event.number }}"
+      - uses: actions/checkout@v4
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
+      - name: Extract release notes
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v2
+      - name: Check versions
+        run: node ./bin/check-build-version.js
+      ############# TAG RELEASE ##############
+      - name: "Push tag v${{ steps.package-version.outputs.current-version }}"
+        uses: rickstaa/action-create-tag@v1
+        id: tag_version
+        with:
+          tag: "v${{ steps.package-version.outputs.current-version }}"
+      ############# RESOLVE NPM TAG ##############
+      - name: NPM TAG
+        id: 'npm_tag'
+        run: node ./bin/resolveNPMTag.js
+      ############# GITHUB RELEASE ##############
+      - name: "Create a GitHub release v${{ steps.package-version.outputs.current-version }}"
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ steps.package-version.outputs.current-version }}"
+          name: "Release v${{ steps.package-version.outputs.current-version }}"
+          body: |
+            ## Release notes:
+            ${{ steps.extract-release-notes.outputs.release_notes }}
+      ############# NPM RELEASE ##############
+      - name: Publish the release to NPM
+        run: npm publish --provenance --access public --tag ${{ steps.npm_tag.outputs.tag || 'latest' }}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+  notify:
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+      - run: npm ci
+      ############# Add release comments and tags to published PRs ##############
+      - name: Notify published PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ./bin/actions/notify_published.js --tag ${{ github.event.inputs.tag || github.event.release.tag_name }}

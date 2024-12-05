@@ -1,0 +1,13 @@
+{{#if prs}}
+### PRs
+{{#each prs}}
+  - {{title}} ( [#{{number}}]({{pull_request.url}}) ){{#if isHot}} 🔥{{/if}}{{#if isHot}} 🚀{{/if}}
+  {{#if messages}}
+    {{#each messages}}
+      ```
+      {{this}}
+      ```
+    {{/each}}
+  {{/if}}
+{{/each}}
+{{/if}}

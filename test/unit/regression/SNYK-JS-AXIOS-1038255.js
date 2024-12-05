@@ -20,8 +20,9 @@ describe('Server-Side Request Forgery (SSRF)', () => {
       fail = true;
       res.end('rm -rf /');
     }).listen(EVIL_PORT);
+
     proxy = http.createServer(function (req, res) {
-      if (req.url === 'http://localhost:' + EVIL_PORT + '/') {
+      if (new URL(req.url, 'http://' + req.headers.host).toString() === 'http://localhost:' + EVIL_PORT + '/') {
         return res.end(JSON.stringify({
           msg: 'Protected',
           headers: req.headers,
@@ -35,8 +36,10 @@ describe('Server-Side Request Forgery (SSRF)', () => {
     server.close();
     proxy.close();
   });
+
   it('obeys proxy settings when following redirects', async () => {
     location = 'http://localhost:' + EVIL_PORT;
+
     let response = await axios({
       method: "get",
       url: "http://www.google.com/",

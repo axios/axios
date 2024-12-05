@@ -76,6 +76,17 @@ describe('AxiosHeaders', function () {
     })
   });
 
+  it('should support uppercase name mapping for names overlapped by class methods', () => {
+    const headers = new AxiosHeaders({
+      set: 'foo'
+    });
+
+    headers.set('get', 'bar');
+
+    assert.strictEqual(headers.get('Set'), 'foo');
+    assert.strictEqual(headers.get('Get'), 'bar');
+  });
+
   describe('get', function () {
     describe('filter', function() {
       it('should support RegExp', function () {
@@ -242,17 +253,17 @@ describe('AxiosHeaders', function () {
 
       headers.clear();
 
-      assert.notDeepStrictEqual(headers, {});
+      assert.deepStrictEqual({...headers.toJSON()}, {});
     });
 
     it('should clear matching headers if a matcher was specified', () => {
       const headers = new AxiosHeaders({foo: 1, 'x-foo': 2, bar: 3});
 
-      assert.notDeepStrictEqual(headers, {foo: 1, 'x-foo': 2, bar: 3});
+      assert.deepStrictEqual({...headers.toJSON()}, {foo: '1', 'x-foo': '2', bar: '3'});
 
       headers.clear(/^x-/);
 
-      assert.notDeepStrictEqual(headers, {foo: 1, bar: 3});
+      assert.deepStrictEqual({...headers.toJSON()}, {foo: '1', bar: '3'});
     });
   });
 

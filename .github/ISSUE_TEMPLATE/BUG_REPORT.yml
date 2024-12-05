@@ -26,7 +26,10 @@ body:
     id: reproduce
     attributes:
       label: 'To Reproduce'
-      description: Code snippet to reproduce, ideally that will work by pasting into something like https://npm.runkit.com/axios, a hosted solution, or a repository that illustrates the issue. **If your problem is not reproducible, please file under Support or Usage Question**
+      description: |
+        Code snippet to reproduce, ideally if you can provide a live example in https://codesandbox.io/ sandbox or a repository that illustrates the issue.
+        (You can use https://codesandbox.io/p/sandbox/zen-knuth-9hvhzq as a node sandbox template, or https://codesandbox.io/s/axios-browser-issue-2l8jec as a browser template)
+        **If your problem is not reproducible, please file under Support or Usage Question**
     validations:
       required: false
   - type: textarea

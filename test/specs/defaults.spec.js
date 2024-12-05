@@ -151,12 +151,12 @@ describe('defaults', function () {
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders).toEqual(
-        utils.merge(defaults.headers.common, defaults.headers.get, {
+        AxiosHeaders.concat(defaults.headers.common, defaults.headers.get, {
           'X-COMMON-HEADER': 'commonHeaderValue',
           'X-GET-HEADER': 'getHeaderValue',
           'X-FOO-HEADER': 'fooHeaderValue',
           'X-BAR-HEADER': 'barHeaderValue'
-        })
+        }).toJSON()
       );
       done();
     });
@@ -178,10 +178,25 @@ describe('defaults', function () {
     const instance = axios.create();
     axios.defaults.baseURL = 'http://example.org/';
 
+    instance.get('/foo/users');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo/users');
+      done();
+    });
+  });
+
+  it('should resistent to ReDoS attack', function (done) {
+    const instance = axios.create();
+    const start = performance.now();
+    const slashes = '/'.repeat(100000);
+    instance.defaults.baseURL = '/' + slashes + 'bar/';
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo');
+      const elapsedTimeMs = performance.now() - start;
+      expect(elapsedTimeMs).toBeLessThan(20);
+      expect(request.url).toBe('/' + slashes + 'bar/foo');
       done();
     });
   });

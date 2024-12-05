@@ -8,6 +8,8 @@ type MethodsHeaders = Partial<{
 
 type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
 
+type AxiosHeaderParser = (this: AxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
+
 type CommonRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent'| 'Content-Encoding' | 'Authorization';
 
 type ContentType = axios.AxiosHeaderValue | 'text/html' | 'text/plain' | 'multipart/form-data' | 'application/json' | 'application/x-www-form-urlencoded' | 'application/octet-stream';
@@ -16,18 +18,18 @@ type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 
 
 declare class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;
 
   set(headerName?: string, value?: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
+  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
-  get(headerName: string, matcher?: true | AxiosHeaderMatcher): axios.AxiosHeaderValue;
+  get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
 
-  has(header: string, matcher?: true | AxiosHeaderMatcher): boolean;
+  has(header: string, matcher?: AxiosHeaderMatcher): boolean;
 
   delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
 
@@ -244,10 +246,7 @@ declare namespace axios {
   interface AxiosProxyConfig {
     host: string;
     port: number;
-    auth?: {
-      username: string;
-      password: string;
-    };
+    auth?: AxiosBasicCredentials;
     protocol?: string;
   }
 
@@ -269,7 +268,8 @@ declare namespace axios {
     | 'document'
     | 'json'
     | 'text'
-    | 'stream';
+    | 'stream'
+    | 'formdata';
 
   type responseEncoding =
     | 'ascii' | 'ASCII'
@@ -354,13 +354,23 @@ declare namespace axios {
     upload?: boolean;
     download?: boolean;
     event?: BrowserProgressEvent;
+    lengthComputable: boolean;
   }
 
   type Milliseconds = number;
 
-  type AxiosAdapterName = 'xhr' | 'http' | string;
+  type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
   type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
+
+  type AddressFamily = 4 | 6 | undefined;
+
+  interface LookupAddressEntry {
+    address: string;
+    family?: AddressFamily;
+  }
+
+  type LookupAddress = string | LookupAddressEntry;
 
   interface AxiosRequestConfig<D = any> {
     url?: string;
@@ -388,7 +398,7 @@ declare namespace axios {
     maxBodyLength?: number;
     maxRedirects?: number;
     maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-    beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
+    beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
     socketPath?: string | null;
     transport?: any;
     httpAgent?: any;
@@ -403,9 +413,11 @@ declare namespace axios {
       FormData?: new (...args: any[]) => object;
     };
     formSerializer?: FormSerializerOptions;
-    family?: 4 | 6 | undefined;
-    lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: string, family: number) => void) => void) |
-        ((hostname: string, options: object) => Promise<[address: string, family: number] | string>);
+    family?: AddressFamily;
+    lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
+        ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
+    withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+    fetchOptions?: Record<string, any>;
   }
 
   // Alias
@@ -481,8 +493,12 @@ declare namespace axios {
     runWhen?: (config: InternalAxiosRequestConfig) => boolean;
   }
 
+  type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+
+  type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+
   interface AxiosInterceptorManager<V> {
-    use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+    use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
     eject(id: number): void;
     clear(): void;
   }
@@ -523,6 +539,7 @@ declare namespace axios {
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+    getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
   }
 }

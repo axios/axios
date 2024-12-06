@@ -1,5 +1,4 @@
 import buildURL from '../../../lib/helpers/buildURL';
-import URLSearchParams from 'url-search-params';
 
 describe('helpers::buildURL', function () {
   it('should support null params', function () {
@@ -99,5 +98,12 @@ describe('helpers::buildURL', function () {
     };
 
     expect(buildURL('/foo', params, options)).toEqual('/foo?rendered');
+
+    const customSerializer = (thisParams) => {
+      expect(thisParams).toEqual(params);
+      return "rendered"
+    };
+
+    expect(buildURL('/foo', params, customSerializer)).toEqual('/foo?rendered');
   });
 });

@@ -159,6 +159,44 @@ describe('supports http with nodejs', function () {
     delete process.env.no_proxy;
   });
 
+  it('should support IPv4 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://127.0.0.1:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
+  });
+
+  it('should support IPv6 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://[::1]:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
+  });
+
   it('should throw an error if the timeout property is not parsable as a number', function (done) {
 
     server = http.createServer(function (req, res) {
@@ -1604,7 +1642,7 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
         assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
-        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
+        assert.strictEqual(error.message, 'stream has been aborted');
         done();
       }).catch(done);
     });
@@ -1919,6 +1957,7 @@ describe('supports http with nodejs', function () {
   describe('progress', function () {
     describe('upload', function () {
       it('should support upload progress capturing', async function () {
+        this.timeout(15000);
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -1943,6 +1982,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onUploadProgress: ({loaded, total, progress, bytes, upload}) => {
+            console.log('onUploadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -1975,6 +2015,8 @@ describe('supports http with nodejs', function () {
 
     describe('download', function () {
       it('should support download progress capturing', async function () {
+        this.timeout(15000);
+
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -1999,6 +2041,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onDownloadProgress: ({loaded, total, progress, bytes, download}) => {
+            console.log('onDownloadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -2114,7 +2157,7 @@ describe('supports http with nodejs', function () {
           }]`
         );
 
-        const progressTicksRate = 2;
+        const progressTicksRate = 3;
         const expectedProgress = ((i + skip) / secs) / progressTicksRate;
 
         assert.ok(

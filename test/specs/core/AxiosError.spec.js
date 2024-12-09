@@ -60,4 +60,9 @@ describe('core::AxiosError', function() {
     const myError = new AxiosError("My Axios Error", AxiosError.ECONNABORTED);
     expect(myError.code).toEqual(AxiosError.ECONNABORTED);
   });
+
+  it('should have status property when response was passed to the constructor', () => {
+      const err = new AxiosError('test', 'foo', {}, {}, {status: 400});
+      expect(err.status).toBe(400);
+  });
 });

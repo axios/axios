@@ -1,3 +1,5 @@
+import assert from "assert";
+
 const {AxiosHeaders} = axios;
 
 function testHeaderValue(headers, key, val) {
@@ -44,18 +46,35 @@ describe('headers', function () {
     });
   });
 
-  it('should add extra headers for post', function (done) {
-    const headers = axios.defaults.headers.common;
+  it('should respect common Content-Type header', function () {
+    const instance = axios.create();
+
+    instance.defaults.headers.common['Content-Type'] = 'application/custom';
+
+    instance.patch('/foo', "");
+
+    const expectedHeaders = {
+      'Content-Type': "application/custom"
+    };
+
+    return getAjaxRequest().then(function (request) {
+      for (const key in expectedHeaders) {
+        if (expectedHeaders.hasOwnProperty(key)) {
+          expect(request.requestHeaders[key]).toEqual(expectedHeaders[key]);
+        }
+      }
+    });
+  });
+
+  it('should add extra headers for post', function () {
+    const headers = AxiosHeaders.from(axios.defaults.headers.common).toJSON();
 
     axios.post('/foo', 'fizz=buzz');
 
-    getAjaxRequest().then(function (request) {
+    return getAjaxRequest().then(function (request) {
       for (const key in headers) {
-        if (headers.hasOwnProperty(key)) {
-          expect(request.requestHeaders[key]).toEqual(headers[key]);
-        }
+         expect(request.requestHeaders[key]).toEqual(headers[key]);
       }
-      done();
     });
   });
 

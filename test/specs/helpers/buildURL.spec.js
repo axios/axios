@@ -98,5 +98,12 @@ describe('helpers::buildURL', function () {
     };
 
     expect(buildURL('/foo', params, options)).toEqual('/foo?rendered');
+
+    const customSerializer = (thisParams) => {
+      expect(thisParams).toEqual(params);
+      return "rendered"
+    };
+
+    expect(buildURL('/foo', params, customSerializer)).toEqual('/foo?rendered');
   });
 });

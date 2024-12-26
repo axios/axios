@@ -1545,7 +1545,7 @@ var worker = async function fetchAdapter(config) {
                     const message = config.timeoutErrorMessage
                         ? config.timeoutErrorMessage
                         : 'timeout of ' + config.timeout + 'ms exceeded';
-                    res(createError(message, config, 'ECONNABORTED', request));
+                    res(new AxiosError_1(message, AxiosError_1['ECONNABORTED'], config, request));
                 }, config.timeout);
             })
         );
@@ -1563,7 +1563,6 @@ var worker = async function fetchAdapter(config) {
     });
 };
 
-
 /**
  * Fetch API stage two is to get response body. This funtion tries to retrieve
  * response body based on response's type
@@ -1573,7 +1572,7 @@ async function getResponse(request, config) {
     try {
         stageOne = await fetch(request);
     } catch (e) {
-        return createError('Network Error', config, 'ERR_NETWORK', request);
+        return new AxiosError_1('Network Error', AxiosError_1['ERR_NETWORK'], config, request);
     }
 
     const response = {
@@ -1663,29 +1662,6 @@ function createRequest(config) {
     return new Request(url, options);
 }
 
-
-
-/**
- * Note:
- * 
- *   From version >= 0.27.0, createError function is replaced by AxiosError class.
- *   So I copy the old createError function here for backward compatible.
- * 
- * 
- * 
- * Create an Error with the specified message, config, error code, request and response.
- *
- * @param {string} message The error message.
- * @param {Object} config The config.
- * @param {string} [code] The error code (for example, 'ECONNABORTED').
- * @param {Object} [request] The request.
- * @param {Object} [response] The response.
- * @returns {Error} The created error.
- */
-function createError(message, config, code, request, response) {
-    return new AxiosError_1(message, AxiosError_1[code], config, request, response);
-}
-
 var DEFAULT_CONTENT_TYPE = {
   'Content-Type': 'application/x-www-form-urlencoded'
 };
@@ -1704,7 +1680,7 @@ function getDefaultAdapter() {
   } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
     // For node use HTTP adapter
     adapter = xhr;
-  } else if (typeof fetch !== 'undefined' && Object.prototype.toString.call(fetch) === '[object Function]') {
+  } else if (caches && typeof caches.default !== 'undefined') {
     adapter = worker;
   }
   return adapter;

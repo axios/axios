@@ -1,4 +1,4 @@
-// Axios v1.7.9 Copyright (c) 2024 Matt Zabriskie and contributors
+/*! Axios v1.7.9 Copyright (c) 2024 Matt Zabriskie and contributors */
 function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);

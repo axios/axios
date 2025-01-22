@@ -3,12 +3,12 @@ interface RawAxiosHeaders {
 }
 
 type MethodsHeaders = Partial<{
-  [Key in axios.Method as Lowercase<Key>]: InternalAxiosHeaders;
-} & {common: InternalAxiosHeaders}>;
+  [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
+} & {common: AxiosHeaders}>;
 
-type AxiosHeaderMatcher = (this: InternalAxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
+type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
 
-type AxiosHeaderParser = (this: InternalAxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
+type AxiosHeaderParser = (this: AxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
 
 type CommonRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent'| 'Content-Encoding' | 'Authorization';
 
@@ -16,15 +16,15 @@ type ContentType = axios.AxiosHeaderValue | 'text/html' | 'text/plain' | 'multip
 
 type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
 
-declare class InternalAxiosHeaders {
+declare class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | InternalAxiosHeaders | string
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;
 
-  set(headerName?: string, value?: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): InternalAxiosHeaders;
-  set(headers?: RawAxiosHeaders | InternalAxiosHeaders | string, rewrite?: boolean): InternalAxiosHeaders;
+  set(headerName?: string, value?: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
   get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
@@ -35,44 +35,44 @@ declare class InternalAxiosHeaders {
 
   clear(matcher?: AxiosHeaderMatcher): boolean;
 
-  normalize(format: boolean): InternalAxiosHeaders;
+  normalize(format: boolean): AxiosHeaders;
 
-  concat(...targets: Array<InternalAxiosHeaders | RawAxiosHeaders | string | undefined | null>): InternalAxiosHeaders;
+  concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
 
   toJSON(asStrings?: boolean): RawAxiosHeaders;
 
-  static from(thing?: InternalAxiosHeaders | RawAxiosHeaders | string): InternalAxiosHeaders;
+  static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
-  static accessor(header: string | string[]): InternalAxiosHeaders;
+  static accessor(header: string | string[]): AxiosHeaders;
 
-  static concat(...targets: Array<InternalAxiosHeaders | RawAxiosHeaders | string | undefined | null>): InternalAxiosHeaders;
+  static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
 
-  setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): InternalAxiosHeaders;
+  setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentType(parser?: RegExp): RegExpExecArray | null;
   getContentType(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasContentType(matcher?: AxiosHeaderMatcher): boolean;
 
-  setContentLength(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): InternalAxiosHeaders;
+  setContentLength(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentLength(parser?: RegExp): RegExpExecArray | null;
   getContentLength(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasContentLength(matcher?: AxiosHeaderMatcher): boolean;
 
-  setAccept(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): InternalAxiosHeaders;
+  setAccept(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getAccept(parser?: RegExp): RegExpExecArray | null;
   getAccept(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasAccept(matcher?: AxiosHeaderMatcher): boolean;
 
-  setUserAgent(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): InternalAxiosHeaders;
+  setUserAgent(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getUserAgent(parser?: RegExp): RegExpExecArray | null;
   getUserAgent(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
 
-  setContentEncoding(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): InternalAxiosHeaders;
+  setContentEncoding(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getContentEncoding(parser?: RegExp): RegExpExecArray | null;
   getContentEncoding(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
-  setAuthorization(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): InternalAxiosHeaders;
+  setAuthorization(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getAuthorization(parser?: RegExp): RegExpExecArray | null;
   getAuthorization(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasAuthorization(matcher?: AxiosHeaderMatcher): boolean;
@@ -111,10 +111,10 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ETIMEDOUT = "ETIMEDOUT";
 }
 
-declare class InternalCanceledError<T> extends AxiosError<T> {
+declare class CanceledError<T> extends AxiosError<T> {
 }
 
-declare class InternalAxios {
+declare class Axios {
   constructor(config?: axios.AxiosRequestConfig);
   defaults: axios.AxiosDefaults;
   interceptors: {
@@ -135,7 +135,7 @@ declare class InternalAxios {
   patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
 }
 
-declare enum InternalHttpStatusCode {
+declare enum HttpStatusCode {
   Continue = 100,
   SwitchingProtocols = 101,
   Processing = 102,
@@ -205,10 +205,6 @@ type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 
 declare namespace axios {
   type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
-  type Axios = InternalAxios;
-  type AxiosHeaders = InternalAxiosHeaders;
-  type CanceledError<T> = InternalCanceledError<T>;
-  type HttpStatusCode = InternalHttpStatusCode;
 
   type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & {
     [Key in CommonRequestHeadersList]: AxiosHeaderValue;
@@ -402,7 +398,7 @@ declare namespace axios {
     maxBodyLength?: number;
     maxRedirects?: number;
     maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-    beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: InternalHttpStatusCode}) => void;
+    beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
     socketPath?: string | null;
     transport?: any;
     httpAgent?: any;
@@ -507,7 +503,7 @@ declare namespace axios {
     clear(): void;
   }
 
-  interface AxiosInstance extends InternalAxios {
+  interface AxiosInstance extends Axios {
     <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
     <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
 
@@ -529,14 +525,13 @@ declare namespace axios {
   }
 
   interface AxiosStatic extends AxiosInstance {
-    default: AxiosStatic;
     create(config?: CreateAxiosDefaults): AxiosInstance;
     Cancel: CancelStatic;
     CancelToken: CancelTokenStatic;
-    Axios: typeof InternalAxios;
+    Axios: typeof Axios;
     AxiosError: typeof AxiosError;
-    CanceledError: typeof InternalCanceledError;
-    HttpStatusCode: typeof InternalHttpStatusCode;
+    CanceledError: typeof CanceledError;
+    HttpStatusCode: typeof HttpStatusCode;
     readonly VERSION: string;
     isCancel(value: any): value is Cancel;
     all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
@@ -545,7 +540,7 @@ declare namespace axios {
     toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
     formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
     getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
-    AxiosHeaders: typeof InternalAxiosHeaders;
+    AxiosHeaders: typeof AxiosHeaders;
   }
 }
 

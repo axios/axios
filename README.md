@@ -818,7 +818,7 @@ The general structure of axios errors is as follows:
 | code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.  |
 | status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings. 
 
-Below is a list of potential axios identified error
+Below is a list of potential axios identified error:
 | Code  |  Definition   |
 | -------- | ----------  |
 | ERR_BAD_OPTION_VALUE | Invalid or unsupported value provided in axios configuration. |
@@ -1129,7 +1129,7 @@ to a `FormData` object by following custom rules.
 - `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key.
 The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
 
-- `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
+- `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects.
 
     - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)

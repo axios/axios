@@ -48,4 +48,9 @@ describe('core::AxiosError', function() {
       expect(AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError).toBeTruthy();
     });
   });
+
+  it('should have status property when response was passed to the constructor', () => {
+      const err = new AxiosError('test', 'foo', {}, {}, {status: 400});
+      expect(err.status).toBe(400);
+  });
 });

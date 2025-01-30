@@ -9,22 +9,24 @@ type MethodsHeaders = Partial<{
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
 } & {common: AxiosHeaders}>;
 
-type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
+type AxiosHeaderMatcher = string | RegExp | ((this: AxiosHeaders, value: string, name: string) => boolean);
+
+type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: string) => any;
 
 export class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders
+      headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;
 
   set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders, rewrite?: boolean): AxiosHeaders;
+  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
-  get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
+  get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 
-  has(header: string, matcher?: true | AxiosHeaderMatcher): boolean;
+  has(header: string, matcher?: AxiosHeaderMatcher): boolean;
 
   delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
 
@@ -207,7 +209,8 @@ export type ResponseType =
     | 'document'
     | 'json'
     | 'text'
-    | 'stream';
+    | 'stream'
+    | 'formdata';
 
 export type responseEncoding =
     | 'ascii' | 'ASCII'
@@ -292,13 +295,23 @@ export interface AxiosProgressEvent {
   upload?: boolean;
   download?: boolean;
   event?: BrowserProgressEvent;
+  lengthComputable: boolean;
 }
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'xhr' | 'http' | string;
+type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
+
+export type AddressFamily = 4 | 6 | undefined;
+
+export interface LookupAddressEntry {
+  address: string;
+  family?: AddressFamily;
+}
+
+export type LookupAddress = string | LookupAddressEntry;
 
 export interface AxiosRequestConfig<D = any> {
   url?: string;
@@ -326,7 +339,7 @@ export interface AxiosRequestConfig<D = any> {
   maxBodyLength?: number;
   maxRedirects?: number;
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-  beforeRedirect?: (options: Record<string, any>, responseDetails: { headers: Record<string, string> }) => void;
+  beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
   socketPath?: string | null;
   transport?: any;
   httpAgent?: any;
@@ -341,9 +354,11 @@ export interface AxiosRequestConfig<D = any> {
     FormData?: new (...args: any[]) => object;
   };
   formSerializer?: FormSerializerOptions;
-  family?: 4 | 6 | undefined;
-  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: string, family: number) => void) => void) |
-      ((hostname: string, options: object) => Promise<[address: string, family: number] | string>);
+  family?: AddressFamily;
+  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
+      ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
+  withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+  fetchOptions?: Record<string, any>;
 }
 
 // Alias
@@ -461,8 +476,12 @@ export interface AxiosInterceptorOptions {
   runWhen?: (config: InternalAxiosRequestConfig) => boolean;
 }
 
+type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+
+type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: ((value: V) => V | Promise<V>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions): number;
+  use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
   eject(id: number): void;
   clear(): void;
 }
@@ -523,6 +542,8 @@ export function isCancel(value: any): value is Cancel;
 
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 
+export function mergeConfig<D = any>(config1: AxiosRequestConfig<D>, config2: AxiosRequestConfig<D>): AxiosRequestConfig<D>;
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
@@ -540,6 +561,7 @@ export interface AxiosStatic extends AxiosInstance {
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
+  mergeConfig: typeof mergeConfig;
 }
 
 declare const axios: AxiosStatic;

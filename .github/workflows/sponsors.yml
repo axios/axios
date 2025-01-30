@@ -1,0 +1,72 @@
+name: Update Readme sponsor list
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - webhook
+  schedule:
+    # Run at 0000 daily
+    - cron: '0 1 * * *'
+jobs:
+  sponsors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+          cache: npm
+      - run: npm ci
+      - name: Check sponsors updates
+        id: sponsors
+        run: node ./bin/sponsors.js
+      - name: Notify status
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
+        run: |
+          echo "Sponsor block has changed. Creating PR with updates..."
+      - name: Read sponsors.md file content
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
+        id: read_file
+        run: |
+          echo 'CONTENT<<EOF' >> $GITHUB_ENV
+          cat ./temp/sponsors.md >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+        shell: bash
+      - name: Echo
+        run: |
+          echo "$CONTENT"
+      - name: Create pull request
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
+        uses: peter-evans/create-pull-request@v7
+        id: cpr
+        with:
+          branch: sponsors
+          delete-branch: true
+          commit-message: 'chore(sponsor): update sponsor block'
+          title: '[Chore] Update sponsor block'
+          body: |
+            **New sponsor block update:**
+            ${{ env.CONTENT }}
+          labels: |
+            readme
+            automated pr
+            automerge
+          signoff: false
+          #team-reviewers: |
+          #  owners
+          #  maintainers
+          #assignees: jasonsaayman
+          #reviewers: jasonsaayman
+          draft: false
+      - name: Show PR link
+        if: ${{ steps.sponsors.outputs.changed == 'true'}}
+        run: |
+          echo "Sponsor block has changed. Creating PR..."
+          echo "Axios Release v${{ steps.package-version.outputs.current-version}}' pull request - ${{ steps.cpr.outputs.pull-request-url }}"

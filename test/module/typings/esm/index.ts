@@ -20,7 +20,7 @@ import axios, {
   all,
   isCancel,
   isAxiosError,
-  spread
+  spread, AddressFamily
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -574,7 +574,7 @@ axios.get('/user', {
 
 {
   // getAdapter
-  
+
   getAdapter(axios.create().defaults.adapter);
   getAdapter(undefined);
   getAdapter([]);
@@ -658,7 +658,7 @@ for (const [header, value] of headers) {
 
 // lookup
 axios.get('/user', {
-  lookup: (hostname: string, opt: object, cb: (err: Error | null, address: string, family: number) => void) => {
+  lookup: (hostname: string, opt: object, cb: (err: Error | null, address: string, family: AddressFamily) => void) => {
     cb(null, '127.0.0.1', 4);
   }
 });

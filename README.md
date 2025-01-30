@@ -1,8 +1,23 @@
-<h1 align="center">
-   <b>
-        <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
-    </b>
-</h1>
+
+<h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http" style="padding: 10px; display: inline-block"> <picture> <source width="200px" height="38px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/stytch_white.png"> <img width="200px" height="38px" src="https://axios-http.com/assets/sponsors/stytch.png" alt="Stytch"/> </picture> </a> <p align="center" title="API-first authentication, authorization, and fraud prevention">API-first authentication, authorization, and fraud prevention</p> <p align="center"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http"><b>Website</b></a> | <a href="https://stytch.com/docs?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;docs-link&amp;utm_campaign&#x3D;axios-http"><b>Documentation</b></a> | <a href="https://github.com/stytchauth/stytch-node?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;node-sdk&amp;utm_campaign&#x3D;axios-http"><b>Node.js</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>www.principal.com</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>Documentation</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"><b>Community</b></a> </p>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="62px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/buzzoid-buy-instagram-followers.png" alt="Buzzoid - Buy Instagram Followers"/> </a> <p align="center" title="At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#x27;s #1 IG service since 2012.">At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rate...</p> <p align="center"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>buzzoid.com</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://www.famety.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/famety-buy-instagram-followers.png" alt="Famety - Buy Instagram Followers"/> </a> <p align="center" title="At Famety, you can grow your social media following quickly, safely, and easily with just a few clicks. Rated the world’s #1 social media service since 2013.">At Famety, you can grow your social media following quickly, safely, and easily with just a few clic...</p> <p align="center"> <a href="https://www.famety.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>www.famety.com</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/instagram-likes.png" alt="Poprey - Buy Instagram Likes"/> </a> <p align="center" title="Buy Instagram Likes">Buy Instagram Likes</p> <p align="center"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>poprey.com</b></a> </p>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://musicza.co.za/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="124px" height="52px" src="https://axios-http.com/assets/sponsors/opencollective/musicza.png" alt="Tubidy"/> </a> <p align="center" title="Tubidy: Free Music and Video Downloads | MP3, MP4">Tubidy: Free Music and Video Downloads | MP3, MP4</p> <p align="center"> <a href="https://musicza.co.za/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>musicza.co.za</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://www.linkedin.com/pulse/7-best-sites-buy-instagram-followers-2024-100-non-drop-arvinder-singh-u6goc/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="63px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/bestsitesbuyinstagramfollowers.png" alt="Buy Instagram Followers"/> </a> <p align="center" title="Ookfy is the best place to buy Instagram followers, likes &amp; views. You can buy Real &amp; Non-Drop Instagram followers from Ookfy.">Ookfy is the best place to buy Instagram followers, likes &amp; views. You can buy Real &amp; Non-Dr...</p> <p align="center"> <a href="https://www.linkedin.com/pulse/7-best-sites-buy-instagram-followers-2024-100-non-drop-arvinder-singh-u6goc/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>www.linkedin.com</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://ssmarket.net/buy-youtube-subscribers?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/youtube-subscribers-ssmarket.png" alt="Buy Youtube Subscribers"/> </a> <p align="center" title="SS Market offers professional social media services that rapidly increase your YouTube subscriber count, elevating your channel to a powerful position.">SS Market offers professional social media services that rapidly increase your YouTube subscriber co...</p> <p align="center"> <a href="https://ssmarket.net/buy-youtube-subscribers?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>ssmarket.net</b></a> </p>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://tokmax.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/tokmax.webp" alt="Tokmax"/> </a> <p align="center" title="At Tokmax, we are dedicated to being the leading platform for enhancing TikTok engagement. Whether you&#x27;re an emerging creator or an established influe">At Tokmax, we are dedicated to being the leading platform for enhancing TikTok engagement. Whether y...</p> <p align="center"> <a href="https://tokmax.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"><b>tokmax.com</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute">💜 Become a sponsor</a>
+</td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute">💜 Become a sponsor</a>
+</td></tr></table>
+
+<!--<div>marker</div>-->
+<br><br>
+<div align="center">
+   <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" /></a><br>
+</div>
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 
@@ -67,6 +82,7 @@
   - [🆕 Progress capturing](#-progress-capturing)
   - [🆕 Rate limiting](#-progress-capturing)
   - [🆕 AxiosHeaders](#-axiosheaders)
+  - [🔥 Fetch adapter](#-fetch-adapter)
   - [Semver](#semver)
   - [Promises](#promises)
   - [TypeScript](#typescript)
@@ -88,8 +104,8 @@
 
 ## Browser Support
 
-![Chrome](https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png) | ![Safari](https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png) | ![Opera](https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png) | ![Edge](https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png) | ![IE](https://raw.githubusercontent.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
---- | --- | --- | --- | --- | --- |
+![Chrome](https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png) | ![Safari](https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png) | ![Opera](https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png) | ![Edge](https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png) |
+--- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 11 ✔ |
 
 [![Browser Matrix](https://saucelabs.com/open_sauce/build_matrix/axios.svg)](https://saucelabs.com/u/axios)
@@ -144,6 +160,12 @@ const axios = require('axios');
 console.log(axios.isCancel('something'));
 ```
 
+For some bundlers and some ES6 linter's you may need to do the following:
+
+```js
+import { default as axios } from 'axios';
+```
+
 For cases where something went wrong when trying to import a module into a custom or legacy environment,
 you can try importing the module package directly:
 
@@ -157,13 +179,13 @@ const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundl
 Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
 ```
 
 ## Example
@@ -389,13 +411,13 @@ These are the available config options for making requests. Only the `url` is re
   // `paramsSerializer` is an optional config that allows you to customize serializing `params`. 
   paramsSerializer: {
 
-    //Custom encoder function which sends key/value pairs in an iterative fashion.
+    // Custom encoder function which sends key/value pairs in an iterative fashion.
     encode?: (param: string): string => { /* Do custom operations here and return transformed string */ }, 
     
     // Custom serializer function for the entire parameter. Allows user to mimic pre 1.x behaviour.
     serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ), 
     
-    //Configuration for formatting array indexes in the params. 
+    // Configuration for formatting array indexes in the params. 
     indexes: false // Three available options: (1) indexes: null (leads to no brackets), (2) (default) indexes: false (leads to empty brackets), (3) indexes: true (leads to brackets with indexes).    
   },
 
@@ -423,10 +445,13 @@ These are the available config options for making requests. Only the `url` is re
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
-  // Return a promise and supply a valid response (see lib/adapters/README.md).
+  // Return a promise and supply a valid response (see lib/adapters/README.md)
   adapter: function (config) {
     /* ... */
   },
+  // Also, you can set the name of the built-in adapter, or provide an array with their names
+  // to choose the first available in the environment
+  adapter: 'xhr' // 'fetch' | 'http' | ['xhr', 'http', 'fetch']
 
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing
@@ -445,6 +470,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
+  // options are: 'ascii', 'ASCII', 'ansi', 'ANSI', 'binary', 'BINARY', 'base64', 'BASE64', 'base64url',
+  // 'BASE64URL', 'hex', 'HEX', 'latin1', 'LATIN1', 'ucs-2', 'UCS-2', 'ucs2', 'UCS2', 'utf-8', 'UTF-8',
+  // 'utf8', 'UTF8', 'utf16le', 'UTF16LE'
   responseEncoding: 'utf8', // default
 
   // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
@@ -452,6 +480,9 @@ These are the available config options for making requests. Only the `url` is re
 
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
+    
+  // `undefined` (default) - set XSRF header only for the same origin requests
+  withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
   // `onUploadProgress` allows handling of progress events for uploads
   // browser & node.js
@@ -543,7 +574,7 @@ These are the available config options for making requests. Only the `url` is re
   // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
   // - Node only (XHR cannot turn off decompression)
-  decompress: true // default
+  decompress: true, // default
 
   // `insecureHTTPParser` boolean.
   // Indicates where to use an insecure HTTP parser that accepts invalid HTTP headers.
@@ -551,7 +582,7 @@ These are the available config options for making requests. Only the `url` is re
   // Using the insecure parser should be avoided.
   // see options https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_http_request_url_options_callback
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
-  insecureHTTPParser: undefined // default
+  insecureHTTPParser: undefined, // default
 
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
@@ -741,7 +772,7 @@ axios.interceptors.request.use(function (config) {
 ```
 
 If you want to execute a particular interceptor based on a runtime check,
-you can add a `runWhen` function to the options object. The interceptor will not be executed **if and only if** the return
+you can add a `runWhen` function to the options object. The request interceptor will not be executed **if and only if** the return
 of `runWhen` is `false`. The function will be called with the config
 object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an
 asynchronous request interceptor that only needs to run at certain times.
@@ -755,6 +786,8 @@ axios.interceptors.request.use(function (config) {
   return config;
 }, null, { runWhen: onGetCall });
 ```
+
+> **Note:** options parameter(having `synchronous` and `runWhen` properties) is only supported for request interceptors at the moment.
 
 ### Multiple Interceptors
 
@@ -785,7 +818,7 @@ The general structure of axios errors is as follows:
 | code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.  |
 | status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings. 
 
-Below is a list of potential axios identified error
+Below is a list of potential axios identified error:
 | Code  |  Definition   |
 | -------- | ----------  |
 | ERR_BAD_OPTION_VALUE | Invalid or unsupported value provided in axios configuration. |
@@ -1096,7 +1129,7 @@ to a `FormData` object by following custom rules.
 - `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key.
 The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
 
-- `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
+- `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects.
 
     - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
@@ -1225,6 +1258,7 @@ Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
 ## 🆕 Progress capturing
 
 Axios supports both browser and node environments to capture request upload/download progress.
+The frequency of progress events is forced to be limited to `3` times per second.
 
 ```js    
 await axios.post(url, data, {
@@ -1545,6 +1579,30 @@ The following shortcuts are available:
 
 - `setContentEncoding`, `getContentEncoding`, `hasContentEncoding`
 
+## 🔥 Fetch adapter
+
+Fetch adapter was introduced in `v1.7.0`. By default, it will be used if `xhr` and `http` adapters are not available in the build,
+or not supported by the environment.
+To use it by default, it must be selected explicitly:
+
+```js
+const {data} = axios.get(url, {
+  adapter: 'fetch' // by default ['xhr', 'http', 'fetch']
+})
+```
+
+You can create a separate instance for this:
+
+```js
+const fetchAxios = axios.create({
+  adapter: 'fetch'
+});
+
+const {data} = fetchAxios.get(url);
+```
+
+The adapter supports the same functionality as `xhr` adapter, **including upload and download progress capturing**. 
+Also, it supports additional response types such as `stream` and `formdata` (if supported by the environment).
 
 ## Semver
 

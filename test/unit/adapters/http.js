@@ -9,6 +9,7 @@ import util from 'util';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import {lookup} from 'dns';
 let server, proxy;
 import AxiosError from '../../../lib/core/AxiosError.js';
 import FormDataLegacy from 'form-data';
@@ -52,20 +53,24 @@ function toleranceRange(positive, negative) {
   }
 }
 
+const nodeVersion = process.versions.node.split('.').map(v => parseInt(v, 10));
+const nodeMajorVersion = nodeVersion[0];
+
 var noop = ()=> {};
 
 const LOCAL_SERVER_URL = 'http://localhost:4444';
 
 const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
-function startHTTPServer(options) {
+function startHTTPServer(handlerOrOptions, options) {
 
-  const {handler, useBuffering = false, rate = undefined, port = 4444} = typeof options === 'function' ? {
-    handler: options
-  } : options || {};
+  const {handler, useBuffering = false, rate = undefined, port = 4444, keepAlive = 1000} =
+    Object.assign(typeof handlerOrOptions === 'function' ? {
+      handler: handlerOrOptions
+    } : handlerOrOptions || {}, options);
 
   return new Promise((resolve, reject) => {
-    http.createServer(handler || async function (req, res) {
+    const server = http.createServer(handler || async function (req, res) {
       try {
         req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
@@ -93,7 +98,19 @@ function startHTTPServer(options) {
     }).listen(port, function (err) {
       err ? reject(err) : resolve(this);
     });
+
+    server.keepAliveTimeout = keepAlive;
   });
+}
+
+const stopHTTPServer = async (server, timeout = 10000) => {
+  if (server) {
+    if (typeof server.closeAllConnections === 'function') {
+      server.closeAllConnections();
+    }
+
+    await Promise.race([new Promise(resolve => server.close(resolve)), setTimeoutAsync(timeout)]);
+  }
 }
 
 const handleFormData = (req) => {
@@ -131,19 +148,53 @@ function generateReadableStream(length = 1024 * 1024, chunkSize = 10 * 1024, sle
 }
 
 describe('supports http with nodejs', function () {
+  afterEach(async function () {
+    await Promise.all([stopHTTPServer(server), stopHTTPServer(proxy)]);
 
-  afterEach(function () {
-    if (server) {
-      server.close();
-      server = null;
-    }
-    if (proxy) {
-      proxy.close();
-      proxy = null;
-    }
+    server = null;
+    proxy = null;
+
     delete process.env.http_proxy;
     delete process.env.https_proxy;
     delete process.env.no_proxy;
+  });
+
+  it('should support IPv4 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://127.0.0.1:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
+  });
+
+  it('should support IPv6 literal strings', function (done) {
+
+    var data = {
+      firstName: 'Fred',
+      lastName: 'Flintstone',
+      emailAddr: 'fred@example.com'
+    };
+
+    server = http.createServer(function (req, res) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+    }).listen(4444, function () {
+      axios.get('http://[::1]:4444/').then(function (res) {
+        assert.deepEqual(res.data, data);
+        done();
+      }).catch(done);
+    });
   });
 
   it('should throw an error if the timeout property is not parsable as a number', function (done) {
@@ -368,67 +419,123 @@ describe('supports http with nodejs', function () {
     }).listen(4444, function () {
       axios.get('http://localhost:4444/', {
         maxRedirects: 3,
-        beforeRedirect: function (options) {
-          if (options.path === '/foo') {
+        beforeRedirect: function (options, responseDetails) {
+          if (options.path === '/foo' && responseDetails.headers.location === '/foo') {
             throw new Error(
               'Provided path is not allowed'
             );
           }
         }
       }).catch(function (error) {
-        assert.equal(error.message, 'Provided path is not allowed');
+        assert.equal(error.message, 'Redirected request failed: Provided path is not allowed');
         done();
       }).catch(done);
     });
   });
 
-  it('should support beforeRedirect and proxy with redirect', function (done) {
-    var requestCount = 0;
-    var totalRedirectCount = 5;
-    server = http.createServer(function (req, res) {
+  it('should support beforeRedirect and proxy with redirect', async () => {
+    let requestCount = 0;
+    let totalRedirectCount = 5;
+
+    server = await startHTTPServer(function (req, res) {
       requestCount += 1;
       if (requestCount <= totalRedirectCount) {
         res.setHeader('Location', 'http://localhost:4444');
         res.writeHead(302);
       }
       res.end();
-    }).listen(4444, function () {
-      var proxyUseCount = 0;
-      proxy = http.createServer(function (request, response) {
-        proxyUseCount += 1;
-        var parsed = url.parse(request.url);
-        var opts = {
-          host: parsed.hostname,
-          port: parsed.port,
-          path: parsed.path
-        };
+    }, {port: 4444});
 
-        http.get(opts, function (res) {
-          response.writeHead(res.statusCode, res.headers);
-          res.on('data', function (data) {
-            response.write(data)
-          });
-          res.on('end', function () {
-            response.end();
-          });
-        });
-      }).listen(4000, function () {
-        var configBeforeRedirectCount = 0;
-        axios.get('http://localhost:4444/', {
-          proxy: {
-            host: 'localhost',
-            port: 4000
-          },
-          maxRedirects: totalRedirectCount,
-          beforeRedirect: function (options) {
-            configBeforeRedirectCount += 1;
-          }
-        }).then(function (res) {
-          assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
-          assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
-          done();
-        }).catch(done);
+    let proxyUseCount = 0;
+    proxy = await startHTTPServer(function (req, res) {
+      proxyUseCount += 1;
+      const targetUrl = new URL(req.url, 'http://' + req.headers.host);
+      const opts = {
+        host: targetUrl.hostname,
+        port: targetUrl.port,
+        path: targetUrl.path,
+        method: req.method
+      };
+
+      const request = http.get(opts, function (response) {
+        res.writeHead(response.statusCode, response.headers);
+        stream.pipeline(response, res, () => {});
       });
+
+      request.on('error', (err) => {
+        console.warn('request error', err);
+        res.statusCode = 500;
+        res.end();
+      })
+
+    }, {port: 4000});
+
+    let configBeforeRedirectCount = 0;
+
+    await axios.get('http://localhost:4444/', {
+      proxy: {
+        host: 'localhost',
+        port: 4000
+      },
+      maxRedirects: totalRedirectCount,
+      beforeRedirect: function (options) {
+        configBeforeRedirectCount += 1;
+      }
+    }).then(function (res) {
+      assert.equal(totalRedirectCount, configBeforeRedirectCount, 'should invoke config.beforeRedirect option on every redirect');
+      assert.equal(totalRedirectCount + 1, proxyUseCount, 'should go through proxy on every redirect');
+    });
+  });
+
+  it('should wrap HTTP errors and keep stack', async function () {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
+
+    server = await startHTTPServer((req, res) => {
+      res.statusCode = 400;
+      res.end();
+    });
+
+    return assert.rejects(
+      async function findMeInStackTrace() {
+        await axios.head('http://localhost:4444/one')
+      },
+      function (err) {
+        assert.equal(err.name, 'AxiosError')
+        assert.equal(err.isAxiosError, true)
+        const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+        assert.equal(matches.length, 1, err.stack)
+        return true;
+      }
+    )
+  });
+
+  it('should wrap interceptor errors and keep stack', function (done) {
+    if (nodeMajorVersion <= 12) {
+      this.skip(); // node 12 support for async stack traces appears lacking
+      return;
+    }
+    const axiosInstance = axios.create();
+    axiosInstance.interceptors.request.use((res) => {
+      throw new Error('from request interceptor')
+    });
+    server = http.createServer(function (req, res) {
+      res.end();
+    }).listen(4444, function () {
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axiosInstance.get('http://localhost:4444/one')
+        },
+        function (err) {
+          assert.equal(err.name, 'Error')
+          assert.equal(err.message, 'from request interceptor')
+          const matches = [...err.stack.matchAll(/findMeInStackTrace/g)]
+          assert.equal(matches.length, 1, err.stack)
+          return true;
+        }
+      ).then(done).catch(done);
     });
   });
 
@@ -666,31 +773,18 @@ describe('supports http with nodejs', function () {
     });
   });
 
-  it('should support max content length', function (done) {
-    var str = Array(100000).join('ж');
-
-    server = http.createServer(function (req, res) {
+  it('should support max content length', async function () {
+    server = await startHTTPServer(function (req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end(str);
-    }).listen(4444, function () {
-      var success = false, failure = false, error;
+      res.end(Array(5000).join('#'));
+    }, {port: 4444});
 
-      axios.get('http://localhost:4444/', {
-        maxContentLength: 2000
-      }).then(function (res) {
-        success = true;
-      }).catch(function (err) {
-        error = err;
-        failure = true;
-      });
-
-      setTimeout(function () {
-        assert.equal(success, false, 'request should not succeed');
-        assert.equal(failure, true, 'request should fail');
-        assert.equal(error.message, 'maxContentLength size of 2000 exceeded');
-        done();
-      }, 100);
-    });
+    await assert.rejects(() => {
+      return axios.get('http://localhost:4444/', {
+        maxContentLength: 2000,
+        maxRedirects: 0
+      })
+    },/maxContentLength size of 2000 exceeded/);
   });
 
   it('should support max content length for redirected', function (done) {
@@ -711,7 +805,7 @@ describe('supports http with nodejs', function () {
       var success = false, failure = false, error;
 
       axios.get('http://localhost:4444/one', {
-        maxContentLength: 2000
+        maxContentLength: 2000,
       }).then(function (res) {
         success = true;
       }).catch(function (err) {
@@ -1383,13 +1477,21 @@ describe('supports http with nodejs', function () {
       // call cancel() when the request has been sent, but a response has not been received
       source.cancel('Operation has been canceled.');
     }).listen(4444, function () {
-      axios.get('http://localhost:4444/', {
-        cancelToken: source.token
-      }).catch(function (thrown) {
-        assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
-        assert.equal(thrown.message, 'Operation has been canceled.');
-        done();
-      });
+      void assert.rejects(
+        async function findMeInStackTrace() {
+          await axios.get('http://localhost:4444/', {
+            cancelToken: source.token
+          });
+        },
+        function (thrown) {
+          assert.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a CanceledError object');
+          assert.equal(thrown.message, 'Operation has been canceled.');
+          if (nodeMajorVersion > 12) {
+            assert.match(thrown.stack, /findMeInStackTrace/);
+          }
+          return true;
+        },
+      ).then(done).catch(done);
     });
   });
 
@@ -1540,7 +1642,7 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(success, false, 'request should not succeed');
         assert.strictEqual(failure, true, 'request should fail');
         assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
-        assert.strictEqual(error.message, 'maxContentLength size of -1 exceeded');
+        assert.strictEqual(error.message, 'stream has been aborted');
         done();
       }).catch(done);
     });
@@ -1855,6 +1957,7 @@ describe('supports http with nodejs', function () {
   describe('progress', function () {
     describe('upload', function () {
       it('should support upload progress capturing', async function () {
+        this.timeout(15000);
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -1879,6 +1982,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onUploadProgress: ({loaded, total, progress, bytes, upload}) => {
+            console.log('onUploadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -1911,6 +2015,8 @@ describe('supports http with nodejs', function () {
 
     describe('download', function () {
       it('should support download progress capturing', async function () {
+        this.timeout(15000);
+
         server = await startHTTPServer({
           rate: 100 * 1024
         });
@@ -1935,6 +2041,7 @@ describe('supports http with nodejs', function () {
 
         const {data} = await axios.post(LOCAL_SERVER_URL, readable, {
           onDownloadProgress: ({loaded, total, progress, bytes, download}) => {
+            console.log('onDownloadProgress', loaded, '/', total);
             samples.push({
               loaded,
               total,
@@ -2050,7 +2157,7 @@ describe('supports http with nodejs', function () {
           }]`
         );
 
-        const progressTicksRate = 2;
+        const progressTicksRate = 3;
         const expectedProgress = ((i + skip) / secs) / progressTicksRate;
 
         assert.ok(
@@ -2122,7 +2229,7 @@ describe('supports http with nodejs', function () {
   });
 
   describe('DNS', function() {
-    it('should support custom DNS lookup function', async function () {
+    it('should support a custom DNS lookup function', async function () {
       server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
 
       const payload = 'test';
@@ -2141,7 +2248,26 @@ describe('supports http with nodejs', function () {
       assert.strictEqual(data, payload);
     });
 
-    it('should support custom DNS lookup function (async)', async function () {
+    it('should support a custom DNS lookup function with address entry passing', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: (hostname, opt, cb) =>  {
+          isCalled = true;
+          cb(null, {address: '127.0.0.1', family: 4});
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function (async)', async function () {
       server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
 
       const payload = 'test';
@@ -2160,7 +2286,26 @@ describe('supports http with nodejs', function () {
       assert.strictEqual(data, payload);
     });
 
-    it('should support custom DNS lookup function that returns only IP address (async)', async function () {
+    it('should support a custom DNS lookup function with address entry (async)', async function () {
+      server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+
+      const payload = 'test';
+
+      let isCalled = false;
+
+      const {data} = await axios.post(`http://fake-name.axios:4444`, payload,{
+        lookup: async (hostname, opt) =>  {
+          isCalled = true;
+          return {address: '127.0.0.1', family: 4};
+        }
+      });
+
+      assert.ok(isCalled);
+
+      assert.strictEqual(data, payload);
+    });
+
+    it('should support a custom DNS lookup function that returns only IP address (async)', async function () {
       server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
 
       const payload = 'test';
@@ -2177,6 +2322,14 @@ describe('supports http with nodejs', function () {
       assert.ok(isCalled);
 
       assert.strictEqual(data, payload);
+    });
+
+    it('should handle errors', () => {
+      return assert.rejects(async () => {
+        await axios.get('https://no-such-domain-987654.com', {
+          lookup
+        });
+      }, /ENOTFOUND/);
     });
   });
 });

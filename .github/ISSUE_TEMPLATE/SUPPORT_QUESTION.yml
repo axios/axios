@@ -14,7 +14,7 @@ body:
         - If you're reporting a bug, ensure it isn't already fixed in the latest Axios version.
   - type: markdown
     attributes:
-      value: '⚠️👆 Feel free to these instructions before submitting the issue 👆⚠️'
+      value: '⚠️👆 Feel free to delete these instructions before submitting the issue 👆⚠️'
   - type: textarea
     id: description
     attributes:

@@ -209,7 +209,8 @@ export type ResponseType =
     | 'document'
     | 'json'
     | 'text'
-    | 'stream';
+    | 'stream'
+    | 'formdata';
 
 export type responseEncoding =
     | 'ascii' | 'ASCII'
@@ -294,11 +295,12 @@ export interface AxiosProgressEvent {
   upload?: boolean;
   download?: boolean;
   event?: BrowserProgressEvent;
+  lengthComputable: boolean;
 }
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'xhr' | 'http' | string;
+type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
@@ -356,6 +358,7 @@ export interface AxiosRequestConfig<D = any> {
   lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
       ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+  fetchOptions?: Record<string, any>;
 }
 
 // Alias
@@ -473,8 +476,12 @@ export interface AxiosInterceptorOptions {
   runWhen?: (config: InternalAxiosRequestConfig) => boolean;
 }
 
+type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+
+type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+
 export interface AxiosInterceptorManager<V> {
-  use(onFulfilled?: ((value: V) => V | Promise<V>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions): number;
+  use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
   eject(id: number): void;
   clear(): void;
 }
@@ -535,6 +542,8 @@ export function isCancel(value: any): value is Cancel;
 
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 
+export function mergeConfig<D = any>(config1: AxiosRequestConfig<D>, config2: AxiosRequestConfig<D>): AxiosRequestConfig<D>;
+
 export interface AxiosStatic extends AxiosInstance {
   create(config?: CreateAxiosDefaults): AxiosInstance;
   Cancel: CancelStatic;
@@ -552,6 +561,7 @@ export interface AxiosStatic extends AxiosInstance {
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
+  mergeConfig: typeof mergeConfig;
 }
 
 declare const axios: AxiosStatic;

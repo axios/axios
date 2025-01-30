@@ -1,16 +1,29 @@
 # Changelog
 
+## [0.29.0](https://github.com/axios/axios/compare/v0.28.1...v0.29.0) (2024-11-21)
+
+## Release notes:
+
+### Bug Fixes
+
+- fix(backport): backport security fixes in commits #6167 and #6163 (#6402)
+- fix: omit nulls in params (#6394)
+- fix(backport): fix paramsSerializer function validation (#6361)
+- fix: regular expression denial of service (ReDoS) (#6708)
+
 ## [0.28.1](https://github.com/axios/axios/compare/v0.28.0...v0.28.1) (2024-03-24)
 
 ## Release notes:
+
 ### Bug Fixes
 
-* fix(backport): custom params serializer support (#6263)
-* fix(backport): uncaught ReferenceError `req` is not defined (#6307)
+- fix(backport): custom params serializer support (#6263)
+- fix(backport): uncaught ReferenceError `req` is not defined (#6307)
 
 ## [0.28.0](https://github.com/axios/axios/compare/v0.27.2...v0.28.0) (2024-02-12)
 
 ## Release notes:
+
 ### Bug Fixes
 
 * fix(security): fixed CVE-2023-45857 by backporting `withXSRFToken` option to v0.x ([#6091](https://github.com/axios/axios/pull/6091))
@@ -70,9 +83,9 @@ Breaking changes:
 
 - New toFormData helper function that allows the implementor to pass an object and allow axios to convert it to FormData ([#3757](https://github.com/axios/axios/pull/3757))
 - Removed functionality that removed the the `Content-Type` request header when passing FormData ([#3785](https://github.com/axios/axios/pull/3785))
-- **(*)** Refactored error handling implementing AxiosError as a constructor, this is a large change to error handling on the whole ([#3645](https://github.com/axios/axios/pull/3645))
+- **(\*)** Refactored error handling implementing AxiosError as a constructor, this is a large change to error handling on the whole ([#3645](https://github.com/axios/axios/pull/3645))
 - Separated responsibility for FormData instantiation between `transformRequest` and `toFormData` ([#4470](https://github.com/axios/axios/pull/4470))
-- **(*)** Improved and fixed multiple issues with FormData support ([#4448](https://github.com/axios/axios/pull/4448))
+- **(\*)** Improved and fixed multiple issues with FormData support ([#4448](https://github.com/axios/axios/pull/4448))
 
 QOL and DevX improvements:
 
@@ -93,7 +106,7 @@ Documentation:
 
 Notes:
 
-- **(*)** Please read these pull requests before updating, these changes are very impactful and far reaching.
+- **(\*)** Please read these pull requests before updating, these changes are very impactful and far reaching.
 
 ## 0.26.1 (March 9, 2022)
 

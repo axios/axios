@@ -493,8 +493,12 @@ declare namespace axios {
     runWhen?: (config: InternalAxiosRequestConfig) => boolean;
   }
 
+  type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+
+  type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+
   interface AxiosInterceptorManager<V> {
-    use(onFulfilled?: (value: V) => V | Promise<V>, onRejected?: (error: any) => any, options?: AxiosInterceptorOptions): number;
+    use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
     eject(id: number): void;
     clear(): void;
   }

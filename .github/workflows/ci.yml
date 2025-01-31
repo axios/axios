@@ -2,9 +2,17 @@ name: 'CI'
 
 on:
   push:
-    branches: '**'
+    branches:
+      - '*'
+      - '*/*'
+      - '**'
+      - '!sponsors'
   pull_request:
-    branches: '**'
+    branches:
+      - '*'
+      - '*/*'
+      - '**'
+      - '!sponsors'
 
 permissions:
   contents: read
@@ -15,16 +23,16 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 21.x]
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x]
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: true
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v45
       - name: List all changed files
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
@@ -32,7 +40,7 @@ jobs:
           done
       - name: Check changes
         id: changed-ignored
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v45
         with:
           files: |
             **.md
@@ -42,7 +50,7 @@ jobs:
             templates/**
             bin/**
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm

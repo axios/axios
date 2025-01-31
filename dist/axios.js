@@ -1,4 +1,4 @@
-// Axios v1.7.2 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.9 Copyright (c) 2024 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1320,6 +1320,34 @@
   var isThenable = function isThenable(thing) {
     return thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing["catch"]);
   };
+
+  // original code
+  // https://github.com/DigitalBrainJS/AxiosPromise/blob/16deab13710ec09779922131f3fa5954320f83ab/lib/utils.js#L11-L34
+
+  var _setImmediate = function (setImmediateSupported, postMessageSupported) {
+    if (setImmediateSupported) {
+      return setImmediate;
+    }
+    return postMessageSupported ? function (token, callbacks) {
+      _global.addEventListener("message", function (_ref5) {
+        var source = _ref5.source,
+          data = _ref5.data;
+        if (source === _global && data === token) {
+          callbacks.length && callbacks.shift()();
+        }
+      }, false);
+      return function (cb) {
+        callbacks.push(cb);
+        _global.postMessage(token, "*");
+      };
+    }("axios@".concat(Math.random()), []) : function (cb) {
+      return setTimeout(cb);
+    };
+  }(typeof setImmediate === 'function', isFunction(_global.postMessage));
+  var asap = typeof queueMicrotask !== 'undefined' ? queueMicrotask.bind(_global) : typeof process !== 'undefined' && process.nextTick || _setImmediate;
+
+  // *********************
+
   var utils$1 = {
     isArray: isArray,
     isArrayBuffer: isArrayBuffer,
@@ -1376,7 +1404,9 @@
     isSpecCompliantForm: isSpecCompliantForm,
     toJSONObject: toJSONObject,
     isAsyncFn: isAsyncFn,
-    isThenable: isThenable
+    isThenable: isThenable,
+    setImmediate: _setImmediate,
+    asap: asap
   };
 
   /**
@@ -1402,7 +1432,10 @@
     code && (this.code = code);
     config && (this.config = config);
     request && (this.request = request);
-    response && (this.response = response);
+    if (response) {
+      this.response = response;
+      this.status = response.status ? response.status : null;
+    }
   }
   utils$1.inherits(AxiosError, Error, {
     toJSON: function toJSON() {
@@ -1421,7 +1454,7 @@
         // Axios
         config: utils$1.toJSONObject(this.config),
         code: this.code,
-        status: this.response && this.response.status ? this.response.status : null
+        status: this.status
       };
     }
   });
@@ -1702,7 +1735,7 @@
    *
    * @param {string} url The base of the url (e.g., http://www.google.com)
    * @param {object} [params] The params to be appended
-   * @param {?object} options
+   * @param {?(object|Function)} options
    *
    * @returns {string} The formatted url
    */
@@ -1712,6 +1745,11 @@
       return url;
     }
     var _encode = options && options.encode || encode;
+    if (utils$1.isFunction(options)) {
+      options = {
+        serialize: options
+      };
+    }
     var serializeFn = options && options.serialize;
     var serializedParams;
     if (serializeFn) {
@@ -1830,6 +1868,7 @@
   };
 
   var hasBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined';
+  var _navigator = (typeof navigator === "undefined" ? "undefined" : _typeof(navigator)) === 'object' && navigator || undefined;
 
   /**
    * Determine if we're running in a standard browser environment
@@ -1848,9 +1887,7 @@
    *
    * @returns {boolean}
    */
-  var hasStandardBrowserEnv = function (product) {
-    return hasBrowserEnv && ['ReactNative', 'NativeScript', 'NS'].indexOf(product) < 0;
-  }(typeof navigator !== 'undefined' && navigator.product);
+  var hasStandardBrowserEnv = hasBrowserEnv && (!_navigator || ['ReactNative', 'NativeScript', 'NS'].indexOf(_navigator.product) < 0);
 
   /**
    * Determine if we're running in a standard browser webWorker environment
@@ -1873,6 +1910,7 @@
     hasBrowserEnv: hasBrowserEnv,
     hasStandardBrowserWebWorkerEnv: hasStandardBrowserWebWorkerEnv,
     hasStandardBrowserEnv: hasStandardBrowserEnv,
+    navigator: _navigator,
     origin: origin
   });
 
@@ -2528,30 +2566,43 @@
   function throttle(fn, freq) {
     var timestamp = 0;
     var threshold = 1000 / freq;
-    var timer = null;
-    return function throttled() {
-      var _arguments = arguments;
-      var force = this === true;
-      var now = Date.now();
-      if (force || now - timestamp > threshold) {
-        if (timer) {
-          clearTimeout(timer);
-          timer = null;
-        }
-        timestamp = now;
-        return fn.apply(null, arguments);
+    var lastArgs;
+    var timer;
+    var invoke = function invoke(args) {
+      var now = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Date.now();
+      timestamp = now;
+      lastArgs = null;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
       }
-      if (!timer) {
-        timer = setTimeout(function () {
-          timer = null;
-          timestamp = Date.now();
-          return fn.apply(null, _arguments);
-        }, threshold - (now - timestamp));
+      fn.apply(null, args);
+    };
+    var throttled = function throttled() {
+      var now = Date.now();
+      var passed = now - timestamp;
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+      if (passed >= threshold) {
+        invoke(args, now);
+      } else {
+        lastArgs = args;
+        if (!timer) {
+          timer = setTimeout(function () {
+            timer = null;
+            invoke(lastArgs);
+          }, threshold - passed);
+        }
       }
     };
+    var flush = function flush() {
+      return lastArgs && invoke(lastArgs);
+    };
+    return [throttled, flush];
   }
 
-  var progressEventReducer = (function (listener, isDownloadStream) {
+  var progressEventReducer = function progressEventReducer(listener, isDownloadStream) {
     var freq = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 3;
     var bytesNotified = 0;
     var _speedometer = speedometer(50, 250);
@@ -2562,7 +2613,7 @@
       var rate = _speedometer(progressBytes);
       var inRange = loaded <= total;
       bytesNotified = loaded;
-      var data = {
+      var data = _defineProperty({
         loaded: loaded,
         total: total,
         progress: total ? loaded / total : undefined,
@@ -2571,66 +2622,39 @@
         estimated: rate && total && inRange ? (total - loaded) / rate : undefined,
         event: e,
         lengthComputable: total != null
-      };
-      data[isDownloadStream ? 'download' : 'upload'] = true;
+      }, isDownloadStream ? 'download' : 'upload', true);
       listener(data);
     }, freq);
-  });
-
-  var isURLSameOrigin = platform.hasStandardBrowserEnv ?
-  // Standard browser envs have full support of the APIs needed to test
-  // whether the request URL is of the same origin as current location.
-  function standardBrowserEnv() {
-    var msie = /(msie|trident)/i.test(navigator.userAgent);
-    var urlParsingNode = document.createElement('a');
-    var originURL;
-
-    /**
-    * Parse a URL to discover its components
-    *
-    * @param {String} url The URL to be parsed
-    * @returns {Object}
-    */
-    function resolveURL(url) {
-      var href = url;
-      if (msie) {
-        // IE needs attribute set twice to normalize properties
-        urlParsingNode.setAttribute('href', href);
-        href = urlParsingNode.href;
+  };
+  var progressEventDecorator = function progressEventDecorator(total, throttled) {
+    var lengthComputable = total != null;
+    return [function (loaded) {
+      return throttled[0]({
+        lengthComputable: lengthComputable,
+        total: total,
+        loaded: loaded
+      });
+    }, throttled[1]];
+  };
+  var asyncDecorator = function asyncDecorator(fn) {
+    return function () {
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
       }
-      urlParsingNode.setAttribute('href', href);
-
-      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-      return {
-        href: urlParsingNode.href,
-        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-        host: urlParsingNode.host,
-        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-        hostname: urlParsingNode.hostname,
-        port: urlParsingNode.port,
-        pathname: urlParsingNode.pathname.charAt(0) === '/' ? urlParsingNode.pathname : '/' + urlParsingNode.pathname
-      };
-    }
-    originURL = resolveURL(window.location.href);
-
-    /**
-    * Determine if a URL shares the same origin as the current location
-    *
-    * @param {String} requestURL The URL to test
-    * @returns {boolean} True if URL shares the same origin, otherwise false
-    */
-    return function isURLSameOrigin(requestURL) {
-      var parsed = utils$1.isString(requestURL) ? resolveURL(requestURL) : requestURL;
-      return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
+      return utils$1.asap(function () {
+        return fn.apply(void 0, args);
+      });
     };
-  }() :
-  // Non standard browser envs (web workers, react-native) lack needed support.
-  function nonStandardBrowserEnv() {
-    return function isURLSameOrigin() {
-      return true;
+  };
+
+  var isURLSameOrigin = platform.hasStandardBrowserEnv ? function (origin, isMSIE) {
+    return function (url) {
+      url = new URL(url, platform.origin);
+      return origin.protocol === url.protocol && origin.host === url.host && (isMSIE || origin.port === url.port);
     };
-  }();
+  }(new URL(platform.origin), platform.navigator && /(msie|trident)/i.test(platform.navigator.userAgent)) : function () {
+    return true;
+  };
 
   var cookies = platform.hasStandardBrowserEnv ?
   // Standard browser envs support document.cookie
@@ -2720,7 +2744,7 @@
     // eslint-disable-next-line no-param-reassign
     config2 = config2 || {};
     var config = {};
-    function getMergedValue(target, source, caseless) {
+    function getMergedValue(target, source, prop, caseless) {
       if (utils$1.isPlainObject(target) && utils$1.isPlainObject(source)) {
         return utils$1.merge.call({
           caseless: caseless
@@ -2734,11 +2758,11 @@
     }
 
     // eslint-disable-next-line consistent-return
-    function mergeDeepProperties(a, b, caseless) {
+    function mergeDeepProperties(a, b, prop, caseless) {
       if (!utils$1.isUndefined(b)) {
-        return getMergedValue(a, b, caseless);
+        return getMergedValue(a, b, prop, caseless);
       } else if (!utils$1.isUndefined(a)) {
-        return getMergedValue(undefined, a, caseless);
+        return getMergedValue(undefined, a, prop, caseless);
       }
     }
 
@@ -2795,8 +2819,8 @@
       socketPath: defaultToConfig2,
       responseEncoding: defaultToConfig2,
       validateStatus: mergeDirectKeys,
-      headers: function headers(a, b) {
-        return mergeDeepProperties(headersToObject(a), headersToObject(b), true);
+      headers: function headers(a, b, prop) {
+        return mergeDeepProperties(headersToObject(a), headersToObject(b), prop, true);
       }
     };
     utils$1.forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
@@ -2861,15 +2885,18 @@
       var _config = resolveConfig(config);
       var requestData = _config.data;
       var requestHeaders = AxiosHeaders$1.from(_config.headers).normalize();
-      var responseType = _config.responseType;
+      var responseType = _config.responseType,
+        onUploadProgress = _config.onUploadProgress,
+        onDownloadProgress = _config.onDownloadProgress;
       var onCanceled;
+      var uploadThrottled, downloadThrottled;
+      var flushUpload, flushDownload;
       function done() {
-        if (_config.cancelToken) {
-          _config.cancelToken.unsubscribe(onCanceled);
-        }
-        if (_config.signal) {
-          _config.signal.removeEventListener('abort', onCanceled);
-        }
+        flushUpload && flushUpload(); // flush events
+        flushDownload && flushDownload(); // flush events
+
+        _config.cancelToken && _config.cancelToken.unsubscribe(onCanceled);
+        _config.signal && _config.signal.removeEventListener('abort', onCanceled);
       }
       var request = new XMLHttpRequest();
       request.open(_config.method.toUpperCase(), _config.url, true);
@@ -2930,7 +2957,7 @@
         if (!request) {
           return;
         }
-        reject(new AxiosError('Request aborted', AxiosError.ECONNABORTED, _config, request));
+        reject(new AxiosError('Request aborted', AxiosError.ECONNABORTED, config, request));
 
         // Clean up request
         request = null;
@@ -2940,7 +2967,7 @@
       request.onerror = function handleError() {
         // Real errors are hidden from us by the browser
         // onerror should only fire if it's a network error
-        reject(new AxiosError('Network Error', AxiosError.ERR_NETWORK, _config, request));
+        reject(new AxiosError('Network Error', AxiosError.ERR_NETWORK, config, request));
 
         // Clean up request
         request = null;
@@ -2953,7 +2980,7 @@
         if (_config.timeoutErrorMessage) {
           timeoutErrorMessage = _config.timeoutErrorMessage;
         }
-        reject(new AxiosError(timeoutErrorMessage, transitional.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED, _config, request));
+        reject(new AxiosError(timeoutErrorMessage, transitional.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED, config, request));
 
         // Clean up request
         request = null;
@@ -2980,13 +3007,22 @@
       }
 
       // Handle progress if needed
-      if (typeof _config.onDownloadProgress === 'function') {
-        request.addEventListener('progress', progressEventReducer(_config.onDownloadProgress, true));
+      if (onDownloadProgress) {
+        var _progressEventReducer = progressEventReducer(onDownloadProgress, true);
+        var _progressEventReducer2 = _slicedToArray(_progressEventReducer, 2);
+        downloadThrottled = _progressEventReducer2[0];
+        flushDownload = _progressEventReducer2[1];
+        request.addEventListener('progress', downloadThrottled);
       }
 
       // Not all browsers support upload events
-      if (typeof _config.onUploadProgress === 'function' && request.upload) {
-        request.upload.addEventListener('progress', progressEventReducer(_config.onUploadProgress));
+      if (onUploadProgress && request.upload) {
+        var _progressEventReducer3 = progressEventReducer(onUploadProgress);
+        var _progressEventReducer4 = _slicedToArray(_progressEventReducer3, 2);
+        uploadThrottled = _progressEventReducer4[0];
+        flushUpload = _progressEventReducer4[1];
+        request.upload.addEventListener('progress', uploadThrottled);
+        request.upload.addEventListener('loadend', flushUpload);
       }
       if (_config.cancelToken || _config.signal) {
         // Handle cancellation
@@ -3016,38 +3052,42 @@
   };
 
   var composeSignals = function composeSignals(signals, timeout) {
-    var controller = new AbortController();
-    var aborted;
-    var onabort = function onabort(cancel) {
-      if (!aborted) {
-        aborted = true;
-        unsubscribe();
-        var err = cancel instanceof Error ? cancel : this.reason;
-        controller.abort(err instanceof AxiosError ? err : new CanceledError(err instanceof Error ? err.message : err));
-      }
-    };
-    var timer = timeout && setTimeout(function () {
-      onabort(new AxiosError("timeout ".concat(timeout, " of ms exceeded"), AxiosError.ETIMEDOUT));
-    }, timeout);
-    var unsubscribe = function unsubscribe() {
-      if (signals) {
-        timer && clearTimeout(timer);
+    var _signals = signals = signals ? signals.filter(Boolean) : [],
+      length = _signals.length;
+    if (timeout || length) {
+      var controller = new AbortController();
+      var aborted;
+      var onabort = function onabort(reason) {
+        if (!aborted) {
+          aborted = true;
+          unsubscribe();
+          var err = reason instanceof Error ? reason : this.reason;
+          controller.abort(err instanceof AxiosError ? err : new CanceledError(err instanceof Error ? err.message : err));
+        }
+      };
+      var timer = timeout && setTimeout(function () {
         timer = null;
-        signals.forEach(function (signal) {
-          signal && (signal.removeEventListener ? signal.removeEventListener('abort', onabort) : signal.unsubscribe(onabort));
-        });
-        signals = null;
-      }
-    };
-    signals.forEach(function (signal) {
-      return signal && signal.addEventListener && signal.addEventListener('abort', onabort);
-    });
-    var signal = controller.signal;
-    signal.unsubscribe = unsubscribe;
-    return [signal, function () {
-      timer && clearTimeout(timer);
-      timer = null;
-    }];
+        onabort(new AxiosError("timeout ".concat(timeout, " of ms exceeded"), AxiosError.ETIMEDOUT));
+      }, timeout);
+      var unsubscribe = function unsubscribe() {
+        if (signals) {
+          timer && clearTimeout(timer);
+          timer = null;
+          signals.forEach(function (signal) {
+            signal.unsubscribe ? signal.unsubscribe(onabort) : signal.removeEventListener('abort', onabort);
+          });
+          signals = null;
+        }
+      };
+      signals.forEach(function (signal) {
+        return signal.addEventListener('abort', onabort);
+      });
+      var signal = controller.signal;
+      signal.unsubscribe = function () {
+        return utils$1.asap(unsubscribe);
+      };
+      return signal;
+    }
   };
   var composeSignals$1 = composeSignals;
 
@@ -3086,7 +3126,7 @@
     }, streamChunk);
   });
   var readBytes = /*#__PURE__*/function () {
-    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize, encode) {
+    var _ref = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(iterable, chunkSize) {
       var _iteratorAbruptCompletion, _didIteratorError, _iteratorError, _iterator, _step, chunk;
       return _regeneratorRuntime().wrap(function _callee$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
@@ -3094,117 +3134,163 @@
             _iteratorAbruptCompletion = false;
             _didIteratorError = false;
             _context2.prev = 2;
-            _iterator = _asyncIterator(iterable);
+            _iterator = _asyncIterator(readStream(iterable));
           case 4:
             _context2.next = 6;
             return _awaitAsyncGenerator(_iterator.next());
           case 6:
             if (!(_iteratorAbruptCompletion = !(_step = _context2.sent).done)) {
-              _context2.next = 27;
+              _context2.next = 12;
               break;
             }
             chunk = _step.value;
-            _context2.t0 = _asyncGeneratorDelegate;
-            _context2.t1 = _asyncIterator;
-            _context2.t2 = streamChunk;
-            if (!ArrayBuffer.isView(chunk)) {
-              _context2.next = 15;
-              break;
-            }
-            _context2.t3 = chunk;
-            _context2.next = 18;
-            break;
-          case 15:
-            _context2.next = 17;
-            return _awaitAsyncGenerator(encode(String(chunk)));
-          case 17:
-            _context2.t3 = _context2.sent;
-          case 18:
-            _context2.t4 = _context2.t3;
-            _context2.t5 = chunkSize;
-            _context2.t6 = (0, _context2.t2)(_context2.t4, _context2.t5);
-            _context2.t7 = (0, _context2.t1)(_context2.t6);
-            _context2.t8 = _awaitAsyncGenerator;
-            return _context2.delegateYield((0, _context2.t0)(_context2.t7, _context2.t8), "t9", 24);
-          case 24:
+            return _context2.delegateYield(_asyncGeneratorDelegate(_asyncIterator(streamChunk(chunk, chunkSize))), "t0", 9);
+          case 9:
             _iteratorAbruptCompletion = false;
             _context2.next = 4;
             break;
-          case 27:
-            _context2.next = 33;
+          case 12:
+            _context2.next = 18;
             break;
-          case 29:
-            _context2.prev = 29;
-            _context2.t10 = _context2["catch"](2);
+          case 14:
+            _context2.prev = 14;
+            _context2.t1 = _context2["catch"](2);
             _didIteratorError = true;
-            _iteratorError = _context2.t10;
-          case 33:
-            _context2.prev = 33;
-            _context2.prev = 34;
+            _iteratorError = _context2.t1;
+          case 18:
+            _context2.prev = 18;
+            _context2.prev = 19;
             if (!(_iteratorAbruptCompletion && _iterator["return"] != null)) {
-              _context2.next = 38;
+              _context2.next = 23;
               break;
             }
-            _context2.next = 38;
+            _context2.next = 23;
             return _awaitAsyncGenerator(_iterator["return"]());
-          case 38:
-            _context2.prev = 38;
+          case 23:
+            _context2.prev = 23;
             if (!_didIteratorError) {
-              _context2.next = 41;
+              _context2.next = 26;
               break;
             }
             throw _iteratorError;
-          case 41:
-            return _context2.finish(38);
-          case 42:
-            return _context2.finish(33);
-          case 43:
+          case 26:
+            return _context2.finish(23);
+          case 27:
+            return _context2.finish(18);
+          case 28:
           case "end":
             return _context2.stop();
         }
-      }, _callee, null, [[2, 29, 33, 43], [34,, 38, 42]]);
+      }, _callee, null, [[2, 14, 18, 28], [19,, 23, 27]]);
     }));
-    return function readBytes(_x, _x2, _x3) {
+    return function readBytes(_x, _x2) {
       return _ref.apply(this, arguments);
     };
   }();
-  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish, encode) {
-    var iterator = readBytes(stream, chunkSize, encode);
+  var readStream = /*#__PURE__*/function () {
+    var _ref2 = _wrapAsyncGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(stream) {
+      var reader, _yield$_awaitAsyncGen, done, value;
+      return _regeneratorRuntime().wrap(function _callee2$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            if (!stream[Symbol.asyncIterator]) {
+              _context3.next = 3;
+              break;
+            }
+            return _context3.delegateYield(_asyncGeneratorDelegate(_asyncIterator(stream)), "t0", 2);
+          case 2:
+            return _context3.abrupt("return");
+          case 3:
+            reader = stream.getReader();
+            _context3.prev = 4;
+          case 5:
+            _context3.next = 7;
+            return _awaitAsyncGenerator(reader.read());
+          case 7:
+            _yield$_awaitAsyncGen = _context3.sent;
+            done = _yield$_awaitAsyncGen.done;
+            value = _yield$_awaitAsyncGen.value;
+            if (!done) {
+              _context3.next = 12;
+              break;
+            }
+            return _context3.abrupt("break", 16);
+          case 12:
+            _context3.next = 14;
+            return value;
+          case 14:
+            _context3.next = 5;
+            break;
+          case 16:
+            _context3.prev = 16;
+            _context3.next = 19;
+            return _awaitAsyncGenerator(reader.cancel());
+          case 19:
+            return _context3.finish(16);
+          case 20:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee2, null, [[4,, 16, 20]]);
+    }));
+    return function readStream(_x3) {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+  var trackStream = function trackStream(stream, chunkSize, onProgress, onFinish) {
+    var iterator = readBytes(stream, chunkSize);
     var bytes = 0;
+    var done;
+    var _onFinish = function _onFinish(e) {
+      if (!done) {
+        done = true;
+        onFinish && onFinish(e);
+      }
+    };
     return new ReadableStream({
-      type: 'bytes',
       pull: function pull(controller) {
-        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-          var _yield$iterator$next, done, value, len;
-          return _regeneratorRuntime().wrap(function _callee2$(_context3) {
-            while (1) switch (_context3.prev = _context3.next) {
+        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+          var _yield$iterator$next, _done, value, len, loadedBytes;
+          return _regeneratorRuntime().wrap(function _callee3$(_context4) {
+            while (1) switch (_context4.prev = _context4.next) {
               case 0:
-                _context3.next = 2;
+                _context4.prev = 0;
+                _context4.next = 3;
                 return iterator.next();
-              case 2:
-                _yield$iterator$next = _context3.sent;
-                done = _yield$iterator$next.done;
+              case 3:
+                _yield$iterator$next = _context4.sent;
+                _done = _yield$iterator$next.done;
                 value = _yield$iterator$next.value;
-                if (!done) {
-                  _context3.next = 9;
+                if (!_done) {
+                  _context4.next = 10;
                   break;
                 }
+                _onFinish();
                 controller.close();
-                onFinish();
-                return _context3.abrupt("return");
-              case 9:
+                return _context4.abrupt("return");
+              case 10:
                 len = value.byteLength;
-                onProgress && onProgress(bytes += len);
+                if (onProgress) {
+                  loadedBytes = bytes += len;
+                  onProgress(loadedBytes);
+                }
                 controller.enqueue(new Uint8Array(value));
-              case 12:
+                _context4.next = 19;
+                break;
+              case 15:
+                _context4.prev = 15;
+                _context4.t0 = _context4["catch"](0);
+                _onFinish(_context4.t0);
+                throw _context4.t0;
+              case 19:
               case "end":
-                return _context3.stop();
+                return _context4.stop();
             }
-          }, _callee2);
+          }, _callee3, null, [[0, 15]]);
         }))();
       },
       cancel: function cancel(reason) {
-        onFinish(reason);
+        _onFinish(reason);
         return iterator["return"]();
       }
     }, {
@@ -3212,18 +3298,6 @@
     });
   };
 
-  var fetchProgressDecorator = function fetchProgressDecorator(total, fn) {
-    var lengthComputable = total != null;
-    return function (loaded) {
-      return setTimeout(function () {
-        return fn({
-          lengthComputable: lengthComputable,
-          total: total,
-          loaded: loaded
-        });
-      });
-    };
-  };
   var isFetchSupported = typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
   var isReadableStreamSupported = isFetchSupported && typeof ReadableStream === 'function';
 
@@ -3253,7 +3327,17 @@
       return _ref.apply(this, arguments);
     };
   }()));
-  var supportsRequestStream = isReadableStreamSupported && function () {
+  var test = function test(fn) {
+    try {
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+      return !!fn.apply(void 0, args);
+    } catch (e) {
+      return false;
+    }
+  };
+  var supportsRequestStream = isReadableStreamSupported && test(function () {
     var duplexAccessed = false;
     var hasContentType = new Request(platform.origin, {
       body: new ReadableStream(),
@@ -3264,15 +3348,11 @@
       }
     }).headers.has('Content-Type');
     return duplexAccessed && !hasContentType;
-  }();
+  });
   var DEFAULT_CHUNK_SIZE = 64 * 1024;
-  var supportsResponseStream = isReadableStreamSupported && !!function () {
-    try {
-      return utils$1.isReadableStream(new Response('').body);
-    } catch (err) {
-      // return undefined
-    }
-  }();
+  var supportsResponseStream = isReadableStreamSupported && test(function () {
+    return utils$1.isReadableStream(new Response('').body);
+  });
   var resolvers = {
     stream: supportsResponseStream && function (res) {
       return res.body;
@@ -3289,6 +3369,7 @@
   }(new Response());
   var getBodyLength = /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(body) {
+      var _request;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
@@ -3305,32 +3386,36 @@
             return _context2.abrupt("return", body.size);
           case 4:
             if (!utils$1.isSpecCompliantForm(body)) {
-              _context2.next = 8;
+              _context2.next = 9;
               break;
             }
-            _context2.next = 7;
-            return new Request(body).arrayBuffer();
-          case 7:
-            return _context2.abrupt("return", _context2.sent.byteLength);
+            _request = new Request(platform.origin, {
+              method: 'POST',
+              body: body
+            });
+            _context2.next = 8;
+            return _request.arrayBuffer();
           case 8:
-            if (!utils$1.isArrayBufferView(body)) {
-              _context2.next = 10;
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 9:
+            if (!(utils$1.isArrayBufferView(body) || utils$1.isArrayBuffer(body))) {
+              _context2.next = 11;
               break;
             }
             return _context2.abrupt("return", body.byteLength);
-          case 10:
+          case 11:
             if (utils$1.isURLSearchParams(body)) {
               body = body + '';
             }
             if (!utils$1.isString(body)) {
-              _context2.next = 15;
+              _context2.next = 16;
               break;
             }
-            _context2.next = 14;
+            _context2.next = 15;
             return encodeText(body);
-          case 14:
-            return _context2.abrupt("return", _context2.sent.byteLength);
           case 15:
+            return _context2.abrupt("return", _context2.sent.byteLength);
+          case 16:
           case "end":
             return _context2.stop();
         }
@@ -3360,18 +3445,15 @@
   }();
   var fetchAdapter = isFetchSupported && ( /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(config) {
-      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, _ref5, _ref6, composedSignal, stopTimeout, finished, request, onFinish, requestContentLength, _request, contentTypeHeader, response, isStreamResponse, options, responseContentLength, responseData;
+      var _resolveConfig, url, method, data, signal, cancelToken, timeout, onDownloadProgress, onUploadProgress, responseType, headers, _resolveConfig$withCr, withCredentials, fetchOptions, composedSignal, request, unsubscribe, requestContentLength, _request, contentTypeHeader, _progressEventDecorat, _progressEventDecorat2, onProgress, flush, isCredentialsSupported, response, isStreamResponse, options, responseContentLength, _ref5, _ref6, _onProgress, _flush, responseData;
       return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) switch (_context4.prev = _context4.next) {
           case 0:
             _resolveConfig = resolveConfig(config), url = _resolveConfig.url, method = _resolveConfig.method, data = _resolveConfig.data, signal = _resolveConfig.signal, cancelToken = _resolveConfig.cancelToken, timeout = _resolveConfig.timeout, onDownloadProgress = _resolveConfig.onDownloadProgress, onUploadProgress = _resolveConfig.onUploadProgress, responseType = _resolveConfig.responseType, headers = _resolveConfig.headers, _resolveConfig$withCr = _resolveConfig.withCredentials, withCredentials = _resolveConfig$withCr === void 0 ? 'same-origin' : _resolveConfig$withCr, fetchOptions = _resolveConfig.fetchOptions;
             responseType = responseType ? (responseType + '').toLowerCase() : 'text';
-            _ref5 = signal || cancelToken || timeout ? composeSignals$1([signal, cancelToken], timeout) : [], _ref6 = _slicedToArray(_ref5, 2), composedSignal = _ref6[0], stopTimeout = _ref6[1];
-            onFinish = function onFinish() {
-              !finished && setTimeout(function () {
-                composedSignal && composedSignal.unsubscribe();
-              });
-              finished = true;
+            composedSignal = composeSignals$1([signal, cancelToken && cancelToken.toAbortSignal()], timeout);
+            unsubscribe = composedSignal && composedSignal.unsubscribe && function () {
+              composedSignal.unsubscribe();
             };
             _context4.prev = 4;
             _context4.t0 = onUploadProgress && supportsRequestStream && method !== 'get' && method !== 'head';
@@ -3398,40 +3480,48 @@
               headers.setContentType(contentTypeHeader);
             }
             if (_request.body) {
-              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, fetchProgressDecorator(requestContentLength, progressEventReducer(onUploadProgress)), null, encodeText);
+              _progressEventDecorat = progressEventDecorator(requestContentLength, progressEventReducer(asyncDecorator(onUploadProgress))), _progressEventDecorat2 = _slicedToArray(_progressEventDecorat, 2), onProgress = _progressEventDecorat2[0], flush = _progressEventDecorat2[1];
+              data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
             }
           case 15:
             if (!utils$1.isString(withCredentials)) {
-              withCredentials = withCredentials ? 'cors' : 'omit';
+              withCredentials = withCredentials ? 'include' : 'omit';
             }
+
+            // Cloudflare Workers throws when credentials are defined
+            // see https://github.com/cloudflare/workerd/issues/902
+            isCredentialsSupported = "credentials" in Request.prototype;
             request = new Request(url, _objectSpread2(_objectSpread2({}, fetchOptions), {}, {
               signal: composedSignal,
               method: method.toUpperCase(),
               headers: headers.normalize().toJSON(),
               body: data,
               duplex: "half",
-              withCredentials: withCredentials
+              credentials: isCredentialsSupported ? withCredentials : undefined
             }));
-            _context4.next = 19;
+            _context4.next = 20;
             return fetch(request);
-          case 19:
+          case 20:
             response = _context4.sent;
             isStreamResponse = supportsResponseStream && (responseType === 'stream' || responseType === 'response');
-            if (supportsResponseStream && (onDownloadProgress || isStreamResponse)) {
+            if (supportsResponseStream && (onDownloadProgress || isStreamResponse && unsubscribe)) {
               options = {};
               ['status', 'statusText', 'headers'].forEach(function (prop) {
                 options[prop] = response[prop];
               });
               responseContentLength = utils$1.toFiniteNumber(response.headers.get('content-length'));
-              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, onDownloadProgress && fetchProgressDecorator(responseContentLength, progressEventReducer(onDownloadProgress, true)), isStreamResponse && onFinish, encodeText), options);
+              _ref5 = onDownloadProgress && progressEventDecorator(responseContentLength, progressEventReducer(asyncDecorator(onDownloadProgress), true)) || [], _ref6 = _slicedToArray(_ref5, 2), _onProgress = _ref6[0], _flush = _ref6[1];
+              response = new Response(trackStream(response.body, DEFAULT_CHUNK_SIZE, _onProgress, function () {
+                _flush && _flush();
+                unsubscribe && unsubscribe();
+              }), options);
             }
             responseType = responseType || 'text';
-            _context4.next = 25;
+            _context4.next = 26;
             return resolvers[utils$1.findKey(resolvers, responseType) || 'text'](response, config);
-          case 25:
+          case 26:
             responseData = _context4.sent;
-            !isStreamResponse && onFinish();
-            stopTimeout && stopTimeout();
+            !isStreamResponse && unsubscribe && unsubscribe();
             _context4.next = 30;
             return new Promise(function (resolve, reject) {
               settle(resolve, reject, {
@@ -3448,7 +3538,7 @@
           case 33:
             _context4.prev = 33;
             _context4.t2 = _context4["catch"](4);
-            onFinish();
+            unsubscribe && unsubscribe();
             if (!(_context4.t2 && _context4.t2.name === 'TypeError' && /fetch/i.test(_context4.t2.message))) {
               _context4.next = 38;
               break;
@@ -3586,7 +3676,7 @@
     });
   }
 
-  var VERSION = "1.7.2";
+  var VERSION = "1.7.9";
 
   var validators$1 = {};
 
@@ -3623,6 +3713,13 @@
         console.warn(formatMessage(opt, ' has been deprecated since v' + version + ' and will be removed in the near future'));
       }
       return validator ? validator(value, opt, opts) : true;
+    };
+  };
+  validators$1.spelling = function spelling(correctSpelling) {
+    return function (value, opt) {
+      // eslint-disable-next-line no-console
+      console.warn("".concat(opt, " is likely a misspelling of ").concat(correctSpelling));
+      return true;
     };
   };
 
@@ -3707,7 +3804,8 @@
                 _context.prev = 6;
                 _context.t0 = _context["catch"](0);
                 if (_context.t0 instanceof Error) {
-                  Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : dummy = new Error();
+                  dummy = {};
+                  Error.captureStackTrace ? Error.captureStackTrace(dummy) : dummy = new Error();
 
                   // slice off the Error: ... line
                   stack = dummy.stack ? dummy.stack.replace(/^.+\n/, '') : '';
@@ -3769,6 +3867,10 @@
             }, true);
           }
         }
+        validator.assertOptions(config, {
+          baseUrl: validators.spelling('baseURL'),
+          withXsrfToken: validators.spelling('withXSRFToken')
+        }, true);
 
         // Set config.method
         config.method = (config.method || this.defaults.method || 'get').toLowerCase();
@@ -3966,6 +4068,20 @@
         if (index !== -1) {
           this._listeners.splice(index, 1);
         }
+      }
+    }, {
+      key: "toAbortSignal",
+      value: function toAbortSignal() {
+        var _this = this;
+        var controller = new AbortController();
+        var abort = function abort(err) {
+          controller.abort(err);
+        };
+        this.subscribe(abort);
+        controller.signal.unsubscribe = function () {
+          return _this.unsubscribe(abort);
+        };
+        return controller.signal;
       }
 
       /**

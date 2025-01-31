@@ -1,5 +1,3 @@
-import assert from "assert";
-
 const {AxiosHeaders} = axios;
 
 function testHeaderValue(headers, key, val) {

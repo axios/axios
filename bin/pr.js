@@ -33,7 +33,7 @@ const generateBody = async ({files, template = './templates/pr.hbs'} = {}) => {
   return Handlebars.compile(String(await fs.readFile(template)))(data);
 }
 
-console.log(await generateBody({
+console.log(generateBody({
   files: {
     'Browser build (UMD)' : './dist/axios.min.js',
     'Browser build (ESM)' : './dist/esm/axios.min.js',

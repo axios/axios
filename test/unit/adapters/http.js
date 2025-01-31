@@ -1,4 +1,5 @@
 import axios from '../../../index.js';
+import dns from 'node:dns';
 import http from 'http';
 import https from 'https';
 import net from 'net';
@@ -311,6 +312,281 @@ describe('supports http with nodejs', function () {
         assert.strictEqual(error.message, 'oops, timeout');
         done();
       }, 300);
+    });
+  });
+
+  context('different test cases for advanced timeout configuration', () => {
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const enumTestResult = {
+      SUCCEEDED: 'SUCCEEDED',
+      FAILED: 'FAILED',
+      PENDING: 'PENDING',
+    };
+    const isInProgress = function ({ testResult, error }) {
+      assert.equal(testResult, enumTestResult.PENDING, 'request should be in progress');
+      assert.equal(error, undefined);
+    };
+    const hasSucceeded = function ({ testResult, error, done }) {
+      assert.equal(testResult, enumTestResult.SUCCEEDED, 'request should succeed');
+      assert.equal(error, undefined);
+      done();
+    };
+    const hasFailed = function ({ testResult, error, done }, expectedError) {
+      assert.equal(testResult, enumTestResult.FAILED, 'request should fail');
+      for (const [key, expected] of Object.entries(expectedError)) {
+        try {
+          assert.equal(error[key], expected);
+        } catch (error) {
+          return done(error);
+        }
+      }
+      done();
+    };
+
+    const bufferTime = 4;
+    const timeSpan = {
+      roundTripTime: 3 * bufferTime,
+      serverProcessing: 3 * bufferTime,
+    };
+    const totalPackets = 4;
+    class EventSchedule {
+      static eventSequence = [
+        'socket',
+        'lookup',
+        'connect',
+        'response',
+        'end'
+      ];
+      static inbetweenIntervalTillEvent = {
+        'socket': 1,
+        'lookup': timeSpan.roundTripTime, // simulating connect time
+        'connect': 1,
+        'response': timeSpan.roundTripTime + timeSpan.serverProcessing,
+        'end': (totalPackets - 1) * timeSpan.roundTripTime
+      }
+      constructor() {
+        const { inbetweenIntervalTillEvent: intervalTill, eventSequence } = EventSchedule;
+        let lastEvent = 'request';
+        this[lastEvent] = Date.now();
+        eventSequence.forEach((event) => {
+          this[event] = this[lastEvent] + intervalTill[event];
+          lastEvent = event;
+        })
+      }
+    }
+    
+    const succeedValidator = (context) => {
+      const { end: endAt, request: requestAt } = context.schedule;
+      const requestLifeSpan = endAt - requestAt;
+      setTimeout(() => {
+        isInProgress(context);
+        setTimeout(() => hasSucceeded(context), 2 * bufferTime);
+      }, requestLifeSpan - bufferTime);
+    }
+    const failValidatorFactory = (timeoutRefPoint = undefined) =>
+      function failValidator(context) {
+        const { startShot = 'socket', timeout, finishLine, timeoutErrorMessage } = this.advancedTimeout[0];
+        timeoutRefPoint = timeoutRefPoint || startShot;
+        const { request: requestAt, [timeoutRefPoint]: timeoutRefPointAt } = context.schedule;
+        const requestLifeSpan = timeoutRefPointAt + timeout - requestAt;
+        const message =
+          timeoutErrorMessage ||
+          (finishLine === 'activity'
+            ? `Post-${startShot} activity timeout of ${timeout}ms exceeded`
+            : `Timeout between ${startShot} and ${finishLine} of ${timeout}ms exceeded`);
+        const expectedError = { code: 'ECONNABORTED', message };
+        setTimeout(() => {
+          isInProgress(context);
+          setTimeout(() => hasFailed(context, expectedError), 2 * bufferTime);
+        }, requestLifeSpan - bufferTime);
+      }
+
+    const scheduleAux = new EventSchedule();
+    const mountTestCases = (config) => {
+      const { startShot = 'socket', finishLine } = config;
+      const { [finishLine]: finishLineAt, [startShot]: startShotAt } = scheduleAux;
+      const raceInterval = finishLineAt - startShotAt;
+      const timeoutDesc = `timeout between ${startShot} and ${finishLine}`;
+      return [{
+        description: `should resolve a request when a ${timeoutDesc} is set and not exceeded`,
+        advancedTimeout: [{ ...config, timeout: raceInterval + bufferTime }],
+        validator: succeedValidator,
+      }, {
+        description: `should fail a request when a ${timeoutDesc} is set and exceeded`,
+        advancedTimeout: [{ ...config, timeout: raceInterval - bufferTime }],
+        validator: failValidatorFactory(),
+      }];
+    }
+    const mountActivityTestCases = (startShot = 'socket', timeoutCases) => {
+      const timeoutDesc = `post-${startShot} activity timeout`;
+      return timeoutCases.map(({ timeout, lastSignal }) => {
+        const advancedTimeout = [{ startShot, finishLine: 'activity', timeout }];
+        if (lastSignal) {
+          return {
+            description: `should fail a request when a ${timeoutDesc} is set and exceeded`,
+            advancedTimeout,
+            validator: failValidatorFactory(lastSignal),
+          };
+        }
+        return {
+          description: `should resolve a request when a ${timeoutDesc} is set and not exceeded`,
+          advancedTimeout,
+          validator: succeedValidator,
+        }
+      });
+    }
+
+    const { inbetweenIntervalTillEvent: intervalTill } = EventSchedule;
+    const testCaseList = [
+      ...EventSchedule.eventSequence.flatMap(
+        (startShot, idx, arr) => arr.slice(idx + 1).flatMap(
+          (finishLine) => mountTestCases({ startShot, finishLine })
+        )
+      ),
+      ...mountActivityTestCases('socket', [
+        { timeout: intervalTill.response + bufferTime },
+        { timeout: intervalTill.response - bufferTime, lastSignal: 'connect' },
+        { timeout: timeSpan.roundTripTime + bufferTime, lastSignal: 'connect' },
+        { timeout: timeSpan.roundTripTime - bufferTime, lastSignal: 'socket' },
+      ]),
+      ...mountActivityTestCases('connect', [
+        { timeout: intervalTill.response + bufferTime },
+        { timeout: intervalTill.response - bufferTime, lastSignal: 'connect' },
+        { timeout: timeSpan.roundTripTime + bufferTime, lastSignal: 'connect' },
+        { timeout: timeSpan.roundTripTime - bufferTime, lastSignal: 'connect' },
+      ]),
+      ...mountActivityTestCases('response', [
+        { timeout: intervalTill.response + bufferTime },
+        { timeout: intervalTill.response - bufferTime },
+        { timeout: timeSpan.roundTripTime + bufferTime },
+        { timeout: timeSpan.roundTripTime - bufferTime, lastSignal: 'response' },
+      ]),
+      {
+        description: `should fail due to timeout with a custom error message`,
+        advancedTimeout: [{ finishLine: 'response', timeout: 1, timeoutErrorMessage: 'foobar' }],
+        validator: failValidatorFactory(),
+      }
+    ]
+
+    testCaseList.forEach(testCase => {
+      const positiveTimeout = testCase.advancedTimeout[0].timeout > 0;
+      const maybeIt = positiveTimeout ? it : it.skip;
+      maybeIt(testCase.description, function (done) {
+        let schedule;
+        server = http.createServer(async function (req, res) {
+          await sleep(schedule.response - Date.now());
+          res.write('data');
+          for (let packets = 1; packets < totalPackets; ++packets) {
+            const latency = Math.round(
+              (schedule.end - Date.now()) /
+              (totalPackets - packets)
+            );
+            await sleep(latency);
+            res.write('data');
+          }
+          res.end();
+        }).listen(4444, function () {
+          const context = {
+            testResult: enumTestResult.PENDING,
+            error: undefined,
+            done,
+            schedule: (schedule = new EventSchedule()),
+          };
+          testCase.validator(context);
+          axios.get('http://localhost:4444/', {
+            advancedTimeout: testCase.advancedTimeout,
+            lookup: (...args) => {
+              setTimeout(() => dns.lookup(...args), schedule.lookup - Date.now());
+            },
+          }).then(function (res) {
+            context.testResult = enumTestResult.SUCCEEDED;
+          }).catch(function (err) {
+            context.testResult = enumTestResult.FAILED;
+            context.error = err;
+          });
+        });
+      });
+    });
+    
+    const validConfig = { finishLine: 'activity', timeout: 1000 };
+    const invalidConfigTestCaseList = [
+      {
+        description: 'should fail if `advancedTimeout` is not an array',
+        advancedTimeout: validConfig,
+        errorMessage: '`advancedTimeout` must be an array'
+      },
+      ...[null, validConfig.timeout].map(config => ({
+          description: `should fail if \`config\` is \`${config}\``,
+          advancedTimeout: [config],
+          errorMessage: '`advancedTimeout[0]` must be a non-null object'
+        })
+      ),
+      ...['timeout', 'finishLine'].map(requiredField => ({
+        description: `should fail if \`${requiredField}\` is missing`,
+        advancedTimeout: [{ ...validConfig, [requiredField]: undefined }],
+        errorMessage: `\`advancedTimeout[0].${requiredField}\` is required`
+      })),
+      ...[
+        { timeout: 'abc', isX: 'is not a number' },
+        { timeout: '123', isX: 'is not a strict number' },
+        { timeout: -123, isX: 'is not a positive number' },
+        { timeout: 0, isX: 'is zero' },
+        { timeout: NaN, isX: 'is NaN' }
+      ].map(({ timeout, isX }) => ({
+          description: `should fail if \`timeout\` ${isX}`,
+          advancedTimeout: [{ ...validConfig, timeout }],
+          errorMessage: '`advancedTimeout[0].timeout` must be a positive number'
+        })
+      ),
+      ...['startShot', 'finishLine'].map((eventField) => ({
+          description: `should fail if \`${eventField}\` is not a valid event`,
+          advancedTimeout: [{ ...validConfig, [eventField]: 'foobar' }],
+          errorMessage: `\`advancedTimeout[0].${eventField}\` must be a valid event`
+        })
+      ),
+      {
+        description: "should fail if `startShot` is 'activity'",
+        advancedTimeout: [{ ...validConfig, startShot: 'activity' }],
+        errorMessage: `\`advancedTimeout[0].startShot\` must not be 'activity'`
+      },
+      ...EventSchedule.eventSequence.flatMap((startShot, idx, arr) => {
+        const nonExhaustiveFinishEventList = idx === 0
+          ? [startShot]
+          : arr.slice(idx - 1, idx + 1);
+        return nonExhaustiveFinishEventList.map(finishLine => ({
+            description: `should fail for an incorrect event sequence from ${startShot} to ${finishLine}`,
+            advancedTimeout: [{ startShot, finishLine, timeout: 1000 }],
+            errorMessage: `\`advancedTimeout[0].finishLine\` must occurs after \`advancedTimeout[0].startShot\``,
+          })
+        );
+      }),
+    ];
+    invalidConfigTestCaseList.forEach(testCase => {
+      it(testCase.description, function (done) {
+        server = http.createServer(async function (req, res) {
+          res.end('data');
+        }).listen(4444, function () {
+          const context = {
+            testResult: enumTestResult.PENDING,
+            error: undefined,
+            done,
+          };
+          axios.get('http://localhost:4444/', {
+            advancedTimeout: testCase.advancedTimeout,
+          }).then(function (res) {
+            context.testResult = enumTestResult.SUCCEEDED;
+          }).catch(function (err) {
+            context.testResult = enumTestResult.FAILED;
+            context.error = err;
+          });
+          sleep(10).then(() => {
+            hasFailed(context, {
+              code: 'ERR_BAD_OPTION_VALUE',
+              message: testCase.errorMessage
+            })
+          })
+        });
+      });
     });
   });
 

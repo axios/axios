@@ -160,7 +160,7 @@ const axios = require('axios');
 console.log(axios.isCancel('something'));
 ```
 
-For some bundlers and some ES6 linter's you may need to do the following:
+For some bundlers and some ES6 linters you may need to do the following:
 
 ```js
 import { default as axios } from 'axios';

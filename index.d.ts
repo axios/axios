@@ -348,6 +348,8 @@ export interface AxiosRequestConfig<D = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions;
+  jsonParser?: (text: string) => any;
+  jsonEncoder?: (value: any) => string;
   signal?: GenericAbortSignal;
   insecureHTTPParser?: boolean;
   env?: {

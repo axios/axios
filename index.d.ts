@@ -45,32 +45,37 @@ export class AxiosHeaders {
   static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
 
   setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentType(parser?: RegExp): RegExpExecArray | null;
+  getContentType(parser: RegExp): RegExpExecArray | null;
   getContentType(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasContentType(matcher?: AxiosHeaderMatcher): boolean;
 
   setContentLength(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentLength(parser?: RegExp): RegExpExecArray | null;
+  getContentLength(parser: RegExp): RegExpExecArray | null;
   getContentLength(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasContentLength(matcher?: AxiosHeaderMatcher): boolean;
 
   setAccept(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getAccept(parser?: RegExp): RegExpExecArray | null;
+  getAccept(parser: RegExp): RegExpExecArray | null;
   getAccept(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasAccept(matcher?: AxiosHeaderMatcher): boolean;
 
+  setAcceptEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getAcceptEncoding(parser: RegExp): RegExpExecArray | null;
+  getAcceptEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
+
   setUserAgent(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getUserAgent(parser?: RegExp): RegExpExecArray | null;
+  getUserAgent(parser: RegExp): RegExpExecArray | null;
   getUserAgent(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
 
   setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentEncoding(parser?: RegExp): RegExpExecArray | null;
+  getContentEncoding(parser: RegExp): RegExpExecArray | null;
   getContentEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAuthorization(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getAuthorization(parser?: RegExp): RegExpExecArray | null;
+  getAuthorization(parser: RegExp): RegExpExecArray | null;
   getAuthorization(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
   hasAuthorization(matcher?: AxiosHeaderMatcher): boolean;
 

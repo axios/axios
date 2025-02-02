@@ -197,4 +197,31 @@ describe('transform', function () {
       done();
     });
   });
+
+  it('should return response.data as parsed JSON object when responseType is json', function (done) {
+    const instance = axios.create({
+      baseURL: '/api',
+      transformResponse: [function (data) {    
+        return data;
+      }],
+      responseType: 'json',
+    });
+  
+    instance.get("my/endpoint", { responseType: 'json' })
+    .then(response => {
+      expect(typeof response).toBe('object');
+      done();
+    })
+    .catch(err => {
+      done(err);
+    });
+  
+    getAjaxRequest().then(function (request){
+      request.respondWith({
+        status: 200,
+        responseText: '{"key1": "value1"}'
+      });
+    });
+  });
+  
 });

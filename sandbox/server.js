@@ -17,7 +17,7 @@ function pipeFileToResponse(res, file, type) {
 server = http.createServer(function (req, res) {
   req.setEncoding('utf8');
 
-  const parsed = url.parse(req.url, true);
+  const parsed = new URL(req.url);
   let pathname = parsed.pathname;
 
   console.log('[' + new Date() + ']', req.method, pathname);

@@ -341,9 +341,9 @@ export interface AxiosRequestConfig<D = any> {
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
   beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
   socketPath?: string | null;
+  httpAgent?: HttpAgent | false;
+  httpsAgent?: HttpsAgent| false;
   transport?: any;
-  httpAgent?: any;
-  httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
@@ -362,6 +362,21 @@ export interface AxiosRequestConfig<D = any> {
 }
 
 // Alias
+export interface HttpAgent {
+  keepAlive?: boolean;
+  keepAliveMsecs?: number;
+  maxSockets?: number;
+  maxTotalSockets?: number;
+  maxFreeSockets?: number;
+  scheduling?: string;
+  timeout?: number
+}
+
+export interface HttpsAgent extends HttpAgent{
+  maxCachedSessions?: number;
+  servername?: string
+}
+
 export type RawAxiosRequestConfig<D = any> = AxiosRequestConfig<D>;
 
 export interface InternalAxiosRequestConfig<D = any> extends AxiosRequestConfig<D> {

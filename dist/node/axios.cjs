@@ -1,4 +1,4 @@
-// Axios v1.7.2 Copyright (c) 2024 Matt Zabriskie and contributors
+// Axios v1.7.2 Copyright (c) 2025 Matt Zabriskie and contributors
 'use strict';
 
 const FormData$1 = require('form-data');

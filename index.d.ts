@@ -313,6 +313,14 @@ export interface LookupAddressEntry {
 
 export type LookupAddress = string | LookupAddressEntry;
 
+type AxiosAdvancedTimeoutEventSequence = ['socket', 'lookup', 'connect', 'response', 'end'];
+export interface AxiosAdvancedTimeout {
+  startShot?: Exclude<AxiosAdvancedTimeoutEventSequence[number], 'end'>;
+  timeout: number;
+  finishLine: Exclude<AxiosAdvancedTimeoutEventSequence[number], AxiosAdvancedTimeoutEventSequence[0]> | 'activity';
+  timeoutErrorMessage?: string;
+}
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: Method | string;
@@ -325,6 +333,7 @@ export interface AxiosRequestConfig<D = any> {
   data?: D;
   timeout?: Milliseconds;
   timeoutErrorMessage?: string;
+  advancedTimeout?: AxiosAdvancedTimeout[];
   withCredentials?: boolean;
   adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;

@@ -359,6 +359,7 @@ export interface AxiosRequestConfig<D = any> {
       ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
   fetchOptions?: Record<string, any>;
+  disableDefaultUserAgent?: boolean;
 }
 
 // Alias

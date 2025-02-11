@@ -229,8 +229,7 @@ const renderPRsList = async (tag, template, {comments_threshold= 5, awesome_thre
 const getTagRef = async (tag) => {
   try {
     return (await exec(`git show-ref --tags "refs/tags/${tag}"`)).stdout.split(' ')[0];
-  } catch(e) {
-  }
+  } catch {}
 }
 
 export {

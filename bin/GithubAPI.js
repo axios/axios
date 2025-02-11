@@ -50,9 +50,7 @@ export default class GithubAPI {
   async isCollaborator(user) {
     try {
       return (await this.axios.get(`/collaborators/${user}`)).status === 204;
-    } catch (e) {
-
-    }
+    } catch {}
   }
 
   async deleteLabel(issue, label) {
@@ -102,8 +100,7 @@ export default class GithubAPI {
   static async getTagRef(tag) {
     try {
       return (await exec(`git show-ref --tags "refs/tags/${tag}"`)).stdout.split(' ')[0];
-    } catch (e) {
-    }
+    } catch {}
   }
 
   static async getLatestTag() {
@@ -111,7 +108,7 @@ export default class GithubAPI {
       const {stdout} = await exec(`git for-each-ref refs/tags --sort=-taggerdate --format='%(refname)' --count=1`);
 
       return stdout.split('/').pop();
-    } catch (e) {}
+    } catch {}
   }
 
   static normalizeTag(tag){

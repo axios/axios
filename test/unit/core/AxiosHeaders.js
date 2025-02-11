@@ -138,7 +138,7 @@ describe('AxiosHeaders', function () {
 
         headers.set('foo', 'bar=value1');
 
-        assert.strictEqual(headers.has('foo', (value, header, headers)=> {
+        assert.strictEqual(headers.has('foo', (value, header)=> {
           assert.strictEqual(value, 'bar=value1');
           assert.strictEqual(header, 'foo');
           return true;

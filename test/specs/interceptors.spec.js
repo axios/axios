@@ -414,7 +414,7 @@ describe('interceptors', function () {
       describe('and when the fulfillment-interceptor throws', function () {
 
         function fireRequestCatchAndExpect(expectation) {
-          axios('/foo').catch(function(data) {
+          axios('/foo').catch(function() {
             // dont handle result
           });
           getAjaxRequest().then(function (request) {

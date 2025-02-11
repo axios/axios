@@ -137,6 +137,10 @@ interface User {
   name: string;
 }
 
+interface ResponseHeaders {
+  'x-header': string;
+}
+
 // with default AxiosResponse<T> result
 
 const handleUserResponse = (response: AxiosResponse<User>) => {
@@ -182,6 +186,53 @@ axios.put<User>('/user', { name: 'foo', id: 1 })
 
 axios.patch<User>('/user', { name: 'foo', id: 1 })
     .then(handleUserResponse)
+    .catch(handleError);
+
+// with custom response headers AxiosResponse<T, any, H> result
+
+const handleUserResponseWithCustomHeaders = (response: AxiosResponse<User, any, ResponseHeaders>) => {
+      console.log(response.data.id);
+      console.log(response.data.name);
+      console.log(response.status);
+      console.log(response.statusText);
+      console.log(response.headers);
+      console.log(response.config);
+    };
+
+axios.get<User, AxiosResponse<User, any, ResponseHeaders>>('/user?id=12345')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.get<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { params: { id: 12345 } })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.head<User, AxiosResponse<User, any, ResponseHeaders>>('/user')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.options<User, AxiosResponse<User, any, ResponseHeaders>>('/user')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.delete<User, AxiosResponse<User, any, ResponseHeaders>>('/user')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.post<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.post<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 }, { headers: { 'X-FOO': 'bar' } })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.put<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.patch<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 })
+    .then(handleUserResponseWithCustomHeaders)
     .catch(handleError);
 
 // (Typed methods) with custom response type

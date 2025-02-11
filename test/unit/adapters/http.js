@@ -2332,4 +2332,22 @@ describe('supports http with nodejs', function () {
       }, /ENOTFOUND/);
     });
   });
+
+  describe('JSON', function() {
+    it('should support reviver on JSON.parse', async function () {
+      server = await startHTTPServer(async (_, res) => {
+        res.end(JSON.stringify({
+          foo: 'bar'
+        }));
+      });
+
+      const {data} = await axios.get(LOCAL_SERVER_URL, {
+        parseReviver: (key, value) => {
+          return key === 'foo' ? 'success' : value;
+        },
+      });
+
+      assert.deepStrictEqual(data, {foo: 'success'});
+    });
+  });
 });

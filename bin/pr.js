@@ -28,7 +28,7 @@ const generateBody = async ({files, template = './templates/pr.hbs'} = {}) => {
     files: await generateFileReport(files)
   };
 
-  Handlebars.registerHelper('filesize', (bytes)=> prettyBytes(bytes));
+  Handlebars.registerHelper('filesize', (bytes) => prettyBytes(bytes));
 
   return Handlebars.compile(String(await fs.readFile(template)))(data);
 }

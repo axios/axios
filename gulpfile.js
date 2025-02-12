@@ -40,7 +40,7 @@ async function getContributors(user, repo, maxCount = 1) {
     { params: { per_page: maxCount } }
   )).data;
 
-  return Promise.all(contributors.map(async (contributor)=> {
+  return Promise.all(contributors.map(async (contributor) => {
     return {...contributor, ...(await axios.get(
       `https://api.github.com/users/${encodeURIComponent(contributor.login)}`
     )).data};

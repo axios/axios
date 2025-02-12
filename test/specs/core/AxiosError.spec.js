@@ -47,6 +47,30 @@ describe('core::AxiosError', function() {
       const error = new Error('Boom!');
       expect(AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError).toBeTruthy();
     });
+
+    it('should add custom properties to error that can be serialized to JSON', function() {
+      const error = new Error('Boom!');
+      const request = { path: '/foo' };
+      const response = { status: 200, data: { foo: 'bar' } };
+      const customProperties = { myCustomProperty: 'myCustomValue' };
+
+      const axiosError = AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }, request, response, customProperties);
+      expect(axiosError.config).toEqual({ foo: 'bar' });
+      expect(axiosError.code).toBe('ESOMETHING');
+      expect(axiosError.request).toBe(request);
+      expect(axiosError.response).toBe(response);
+      expect(axiosError.myCustomProperty).toBe('myCustomValue')
+      expect(axiosError.isAxiosError).toBe(true);
+
+      const json = axiosError.toJSON();
+      expect(json.message).toBe('Boom!');
+      expect(json.config).toEqual({ foo: 'bar' });
+      expect(json.code).toBe('ESOMETHING');
+      expect(json.status).toBe(200);
+      expect(json.request).toBe(undefined);
+      expect(json.response).toBe(undefined);
+      expect(json.myCustomProperty).toBe('myCustomValue')
+    });
   });
 
   it('should have status property when response was passed to the constructor', () => {

@@ -191,6 +191,18 @@ export enum HttpStatusCode {
   NetworkAuthenticationRequired = 511,
 }
 
+export enum HttpRequestMethods {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  HEAD = 'HEAD',
+  DELETE = 'DELETE',
+  PATCH = 'PATCH',
+  OPTIONS = 'OPTIONS',
+  CONNECT = 'CONNECT',
+  TRACE = 'TRACE',
+}
+
 export type Method =
     | 'get' | 'GET'
     | 'delete' | 'DELETE'
@@ -551,6 +563,7 @@ export interface AxiosStatic extends AxiosInstance {
   Axios: typeof Axios;
   AxiosError: typeof AxiosError;
   HttpStatusCode: typeof HttpStatusCode;
+  HttpRequestMethods: typeof HttpRequestMethods;
   readonly VERSION: string;
   isCancel: typeof isCancel;
   all: typeof all;

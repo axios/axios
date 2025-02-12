@@ -19,11 +19,13 @@ const {
   HttpStatusCode,
   formToJSON,
   getAdapter,
-  mergeConfig
+  mergeConfig,
+  create
 } = axios;
 
 export {
   axios as default,
+  create,
   Axios,
   AxiosError,
   CanceledError,

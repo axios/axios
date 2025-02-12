@@ -837,6 +837,7 @@ Below is a list of potential axios identified error:
 | ERR_BAD_OPTION_VALUE | Invalid or unsupported value provided in axios configuration. |
 | ERR_BAD_OPTION | Invalid option provided in axios configuration. |
 | ECONNABORTED | Request timed out due to exceeding timeout specified in axios configuration. |
+| ECONNREFUSED | Connection was refused by the server. |
 | ETIMEDOUT | Request timed out due to exceeding default axios timelimit. |
 | ERR_NETWORK | Network-related issue.
 | ERR_FR_TOO_MANY_REDIRECTS | Request is redirected too many times; exceeds max redirects specified in axios configuration.

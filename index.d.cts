@@ -217,7 +217,7 @@ declare namespace axios {
   type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
   type RawCommonResponseHeaders = {
-    [Key in CommonResponseHeadersList]: AxiosHeaderValue;
+    [Key in Lowercase<CommonResponseHeadersList>]: AxiosHeaderValue;
   } & {
     "set-cookie": string[];
   };

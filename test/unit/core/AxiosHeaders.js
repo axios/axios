@@ -423,4 +423,19 @@ describe('AxiosHeaders', function () {
       assert.deepStrictEqual(new AxiosHeaders({x:1, y:2}).toString(), 'x: 1\ny: 2');
     });
   });
+
+  describe('getSetCookie', function () {
+    it('should return set-cookie', function () {
+      const headers = new AxiosHeaders(
+        'Set-Cookie: key=val;\n' +
+        'Set-Cookie: key2=val2;\n'
+      );
+
+      assert.deepStrictEqual(headers.getSetCookie(), ['key=val;', 'key2=val2;']);
+    });
+
+    it('should return empty set-cookie', function () {
+      assert.deepStrictEqual(new AxiosHeaders().getSetCookie(), []);
+    });
+  });
 });

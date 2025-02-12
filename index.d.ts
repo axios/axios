@@ -1,9 +1,10 @@
 // TypeScript Version: 4.7
 export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
-interface RawAxiosHeaders {
+// tslint:disable-next-line:interface-over-type-literal
+type RawAxiosHeaders = {
   [key: string]: AxiosHeaderValue;
-}
+};
 
 type MethodsHeaders = Partial<{
   [Key in Method as Lowercase<Key>]: AxiosHeaders;

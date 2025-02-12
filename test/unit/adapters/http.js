@@ -1439,6 +1439,29 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  describe('when invalid proxy options are provided', function () {
+    it('should throw error', function () {
+      const proxy = {
+        protocol: "http:",
+        host: "hostname.abc.xyz",
+        port: 3300,
+        auth: {
+          username: "",
+          password: "",
+        }
+      };
+
+      return axios.get("https://test-domain.abc", {proxy})
+        .then(function(){
+          fail('Does not throw');
+        }, function (error) {          
+          assert.strictEqual(error.message, 'Invalid proxy authorization')
+          assert.strictEqual(error.code, 'ERR_BAD_OPTION')
+          assert.deepStrictEqual(error.config.proxy, proxy)
+        })
+    });
+  });
+
   context('different options for direct proxy configuration (without env variables)', () => {
     const destination = 'www.example.com';
 

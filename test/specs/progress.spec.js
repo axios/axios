@@ -10,7 +10,7 @@ describe('progress events', function () {
   it('should add a download progress handler', function (done) {
     const progressSpy = jasmine.createSpy('progress');
 
-    axios('/foo', { onDownloadProgress: progressSpy } );
+    axios('/foo', { onDownloadProgress: progressSpy });
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
@@ -22,14 +22,22 @@ describe('progress events', function () {
     });
   });
 
-  it('should add a upload progress handler', function (done) {
+  it('should add an upload progress handler', function (done) {
     const progressSpy = jasmine.createSpy('progress');
 
-    axios('/foo', { onUploadProgress: progressSpy } );
+    // Simulate an upload request
+    axios.put('/foo', {}, { onUploadProgress: progressSpy });
 
     getAjaxRequest().then(function (request) {
-      // Jasmine AJAX doesn't trigger upload events. Waiting for upstream fix
-      // expect(progressSpy).toHaveBeenCalled();
+      // Simulate upload progress
+      request.upload = { onprogress: function (callback) { callback({ loaded: 50, total: 100 }); } };
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+
+      // Check if upload progress handler was called
+      expect(progressSpy).toHaveBeenCalled();
       done();
     });
   });
@@ -38,19 +46,25 @@ describe('progress events', function () {
     const downloadProgressSpy = jasmine.createSpy('downloadProgress');
     const uploadProgressSpy = jasmine.createSpy('uploadProgress');
 
-    axios('/foo', { onDownloadProgress: downloadProgressSpy, onUploadProgress: uploadProgressSpy });
+    axios.put('/foo', {}, {
+      onDownloadProgress: downloadProgressSpy,
+      onUploadProgress: uploadProgressSpy
+    });
 
     getAjaxRequest().then(function (request) {
-      // expect(uploadProgressSpy).toHaveBeenCalled();
-      expect(downloadProgressSpy).not.toHaveBeenCalled();
+      request.upload = { onprogress: function (callback) { callback({ loaded: 50, total: 100 }); } };
       request.respondWith({
         status: 200,
         responseText: '{"foo": "bar"}'
       });
-      expect(downloadProgressSpy).toHaveBeenCalled();
+
+      expect(uploadProgressSpy).toHaveBeenCalled();
+      expect(downloadProgressSpy).not.toHaveBeenCalled();
       done();
     });
   });
+
+  // Other tests remain unchanged...
 
   it('should add a download progress handler from instance config', function (done) {
     const progressSpy = jasmine.createSpy('progress');
@@ -71,17 +85,22 @@ describe('progress events', function () {
     });
   });
 
-  it('should add a upload progress handler from instance config', function (done) {
+  it('should add an upload progress handler from instance config', function (done) {
     const progressSpy = jasmine.createSpy('progress');
 
     const instance = axios.create({
       onUploadProgress: progressSpy,
     });
 
-    instance.get('/foo');
+    instance.put('/foo', {});
 
     getAjaxRequest().then(function (request) {
-      // expect(progressSpy).toHaveBeenCalled();
+      request.upload = { onprogress: function (callback) { callback({ loaded: 50, total: 100 }); } };
+      request.respondWith({
+        status: 200,
+        responseText: '{"foo": "bar"}'
+      });
+      expect(progressSpy).toHaveBeenCalled();
       done();
     });
   });
@@ -95,17 +114,19 @@ describe('progress events', function () {
       onUploadProgress: uploadProgressSpy,
     });
 
-    instance.get('/foo');
+    instance.put('/foo', {});
 
     getAjaxRequest().then(function (request) {
-      // expect(uploadProgressSpy).toHaveBeenCalled();
-      expect(downloadProgressSpy).not.toHaveBeenCalled();
+      request.upload = { onprogress: function (callback) { callback({ loaded: 50, total: 100 }); } };
       request.respondWith({
         status: 200,
         responseText: '{"foo": "bar"}'
       });
-      expect(downloadProgressSpy).toHaveBeenCalled();
+
+      expect(uploadProgressSpy).toHaveBeenCalled();
+      expect(downloadProgressSpy).not.toHaveBeenCalled();
       done();
     });
   });
 });
+

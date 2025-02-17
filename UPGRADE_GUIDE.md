@@ -167,3 +167,24 @@ require(['bower_components/axios/dist/axios'], function (axios) {
 // CommonJS
 var axios = require('axios/dist/axios');
 ```
+
+## 0.28.x -> 0.28.1
+
+The way to pass in a custom parameter serializer has changed
+
+0.28.0
+```js
+axios.create({
+    paramsSerializer: (params) => {
+        return qs.stringify(params, { arrayFormat: 'repeat', skipNulls: true })
+    }, ...config);
+```
+now the serializer needs to be in under a new key:
+
+0.28.1
+```js
+axios.create({
+    paramsSerializer: {
+        serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', skipNulls: true }),
+    }, ...config);
+```

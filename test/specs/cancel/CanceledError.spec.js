@@ -12,4 +12,10 @@ describe('Cancel', function() {
       expect(cancel.toString()).toBe('CanceledError: Operation has been canceled.');
     });
   });
+  it('should be a native error as checked by the NodeJS `isNativeError` function', async function (){
+    if((typeof process !== 'undefined') && (process.release.name === 'node')){
+      let {isNativeError} = require('node:util/types');
+      expect(isNativeError(new CanceledError("My Cancelled Error"))).toBeTruthy();
+    }
+  });
 });

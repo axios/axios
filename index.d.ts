@@ -92,7 +92,7 @@ export type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
 
 type RawCommonResponseHeaders = {
-  [Key in CommonResponseHeadersList]: AxiosHeaderValue;
+  [Key in Lowercase<CommonResponseHeadersList>]: AxiosHeaderValue;
 } & {
   "set-cookie": string[];
 };

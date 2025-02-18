@@ -390,11 +390,8 @@ export interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>
   headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
 }
 
-export interface AxiosResponse<T = any, D = any> {
+export interface AxiosResponse<T = any, D = any> extends Response {
   data: T;
-  status: number;
-  statusText: string;
-  headers: RawAxiosResponseHeaders | AxiosResponseHeaders;
   config: InternalAxiosRequestConfig<D>;
   request?: any;
 }

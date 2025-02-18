@@ -449,11 +449,8 @@ declare namespace axios {
     headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   }
 
-  interface AxiosResponse<T = any, D = any>  {
+  interface AxiosResponse<T = any, D = any> extends Response  {
     data: T;
-    status: number;
-    statusText: string;
-    headers: RawAxiosResponseHeaders | AxiosResponseHeaders;
     config: InternalAxiosRequestConfig<D>;
     request?: any;
   }

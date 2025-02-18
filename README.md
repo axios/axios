@@ -571,6 +571,12 @@ These are the available config options for making requests. Only the `url` is re
     }
   },
 
+  // When an HTTP proxy is used, this option will make axios tunnel through the proxy.
+  // The tunnel approach is made with the HTTP proxy CONNECT request and requires that the
+  // proxy allows direct connect to the remote port number axios wants to tunnel through to.
+  // Note: This option is ignored if you use a custom agent.
+  proxytunnel: false, // default
+
   // `cancelToken` specifies a cancel token that can be used to cancel the request
   // (see Cancellation section below for details)
   cancelToken: new CancelToken(function (cancel) {

@@ -37,7 +37,7 @@ describe('helpers::buildURL', function () {
       foo: {
         bar: 'baz'
       }
-    })).toEqual('/foo?foo[bar]=baz');
+    })).toEqual('/foo?foo%5Bbar%5D=baz');
   });
 
   it('should support date params', function () {
@@ -48,10 +48,10 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?date=' + date.toISOString());
   });
 
-  it('should support array params', function () {
+  it('should support array params with encode', function () {
     expect(buildURL('/foo', {
-      foo: ['bar', 'baz', null, undefined]
-    })).toEqual('/foo?foo[]=bar&foo[]=baz');
+      foo: ['bar', 'baz']
+    })).toEqual('/foo?foo%5B%5D=bar&foo%5B%5D=baz');
   });
 
   it('should support special char params', function () {

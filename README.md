@@ -160,7 +160,7 @@ const axios = require('axios');
 console.log(axios.isCancel('something'));
 ```
 
-For some bundlers and some ES6 linter's you may need to do the following:
+For some bundlers and some ES6 linters you may need to do the following:
 
 ```js
 import { default as axios } from 'axios';
@@ -375,10 +375,15 @@ These are the available config options for making requests. Only the `url` is re
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute.
+  // `baseURL` will be prepended to `url` unless `url` is absolute and option `allowAbsoluteUrls` is set to true.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
   // to methods of that instance.
   baseURL: 'https://some-domain.com/api/',
+
+  // `allowAbsoluteUrls` determines whether or not absolute URLs will override a configured `baseUrl`.
+  // When set to true (default), absolute values for `url` will override `baseUrl`.
+  // When set to false, absolute values for `url` will always be prepended by `baseUrl`.
+  allowAbsoluteUrls: true,
 
   // `transformRequest` allows changes to the request data before it is sent to the server
   // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
@@ -411,13 +416,13 @@ These are the available config options for making requests. Only the `url` is re
   // `paramsSerializer` is an optional config that allows you to customize serializing `params`. 
   paramsSerializer: {
 
-    //Custom encoder function which sends key/value pairs in an iterative fashion.
+    // Custom encoder function which sends key/value pairs in an iterative fashion.
     encode?: (param: string): string => { /* Do custom operations here and return transformed string */ }, 
     
     // Custom serializer function for the entire parameter. Allows user to mimic pre 1.x behaviour.
     serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ), 
     
-    //Configuration for formatting array indexes in the params. 
+    // Configuration for formatting array indexes in the params. 
     indexes: false // Three available options: (1) indexes: null (leads to no brackets), (2) (default) indexes: false (leads to empty brackets), (3) indexes: true (leads to brackets with indexes).    
   },
 
@@ -451,7 +456,7 @@ These are the available config options for making requests. Only the `url` is re
   },
   // Also, you can set the name of the built-in adapter, or provide an array with their names
   // to choose the first available in the environment
-  adapter: 'xhr' // 'fetch' | 'http' | ['xhr', 'http', 'fetch']
+  adapter: 'xhr', // 'fetch' | 'http' | ['xhr', 'http', 'fetch']
 
   // `auth` indicates that HTTP Basic auth should be used, and supplies credentials.
   // This will set an `Authorization` header, overwriting any existing
@@ -531,7 +536,11 @@ These are the available config options for making requests. Only the `url` is re
   // If both are specified, `socketPath` is used.
   socketPath: null, // default
   
-  // `transport` determines the transport method that will be used to make the request. If defined, it will be used. Otherwise, if `maxRedirects` is 0, the default `http` or `https` library will be used, depending on the protocol specified in `protocol`. Otherwise, the `httpFollow` or `httpsFollow` library will be used, again depending on the protocol, which can handle redirects.
+  // `transport` determines the transport method that will be used to make the request.
+  // If defined, it will be used. Otherwise, if `maxRedirects` is 0,
+  // the default `http` or `https` library will be used, depending on the protocol specified in `protocol`.
+  // Otherwise, the `httpFollow` or `httpsFollow` library will be used, again depending on the protocol,
+  // which can handle redirects.
   transport: undefined, // default
 
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
@@ -693,7 +702,7 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
 ### Config order of precedence
 
-Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults/index.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults/index.js](https://github.com/axios/axios/blob/main/lib/defaults/index.js#L49), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
 
 ```js
 // Create an instance using the config defaults provided by the library
@@ -715,8 +724,11 @@ instance.get('/longRequest', {
 You can intercept requests or responses before they are handled by `then` or `catch`.
 
 ```js
+
+const instance = axios.create();
+
 // Add a request interceptor
-axios.interceptors.request.use(function (config) {
+instance.interceptors.request.use(function (config) {
     // Do something before request is sent
     return config;
   }, function (error) {
@@ -725,7 +737,7 @@ axios.interceptors.request.use(function (config) {
   });
 
 // Add a response interceptor
-axios.interceptors.response.use(function (response) {
+instance.interceptors.response.use(function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
     return response;
@@ -739,7 +751,8 @@ axios.interceptors.response.use(function (response) {
 If you need to remove an interceptor later you can.
 
 ```js
-const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+const instance = axios.create();
+const myInterceptor = instance.interceptors.request.use(function () {/*...*/});
 axios.interceptors.request.eject(myInterceptor);
 ```
 
@@ -818,7 +831,7 @@ The general structure of axios errors is as follows:
 | code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.  |
 | status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings. 
 
-Below is a list of potential axios identified error
+Below is a list of potential axios identified error:
 | Code  |  Definition   |
 | -------- | ----------  |
 | ERR_BAD_OPTION_VALUE | Invalid or unsupported value provided in axios configuration. |
@@ -1129,7 +1142,7 @@ to a `FormData` object by following custom rules.
 - `metaTokens: boolean = true` - add the special ending (e.g `user{}: '{"name": "John"}'`) in the FormData key.
 The back-end body-parser could potentially use this meta-information to automatically parse the value as JSON.
 
-- `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects
+- `indexes: null|false|true = false` - controls how indexes will be added to unwrapped keys of `flat` array-like objects.
 
     - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)

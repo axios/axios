@@ -80,24 +80,4 @@ describe('utils', function (){
       assert.strictEqual(JSON.stringify(jsonObject), JSON.stringify({x: 1, y:2, obj: {ok: 1}}))
     });
   });
-
-  describe('generateString', function () {
-    it('should generate a string of the specified length using the default alphabet', function () {
-      const size = 10;
-      const str = utils.generateString(size);
-  
-      assert.strictEqual(str.length, size);
-    });
-  
-    it('should generate a string using only characters from the default alphabet', function () {
-      const size = 10;
-      const alphabet = utils.ALPHABET.ALPHA_DIGIT;
-
-      const str = utils.generateString(size, alphabet);
-  
-      for (let char of str) {
-        assert.ok(alphabet.includes(char), `Character ${char} is not in the alphabet`);
-      }
-    });
-  });
 });

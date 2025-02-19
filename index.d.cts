@@ -201,6 +201,18 @@ declare enum HttpStatusCode {
   NetworkAuthenticationRequired = 511,
 }
 
+declare enum HttpRequestMethods {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  HEAD = 'HEAD',
+  DELETE = 'DELETE',
+  PATCH = 'PATCH',
+  OPTIONS = 'OPTIONS',
+  CONNECT = 'CONNECT',
+  TRACE = 'TRACE',
+}
+
 type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 
 declare namespace axios {
@@ -532,6 +544,7 @@ declare namespace axios {
     AxiosError: typeof AxiosError;
     CanceledError: typeof CanceledError;
     HttpStatusCode: typeof HttpStatusCode;
+    HttpRequestMethods: typeof HttpRequestMethods;
     readonly VERSION: string;
     isCancel(value: any): value is Cancel;
     all<T>(values: Array<T | Promise<T>>): Promise<T[]>;

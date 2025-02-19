@@ -17,6 +17,7 @@ const {
   toFormData,
   AxiosHeaders,
   HttpStatusCode,
+  HttpRequestMethods,
   formToJSON,
   getAdapter,
   mergeConfig
@@ -37,6 +38,7 @@ export {
   toFormData,
   AxiosHeaders,
   HttpStatusCode,
+  HttpRequestMethods,
   formToJSON,
   getAdapter,
   mergeConfig

@@ -109,7 +109,7 @@ describe('requests', function () {
         expect(request).toBeDefined();
         expect(request.url).toBe('/foo');
         done();
-      }, 0);
+      }, 10);
     });
   });
 

@@ -63,8 +63,8 @@ describe('requests', function () {
     });
   });
 
-  describe('asyncConfig option', function() {
-    it('should use synchronous config resolution by default', function (done) {
+  describe('asyncCookieConfig option', function() {
+    it('should use synchronous cookie config resolution by default', function (done) {
       axios({
         url: '/foo'
       });
@@ -76,10 +76,10 @@ describe('requests', function () {
       done();
     });
 
-    it('should use synchronous config resolution when asyncConfig is false', function (done) {
+    it('should use synchronous cookie config resolution when asyncCookieConfig is false', function (done) {
       axios({
         url: '/foo',
-        asyncConfig: false
+        asyncCookieConfig: false
       });
       
       // Request should be available immediately without setTimeout
@@ -89,10 +89,10 @@ describe('requests', function () {
       done();
     });
 
-    it('should use asynchronous config resolution when asyncConfig is true', function (done) {
+    it('should use asynchronous cookie config resolution when asyncCookieConfig is true', function (done) {
       axios({
         url: '/foo',
-        asyncConfig: true
+        asyncCookieConfig: true
       }).then(function () {
         fail(new Error('should not resolve immediately'));
       }, function (err) {

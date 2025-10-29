@@ -91,6 +91,22 @@ describe('defaults', function () {
     });
   });
 
+  it('should use async cookie config for custom instance', function (done) {
+    const instance = axios.create({
+      xsrfCookieName: XSRF_COOKIE_NAME,
+      xsrfHeaderName: 'X-CUSTOM-XSRF-TOKEN',
+      asyncCookieConfig: true
+    });
+    document.cookie = instance.defaults.xsrfCookieName + '=foobarbaz';
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders[instance.defaults.xsrfHeaderName]).toEqual('foobarbaz');
+      done();
+    });
+  });
+
   it('should use default config for custom instance', function (done) {
     const instance = axios.create({
       xsrfCookieName: XSRF_COOKIE_NAME,

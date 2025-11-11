@@ -16,7 +16,7 @@ export default [
             },
         },
         rules: {
-            "no-cond-assign": 0,
+            "no-cond-assign": "off",
         },
     }
 ];

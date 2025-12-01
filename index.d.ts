@@ -9,7 +9,7 @@ interface RawAxiosHeaders {
 
 type MethodsHeaders = Partial<{
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
-} & {common: AxiosHeaders}>;
+} & { common: AxiosHeaders }>;
 
 type AxiosHeaderMatcher = string | RegExp | ((this: AxiosHeaders, value: string, name: string) => boolean);
 
@@ -17,7 +17,7 @@ type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: s
 
 export class AxiosHeaders {
   constructor(
-      headers?: RawAxiosHeaders | AxiosHeaders | string
+    headers?: RawAxiosHeaders | AxiosHeaders | string
   );
 
   [key: string]: any;
@@ -93,7 +93,7 @@ export type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & {
 
 export type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 
-type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
+type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control' | 'Content-Encoding';
 
 type RawCommonResponseHeaders = {
   [Key in CommonResponseHeadersList]: AxiosHeaderValue;
@@ -196,39 +196,39 @@ export enum HttpStatusCode {
 }
 
 export type Method =
-    | 'get' | 'GET'
-    | 'delete' | 'DELETE'
-    | 'head' | 'HEAD'
-    | 'options' | 'OPTIONS'
-    | 'post' | 'POST'
-    | 'put' | 'PUT'
-    | 'patch' | 'PATCH'
-    | 'purge' | 'PURGE'
-    | 'link' | 'LINK'
-    | 'unlink' | 'UNLINK';
+  | 'get' | 'GET'
+  | 'delete' | 'DELETE'
+  | 'head' | 'HEAD'
+  | 'options' | 'OPTIONS'
+  | 'post' | 'POST'
+  | 'put' | 'PUT'
+  | 'patch' | 'PATCH'
+  | 'purge' | 'PURGE'
+  | 'link' | 'LINK'
+  | 'unlink' | 'UNLINK';
 
 export type ResponseType =
-    | 'arraybuffer'
-    | 'blob'
-    | 'document'
-    | 'json'
-    | 'text'
-    | 'stream'
-    | 'formdata';
+  | 'arraybuffer'
+  | 'blob'
+  | 'document'
+  | 'json'
+  | 'text'
+  | 'stream'
+  | 'formdata';
 
 export type responseEncoding =
-    | 'ascii' | 'ASCII'
-    | 'ansi' | 'ANSI'
-    | 'binary' | 'BINARY'
-    | 'base64' | 'BASE64'
-    | 'base64url' | 'BASE64URL'
-    | 'hex' | 'HEX'
-    | 'latin1' | 'LATIN1'
-    | 'ucs-2' | 'UCS-2'
-    | 'ucs2' | 'UCS2'
-    | 'utf-8' | 'UTF-8'
-    | 'utf8' | 'UTF8'
-    | 'utf16le' | 'UTF16LE';
+  | 'ascii' | 'ASCII'
+  | 'ansi' | 'ANSI'
+  | 'binary' | 'BINARY'
+  | 'base64' | 'BASE64'
+  | 'base64url' | 'BASE64URL'
+  | 'hex' | 'HEX'
+  | 'latin1' | 'LATIN1'
+  | 'ucs-2' | 'UCS-2'
+  | 'ucs2' | 'UCS2'
+  | 'utf-8' | 'UTF-8'
+  | 'utf8' | 'UTF8'
+  | 'utf16le' | 'UTF16LE';
 
 export interface TransitionalOptions {
   silentJSONParsing?: boolean;
@@ -251,11 +251,11 @@ export interface FormDataVisitorHelpers {
 
 export interface SerializerVisitor {
   (
-      this: GenericFormData,
-      value: any,
-      key: string | number,
-      path: null | Array<string | number>,
-      helpers: FormDataVisitorHelpers
+    this: GenericFormData,
+    value: any,
+    key: string | number,
+    path: null | Array<string | number>,
+    helpers: FormDataVisitorHelpers
   ): boolean;
 }
 
@@ -344,7 +344,7 @@ export interface AxiosRequestConfig<D = any> {
   maxBodyLength?: number;
   maxRedirects?: number;
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-  beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
+  beforeRedirect?: (options: Record<string, any>, responseDetails: { headers: Record<string, string>, statusCode: HttpStatusCode }) => void;
   socketPath?: string | null;
   transport?: any;
   httpAgent?: any;
@@ -360,14 +360,13 @@ export interface AxiosRequestConfig<D = any> {
     fetch?: (input: URL | Request | string, init?: RequestInit) => Promise<Response>;
     Request?: new (input: URL | Request | string, init?: RequestInit) => Request;
     Response?: new (
-        body?: ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParams | string | null,
-        init?: ResponseInit
+      body?: ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParams | string | null,
+      init?: ResponseInit
     ) => Response;
   };
   formSerializer?: FormSerializerOptions;
   family?: AddressFamily;
-  lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
-      ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
+
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
   parseReviver?: (this: any, key: string, value: any) => any;
   fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> | Record<string, any>;
@@ -417,11 +416,11 @@ export interface AxiosResponse<T = any, D = any, H = {}> {
 
 export class AxiosError<T = unknown, D = any> extends Error {
   constructor(
-      message?: string,
-      code?: string,
-      config?: InternalAxiosRequestConfig<D>,
-      request?: any,
-      response?: AxiosResponse<T, D>
+    message?: string,
+    code?: string,
+    config?: InternalAxiosRequestConfig<D>,
+    request?: any,
+    response?: AxiosResponse<T, D>
   );
 
   config?: InternalAxiosRequestConfig<D>;
@@ -440,7 +439,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
     request?: any,
     response?: AxiosResponse<T, D>,
     customProps?: object,
-): AxiosError<T, D>;
+  ): AxiosError<T, D>;
   static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
   static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
   static readonly ERR_BAD_OPTION = "ERR_BAD_OPTION";
@@ -462,7 +461,7 @@ export class CanceledError<T> extends AxiosError<T> {
 export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
 
 export interface CancelStatic {
-  new (message?: string): Cancel;
+  new(message?: string): Cancel;
 }
 
 export interface Cancel {
@@ -474,7 +473,7 @@ export interface Canceler {
 }
 
 export interface CancelTokenStatic {
-  new (executor: (cancel: Canceler) => void): CancelToken;
+  new(executor: (cancel: Canceler) => void): CancelToken;
   source(): CancelTokenSource;
 }
 
@@ -551,7 +550,7 @@ export function getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] |
 
 export function toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
 
-export function formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+export function formToJSON(form: GenericFormData | GenericHTMLFormElement): object;
 
 export function isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
 

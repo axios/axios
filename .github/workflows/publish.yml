@@ -18,7 +18,7 @@ jobs:
       - name: "Release PR info"
         if: github.event_name != 'workflow_dispatch'
         run: echo "PR ${{ github.event.number }}"
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: git config
         run: |
           git config user.name "${GITHUB_ACTOR}"
@@ -34,7 +34,7 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@main
       - name: Extract release notes
         id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v2
+        uses: ffurrer2/extract-release-notes@v3
       - name: Check versions
         run: node ./bin/check-build-version.js
       ############# TAG RELEASE ##############
@@ -65,7 +65,7 @@ jobs:
     needs: [publish]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: git config

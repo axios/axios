@@ -793,6 +793,51 @@ axios.interceptors.request.use(function (config) {
 }, null, { runWhen: onGetCall });
 ```
 
+
+diff --git a/README.md b/README.md
+index 8f3c1da..c4c2ef2 100644
+--- a/README.md
++++ b/README.md
+@@ -450,6 +450,37 @@ axios.get('/user', {
+ 
+ ---
+ 
++### Canceling a Request using `AbortController`
++
++Axios supports request cancellation using the standard **AbortController** API.
++This is useful when you want to stop a long-running HTTP request or prevent
++updates after a component unmounts (in React, for example).
++
++```js
++// Create an AbortController instance
++const controller = new AbortController();
++
++// Pass the controller's signal to Axios
++axios.get('/long-running-endpoint', {
++  signal: controller.signal
++})
++  .then((response) => {
++    console.log('Response:', response.data);
++  })
++  .catch((error) => {
++    if (error.name === 'CanceledError') {
++      console.log('Request was canceled by the user');
++    } else {
++      console.error('Request failed:', error);
++    }
++  });
++
++// Cancel the request after some time
++setTimeout(() => {
++  controller.abort(); // Cancels the HTTP request
++}, 2000);
++```
++
+ ## Notes
+ - When using the `transformRequest` option, the `Content-Type` header will be set to `application/x-www-form-urlencoded;charset=utf-8` by default.
+ - To send data as a JSON string, include the `Content-Type: application/json` header.
+
+
 > **Note:** The options parameter(having `synchronous` and `runWhen` properties) is only supported for request interceptors at the moment.
 
 ### Interceptor Execution Order

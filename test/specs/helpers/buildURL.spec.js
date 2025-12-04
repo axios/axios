@@ -60,6 +60,17 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=:$,+');
   });
 
+  it('should encode colon inside JSON-stringified nested param objects', function () {
+    const params = {
+      filter: JSON.stringify({ EstimatedStartedAt: '2025-01-23' }),
+      OrderType: 'asc'
+    };
+
+    expect(buildURL('/foo', params)).toEqual(
+      '/foo?filter=%7B%22EstimatedStartedAt%22%3A%222025-01-23%22%7D&OrderType=asc'
+    );
+  });
+
   it('should support existing params', function () {
     expect(buildURL('/foo?foo=bar', {
       bar: 'baz'

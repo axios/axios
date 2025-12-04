@@ -902,6 +902,22 @@ axios.get('/user/12345')
   });
 ```
 
+Error handling with `async/await`:
+
+```js
+try {
+  const response = await axios.get('/user/12345');
+  console.log(response.data);
+} catch (error) {
+  if (error.code === 'ECONNABORTED') {
+    console.log('Request timed out');
+  } else {
+    console.log(error.message);
+  }
+}
+```
+
+
 Using the `validateStatus` config option, you can override the default condition (status >= 200 && status < 300) and define HTTP code(s) that should throw an error.
 
 ```js

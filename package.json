@@ -171,6 +171,7 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
+    "data-uri-to-buffer": "^3.0.1",
     "follow-redirects": "^1.15.6",
     "form-data": "^4.0.4",
     "proxy-from-env": "^1.1.0"

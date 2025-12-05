@@ -1,14 +1,11 @@
 
-<h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="38px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/stytch_white.png"> <img width="200px" height="38px" src="https://axios-http.com/assets/sponsors/stytch.png" alt="Stytch"/> </picture> </a> <p align="center" title="API-first authentication, authorization, and fraud prevention">API-first authentication, authorization, and fraud prevention</p> <p align="center"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http" target="_blank"><b>Website</b></a> | <a href="https://stytch.com/docs?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;docs-link&amp;utm_campaign&#x3D;axios-http" target="_blank"><b>Documentation</b></a> | <a href="https://github.com/stytchauth/stytch-node?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;node-sdk&amp;utm_campaign&#x3D;axios-http" target="_blank"><b>Node.js</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.principal.com</b></a> </p>
+<h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.principal.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="85px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/dfa9670ad5e66eea17315332453c7f4e3a3b5905.png" alt="Buy Instagram Followers Twicsy"/> </a> <p align="center" title="Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site to buy followers from the likes of US Magazine.">Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site...</p> <p align="center"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>twicsy.com</b></a> </p>
-</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Docs</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Community</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://route4me.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="51px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/route4me_white.png"> <img width="200px" height="51px" src="https://axios-http.com/assets/sponsors/route4me.png" alt="Route4Me"/> </picture> </a> <p align="center" title="Best Route Planning And Route Optimization Software">Best Route Planning And Route Optimization Software</p> <p align="center"> <a href="https://route4me.com/platform/route-optimization-software?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Explore</b></a> | <a href="https://route4me.com/platform/marketplace/pricing?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Free Trial</b></a> | <a href="https://route4me.com/contact?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Contact</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Docs</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Community</b></a> </p>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://route4me.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="51px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/route4me_white.png"> <img width="200px" height="51px" src="https://axios-http.com/assets/sponsors/route4me.png" alt="Route4Me"/> </picture> </a> <p align="center" title="Best Route Planning And Route Optimization Software">Best Route Planning And Route Optimization Software</p> <p align="center"> <a href="https://route4me.com/platform/route-optimization-software?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Explore</b></a> | <a href="https://route4me.com/platform/marketplace/pricing?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Free Trial</b></a> | <a href="https://route4me.com/contact?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Contact</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="62px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e1625cb54e10ee40180c99d1495a462e9d6664a4.png" alt="Buzzoid - Buy Instagram Followers"/> </a> <p align="center" title="At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#x27;s #1 IG service since 2012.">At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rate...</p> <p align="center"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>buzzoid.com</b></a> </p>
-</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.famety.net/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/56645c65d4bad0ab84265e02430d19d64afde927.png" alt="Famety - Buy Instagram Followers"/> </a> <p align="center" title="At Famety, you can grow your social media following quickly, safely, and easily with just a few clicks. Rated the world’s #1 social media service since 2013.">At Famety, you can grow your social media following quickly, safely, and easily with just a few clic...</p> <p align="center"> <a href="https://www.famety.net/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.famety.net</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e699ec99f7df3a203ddbc49d3c7712a907e628ea.png" alt="Poprey - Buy Instagram Likes"/> </a> <p align="center" title="Buy Instagram Likes">Buy Instagram Likes</p> <p align="center"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>poprey.com</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="71px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/16450b4dc0deb9dab5a511bf2bc8b8b4ac33412f.png" alt="Requestly"/> </a> <p align="center" title="A lightweight open-source API Development, Testing &amp; Mocking platform">A lightweight open-source API Development, Testing &amp; Mocking platform</p> <p align="center"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>requestly.com</b></a> </p>
-</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="71px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/16450b4dc0deb9dab5a511bf2bc8b8b4ac33412f.png" alt="Requestly"/> </a> <p align="center" title="A lightweight open-source API Development, Testing &amp; Mocking platform">A lightweight open-source API Development, Testing &amp; Mocking platform</p> <p align="center"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>requestly.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
 </td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
 </td></tr></table>
@@ -164,7 +161,7 @@ import axios from 'axios';
 console.log(axios.isCancel('something'));
 ````
 
-If you use `require` for importing, **only default export is available**:
+If you use `require` for importing, **only the default export is available**:
 
 ```js
 const axios = require('axios');
@@ -202,26 +199,16 @@ Using unpkg CDN:
 
 ## Example
 
-> **Note**: CommonJS usage
-> In order to gain the TypeScript typings (for intellisense / autocomplete) while using CommonJS imports with `require()`, use the following approach:
-
 ```js
 import axios from 'axios';
 //const axios = require('axios'); // legacy way
 
-// Make a request for a user with a given ID
-axios.get('/user?ID=12345')
-  .then(function (response) {
-    // handle success
-    console.log(response);
-  })
-  .catch(function (error) {
-    // handle error
-    console.log(error);
-  })
-  .finally(function () {
-    // always executed
-  });
+try {
+  const response = await axios.get('/user?ID=12345');
+  console.log(response);
+} catch (error) {
+  console.error(error);
+}
 
 // Optionally the request above could also be done as
 axios.get('/user', {
@@ -256,16 +243,11 @@ async function getUser() {
 Performing a `POST` request
 
 ```js
-axios.post('/user', {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
-  })
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
+const response = await axios.post('/user', {
+  firstName: 'Fred',
+  lastName: 'Flintstone'
+});
+console.log(response);
 ```
 
 Performing multiple concurrent requests
@@ -306,14 +288,12 @@ axios({
 
 ```js
 // GET request for remote image in node.js
-axios({
+const response = await axios({
   method: 'get',
   url: 'https://bit.ly/2mTM3nY',
   responseType: 'stream'
-})
-  .then(function (response) {
-    response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
-  });
+});
+response.data.pipe(fs.createWriteStream('ada_lovelace.jpg'))
 ```
 
 ##### axios(url[, config])
@@ -387,9 +367,9 @@ These are the available config options for making requests. Only the `url` is re
   // `method` is the request method to be used when making the request
   method: 'get', // default
 
-  // `baseURL` will be prepended to `url` unless `url` is absolute and option `allowAbsoluteUrls` is set to true.
+  // `baseURL` will be prepended to `url` unless `url` is absolute and the option `allowAbsoluteUrls` is set to true.
   // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
-  // to methods of that instance.
+  // to the methods of that instance.
   baseURL: 'https://some-domain.com/api/',
 
   // `allowAbsoluteUrls` determines whether or not absolute URLs will override a configured `baseUrl`.
@@ -431,7 +411,7 @@ These are the available config options for making requests. Only the `url` is re
     // Custom encoder function which sends key/value pairs in an iterative fashion.
     encode?: (param: string): string => { /* Do custom operations here and return transformed string */ },
 
-    // Custom serializer function for the entire parameter. Allows user to mimic pre 1.x behaviour.
+    // Custom serializer function for the entire parameter. Allows the user to mimic pre 1.x behaviour.
     serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ),
 
     // Configuration for formatting array indexes in the params.
@@ -439,8 +419,8 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `data` is the data to be sent as the request body
-  // Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH'
-  // When no `transformRequest` is set, must be of one of the following types:
+  // Only applicable for request methods 'PUT', 'POST', 'DELETE', and 'PATCH'
+  // When no `transformRequest` is set, it must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
   // - Node only: Stream, Buffer, FormData (form-data package)
@@ -492,7 +472,7 @@ These are the available config options for making requests. Only the `url` is re
   // 'utf8', 'UTF8', 'utf16le', 'UTF16LE'
   responseEncoding: 'utf8', // default
 
-  // `xsrfCookieName` is the name of the cookie to use as a value for xsrf token
+  // `xsrfCookieName` is the name of the cookie to use as a value for the xsrf token
   xsrfCookieName: 'XSRF-TOKEN', // default
 
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
@@ -571,7 +551,7 @@ These are the available config options for making requests. Only the `url` is re
   // Use `false` to disable proxies, ignoring environment variables.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
-  // This will set an `Proxy-Authorization` header, overwriting any existing
+  // This will set a `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
   // If the proxy server uses HTTPS, then you must set the protocol to `https`.
   proxy: {
@@ -643,7 +623,7 @@ These are the available config options for making requests. Only the `url` is re
 
 ## Response Schema
 
-The response for a request contains the following information.
+The response to a request contains the following information.
 
 ```js
 {
@@ -674,14 +654,12 @@ The response for a request contains the following information.
 When using `then`, you will receive the response as follows:
 
 ```js
-axios.get('/user/12345')
-  .then(function (response) {
-    console.log(response.data);
-    console.log(response.status);
-    console.log(response.statusText);
-    console.log(response.headers);
-    console.log(response.config);
-  });
+const response = await axios.get('/user/12345')
+console.log(response.data);
+console.log(response.status);
+console.log(response.statusText);
+console.log(response.headers);
+console.log(response.config);
 ```
 
 When using `catch`, or passing a [rejection callback](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then) as second parameter of `then`, the response will be available through the `error` object as explained in the [Handling Errors](#handling-errors) section.
@@ -735,7 +713,8 @@ instance.get('/longRequest', {
 
 ## Interceptors
 
-You can intercept requests or responses before they are handled by `then` or `catch`.
+You can intercept requests or responses before methods like `.get()` or `.post()`
+resolve their promises (before code inside `then` or `catch`, or after `await`)
 
 ```js
 
@@ -743,20 +722,20 @@ const instance = axios.create();
 
 // Add a request interceptor
 instance.interceptors.request.use(function (config) {
-    // Do something before request is sent
+    // Do something before the request is sent
     return config;
   }, function (error) {
-    // Do something with request error
+    // Do something with the request error
     return Promise.reject(error);
   });
 
 // Add a response interceptor
 instance.interceptors.response.use(function (response) {
-    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Any status code that lies within the range of 2xx causes this function to trigger
     // Do something with response data
     return response;
   }, function (error) {
-    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Any status codes that fall outside the range of 2xx cause this function to trigger
     // Do something with response error
     return Promise.reject(error);
   });
@@ -788,7 +767,7 @@ instance.interceptors.request.use(function () {/*...*/});
 
 When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay
 in the execution of your axios request when the main thread is blocked (a promise is created under the hood for
-the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag
+the interceptor and your request gets put at the bottom of the call stack). If your request interceptors are synchronous you can add a flag
 to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
 
 ```js
@@ -814,11 +793,46 @@ axios.interceptors.request.use(function (config) {
 }, null, { runWhen: onGetCall });
 ```
 
-> **Note:** options parameter(having `synchronous` and `runWhen` properties) is only supported for request interceptors at the moment.
+> **Note:** The options parameter(having `synchronous` and `runWhen` properties) is only supported for request interceptors at the moment.
+
+### Interceptor Execution Order
+
+**Important:** Interceptors have different execution orders depending on their type!
+
+Request interceptors are executed in **reverse order** (LIFO - Last In, First Out). This means the _last_ interceptor added is executed **first**.
+
+Response interceptors are executed in the **order they were added** (FIFO - First In, First Out). This means the _first_ interceptor added is executed **first**.
+
+Example:
+
+```js
+const instance = axios.create();
+
+const interceptor = (id) => (base) => {
+  console.log(id);
+  return base;
+}
+
+instance.interceptors.request.use(interceptor('Request Interceptor 1'));
+instance.interceptors.request.use(interceptor('Request Interceptor 2'));
+instance.interceptors.request.use(interceptor('Request Interceptor 3'));
+instance.interceptors.response.use(interceptor('Response Interceptor 1'));
+instance.interceptors.response.use(interceptor('Response Interceptor 2'));
+instance.interceptors.response.use(interceptor('Response Interceptor 3'));
+
+// Console output:
+// Request Interceptor 3
+// Request Interceptor 2
+// Request Interceptor 1
+// [HTTP request is made]
+// Response Interceptor 1
+// Response Interceptor 2
+// Response Interceptor 3
+```
 
 ### Multiple Interceptors
 
-Given you add multiple response interceptors
+Given that you add multiple response interceptors
 and when the response was fulfilled
 - then each interceptor is executed
 - then they are executed in the order they were added
@@ -829,11 +843,11 @@ and when the response was fulfilled
     - then the following rejection-interceptor is called
     - once caught, another following fulfill-interceptor is called again (just like in a promise chain).
 
-Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
+Read [the interceptor tests](./test/specs/interceptors.spec.js) to see all this in code.
 
 ## Error Types
 
-There are many different axios error messages that can appear that can provide basic information about the specifics of the error and where opportunities may lie in debugging.
+There are many different axios error messages that can appear which can provide basic information about the specifics of the error and where opportunities may lie in debugging.
 
 The general structure of axios errors is as follows:
 | Property  | Definition  |
@@ -842,7 +856,7 @@ The general structure of axios errors is as follows:
 | name     | This defines where the error originated from. For axios, it will always be an 'AxiosError'. |
 | stack    | Provides the stack trace of the error. |
 | config   | An axios config object with specific instance configurations defined by the user from when the request was made |
-| code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.  |
+| code     | Represents an axios identified error. The table below lists specific definitions for internal axios error.  |
 | status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings.
 
 Below is a list of potential axios identified error:
@@ -856,7 +870,7 @@ Below is a list of potential axios identified error:
 | ERR_INVALID_URL           | Invalid URL provided for axios request.                                                                                                                                                                                                                                                                                                                                                        |
 | ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin.                                                                                                                                                                                                                                            |
 | ERR_CANCELED              | Feature or method is canceled explicitly by the user using an AbortSignal (or a CancelToken).                                                                                                                                                                                                                                                                                                  |
-| ETIMEDOUT                 | Request timed out due to exceeding default axios timelimit. `transitional.clarifyTimeoutError` must be set to `true`, otherwise a generic `ECONNABORTED` error will be thrown instead.                                                                                                                                                                                                         |
+| ETIMEDOUT                 | Request timed out due to exceeding the default axios timelimit. `transitional.clarifyTimeoutError` must be set to `true`, otherwise a generic `ECONNABORTED` error will be thrown instead.                                                                                                                                                                                                         |
 | ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request is redirected too many times; exceeds max redirects specified in axios configuration.                                                                                                                                                                                                                                                                                                  |
 | ERR_BAD_RESPONSE          | Response cannot be parsed properly or is in an unexpected format. Usually related to a response with `5xx` status code.                                                                                                                                                                                                                                                                          |
@@ -864,7 +878,7 @@ Below is a list of potential axios identified error:
 
 ## Handling Errors
 
-the default behavior is to reject every response that returns with a status code that falls out of the range of 2xx and treat it as an error.
+The default behavior is to reject every response that returns with a status code that falls out of the range of 2xx and treat it as an error.
 
 ```js
 axios.get('/user/12345')
@@ -911,7 +925,7 @@ axios.get('/user/12345')
 
 ### AbortController
 
-Starting from `v0.22.0` Axios supports AbortController to cancel requests in fetch API way:
+Starting from `v0.22.0` Axios supports AbortController to cancel requests in a fetch API way:
 
 ```js
 const controller = new AbortController();
@@ -1225,7 +1239,7 @@ All files will be sent with the same field names: `files[]`.
 
 ## 🆕 HTML Form Posting (browser)
 
-Pass HTML Form element as a payload to submit it as `multipart/form-data` content.
+Pass an HTML Form element as a payload to submit it as `multipart/form-data` content.
 
 ```js
 await axios.postForm('https://httpbin.org/post', document.querySelector('#htmlForm'));
@@ -1337,7 +1351,7 @@ const {data} = await axios.post(SERVER_URL, readableStream, {
 
 > **⚠️ Warning**
 > It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the **node.js** environment,
-> as follow-redirects package will buffer the entire stream in RAM without following the "backpressure" algorithm.
+> as the follow-redirects package will buffer the entire stream in RAM without following the "backpressure" algorithm.
 
 
 ## 🆕 Rate limiting
@@ -1358,8 +1372,8 @@ const {data} = await axios.post(LOCAL_SERVER_URL, myBuffer, {
 
 Axios has its own `AxiosHeaders` class to manipulate headers using a Map-like API that guarantees caseless work.
 Although HTTP is case-insensitive in headers, Axios will retain the case of the original header for stylistic reasons
-and for a workaround when servers mistakenly consider the header's case.
-The old approach of directly manipulating headers object is still available, but deprecated and not recommended for future usage.
+and as a workaround when servers mistakenly consider the header's case.
+The old approach of directly manipulating the headers object is still available, but deprecated and not recommended for future usage.
 
 ### Working with headers
 
@@ -1451,7 +1465,7 @@ set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
 ```
 
 The `rewrite` argument controls the overwriting behavior:
-- `false` - do not overwrite if header's value is set (is not `undefined`)
+- `false` - do not overwrite if the header's value is set (is not `undefined`)
 - `undefined` (default) - overwrite the header unless its value is set to `false`
 - `true` - rewrite anyway
 
@@ -1540,7 +1554,7 @@ Returns `true` if at least one header has been cleared.
 If the headers object was changed directly, it can have duplicates with the same name but in different cases.
 This method normalizes the headers object by combining duplicate keys into one.
 Axios uses this method internally after calling each interceptor.
-Set `format` to true for converting headers name to lowercase and capitalize the initial letters (`cOntEnt-type` => `Content-Type`)
+Set `format` to true for converting header names to lowercase and capitalizing the initial letters (`cOntEnt-type` => `Content-Type`)
 
 ```js
 const headers = new AxiosHeaders({
@@ -1573,7 +1587,7 @@ Returns a new `AxiosHeaders` instance.
 toJSON(asStrings?: boolean): RawAxiosHeaders;
 ````
 
-Resolve all internal headers values into a new null prototype object.
+Resolve all internal header values into a new null prototype object.
 Set `asStrings` to true to resolve arrays as a string containing all elements, separated by commas.
 
 ### AxiosHeaders.from(thing?)
@@ -1629,7 +1643,7 @@ const fetchAxios = axios.create({
 const {data} = fetchAxios.get(url);
 ```
 
-The adapter supports the same functionality as `xhr` adapter, **including upload and download progress capturing**.
+The adapter supports the same functionality as the `xhr` adapter, **including upload and download progress capturing**.
 Also, it supports additional response types such as `stream` and `formdata` (if supported by the environment).
 
 ### 🔥 Custom fetch

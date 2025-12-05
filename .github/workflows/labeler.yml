@@ -14,7 +14,7 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: git config
@@ -27,6 +27,6 @@ jobs:
             echo "Using PR number: ${{ github.event.inputs.prs || github.event.pull_request.number }}"
             echo "pr=${{ github.event.inputs.prs || github.event.pull_request.number }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/labeler@v5
+      - uses: actions/labeler@v6
         with:
            pr-number: ${{ steps.set-pr.outputs.pr }}

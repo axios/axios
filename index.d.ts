@@ -1,4 +1,6 @@
 // TypeScript Version: 4.7
+type StringLiteralsOrString<Literals extends string> = Literals | (string & {});
+
 export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
 interface RawAxiosHeaders {
@@ -302,7 +304,7 @@ export interface AxiosProgressEvent {
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | (string & {});
+type AxiosAdapterName = StringLiteralsOrString<'xhr' | 'http' | 'fetch'>;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
@@ -317,7 +319,7 @@ export type LookupAddress = string | LookupAddressEntry;
 
 export interface AxiosRequestConfig<D = any> {
   url?: string;
-  method?: Method | string;
+  method?: StringLiteralsOrString<Method>;
   baseURL?: string;
   allowAbsoluteUrls?: boolean;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
@@ -332,7 +334,7 @@ export interface AxiosRequestConfig<D = any> {
   adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
-  responseEncoding?: responseEncoding | string;
+  responseEncoding?: StringLiteralsOrString<responseEncoding>;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
@@ -348,7 +350,7 @@ export interface AxiosRequestConfig<D = any> {
   httpAgent?: any;
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;
-  cancelToken?: CancelToken;
+  cancelToken?: CancelToken | undefined;
   decompress?: boolean;
   transitional?: TransitionalOptions;
   signal?: GenericAbortSignal;

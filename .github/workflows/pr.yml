@@ -19,7 +19,7 @@ jobs:
   releaseIt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: git config
@@ -51,7 +51,7 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@main
       - name: Extract release notes
         id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v2
+        uses: ffurrer2/extract-release-notes@v3
       - name: Generate PR body
         id: body
         uses: mathiasvr/command-output@v1

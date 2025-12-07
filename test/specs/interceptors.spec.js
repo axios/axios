@@ -622,7 +622,7 @@ describe('interceptors', function () {
     });
   });
 
-  it('should handler the error in the same response interceptors', function (done) {
+  it('should handle the error in the same response interceptors', function (done) {
     const rejectedSpy1 = jasmine.createSpy('rejectedSpy1');
     const rejectedSpy2 = jasmine.createSpy('rejectedSpy2');
     const error1 = new Error('deadly error 1');
@@ -657,6 +657,7 @@ describe('interceptors', function () {
 
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by interceptor';
+      return config;
     });
 
     axios.interceptors.request.use(function () {

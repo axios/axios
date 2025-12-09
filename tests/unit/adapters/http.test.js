@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'vitest';
 import assert from 'assert';
 import {
   startHTTPServer,
@@ -5773,6 +5773,167 @@ describe('supports http with nodejs', () => {
           return true;
         }
       );
+    });
+
+    describe('NODE_USE_ENV_PROXY native proxy handling', () => {
+      let originalEnv;
+      let originalNodeVersion;
+
+      beforeEach(() => {
+        originalEnv = process.env.NODE_USE_ENV_PROXY;
+        originalNodeVersion = process.versions.node;
+      });
+
+      afterEach(() => {
+        if (originalEnv === undefined) {
+          delete process.env.NODE_USE_ENV_PROXY;
+        } else {
+          process.env.NODE_USE_ENV_PROXY = originalEnv;
+        }
+        Object.defineProperty(process.versions, 'node', {
+          value: originalNodeVersion,
+          writable: true,
+          configurable: true,
+        });
+      });
+
+      function setNodeVersion(version) {
+        Object.defineProperty(process.versions, 'node', {
+          value: version,
+          writable: true,
+          configurable: true,
+        });
+      }
+
+      function makeOptions() {
+        return {
+          headers: {},
+          beforeRedirects: {},
+          hostname: 'example.com',
+          port: 80,
+          path: '/',
+        };
+      }
+
+      it('should skip proxy logic when NODE_USE_ENV_PROXY=1 and Node>=24, no explicit proxy, no custom agent', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('24.0.0');
+
+        const options = makeOptions();
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(options.beforeRedirects.proxy, undefined,
+          'beforeRedirects.proxy should not be set when skipped');
+        assert.strictEqual(options.hostname, 'example.com',
+          'hostname should not be rewritten when skipped');
+      });
+
+      it('should NOT skip proxy logic when Node < 24.0.0, even with NODE_USE_ENV_PROXY=1', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('22.11.0');
+
+        const options = makeOptions();
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(typeof options.beforeRedirects.proxy, 'function',
+          'beforeRedirects.proxy should be registered when Node < 24');
+      });
+
+      it('should NOT skip proxy logic when NODE_USE_ENV_PROXY is not set, even on Node 24', () => {
+        delete process.env.NODE_USE_ENV_PROXY;
+        setNodeVersion('24.0.0');
+
+        const options = makeOptions();
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(typeof options.beforeRedirects.proxy, 'function',
+          'beforeRedirects.proxy should be registered when NODE_USE_ENV_PROXY is absent');
+      });
+
+      it('should NOT skip proxy logic when user supplies explicit proxy object, even with NODE_USE_ENV_PROXY=1 on Node 24', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('24.0.0');
+
+        const options = makeOptions();
+        const explicitProxy = { host: '10.0.0.1', port: 3128, protocol: 'http:' };
+
+        __setProxy(options, explicitProxy, 'http://example.com/');
+
+        assert.strictEqual(options.hostname, '10.0.0.1',
+          'hostname should be rewritten to explicit proxy host');
+        assert.strictEqual(typeof options.beforeRedirects.proxy, 'function',
+          'beforeRedirects.proxy should be registered');
+      });
+
+      it('should NOT skip proxy logic when proxy:false is passed (user explicitly disables proxy)', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('24.0.0');
+
+        const options = makeOptions();
+        __setProxy(options, false, 'http://example.com/');
+
+        assert.strictEqual(typeof options.beforeRedirects.proxy, 'function',
+          'beforeRedirects.proxy should be registered even with proxy:false');
+      });
+
+      it('should NOT skip proxy logic when user supplies a custom httpAgent', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('24.0.0');
+
+        const options = makeOptions();
+        options.httpAgent = new http.Agent({ keepAlive: false });
+
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(typeof options.beforeRedirects.proxy, 'function',
+          'beforeRedirects.proxy should be registered when custom httpAgent is present');
+      });
+
+      it('should NOT skip proxy logic when user supplies a custom httpsAgent', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('24.0.0');
+
+        const options = makeOptions();
+        options.httpsAgent = new https.Agent({ keepAlive: false });
+
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(typeof options.beforeRedirects.proxy, 'function',
+          'beforeRedirects.proxy should be registered when custom httpsAgent is present');
+      });
+
+      it('should skip on Node 24.1.0 (above minimum threshold)', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('24.1.0');
+
+        const options = makeOptions();
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(options.beforeRedirects.proxy, undefined,
+          'should skip on any Node >= 24');
+      });
+
+      it('should skip on Node 25.0.0 (future versions)', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('25.0.0');
+
+        const options = makeOptions();
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(options.beforeRedirects.proxy, undefined,
+          'should skip on Node 25+');
+      });
+
+      it('should NOT skip on Node 23.9.9 (just below threshold)', () => {
+        process.env.NODE_USE_ENV_PROXY = '1';
+        setNodeVersion('23.9.9');
+
+        const options = makeOptions();
+        __setProxy(options, undefined, 'http://example.com/');
+
+        assert.strictEqual(typeof options.beforeRedirects.proxy, 'function',
+          'should not skip on Node 23.x');
+      });
     });
   });
 });

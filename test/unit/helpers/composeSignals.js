@@ -1,6 +1,7 @@
 import assert from 'assert';
 import composeSignals from '../../../lib/helpers/composeSignals.js';
 
+// comment
 describe('helpers::composeSignals', () => {
   before(function () {
     if (typeof AbortController !== 'function') {

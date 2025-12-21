@@ -1098,7 +1098,7 @@ If your backend body-parser (like `body-parser` of `express.js`) supports nested
 
 ### FormData
 
-To send the data as a `multipart/formdata` you need to pass a formData instance as a payload.
+To send the data as a `multipart/form-data` you need to pass a formData instance as a payload.
 Setting the `Content-Type` header is not required as Axios guesses it based on the payload type.
 
 ```js

@@ -3,6 +3,7 @@ import path from 'path';
 import http from 'http';
 import minimist from 'minimist';
 import url from "url";
+
 const argv = minimist(process.argv.slice(2));
 let server;
 let dirs;
@@ -67,14 +68,52 @@ function send404(res, body) {
 }
 
 function pipeFileToResponse(res, file, type) {
-  if (type) {
-    res.writeHead(200, {
-      'Content-Type': type
-    });
-  }
-  fs.createReadStream(path.join(__dirname, file)).pipe(res);
-}
+  try {
+    // Validate file path - prevent directory traversal
+    const safeBasePath = path.join(__dirname, 'examples');
+    const resolvedPath = path.resolve(path.join(safeBasePath, file));
+    
+    // Ensure the resolved path is within intended directory
+    if (!resolvedPath.startsWith(safeBasePath)) {
+      res.writeHead(400);
+      res.end('Invalid file path');
+      return;
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(resolvedPath)) {
+      res.writeHead(404);
+      res.end('File not found');
+      return;
+    }
 
+    if (type) {
+      res.writeHead(200, {
+        "Content-Type": type
+      });
+    } else {
+      res.writeHead(200);
+    }
+
+    const stream = fs.createReadStream(resolvedPath);
+
+    stream.on("error", (err) => {
+      console.error("Error while reading file:", err.message);
+      if (!res.headersSent) {
+        res.writeHead(500, { "Content-Type": "text/plain" });
+      }
+      res.end("File read error");
+    });
+
+    stream.pipe(res);
+  } catch (err) {
+    console.error("Unexpected error:", err.message);
+    if (!res.headersSent) {
+      res.writeHead(500, { "Content-Type": "text/plain" });
+    }
+    res.end("Internal server error");
+  }
+}
 
 dirs = listDirs(__dirname);
 
@@ -123,6 +162,7 @@ server = http.createServer(function (req, res) {
     } else {
       send404(res);
     }
+    return;
   }
 
   // Process server request
@@ -130,10 +170,14 @@ server = http.createServer(function (req, res) {
     if (fs.existsSync(path.join(__dirname, url + '.js'))) {
       import('file://' + path.join(__dirname, url + '.js')).then((server) => {
         server.default(req, res);
+      }).catch(err => {
+        console.error('Error importing server:', err);
+        send404(res);
       });
     } else {
       send404(res);
     }
+    return;
   }
   else {
     send404(res);

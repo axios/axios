@@ -1,12 +1,10 @@
-import utils from '../../../lib/utils';
+import {kindOfTest} from '../../../lib/utils';
 
-const {kindOf} = utils;
+describe('utils::kindOfTest', function () {
+  it('should return true if the type is matched', function () {
+    const test = kindOfTest('number');
 
-describe('utils::kindOf', function () {
-  it('should return object tag', function () {
-    expect(kindOf({})).toEqual('object');
-    // cached result
-    expect(kindOf({})).toEqual('object');
-    expect(kindOf([])).toEqual('array');
+    expect(test(123)).toEqual(true);
+    expect(test('123')).toEqual(false);
   });
 });

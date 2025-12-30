@@ -1,4 +1,6 @@
 // TypeScript Version: 4.7
+type StringLiteralsOrString<Literals extends string> = Literals | (string & {});
+
 export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
 interface RawAxiosHeaders {
@@ -302,7 +304,7 @@ export interface AxiosProgressEvent {
 
 type Milliseconds = number;
 
-type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | (string & {});
+type AxiosAdapterName = StringLiteralsOrString<'xhr' | 'http' | 'fetch'>;
 
 type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
 
@@ -317,7 +319,7 @@ export type LookupAddress = string | LookupAddressEntry;
 
 export interface AxiosRequestConfig<D = any> {
   url?: string;
-  method?: Method | string;
+  method?: StringLiteralsOrString<Method>;
   baseURL?: string;
   allowAbsoluteUrls?: boolean;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
@@ -332,7 +334,7 @@ export interface AxiosRequestConfig<D = any> {
   adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
   auth?: AxiosBasicCredentials;
   responseType?: ResponseType;
-  responseEncoding?: responseEncoding | string;
+  responseEncoding?: StringLiteralsOrString<responseEncoding>;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
@@ -492,14 +494,32 @@ export interface AxiosInterceptorOptions {
   runWhen?: (config: InternalAxiosRequestConfig) => boolean;
 }
 
-type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+type AxiosInterceptorFulfilled<T> = (value: T) => T | Promise<T>;
+type AxiosInterceptorRejected = (error: any) => any;
 
-type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+type AxiosRequestInterceptorUse<T> = (
+  onFulfilled?: AxiosInterceptorFulfilled<T> | null,
+  onRejected?: AxiosInterceptorRejected | null,
+  options?: AxiosInterceptorOptions
+) => number;
+
+type AxiosResponseInterceptorUse<T> = (
+  onFulfilled?: AxiosInterceptorFulfilled<T> | null,
+  onRejected?: AxiosInterceptorRejected | null
+) => number;
+
+interface AxiosInterceptorHandler<T> {
+  fulfilled: AxiosInterceptorFulfilled<T>;
+  rejected?: AxiosInterceptorRejected;
+  synchronous: boolean;
+  runWhen: (config: AxiosRequestConfig) => boolean | null;
+}
 
 export interface AxiosInterceptorManager<V> {
   use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
   eject(id: number): void;
   clear(): void;
+  handlers?: Array<AxiosInterceptorHandler<V>>;
 }
 
 export class Axios {

@@ -44,7 +44,7 @@ jobs:
           echo "$CONTENT"
       - name: Create pull request
         if: ${{ steps.sponsors.outputs.changed == 'true'}}
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         id: cpr
         with:
           branch: sponsors

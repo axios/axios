@@ -540,7 +540,7 @@ declare namespace axios {
     use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
     eject(id: number): void;
     clear(): void;
-    handlers: Array<AxiosInterceptorHandler<V>>;
+    handlers?: Array<AxiosInterceptorHandler<V>>;
   }
 
   interface AxiosInstance extends Axios {

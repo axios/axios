@@ -66,7 +66,7 @@ function toleranceRange(positive, negative) {
 const nodeVersion = process.versions.node.split('.').map(v => parseInt(v, 10));
 const nodeMajorVersion = nodeVersion[0];
 
-var noop = ()=> {};
+var noop = () => {};
 
 describe('supports http with nodejs', function () {
   afterEach(async function () {
@@ -541,7 +541,7 @@ describe('supports http with nodejs', function () {
       });
     });
 
-    describe('algorithms', ()=> {
+    describe('algorithms', () => {
       const responseBody ='str';
 
       for (const [typeName, zipped] of Object.entries({
@@ -783,7 +783,7 @@ describe('supports http with nodejs', function () {
       // consume the req stream
       req.on('data', noop);
       // and wait for the end before responding, otherwise an ECONNRESET error will be thrown
-      req.on('end', ()=> {
+      req.on('end', () => {
         res.end('OK');
       });
     }).listen(4444, function (err) {
@@ -1361,6 +1361,29 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  describe('when invalid proxy options are provided', function () {
+    it('should throw error', function () {
+      const proxy = {
+        protocol: "http:",
+        host: "hostname.abc.xyz",
+        port: 3300,
+        auth: {
+          username: "",
+          password: "",
+        }
+      };
+
+      return axios.get('https://test-domain.abc', {proxy})
+        .then(function(){
+          assert.fail('Does not throw');
+        }, function (error) {
+          assert.strictEqual(error.message, 'Invalid proxy authorization');
+          assert.strictEqual(error.code, 'ERR_BAD_OPTION');
+          assert.deepStrictEqual(error.config.proxy, proxy);
+        })
+    });
+  });
+
   context('different options for direct proxy configuration (without env variables)', () => {
     const destination = 'www.example.com';
 
@@ -1821,7 +1844,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI).then(({data})=> {
+      axios.get(dataURI).then(({data}) => {
         assert.deepStrictEqual(data, buffer);
         done();
       }).catch(done);
@@ -1838,7 +1861,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI, {responseType: 'blob'}).then(async ({data})=> {
+      axios.get(dataURI, {responseType: 'blob'}).then(async ({data}) => {
         assert.strictEqual(data.type, 'application/octet-stream');
         assert.deepStrictEqual(await data.text(), '123');
         done();
@@ -1850,7 +1873,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI, {responseType: "text"}).then(({data})=> {
+      axios.get(dataURI, {responseType: "text"}).then(({data}) => {
         assert.deepStrictEqual(data, '123');
         done();
       }).catch(done);
@@ -1861,7 +1884,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI, {responseType: "stream"}).then(({data})=> {
+      axios.get(dataURI, {responseType: "stream"}).then(({data}) => {
         var str = '';
 
         data.on('data', function(response){
@@ -2026,7 +2049,7 @@ describe('supports http with nodejs', function () {
         maxRedirects: 0
       });
 
-      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+      samples.slice(skip).forEach(({rate, progress}, i, _samples) => {
         assert.ok(compareValues(rate, configRate),
           `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
             _samples.map(({rate}) => rate).join(', ')
@@ -2074,7 +2097,7 @@ describe('supports http with nodejs', function () {
         maxRedirects: 0
       });
 
-      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+      samples.slice(skip).forEach(({rate, progress}, i, _samples) => {
         assert.ok(compareValues(rate, configRate),
           `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
             _samples.map(({rate}) => rate).join(', ')

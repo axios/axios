@@ -5,11 +5,11 @@ import fs from 'fs/promises';
 const argv = minimist(process.argv.slice(2));
 console.log(argv);
 
-let {tag} = argv;
+let { tag } = argv;
 
-(async() => {
+(async () => {
   if (!tag || tag === true) {
-    const {version} = JSON.parse((await fs.readFile('./package.json')).toString());
+    const { version } = JSON.parse((await fs.readFile('./package.json')).toString());
 
     tag = 'v' + version;
   } else if (typeof tag !== 'string') {

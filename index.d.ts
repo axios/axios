@@ -517,7 +517,7 @@ export interface AxiosInterceptorManager<V> {
   use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
   eject(id: number): void;
   clear(): void;
-  handlers: Array<AxiosInterceptorHandler<V>>;
+  handlers?: Array<AxiosInterceptorHandler<V>>;
 }
 
 export class Axios {

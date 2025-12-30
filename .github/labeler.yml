@@ -1,0 +1,34 @@
+
+"pr::docs":
+  - changed-files:
+      - any-glob-to-any-file: '**.md'
+
+"pr::code":
+  - changed-files:
+      - any-glob-to-any-file: 'lib/**.js'
+
+"pr::types":
+  - changed-files:
+      - any-glob-to-any-file: ['index.d.ts', 'index.d.cts']
+
+"pr::tests":
+  - changed-files:
+      - any-glob-to-any-file: 'test/**.js'
+
+"pr::github":
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+
+"pr::examples":
+  - changed-files:
+      - any-glob-to-any-file: 'examples/**.js'
+
+"pr::ci":
+  - changed-files:
+      - any-glob-to-any-file: ['bin/**', 'rollup.config.js']
+
+"pr::feature":
+  - head-branch: ['feature', 'feat']
+
+"pr::fix":
+  - head-branch: ['fix', 'bug']

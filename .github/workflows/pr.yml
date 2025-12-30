@@ -19,7 +19,7 @@ jobs:
   releaseIt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: git config
@@ -27,11 +27,12 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 16
           cache: npm
       - run: npm ci
+      - run: npm run build
       - name: Prepare release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,14 +51,14 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@main
       - name: Extract release notes
         id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v2
+        uses: ffurrer2/extract-release-notes@v3
       - name: Generate PR body
         id: body
         uses: mathiasvr/command-output@v1
         with:
           run: node ./bin/pr.js
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         id: cpr
         with:
           branch: release
@@ -70,7 +71,7 @@ jobs:
             ${{ steps.extract-release-notes.outputs.release_notes }}
           labels: |
             release
-            automated pr
+            bot
           signoff: false
           #team-reviewers: |
           #  owners

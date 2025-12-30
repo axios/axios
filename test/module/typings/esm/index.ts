@@ -1,5 +1,4 @@
 import axios, {
-  InternalAxiosRequestConfig,
   AxiosRequestConfig,
   AxiosHeaders,
   AxiosRequestHeaders,
@@ -138,6 +137,10 @@ interface User {
   name: string;
 }
 
+interface ResponseHeaders {
+  'x-header': string;
+}
+
 // with default AxiosResponse<T> result
 
 const handleUserResponse = (response: AxiosResponse<User>) => {
@@ -183,6 +186,53 @@ axios.put<User>('/user', { name: 'foo', id: 1 })
 
 axios.patch<User>('/user', { name: 'foo', id: 1 })
     .then(handleUserResponse)
+    .catch(handleError);
+
+// with custom response headers AxiosResponse<T, any, H> result
+
+const handleUserResponseWithCustomHeaders = (response: AxiosResponse<User, any, ResponseHeaders>) => {
+      console.log(response.data.id);
+      console.log(response.data.name);
+      console.log(response.status);
+      console.log(response.statusText);
+      console.log(response.headers);
+      console.log(response.config);
+    };
+
+axios.get<User, AxiosResponse<User, any, ResponseHeaders>>('/user?id=12345')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.get<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { params: { id: 12345 } })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.head<User, AxiosResponse<User, any, ResponseHeaders>>('/user')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.options<User, AxiosResponse<User, any, ResponseHeaders>>('/user')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.delete<User, AxiosResponse<User, any, ResponseHeaders>>('/user')
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.post<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.post<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 }, { headers: { 'X-FOO': 'bar' } })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.put<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 })
+    .then(handleUserResponseWithCustomHeaders)
+    .catch(handleError);
+
+axios.patch<User, AxiosResponse<User, any, ResponseHeaders>>('/user', { name: 'foo', id: 1 })
+    .then(handleUserResponseWithCustomHeaders)
     .catch(handleError);
 
 // (Typed methods) with custom response type
@@ -237,7 +287,7 @@ axios.request<User, string>({
 // Instances
 
 const instance1: AxiosInstance = axios.create();
-const instance2: AxiosInstance = axios.create(config);
+const instance2: AxiosInstance = instance1.create(config);
 
 instance1(config)
     .then(handleResponse)
@@ -627,7 +677,7 @@ for (const [header, value] of headers) {
   headers.get('x');
 })();
 
-// AxiosHeaders instance assigment
+// AxiosHeaders instance assignment
 
 {
   const requestInterceptorId: number = axios.interceptors.request.use(

@@ -1,7 +1,7 @@
 {
   "name": "axios",
   "main": "./dist/axios.js",
-  "version": "1.8.4",
+  "version": "1.13.2",
   "homepage": "https://axios-http.com",
   "authors": [
     "Matt Zabriskie"
@@ -16,7 +16,12 @@
     "http",
     "ajax",
     "promise",
-    "node"
+    "node",
+    "browser",
+    "fetch",
+    "rest",
+    "api",
+    "client"
   ],
   "license": "MIT",
   "ignore": [

@@ -1,5 +1,194 @@
 # Changelog
 
+## [1.13.2](https://github.com/axios/axios/compare/v1.13.1...v1.13.2) (2025-11-04)
+
+
+### Bug Fixes
+
+* **http:** fix 'socket hang up' bug for keep-alive requests when using timeouts; ([#7206](https://github.com/axios/axios/issues/7206)) ([8d37233](https://github.com/axios/axios/commit/8d372335f5c50ecd01e8615f2468a9eb19703117))
+* **http:** use default export for http2 module to support stubs; ([#7196](https://github.com/axios/axios/issues/7196)) ([0588880](https://github.com/axios/axios/commit/0588880ac7ddba7594ef179930493884b7e90bf5))
+
+
+### Performance Improvements
+
+* **http:** fix early loop exit; ([#7202](https://github.com/axios/axios/issues/7202)) ([12c314b](https://github.com/axios/axios/commit/12c314b603e7852a157e93e47edb626a471ba6c5))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+28/-9 (#7206 #7202 )")
+- <img src="https://avatars.githubusercontent.com/u/1174718?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kasper Isager Dalsgarð](https://github.com/kasperisager "+9/-9 (#7196 )")
+
+## [1.13.1](https://github.com/axios/axios/compare/v1.13.0...v1.13.1) (2025-10-28)
+
+
+### Bug Fixes
+
+* **http:** fixed a regression that caused the data stream to be interrupted for responses with non-OK HTTP statuses; ([#7193](https://github.com/axios/axios/issues/7193)) ([bcd5581](https://github.com/axios/axios/commit/bcd5581d208cd372055afdcb2fd10b68ca40613c))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh "+220/-111 (#7173 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+18/-1 (#7193 )")
+
+# [1.13.0](https://github.com/axios/axios/compare/v1.12.2...v1.13.0) (2025-10-27)
+
+
+### Bug Fixes
+
+* **fetch:** prevent TypeError when config.env is undefined ([#7155](https://github.com/axios/axios/issues/7155)) ([015faec](https://github.com/axios/axios/commit/015faeca9f26db76f9562760f04bb9f8229f4db1))
+* resolve issue [#7131](https://github.com/axios/axios/issues/7131) (added spacing in mergeConfig.js) ([#7133](https://github.com/axios/axios/issues/7133)) ([9b9ec98](https://github.com/axios/axios/commit/9b9ec98548d93e9f2204deea10a5f1528bf3ce62))
+
+
+### Features
+
+* **http:** add HTTP2 support; ([#7150](https://github.com/axios/axios/issues/7150)) ([d676df7](https://github.com/axios/axios/commit/d676df772244726533ca320f42e967f5af056bac))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+794/-180 (#7186 #7150 #7039 )")
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+24/-509 (#7032 )")
+- <img src="https://avatars.githubusercontent.com/u/195581631?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aviraj2929](https://github.com/Aviraj2929 "+211/-93 (#7136 #7135 #7134 #7112 )")
+- <img src="https://avatars.githubusercontent.com/u/181717941?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [prasoon patel](https://github.com/Prasoon52 "+167/-6 (#7099 )")
+- <img src="https://avatars.githubusercontent.com/u/141911040?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Samyak Dandge](https://github.com/Samy-in "+134/-0 (#7171 )")
+- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh "+53/-56 (#7170 )")
+- <img src="https://avatars.githubusercontent.com/u/146073621?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rahul Kumar](https://github.com/jaiyankargupta "+28/-28 (#7073 )")
+- <img src="https://avatars.githubusercontent.com/u/148716794?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Amit Verma](https://github.com/Amitverma0509 "+24/-13 (#7129 )")
+- <img src="https://avatars.githubusercontent.com/u/141427581?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Abhishek3880](https://github.com/abhishekmaniy "+23/-4 (#7119 #7117 #7116 #7115 )")
+- <img src="https://avatars.githubusercontent.com/u/91522146?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dhvani Maktuporia](https://github.com/Dhvani365 "+14/-5 (#7175 )")
+- <img src="https://avatars.githubusercontent.com/u/41838423?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Usama Ayoub](https://github.com/sam3690 "+4/-4 (#7133 )")
+- <img src="https://avatars.githubusercontent.com/u/79366821?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ikuy1203](https://github.com/ikuy1203 "+3/-3 (#7166 )")
+- <img src="https://avatars.githubusercontent.com/u/74639234?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nikhil Simon Toppo](https://github.com/Kirito-Excalibur "+1/-1 (#7172 )")
+- <img src="https://avatars.githubusercontent.com/u/200562195?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jane Wangari](https://github.com/Wangarijane "+1/-1 (#7155 )")
+- <img src="https://avatars.githubusercontent.com/u/78318848?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Supakorn Ieamgomol](https://github.com/Supakornn "+1/-1 (#7065 )")
+- <img src="https://avatars.githubusercontent.com/u/134518?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kian-Meng Ang](https://github.com/kianmeng "+1/-1 (#7046 )")
+- <img src="https://avatars.githubusercontent.com/u/13148112?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [UTSUMI Keiji](https://github.com/k-utsumi "+1/-1 (#7037 )")
+
+## [1.12.2](https://github.com/axios/axios/compare/v1.12.1...v1.12.2) (2025-09-14)
+
+
+### Bug Fixes
+
+* **fetch:** use current global fetch instead of cached one when env fetch is not specified to keep MSW support; ([#7030](https://github.com/axios/axios/issues/7030)) ([cf78825](https://github.com/axios/axios/commit/cf78825e1229b60d1629ad0bbc8a752ff43c3f53))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+247/-16 (#7030 #7022 #7024 )")
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+2/-6 (#7028 #7029 )")
+
+## [1.12.1](https://github.com/axios/axios/compare/v1.12.0...v1.12.1) (2025-09-12)
+
+
+### Bug Fixes
+
+* **types:** fixed env config types; ([#7020](https://github.com/axios/axios/issues/7020)) ([b5f26b7](https://github.com/axios/axios/commit/b5f26b75bdd9afa95016fb67d0cab15fc74cbf05))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+10/-4 (#7020 )")
+
+# [1.12.0](https://github.com/axios/axios/compare/v1.11.0...v1.12.0) (2025-09-11)
+
+
+### Bug Fixes
+
+* adding build artifacts ([9ec86de](https://github.com/axios/axios/commit/9ec86de257bfa33856571036279169f385ed92bd))
+* dont add dist on release ([a2edc36](https://github.com/axios/axios/commit/a2edc3606a4f775d868a67bb3461ff18ce7ecd11))
+* **fetch-adapter:** set correct Content-Type for Node FormData ([#6998](https://github.com/axios/axios/issues/6998)) ([a9f47af](https://github.com/axios/axios/commit/a9f47afbf3224d2ca987dbd8188789c7ea853c5d))
+* **node:** enforce maxContentLength for data: URLs ([#7011](https://github.com/axios/axios/issues/7011)) ([945435f](https://github.com/axios/axios/commit/945435fc51467303768202250debb8d4ae892593))
+* package exports ([#5627](https://github.com/axios/axios/issues/5627)) ([aa78ac2](https://github.com/axios/axios/commit/aa78ac23fc9036163308c0f6bd2bb885e7af3f36))
+* **params:** removing '[' and ']' from URL encode exclude characters ([#3316](https://github.com/axios/axios/issues/3316)) ([#5715](https://github.com/axios/axios/issues/5715)) ([6d84189](https://github.com/axios/axios/commit/6d84189349c43b1dcdd977b522610660cc4c7042))
+* release pr run ([fd7f404](https://github.com/axios/axios/commit/fd7f404488b2c4f238c2fbe635b58026a634bfd2))
+* **types:** change the type guard on isCancel ([#5595](https://github.com/axios/axios/issues/5595)) ([0dbb7fd](https://github.com/axios/axios/commit/0dbb7fd4f61dc568498cd13a681fa7f907d6ec7e))
+
+
+### Features
+
+* **adapter:** surface low‑level network error details; attach original error via cause ([#6982](https://github.com/axios/axios/issues/6982)) ([78b290c](https://github.com/axios/axios/commit/78b290c57c978ed2ab420b90d97350231c9e5d74))
+* **fetch:** add fetch, Request, Response env config variables for the adapter; ([#7003](https://github.com/axios/axios/issues/7003)) ([c959ff2](https://github.com/axios/axios/commit/c959ff29013a3bc90cde3ac7ea2d9a3f9c08974b))
+* support reviver on JSON.parse ([#5926](https://github.com/axios/axios/issues/5926)) ([2a97634](https://github.com/axios/axios/commit/2a9763426e43d996fd60d01afe63fa6e1f5b4fca)), closes [#5924](https://github.com/axios/axios/issues/5924)
+* **types:** extend AxiosResponse interface to include custom headers type ([#6782](https://github.com/axios/axios/issues/6782)) ([7960d34](https://github.com/axios/axios/commit/7960d34eded2de66ffd30b4687f8da0e46c4903e))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini "+132/-16760 (#7002 #5926 #6782 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+4263/-293 (#7006 #7003 )")
+- <img src="https://avatars.githubusercontent.com/u/53833811?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [khani](https://github.com/mkhani01 "+111/-15 (#6982 )")
+- <img src="https://avatars.githubusercontent.com/u/7712804?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ameer Assadi](https://github.com/AmeerAssadi "+123/-0 (#7011 )")
+- <img src="https://avatars.githubusercontent.com/u/70265727?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Emiedonmokumo Dick-Boro](https://github.com/emiedonmokumo "+55/-35 (#6998 )")
+- <img src="https://avatars.githubusercontent.com/u/47859767?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Zeroday BYTE](https://github.com/opsysdebug "+8/-8 (#6980 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jason Saayman](https://github.com/jasonsaayman "+7/-7 (#6985 #6985 )")
+- <img src="https://avatars.githubusercontent.com/u/13010755?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [최예찬](https://github.com/HealGaren "+5/-7 (#5715 )")
+- <img src="https://avatars.githubusercontent.com/u/7002604?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Gligor Kotushevski](https://github.com/gligorkot "+3/-1 (#5627 )")
+- <img src="https://avatars.githubusercontent.com/u/15893?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aleksandar Dimitrov](https://github.com/adimit "+2/-1 (#5595 )")
+
+# [1.11.0](https://github.com/axios/axios/compare/v1.10.0...v1.11.0) (2025-07-22)
+
+
+### Bug Fixes
+
+* form-data npm pakcage ([#6970](https://github.com/axios/axios/issues/6970)) ([e72c193](https://github.com/axios/axios/commit/e72c193722530db538b19e5ddaaa4544d226b253))
+* prevent RangeError when using large Buffers ([#6961](https://github.com/axios/axios/issues/6961)) ([a2214ca](https://github.com/axios/axios/commit/a2214ca1bc60540baf2c80573cea3a0ff91ba9d1))
+* **types:** resolve type discrepancies between ESM and CJS TypeScript declaration files ([#6956](https://github.com/axios/axios/issues/6956)) ([8517aa1](https://github.com/axios/axios/commit/8517aa16f8d082fc1d5309c642220fa736159110))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12534341?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [izzy goldman](https://github.com/izzygld "+186/-93 (#6970 )")
+- <img src="https://avatars.githubusercontent.com/u/142807367?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Manish Sahani](https://github.com/manishsahanidev "+70/-0 (#6961 )")
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+12/-10 (#6938 #6939 )")
+- <img src="https://avatars.githubusercontent.com/u/392612?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [James Nail](https://github.com/jrnail23 "+13/-2 (#6956 )")
+- <img src="https://avatars.githubusercontent.com/u/163745239?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tejaswi1305](https://github.com/Tejaswi1305 "+1/-1 (#6894 )")
+
+# [1.10.0](https://github.com/axios/axios/compare/v1.9.0...v1.10.0) (2025-06-14)
+
+
+### Bug Fixes
+
+* **adapter:** pass fetchOptions to fetch function ([#6883](https://github.com/axios/axios/issues/6883)) ([0f50af8](https://github.com/axios/axios/commit/0f50af8e076b7fb403844789bd5e812dedcaf4ed))
+* **form-data:** convert boolean values to strings in FormData serialization ([#6917](https://github.com/axios/axios/issues/6917)) ([5064b10](https://github.com/axios/axios/commit/5064b108de336ff34862650709761b8a96d26be0))
+* **package:** add module entry point for React Native; ([#6933](https://github.com/axios/axios/issues/6933)) ([3d343b8](https://github.com/axios/axios/commit/3d343b86dc4fd0eea0987059c5af04327c7ae304))
+
+
+### Features
+
+* **types:** improved fetchOptions interface ([#6867](https://github.com/axios/axios/issues/6867)) ([63f1fce](https://github.com/axios/axios/commit/63f1fce233009f5db1abf2586c145825ac98c3d7))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+30/-19 (#6933 #6920 #6893 #6892 )")
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+2/-6 (#6922 #6923 )")
+- <img src="https://avatars.githubusercontent.com/u/48370490?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dimitrios Lazanas](https://github.com/dimitry-lzs "+4/-0 (#6917 )")
+- <img src="https://avatars.githubusercontent.com/u/71047946?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Adrian Knapp](https://github.com/AdrianKnapp "+2/-2 (#6867 )")
+- <img src="https://avatars.githubusercontent.com/u/16129206?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Howie Zhao](https://github.com/howiezhao "+3/-1 (#6872 )")
+- <img src="https://avatars.githubusercontent.com/u/6788611?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Uhyeon Park](https://github.com/warpdev "+1/-1 (#6883 )")
+- <img src="https://avatars.githubusercontent.com/u/20028934?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sampo Silvennoinen](https://github.com/stscoundrel "+1/-1 (#6913 )")
+
+# [1.9.0](https://github.com/axios/axios/compare/v1.8.4...v1.9.0) (2025-04-24)
+
+
+### Bug Fixes
+
+* **core:** fix the Axios constructor implementation to treat the config argument as optional; ([#6881](https://github.com/axios/axios/issues/6881)) ([6c5d4cd](https://github.com/axios/axios/commit/6c5d4cd69286868059c5e52d45085cb9a894a983))
+* **fetch:** fixed ERR_NETWORK mapping for Safari browsers; ([#6767](https://github.com/axios/axios/issues/6767)) ([dfe8411](https://github.com/axios/axios/commit/dfe8411c9a082c3d068bdd1f8d6e73054f387f45))
+* **headers:** allow iterable objects to be a data source for the set method; ([#6873](https://github.com/axios/axios/issues/6873)) ([1b1f9cc](https://github.com/axios/axios/commit/1b1f9ccdc15f1ea745160ec9a5223de9db4673bc))
+* **headers:** fix `getSetCookie` by using 'get' method for caseless access; ([#6874](https://github.com/axios/axios/issues/6874)) ([d4f7df4](https://github.com/axios/axios/commit/d4f7df4b304af8b373488fdf8e830793ff843eb9))
+* **headers:** fixed support for setting multiple header values from an iterated source; ([#6885](https://github.com/axios/axios/issues/6885)) ([f7a3b5e](https://github.com/axios/axios/commit/f7a3b5e0f7e5e127b97defa92a132fbf1b55cf15))
+* **http:** send minimal end multipart boundary ([#6661](https://github.com/axios/axios/issues/6661)) ([987d2e2](https://github.com/axios/axios/commit/987d2e2dd3b362757550f36eab875e60640b6ddc))
+* **types:** fix autocomplete for adapter config ([#6855](https://github.com/axios/axios/issues/6855)) ([e61a893](https://github.com/axios/axios/commit/e61a8934d8f94dd429a2f309b48c67307c700df0))
+
+
+### Features
+
+* **AxiosHeaders:** add getSetCookie method to retrieve set-cookie headers values ([#5707](https://github.com/axios/axios/issues/5707)) ([80ea756](https://github.com/axios/axios/commit/80ea756e72bcf53110fa792f5d7ab76e8b11c996))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+200/-34 (#6890 #6889 #6888 #6885 #6881 #6767 #6874 #6873 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+26/-1 ()")
+- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini "+21/-0 (#5707 )")
+- <img src="https://avatars.githubusercontent.com/u/2500247?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [George Cheng](https://github.com/Gerhut "+3/-3 (#5096 )")
+- <img src="https://avatars.githubusercontent.com/u/30260221?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [FatahChan](https://github.com/FatahChan "+2/-2 (#6855 )")
+- <img src="https://avatars.githubusercontent.com/u/49002?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ionuț G. Stan](https://github.com/igstan "+1/-1 (#6661 )")
+
 ## [1.8.4](https://github.com/axios/axios/compare/v1.8.3...v1.8.4) (2025-03-19)
 
 
@@ -1166,4 +1355,5 @@ This functionality is considered as a fix.
 - [Marco Weber](https://github.com/mrcwbr)
 - [Luca Pizzini](https://github.com/lpizzinidev)
 - [Willian Agostini](https://github.com/WillianAgostini)
+
 - [Huyen Nguyen](https://github.com/huyenltnguyen)

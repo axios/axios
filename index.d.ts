@@ -234,6 +234,7 @@ export interface TransitionalOptions {
   silentJSONParsing?: boolean;
   forcedJSONParsing?: boolean;
   clarifyTimeoutError?: boolean;
+  legacyInterceptorReqResOrdering?: boolean;
 }
 
 export interface GenericAbortSignal {

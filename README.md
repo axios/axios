@@ -1840,3 +1840,10 @@ axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/
 ## License
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+### URL Parsing
+
+Axios now throws an explicit error if a URL has a protocol but is missing `//`.
+
+```js
+axios.get('http:/example.com') // Throws: Invalid URL: missing '//' after protocol

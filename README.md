@@ -1,11 +1,11 @@
 
-<h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="38px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/stytch_white.png"> <img width="200px" height="38px" src="https://axios-http.com/assets/sponsors/stytch.png" alt="Stytch"/> </picture> </a> <p align="center" title="API-first authentication, authorization, and fraud prevention">API-first authentication, authorization, and fraud prevention</p> <p align="center"> <a href="https://stytch.com/?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;website-link&amp;utm_campaign&#x3D;axios-http" target="_blank"><b>Website</b></a> | <a href="https://stytch.com/docs?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;docs-link&amp;utm_campaign&#x3D;axios-http" target="_blank"><b>Documentation</b></a> | <a href="https://github.com/stytchauth/stytch-node?utm_source&#x3D;oss-sponsorship&amp;utm_medium&#x3D;paid_sponsorship&amp;utm_content&#x3D;node-sdk&amp;utm_campaign&#x3D;axios-http" target="_blank"><b>Node.js</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.principal.com</b></a> </p>
+<h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.principal.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="85px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/dfa9670ad5e66eea17315332453c7f4e3a3b5905.png" alt="Buy Instagram Followers Twicsy"/> </a> <p align="center" title="Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site to buy followers from the likes of US Magazine.">Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site...</p> <p align="center"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>twicsy.com</b></a> </p>
-</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Docs</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Community</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://route4me.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="51px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/route4me_white.png"> <img width="200px" height="51px" src="https://axios-http.com/assets/sponsors/route4me.png" alt="Route4Me"/> </picture> </a> <p align="center" title="Best Route Planning And Route Optimization Software">Best Route Planning And Route Optimization Software</p> <p align="center"> <a href="https://route4me.com/platform/route-optimization-software?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Explore</b></a> | <a href="https://route4me.com/platform/marketplace/pricing?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Free Trial</b></a> | <a href="https://route4me.com/contact?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Contact</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Docs</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Community</b></a> </p>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://route4me.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="51px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/route4me_white.png"> <img width="200px" height="51px" src="https://axios-http.com/assets/sponsors/route4me.png" alt="Route4Me"/> </picture> </a> <p align="center" title="Best Route Planning And Route Optimization Software">Best Route Planning And Route Optimization Software</p> <p align="center"> <a href="https://route4me.com/platform/route-optimization-software?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Explore</b></a> | <a href="https://route4me.com/platform/marketplace/pricing?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Free Trial</b></a> | <a href="https://route4me.com/contact?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Contact</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="62px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e1625cb54e10ee40180c99d1495a462e9d6664a4.png" alt="Buzzoid - Buy Instagram Followers"/> </a> <p align="center" title="At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#x27;s #1 IG service since 2012.">At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rate...</p> <p align="center"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>buzzoid.com</b></a> </p>
-</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e699ec99f7df3a203ddbc49d3c7712a907e628ea.png" alt="Poprey - Buy Instagram Likes"/> </a> <p align="center" title="Buy Instagram Likes">Buy Instagram Likes</p> <p align="center"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>poprey.com</b></a> </p>
+</td><td align="center" width="33.333333333333336%"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e699ec99f7df3a203ddbc49d3c7712a907e628ea.png" alt="Poprey - Buy Instagram Likes"/> </a> <p align="center" title="Buy Instagram Likes">Buy Instagram Likes</p> <p align="center"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>poprey.com</b></a> </p>
+</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://betking.com.ua/sports-book/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/6767b3891180eb94f442953d450a5c121ab8edf6.jpg" alt="Букмекер"/> </a> <p align="center" title="Ставки на спорт, БК в Україні">Ставки на спорт, БК в Україні</p> <p align="center"> <a href="https://betking.com.ua/sports-book/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>betking.com.ua</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="71px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/16450b4dc0deb9dab5a511bf2bc8b8b4ac33412f.png" alt="Requestly"/> </a> <p align="center" title="A lightweight open-source API Development, Testing &amp; Mocking platform">A lightweight open-source API Development, Testing &amp; Mocking platform</p> <p align="center"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>requestly.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
 </td></tr></table>
@@ -65,6 +65,7 @@
   - [Interceptors](#interceptors)
     - [Multiple Interceptors](#multiple-interceptors)
   - [Handling Errors](#handling-errors)
+  - [Handling Timeouts](#handling-timeouts)
   - [Cancellation](#cancellation)
     - [AbortController](#abortcontroller)
     - [CancelToken 👎](#canceltoken-deprecated)
@@ -188,13 +189,13 @@ const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundl
 Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.13.2/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.13.2/dist/axios.min.js"></script>
 ```
 
 ## Example
@@ -921,6 +922,27 @@ axios.get('/user/12345')
   });
 ```
 
+## Handling Timeouts
+
+```js
+async function fetchWithTimeout() {
+  try {
+    const response = await axios.get('https://example.com/data', {
+      timeout: 5000 // 5 seconds
+    });
+
+    console.log('Response:', response.data);
+
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+      console.error('❌ Request timed out!');
+    } else {
+      console.error('❌ Error:', error.message);
+    }
+  }
+}
+```
+
 ## Cancellation
 
 ### AbortController
@@ -1082,7 +1104,7 @@ The server will handle it as:
 If your backend body-parser (like `body-parser` of `express.js`) supports nested objects decoding, you will get the same object on the server-side automatically
 
 ```js
-  var app = express();
+  const app = express();
 
   app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
@@ -1098,7 +1120,7 @@ If your backend body-parser (like `body-parser` of `express.js`) supports nested
 
 ### FormData
 
-To send the data as a `multipart/formdata` you need to pass a formData instance as a payload.
+To send the data as a `multipart/form-data` you need to pass a formData instance as a payload.
 Setting the `Content-Type` header is not required as Axios guesses it based on the payload type.
 
 ```js
@@ -1777,6 +1799,25 @@ The recommended setting is to use `"moduleResolution": "node16"` (this is implie
 If use ESM, your settings should be fine.
 If you compile TypeScript to CJS and you can’t use `"moduleResolution": "node 16"`, you have to enable `esModuleInterop`.
 If you use TypeScript to type check CJS JavaScript code, your only option is to use `"moduleResolution": "node16"`.
+
+
+You can also create a custom instance with typed interceptors:
+
+```typescript
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+
+const apiClient: AxiosInstance = axios.create({
+  baseURL: 'https://api.example.com',
+  timeout: 10000,
+});
+
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    // Add auth token
+    return config;
+  }
+);
+```
 
 ## Online one-click setup
 

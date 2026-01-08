@@ -522,7 +522,27 @@ These are the available config options for making requests. Only the `url` is re
   }
 }
 ```
+**Handling request timeouts with async/await**
 
+```js
+import axios from 'axios';
+
+async function fetchData() {
+  try {
+    const response = await axios.get('https://example.com/api', {
+      timeout: 1000,
+    });
+
+    console.log(response.data);
+  } catch (error) {
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timed out');
+    } else {
+      console.error(error.message);
+    }
+  }
+}
+```
 ## Response Schema
 
 The response for a request contains the following information.

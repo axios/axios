@@ -100,7 +100,7 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   isAxiosError: boolean;
   status?: number;
   toJSON: () => object;
-  cause?: unknown;
+  cause?: Error;
   event?: BrowserProgressEvent;
   static from<T = unknown, D = any>(
     error: Error | unknown,

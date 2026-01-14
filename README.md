@@ -500,6 +500,9 @@ These are the available config options for making requests. Only the `url` is re
   // `undefined` (default) - set XSRF header only for the same origin requests
   withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
+  // Indicates whether the cookie config should be resolved asynchronously to get the value of xsrfCookieName from cookie.
+  asyncCookieConfig: boolean | undefined,
+
   // `onUploadProgress` allows handling of progress events for uploads
   // browser & node.js
   onUploadProgress: function ({loaded, total, progress, bytes, estimated, rate, upload = true}) {

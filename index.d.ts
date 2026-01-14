@@ -347,7 +347,6 @@ export interface AxiosRequestConfig<D = any> {
   transport?: any;
   httpAgent?: any;
   httpsAgent?: any;
-  asyncCookieConfig?: boolean;
   proxy?: AxiosProxyConfig | false;
   cancelToken?: CancelToken;
   decompress?: boolean;
@@ -368,6 +367,7 @@ export interface AxiosRequestConfig<D = any> {
   lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
       ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+  asyncCookieConfig?: boolean;
   parseReviver?: (this: any, key: string, value: any) => any;
   fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> | Record<string, any>;
 }

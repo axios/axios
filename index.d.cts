@@ -413,7 +413,8 @@ declare namespace axios {
     beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
     socketPath?: string | null;
     transport?: any;
-    asyncCookieConfig?: boolean;
+    httpAgent?: any;
+    httpsAgent?: any;
     proxy?: AxiosProxyConfig | false;
     cancelToken?: CancelToken;
     decompress?: boolean;
@@ -434,6 +435,7 @@ declare namespace axios {
     lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
         ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
     withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+    asyncCookieConfig?: boolean;
     fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> | Record<string, any>;
   }
 

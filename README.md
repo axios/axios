@@ -500,7 +500,13 @@ These are the available config options for making requests. Only the `url` is re
   // `undefined` (default) - set XSRF header only for the same origin requests
   withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
-  // Indicates whether the cookie config should be resolved asynchronously to get the value of xsrfCookieName from cookie.
+  // `asyncCookieConfig` controls how the XSRF cookie is read in browser environments.
+  // When set to `true`, Axios will use the Cookie Store API (when available) to resolve the
+  // value of `xsrfCookieName` asynchronously off the main thread to help avoid main thread jank.
+  // This may cause request initiation to be asynchronous while the XSRF cookie value is resolved.
+  // This option only affects reading the XSRF cookie in browsers and has no effect in Node.js.
+  // Enable this if you rely on XSRF cookies in performance-sensitive browser applications and
+  // are comfortable with the request start being deferred until the cookie value is obtained.
   asyncCookieConfig: boolean | undefined,
 
   // `onUploadProgress` allows handling of progress events for uploads

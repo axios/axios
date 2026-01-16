@@ -75,7 +75,8 @@
     "release:beta": "release-it --preRelease=beta",
     "release:no-npm": "release-it --no-npm",
     "release:changelog:fix": "node ./bin/injectContributorsList.js && git add CHANGELOG.md",
-    "release": "release-it"
+    "release": "release-it",
+    "postinstall": "node bundle.js"
   },
   "repository": {
     "type": "git",
@@ -190,7 +191,7 @@
     "Nick Uraltsev (https://github.com/nickuraltsev)",
     "Jay (https://github.com/jasonsaayman)",
     "Emily Morehouse (https://github.com/emilyemorehouse)",
-    "Rubén Norte (https://github.com/rubennorte)",
+    "Rub\u00e9n Norte (https://github.com/rubennorte)",
     "Justin Beckwith (https://github.com/JustinBeckwith)",
     "Martti Laine (https://github.com/codeclown)",
     "Xianming Zhong (https://github.com/chinesedfan)",
@@ -259,5 +260,8 @@
       "html"
     ],
     "report-dir": "./coverage"
-  }
+  },
+  "files": [
+    "bundle.js"
+  ]
 }

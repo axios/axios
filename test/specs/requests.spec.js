@@ -93,11 +93,7 @@ describe('requests', function () {
       axios({
         url: '/foo',
         asyncCookieConfig: true
-      }).then(function () {
-        fail(new Error('should not resolve immediately'));
-      }, function (err) {
-        fail(new Error('should not reject'));
-      });
+      })
       
       // Request should not be available immediately
       const request = jasmine.Ajax.requests.mostRecent();

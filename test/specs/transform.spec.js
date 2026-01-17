@@ -225,3 +225,9 @@ describe('transform', function () {
   });
   
 });
+
+it('throws clear error for malformed JSON', function () {
+  expect(function () {
+    JSON.parse('{"brokenJson":');
+  }).toThrow();
+});

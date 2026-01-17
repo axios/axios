@@ -1840,3 +1840,13 @@ axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/
 ## License
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+
+## Error Handling
+
+Axios throws an error for non-2xx responses.
+
+### JSON Parsing Errors
+
+Axios provides clearer error messages when JSON parsing fails
+and preserves the original response for easier debugging.

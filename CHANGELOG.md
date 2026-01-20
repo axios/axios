@@ -1,5 +1,72 @@
 # Changelog
 
+## [1.13.3](https://github.com/axios/axios/compare/v1.13.2...v1.13.3) (2026-01-20)
+
+
+### Bug Fixes
+
+* **http2:** Use port 443 for HTTPS connections by default. ([#7256](https://github.com/axios/axios/issues/7256)) ([d7e6065](https://github.com/axios/axios/commit/d7e60653460480ffacecf85383012ca1baa6263e))
+* **interceptor:** handle the error in the same interceptor ([#6269](https://github.com/axios/axios/issues/6269)) ([5945e40](https://github.com/axios/axios/commit/5945e40bb171d4ac4fc195df276cf952244f0f89))
+* main field in package.json should correspond to cjs artifacts ([#5756](https://github.com/axios/axios/issues/5756)) ([7373fbf](https://github.com/axios/axios/commit/7373fbff24cd92ce650d99ff6f7fe08c2e2a0a04))
+* **package.json:** add 'bun' package.json 'exports' condition. Load the Node.js build in Bun instead of the browser build ([#5754](https://github.com/axios/axios/issues/5754)) ([b89217e](https://github.com/axios/axios/commit/b89217e3e91de17a3d55e2b8f39ceb0e9d8aeda8))
+* silentJSONParsing=false should throw on invalid JSON ([#7253](https://github.com/axios/axios/issues/7253)) ([#7257](https://github.com/axios/axios/issues/7257)) ([7d19335](https://github.com/axios/axios/commit/7d19335e43d6754a1a9a66e424f7f7da259895bf))
+* turn AxiosError into a native error ([#5394](https://github.com/axios/axios/issues/5394)) ([#5558](https://github.com/axios/axios/issues/5558)) ([1c6a86d](https://github.com/axios/axios/commit/1c6a86dd2c0623ee1af043a8491dbc96d40e883b))
+* **types:** add handlers to AxiosInterceptorManager interface ([#5551](https://github.com/axios/axios/issues/5551)) ([8d1271b](https://github.com/axios/axios/commit/8d1271b49fc226ed7defd07cd577bd69a55bb13a))
+* **types:** restore AxiosError.cause type from unknown to Error ([#7327](https://github.com/axios/axios/issues/7327)) ([d8233d9](https://github.com/axios/axios/commit/d8233d9e8e9a64bfba9bbe01d475ba417510b82b))
+* unclear error message is thrown when specifying an empty proxy authorization ([#6314](https://github.com/axios/axios/issues/6314)) ([6ef867e](https://github.com/axios/axios/commit/6ef867e684adf7fb2343e3b29a79078a3c76dc29))
+
+
+### Features
+
+* add `undefined` as a value in AxiosRequestConfig ([#5560](https://github.com/axios/axios/issues/5560)) ([095033c](https://github.com/axios/axios/commit/095033c626895ecdcda2288050b63dcf948db3bd))
+* add automatic minor and patch upgrades to dependabot ([#6053](https://github.com/axios/axios/issues/6053)) ([65a7584](https://github.com/axios/axios/commit/65a7584eda6164980ddb8cf5372f0afa2a04c1ed))
+* add Node.js coverage script using c8 (closes [#7289](https://github.com/axios/axios/issues/7289)) ([#7294](https://github.com/axios/axios/issues/7294)) ([ec9d94e](https://github.com/axios/axios/commit/ec9d94e9f88da13e9219acadf65061fb38ce080a))
+* added copilot instructions ([3f83143](https://github.com/axios/axios/commit/3f83143bfe617eec17f9d7dcf8bafafeeae74c26))
+* compatibility with frozen prototypes ([#6265](https://github.com/axios/axios/issues/6265)) ([860e033](https://github.com/axios/axios/commit/860e03396a536e9b926dacb6570732489c9d7012))
+* enhance pipeFileToResponse with error handling ([#7169](https://github.com/axios/axios/issues/7169)) ([88d7884](https://github.com/axios/axios/commit/88d78842541610692a04282233933d078a8a2552))
+* **types:** Intellisense for string literals in a widened union ([#6134](https://github.com/axios/axios/issues/6134)) ([f73474d](https://github.com/axios/axios/commit/f73474d02c5aa957b2daeecee65508557fd3c6e5)), closes [/github.com/microsoft/TypeScript/issues/33471#issuecomment-1376364329](https://github.com//github.com/microsoft/TypeScript/issues/33471/issues/issuecomment-1376364329)
+
+
+### Reverts
+
+* Revert "fix: silentJSONParsing=false should throw on invalid JSON (#7253) (#7…" (#7298) ([a4230f5](https://github.com/axios/axios/commit/a4230f5581b3f58b6ff531b6dbac377a4fd7942a)), closes [#7253](https://github.com/axios/axios/issues/7253) [#7](https://github.com/axios/axios/issues/7) [#7298](https://github.com/axios/axios/issues/7298)
+* **deps:** bump peter-evans/create-pull-request from 7 to 8 in the github-actions group  ([#7334](https://github.com/axios/axios/issues/7334)) ([2d6ad5e](https://github.com/axios/axios/commit/2d6ad5e48bd29b0b2b5e7e95fb473df98301543a))
+
+### Contributors to this release
+
+- <img src="https://avatars.githubusercontent.com/u/175160345?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ashvin Tiwari](https://github.com/ashvin2005 "+1752/-4 (#7218 #7218 )")
+- <img src="https://avatars.githubusercontent.com/u/71729144?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nikunj Mochi](https://github.com/mochinikunj "+940/-12 (#7294 #7294 )")
+- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh "+544/-102 (#7169 #7185 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [jasonsaayman](https://github.com/jasonsaayman "+317/-73 (#7334 #7298 )")
+- <img src="https://avatars.githubusercontent.com/u/377911?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Julian Dax](https://github.com/brodo "+99/-120 (#5558 )")
+- <img src="https://avatars.githubusercontent.com/u/184285082?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Akash Dhar Dubey](https://github.com/AKASHDHARDUBEY "+167/-0 (#7287 #7288 )")
+- <img src="https://avatars.githubusercontent.com/u/145687605?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Madhumita](https://github.com/madhumitaaa "+20/-68 (#7198 )")
+- <img src="https://avatars.githubusercontent.com/u/24915252?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tackoil](https://github.com/Tackoil "+80/-2 (#6269 )")
+- <img src="https://avatars.githubusercontent.com/u/145078271?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Justin Dhillon](https://github.com/justindhillon "+41/-41 (#6324 #6315 )")
+- <img src="https://avatars.githubusercontent.com/u/184138832?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rudransh](https://github.com/Rudrxxx "+71/-2 (#7257 )")
+- <img src="https://avatars.githubusercontent.com/u/146366930?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [WuMingDao](https://github.com/WuMingDao "+36/-36 (#7215 )")
+- <img src="https://avatars.githubusercontent.com/u/46827243?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [codenomnom](https://github.com/codenomnom "+70/-0 (#7201 #7201 )")
+- <img src="https://avatars.githubusercontent.com/u/189698992?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nandan Acharya](https://github.com/Nandann018-ux "+60/-10 (#7272 )")
+- <img src="https://avatars.githubusercontent.com/u/7225168?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Eric Dubé](https://github.com/KernelDeimos "+22/-40 (#7042 )")
+- <img src="https://avatars.githubusercontent.com/u/915045?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tibor Pilz](https://github.com/tiborpilz "+40/-4 (#5551 )")
+- <img src="https://avatars.githubusercontent.com/u/23138717?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Gabriel Quaresma](https://github.com/joaoGabriel55 "+31/-4 (#6314 )")
+- <img src="https://avatars.githubusercontent.com/u/21505?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Turadg Aleahmad](https://github.com/turadg "+23/-6 (#6265 )")
+- <img src="https://avatars.githubusercontent.com/u/4273631?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [JohnTitor](https://github.com/kiritosan "+14/-14 (#6155 )")
+- <img src="https://avatars.githubusercontent.com/u/39668736?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [rohit miryala](https://github.com/rohitmiryala "+22/-0 (#7250 )")
+- <img src="https://avatars.githubusercontent.com/u/30316250?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Wilson Mun](https://github.com/wmundev "+20/-0 (#6053 )")
+- <img src="https://avatars.githubusercontent.com/u/184506226?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [techcodie](https://github.com/techcodie "+7/-7 (#7236 )")
+- <img src="https://avatars.githubusercontent.com/u/187598667?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ved Vadnere](https://github.com/Archis009 "+5/-6 (#7283 )")
+- <img src="https://avatars.githubusercontent.com/u/115612815?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [svihpinc](https://github.com/svihpinc "+5/-3 (#6134 )")
+- <img src="https://avatars.githubusercontent.com/u/123884782?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [SANDESH LENDVE](https://github.com/mrsandy1965 "+3/-3 (#7246 )")
+- <img src="https://avatars.githubusercontent.com/u/12529395?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lubos](https://github.com/mrlubos "+5/-1 (#7312 )")
+- <img src="https://avatars.githubusercontent.com/u/709451?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jarred Sumner](https://github.com/Jarred-Sumner "+5/-1 (#5754 )")
+- <img src="https://avatars.githubusercontent.com/u/17907922?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Adam Hines](https://github.com/thebanjomatic "+2/-1 (#5756 )")
+- <img src="https://avatars.githubusercontent.com/u/177472603?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Subhan Kumar Rai](https://github.com/Subhan030 "+2/-1 (#7256 )")
+- <img src="https://avatars.githubusercontent.com/u/6473925?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Joseph Frazier](https://github.com/josephfrazier "+1/-1 (#7311 )")
+- <img src="https://avatars.githubusercontent.com/u/184906930?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [KT0803](https://github.com/KT0803 "+0/-2 (#7229 )")
+- <img src="https://avatars.githubusercontent.com/u/6703955?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Albie](https://github.com/AlbertoSadoc "+1/-1 (#5560 )")
+- <img src="https://avatars.githubusercontent.com/u/9452325?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jake Hayes](https://github.com/thejayhaykid "+1/-0 (#5999 )")
+
 ## [1.13.2](https://github.com/axios/axios/compare/v1.13.1...v1.13.2) (2025-11-04)
 
 

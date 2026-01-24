@@ -41,15 +41,18 @@ jobs:
             echo "only_modified=false" >> $GITHUB_OUTPUT
           fi
       - name: Read sponsors.md file content
+        if: steps.sponsors-requires-update.outputs.changed == 'true'
         run: |
           echo 'CONTENT<<EOF' >> $GITHUB_ENV
           cat ./temp/sponsors.md >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
         shell: bash
       - name: Echo sponsors content
+        if: steps.sponsors-requires-update.outputs.changed == 'true'
         run: |
           echo "$CONTENT"
       - name: Create pull request
+        if: steps.sponsors-requires-update.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           branch: sponsors

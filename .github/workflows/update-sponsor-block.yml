@@ -30,25 +30,17 @@ jobs:
       - name: Check if sponsors require updates
         id: sponsors-requires-update
         run: node ./resources/update-sponsors.js
-      - name: Exit gracefully if no sponsor updates are needed
-        run: |
-          if [ "${{ steps.sponsors-requires-update.outputs.changed }}" = "false" ]; then
-            echo "No sponsor updates needed. Skipping further steps."
-            echo "only_modified=false" >> $GITHUB_OUTPUT
-            exit 0
-          else
-            echo "Sponsor updates needed. Continuing with the workflow."
-            echo "only_modified=false" >> $GITHUB_OUTPUT
-          fi
       - name: Read sponsors.md file content
         run: |
           echo 'CONTENT<<EOF' >> $GITHUB_ENV
           cat ./temp/sponsors.md >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
         shell: bash
+        if: steps.sponsors-requires-update.outputs.changed == 'true'
       - name: Echo sponsors content
         run: |
           echo "$CONTENT"
+        if: steps.sponsors-requires-update.outputs.changed == 'true'
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -65,3 +57,4 @@ jobs:
             automerge
           signoff: false
           draft: false
+        if: steps.sponsors-requires-update.outputs.changed == 'true'

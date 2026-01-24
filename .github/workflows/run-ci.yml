@@ -22,8 +22,8 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: "Checkout repo"
-      - uses: actions/checkout@v6
+      - name: Checkout repo
+        uses: actions/checkout@v6
         with:
           persist-credentials: true
       - name: Check if core code files were modified

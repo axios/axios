@@ -67,20 +67,23 @@ jobs:
         run: npm run build
       - name: Run unit tests
         run: npm run test:node
+      - name: Run package tests
+        run: npm run test:package
       # Browser tests are only run on the latest Node.js version
       # this helps to reduce the overall CI time and resource usage
       # as browser tests are independent of the Node.js version.
       - name: Run browser tests
         run: npm run test:browser
         if: matrix.node-version == '24.x'
-      - name: Run package tests
-        run: npm run test:package
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+        if: matrix.node-version == '24.x'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
+        if: matrix.node-version == '24.x'
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
+        if: matrix.node-version == '24.x'

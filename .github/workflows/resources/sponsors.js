@@ -1,7 +1,7 @@
 import fs from "fs/promises";
-import _axios from "../index.js";
-import { exec } from "./repo.js";
-import { colorize } from "./helpers/colorize.js";
+import _axios from "../../../index.js";
+import { exec } from "../../../bin/repo.js";
+import { colorize } from "../../../bin/helpers/colorize.js";
 
 const axios = _axios.create({
   headers: {

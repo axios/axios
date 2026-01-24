@@ -46,44 +46,36 @@ jobs:
             tsconfig.json
             tslint.json
             webpack.config.js
-      - name: Exit gracefully if only non-core code files were modified
-        run: |
-          if [ "${{ steps.changed-core-code-files.outputs.only_changed_files }}" = "false" ]; then
-            echo "Only non-core code files were modified. Skipping further steps."
-            echo "core_modified=false" >> $GITHUB_OUTPUT
-            exit 0
-          else
-            echo "Core code files were modified. Continuing with the workflow."
-            echo "core_modified=true" >> $GITHUB_OUTPUT
-          fi
       - name: Setup node
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Install dependencies
         run: npm ci
+        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Build project
         run: npm run build
+        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Run unit tests
         run: npm run test:node
+        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Run package tests
         run: npm run test:package
-      # Browser tests are only run on the latest Node.js version
-      # this helps to reduce the overall CI time and resource usage
-      # as browser tests are independent of the Node.js version.
+        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Run browser tests
         run: npm run test:browser
-        if: matrix.node-version == '24.x'
+        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
-        if: matrix.node-version == '24.x'
+        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: ${{ matrix.language }}
+          languages: javascript
           queries: security-extended,security-and-quality
-        if: matrix.node-version == '24.x'
+        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-        if: matrix.node-version == '24.x'
+        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'

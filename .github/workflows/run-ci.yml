@@ -1,0 +1,86 @@
+name: "Continuous integration"
+
+on:
+  pull_request:
+    branches:
+      - "*"
+      - "*/*"
+      - "**"
+      - "!sponsors"
+      - "!release/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
+      fail-fast: false
+
+    steps:
+      - name: "Checkout repo"
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - name: Check if core code files were modified
+        id: changed-core-code-files
+        uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            .husky/**
+            lib/**
+            test/**
+            .eslintrc.cjs
+            bower.json
+            gulpfile.js
+            index.d.cts
+            index.ts
+            index.js
+            karma.conf.js
+            package.json
+            rollup.config.js
+            tsconfig.json
+            tslint.json
+            webpack.config.js
+      - name: Exit gracefully if only non-core code files were modified
+        run: |
+          if [ "${{ steps.changed-core-code-files.outputs.only_changed_files }}" = "false" ]; then
+            echo "Only non-core code files were modified. Skipping further steps."
+            echo "core_modified=false" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "Core code files were modified. Continuing with the workflow."
+            echo "core_modified=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build project
+        run: npm run build
+      - name: Run unit tests
+        run: npm run test:node
+      # Browser tests are only run on the latest Node.js version
+      # this helps to reduce the overall CI time and resource usage
+      # as browser tests are independent of the Node.js version.
+      - name: Run browser tests
+        run: npm run test:browser
+        if: matrix.node-version == '24.x'
+      - name: Run package tests
+        run: npm run test:package
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+      - name: Perform CodeQL Analysis
+          uses: github/codeql-action/analyze@v4

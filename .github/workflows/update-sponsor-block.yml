@@ -1,0 +1,67 @@
+name: Update readme sponsor block
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - webhook
+  schedule:
+    - cron: "0 1 * * *"
+
+jobs:
+  sponsors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Check if sponsors require updates
+        id: sponsors-requires-update
+        run: node ./resources/update-sponsors.js
+      - name: Exit gracefully if no sponsor updates are needed
+        run: |
+          if [ "${{ steps.sponsors-requires-update.outputs.changed }}" = "false" ]; then
+            echo "No sponsor updates needed. Skipping further steps."
+            echo "only_modified=false" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "Sponsor updates needed. Continuing with the workflow."
+            echo "only_modified=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Read sponsors.md file content
+        run: |
+          echo 'CONTENT<<EOF' >> $GITHUB_ENV
+          cat ./temp/sponsors.md >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+        shell: bash
+      - name: Echo sponsors content
+        run: |
+          echo "$CONTENT"
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: sponsors
+          delete-branch: true
+          commit-message: "chore(sponsor): update sponsor block"
+          title: "[Chore] Update sponsor block"
+          body: |
+            **New sponsor block update:**
+            ${{ env.CONTENT }}
+          labels: |
+            pr::docs
+            bot
+            automerge
+          signoff: false
+          draft: false

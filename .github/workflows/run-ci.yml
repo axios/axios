@@ -27,56 +27,31 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: true
-      - name: Check if core code files were modified
-        id: changed-core-code-files
-        uses: tj-actions/changed-files@v47
-        with:
-          files: |
-            .husky/**
-            lib/**
-            test/**
-            .eslintrc.cjs
-            bower.json
-            gulpfile.js
-            index.d.cts
-            index.d.ts
-            index.js
-            karma.conf.cjs
-            package.json
-            rollup.config.js
-            tsconfig.json
-            tslint.json
-            webpack.config.js
       - name: Setup node
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Install dependencies
         run: npm ci
-        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Build project
         run: npm run build
-        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Run unit tests
         run: npm run test:node
-        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Run package tests
         run: npm run test:package
-        if: steps.changed-core-code-files.outputs.any_changed == 'true'
       - name: Run browser tests
         run: npm run test:browser
-        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'
+        if: matrix.node-version == '24.x'
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
-        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'
+        if: matrix.node-version == '24.x'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: javascript
           queries: security-extended,security-and-quality
-        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'
+        if: matrix.node-version == '24.x'
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
-        if: matrix.node-version == '24.x' && steps.changed-core-code-files.outputs.any_changed == 'true'
+        if: matrix.node-version == '24.x'

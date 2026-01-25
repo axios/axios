@@ -3,7 +3,7 @@ name: Publish package to NPM
 on:
   push:
     tags:
-      - "*.*.*"
+      - "v*.*.*"
 
 permissions:
   contents: read
@@ -27,6 +27,6 @@ jobs:
       - name: Build project
         run: npm run build
       - name: Publish to NPM
-        run: npm publish
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

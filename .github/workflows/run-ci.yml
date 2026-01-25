@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   ci:
@@ -38,9 +39,9 @@ jobs:
             bower.json
             gulpfile.js
             index.d.cts
-            index.ts
+            index.d.ts
             index.js
-            karma.conf.js
+            karma.conf.cjs
             package.json
             rollup.config.js
             tsconfig.json

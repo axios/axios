@@ -44,6 +44,7 @@ jobs:
           version-type: ${{ github.event.inputs.type }}
           default: ${{ github.event.inputs.beta == true && 'prerelease' || 'patch' }}
           commit-message: "chore(release): prepare release ${{version}}"
+          tag-prefix: "v"
           skip-tag: true
           skip-push: true
       - name: Build project
@@ -54,12 +55,6 @@ jobs:
         run: npm run test:package
       - name: Run browser tests
         run: npm run test:browser
-      - name: Push release branch
-        uses: ad-m/github-push-action@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "release/${{ steps.bump_version.outputs.newTag }}"
-          force: true
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:

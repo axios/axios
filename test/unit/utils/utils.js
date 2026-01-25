@@ -140,7 +140,7 @@ describe('utils', function (){
       assert.strictEqual(utils.isReactNativeBlob(undefined), false);
       assert.strictEqual(utils.isReactNativeBlob('string'), false);
       assert.strictEqual(utils.isReactNativeBlob(123), false);
-      assert.strictEqual(utils.isReactNativeBlob(true), false);
+      assert.strictEqual(utils.isReactNativeBlob(false), false);
     });
 
     it('should return true even if uri is empty string', function () {

@@ -56,9 +56,9 @@ jobs:
             **New sponsor block update:**
             ${{ env.CONTENT }}
           labels: |
-            pr::docs
-            bot
-            automerge
+            commit::docs
+            priority::high
+            type::automated-pr
           signoff: false
           draft: false
         if: steps.sponsors-requires-update.outputs.changed == 'true'

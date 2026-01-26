@@ -1,5 +1,5 @@
-var assert = require('assert');
-var fromDataURI = require('../../../lib/helpers/fromDataURI');
+import assert from 'assert';
+import fromDataURI from '../../../lib/helpers/fromDataURI.js';
 
 describe('helpers::fromDataURI', function () {
   it('should return buffer from data uri', function () {

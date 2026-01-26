@@ -1,9 +1,9 @@
-var parseHeaders = require('../../../lib/helpers/parseHeaders');
+import parseHeaders from '../../../lib/helpers/parseHeaders';
 
 describe('helpers::parseHeaders', function () {
   it('should parse headers', function () {
-    var date = new Date();
-    var parsed = parseHeaders(
+    const date = new Date();
+    const parsed = parseHeaders(
       'Date: ' + date.toISOString() + '\n' +
       'Content-Type: application/json\n' +
       'Connection: keep-alive\n' +
@@ -17,11 +17,11 @@ describe('helpers::parseHeaders', function () {
   });
 
   it('should use array for set-cookie', function() {
-    var parsedZero = parseHeaders('');
-    var parsedSingle = parseHeaders(
+    const parsedZero = parseHeaders('');
+    const parsedSingle = parseHeaders(
       'Set-Cookie: key=val;'
     );
-    var parsedMulti = parseHeaders(
+    const parsedMulti = parseHeaders(
       'Set-Cookie: key=val;\n' +
       'Set-Cookie: key2=val2;\n'
     );
@@ -32,7 +32,7 @@ describe('helpers::parseHeaders', function () {
   });
 
   it('should handle duplicates', function() {
-    var parsed = parseHeaders(
+    const parsed = parseHeaders(
       'Age: age-a\n' + // age is in ignore duplicates blocklist
       'Age: age-b\n' +
       'Foo: foo-a\n' +

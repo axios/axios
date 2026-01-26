@@ -1,8 +1,8 @@
-var settle = require('../../../lib/core/settle');
+import settle from '../../../lib/core/settle';
 
 describe('core::settle', function() {
-  var resolve;
-  var reject;
+  let resolve;
+  let reject;
 
   beforeEach(function() {
     resolve = jasmine.createSpy('resolve');
@@ -10,7 +10,7 @@ describe('core::settle', function() {
   });
 
   it('should resolve promise if status is not set', function() {
-    var response = {
+    const response = {
       config: {
         validateStatus: function() {
           return true;
@@ -23,7 +23,7 @@ describe('core::settle', function() {
   });
 
   it('should resolve promise if validateStatus is not set', function() {
-    var response = {
+    const response = {
       status: 500,
       config: {
       }
@@ -34,7 +34,7 @@ describe('core::settle', function() {
   });
 
   it('should resolve promise if validateStatus returns true', function() {
-    var response = {
+    const response = {
       status: 500,
       config: {
         validateStatus: function() {
@@ -48,10 +48,10 @@ describe('core::settle', function() {
   });
 
   it('should reject promise if validateStatus returns false', function() {
-    var req = {
+    const req = {
       path: '/foo'
     };
-    var response = {
+    const response = {
       status: 500,
       config: {
         validateStatus: function() {
@@ -63,7 +63,7 @@ describe('core::settle', function() {
     settle(resolve, reject, response);
     expect(resolve).not.toHaveBeenCalled();
     expect(reject).toHaveBeenCalled();
-    var reason = reject.calls.first().args[0];
+    const reason = reject.calls.first().args[0];
     expect(reason instanceof Error).toBe(true);
     expect(reason.message).toBe('Request failed with status code 500');
     expect(reason.config).toBe(response.config);
@@ -72,8 +72,8 @@ describe('core::settle', function() {
   });
 
   it('should pass status to validateStatus', function() {
-    var validateStatus = jasmine.createSpy('validateStatus');
-    var response = {
+    const validateStatus = jasmine.createSpy('validateStatus');
+    const response = {
       status: 500,
       config: {
         validateStatus: validateStatus

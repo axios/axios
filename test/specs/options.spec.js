@@ -1,3 +1,6 @@
+// import AxiosHeaders from "../../lib/core/AxiosHeaders.js";
+// import isAbsoluteURL from '../../lib/helpers/isAbsoluteURL.js';
+
 describe('options', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -57,20 +60,35 @@ describe('options', function () {
   });
 
   it('should accept base URL', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'http://test.com/'
     });
 
-    instance.get('/foo');
-
+    instance.get('/foo')
     getAjaxRequest().then(function (request) {
       expect(request.url).toBe('http://test.com/foo');
       done();
     });
   });
 
+  it('should warn about baseUrl', function (done) {
+    spyOn(window.console, 'warn');
+
+    const instance = axios.create({
+      baseUrl: 'http://example.com/'
+    });
+
+    instance.get('/foo');
+
+    getAjaxRequest().then(function (request) {
+      expect(window.console.warn).toHaveBeenCalledWith('baseUrl is likely a misspelling of baseURL');
+      expect(request.url).toBe('/foo');
+      done();
+    });
+  });
+
   it('should ignore base URL if request URL is absolute', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       baseURL: 'http://someurl.com/'
     });
 
@@ -82,9 +100,24 @@ describe('options', function () {
     });
   });
 
+  it('should combine the URLs if base url and request url exist and allowAbsoluteUrls is false', function (done) {
+    const instance = axios.create({
+      baseURL: 'http://someurl.com/',
+      allowAbsoluteUrls: false
+    });
+
+    instance.get('http://someotherurl.com/');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('http://someurl.com/http://someotherurl.com/');
+      done();
+    });
+
+  });
+
   it('should change only the baseURL of the specified instance', function() {
-    var instance1 = axios.create();
-    var instance2 = axios.create();
+    const instance1 = axios.create();
+    const instance2 = axios.create();
 
     instance1.defaults.baseURL = 'http://instance1.example.com/';
 
@@ -92,8 +125,8 @@ describe('options', function () {
   });
 
   it('should change only the headers of the specified instance', function() {
-    var instance1 = axios.create();
-    var instance2 = axios.create();
+    const instance1 = axios.create();
+    const instance2 = axios.create();
 
     instance1.defaults.headers.common.Authorization = 'faketoken';
     instance2.defaults.headers.common.Authorization = 'differentfaketoken';

@@ -1,5 +1,14 @@
-# Reporting a Vulnerability
+# Security Policy
 
-If you discover a security vulnerability within axios, please submit a report via [huntr.dev](https://huntr.dev/bounties/?target=https%3A%2F%2Fgithub.com%2Faxios%2Faxios). Bounties and CVEs are automatically managed and allocated via the platform.
+## Supported Versions
 
-All security vulnerabilities will be promptly addressed.
+The following versions will receive security updates promptly based on the maintainers' discretion.
+
+| Version | Supported          |
+| ------- | ------------------ |
+| 0.x.x   | :white_check_mark: |
+| 1.x.x   | :white_check_mark: |
+
+## Reporting a Vulnerability
+
+To report a vulnerability, please use the GitHub disclosure in the security tab to alert us to a security issue.

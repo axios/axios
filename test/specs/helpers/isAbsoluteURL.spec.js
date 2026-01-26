@@ -1,4 +1,4 @@
-var isAbsoluteURL = require('../../../lib/helpers/isAbsoluteURL');
+import isAbsoluteURL from '../../../lib/helpers/isAbsoluteURL';
 
 describe('helpers::isAbsoluteURL', function () {
   it('should return true if URL begins with valid scheme name', function () {

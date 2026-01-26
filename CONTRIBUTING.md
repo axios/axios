@@ -1,6 +1,6 @@
 # Contributing
 
-We are open to, and grateful for, any contributions made by the community. By contributing to axios, you agree to abide by the [code of conduct](https://github.com/axios/axios/blob/main/CODE_OF_CONDUCT.md).
+We are open to, and grateful for, any contributions made by the community. By contributing to axios, you agree to abide by the [code of conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md).
 
 ## Code Style
 
@@ -12,28 +12,17 @@ Please follow [conventional commits](https://www.conventionalcommits.org/en/v1.0
 
 ## Testing
 
-Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on [Travis CI](https://travis-ci.org/axios/axios).
+Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on GitHub actions.
 
 ## Documentation
 
-Please update the [docs](README.md) accordingly so that there are no discrepancies between the API and the documentation.
+Please update the [documentation](https://axios-http.com/docs/intro) accordingly so that there are no discrepancies between the API and the documentation.
 
 ## Developing
 
-- `grunt test` run the jasmine and mocha tests
-- `grunt build` run webpack and bundle the source
-- `grunt version` prepare the code for release
-- `grunt watch:test` watch for changes and run `test`
-- `grunt watch:build` watch for changes and run `build`
-
-Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
-
-## Releasing
-
-Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/axios/axios/blob/main/CHANGELOG.md) requires being updated manually. Once this has been done run the commands below. Versions should follow [semantic versioning](http://semver.org/).
-
-- `npm version <newversion> -m "Releasing %s"`
-- `npm publish`
+- `npm run test` runs the jasmine and mocha tests
+- `npm run build` runs rollup and bundles the source
+- `npm run version` prepares the code for release
 
 ## Running Examples
 

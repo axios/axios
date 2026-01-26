@@ -1,5 +1,5 @@
-var AxiosError = require('../../../lib/core/AxiosError');
-var isAxiosError = require('../../../lib/helpers/isAxiosError');
+import AxiosError from '../../../lib/core/AxiosError';
+import isAxiosError from '../../../lib/helpers/isAxiosError';
 
 describe('helpers::isAxiosError', function() {
   it('should return true if the error is created by core::createError', function() {

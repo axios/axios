@@ -1,16 +1,9 @@
-var utils = require('../../../lib/utils');
-var Stream = require('stream');
+import utils from '../../../lib/utils';
 
 describe('utils::isX', function () {
   it('should validate Array', function () {
     expect(utils.isArray([])).toEqual(true);
     expect(utils.isArray({length: 5})).toEqual(false);
-  });
-
-  it('should validate Buffer', function () {
-    expect(utils.isBuffer(Buffer.from('a'))).toEqual(true);
-    expect(utils.isBuffer(null)).toEqual(false);
-    expect(utils.isBuffer(undefined)).toEqual(false);
   });
 
   it('should validate ArrayBuffer', function () {
@@ -66,11 +59,6 @@ describe('utils::isX', function () {
   it('should validate Function', function () {
     expect(utils.isFunction(function () {})).toEqual(true);
     expect(utils.isFunction('function')).toEqual(false);
-  });
-
-  it('should validate Stream', function () {
-    expect(utils.isStream(new Stream.Readable())).toEqual(true);
-    expect(utils.isStream({ foo: 'bar' })).toEqual(false);
   });
 
   it('should validate URLSearchParams', function () {

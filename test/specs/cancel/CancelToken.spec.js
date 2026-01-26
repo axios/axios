@@ -1,5 +1,5 @@
-var CancelToken = require('../../../lib/cancel/CancelToken');
-var CanceledError = require('../../../lib/cancel/CanceledError');
+import CancelToken from '../../../lib/cancel/CancelToken';
+import CanceledError from '../../../lib/cancel/CanceledError';
 
 describe('CancelToken', function() {
   describe('constructor', function() {
@@ -18,8 +18,8 @@ describe('CancelToken', function() {
 
   describe('reason', function() {
     it('returns a CanceledError if cancellation has been requested', function() {
-      var cancel;
-      var token = new CancelToken(function(c) {
+      let cancel;
+      const token = new CancelToken(function(c) {
         cancel = c;
       });
       cancel('Operation has been canceled.');
@@ -28,15 +28,15 @@ describe('CancelToken', function() {
     });
 
     it('returns undefined if cancellation has not been requested', function() {
-      var token = new CancelToken(function() {});
+      const token = new CancelToken(function() {});
       expect(token.reason).toBeUndefined();
     });
   });
 
   describe('promise', function() {
     it('returns a Promise that resolves when cancellation is requested', function(done) {
-      var cancel;
-      var token = new CancelToken(function(c) {
+      let cancel;
+      const token = new CancelToken(function(c) {
         cancel = c;
       });
       token.promise.then(function onFulfilled(value) {
@@ -51,8 +51,8 @@ describe('CancelToken', function() {
   describe('throwIfRequested', function() {
     it('throws if cancellation has been requested', function() {
       // Note: we cannot use expect.toThrowError here as CanceledError does not inherit from Error
-      var cancel;
-      var token = new CancelToken(function(c) {
+      let cancel;
+      const token = new CancelToken(function(c) {
         cancel = c;
       });
       cancel('Operation has been canceled.');
@@ -68,14 +68,14 @@ describe('CancelToken', function() {
     });
 
     it('does not throw if cancellation has not been requested', function() {
-      var token = new CancelToken(function() {});
+      const token = new CancelToken(function() {});
       token.throwIfRequested();
     });
   });
 
   describe('source', function() {
     it('returns an object containing token and cancel function', function() {
-      var source = CancelToken.source();
+      const source = CancelToken.source();
       expect(source.token).toEqual(jasmine.any(CancelToken));
       expect(source.cancel).toEqual(jasmine.any(Function));
       expect(source.token.reason).toBeUndefined();

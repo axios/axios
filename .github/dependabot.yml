@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    groups:
+      github-actions:
+        patterns:
+          - "*"  # Group all Actions updates into a single larger pull request
+    schedule:
+      interval: "weekly"
+  # Upgrade for npm packages, minor and patch versions only
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      production_dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development_dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

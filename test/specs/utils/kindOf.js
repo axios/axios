@@ -1,10 +1,12 @@
-var kindOfTest = require('../../../lib/utils').kindOfTest;
+import utils from '../../../lib/utils';
 
-describe('utils::endsWith', function () {
-  it('should return true if the string ends with passed substring', function () {
-    var test = kindOfTest('number');
+const {kindOf} = utils;
 
-    expect(test(123)).toEqual(true);
-    expect(test('123')).toEqual(false);
+describe('utils::kindOf', function () {
+  it('should return object tag', function () {
+    expect(kindOf({})).toEqual('object');
+    // cached result
+    expect(kindOf({})).toEqual('object');
+    expect(kindOf([])).toEqual('array');
   });
 });

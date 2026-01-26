@@ -1,0 +1,13 @@
+{{#if authors}}
+  ### Contributors to this release
+
+  {{#each authors}}
+    {{#unless isBot}}
+    {{#if login}}
+      - {{#if avatar_url}}<img src="{{avatar_url_sm}}" alt="avatar" width="18"/>{{/if}} [{{displayName}}]({{html_url}} "+{{insertions}}/-{{deletions}} ({{#each prs}}#{{this}} {{/each}})")
+    {{else}}
+      - {{displayName}}
+    {{/if}}
+    {{/unless}}
+  {{/each}}
+{{/if}}

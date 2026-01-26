@@ -1,4 +1,4 @@
-var people = [
+const people = [
   {
     "name": "Matt Zabriskie",
     "github": "mzabriskie",
@@ -25,9 +25,9 @@ var people = [
   }
 ];
 
-module.exports = function (req, res) {
+export default function (req, res) {
   res.writeHead(200, {
-    'Content-Type': 'text/json'
+    'Content-Type': 'application/json'
   });
   res.write(JSON.stringify(people));
   res.end();

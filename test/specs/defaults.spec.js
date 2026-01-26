@@ -1,8 +1,8 @@
-var defaults = require('../../lib/defaults');
-var utils = require('../../lib/utils');
+import defaults from '../../lib/defaults';
+import AxiosHeaders from '../../lib/core/AxiosHeaders';
 
 describe('defaults', function () {
-  var XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
+  const XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
 
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -17,13 +17,13 @@ describe('defaults', function () {
   });
 
   it('should transform request json', function () {
-    expect(defaults.transformRequest[0]({foo: 'bar'})).toEqual('{"foo":"bar"}');
+    expect(defaults.transformRequest[0]({foo: 'bar'}, new AxiosHeaders())).toEqual('{"foo":"bar"}');
   });
 
   it("should also transform request json when 'Content-Type' is 'application/json'", function () {
-    var headers = {
+    const headers = new AxiosHeaders({
       'Content-Type': 'application/json',
-    };
+    });
     expect(defaults.transformRequest[0](JSON.stringify({ foo: 'bar' }), headers)).toEqual('{"foo":"bar"}');
     expect(defaults.transformRequest[0]([42, 43], headers)).toEqual('[42,43]');
     expect(defaults.transformRequest[0]('foo', headers)).toEqual('"foo"');
@@ -34,23 +34,23 @@ describe('defaults', function () {
   });
 
   it("should transform the plain data object to a FormData instance 'Content-Type' if header is 'multipart/form-data'", function() {
-    var headers = {
+    const headers = new AxiosHeaders({
       'Content-Type': 'multipart/form-data'
-    };
+    });
 
-    var payload = {x: 1};
+    const payload = {x: 1};
 
-    var transformed = defaults.transformRequest[0](payload, headers);
+    const transformed = defaults.transformRequest[0](payload, headers);
 
     expect(transformed).toEqual(jasmine.any(FormData));
   });
 
   it('should do nothing to request string', function () {
-    expect(defaults.transformRequest[0]('foo=bar')).toEqual('foo=bar');
+    expect(defaults.transformRequest[0]('foo=bar', new AxiosHeaders())).toEqual('foo=bar');
   });
 
   it('should transform response json', function () {
-    var data = defaults.transformResponse[0].call(defaults, '{"foo":"bar"}');
+    const data = defaults.transformResponse[0].call(defaults, '{"foo":"bar"}');
 
     expect(typeof data).toEqual('object');
     expect(data.foo).toEqual('bar');
@@ -92,7 +92,7 @@ describe('defaults', function () {
   });
 
   it('should use default config for custom instance', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       xsrfCookieName: XSRF_COOKIE_NAME,
       xsrfHeaderName: 'X-CUSTOM-XSRF-TOKEN'
     });
@@ -127,7 +127,7 @@ describe('defaults', function () {
   });
 
   it('should use header config', function (done) {
-    var instance = axios.create({
+    const instance = axios.create({
       headers: {
         common: {
           'X-COMMON-HEADER': 'commonHeaderValue'
@@ -150,12 +150,12 @@ describe('defaults', function () {
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders).toEqual(
-        utils.merge(defaults.headers.common, defaults.headers.get, {
+        AxiosHeaders.concat(defaults.headers.common, defaults.headers.get, {
           'X-COMMON-HEADER': 'commonHeaderValue',
           'X-GET-HEADER': 'getHeaderValue',
           'X-FOO-HEADER': 'fooHeaderValue',
           'X-BAR-HEADER': 'barHeaderValue'
-        })
+        }).toJSON()
       );
       done();
     });
@@ -163,7 +163,7 @@ describe('defaults', function () {
 
   it('should be used by custom instance if set before instance created', function (done) {
     axios.defaults.baseURL = 'http://example.org/';
-    var instance = axios.create();
+    const instance = axios.create();
 
     instance.get('/foo');
 
@@ -174,13 +174,28 @@ describe('defaults', function () {
   });
 
   it('should not be used by custom instance if set after instance created', function (done) {
-    var instance = axios.create();
+    const instance = axios.create();
     axios.defaults.baseURL = 'http://example.org/';
 
+    instance.get('/foo/users');
+
+    getAjaxRequest().then(function (request) {
+      expect(request.url).toBe('/foo/users');
+      done();
+    });
+  });
+
+  it('should resistant to ReDoS attack', function (done) {
+    const instance = axios.create();
+    const start = performance.now();
+    const slashes = '/'.repeat(100000);
+    instance.defaults.baseURL = '/' + slashes + 'bar/';
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.url).toBe('/foo');
+      const elapsedTimeMs = performance.now() - start;
+      expect(elapsedTimeMs).toBeLessThan(20);
+      expect(request.url).toBe('/' + slashes + 'bar/foo');
       done();
     });
   });

@@ -1,0 +1,21 @@
+{{#if files}}
+### Build info (v{{version}})
+
+Client bundles:
+{{#each files}}
+  - {{ name}} ({{ path }})
+    - **[ this ]** - {{ filesize size }} (**{{ filesize gzip }}** gzipped, {{percent compressed}})
+  {{#each history}}
+    - **[{{ tag }}]** - {{filesize size}} (**{{ filesize gzip }}** gzipped, {{percent compressed}})
+  {{/each}}
+{{/each}}
+{{/if}}
+
+{{#if warns}}
+#### Warnings
+  {{#each warns}}
+    {{#if sizeReport}}
+  - ⚠️ File `{{filename}}` has increased in size by `{{filesize diff}}` (`+{{percent percent}}`)
+    {{/if}}
+  {{/each}}
+{{/if}}

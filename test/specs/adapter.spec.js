@@ -1,4 +1,3 @@
-var axios = require('../../index');
 
 describe('adapter', function () {
   beforeEach(function () {
@@ -13,7 +12,7 @@ describe('adapter', function () {
     axios('/foo', {
       adapter: function barAdapter(config) {
         return new Promise(function dispatchXhrRequest(resolve) {
-          var request = new XMLHttpRequest();
+          const request = new XMLHttpRequest();
           request.open('GET', '/bar');
 
           request.onreadystatechange = function () {
@@ -26,7 +25,7 @@ describe('adapter', function () {
           request.send(null);
         });
       }
-    }).catch(console.log);
+    }).catch(done);
 
     getAjaxRequest().then(function(request) {
       expect(request.url).toBe('/bar');
@@ -35,11 +34,11 @@ describe('adapter', function () {
   });
 
   it('should execute adapter code synchronously', function (done) {
-    var asyncFlag = false;
+    let asyncFlag = false;
     axios('/foo', {
       adapter: function barAdapter(config) {
         return new Promise(function dispatchXhrRequest(resolve) {
-          var request = new XMLHttpRequest();
+          const request = new XMLHttpRequest();
           request.open('GET', '/bar');
 
           request.onreadystatechange = function () {
@@ -53,7 +52,7 @@ describe('adapter', function () {
           request.send(null);
         });
       }
-    }).catch(console.log);
+    }).catch(done);
 
     asyncFlag = true;
 
@@ -63,7 +62,7 @@ describe('adapter', function () {
   });
 
   it('should execute adapter code asynchronously when interceptor is present', function (done) {
-    var asyncFlag = false;
+    let asyncFlag = false;
 
     axios.interceptors.request.use(function (config) {
       config.headers.async = 'async it!';
@@ -73,7 +72,7 @@ describe('adapter', function () {
     axios('/foo', {
       adapter: function barAdapter(config) {
         return new Promise(function dispatchXhrRequest(resolve) {
-          var request = new XMLHttpRequest();
+          const request = new XMLHttpRequest();
           request.open('GET', '/bar');
 
           request.onreadystatechange = function () {
@@ -87,7 +86,7 @@ describe('adapter', function () {
           request.send(null);
         });
       }
-    }).catch(console.log);
+    }).catch(done);
 
     asyncFlag = true;
 

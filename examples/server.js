@@ -1,18 +1,24 @@
-var fs = require('fs');
-var path = require('path');
-var http = require('http');
-var argv = require('minimist')(process.argv.slice(2));
-var server;
-var dirs;
+import fs from 'fs';
+import path from 'path';
+import http from 'http';
+import minimist from 'minimist';
+import url from "url";
+
+const argv = minimist(process.argv.slice(2));
+let server;
+let dirs;
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function listDirs(root) {
-  var files = fs.readdirSync(root);
-  var dirs = [];
+  const files = fs.readdirSync(root);
+  const dirs = [];
 
-  for (var i = 0, l = files.length; i < l; i++) {
-    var file = files[i];
+  for (let i = 0, l = files.length; i < l; i++) {
+    const file = files[i];
     if (file[0] !== '.') {
-      var stat = fs.statSync(path.join(root, file));
+      const stat = fs.statSync(path.join(root, file));
       if (stat.isDirectory()) {
         dirs.push(file);
       }
@@ -23,8 +29,8 @@ function listDirs(root) {
 }
 
 function getIndexTemplate() {
-  var links = dirs.map(function (dir) {
-    var url = '/' + dir;
+  const links = dirs.map(function (dir) {
+    const url = '/' + dir;
     return '<li onclick="document.location=\'' + url + '\'"><a href="' + url + '">' + url + '</a></li>';
   });
 
@@ -62,19 +68,57 @@ function send404(res, body) {
 }
 
 function pipeFileToResponse(res, file, type) {
-  if (type) {
-    res.writeHead(200, {
-      'Content-Type': type
-    });
-  }
-  fs.createReadStream(path.join(__dirname, file)).pipe(res);
-}
+  try {
+    // Validate file path - prevent directory traversal
+    const safeBasePath = path.join(__dirname, 'examples');
+    const resolvedPath = path.resolve(path.join(safeBasePath, file));
+    
+    // Ensure the resolved path is within intended directory
+    if (!resolvedPath.startsWith(safeBasePath)) {
+      res.writeHead(400);
+      res.end('Invalid file path');
+      return;
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(resolvedPath)) {
+      res.writeHead(404);
+      res.end('File not found');
+      return;
+    }
 
+    if (type) {
+      res.writeHead(200, {
+        "Content-Type": type
+      });
+    } else {
+      res.writeHead(200);
+    }
+
+    const stream = fs.createReadStream(resolvedPath);
+
+    stream.on("error", (err) => {
+      console.error("Error while reading file:", err.message);
+      if (!res.headersSent) {
+        res.writeHead(500, { "Content-Type": "text/plain" });
+      }
+      res.end("File read error");
+    });
+
+    stream.pipe(res);
+  } catch (err) {
+    console.error("Unexpected error:", err.message);
+    if (!res.headersSent) {
+      res.writeHead(500, { "Content-Type": "text/plain" });
+    }
+    res.end("Internal server error");
+  }
+}
 
 dirs = listDirs(__dirname);
 
 server = http.createServer(function (req, res) {
-  var url = req.url;
+  let url = req.url;
 
   // Process axios itself
   if (/axios\.min\.js$/.test(url)) {
@@ -106,7 +150,7 @@ server = http.createServer(function (req, res) {
   }
 
   // Format request /get -> /get/index.html
-  var parts = url.split('/');
+  const parts = url.split('/');
   if (dirs.indexOf(parts[parts.length - 1]) > -1) {
     url += '/index.html';
   }
@@ -118,15 +162,22 @@ server = http.createServer(function (req, res) {
     } else {
       send404(res);
     }
+    return;
   }
 
   // Process server request
   else if (new RegExp('(' + dirs.join('|') + ')\/server').test(url)) {
     if (fs.existsSync(path.join(__dirname, url + '.js'))) {
-      require(path.join(__dirname, url + '.js'))(req, res);
+      import('file://' + path.join(__dirname, url + '.js')).then((server) => {
+        server.default(req, res);
+      }).catch(err => {
+        console.error('Error importing server:', err);
+        send404(res);
+      });
     } else {
       send404(res);
     }
+    return;
   }
   else {
     send404(res);
@@ -136,5 +187,5 @@ server = http.createServer(function (req, res) {
 const PORT = argv.p || 3000;
 
 server.listen(PORT, () => {
-  console.log(`Examples running on ${PORT}`); 
+  console.log(`Examples running on ${PORT}`);
 });

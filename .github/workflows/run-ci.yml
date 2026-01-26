@@ -1,0 +1,61 @@
+name: Continuous integration
+
+on:
+  pull_request:
+    branches:
+      - "*"
+      - "*/*"
+      - "**"
+      - "!sponsors"
+      - "!release/**"
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
+      fail-fast: false
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build project
+        run: npm run build
+      - name: Run unit tests
+        run: npm run test:node
+      - name: Run package tests
+        run: npm run test:package
+      - name: Run browser tests
+        run: npm run test:browser
+        if: matrix.node-version == '24.x'
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        if: matrix.node-version == '24.x'
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript
+          queries: security-extended,security-and-quality
+        if: matrix.node-version == '24.x'
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        if: matrix.node-version == '24.x'

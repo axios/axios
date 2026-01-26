@@ -1,10 +1,10 @@
-var kindOf = require('../../../lib/utils').kindOf;
+import {kindOfTest} from '../../../lib/utils';
 
-describe('utils::kindOf', function () {
-  it('should return object tag', function () {
-    expect(kindOf({})).toEqual('object');
-    // cached result
-    expect(kindOf({})).toEqual('object');
-    expect(kindOf([])).toEqual('array');
+describe('utils::kindOfTest', function () {
+  it('should return true if the type is matched', function () {
+    const test = kindOfTest('number');
+
+    expect(test(123)).toEqual(true);
+    expect(test('123')).toEqual(false);
   });
 });

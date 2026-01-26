@@ -1,4 +1,4 @@
-module.exports = function (req, res) {
+export default function (req, res) {
   
   req.on('data', function (chunk) {
   });
@@ -6,7 +6,7 @@ module.exports = function (req, res) {
   req.on('end', function () {
     console.log('POST  received');
     res.writeHead(200, {
-      'Content-Type': 'text/json'
+    'Content-Type': 'application/json'
     });
     res.end();
   });

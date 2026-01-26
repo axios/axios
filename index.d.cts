@@ -100,7 +100,7 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   isAxiosError: boolean;
   status?: number;
   toJSON: () => object;
-  cause?: unknown;
+  cause?: Error;
   event?: BrowserProgressEvent;
   static from<T = unknown, D = any>(
     error: Error | unknown,
@@ -515,14 +515,32 @@ declare namespace axios {
     runWhen?: (config: InternalAxiosRequestConfig) => boolean;
   }
 
-  type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+  type AxiosInterceptorFulfilled<T> = (value: T) => T | Promise<T>;
+  type AxiosInterceptorRejected = (error: any) => any;
 
-  type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+  type AxiosRequestInterceptorUse<T> = (
+    onFulfilled?: AxiosInterceptorFulfilled<T> | null,
+    onRejected?: AxiosInterceptorRejected | null,
+    options?: AxiosInterceptorOptions
+  ) => number;
+
+  type AxiosResponseInterceptorUse<T> = (
+    onFulfilled?: AxiosInterceptorFulfilled<T> | null,
+    onRejected?: AxiosInterceptorRejected | null
+  ) => number;
+
+  interface AxiosInterceptorHandler<T> {
+    fulfilled: AxiosInterceptorFulfilled<T>;
+    rejected?: AxiosInterceptorRejected;
+    synchronous: boolean;
+    runWhen?: (config: AxiosRequestConfig) => boolean;
+  }
 
   interface AxiosInterceptorManager<V> {
     use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
     eject(id: number): void;
     clear(): void;
+    handlers?: Array<AxiosInterceptorHandler<V>>;
   }
 
   interface AxiosInstance extends Axios {

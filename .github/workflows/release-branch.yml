@@ -1,0 +1,72 @@
+name: Create release branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        type: choice
+        description: Choose release type
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+        default: auto
+      beta:
+        type: boolean
+        description: Prerelease
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Bump version
+        id: bump_version
+        uses: phips28/gh-action-bump-version@v9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version-type: ${{ github.event.inputs.type }}
+          default: ${{ github.event.inputs.beta == true && 'prerelease' || 'patch' }}
+          commit-message: "chore(release): prepare release ${{version}}"
+          tag-prefix: "v"
+          skip-tag: true
+          skip-push: true
+      - name: Build project
+        run: npm run build
+      - name: Run unit tests
+        run: npm run test:node
+      - name: Run package tests
+        run: npm run test:package
+      - name: Run browser tests
+        run: npm run test:browser
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(release): prepare release ${{ steps.bump_version.outputs.newTag }}"
+          branch: "release/${{ steps.bump_version.outputs.newTag }}"
+          title: "chore(release): prepare release ${{ steps.bump_version.outputs.newTag }}"
+          body: "This PR prepares the release ${{ steps.bump_version.outputs.newTag }}."
+          base: main
+          maintainer-can-modify: true
+          draft: false
+          labels: |
+            type::automated-pr
+            priority::high
+            commit::chore

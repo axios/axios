@@ -1,0 +1,64 @@
+name: Update readme sponsor block
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - webhook
+  schedule:
+    - cron: "0 1 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sponsors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: git config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Check if sponsors require updates
+        id: sponsors-requires-update
+        run: node ../../bin/update-sponsors.js
+      - name: Read sponsors.md file content
+        run: |
+          echo 'CONTENT<<EOF' >> $GITHUB_ENV
+          cat ./temp/sponsors.md >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+        shell: bash
+        if: steps.sponsors-requires-update.outputs.changed == 'true'
+      - name: Echo sponsors content
+        run: |
+          echo "$CONTENT"
+        if: steps.sponsors-requires-update.outputs.changed == 'true'
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: sponsors
+          delete-branch: true
+          commit-message: "chore(sponsor): update sponsor block"
+          title: "[Chore] Update sponsor block"
+          body: |
+            **New sponsor block update:**
+            ${{ env.CONTENT }}
+          labels: |
+            commit::docs
+            priority::high
+            type::automated-pr
+          signoff: false
+          draft: false
+        if: steps.sponsors-requires-update.outputs.changed == 'true'

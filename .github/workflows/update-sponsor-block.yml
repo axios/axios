@@ -46,7 +46,7 @@ jobs:
           echo "$CONTENT"
         if: steps.sponsors-requires-update.outputs.changed == 'true'
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: sponsors
           delete-branch: true

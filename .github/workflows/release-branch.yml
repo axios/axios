@@ -35,18 +35,27 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Bump version
-        id: bump_version
-        uses: phips28/gh-action-bump-version@v9
+      - name: Configure git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Bump version with NPM version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          version-type: ${{ github.event.inputs.type }}
-          default: ${{ github.event.inputs.beta == true && 'prerelease' || 'patch' }}
-          commit-message: "chore(release): prepare release {{version}}"
-          tag-prefix: "v"
-          skip-tag: true
-          skip-push: true
+        id: bump-version
+        run: |
+          TYPE=${{ github.event.inputs.type }}
+          BETA=${{ github.event.inputs.beta }}
+          if [ "$TYPE" = "auto" ]; then
+            npm version $(npm version | grep -Eo 'patch|minor|major' | head -1)
+          else
+            if [ "$BETA" = "true" ]; then
+              npm version $TYPE --preid=beta
+            else
+              npm version $TYPE
+            fi
+          fi
+          echo "::set-output name=newTag::$(node -p "require('./package.json').version")"
       - name: Build project
         run: npm run build
       - name: Run unit tests
@@ -56,14 +65,12 @@ jobs:
       - name: Run browser tests
         run: npm run test:browser
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(release): prepare release ${{ steps.bump_version.outputs.newTag }}"
-          branch: "release/${{ steps.bump_version.outputs.newTag }}"
-          title: "chore(release): prepare release ${{ steps.bump_version.outputs.newTag }}"
-          body: "This PR prepares the release ${{ steps.bump_version.outputs.newTag }}."
-          base: main
+          branch: "release"
+          commit-message: "chore(release): prepare release ${{ steps.bump-version.outputs.newTag }}"
+          body: "This PR prepares the release ${{ steps.bump-version.outputs.newTag }}."
+          title: "chore(release): prepare release ${{ steps.bump-version.outputs.newTag }}"
           maintainer-can-modify: true
           draft: false
           labels: |

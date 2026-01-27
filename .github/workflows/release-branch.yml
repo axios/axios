@@ -56,6 +56,8 @@ jobs:
             fi
           fi
           echo "::set-output name=newTag::$(node -p "require('./package.json').version")"
+      - name: Bump bower etc
+        run: npm run preversion
       - name: Build project
         run: npm run build
       - name: Run unit tests

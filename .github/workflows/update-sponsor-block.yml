@@ -33,7 +33,7 @@ jobs:
         run: npm ci
       - name: Check if sponsors require updates
         id: sponsors-requires-update
-        run: node ../../bin/update-sponsors.js
+        run: node ./bin/update-sponsors.js
       - name: Read sponsors.md file content
         run: |
           echo 'CONTENT<<EOF' >> $GITHUB_ENV

@@ -2,35 +2,32 @@
 
 ## [1.13.3](https://github.com/axios/axios/compare/v1.13.2...v1.13.3) (2026-01-20)
 
-
 ### Bug Fixes
 
-* **http2:** Use port 443 for HTTPS connections by default. ([#7256](https://github.com/axios/axios/issues/7256)) ([d7e6065](https://github.com/axios/axios/commit/d7e60653460480ffacecf85383012ca1baa6263e))
-* **interceptor:** handle the error in the same interceptor ([#6269](https://github.com/axios/axios/issues/6269)) ([5945e40](https://github.com/axios/axios/commit/5945e40bb171d4ac4fc195df276cf952244f0f89))
-* main field in package.json should correspond to cjs artifacts ([#5756](https://github.com/axios/axios/issues/5756)) ([7373fbf](https://github.com/axios/axios/commit/7373fbff24cd92ce650d99ff6f7fe08c2e2a0a04))
-* **package.json:** add 'bun' package.json 'exports' condition. Load the Node.js build in Bun instead of the browser build ([#5754](https://github.com/axios/axios/issues/5754)) ([b89217e](https://github.com/axios/axios/commit/b89217e3e91de17a3d55e2b8f39ceb0e9d8aeda8))
-* silentJSONParsing=false should throw on invalid JSON ([#7253](https://github.com/axios/axios/issues/7253)) ([#7257](https://github.com/axios/axios/issues/7257)) ([7d19335](https://github.com/axios/axios/commit/7d19335e43d6754a1a9a66e424f7f7da259895bf))
-* turn AxiosError into a native error ([#5394](https://github.com/axios/axios/issues/5394)) ([#5558](https://github.com/axios/axios/issues/5558)) ([1c6a86d](https://github.com/axios/axios/commit/1c6a86dd2c0623ee1af043a8491dbc96d40e883b))
-* **types:** add handlers to AxiosInterceptorManager interface ([#5551](https://github.com/axios/axios/issues/5551)) ([8d1271b](https://github.com/axios/axios/commit/8d1271b49fc226ed7defd07cd577bd69a55bb13a))
-* **types:** restore AxiosError.cause type from unknown to Error ([#7327](https://github.com/axios/axios/issues/7327)) ([d8233d9](https://github.com/axios/axios/commit/d8233d9e8e9a64bfba9bbe01d475ba417510b82b))
-* unclear error message is thrown when specifying an empty proxy authorization ([#6314](https://github.com/axios/axios/issues/6314)) ([6ef867e](https://github.com/axios/axios/commit/6ef867e684adf7fb2343e3b29a79078a3c76dc29))
-
+- **http2:** Use port 443 for HTTPS connections by default. ([#7256](https://github.com/axios/axios/issues/7256)) ([d7e6065](https://github.com/axios/axios/commit/d7e60653460480ffacecf85383012ca1baa6263e))
+- **interceptor:** handle the error in the same interceptor ([#6269](https://github.com/axios/axios/issues/6269)) ([5945e40](https://github.com/axios/axios/commit/5945e40bb171d4ac4fc195df276cf952244f0f89))
+- main field in package.json should correspond to cjs artifacts ([#5756](https://github.com/axios/axios/issues/5756)) ([7373fbf](https://github.com/axios/axios/commit/7373fbff24cd92ce650d99ff6f7fe08c2e2a0a04))
+- **package.json:** add 'bun' package.json 'exports' condition. Load the Node.js build in Bun instead of the browser build ([#5754](https://github.com/axios/axios/issues/5754)) ([b89217e](https://github.com/axios/axios/commit/b89217e3e91de17a3d55e2b8f39ceb0e9d8aeda8))
+- silentJSONParsing=false should throw on invalid JSON ([#7253](https://github.com/axios/axios/issues/7253)) ([#7257](https://github.com/axios/axios/issues/7257)) ([7d19335](https://github.com/axios/axios/commit/7d19335e43d6754a1a9a66e424f7f7da259895bf))
+- turn AxiosError into a native error ([#5394](https://github.com/axios/axios/issues/5394)) ([#5558](https://github.com/axios/axios/issues/5558)) ([1c6a86d](https://github.com/axios/axios/commit/1c6a86dd2c0623ee1af043a8491dbc96d40e883b))
+- **types:** add handlers to AxiosInterceptorManager interface ([#5551](https://github.com/axios/axios/issues/5551)) ([8d1271b](https://github.com/axios/axios/commit/8d1271b49fc226ed7defd07cd577bd69a55bb13a))
+- **types:** restore AxiosError.cause type from unknown to Error ([#7327](https://github.com/axios/axios/issues/7327)) ([d8233d9](https://github.com/axios/axios/commit/d8233d9e8e9a64bfba9bbe01d475ba417510b82b))
+- unclear error message is thrown when specifying an empty proxy authorization ([#6314](https://github.com/axios/axios/issues/6314)) ([6ef867e](https://github.com/axios/axios/commit/6ef867e684adf7fb2343e3b29a79078a3c76dc29))
 
 ### Features
 
-* add `undefined` as a value in AxiosRequestConfig ([#5560](https://github.com/axios/axios/issues/5560)) ([095033c](https://github.com/axios/axios/commit/095033c626895ecdcda2288050b63dcf948db3bd))
-* add automatic minor and patch upgrades to dependabot ([#6053](https://github.com/axios/axios/issues/6053)) ([65a7584](https://github.com/axios/axios/commit/65a7584eda6164980ddb8cf5372f0afa2a04c1ed))
-* add Node.js coverage script using c8 (closes [#7289](https://github.com/axios/axios/issues/7289)) ([#7294](https://github.com/axios/axios/issues/7294)) ([ec9d94e](https://github.com/axios/axios/commit/ec9d94e9f88da13e9219acadf65061fb38ce080a))
-* added copilot instructions ([3f83143](https://github.com/axios/axios/commit/3f83143bfe617eec17f9d7dcf8bafafeeae74c26))
-* compatibility with frozen prototypes ([#6265](https://github.com/axios/axios/issues/6265)) ([860e033](https://github.com/axios/axios/commit/860e03396a536e9b926dacb6570732489c9d7012))
-* enhance pipeFileToResponse with error handling ([#7169](https://github.com/axios/axios/issues/7169)) ([88d7884](https://github.com/axios/axios/commit/88d78842541610692a04282233933d078a8a2552))
-* **types:** Intellisense for string literals in a widened union ([#6134](https://github.com/axios/axios/issues/6134)) ([f73474d](https://github.com/axios/axios/commit/f73474d02c5aa957b2daeecee65508557fd3c6e5)), closes [/github.com/microsoft/TypeScript/issues/33471#issuecomment-1376364329](https://github.com//github.com/microsoft/TypeScript/issues/33471/issues/issuecomment-1376364329)
-
+- add `undefined` as a value in AxiosRequestConfig ([#5560](https://github.com/axios/axios/issues/5560)) ([095033c](https://github.com/axios/axios/commit/095033c626895ecdcda2288050b63dcf948db3bd))
+- add automatic minor and patch upgrades to dependabot ([#6053](https://github.com/axios/axios/issues/6053)) ([65a7584](https://github.com/axios/axios/commit/65a7584eda6164980ddb8cf5372f0afa2a04c1ed))
+- add Node.js coverage script using c8 (closes [#7289](https://github.com/axios/axios/issues/7289)) ([#7294](https://github.com/axios/axios/issues/7294)) ([ec9d94e](https://github.com/axios/axios/commit/ec9d94e9f88da13e9219acadf65061fb38ce080a))
+- added copilot instructions ([3f83143](https://github.com/axios/axios/commit/3f83143bfe617eec17f9d7dcf8bafafeeae74c26))
+- compatibility with frozen prototypes ([#6265](https://github.com/axios/axios/issues/6265)) ([860e033](https://github.com/axios/axios/commit/860e03396a536e9b926dacb6570732489c9d7012))
+- enhance pipeFileToResponse with error handling ([#7169](https://github.com/axios/axios/issues/7169)) ([88d7884](https://github.com/axios/axios/commit/88d78842541610692a04282233933d078a8a2552))
+- **types:** Intellisense for string literals in a widened union ([#6134](https://github.com/axios/axios/issues/6134)) ([f73474d](https://github.com/axios/axios/commit/f73474d02c5aa957b2daeecee65508557fd3c6e5)), closes [/github.com/microsoft/TypeScript/issues/33471#issuecomment-1376364329](https://github.com//github.com/microsoft/TypeScript/issues/33471/issues/issuecomment-1376364329)
 
 ### Reverts
 
-* Revert "fix: silentJSONParsing=false should throw on invalid JSON (#7253) (#7…" (#7298) ([a4230f5](https://github.com/axios/axios/commit/a4230f5581b3f58b6ff531b6dbac377a4fd7942a)), closes [#7253](https://github.com/axios/axios/issues/7253) [#7](https://github.com/axios/axios/issues/7) [#7298](https://github.com/axios/axios/issues/7298)
-* **deps:** bump peter-evans/create-pull-request from 7 to 8 in the github-actions group  ([#7334](https://github.com/axios/axios/issues/7334)) ([2d6ad5e](https://github.com/axios/axios/commit/2d6ad5e48bd29b0b2b5e7e95fb473df98301543a))
+- Revert "fix: silentJSONParsing=false should throw on invalid JSON (#7253) (#7…" (#7298) ([a4230f5](https://github.com/axios/axios/commit/a4230f5581b3f58b6ff531b6dbac377a4fd7942a)), closes [#7253](https://github.com/axios/axios/issues/7253) [#7](https://github.com/axios/axios/issues/7) [#7298](https://github.com/axios/axios/issues/7298)
+- **deps:** bump peter-evans/create-pull-request from 7 to 8 in the github-actions group ([#7334](https://github.com/axios/axios/issues/7334)) ([2d6ad5e](https://github.com/axios/axios/commit/2d6ad5e48bd29b0b2b5e7e95fb473df98301543a))
 
 ### Contributors to this release
 
@@ -69,16 +66,14 @@
 
 ## [1.13.2](https://github.com/axios/axios/compare/v1.13.1...v1.13.2) (2025-11-04)
 
-
 ### Bug Fixes
 
-* **http:** fix 'socket hang up' bug for keep-alive requests when using timeouts; ([#7206](https://github.com/axios/axios/issues/7206)) ([8d37233](https://github.com/axios/axios/commit/8d372335f5c50ecd01e8615f2468a9eb19703117))
-* **http:** use default export for http2 module to support stubs; ([#7196](https://github.com/axios/axios/issues/7196)) ([0588880](https://github.com/axios/axios/commit/0588880ac7ddba7594ef179930493884b7e90bf5))
-
+- **http:** fix 'socket hang up' bug for keep-alive requests when using timeouts; ([#7206](https://github.com/axios/axios/issues/7206)) ([8d37233](https://github.com/axios/axios/commit/8d372335f5c50ecd01e8615f2468a9eb19703117))
+- **http:** use default export for http2 module to support stubs; ([#7196](https://github.com/axios/axios/issues/7196)) ([0588880](https://github.com/axios/axios/commit/0588880ac7ddba7594ef179930493884b7e90bf5))
 
 ### Performance Improvements
 
-* **http:** fix early loop exit; ([#7202](https://github.com/axios/axios/issues/7202)) ([12c314b](https://github.com/axios/axios/commit/12c314b603e7852a157e93e47edb626a471ba6c5))
+- **http:** fix early loop exit; ([#7202](https://github.com/axios/axios/issues/7202)) ([12c314b](https://github.com/axios/axios/commit/12c314b603e7852a157e93e47edb626a471ba6c5))
 
 ### Contributors to this release
 
@@ -87,10 +82,9 @@
 
 ## [1.13.1](https://github.com/axios/axios/compare/v1.13.0...v1.13.1) (2025-10-28)
 
-
 ### Bug Fixes
 
-* **http:** fixed a regression that caused the data stream to be interrupted for responses with non-OK HTTP statuses; ([#7193](https://github.com/axios/axios/issues/7193)) ([bcd5581](https://github.com/axios/axios/commit/bcd5581d208cd372055afdcb2fd10b68ca40613c))
+- **http:** fixed a regression that caused the data stream to be interrupted for responses with non-OK HTTP statuses; ([#7193](https://github.com/axios/axios/issues/7193)) ([bcd5581](https://github.com/axios/axios/commit/bcd5581d208cd372055afdcb2fd10b68ca40613c))
 
 ### Contributors to this release
 
@@ -99,16 +93,14 @@
 
 # [1.13.0](https://github.com/axios/axios/compare/v1.12.2...v1.13.0) (2025-10-27)
 
-
 ### Bug Fixes
 
-* **fetch:** prevent TypeError when config.env is undefined ([#7155](https://github.com/axios/axios/issues/7155)) ([015faec](https://github.com/axios/axios/commit/015faeca9f26db76f9562760f04bb9f8229f4db1))
-* resolve issue [#7131](https://github.com/axios/axios/issues/7131) (added spacing in mergeConfig.js) ([#7133](https://github.com/axios/axios/issues/7133)) ([9b9ec98](https://github.com/axios/axios/commit/9b9ec98548d93e9f2204deea10a5f1528bf3ce62))
-
+- **fetch:** prevent TypeError when config.env is undefined ([#7155](https://github.com/axios/axios/issues/7155)) ([015faec](https://github.com/axios/axios/commit/015faeca9f26db76f9562760f04bb9f8229f4db1))
+- resolve issue [#7131](https://github.com/axios/axios/issues/7131) (added spacing in mergeConfig.js) ([#7133](https://github.com/axios/axios/issues/7133)) ([9b9ec98](https://github.com/axios/axios/commit/9b9ec98548d93e9f2204deea10a5f1528bf3ce62))
 
 ### Features
 
-* **http:** add HTTP2 support; ([#7150](https://github.com/axios/axios/issues/7150)) ([d676df7](https://github.com/axios/axios/commit/d676df772244726533ca320f42e967f5af056bac))
+- **http:** add HTTP2 support; ([#7150](https://github.com/axios/axios/issues/7150)) ([d676df7](https://github.com/axios/axios/commit/d676df772244726533ca320f42e967f5af056bac))
 
 ### Contributors to this release
 
@@ -132,10 +124,9 @@
 
 ## [1.12.2](https://github.com/axios/axios/compare/v1.12.1...v1.12.2) (2025-09-14)
 
-
 ### Bug Fixes
 
-* **fetch:** use current global fetch instead of cached one when env fetch is not specified to keep MSW support; ([#7030](https://github.com/axios/axios/issues/7030)) ([cf78825](https://github.com/axios/axios/commit/cf78825e1229b60d1629ad0bbc8a752ff43c3f53))
+- **fetch:** use current global fetch instead of cached one when env fetch is not specified to keep MSW support; ([#7030](https://github.com/axios/axios/issues/7030)) ([cf78825](https://github.com/axios/axios/commit/cf78825e1229b60d1629ad0bbc8a752ff43c3f53))
 
 ### Contributors to this release
 
@@ -144,10 +135,9 @@
 
 ## [1.12.1](https://github.com/axios/axios/compare/v1.12.0...v1.12.1) (2025-09-12)
 
-
 ### Bug Fixes
 
-* **types:** fixed env config types; ([#7020](https://github.com/axios/axios/issues/7020)) ([b5f26b7](https://github.com/axios/axios/commit/b5f26b75bdd9afa95016fb67d0cab15fc74cbf05))
+- **types:** fixed env config types; ([#7020](https://github.com/axios/axios/issues/7020)) ([b5f26b7](https://github.com/axios/axios/commit/b5f26b75bdd9afa95016fb67d0cab15fc74cbf05))
 
 ### Contributors to this release
 
@@ -155,25 +145,23 @@
 
 # [1.12.0](https://github.com/axios/axios/compare/v1.11.0...v1.12.0) (2025-09-11)
 
-
 ### Bug Fixes
 
-* adding build artifacts ([9ec86de](https://github.com/axios/axios/commit/9ec86de257bfa33856571036279169f385ed92bd))
-* dont add dist on release ([a2edc36](https://github.com/axios/axios/commit/a2edc3606a4f775d868a67bb3461ff18ce7ecd11))
-* **fetch-adapter:** set correct Content-Type for Node FormData ([#6998](https://github.com/axios/axios/issues/6998)) ([a9f47af](https://github.com/axios/axios/commit/a9f47afbf3224d2ca987dbd8188789c7ea853c5d))
-* **node:** enforce maxContentLength for data: URLs ([#7011](https://github.com/axios/axios/issues/7011)) ([945435f](https://github.com/axios/axios/commit/945435fc51467303768202250debb8d4ae892593))
-* package exports ([#5627](https://github.com/axios/axios/issues/5627)) ([aa78ac2](https://github.com/axios/axios/commit/aa78ac23fc9036163308c0f6bd2bb885e7af3f36))
-* **params:** removing '[' and ']' from URL encode exclude characters ([#3316](https://github.com/axios/axios/issues/3316)) ([#5715](https://github.com/axios/axios/issues/5715)) ([6d84189](https://github.com/axios/axios/commit/6d84189349c43b1dcdd977b522610660cc4c7042))
-* release pr run ([fd7f404](https://github.com/axios/axios/commit/fd7f404488b2c4f238c2fbe635b58026a634bfd2))
-* **types:** change the type guard on isCancel ([#5595](https://github.com/axios/axios/issues/5595)) ([0dbb7fd](https://github.com/axios/axios/commit/0dbb7fd4f61dc568498cd13a681fa7f907d6ec7e))
-
+- adding build artifacts ([9ec86de](https://github.com/axios/axios/commit/9ec86de257bfa33856571036279169f385ed92bd))
+- dont add dist on release ([a2edc36](https://github.com/axios/axios/commit/a2edc3606a4f775d868a67bb3461ff18ce7ecd11))
+- **fetch-adapter:** set correct Content-Type for Node FormData ([#6998](https://github.com/axios/axios/issues/6998)) ([a9f47af](https://github.com/axios/axios/commit/a9f47afbf3224d2ca987dbd8188789c7ea853c5d))
+- **node:** enforce maxContentLength for data: URLs ([#7011](https://github.com/axios/axios/issues/7011)) ([945435f](https://github.com/axios/axios/commit/945435fc51467303768202250debb8d4ae892593))
+- package exports ([#5627](https://github.com/axios/axios/issues/5627)) ([aa78ac2](https://github.com/axios/axios/commit/aa78ac23fc9036163308c0f6bd2bb885e7af3f36))
+- **params:** removing '[' and ']' from URL encode exclude characters ([#3316](https://github.com/axios/axios/issues/3316)) ([#5715](https://github.com/axios/axios/issues/5715)) ([6d84189](https://github.com/axios/axios/commit/6d84189349c43b1dcdd977b522610660cc4c7042))
+- release pr run ([fd7f404](https://github.com/axios/axios/commit/fd7f404488b2c4f238c2fbe635b58026a634bfd2))
+- **types:** change the type guard on isCancel ([#5595](https://github.com/axios/axios/issues/5595)) ([0dbb7fd](https://github.com/axios/axios/commit/0dbb7fd4f61dc568498cd13a681fa7f907d6ec7e))
 
 ### Features
 
-* **adapter:** surface low‑level network error details; attach original error via cause ([#6982](https://github.com/axios/axios/issues/6982)) ([78b290c](https://github.com/axios/axios/commit/78b290c57c978ed2ab420b90d97350231c9e5d74))
-* **fetch:** add fetch, Request, Response env config variables for the adapter; ([#7003](https://github.com/axios/axios/issues/7003)) ([c959ff2](https://github.com/axios/axios/commit/c959ff29013a3bc90cde3ac7ea2d9a3f9c08974b))
-* support reviver on JSON.parse ([#5926](https://github.com/axios/axios/issues/5926)) ([2a97634](https://github.com/axios/axios/commit/2a9763426e43d996fd60d01afe63fa6e1f5b4fca)), closes [#5924](https://github.com/axios/axios/issues/5924)
-* **types:** extend AxiosResponse interface to include custom headers type ([#6782](https://github.com/axios/axios/issues/6782)) ([7960d34](https://github.com/axios/axios/commit/7960d34eded2de66ffd30b4687f8da0e46c4903e))
+- **adapter:** surface low‑level network error details; attach original error via cause ([#6982](https://github.com/axios/axios/issues/6982)) ([78b290c](https://github.com/axios/axios/commit/78b290c57c978ed2ab420b90d97350231c9e5d74))
+- **fetch:** add fetch, Request, Response env config variables for the adapter; ([#7003](https://github.com/axios/axios/issues/7003)) ([c959ff2](https://github.com/axios/axios/commit/c959ff29013a3bc90cde3ac7ea2d9a3f9c08974b))
+- support reviver on JSON.parse ([#5926](https://github.com/axios/axios/issues/5926)) ([2a97634](https://github.com/axios/axios/commit/2a9763426e43d996fd60d01afe63fa6e1f5b4fca)), closes [#5924](https://github.com/axios/axios/issues/5924)
+- **types:** extend AxiosResponse interface to include custom headers type ([#6782](https://github.com/axios/axios/issues/6782)) ([7960d34](https://github.com/axios/axios/commit/7960d34eded2de66ffd30b4687f8da0e46c4903e))
 
 ### Contributors to this release
 
@@ -190,12 +178,11 @@
 
 # [1.11.0](https://github.com/axios/axios/compare/v1.10.0...v1.11.0) (2025-07-22)
 
-
 ### Bug Fixes
 
-* form-data npm pakcage ([#6970](https://github.com/axios/axios/issues/6970)) ([e72c193](https://github.com/axios/axios/commit/e72c193722530db538b19e5ddaaa4544d226b253))
-* prevent RangeError when using large Buffers ([#6961](https://github.com/axios/axios/issues/6961)) ([a2214ca](https://github.com/axios/axios/commit/a2214ca1bc60540baf2c80573cea3a0ff91ba9d1))
-* **types:** resolve type discrepancies between ESM and CJS TypeScript declaration files ([#6956](https://github.com/axios/axios/issues/6956)) ([8517aa1](https://github.com/axios/axios/commit/8517aa16f8d082fc1d5309c642220fa736159110))
+- form-data npm pakcage ([#6970](https://github.com/axios/axios/issues/6970)) ([e72c193](https://github.com/axios/axios/commit/e72c193722530db538b19e5ddaaa4544d226b253))
+- prevent RangeError when using large Buffers ([#6961](https://github.com/axios/axios/issues/6961)) ([a2214ca](https://github.com/axios/axios/commit/a2214ca1bc60540baf2c80573cea3a0ff91ba9d1))
+- **types:** resolve type discrepancies between ESM and CJS TypeScript declaration files ([#6956](https://github.com/axios/axios/issues/6956)) ([8517aa1](https://github.com/axios/axios/commit/8517aa16f8d082fc1d5309c642220fa736159110))
 
 ### Contributors to this release
 
@@ -207,17 +194,15 @@
 
 # [1.10.0](https://github.com/axios/axios/compare/v1.9.0...v1.10.0) (2025-06-14)
 
-
 ### Bug Fixes
 
-* **adapter:** pass fetchOptions to fetch function ([#6883](https://github.com/axios/axios/issues/6883)) ([0f50af8](https://github.com/axios/axios/commit/0f50af8e076b7fb403844789bd5e812dedcaf4ed))
-* **form-data:** convert boolean values to strings in FormData serialization ([#6917](https://github.com/axios/axios/issues/6917)) ([5064b10](https://github.com/axios/axios/commit/5064b108de336ff34862650709761b8a96d26be0))
-* **package:** add module entry point for React Native; ([#6933](https://github.com/axios/axios/issues/6933)) ([3d343b8](https://github.com/axios/axios/commit/3d343b86dc4fd0eea0987059c5af04327c7ae304))
-
+- **adapter:** pass fetchOptions to fetch function ([#6883](https://github.com/axios/axios/issues/6883)) ([0f50af8](https://github.com/axios/axios/commit/0f50af8e076b7fb403844789bd5e812dedcaf4ed))
+- **form-data:** convert boolean values to strings in FormData serialization ([#6917](https://github.com/axios/axios/issues/6917)) ([5064b10](https://github.com/axios/axios/commit/5064b108de336ff34862650709761b8a96d26be0))
+- **package:** add module entry point for React Native; ([#6933](https://github.com/axios/axios/issues/6933)) ([3d343b8](https://github.com/axios/axios/commit/3d343b86dc4fd0eea0987059c5af04327c7ae304))
 
 ### Features
 
-* **types:** improved fetchOptions interface ([#6867](https://github.com/axios/axios/issues/6867)) ([63f1fce](https://github.com/axios/axios/commit/63f1fce233009f5db1abf2586c145825ac98c3d7))
+- **types:** improved fetchOptions interface ([#6867](https://github.com/axios/axios/issues/6867)) ([63f1fce](https://github.com/axios/axios/commit/63f1fce233009f5db1abf2586c145825ac98c3d7))
 
 ### Contributors to this release
 
@@ -231,21 +216,19 @@
 
 # [1.9.0](https://github.com/axios/axios/compare/v1.8.4...v1.9.0) (2025-04-24)
 
-
 ### Bug Fixes
 
-* **core:** fix the Axios constructor implementation to treat the config argument as optional; ([#6881](https://github.com/axios/axios/issues/6881)) ([6c5d4cd](https://github.com/axios/axios/commit/6c5d4cd69286868059c5e52d45085cb9a894a983))
-* **fetch:** fixed ERR_NETWORK mapping for Safari browsers; ([#6767](https://github.com/axios/axios/issues/6767)) ([dfe8411](https://github.com/axios/axios/commit/dfe8411c9a082c3d068bdd1f8d6e73054f387f45))
-* **headers:** allow iterable objects to be a data source for the set method; ([#6873](https://github.com/axios/axios/issues/6873)) ([1b1f9cc](https://github.com/axios/axios/commit/1b1f9ccdc15f1ea745160ec9a5223de9db4673bc))
-* **headers:** fix `getSetCookie` by using 'get' method for caseless access; ([#6874](https://github.com/axios/axios/issues/6874)) ([d4f7df4](https://github.com/axios/axios/commit/d4f7df4b304af8b373488fdf8e830793ff843eb9))
-* **headers:** fixed support for setting multiple header values from an iterated source; ([#6885](https://github.com/axios/axios/issues/6885)) ([f7a3b5e](https://github.com/axios/axios/commit/f7a3b5e0f7e5e127b97defa92a132fbf1b55cf15))
-* **http:** send minimal end multipart boundary ([#6661](https://github.com/axios/axios/issues/6661)) ([987d2e2](https://github.com/axios/axios/commit/987d2e2dd3b362757550f36eab875e60640b6ddc))
-* **types:** fix autocomplete for adapter config ([#6855](https://github.com/axios/axios/issues/6855)) ([e61a893](https://github.com/axios/axios/commit/e61a8934d8f94dd429a2f309b48c67307c700df0))
-
+- **core:** fix the Axios constructor implementation to treat the config argument as optional; ([#6881](https://github.com/axios/axios/issues/6881)) ([6c5d4cd](https://github.com/axios/axios/commit/6c5d4cd69286868059c5e52d45085cb9a894a983))
+- **fetch:** fixed ERR_NETWORK mapping for Safari browsers; ([#6767](https://github.com/axios/axios/issues/6767)) ([dfe8411](https://github.com/axios/axios/commit/dfe8411c9a082c3d068bdd1f8d6e73054f387f45))
+- **headers:** allow iterable objects to be a data source for the set method; ([#6873](https://github.com/axios/axios/issues/6873)) ([1b1f9cc](https://github.com/axios/axios/commit/1b1f9ccdc15f1ea745160ec9a5223de9db4673bc))
+- **headers:** fix `getSetCookie` by using 'get' method for caseless access; ([#6874](https://github.com/axios/axios/issues/6874)) ([d4f7df4](https://github.com/axios/axios/commit/d4f7df4b304af8b373488fdf8e830793ff843eb9))
+- **headers:** fixed support for setting multiple header values from an iterated source; ([#6885](https://github.com/axios/axios/issues/6885)) ([f7a3b5e](https://github.com/axios/axios/commit/f7a3b5e0f7e5e127b97defa92a132fbf1b55cf15))
+- **http:** send minimal end multipart boundary ([#6661](https://github.com/axios/axios/issues/6661)) ([987d2e2](https://github.com/axios/axios/commit/987d2e2dd3b362757550f36eab875e60640b6ddc))
+- **types:** fix autocomplete for adapter config ([#6855](https://github.com/axios/axios/issues/6855)) ([e61a893](https://github.com/axios/axios/commit/e61a8934d8f94dd429a2f309b48c67307c700df0))
 
 ### Features
 
-* **AxiosHeaders:** add getSetCookie method to retrieve set-cookie headers values ([#5707](https://github.com/axios/axios/issues/5707)) ([80ea756](https://github.com/axios/axios/commit/80ea756e72bcf53110fa792f5d7ab76e8b11c996))
+- **AxiosHeaders:** add getSetCookie method to retrieve set-cookie headers values ([#5707](https://github.com/axios/axios/issues/5707)) ([80ea756](https://github.com/axios/axios/commit/80ea756e72bcf53110fa792f5d7ab76e8b11c996))
 
 ### Contributors to this release
 
@@ -258,10 +241,9 @@
 
 ## [1.8.4](https://github.com/axios/axios/compare/v1.8.3...v1.8.4) (2025-03-19)
 
-
 ### Bug Fixes
 
-* **buildFullPath:** handle `allowAbsoluteUrls: false` without `baseURL` ([#6833](https://github.com/axios/axios/issues/6833)) ([f10c2e0](https://github.com/axios/axios/commit/f10c2e0de7fde0051f848609a29c2906d0caa1d9))
+- **buildFullPath:** handle `allowAbsoluteUrls: false` without `baseURL` ([#6833](https://github.com/axios/axios/issues/6833)) ([f10c2e0](https://github.com/axios/axios/commit/f10c2e0de7fde0051f848609a29c2906d0caa1d9))
 
 ### Contributors to this release
 
@@ -269,11 +251,10 @@
 
 ## [1.8.3](https://github.com/axios/axios/compare/v1.8.2...v1.8.3) (2025-03-10)
 
-
 ### Bug Fixes
 
-* add missing type for allowAbsoluteUrls ([#6818](https://github.com/axios/axios/issues/6818)) ([10fa70e](https://github.com/axios/axios/commit/10fa70ef14fe39558b15a179f0e82f5f5e5d11b2))
-* **xhr/fetch:** pass `allowAbsoluteUrls` to `buildFullPath` in `xhr` and `fetch` adapters ([#6814](https://github.com/axios/axios/issues/6814)) ([ec159e5](https://github.com/axios/axios/commit/ec159e507bdf08c04ba1a10fe7710094e9e50ec9))
+- add missing type for allowAbsoluteUrls ([#6818](https://github.com/axios/axios/issues/6818)) ([10fa70e](https://github.com/axios/axios/commit/10fa70ef14fe39558b15a179f0e82f5f5e5d11b2))
+- **xhr/fetch:** pass `allowAbsoluteUrls` to `buildFullPath` in `xhr` and `fetch` adapters ([#6814](https://github.com/axios/axios/issues/6814)) ([ec159e5](https://github.com/axios/axios/commit/ec159e507bdf08c04ba1a10fe7710094e9e50ec9))
 
 ### Contributors to this release
 
@@ -283,10 +264,9 @@
 
 ## [1.8.2](https://github.com/axios/axios/compare/v1.8.1...v1.8.2) (2025-03-07)
 
-
 ### Bug Fixes
 
-* **http-adapter:** add allowAbsoluteUrls to path building ([#6810](https://github.com/axios/axios/issues/6810)) ([fb8eec2](https://github.com/axios/axios/commit/fb8eec214ce7744b5ca787f2c3b8339b2f54b00f))
+- **http-adapter:** add allowAbsoluteUrls to path building ([#6810](https://github.com/axios/axios/issues/6810)) ([fb8eec2](https://github.com/axios/axios/commit/fb8eec214ce7744b5ca787f2c3b8339b2f54b00f))
 
 ### Contributors to this release
 
@@ -294,10 +274,9 @@
 
 ## [1.8.1](https://github.com/axios/axios/compare/v1.8.0...v1.8.1) (2025-02-26)
 
-
 ### Bug Fixes
 
-* **utils:** move `generateString` to platform utils to avoid importing crypto module into client builds; ([#6789](https://github.com/axios/axios/issues/6789)) ([36a5a62](https://github.com/axios/axios/commit/36a5a620bec0b181451927f13ac85b9888b86cec))
+- **utils:** move `generateString` to platform utils to avoid importing crypto module into client builds; ([#6789](https://github.com/axios/axios/issues/6789)) ([36a5a62](https://github.com/axios/axios/commit/36a5a620bec0b181451927f13ac85b9888b86cec))
 
 ### Contributors to this release
 
@@ -305,33 +284,29 @@
 
 # [1.8.0](https://github.com/axios/axios/compare/v1.7.9...v1.8.0) (2025-02-25)
 
-
 ### Bug Fixes
 
-* **examples:** application crashed when navigating examples in browser ([#5938](https://github.com/axios/axios/issues/5938)) ([1260ded](https://github.com/axios/axios/commit/1260ded634ec101dd5ed05d3b70f8e8f899dba6c))
-* missing word in SUPPORT_QUESTION.yml ([#6757](https://github.com/axios/axios/issues/6757)) ([1f890b1](https://github.com/axios/axios/commit/1f890b13f2c25a016f3c84ae78efb769f244133e))
-* **utils:** replace getRandomValues with crypto module ([#6788](https://github.com/axios/axios/issues/6788)) ([23a25af](https://github.com/axios/axios/commit/23a25af0688d1db2c396deb09229d2271cc24f6c))
-
+- **examples:** application crashed when navigating examples in browser ([#5938](https://github.com/axios/axios/issues/5938)) ([1260ded](https://github.com/axios/axios/commit/1260ded634ec101dd5ed05d3b70f8e8f899dba6c))
+- missing word in SUPPORT_QUESTION.yml ([#6757](https://github.com/axios/axios/issues/6757)) ([1f890b1](https://github.com/axios/axios/commit/1f890b13f2c25a016f3c84ae78efb769f244133e))
+- **utils:** replace getRandomValues with crypto module ([#6788](https://github.com/axios/axios/issues/6788)) ([23a25af](https://github.com/axios/axios/commit/23a25af0688d1db2c396deb09229d2271cc24f6c))
 
 ### Features
 
-* Add config for ignoring absolute URLs ([#5902](https://github.com/axios/axios/issues/5902)) ([#6192](https://github.com/axios/axios/issues/6192)) ([32c7bcc](https://github.com/axios/axios/commit/32c7bcc0f233285ba27dec73a4b1e81fb7a219b3))
-
+- Add config for ignoring absolute URLs ([#5902](https://github.com/axios/axios/issues/5902)) ([#6192](https://github.com/axios/axios/issues/6192)) ([32c7bcc](https://github.com/axios/axios/commit/32c7bcc0f233285ba27dec73a4b1e81fb7a219b3))
 
 ### Reverts
 
-* Revert "chore: expose fromDataToStream to be consumable (#6731)" (#6732) ([1317261](https://github.com/axios/axios/commit/1317261125e9c419fe9f126867f64d28f9c1efda)), closes [#6731](https://github.com/axios/axios/issues/6731) [#6732](https://github.com/axios/axios/issues/6732)
-
+- Revert "chore: expose fromDataToStream to be consumable (#6731)" (#6732) ([1317261](https://github.com/axios/axios/commit/1317261125e9c419fe9f126867f64d28f9c1efda)), closes [#6731](https://github.com/axios/axios/issues/6731) [#6732](https://github.com/axios/axios/issues/6732)
 
 ### BREAKING CHANGES
 
-* code relying on the above will now combine the URLs instead of prefer request URL
+- code relying on the above will now combine the URLs instead of prefer request URL
 
-* feat: add config option for allowing absolute URLs
+- feat: add config option for allowing absolute URLs
 
-* fix: add default value for allowAbsoluteUrls in buildFullPath
+- fix: add default value for allowAbsoluteUrls in buildFullPath
 
-* fix: typo in flow control when setting allowAbsoluteUrls
+- fix: typo in flow control when setting allowAbsoluteUrls
 
 ### Contributors to this release
 
@@ -355,10 +330,9 @@
 
 ## [1.7.9](https://github.com/axios/axios/compare/v1.7.8...v1.7.9) (2024-12-04)
 
-
 ### Reverts
 
-* Revert "fix(types): export CJS types from ESM (#6218)" (#6729) ([c44d2f2](https://github.com/axios/axios/commit/c44d2f2316ad289b38997657248ba10de11deb6c)), closes [#6218](https://github.com/axios/axios/issues/6218) [#6729](https://github.com/axios/axios/issues/6729)
+- Revert "fix(types): export CJS types from ESM (#6218)" (#6729) ([c44d2f2](https://github.com/axios/axios/commit/c44d2f2316ad289b38997657248ba10de11deb6c)), closes [#6218](https://github.com/axios/axios/issues/6218) [#6729](https://github.com/axios/axios/issues/6729)
 
 ### Contributors to this release
 
@@ -366,20 +340,19 @@
 
 ## [1.7.8](https://github.com/axios/axios/compare/v1.7.7...v1.7.8) (2024-11-25)
 
-
 ### Bug Fixes
 
-* allow passing a callback as paramsSerializer to buildURL ([#6680](https://github.com/axios/axios/issues/6680)) ([eac4619](https://github.com/axios/axios/commit/eac4619fe2e0926e876cd260ee21e3690381dbb5))
-* **core:** fixed config merging bug ([#6668](https://github.com/axios/axios/issues/6668)) ([5d99fe4](https://github.com/axios/axios/commit/5d99fe4491202a6268c71e5dcc09192359d73cea))
-* fixed width form to not shrink after 'Send Request' button is clicked ([#6644](https://github.com/axios/axios/issues/6644)) ([7ccd5fd](https://github.com/axios/axios/commit/7ccd5fd42402102d38712c32707bf055be72ab54))
-* **http:** add support for File objects as payload in http adapter ([#6588](https://github.com/axios/axios/issues/6588)) ([#6605](https://github.com/axios/axios/issues/6605)) ([6841d8d](https://github.com/axios/axios/commit/6841d8d18ddc71cc1bd202ffcfddb3f95622eef3))
-* **http:** fixed proxy-from-env module import ([#5222](https://github.com/axios/axios/issues/5222)) ([12b3295](https://github.com/axios/axios/commit/12b32957f1258aee94ef859809ed39f8f88f9dfa))
-* **http:** use `globalThis.TextEncoder` when available ([#6634](https://github.com/axios/axios/issues/6634)) ([df956d1](https://github.com/axios/axios/commit/df956d18febc9100a563298dfdf0f102c3d15410))
-* ios11 breaks when build ([#6608](https://github.com/axios/axios/issues/6608)) ([7638952](https://github.com/axios/axios/commit/763895270f7b50c7c780c3c9807ae8635de952cd))
-* **types:** add missing types for mergeConfig function ([#6590](https://github.com/axios/axios/issues/6590)) ([00de614](https://github.com/axios/axios/commit/00de614cd07b7149af335e202aef0e076c254f49))
-* **types:** export CJS types from ESM ([#6218](https://github.com/axios/axios/issues/6218)) ([c71811b](https://github.com/axios/axios/commit/c71811b00f2fcff558e4382ba913bdac4ad7200e))
-* updated stream aborted error message to be more clear ([#6615](https://github.com/axios/axios/issues/6615)) ([cc3217a](https://github.com/axios/axios/commit/cc3217a612024d83a663722a56d7a98d8759c6d5))
-* use URL API instead of DOM to fix a potential vulnerability warning; ([#6714](https://github.com/axios/axios/issues/6714)) ([0a8d6e1](https://github.com/axios/axios/commit/0a8d6e19da5b9899a2abafaaa06a75ee548597db))
+- allow passing a callback as paramsSerializer to buildURL ([#6680](https://github.com/axios/axios/issues/6680)) ([eac4619](https://github.com/axios/axios/commit/eac4619fe2e0926e876cd260ee21e3690381dbb5))
+- **core:** fixed config merging bug ([#6668](https://github.com/axios/axios/issues/6668)) ([5d99fe4](https://github.com/axios/axios/commit/5d99fe4491202a6268c71e5dcc09192359d73cea))
+- fixed width form to not shrink after 'Send Request' button is clicked ([#6644](https://github.com/axios/axios/issues/6644)) ([7ccd5fd](https://github.com/axios/axios/commit/7ccd5fd42402102d38712c32707bf055be72ab54))
+- **http:** add support for File objects as payload in http adapter ([#6588](https://github.com/axios/axios/issues/6588)) ([#6605](https://github.com/axios/axios/issues/6605)) ([6841d8d](https://github.com/axios/axios/commit/6841d8d18ddc71cc1bd202ffcfddb3f95622eef3))
+- **http:** fixed proxy-from-env module import ([#5222](https://github.com/axios/axios/issues/5222)) ([12b3295](https://github.com/axios/axios/commit/12b32957f1258aee94ef859809ed39f8f88f9dfa))
+- **http:** use `globalThis.TextEncoder` when available ([#6634](https://github.com/axios/axios/issues/6634)) ([df956d1](https://github.com/axios/axios/commit/df956d18febc9100a563298dfdf0f102c3d15410))
+- ios11 breaks when build ([#6608](https://github.com/axios/axios/issues/6608)) ([7638952](https://github.com/axios/axios/commit/763895270f7b50c7c780c3c9807ae8635de952cd))
+- **types:** add missing types for mergeConfig function ([#6590](https://github.com/axios/axios/issues/6590)) ([00de614](https://github.com/axios/axios/commit/00de614cd07b7149af335e202aef0e076c254f49))
+- **types:** export CJS types from ESM ([#6218](https://github.com/axios/axios/issues/6218)) ([c71811b](https://github.com/axios/axios/commit/c71811b00f2fcff558e4382ba913bdac4ad7200e))
+- updated stream aborted error message to be more clear ([#6615](https://github.com/axios/axios/issues/6615)) ([cc3217a](https://github.com/axios/axios/commit/cc3217a612024d83a663722a56d7a98d8759c6d5))
+- use URL API instead of DOM to fix a potential vulnerability warning; ([#6714](https://github.com/axios/axios/issues/6714)) ([0a8d6e1](https://github.com/axios/axios/commit/0a8d6e19da5b9899a2abafaaa06a75ee548597db))
 
 ### Contributors to this release
 
@@ -404,11 +377,10 @@
 
 ## [1.7.7](https://github.com/axios/axios/compare/v1.7.6...v1.7.7) (2024-08-31)
 
-
 ### Bug Fixes
 
-* **fetch:** fix stream handling in Safari by fallback to using a stream reader instead of an async iterator; ([#6584](https://github.com/axios/axios/issues/6584)) ([d198085](https://github.com/axios/axios/commit/d1980854fee1765cd02fa0787adf5d6e34dd9dcf))
-* **http:** fixed support for IPv6 literal strings in url ([#5731](https://github.com/axios/axios/issues/5731)) ([364993f](https://github.com/axios/axios/commit/364993f0d8bc6e0e06f76b8a35d2d0a35cab054c))
+- **fetch:** fix stream handling in Safari by fallback to using a stream reader instead of an async iterator; ([#6584](https://github.com/axios/axios/issues/6584)) ([d198085](https://github.com/axios/axios/commit/d1980854fee1765cd02fa0787adf5d6e34dd9dcf))
+- **http:** fixed support for IPv6 literal strings in url ([#5731](https://github.com/axios/axios/issues/5731)) ([364993f](https://github.com/axios/axios/commit/364993f0d8bc6e0e06f76b8a35d2d0a35cab054c))
 
 ### Contributors to this release
 
@@ -417,11 +389,10 @@
 
 ## [1.7.6](https://github.com/axios/axios/compare/v1.7.5...v1.7.6) (2024-08-30)
 
-
 ### Bug Fixes
 
-* **fetch:** fix content length calculation for FormData payload; ([#6524](https://github.com/axios/axios/issues/6524)) ([085f568](https://github.com/axios/axios/commit/085f56861a83e9ac02c140ad9d68dac540dfeeaa))
-* **fetch:** optimize signals composing logic; ([#6582](https://github.com/axios/axios/issues/6582)) ([df9889b](https://github.com/axios/axios/commit/df9889b83c2cc37e9e6189675a73ab70c60f031f))
+- **fetch:** fix content length calculation for FormData payload; ([#6524](https://github.com/axios/axios/issues/6524)) ([085f568](https://github.com/axios/axios/commit/085f56861a83e9ac02c140ad9d68dac540dfeeaa))
+- **fetch:** optimize signals composing logic; ([#6582](https://github.com/axios/axios/issues/6582)) ([df9889b](https://github.com/axios/axios/commit/df9889b83c2cc37e9e6189675a73ab70c60f031f))
 
 ### Contributors to this release
 
@@ -431,13 +402,12 @@
 
 ## [1.7.5](https://github.com/axios/axios/compare/v1.7.4...v1.7.5) (2024-08-23)
 
-
 ### Bug Fixes
 
-* **adapter:** fix undefined reference to hasBrowserEnv ([#6572](https://github.com/axios/axios/issues/6572)) ([7004707](https://github.com/axios/axios/commit/7004707c4180b416341863bd86913fe4fc2f1df1))
-* **core:** add the missed implementation of AxiosError#status property; ([#6573](https://github.com/axios/axios/issues/6573)) ([6700a8a](https://github.com/axios/axios/commit/6700a8adac06942205f6a7a21421ecb36c4e0852))
-* **core:** fix `ReferenceError: navigator is not defined` for custom environments; ([#6567](https://github.com/axios/axios/issues/6567)) ([fed1a4b](https://github.com/axios/axios/commit/fed1a4b2d78ed4a588c84e09d32749ed01dc2794))
-* **fetch:** fix credentials handling in Cloudflare workers ([#6533](https://github.com/axios/axios/issues/6533)) ([550d885](https://github.com/axios/axios/commit/550d885eb90fd156add7b93bbdc54d30d2f9a98d))
+- **adapter:** fix undefined reference to hasBrowserEnv ([#6572](https://github.com/axios/axios/issues/6572)) ([7004707](https://github.com/axios/axios/commit/7004707c4180b416341863bd86913fe4fc2f1df1))
+- **core:** add the missed implementation of AxiosError#status property; ([#6573](https://github.com/axios/axios/issues/6573)) ([6700a8a](https://github.com/axios/axios/commit/6700a8adac06942205f6a7a21421ecb36c4e0852))
+- **core:** fix `ReferenceError: navigator is not defined` for custom environments; ([#6567](https://github.com/axios/axios/issues/6567)) ([fed1a4b](https://github.com/axios/axios/commit/fed1a4b2d78ed4a588c84e09d32749ed01dc2794))
+- **fetch:** fix credentials handling in Cloudflare workers ([#6533](https://github.com/axios/axios/issues/6533)) ([550d885](https://github.com/axios/axios/commit/550d885eb90fd156add7b93bbdc54d30d2f9a98d))
 
 ### Contributors to this release
 
@@ -447,11 +417,10 @@
 
 ## [1.7.4](https://github.com/axios/axios/compare/v1.7.3...v1.7.4) (2024-08-13)
 
-
 ### Bug Fixes
 
-* **sec:** CVE-2024-39338 ([#6539](https://github.com/axios/axios/issues/6539)) ([#6543](https://github.com/axios/axios/issues/6543)) ([6b6b605](https://github.com/axios/axios/commit/6b6b605eaf73852fb2dae033f1e786155959de3a))
-* **sec:** disregard protocol-relative URL to remediate SSRF ([#6539](https://github.com/axios/axios/issues/6539)) ([07a661a](https://github.com/axios/axios/commit/07a661a2a6b9092c4aa640dcc7f724ec5e65bdda))
+- **sec:** CVE-2024-39338 ([#6539](https://github.com/axios/axios/issues/6539)) ([#6543](https://github.com/axios/axios/issues/6543)) ([6b6b605](https://github.com/axios/axios/commit/6b6b605eaf73852fb2dae033f1e786155959de3a))
+- **sec:** disregard protocol-relative URL to remediate SSRF ([#6539](https://github.com/axios/axios/issues/6539)) ([07a661a](https://github.com/axios/axios/commit/07a661a2a6b9092c4aa640dcc7f724ec5e65bdda))
 
 ### Contributors to this release
 
@@ -460,12 +429,11 @@
 
 ## [1.7.3](https://github.com/axios/axios/compare/v1.7.2...v1.7.3) (2024-08-01)
 
-
 ### Bug Fixes
 
-* **adapter:** fix progress event emitting; ([#6518](https://github.com/axios/axios/issues/6518)) ([e3c76fc](https://github.com/axios/axios/commit/e3c76fc9bdd03aa4d98afaf211df943e2031453f))
-* **fetch:** fix withCredentials request config ([#6505](https://github.com/axios/axios/issues/6505)) ([85d4d0e](https://github.com/axios/axios/commit/85d4d0ea0aae91082f04e303dec46510d1b4e787))
-* **xhr:** return original config on errors from XHR adapter ([#6515](https://github.com/axios/axios/issues/6515)) ([8966ee7](https://github.com/axios/axios/commit/8966ee7ea62ecbd6cfb39a905939bcdab5cf6388))
+- **adapter:** fix progress event emitting; ([#6518](https://github.com/axios/axios/issues/6518)) ([e3c76fc](https://github.com/axios/axios/commit/e3c76fc9bdd03aa4d98afaf211df943e2031453f))
+- **fetch:** fix withCredentials request config ([#6505](https://github.com/axios/axios/issues/6505)) ([85d4d0e](https://github.com/axios/axios/commit/85d4d0ea0aae91082f04e303dec46510d1b4e787))
+- **xhr:** return original config on errors from XHR adapter ([#6515](https://github.com/axios/axios/issues/6515)) ([8966ee7](https://github.com/axios/axios/commit/8966ee7ea62ecbd6cfb39a905939bcdab5cf6388))
 
 ### Contributors to this release
 
@@ -475,10 +443,9 @@
 
 ## [1.7.2](https://github.com/axios/axios/compare/v1.7.1...v1.7.2) (2024-05-21)
 
-
 ### Bug Fixes
 
-* **fetch:** enhance fetch API detection; ([#6413](https://github.com/axios/axios/issues/6413)) ([4f79aef](https://github.com/axios/axios/commit/4f79aef81b7c4644328365bfc33acf0a9ef595bc))
+- **fetch:** enhance fetch API detection; ([#6413](https://github.com/axios/axios/issues/6413)) ([4f79aef](https://github.com/axios/axios/commit/4f79aef81b7c4644328365bfc33acf0a9ef595bc))
 
 ### Contributors to this release
 
@@ -486,10 +453,9 @@
 
 ## [1.7.1](https://github.com/axios/axios/compare/v1.7.0...v1.7.1) (2024-05-20)
 
-
 ### Bug Fixes
 
-* **fetch:** fixed ReferenceError issue when TextEncoder is not available in the environment; ([#6410](https://github.com/axios/axios/issues/6410)) ([733f15f](https://github.com/axios/axios/commit/733f15fe5bd2d67e1fadaee82e7913b70d45dc5e))
+- **fetch:** fixed ReferenceError issue when TextEncoder is not available in the environment; ([#6410](https://github.com/axios/axios/issues/6410)) ([733f15f](https://github.com/axios/axios/commit/733f15fe5bd2d67e1fadaee82e7913b70d45dc5e))
 
 ### Contributors to this release
 
@@ -497,14 +463,13 @@
 
 # [1.7.0](https://github.com/axios/axios/compare/v1.7.0-beta.2...v1.7.0) (2024-05-19)
 
-
 ### Features
 
-* **adapter:** add fetch adapter; ([#6371](https://github.com/axios/axios/issues/6371)) ([a3ff99b](https://github.com/axios/axios/commit/a3ff99b59d8ec2ab5dd049e68c043617a4072e42))
+- **adapter:** add fetch adapter; ([#6371](https://github.com/axios/axios/issues/6371)) ([a3ff99b](https://github.com/axios/axios/commit/a3ff99b59d8ec2ab5dd049e68c043617a4072e42))
 
 ### Bug Fixes
 
-* **core/axios:** handle un-writable error stack ([#6362](https://github.com/axios/axios/issues/6362)) ([81e0455](https://github.com/axios/axios/commit/81e0455b7b57fbaf2be16a73ebe0e6591cc6d8f9))  
+- **core/axios:** handle un-writable error stack ([#6362](https://github.com/axios/axios/issues/6362)) ([81e0455](https://github.com/axios/axios/commit/81e0455b7b57fbaf2be16a73ebe0e6591cc6d8f9))
 
 ### Contributors to this release
 
@@ -514,12 +479,11 @@
 
 # [1.7.0-beta.2](https://github.com/axios/axios/compare/v1.7.0-beta.1...v1.7.0-beta.2) (2024-05-19)
 
-
 ### Bug Fixes
 
-* **fetch:** capitalize HTTP method names; ([#6395](https://github.com/axios/axios/issues/6395)) ([ad3174a](https://github.com/axios/axios/commit/ad3174a3515c3c2573f4bcb94818d582826f3914))
-* **fetch:** fix & optimize progress capturing for cases when the request data has a nullish value or zero data length ([#6400](https://github.com/axios/axios/issues/6400)) ([95a3e8e](https://github.com/axios/axios/commit/95a3e8e346cfd6a5548e171f2341df3235d0e26b))
-* **fetch:** fix headers getting from a stream response; ([#6401](https://github.com/axios/axios/issues/6401)) ([870e0a7](https://github.com/axios/axios/commit/870e0a76f60d0094774a6a63fa606eec52a381af))
+- **fetch:** capitalize HTTP method names; ([#6395](https://github.com/axios/axios/issues/6395)) ([ad3174a](https://github.com/axios/axios/commit/ad3174a3515c3c2573f4bcb94818d582826f3914))
+- **fetch:** fix & optimize progress capturing for cases when the request data has a nullish value or zero data length ([#6400](https://github.com/axios/axios/issues/6400)) ([95a3e8e](https://github.com/axios/axios/commit/95a3e8e346cfd6a5548e171f2341df3235d0e26b))
+- **fetch:** fix headers getting from a stream response; ([#6401](https://github.com/axios/axios/issues/6401)) ([870e0a7](https://github.com/axios/axios/commit/870e0a76f60d0094774a6a63fa606eec52a381af))
 
 ### Contributors to this release
 
@@ -527,12 +491,11 @@
 
 # [1.7.0-beta.1](https://github.com/axios/axios/compare/v1.7.0-beta.0...v1.7.0-beta.1) (2024-05-07)
 
-
 ### Bug Fixes
 
-* **core/axios:** handle un-writable error stack ([#6362](https://github.com/axios/axios/issues/6362)) ([81e0455](https://github.com/axios/axios/commit/81e0455b7b57fbaf2be16a73ebe0e6591cc6d8f9))
-* **fetch:** fix cases when ReadableStream or Response.body are not available; ([#6377](https://github.com/axios/axios/issues/6377)) ([d1d359d](https://github.com/axios/axios/commit/d1d359da347704e8b28d768e61515a3e96c5b072))
-* **fetch:** treat fetch-related TypeError as an AxiosError.ERR_NETWORK error; ([#6380](https://github.com/axios/axios/issues/6380)) ([bb5f9a5](https://github.com/axios/axios/commit/bb5f9a5ab768452de9e166dc28d0ffc234245ef1))
+- **core/axios:** handle un-writable error stack ([#6362](https://github.com/axios/axios/issues/6362)) ([81e0455](https://github.com/axios/axios/commit/81e0455b7b57fbaf2be16a73ebe0e6591cc6d8f9))
+- **fetch:** fix cases when ReadableStream or Response.body are not available; ([#6377](https://github.com/axios/axios/issues/6377)) ([d1d359d](https://github.com/axios/axios/commit/d1d359da347704e8b28d768e61515a3e96c5b072))
+- **fetch:** treat fetch-related TypeError as an AxiosError.ERR_NETWORK error; ([#6380](https://github.com/axios/axios/issues/6380)) ([bb5f9a5](https://github.com/axios/axios/commit/bb5f9a5ab768452de9e166dc28d0ffc234245ef1))
 
 ### Contributors to this release
 
@@ -541,10 +504,9 @@
 
 # [1.7.0-beta.0](https://github.com/axios/axios/compare/v1.6.8...v1.7.0-beta.0) (2024-04-28)
 
-
 ### Features
 
-* **adapter:** add fetch adapter; ([#6371](https://github.com/axios/axios/issues/6371)) ([a3ff99b](https://github.com/axios/axios/commit/a3ff99b59d8ec2ab5dd049e68c043617a4072e42))
+- **adapter:** add fetch adapter; ([#6371](https://github.com/axios/axios/issues/6371)) ([a3ff99b](https://github.com/axios/axios/commit/a3ff99b59d8ec2ab5dd049e68c043617a4072e42))
 
 ### Contributors to this release
 
@@ -553,12 +515,11 @@
 
 ## [1.6.8](https://github.com/axios/axios/compare/v1.6.7...v1.6.8) (2024-03-15)
 
-
 ### Bug Fixes
 
-* **AxiosHeaders:** fix AxiosHeaders conversion to an object during config merging ([#6243](https://github.com/axios/axios/issues/6243)) ([2656612](https://github.com/axios/axios/commit/2656612bc10fe2757e9832b708ed773ab340b5cb))
-* **import:** use named export for EventEmitter; ([7320430](https://github.com/axios/axios/commit/7320430aef2e1ba2b89488a0eaf42681165498b1))
-* **vulnerability:** update follow-redirects to 1.15.6 ([#6300](https://github.com/axios/axios/issues/6300)) ([8786e0f](https://github.com/axios/axios/commit/8786e0ff55a8c68d4ca989801ad26df924042e27))
+- **AxiosHeaders:** fix AxiosHeaders conversion to an object during config merging ([#6243](https://github.com/axios/axios/issues/6243)) ([2656612](https://github.com/axios/axios/commit/2656612bc10fe2757e9832b708ed773ab340b5cb))
+- **import:** use named export for EventEmitter; ([7320430](https://github.com/axios/axios/commit/7320430aef2e1ba2b89488a0eaf42681165498b1))
+- **vulnerability:** update follow-redirects to 1.15.6 ([#6300](https://github.com/axios/axios/issues/6300)) ([8786e0f](https://github.com/axios/axios/commit/8786e0ff55a8c68d4ca989801ad26df924042e27))
 
 ### Contributors to this release
 
@@ -572,10 +533,9 @@
 
 ## [1.6.7](https://github.com/axios/axios/compare/v1.6.6...v1.6.7) (2024-01-25)
 
-
 ### Bug Fixes
 
-* capture async stack only for rejections with native error objects; ([#6203](https://github.com/axios/axios/issues/6203)) ([1a08f90](https://github.com/axios/axios/commit/1a08f90f402336e4d00e9ee82f211c6adb1640b0))
+- capture async stack only for rejections with native error objects; ([#6203](https://github.com/axios/axios/issues/6203)) ([1a08f90](https://github.com/axios/axios/commit/1a08f90f402336e4d00e9ee82f211c6adb1640b0))
 
 ### Contributors to this release
 
@@ -584,11 +544,10 @@
 
 ## [1.6.6](https://github.com/axios/axios/compare/v1.6.5...v1.6.6) (2024-01-24)
 
-
 ### Bug Fixes
 
-* fixed missed dispatchBeforeRedirect argument ([#5778](https://github.com/axios/axios/issues/5778)) ([a1938ff](https://github.com/axios/axios/commit/a1938ff073fcb0f89011f001dfbc1fa1dc995e39))
-* wrap errors to improve async stack trace ([#5987](https://github.com/axios/axios/issues/5987)) ([123f354](https://github.com/axios/axios/commit/123f354b920f154a209ea99f76b7b2ef3d9ebbab))
+- fixed missed dispatchBeforeRedirect argument ([#5778](https://github.com/axios/axios/issues/5778)) ([a1938ff](https://github.com/axios/axios/commit/a1938ff073fcb0f89011f001dfbc1fa1dc995e39))
+- wrap errors to improve async stack trace ([#5987](https://github.com/axios/axios/issues/5987)) ([123f354](https://github.com/axios/axios/commit/123f354b920f154a209ea99f76b7b2ef3d9ebbab))
 
 ### Contributors to this release
 
@@ -597,11 +556,10 @@
 
 ## [1.6.5](https://github.com/axios/axios/compare/v1.6.4...v1.6.5) (2024-01-05)
 
-
 ### Bug Fixes
 
-* **ci:** refactor notify action as a job of publish action; ([#6176](https://github.com/axios/axios/issues/6176)) ([0736f95](https://github.com/axios/axios/commit/0736f95ce8776366dc9ca569f49ba505feb6373c))
-* **dns:** fixed lookup error handling; ([#6175](https://github.com/axios/axios/issues/6175)) ([f4f2b03](https://github.com/axios/axios/commit/f4f2b039dd38eb4829e8583caede4ed6d2dd59be))
+- **ci:** refactor notify action as a job of publish action; ([#6176](https://github.com/axios/axios/issues/6176)) ([0736f95](https://github.com/axios/axios/commit/0736f95ce8776366dc9ca569f49ba505feb6373c))
+- **dns:** fixed lookup error handling; ([#6175](https://github.com/axios/axios/issues/6175)) ([f4f2b03](https://github.com/axios/axios/commit/f4f2b039dd38eb4829e8583caede4ed6d2dd59be))
 
 ### Contributors to this release
 
@@ -610,11 +568,10 @@
 
 ## [1.6.4](https://github.com/axios/axios/compare/v1.6.3...v1.6.4) (2024-01-03)
 
-
 ### Bug Fixes
 
-* **security:** fixed formToJSON prototype pollution vulnerability; ([#6167](https://github.com/axios/axios/issues/6167)) ([3c0c11c](https://github.com/axios/axios/commit/3c0c11cade045c4412c242b5727308cff9897a0e))
-* **security:** fixed security vulnerability in follow-redirects ([#6163](https://github.com/axios/axios/issues/6163)) ([75af1cd](https://github.com/axios/axios/commit/75af1cdff5b3a6ca3766d3d3afbc3115bb0811b8))
+- **security:** fixed formToJSON prototype pollution vulnerability; ([#6167](https://github.com/axios/axios/issues/6167)) ([3c0c11c](https://github.com/axios/axios/commit/3c0c11cade045c4412c242b5727308cff9897a0e))
+- **security:** fixed security vulnerability in follow-redirects ([#6163](https://github.com/axios/axios/issues/6163)) ([75af1cd](https://github.com/axios/axios/commit/75af1cdff5b3a6ca3766d3d3afbc3115bb0811b8))
 
 ### Contributors to this release
 
@@ -624,10 +581,9 @@
 
 ## [1.6.3](https://github.com/axios/axios/compare/v1.6.2...v1.6.3) (2023-12-26)
 
-
 ### Bug Fixes
 
-* Regular Expression Denial of Service (ReDoS) ([#6132](https://github.com/axios/axios/issues/6132)) ([5e7ad38](https://github.com/axios/axios/commit/5e7ad38fb0f819fceb19fb2ee5d5d38f56aa837d))
+- Regular Expression Denial of Service (ReDoS) ([#6132](https://github.com/axios/axios/issues/6132)) ([5e7ad38](https://github.com/axios/axios/commit/5e7ad38fb0f819fceb19fb2ee5d5d38f56aa837d))
 
 ### Contributors to this release
 
@@ -637,16 +593,17 @@
 
 ## [1.6.2](https://github.com/axios/axios/compare/v1.6.1...v1.6.2) (2023-11-14)
 
-
 ### Features
 
-* **withXSRFToken:** added withXSRFToken option as a workaround to achieve the old `withCredentials` behavior; ([#6046](https://github.com/axios/axios/issues/6046)) ([cff9967](https://github.com/axios/axios/commit/cff996779b272a5e94c2b52f5503ccf668bc42dc))
+- **withXSRFToken:** added withXSRFToken option as a workaround to achieve the old `withCredentials` behavior; ([#6046](https://github.com/axios/axios/issues/6046)) ([cff9967](https://github.com/axios/axios/commit/cff996779b272a5e94c2b52f5503ccf668bc42dc))
 
 ### PRs
+
 - feat(withXSRFToken): added withXSRFToken option as a workaround to achieve the old &#x60;withCredentials&#x60; behavior; ( [#6046](https://api.github.com/repos/axios/axios/pulls/6046) )
+
 ```
 
-📢 This PR added &#x27;withXSRFToken&#x27; option as a replacement for old withCredentials behaviour. 
+📢 This PR added &#x27;withXSRFToken&#x27; option as a replacement for old withCredentials behaviour.
 You should now use withXSRFToken along with withCredential to get the old behavior.
 This functionality is considered as a fix.
 ```
@@ -659,11 +616,10 @@ This functionality is considered as a fix.
 
 ## [1.6.1](https://github.com/axios/axios/compare/v1.6.0...v1.6.1) (2023-11-08)
 
-
 ### Bug Fixes
 
-* **formdata:** fixed content-type header normalization for non-standard browser environments; ([#6056](https://github.com/axios/axios/issues/6056)) ([dd465ab](https://github.com/axios/axios/commit/dd465ab22bbfa262c6567be6574bf46a057d5288))
-* **platform:** fixed emulated browser detection in node.js environment; ([#6055](https://github.com/axios/axios/issues/6055)) ([3dc8369](https://github.com/axios/axios/commit/3dc8369e505e32a4e12c22f154c55fd63ac67fbb))
+- **formdata:** fixed content-type header normalization for non-standard browser environments; ([#6056](https://github.com/axios/axios/issues/6056)) ([dd465ab](https://github.com/axios/axios/commit/dd465ab22bbfa262c6567be6574bf46a057d5288))
+- **platform:** fixed emulated browser detection in node.js environment; ([#6055](https://github.com/axios/axios/issues/6055)) ([3dc8369](https://github.com/axios/axios/commit/3dc8369e505e32a4e12c22f154c55fd63ac67fbb))
 
 ### Contributors to this release
 
@@ -671,25 +627,28 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/3982806?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Fabian Meyer](https://github.com/meyfa "+5/-2 (#5835 )")
 
 ### PRs
+
 - feat(withXSRFToken): added withXSRFToken option as a workaround to achieve the old &#x60;withCredentials&#x60; behavior; ( [#6046](https://api.github.com/repos/axios/axios/pulls/6046) )
+
 ```
 
-📢 This PR added &#x27;withXSRFToken&#x27; option as a replacement for old withCredentials behaviour. 
+📢 This PR added &#x27;withXSRFToken&#x27; option as a replacement for old withCredentials behaviour.
 You should now use withXSRFToken along with withCredential to get the old behavior.
 This functionality is considered as a fix.
 ```
 
 # [1.6.0](https://github.com/axios/axios/compare/v1.5.1...v1.6.0) (2023-10-26)
 
-
 ### Bug Fixes
 
-* **CSRF:** fixed CSRF vulnerability CVE-2023-45857 ([#6028](https://github.com/axios/axios/issues/6028)) ([96ee232](https://github.com/axios/axios/commit/96ee232bd3ee4de2e657333d4d2191cd389e14d0))
-* **dns:** fixed lookup function decorator to work properly in node v20; ([#6011](https://github.com/axios/axios/issues/6011)) ([5aaff53](https://github.com/axios/axios/commit/5aaff532a6b820bb9ab6a8cd0f77131b47e2adb8))
-* **types:** fix AxiosHeaders types; ([#5931](https://github.com/axios/axios/issues/5931)) ([a1c8ad0](https://github.com/axios/axios/commit/a1c8ad008b3c13d53e135bbd0862587fb9d3fc09))
+- **CSRF:** fixed CSRF vulnerability CVE-2023-45857 ([#6028](https://github.com/axios/axios/issues/6028)) ([96ee232](https://github.com/axios/axios/commit/96ee232bd3ee4de2e657333d4d2191cd389e14d0))
+- **dns:** fixed lookup function decorator to work properly in node v20; ([#6011](https://github.com/axios/axios/issues/6011)) ([5aaff53](https://github.com/axios/axios/commit/5aaff532a6b820bb9ab6a8cd0f77131b47e2adb8))
+- **types:** fix AxiosHeaders types; ([#5931](https://github.com/axios/axios/issues/5931)) ([a1c8ad0](https://github.com/axios/axios/commit/a1c8ad008b3c13d53e135bbd0862587fb9d3fc09))
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -703,13 +662,12 @@ This functionality is considered as a fix.
 
 ## [1.5.1](https://github.com/axios/axios/compare/v1.5.0...v1.5.1) (2023-09-26)
 
-
 ### Bug Fixes
 
-* **adapters:** improved adapters loading logic to have clear error messages; ([#5919](https://github.com/axios/axios/issues/5919)) ([e410779](https://github.com/axios/axios/commit/e4107797a7a1376f6209fbecfbbce73d3faa7859))
-* **formdata:** fixed automatic addition of the `Content-Type` header for FormData in non-browser environments; ([#5917](https://github.com/axios/axios/issues/5917)) ([bc9af51](https://github.com/axios/axios/commit/bc9af51b1886d1b3529617702f2a21a6c0ed5d92))
-* **headers:** allow `content-encoding` header to handle case-insensitive values ([#5890](https://github.com/axios/axios/issues/5890)) ([#5892](https://github.com/axios/axios/issues/5892)) ([4c89f25](https://github.com/axios/axios/commit/4c89f25196525e90a6e75eda9cb31ae0a2e18acd))
-* **types:** removed duplicated code ([9e62056](https://github.com/axios/axios/commit/9e6205630e1c9cf863adf141c0edb9e6d8d4b149))
+- **adapters:** improved adapters loading logic to have clear error messages; ([#5919](https://github.com/axios/axios/issues/5919)) ([e410779](https://github.com/axios/axios/commit/e4107797a7a1376f6209fbecfbbce73d3faa7859))
+- **formdata:** fixed automatic addition of the `Content-Type` header for FormData in non-browser environments; ([#5917](https://github.com/axios/axios/issues/5917)) ([bc9af51](https://github.com/axios/axios/commit/bc9af51b1886d1b3529617702f2a21a6c0ed5d92))
+- **headers:** allow `content-encoding` header to handle case-insensitive values ([#5890](https://github.com/axios/axios/issues/5890)) ([#5892](https://github.com/axios/axios/issues/5892)) ([4c89f25](https://github.com/axios/axios/commit/4c89f25196525e90a6e75eda9cb31ae0a2e18acd))
+- **types:** removed duplicated code ([9e62056](https://github.com/axios/axios/commit/9e6205630e1c9cf863adf141c0edb9e6d8d4b149))
 
 ### Contributors to this release
 
@@ -721,7 +679,9 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+1/-1 ()")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -729,19 +689,17 @@ This functionality is considered as a fix.
 
 # [1.5.0](https://github.com/axios/axios/compare/v1.4.0...v1.5.0) (2023-08-26)
 
-
 ### Bug Fixes
 
-* **adapter:** make adapter loading error more clear by using platform-specific adapters explicitly ([#5837](https://github.com/axios/axios/issues/5837)) ([9a414bb](https://github.com/axios/axios/commit/9a414bb6c81796a95c6c7fe668637825458e8b6d))
-* **dns:** fixed `cacheable-lookup` integration; ([#5836](https://github.com/axios/axios/issues/5836)) ([b3e327d](https://github.com/axios/axios/commit/b3e327dcc9277bdce34c7ef57beedf644b00d628))
-* **headers:** added support for setting header names that overlap with class methods; ([#5831](https://github.com/axios/axios/issues/5831)) ([d8b4ca0](https://github.com/axios/axios/commit/d8b4ca0ea5f2f05efa4edfe1e7684593f9f68273))
-* **headers:** fixed common Content-Type header merging; ([#5832](https://github.com/axios/axios/issues/5832)) ([8fda276](https://github.com/axios/axios/commit/8fda2766b1e6bcb72c3fabc146223083ef13ce17))
-
+- **adapter:** make adapter loading error more clear by using platform-specific adapters explicitly ([#5837](https://github.com/axios/axios/issues/5837)) ([9a414bb](https://github.com/axios/axios/commit/9a414bb6c81796a95c6c7fe668637825458e8b6d))
+- **dns:** fixed `cacheable-lookup` integration; ([#5836](https://github.com/axios/axios/issues/5836)) ([b3e327d](https://github.com/axios/axios/commit/b3e327dcc9277bdce34c7ef57beedf644b00d628))
+- **headers:** added support for setting header names that overlap with class methods; ([#5831](https://github.com/axios/axios/issues/5831)) ([d8b4ca0](https://github.com/axios/axios/commit/d8b4ca0ea5f2f05efa4edfe1e7684593f9f68273))
+- **headers:** fixed common Content-Type header merging; ([#5832](https://github.com/axios/axios/issues/5832)) ([8fda276](https://github.com/axios/axios/commit/8fda2766b1e6bcb72c3fabc146223083ef13ce17))
 
 ### Features
 
-* export getAdapter function ([#5324](https://github.com/axios/axios/issues/5324)) ([ca73eb8](https://github.com/axios/axios/commit/ca73eb878df0ae2dace81fe3a7f1fb5986231bf1))
-* **export:** export adapters without `unsafe` prefix ([#5839](https://github.com/axios/axios/issues/5839)) ([1601f4a](https://github.com/axios/axios/commit/1601f4a27a81ab47fea228f1e244b2c4e3ce28bf))
+- export getAdapter function ([#5324](https://github.com/axios/axios/issues/5324)) ([ca73eb8](https://github.com/axios/axios/commit/ca73eb878df0ae2dace81fe3a7f1fb5986231bf1))
+- **export:** export adapters without `unsafe` prefix ([#5839](https://github.com/axios/axios/issues/5839)) ([1601f4a](https://github.com/axios/axios/commit/1601f4a27a81ab47fea228f1e244b2c4e3ce28bf))
 
 ### Contributors to this release
 
@@ -751,7 +709,9 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-5 (#5791 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -759,22 +719,19 @@ This functionality is considered as a fix.
 
 # [1.4.0](https://github.com/axios/axios/compare/v1.3.6...v1.4.0) (2023-04-27)
 
-
 ### Bug Fixes
 
-* **formdata:** add `multipart/form-data` content type for FormData payload on custom client environments; ([#5678](https://github.com/axios/axios/issues/5678)) ([bbb61e7](https://github.com/axios/axios/commit/bbb61e70cb1185adfb1cbbb86eaf6652c48d89d1))
-* **package:** export package internals with unsafe path prefix; ([#5677](https://github.com/axios/axios/issues/5677)) ([df38c94](https://github.com/axios/axios/commit/df38c949f26414d88ba29ec1e353c4d4f97eaf09))
-
+- **formdata:** add `multipart/form-data` content type for FormData payload on custom client environments; ([#5678](https://github.com/axios/axios/issues/5678)) ([bbb61e7](https://github.com/axios/axios/commit/bbb61e70cb1185adfb1cbbb86eaf6652c48d89d1))
+- **package:** export package internals with unsafe path prefix; ([#5677](https://github.com/axios/axios/issues/5677)) ([df38c94](https://github.com/axios/axios/commit/df38c949f26414d88ba29ec1e353c4d4f97eaf09))
 
 ### Features
 
-* **dns:** added support for a custom lookup function; ([#5339](https://github.com/axios/axios/issues/5339)) ([2701911](https://github.com/axios/axios/commit/2701911260a1faa5cc5e1afe437121b330a3b7bb))
-* **types:** export `AxiosHeaderValue` type. ([#5525](https://github.com/axios/axios/issues/5525)) ([726f1c8](https://github.com/axios/axios/commit/726f1c8e00cffa0461a8813a9bdcb8f8b9d762cf))
-
+- **dns:** added support for a custom lookup function; ([#5339](https://github.com/axios/axios/issues/5339)) ([2701911](https://github.com/axios/axios/commit/2701911260a1faa5cc5e1afe437121b330a3b7bb))
+- **types:** export `AxiosHeaderValue` type. ([#5525](https://github.com/axios/axios/issues/5525)) ([726f1c8](https://github.com/axios/axios/commit/726f1c8e00cffa0461a8813a9bdcb8f8b9d762cf))
 
 ### Performance Improvements
 
-* **merge-config:** optimize mergeConfig performance by avoiding duplicate key visits; ([#5679](https://github.com/axios/axios/issues/5679)) ([e6f7053](https://github.com/axios/axios/commit/e6f7053bf1a3e87cf1f9da8677e12e3fe829d68e))
+- **merge-config:** optimize mergeConfig performance by avoiding duplicate key visits; ([#5679](https://github.com/axios/axios/issues/5679)) ([e6f7053](https://github.com/axios/axios/commit/e6f7053bf1a3e87cf1f9da8677e12e3fe829d68e))
 
 ### Contributors to this release
 
@@ -783,7 +740,9 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/43876655?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [PIYUSH NEGI](https://github.com/npiyush97 "+2/-18 (#5670 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -791,11 +750,10 @@ This functionality is considered as a fix.
 
 ## [1.3.6](https://github.com/axios/axios/compare/v1.3.5...v1.3.6) (2023-04-19)
 
-
 ### Bug Fixes
 
-* **types:** added transport to RawAxiosRequestConfig ([#5445](https://github.com/axios/axios/issues/5445)) ([6f360a2](https://github.com/axios/axios/commit/6f360a2531d8d70363fd9becef6a45a323f170e2))
-* **utils:** make isFormData detection logic stricter to avoid unnecessary calling of the `toString` method on the target; ([#5661](https://github.com/axios/axios/issues/5661)) ([aa372f7](https://github.com/axios/axios/commit/aa372f7306295dfd1100c1c2c77ce95c95808e76))
+- **types:** added transport to RawAxiosRequestConfig ([#5445](https://github.com/axios/axios/issues/5445)) ([6f360a2](https://github.com/axios/axios/commit/6f360a2531d8d70363fd9becef6a45a323f170e2))
+- **utils:** make isFormData detection logic stricter to avoid unnecessary calling of the `toString` method on the target; ([#5661](https://github.com/axios/axios/issues/5661)) ([aa372f7](https://github.com/axios/axios/commit/aa372f7306295dfd1100c1c2c77ce95c95808e76))
 
 ### Contributors to this release
 
@@ -803,7 +761,9 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+2/-0 (#5445 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -811,18 +771,19 @@ This functionality is considered as a fix.
 
 ## [1.3.5](https://github.com/axios/axios/compare/v1.3.4...v1.3.5) (2023-04-05)
 
-
 ### Bug Fixes
 
-* **headers:** fixed isValidHeaderName to support full list of allowed characters; ([#5584](https://github.com/axios/axios/issues/5584)) ([e7decef](https://github.com/axios/axios/commit/e7decef6a99f4627e27ed9ea5b00ce8e201c3841))
-* **params:** re-added the ability to set the function as `paramsSerializer` config; ([#5633](https://github.com/axios/axios/issues/5633)) ([a56c866](https://github.com/axios/axios/commit/a56c8661209d5ce5a645a05f294a0e08a6c1f6b3))
+- **headers:** fixed isValidHeaderName to support full list of allowed characters; ([#5584](https://github.com/axios/axios/issues/5584)) ([e7decef](https://github.com/axios/axios/commit/e7decef6a99f4627e27ed9ea5b00ce8e201c3841))
+- **params:** re-added the ability to set the function as `paramsSerializer` config; ([#5633](https://github.com/axios/axios/issues/5633)) ([a56c866](https://github.com/axios/axios/commit/a56c8661209d5ce5a645a05f294a0e08a6c1f6b3))
 
 ### Contributors to this release
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+28/-10 (#5633 #5584 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -830,11 +791,10 @@ This functionality is considered as a fix.
 
 ## [1.3.4](https://github.com/axios/axios/compare/v1.3.3...v1.3.4) (2023-02-22)
 
-
 ### Bug Fixes
 
-* **blob:** added a check to make sure the Blob class is available in the browser's global scope; ([#5548](https://github.com/axios/axios/issues/5548)) ([3772c8f](https://github.com/axios/axios/commit/3772c8fe74112a56e3e9551f894d899bc3a9443a))
-* **http:** fixed regression bug when handling synchronous errors inside the adapter; ([#5564](https://github.com/axios/axios/issues/5564)) ([a3b246c](https://github.com/axios/axios/commit/a3b246c9de5c3bc4b5a742e15add55b375479451))
+- **blob:** added a check to make sure the Blob class is available in the browser's global scope; ([#5548](https://github.com/axios/axios/issues/5548)) ([3772c8f](https://github.com/axios/axios/commit/3772c8fe74112a56e3e9551f894d899bc3a9443a))
+- **http:** fixed regression bug when handling synchronous errors inside the adapter; ([#5564](https://github.com/axios/axios/issues/5564)) ([a3b246c](https://github.com/axios/axios/commit/a3b246c9de5c3bc4b5a742e15add55b375479451))
 
 ### Contributors to this release
 
@@ -843,7 +803,9 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-0 (#5444 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -851,12 +813,11 @@ This functionality is considered as a fix.
 
 ## [1.3.3](https://github.com/axios/axios/compare/v1.3.2...v1.3.3) (2023-02-13)
 
-
 ### Bug Fixes
 
-* **formdata:** added a check to make sure the FormData class is available in the browser's global scope; ([#5545](https://github.com/axios/axios/issues/5545)) ([a6dfa72](https://github.com/axios/axios/commit/a6dfa72010db5ad52db8bd13c0f98e537e8fd05d))
-* **formdata:** fixed setting NaN as Content-Length for form payload in some cases; ([#5535](https://github.com/axios/axios/issues/5535)) ([c19f7bf](https://github.com/axios/axios/commit/c19f7bf770f90ae8307f4ea3104f227056912da1))
-* **headers:** fixed the filtering logic of the clear method; ([#5542](https://github.com/axios/axios/issues/5542)) ([ea87ebf](https://github.com/axios/axios/commit/ea87ebfe6d1699af072b9e7cd40faf8f14b0ab93))
+- **formdata:** added a check to make sure the FormData class is available in the browser's global scope; ([#5545](https://github.com/axios/axios/issues/5545)) ([a6dfa72](https://github.com/axios/axios/commit/a6dfa72010db5ad52db8bd13c0f98e537e8fd05d))
+- **formdata:** fixed setting NaN as Content-Length for form payload in some cases; ([#5535](https://github.com/axios/axios/issues/5535)) ([c19f7bf](https://github.com/axios/axios/commit/c19f7bf770f90ae8307f4ea3104f227056912da1))
+- **headers:** fixed the filtering logic of the clear method; ([#5542](https://github.com/axios/axios/issues/5542)) ([ea87ebf](https://github.com/axios/axios/commit/ea87ebfe6d1699af072b9e7cd40faf8f14b0ab93))
 
 ### Contributors to this release
 
@@ -864,7 +825,9 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/19842213?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [陈若枫](https://github.com/ruofee "+2/-2 (#5467 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -872,18 +835,19 @@ This functionality is considered as a fix.
 
 ## [1.3.2](https://github.com/axios/axios/compare/v1.3.1...v1.3.2) (2023-02-03)
 
-
 ### Bug Fixes
 
-* **http:** treat http://localhost as base URL for relative paths to avoid `ERR_INVALID_URL` error; ([#5528](https://github.com/axios/axios/issues/5528)) ([128d56f](https://github.com/axios/axios/commit/128d56f4a0fb8f5f2ed6e0dd80bc9225fee9538c))
-* **http:** use explicit import instead of TextEncoder global; ([#5530](https://github.com/axios/axios/issues/5530)) ([6b3c305](https://github.com/axios/axios/commit/6b3c305fc40c56428e0afabedc6f4d29c2830f6f))
+- **http:** treat http://localhost as base URL for relative paths to avoid `ERR_INVALID_URL` error; ([#5528](https://github.com/axios/axios/issues/5528)) ([128d56f](https://github.com/axios/axios/commit/128d56f4a0fb8f5f2ed6e0dd80bc9225fee9538c))
+- **http:** use explicit import instead of TextEncoder global; ([#5530](https://github.com/axios/axios/issues/5530)) ([6b3c305](https://github.com/axios/axios/commit/6b3c305fc40c56428e0afabedc6f4d29c2830f6f))
 
 ### Contributors to this release
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+2/-1 (#5530 #5528 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -891,18 +855,19 @@ This functionality is considered as a fix.
 
 ## [1.3.1](https://github.com/axios/axios/compare/v1.3.0...v1.3.1) (2023-02-01)
 
-
 ### Bug Fixes
 
-* **formdata:** add hotfix to use the asynchronous API to compute the content-length header value; ([#5521](https://github.com/axios/axios/issues/5521)) ([96d336f](https://github.com/axios/axios/commit/96d336f527619f21da012fe1f117eeb53e5a2120))
-* **serializer:** fixed serialization of array-like objects; ([#5518](https://github.com/axios/axios/issues/5518)) ([08104c0](https://github.com/axios/axios/commit/08104c028c0f9353897b1b6691d74c440fd0c32d))
+- **formdata:** add hotfix to use the asynchronous API to compute the content-length header value; ([#5521](https://github.com/axios/axios/issues/5521)) ([96d336f](https://github.com/axios/axios/commit/96d336f527619f21da012fe1f117eeb53e5a2120))
+- **serializer:** fixed serialization of array-like objects; ([#5518](https://github.com/axios/axios/issues/5518)) ([08104c0](https://github.com/axios/axios/commit/08104c028c0f9353897b1b6691d74c440fd0c32d))
 
 ### Contributors to this release
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+27/-8 (#5521 #5518 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -910,16 +875,14 @@ This functionality is considered as a fix.
 
 # [1.3.0](https://github.com/axios/axios/compare/v1.2.6...v1.3.0) (2023-01-31)
 
-
 ### Bug Fixes
 
-* **headers:** fixed & optimized clear method; ([#5507](https://github.com/axios/axios/issues/5507)) ([9915635](https://github.com/axios/axios/commit/9915635c69d0ab70daca5738488421f67ca60959))
-* **http:** add zlib headers if missing ([#5497](https://github.com/axios/axios/issues/5497)) ([65e8d1e](https://github.com/axios/axios/commit/65e8d1e28ce829f47a837e45129730e541950d3c))
-
+- **headers:** fixed & optimized clear method; ([#5507](https://github.com/axios/axios/issues/5507)) ([9915635](https://github.com/axios/axios/commit/9915635c69d0ab70daca5738488421f67ca60959))
+- **http:** add zlib headers if missing ([#5497](https://github.com/axios/axios/issues/5497)) ([65e8d1e](https://github.com/axios/axios/commit/65e8d1e28ce829f47a837e45129730e541950d3c))
 
 ### Features
 
-* **fomdata:** added support for spec-compliant FormData & Blob types; ([#5316](https://github.com/axios/axios/issues/5316)) ([6ac574e](https://github.com/axios/axios/commit/6ac574e00a06731288347acea1e8246091196953))
+- **fomdata:** added support for spec-compliant FormData & Blob types; ([#5316](https://github.com/axios/axios/issues/5316)) ([6ac574e](https://github.com/axios/axios/commit/6ac574e00a06731288347acea1e8246091196953))
 
 ### Contributors to this release
 
@@ -927,7 +890,9 @@ This functionality is considered as a fix.
 - <img src="https://avatars.githubusercontent.com/u/35015993?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ItsNotGoodName](https://github.com/ItsNotGoodName "+43/-2 (#5497 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -935,18 +900,19 @@ This functionality is considered as a fix.
 
 ## [1.2.6](https://github.com/axios/axios/compare/v1.2.5...v1.2.6) (2023-01-28)
 
-
 ### Bug Fixes
 
-* **headers:** added missed Authorization accessor; ([#5502](https://github.com/axios/axios/issues/5502)) ([342c0ba](https://github.com/axios/axios/commit/342c0ba9a16ea50f5ed7d2366c5c1a2c877e3f26))
-* **types:** fixed `CommonRequestHeadersList` & `CommonResponseHeadersList` types to be private in commonJS; ([#5503](https://github.com/axios/axios/issues/5503)) ([5a3d0a3](https://github.com/axios/axios/commit/5a3d0a3234d77361a1bc7cedee2da1e11df08e2c))
+- **headers:** added missed Authorization accessor; ([#5502](https://github.com/axios/axios/issues/5502)) ([342c0ba](https://github.com/axios/axios/commit/342c0ba9a16ea50f5ed7d2366c5c1a2c877e3f26))
+- **types:** fixed `CommonRequestHeadersList` & `CommonResponseHeadersList` types to be private in commonJS; ([#5503](https://github.com/axios/axios/issues/5503)) ([5a3d0a3](https://github.com/axios/axios/commit/5a3d0a3234d77361a1bc7cedee2da1e11df08e2c))
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+24/-9 (#5503 #5502 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+24/-9 (#5503 #5502 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -954,18 +920,19 @@ This functionality is considered as a fix.
 
 ## [1.2.5](https://github.com/axios/axios/compare/v1.2.4...v1.2.5) (2023-01-26)
 
-
 ### Bug Fixes
 
-* **types:** fixed AxiosHeaders to handle spread syntax by making all methods non-enumerable; ([#5499](https://github.com/axios/axios/issues/5499)) ([580f1e8](https://github.com/axios/axios/commit/580f1e8033a61baa38149d59fd16019de3932c22))
+- **types:** fixed AxiosHeaders to handle spread syntax by making all methods non-enumerable; ([#5499](https://github.com/axios/axios/issues/5499)) ([580f1e8](https://github.com/axios/axios/commit/580f1e8033a61baa38149d59fd16019de3932c22))
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+82/-54 (#5499 )")
-- ![avatar](https://avatars.githubusercontent.com/u/20516159?v&#x3D;4&amp;s&#x3D;16) [Elliot Ford](https://github.com/EFord36 "+1/-1 (#5462 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+82/-54 (#5499 )")
+- ![avatar](https://avatars.githubusercontent.com/u/20516159?v=4&s=16) [Elliot Ford](https://github.com/EFord36 "+1/-1 (#5462 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -973,19 +940,20 @@ This functionality is considered as a fix.
 
 ## [1.2.4](https://github.com/axios/axios/compare/v1.2.3...v1.2.4) (2023-01-22)
 
-
 ### Bug Fixes
 
-* **types:** renamed `RawAxiosRequestConfig` back to `AxiosRequestConfig`; ([#5486](https://github.com/axios/axios/issues/5486)) ([2a71f49](https://github.com/axios/axios/commit/2a71f49bc6c68495fa419003a3107ed8bd703ad0))
-* **types:** fix `AxiosRequestConfig` generic; ([#5478](https://github.com/axios/axios/issues/5478)) ([9bce81b](https://github.com/axios/axios/commit/186ea062da8b7d578ae78b1a5c220986b9bce81b))
+- **types:** renamed `RawAxiosRequestConfig` back to `AxiosRequestConfig`; ([#5486](https://github.com/axios/axios/issues/5486)) ([2a71f49](https://github.com/axios/axios/commit/2a71f49bc6c68495fa419003a3107ed8bd703ad0))
+- **types:** fix `AxiosRequestConfig` generic; ([#5478](https://github.com/axios/axios/issues/5478)) ([9bce81b](https://github.com/axios/axios/commit/186ea062da8b7d578ae78b1a5c220986b9bce81b))
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+242/-108 (#5486 #5482 )")
-- ![avatar](https://avatars.githubusercontent.com/u/9430821?v&#x3D;4&amp;s&#x3D;16) [Daniel Hillmann](https://github.com/hilleer "+1/-1 (#5478 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+242/-108 (#5486 #5482 )")
+- ![avatar](https://avatars.githubusercontent.com/u/9430821?v=4&s=16) [Daniel Hillmann](https://github.com/hilleer "+1/-1 (#5478 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -993,17 +961,18 @@ This functionality is considered as a fix.
 
 ## [1.2.3](https://github.com/axios/axios/compare/1.2.2...1.2.3) (2023-01-10)
 
-
 ### Bug Fixes
 
-* **types:** fixed AxiosRequestConfig header interface by refactoring it to RawAxiosRequestConfig; ([#5420](https://github.com/axios/axios/issues/5420)) ([0811963](https://github.com/axios/axios/commit/08119634a22f1d5b19f5c9ea0adccb6d3eebc3bc))
+- **types:** fixed AxiosRequestConfig header interface by refactoring it to RawAxiosRequestConfig; ([#5420](https://github.com/axios/axios/issues/5420)) ([0811963](https://github.com/axios/axios/commit/08119634a22f1d5b19f5c9ea0adccb6d3eebc3bc))
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+938/-442 (#5456 #5455 #5453 #5451 #5449 #5447 #5446 #5443 #5442 #5439 #5420 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+938/-442 (#5456 #5455 #5453 #5451 #5449 #5447 #5446 #5443 #5442 #5439 #5420 )")
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -1012,6 +981,7 @@ This functionality is considered as a fix.
 ## [1.2.2] - 2022-12-29
 
 ### Fixed
+
 - fix(ci): fix release script inputs [#5392](https://github.com/axios/axios/pull/5392)
 - fix(ci): prerelease scipts [#5377](https://github.com/axios/axios/pull/5377)
 - fix(ci): release scripts [#5376](https://github.com/axios/axios/pull/5376)
@@ -1020,6 +990,7 @@ This functionality is considered as a fix.
 - fix: add missing HttpStatusCode [#5345](https://github.com/axios/axios/pull/5345)
 
 ### Chores
+
 - chore(ci): set conventional-changelog header config [#5406](https://github.com/axios/axios/pull/5406)
 - chore(ci): fix automatic contributors resolving [#5403](https://github.com/axios/axios/pull/5403)
 - chore(ci): improved logging for the contributors list generator [#5398](https://github.com/axios/axios/pull/5398)
@@ -1030,25 +1001,30 @@ This functionality is considered as a fix.
 - chore(ci): release scripts [#5364](https://github.com/axios/axios/pull/5364)
 
 ### Contributors to this release
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
-- ![avatar](https://avatars.githubusercontent.com/u/1652293?v&#x3D;4&amp;s&#x3D;16) [Winnie](https://github.com/winniehell)
+
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS)
+- ![avatar](https://avatars.githubusercontent.com/u/1652293?v=4&s=16) [Winnie](https://github.com/winniehell)
 
 ## [1.2.1] - 2022-12-05
 
 ### Changed
+
 - feat(exports): export mergeConfig [#5151](https://github.com/axios/axios/pull/5151)
 
 ### Fixed
+
 - fix(CancelledError): include config [#4922](https://github.com/axios/axios/pull/4922)
 - fix(general): removing multiple/trailing/leading whitespace [#5022](https://github.com/axios/axios/pull/5022)
 - fix(headers): decompression for responses without Content-Length header [#5306](https://github.com/axios/axios/pull/5306)
 - fix(webWorker): exception to sending form data in web worker [#5139](https://github.com/axios/axios/pull/5139)
 
 ### Refactors
+
 - refactor(types): AxiosProgressEvent.event type to any [#5308](https://github.com/axios/axios/pull/5308)
 - refactor(types): add missing types for static AxiosError.from method [#4956](https://github.com/axios/axios/pull/4956)
 
 ### Chores
+
 - chore(docs): remove README link to non-existent upgrade guide [#5307](https://github.com/axios/axios/pull/5307)
 - chore(docs): typo in issue template name [#5159](https://github.com/axios/axios/pull/5159)
 
@@ -1064,7 +1040,9 @@ This functionality is considered as a fix.
 - [Arthur Fiorette](https://github.com/arthurfiorette)
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -1082,11 +1060,12 @@ This functionality is considered as a fix.
 - fix: improve AxiosHeaders class [#5224](https://github.com/axios/axios/pull/5224)
 - fix: TypeScript type definitions for commonjs [#5196](https://github.com/axios/axios/pull/5196)
 - fix: type definition of use method on AxiosInterceptorManager to match the the README [#5071](https://github.com/axios/axios/pull/5071)
-- fix: __dirname is not defined in the sandbox [#5269](https://github.com/axios/axios/pull/5269)
+- fix: \_\_dirname is not defined in the sandbox [#5269](https://github.com/axios/axios/pull/5269)
 - fix: AxiosError.toJSON method to avoid circular references [#5247](https://github.com/axios/axios/pull/5247)
 - fix: Z_BUF_ERROR when content-encoding is set but the response body is empty [#5250](https://github.com/axios/axios/pull/5250)
 
 ### Refactors
+
 - refactor: allowing adapters to be loaded by name [#5277](https://github.com/axios/axios/pull/5277)
 
 ### Chores
@@ -1137,7 +1116,9 @@ This functionality is considered as a fix.
 - [relbns](https://github.com/relbns)
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -1178,7 +1159,9 @@ This functionality is considered as a fix.
 - [ChronosMasterOfAllTime](https://github.com/ChronosMasterOfAllTime)
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -1195,7 +1178,9 @@ This functionality is considered as a fix.
 - [Jason Saayman](https://github.com/jasonsaayman)
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -1212,7 +1197,9 @@ This functionality is considered as a fix.
 - [Jason Saayman](https://github.com/jasonsaayman)
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -1238,7 +1225,9 @@ This functionality is considered as a fix.
 - [Richard Kořínek](https://github.com/risa)
 
 ### PRs
+
 - CVE 2023 45857 ( [#6028](https://api.github.com/repos/axios/axios/pulls/6028) )
+
 ```
 
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
@@ -1293,8 +1282,8 @@ This functionality is considered as a fix.
 - Updated Docs [#4742](https://github.com/axios/axios/pull/4742)
 - Refactored Axios to use ES2017 [#4787](https://github.com/axios/axios/pull/4787)
 
-
 ### Deprecated
+
 - There are multiple deprecations, refactors and fixes provided in this release. Please read through the full release notes to see how this may impact your project and use case.
 
 ### Removed
@@ -1340,6 +1329,7 @@ This functionality is considered as a fix.
 - Allow null indexes on formSerializer and paramsSerializer [#4960](https://github.com/axios/axios/pull/4960)
 
 ### Chores
+
 - Set permissions for GitHub actions [#4765](https://github.com/axios/axios/pull/4765)
 - Included githubactions in the dependabot config [#4770](https://github.com/axios/axios/pull/4770)
 - Included dependency review [#4771](https://github.com/axios/axios/pull/4771)

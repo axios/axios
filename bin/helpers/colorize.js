@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-export const colorize = (...colors)=> {
+export const colorize = (...colors) => {
   if(!colors.length) {
     colors = ['green', 'cyan', 'magenta', 'blue', 'yellow', 'red'];
   }

@@ -1,8 +1,10 @@
 import http from "http";
+import http2 from "http2";
 import stream from "stream";
 import getStream from "get-stream";
 import {Throttle} from "stream-throttle";
 import formidable from "formidable";
+import selfsigned from 'selfsigned';
 
 
 export const LOCAL_SERVER_URL = 'http://localhost:4444';
@@ -11,15 +13,26 @@ export const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
 export const setTimeoutAsync = (ms) => new Promise(resolve=> setTimeout(resolve, ms));
 
+const certificate = selfsigned.generate(null, { keySize: 2048 });
+
 export const startHTTPServer = (handlerOrOptions, options) => {
 
-  const {handler, useBuffering = false, rate = undefined, port = 4444, keepAlive = 1000} =
+  const {
+    handler,
+    useBuffering = false,
+    rate = undefined,
+    port = 4444,
+    keepAlive = 1000,
+    useHTTP2,
+    key = certificate.private,
+    cert = certificate.cert,
+  } =
     Object.assign(typeof handlerOrOptions === 'function' ? {
       handler: handlerOrOptions
     } : handlerOrOptions || {}, options);
 
   return new Promise((resolve, reject) => {
-    const server = http.createServer(handler || async function (req, res) {
+    const serverHandler = handler || async function (req, res) {
       try {
         req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
 
@@ -43,12 +56,36 @@ export const startHTTPServer = (handlerOrOptions, options) => {
       } catch (err){
         console.warn('HTTP server error:', err);
       }
+    }
 
-    }).listen(port, function (err) {
+    const server = useHTTP2 ?
+      http2.createSecureServer({key, cert} , serverHandler) :
+      http.createServer(serverHandler);
+
+    const sessions = new Set();
+
+    if(useHTTP2) {
+      server.on('session', (session) => {
+        sessions.add(session);
+
+        session.once('close', () => {
+          sessions.delete(session);
+        });
+      });
+
+      server.closeAllSessions = () => {
+        for (const session of sessions) {
+          session.destroy();
+        }
+      }
+    } else {
+      server.keepAliveTimeout = keepAlive;
+    }
+
+    server.listen(port, function (err) {
       err ? reject(err) : resolve(this);
     });
 
-    server.keepAliveTimeout = keepAlive;
   });
 }
 
@@ -56,6 +93,10 @@ export const stopHTTPServer = async (server, timeout = 10000) => {
   if (server) {
     if (typeof server.closeAllConnections === 'function') {
       server.closeAllConnections();
+    }
+
+    if (typeof server.closeAllSessions === 'function') {
+      server.closeAllSessions();
     }
 
     await Promise.race([new Promise(resolve => server.close(resolve)), setTimeoutAsync(timeout)]);

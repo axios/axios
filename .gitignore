@@ -13,3 +13,4 @@ backup/
 .npmrc
 .env
 dist/
+.vscode/

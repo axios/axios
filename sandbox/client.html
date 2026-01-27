@@ -3,69 +3,74 @@
 <head>
   <title>AXIOS | Sandbox</title>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"/>
-  <style type="text/css">
-    :root {
-      --bg-color: #fff;
-      --text-color: #212529;
-      --border-color: #dee2e6;
-      --well-bg: #f8f9fa;
-      --input-bg: #fff;
-      --footer-text-color: #6c757d;
-      --footer-heading-color: #212529;
-      --footer-link-color: #007bff;
-      --footer-link-hover-color: #0056b3;
-      --shadow-color: rgba(0, 0, 0, 0.1);
-      --axios-purple: #6a1b9a;
-      --sandbox-color: #212529;
-    }
+ <style type="text/css">
+      /* 
+   :root & Dark Mode Variables
+    */
+      :root {
+        --bg-color: #f0f4ff; /* main page background */
+        --text-color: #1a1a1a; /* main text color */
+        --border-color: #cfd8ff; /* default borders */
+        --well-bg: rgba(255, 255, 255, 0.9); /* card & well background */
+        --input-bg: rgba(255, 255, 255, 0.95); /* input background */
+        --footer-text-color: #555;
+        --footer-heading-color: #1a1a1a;
+        --footer-link-color: #5b4bff;
+        --footer-link-hover-color: #3a2ecb;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --primary-gradient: linear-gradient(135deg, #6a1bff, #00c3ff);
+        --btn-hover-gradient: linear-gradient(135deg, #5b00d1, #00aaff);
+        --glass-blur: blur(12px); /* for frosted glass effect */
+      }
 
-    body.dark-mode {
-      --bg-color: #121212;
-      --text-color: #e9ecef;
-      --border-color: #495057;
-      --well-bg: #1c1c1c;
-      --input-bg: #212121;
-      --footer-text-color: #adb5bd;
-      --footer-heading-color: #f8f9fa;
-      --footer-link-color: #61dafb;
-      --footer-link-hover-color: #fff;
-      --shadow-color: rgba(0, 0, 0, 0.4);
-      --axios-purple: #a78bfa;
-      --sandbox-color: #e9ecef;
-    }
-    
-    * {
-        transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-    }
+      body.dark-mode {
+        /* Dark mode overrides */
+        --bg-color: #0e0f1a;
+        --text-color: #e0e0ff;
+        --border-color: #444;
+        --well-bg: rgba(30, 30, 50, 0.7);
+        --input-bg: rgba(40, 40, 60, 0.85);
+        --footer-text-color: #aaa;
+        --footer-heading-color: #fff;
+        --footer-link-color: #7f8fff;
+        --footer-link-hover-color: #aabfff;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+        --primary-gradient: linear-gradient(135deg, #9b59ff, #00d1ff);
+        --btn-hover-gradient: linear-gradient(135deg, #7d33ff, #00b7ff);
+      }
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-    }
+      /* 
+   Global Styles
+    */
+      * {
+        box-sizing: border-box;
+        transition: all 0.4s ease; /* smooth transitions everywhere */
+      }
 
-    .well, .form-control {
-      background-color: var(--well-bg);
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-    }
-    
-    .form-control {
-        background-color: var(--input-bg);
-    }
-    
-    .form-control::placeholder {
-        color: #6c757d;
-    }
-    
-    /* --- UI Improvement: Added spacing to form groups --- */
-    .form-group {
-        margin-bottom: 1.25rem; /* Adds space between each form field */
-    }
-
+     body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+      }
     pre {
       min-height: 39px;
+      white-space: pre-wrap; /* wrap long lines instead of stretching the panel */
+      word-wrap: break-word;
       overflow: auto;
     }
+
+    .box{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 40px; /* Increased gap between input and response columns */
+    }
+
+    .response {
+      min-width: 0; /* prevents content overflow from pushing layout */
+      overflow-x: auto;
+    }
+
     .header{
       display: flex;
       flex-direction: row;
@@ -73,90 +78,203 @@
       align-items: center;
       margin-bottom: 2rem; /* Added space below the header */
     }
-    .box{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 40px; /* Increased gap between input and response columns */
-    }
 
-    #theme-toggle {
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
+      /* 
+   Input & Well Styles
+    */
+      .well,
+      .form-control {
+        background: var(--well-bg);
+        margin-top: 5px;
         border: 1px solid var(--border-color);
-        background-color: var(--well-bg);
-        color: var(--text-color);
-    }
+        border-radius: 16px;
+        padding: 14px 16px;
+        box-shadow: 0 10px 25px -8px var(--shadow-color);
+        backdrop-filter: var(--glass-blur); /* glass effect */
+      }
 
-    .footer {
+      .form-control {
+        background: var(--input-bg);
+        color: var(--text-color);
+        border-radius: 16px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        outline: none; /* remove default bootstrap focus outline */
+      }
+
+      .form-control::placeholder {
+        color: #9e9eef; /* subtle placeholder */
+      }
+
+      /* Modern neon focus effect */
+      .form-control:focus {
+        background: var(--input-bg); /* keep consistent */
+        border: 1px solid #ff00ff; /* neon border */
+        box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff; /* glowing focus */
+        color: var(--text-color);
+      }
+
+      /* subtle placeholder fade on focus */
+      .form-control:focus::placeholder {
+        color: #ddd;
+      }
+
+      /* spacing between form groups */
+      .form-group {
+        margin-bottom: 1.75rem;
+      }
+
+      /* 
+   Header & Box Layout
+    */
+      .header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        gap: 15px;
+      }
+
+      .box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+
+      /* 
+   Theme Toggle Button
+    */
+      #theme-toggle {
+        padding: 8px 18px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        background: var(--primary-gradient);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 8px 20px -5px var(--shadow-color);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      #theme-toggle:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px -8px var(--shadow-color);
+      }
+
+      /* 
+   Footer Styles
+    */
+      .footer {
         max-width: 900px;
         margin: 60px auto 40px auto;
-        padding: 2rem 3rem;
-        border: 1px solid var(--border-color);
-        background-color: var(--well-bg);
-        /* border-radius: 30px; */
-        box-shadow: 0 10px 30px -10px var(--shadow-color);
+        padding: 2.5rem 3rem;
+        border-radius: 24px;
+        background: var(--well-bg);
+        box-shadow: 0 15px 35px -10px var(--shadow-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 30px;
-    }
+        gap: 25px;
+      }
 
-    .footer-left .footer-brand-axios {
-        font-size: 1.1em;
-        font-weight: bold;
-        color: var(--axios-purple);
-        margin: 0;
-        display: inline;
-    }
-    .footer-left .footer-brand-sandbox {
-        font-size: 1.1em;
-        font-weight: bold;
-        color: var(--sandbox-color);
-        margin: 0;
-        display: inline;
-    }
-    
-    .footer-left .footer-copyright {
+      .footer-left {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .footer-left .footer-brand-axios,
+      .footer-left .footer-brand-sandbox {
+        font-size: 1.2em;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .footer-left .footer-copyright {
         font-size: 0.9em;
         color: var(--footer-text-color);
-        margin: 5px 0 0 0;
-    }
+      }
 
-    .footer-nav ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
+      .footer-nav ul {
         display: flex;
         gap: 25px;
-    }
-
-    .footer-nav a {
-        color: var(--footer-link-color);
-        text-decoration: none;
-        font-weight: 500;
-    }
-    .footer-nav a:hover {
-        color: var(--footer-link-hover-color);
-        text-decoration: underline;
-    }
-
-    @media screen and (max-width: 1000px) {
-      .box {
-        grid-template-columns: 1fr;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-wrap: wrap;
       }
-    }
-    @media screen and (max-width: 768px) {
-        .footer {
-            flex-direction: column;
-            text-align: center;
-            border-radius: 25px;
-            padding: 2rem;
-            max-width: 90%;
+
+      .footer-nav a {
+        color: var(--footer-link-color);
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.3s ease, transform 0.2s ease;
+      }
+
+      .footer-nav a:hover {
+        color: var(--footer-link-hover-color);
+        transform: translateY(-2px);
+        text-decoration: underline;
+      }
+
+      /* 
+   Buttons
+    */
+      .btn {
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        background: var(--primary-gradient);
+        box-shadow: 0 10px 25px -8px var(--shadow-color);
+        transition: all 0.3s ease;
+      }
+
+      .btn:hover {
+        background: var(--btn-hover-gradient);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 30px -10px var(--shadow-color);
+      }
+
+      /* 
+   Code/Pre blocks
+    */
+      pre {
+        border-radius: 16px;
+        padding: 14px;
+        background: var(--well-bg);
+        box-shadow: inset 0 6px 12px -4px var(--shadow-color);
+        overflow: auto;
+      }
+
+      /* 
+   Responsive Layout
+    */
+      @media screen and (max-width: 1000px) {
+        .box {
+          grid-template-columns: 1fr;
         }
-    }
-  </style>
+      }
+
+      @media screen and (max-width: 768px) {
+        .footer {
+          flex-direction: column;
+          text-align: center;
+          padding: 2rem;
+          max-width: 90%;
+        }
+
+        .footer-nav ul {
+          justify-content: center;
+        }
+      }
+    </style>
 </head>
 <body class="container">
 <div class="header">

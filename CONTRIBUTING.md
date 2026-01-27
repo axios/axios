@@ -20,9 +20,9 @@ Please update the [documentation](https://axios-http.com/docs/intro) accordingly
 
 ## Developing
 
-- `npm run test` run the jasmine and mocha tests
-- `npm run build` run rollup and bundle the source
-- `npm run version` prepare the code for release
+- `npm run test` runs the jasmine and mocha tests
+- `npm run build` runs rollup and bundles the source
+- `npm run version` prepares the code for release
 
 ## Running Examples
 

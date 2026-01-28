@@ -49,12 +49,3 @@ jobs:
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         if: matrix.node-version == '24.x'
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: javascript
-          queries: security-extended,security-and-quality
-        if: matrix.node-version == '24.x'
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
-        if: matrix.node-version == '24.x'

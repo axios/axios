@@ -49,7 +49,7 @@
     "test:node": "npm run test:mocha",
     "test:node:coverage": "c8 npm run test:mocha",
     "test:browser": "npm run test:karma",
-    "test:package": "npm run test:eslint && npm run && npm run test:exports",
+    "test:package": "npm run test:eslint && npm run test:exports",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
     "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
     "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
@@ -164,7 +164,7 @@
   "unpkg": "dist/axios.min.js",
   "typings": "./index.d.ts",
   "dependencies": {
-    "follow-redirects": "^1.15.10",
+    "follow-redirects": "^1.15.6",
     "form-data": "^4.0.5",
     "proxy-from-env": "^1.1.0"
   },

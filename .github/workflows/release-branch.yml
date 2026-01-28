@@ -56,6 +56,10 @@ jobs:
             fi
           fi
           echo "::set-output name=newTag::$(node -p "require('./package.json').version")"
+      - name: Bump bower etc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run preversion
       - name: Build project
         run: npm run build
       - name: Run unit tests

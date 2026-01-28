@@ -7,7 +7,6 @@ on:
       - "*/*"
       - "**"
       - "!sponsors"
-      - "!release/**"
 
 permissions:
   contents: read

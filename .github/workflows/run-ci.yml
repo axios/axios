@@ -35,9 +35,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - name: IDK
-        run: npm i follow-redirects@1.15.11
       - name: Install dependencies
+        if: matrix.node-version == '12.x' || matrix.node-version == '14.x'
+        run: npm i
+      - name: Install dependencies
+        if: matrix.node-version != '12.x' && matrix.node-version != '14.x'
         run: npm ci
       - name: Build project
         run: npm run build

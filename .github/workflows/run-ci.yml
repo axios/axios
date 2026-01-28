@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
+        node-version: [14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
       fail-fast: false
 
     steps:
@@ -36,10 +36,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - name: Install dependencies
-        if: matrix.node-version == '12.x' || matrix.node-version == '14.x'
+        if: matrix.node-version == '14.x'
         run: npm i
       - name: Install dependencies
-        if: matrix.node-version != '12.x' && matrix.node-version != '14.x'
+        if: matrix.node-version != '14.x'
         run: npm ci
       - name: Build project
         run: npm run build

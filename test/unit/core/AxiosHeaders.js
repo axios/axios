@@ -1,6 +1,7 @@
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 import assert from 'assert';
 
+const [nodeMajorVersion] = process.versions.node.split('.').map(v => parseInt(v, 10));
 
 describe('AxiosHeaders', function () {
   it('should support headers argument', function () {
@@ -73,7 +74,36 @@ describe('AxiosHeaders', function () {
       headers.set('foo', 'value2', true);
 
       assert.strictEqual(headers.get('foo'), 'value2');
-    })
+    });
+
+    it('should support iterables as a key-value source object', function () {
+      const headers = new AxiosHeaders();
+
+      headers.set(new Map([['x', '123']]));
+
+      assert.strictEqual(headers.get('x'), '123');
+    });
+
+    it('should support setting multiple header values from an iterable source', function () {
+      if (nodeMajorVersion < 18) {
+        this.skip();
+        return;
+      }
+
+      const headers = new AxiosHeaders();
+
+      const nativeHeaders = new Headers();
+
+      nativeHeaders.append('set-cookie', 'foo');
+      nativeHeaders.append('set-cookie', 'bar');
+      nativeHeaders.append('set-cookie', 'baz');
+      nativeHeaders.append('y', 'qux');
+
+      headers.set(nativeHeaders);
+
+      assert.deepStrictEqual(headers.get('set-cookie'), ['foo', 'bar', 'baz']);
+      assert.strictEqual(headers.get('y'), 'qux');
+    });
   });
 
   it('should support uppercase name mapping for names overlapped by class methods', () => {
@@ -138,12 +168,12 @@ describe('AxiosHeaders', function () {
 
         headers.set('foo', 'bar=value1');
 
-        assert.strictEqual(headers.has('foo', (value, header, headers)=> {
+        assert.strictEqual(headers.has('foo', (value, header, headers) => {
           assert.strictEqual(value, 'bar=value1');
           assert.strictEqual(header, 'foo');
           return true;
         }), true);
-        assert.strictEqual(headers.has('foo', ()=> false), false);
+        assert.strictEqual(headers.has('foo', () => false), false);
       });
 
       it('should support string pattern', function () {
@@ -216,7 +246,7 @@ describe('AxiosHeaders', function () {
 
         headers.set('foo', 'bar=value1');
 
-        headers.delete('foo', (value, header)=> {
+        headers.delete('foo', (value, header) => {
           assert.strictEqual(value, 'bar=value1');
           assert.strictEqual(header, 'foo');
           return false;
@@ -224,7 +254,7 @@ describe('AxiosHeaders', function () {
 
         assert.strictEqual(headers.has('foo'), true);
 
-        assert.strictEqual(headers.delete('foo', ()=> true), true);
+        assert.strictEqual(headers.delete('foo', () => true), true);
 
         assert.strictEqual(headers.has('foo'), false);
       });
@@ -247,7 +277,7 @@ describe('AxiosHeaders', function () {
     });
   });
 
-  describe('clear', ()=> {
+  describe('clear', () => {
     it('should clear all headers', () => {
       const headers = new AxiosHeaders({x: 1, y:2});
 
@@ -421,6 +451,21 @@ describe('AxiosHeaders', function () {
   describe('toString', function () {
     it('should serialize AxiosHeader instance to a raw headers string', function () {
       assert.deepStrictEqual(new AxiosHeaders({x:1, y:2}).toString(), 'x: 1\ny: 2');
+    });
+  });
+
+  describe('getSetCookie', function () {
+    it('should return set-cookie', function () {
+      const headers = new AxiosHeaders(
+        'Set-Cookie: key=val;\n' +
+        'Set-Cookie: key2=val2;\n'
+      );
+
+      assert.deepStrictEqual(headers.getSetCookie(), ['key=val;', 'key2=val2;']);
+    });
+
+    it('should return empty set-cookie', function () {
+      assert.deepStrictEqual(new AxiosHeaders().getSetCookie(), []);
     });
   });
 });

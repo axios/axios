@@ -1,128 +1,523 @@
 <!doctype html>
 <html>
   <head>
-    <title>axios - post example</title>
+    <title>Axios - Multipart Form Example</title>
     <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-      .postSubmission {
-        margin-top: 40px;
+      :root {
+        --primary: #6c63ff;
+        --primary-dark: #5a52d5;
+        --primary-light: #8b85ff;
+        --secondary: #ff6584;
+        --light: #f8f9fa;
+        --dark: #1a1a2e;
+        --gray: #6c757d;
+        --gray-light: #e9ecef;
+        --gray-dark: #495057;
+        --success: #4bb543;
+        --danger: #dc3545;
+        --border-radius: 12px;
+        --shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        --transition: all 0.3s ease;
+        --card-bg: #ffffff;
+        --text-color: #333333;
+        --input-bg: #ffffff;
+        --border-color: #e1e5e9;
+      }
 
-        /* white-space: pre-line; */
+      [data-theme="dark"] {
+        --primary: #8b85ff;
+        --primary-dark: #6c63ff;
+        --primary-light: #a9a4ff;
+        --secondary: #ff6584;
+        --light: #1a1a2e;
+        --dark: #f8f9fa;
+        --gray: #a0a0a0;
+        --gray-light: #2d3748;
+        --gray-dark: #e2e8f0;
+        --success: #4bb543;
+        --danger: #dc3545;
+        --card-bg: #16213e;
+        --text-color: #e2e8f0;
+        --input-bg: #1a1a2e;
+        --border-color: #2d3748;
       }
+
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text-color);
+        transition: var(--transition);
+      }
+
+      [data-theme="dark"] body {
+        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      }
+
+      .container {
+        max-width: 1200px;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 0;
+        overflow: hidden;
+        transition: var(--transition);
+      }
+
+      .header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 25px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+      }
+
+      h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .theme-toggle {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50px;
+        width: 60px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        padding: 0 5px;
+        cursor: pointer;
+        position: relative;
+        transition: var(--transition);
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .toggle-circle {
+        width: 22px;
+        height: 22px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        left: 4px;
+        transition: var(--transition);
+      }
+
+      [data-theme="dark"] .toggle-circle {
+        left: 34px;
+      }
+
+      .theme-toggle i {
+        color: white;
+        font-size: 14px;
+        position: absolute;
+      }
+
+      .fa-sun {
+        left: 8px;
+      }
+
+      .fa-moon {
+        right: 8px;
+      }
+
+      .content-wrapper {
+        display: flex;
+        flex-direction: row;
+        min-height: 600px;
+      }
+
+      @media (max-width: 992px) {
+        .content-wrapper {
+          flex-direction: column;
+        }
+      }
+
+      .form-section {
+        flex: 1;
+        padding: 30px;
+        border-right: 1px solid var(--border-color);
+      }
+
+      .result-section {
+        flex: 1;
+        padding: 30px;
+        background-color: rgba(108, 99, 255, 0.03);
+        display: flex;
+        flex-direction: column;
+      }
+
+      [data-theme="dark"] .result-section {
+        background-color: rgba(26, 26, 46, 0.5);
+      }
+
+      .form-group {
+        margin-bottom: 24px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-color);
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="file"] {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 16px;
+        transition: var(--transition);
+        background-color: var(--input-bg);
+        color: var(--text-color);
+      }
+
+      input[type="text"]:focus,
+      input[type="number"]:focus,
+      input[type="file"]:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+      }
+
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin: 25px 0;
+      }
+
+      .radio-option {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        background-color: var(--input-bg);
+      }
+
+      .radio-option:hover {
+        background-color: rgba(108, 99, 255, 0.05);
+        border-color: var(--primary);
+      }
+
+      .radio-option input {
+        margin-right: 12px;
+        transform: scale(1.2);
+      }
+
+      .radio-option label {
+        margin-bottom: 0;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        padding: 16px 28px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: white;
+        box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(108, 99, 255, 0.4);
+      }
+
+      .postSubmission {
+        margin-top: 20px;
+        padding: 25px;
+        background-color: var(--light);
+        border-radius: var(--border-radius);
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      [data-theme="dark"] .postSubmission {
+        background-color: var(--gray-light);
+      }
+
       .checkNetwork {
-        margin-bottom: 10px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: rgba(108, 99, 255, 0.1);
+        border-left: 4px solid var(--primary);
+        border-radius: 4px;
       }
+
       .text-strong {
         font-weight: 700;
+        color: var(--primary);
       }
+
       .hidden {
-        display: none; 
+        display: none;
+      }
+
+      .text-danger {
+        padding: 15px;
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid var(--danger);
+        border-radius: 4px;
+        color: var(--danger);
+        margin-top: 20px;
+      }
+
+      .text-success {
+        padding: 15px;
+        background-color: rgba(75, 181, 67, 0.1);
+        border-left: 4px solid var(--success);
+        border-radius: 4px;
+        color: var(--success);
+        margin-top: 20px;
+      }
+
+      .info-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 20px;
+        padding: 15px;
+        background-color: rgba(108, 99, 255, 0.05);
+        border-radius: var(--border-radius);
+      }
+
+      .info-box i {
+        color: var(--primary);
+        font-size: 20px;
+      }
+
+      .result-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .result-content {
+        background-color: var(--input-bg);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        flex-grow: 1;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        font-family: 'Courier New', monospace;
+        white-space: pre-wrap;
+      }
+
+      .result-placeholder {
+        color: var(--gray);
+        font-style: italic;
+        text-align: center;
+        margin-top: 50%;
+        transform: translateY(-50%);
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          margin: 10px;
+        }
+        
+        .form-section, .result-section {
+          padding: 20px;
+        }
+        
+        .header {
+          padding: 20px;
+          flex-direction: column;
+          gap: 15px;
+        }
+        
+        h1 {
+          font-size: 24px;
+        }
       }
     </style>
-
   </head>
-  <body class="container">
-    <h1>Post multipart/form-data</h1>
-
-    <form role="form" class="form" onsubmit="return false;">
-      <div class="form-group">
-        <label for="data">someString</label>
-        <input id="someString" type="text"></input>
-      </div>
-      <div class="form-group">
-        <label for="data">someNumber</label>
-        <input id="someNumber" type="number"></input>
-      </div>
-      <div class="form-group">
-        <label for="data">someSamllFile</label>
-        <input id="someSamllFile" type="file"></input>
-      </div>
-      <div class="form-group">
-        <label for="data">nested.someString</label>
-        <input id="nested.someString"  type="text"></input>
-      </div>
-      <div>
-        <input type="radio" name="format" value="formData"
-               checked>
-        <label for="huey">Pass to Axios as FormData</label>
-      </div>
-      <div>
-        <input type="radio"  name="format" value="json"
-               checked>
-        <label for="huey">Pass to Axios as json. Let Axios convert to form data</label>
-      </div>
-      <button id="post" type="button" class="btn btn-primary">POST</button>
-    </form>
-
-    <div class="postSubmission">
-
-      <div id="checkNetwork" class="checkNetwork hidden">
-        <span class="text-strong">Check devtools to see details of request sent, and content of FormData. </span><br/>
-        In Chromium check: devtools -> network tab -> request to "server" -> payload tab
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1><i class="fas fa-file-upload"></i> Multipart Form Data</h1>
+        <button class="theme-toggle" id="themeToggle">
+          <i class="fas fa-sun"></i>
+          <i class="fas fa-moon"></i>
+          <span class="toggle-circle"></span>
+        </button>
       </div>
 
+      <div class="content-wrapper">
+        <div class="form-section">
+          <form role="form" class="form" onsubmit="return false;">
+            <div class="form-group">
+              <label for="someString">someString</label>
+              <input id="someString" type="text" placeholder="Enter text value">
+            </div>
+            <div class="form-group">
+              <label for="someNumber">someNumber</label>
+              <input id="someNumber" type="number" placeholder="Enter numeric value">
+            </div>
+            <div class="form-group">
+              <label for="someSmallFile">someSmallFile</label>
+              <input id="someSmallFile" type="file">
+            </div>
+            <div class="form-group">
+              <label for="nested.someString">nested.someString</label>
+              <input id="nested.someString" type="text" placeholder="Enter nested text value">
+            </div>
+            
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="format" value="formData" id="formData" checked>
+                <label for="formData">Pass to Axios as FormData</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="format" value="json" id="json">
+                <label for="json">Pass to Axios as JSON. Let Axios convert to form data</label>
+              </div>
+            </div>
+            
+            <button id="post" type="button" class="btn btn-primary">
+              <i class="fas fa-paper-plane"></i> POST Data
+            </button>
+          </form>
 
-      <div id="errorOutput" class="text-danger">
+          <div class="postSubmission">
+            <div id="checkNetwork" class="checkNetwork hidden">
+              <span class="text-strong">Check devtools to see details of request sent, and content of FormData. </span><br/>
+              In Chromium check: devtools -> network tab -> request to "server" -> payload tab
+            </div>
+
+            <div id="errorOutput" class="text-danger hidden">
+            </div>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-title">
+            <i class="fas fa-code"></i> Response Data
+          </div>
+          <div class="result-content" id="resultContent">
+            <div class="result-placeholder">Submit the form to see the response data here</div>
+          </div>
+        </div>
       </div>
 
+      <div class="info-box">
+        <i class="fas fa-info-circle"></i>
+        <div>This form demonstrates how to submit multipart/form-data with both text fields and files.</div>
+      </div>
     </div>
 
-    <script src="/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
       (function () {
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
         
+        // Check for saved theme preference or default to light
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', currentTheme);
+        
+        themeToggle.addEventListener('click', () => {
+          const currentTheme = body.getAttribute('data-theme');
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          
+          body.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+        });
+
+        // Form submission functionality
         document.getElementById('post').onclick = function () {
-          document.getElementById("checkNetwork").classList.remove("hidden")
+          // Show network/loading indicator
+          document.getElementById("checkNetwork").classList.remove("hidden");
+          document.getElementById("errorOutput").classList.add("hidden");
+          
+          // Grab values from inputs
+          const someString = document.getElementById('someString').value;
+          const someNumber = document.getElementById('someNumber').valueAsNumber;
+          const files = Array.from(document.getElementById('someSmallFile').files);
+          const nestedString = document.getElementById('nested.someString').value;
+          const passAsFormData = document.querySelector('input[name="format"]:checked').value === "formData";
 
-          var someString = document.getElementById('someString').value;
-          var someNumber = document.getElementById('someNumber').valueAsNumber;
-          var files = Array.from(document.getElementById('someSamllFile').files)
-          var nestedString = document.getElementById('nested.someString').value;
-          var passAsFormData = document.querySelector('input[name="format"]:checked').value==="formData";
+          const data = passAsFormData ? new FormData() : {};
 
-          var data = passAsFormData? new FormData() : {}
+          // Helper to add value to FormData or plain object
+          function addValueToData(key, val, isValDefined) {
+            if (!isValDefined) return;
 
-          function addValueToData(key, val, isValDefined){
-            if (!isValDefined){
-              return 
-            }
-
-            if(passAsFormData){
-              data.append(key, val)
+            if (passAsFormData) {
+              data.append(key, val);
             } else {
-
-              var keys = key.split(".")
-              if (keys.length===1){
-                data[key] = val
+              const keys = key.split(".");
+              if (keys.length === 1) {
+                data[key] = val;
               } else {
-                data[keys[0]]={
-                  [keys[1]]: val
-                }
+                // Preserve existing nested objects if any
+                data[keys[0]] = data[keys[0]] || {};
+                data[keys[0]][keys[1]] = val;
               }
             }
-
           }
 
-          addValueToData("someString", someString, someString.length)
-          addValueToData("someNumber", someNumber, !isNaN(someNumber))
-          if (files.length){
-            addValueToData("someSmallFile", files[0], true)
-          }
-          addValueToData("nested.someString", nestedString, nestedString.length)
+          addValueToData("someString", someString, someString.length > 0);
+          addValueToData("someNumber", someNumber, !isNaN(someNumber));
+          if (files.length) addValueToData("someSmallFile", files[0], true);
+          addValueToData("nested.someString", nestedString, nestedString !== undefined && nestedString !== null);
 
-          var errorOutput = document.getElementById("errorOutput")
+          const errorOutput = document.getElementById("errorOutput");
+          const resultContent = document.getElementById("resultContent");
 
           axios({
-            url: '/postMultipartFormData/server', 
-            data: data, 
+            url: 'https://httpbin.org/post', // Using a test endpoint
+            data: data,
             method: "post",
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: passAsFormData ? { "Content-Type": "multipart/form-data" } : {},
           })
-            .then(function (res) {
-              errorOutput.innerHTML = "";
+            .then(res => {
+              errorOutput.innerHTML = "Successfully posted!";
+              errorOutput.classList.remove("text-danger");
+              errorOutput.classList.add("text-success");
+              errorOutput.classList.remove("hidden");
+              
+              // Display the response in the result section
+              resultContent.innerHTML = JSON.stringify(res.data, null, 2);
             })
-            .catch(function (err) {
-              errorOutput.innerHTML = err.message;
+            .catch(err => {
+              console.error("Error posting data:", err);
+              errorOutput.innerHTML = `${err.message}`;
+              errorOutput.classList.add("text-danger");
+              errorOutput.classList.remove("text-success");
+              errorOutput.classList.remove("hidden");
+              
+              // Display error in the result section
+              resultContent.innerHTML = `Error: ${err.message}\n\n${JSON.stringify(err.response?.data || {}, null, 2)}`;
             });
         };
       })();

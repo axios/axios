@@ -5,7 +5,7 @@ The modules under `adapters/` are modules that handle dispatching a request and 
 ## Example
 
 ```js
-var settle = require('./../core/settle');
+var settle = require('../core/settle');
 
 module.exports = function myAdapter(config) {
   // At this point:

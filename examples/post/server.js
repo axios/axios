@@ -8,7 +8,7 @@ export default function (req, res) {
   req.on('end', function () {
     console.log('POST data received');
     res.writeHead(200, {
-      'Content-Type': 'text/json'
+    'Content-Type': 'application/json'
     });
     res.write(JSON.stringify(data));
     res.end();

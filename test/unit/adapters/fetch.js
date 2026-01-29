@@ -10,7 +10,7 @@ import {
 } from '../../helpers/server.js';
 import axios from '../../../index.js';
 import stream from "stream";
-import {AbortController} from "abortcontroller-polyfill/dist/cjs-ponyfill.js";
+import { AbortController } from "abortcontroller-polyfill/dist/cjs-ponyfill.js";
 import util from "util";
 
 const pipelineAsync = util.promisify(stream.pipeline);
@@ -41,7 +41,7 @@ describe('supports fetch with nodejs', function () {
 
       server = await startHTTPServer((req, res) => res.end(originalData));
 
-      const {data} = await fetchAxios.get('/', {
+      const { data } = await fetchAxios.get('/', {
         responseType: 'text'
       });
 
@@ -53,7 +53,7 @@ describe('supports fetch with nodejs', function () {
 
       server = await startHTTPServer((req, res) => res.end(originalData));
 
-      const {data} = await fetchAxios.get('/', {
+      const { data } = await fetchAxios.get('/', {
         responseType: 'arraybuffer'
       });
 
@@ -65,7 +65,7 @@ describe('supports fetch with nodejs', function () {
 
       server = await startHTTPServer((req, res) => res.end(originalData));
 
-      const {data} = await fetchAxios.get('/', {
+      const { data } = await fetchAxios.get('/', {
         responseType: 'blob'
       });
 
@@ -77,7 +77,7 @@ describe('supports fetch with nodejs', function () {
 
       server = await startHTTPServer((req, res) => res.end(originalData));
 
-      const {data} = await fetchAxios.get('/', {
+      const { data } = await fetchAxios.get('/', {
         responseType: 'stream'
       });
 
@@ -104,7 +104,7 @@ describe('supports fetch with nodejs', function () {
         res.end(await response.text());
       });
 
-      const {data} = await fetchAxios.get('/', {
+      const { data } = await fetchAxios.get('/', {
         responseType: 'formdata'
       });
 
@@ -114,11 +114,11 @@ describe('supports fetch with nodejs', function () {
     });
 
     it(`should support json response type`, async () => {
-      const originalData = {x: 'my data'};
+      const originalData = { x: 'my data' };
 
       server = await startHTTPServer((req, res) => res.end(JSON.stringify(originalData)));
 
-      const {data} = await fetchAxios.get('/', {
+      const { data } = await fetchAxios.get('/', {
         responseType: 'json'
       });
 
@@ -153,8 +153,8 @@ describe('supports fetch with nodejs', function () {
 
         const samples = [];
 
-        const {data} = await fetchAxios.post('/', readable, {
-          onUploadProgress: ({loaded, total, progress, bytes, upload}) => {
+        const { data } = await fetchAxios.post('/', readable, {
+          onUploadProgress: ({ loaded, total, progress, bytes, upload }) => {
             console.log(`Upload Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`);
 
             samples.push({
@@ -188,10 +188,10 @@ describe('supports fetch with nodejs', function () {
         }()));
       });
 
-      it('should not fail with get method', async() => {
+      it('should not fail with get method', async () => {
         server = await startHTTPServer((req, res) => res.end('OK'));
 
-        const {data} = await fetchAxios.get('/', {
+        const { data } = await fetchAxios.get('/', {
           onUploadProgress() {
 
           }
@@ -227,8 +227,8 @@ describe('supports fetch with nodejs', function () {
 
         const samples = [];
 
-        const {data} = await fetchAxios.post('/', readable, {
-          onDownloadProgress: ({loaded, total, progress, bytes, download}) => {
+        const { data } = await fetchAxios.post('/', readable, {
+          onDownloadProgress: ({ loaded, total, progress, bytes, download }) => {
             console.log(`Download Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`);
 
             samples.push({
@@ -269,8 +269,8 @@ describe('supports fetch with nodejs', function () {
     server = await startHTTPServer((req, res) => res.end(req.headers.authorization));
 
     const user = 'foo';
-    const headers = {Authorization: 'Bearer 1234'};
-    const res = await axios.get('http://' + user + '@localhost:4444/', {headers: headers});
+    const headers = { Authorization: 'Bearer 1234' };
+    const res = await axios.get('http://' + user + '@localhost:4444/', { headers: headers });
 
     const base64 = Buffer.from(user + ':', 'utf8').toString('base64');
     assert.equal(res.data, 'Basic ' + base64);
@@ -279,12 +279,12 @@ describe('supports fetch with nodejs', function () {
   it("should support stream.Readable as a payload", async () => {
     server = await startHTTPServer();
 
-    const {data} = await fetchAxios.post('/', stream.Readable.from('OK'));
+    const { data } = await fetchAxios.post('/', stream.Readable.from('OK'));
 
     assert.strictEqual(data, 'OK');
   });
 
-  describe('request aborting', function() {
+  describe('request aborting', function () {
     it('should be able to abort the request stream', async function () {
       server = await startHTTPServer({
         rate: 100000,
@@ -316,7 +316,7 @@ describe('supports fetch with nodejs', function () {
         controller.abort(new Error('test'));
       }, 800);
 
-      const {data} = await fetchAxios.get('/', {
+      const { data } = await fetchAxios.get('/', {
         responseType: 'stream',
         signal: controller.signal
       });
@@ -328,7 +328,7 @@ describe('supports fetch with nodejs', function () {
   });
 
   it('should support a timeout', async () => {
-    server = await startHTTPServer(async(req, res) => {
+    server = await startHTTPServer(async (req, res) => {
       await setTimeoutAsync(1000);
       res.end('OK');
     });
@@ -337,7 +337,7 @@ describe('supports fetch with nodejs', function () {
 
     const ts = Date.now();
 
-    await assert.rejects(async() => {
+    await assert.rejects(async () => {
       await fetchAxios('/', {
         timeout
       })
@@ -358,10 +358,10 @@ describe('supports fetch with nodejs', function () {
     assert.equal(res.config.url, '/foo');
   });
 
-  it('should support params', async() => {
+  it('should support params', async () => {
     server = await startHTTPServer((req, res) => res.end(req.url));
 
-    const {data} = await fetchAxios.get('/?test=1', {
+    const { data } = await fetchAxios.get('/?test=1', {
       params: {
         foo: 1,
         bar: 2
@@ -372,7 +372,7 @@ describe('supports fetch with nodejs', function () {
   });
 
   it('should handle fetch failed error as an AxiosError with ERR_NETWORK code', async () => {
-    try{
+    try {
       await fetchAxios('http://notExistsUrl.in.nowhere');
       assert.fail('should fail');
     } catch (err) {
@@ -387,10 +387,134 @@ describe('supports fetch with nodejs', function () {
       res.end(req.url)
     });
 
-    const {headers} = await fetchAxios.get('/', {
+    const { headers } = await fetchAxios.get('/', {
       responseType: 'stream'
     });
 
     assert.strictEqual(headers.get('foo'), 'bar');
+  });
+
+  describe('fetch adapter - Content-Type handling', function () {
+    it('should set correct Content-Type for FormData automatically', async function () {
+      const FormData = (await import('form-data')).default; // Node FormData
+      const form = new FormData();
+      form.append('foo', 'bar');
+
+      server = await startHTTPServer((req, res) => {
+        const contentType = req.headers['content-type'];
+        assert.match(contentType, /^multipart\/form-data; boundary=/i);
+        res.end('OK');
+      });
+
+      await fetchAxios.post('/form', form);
+    });
+  });
+
+  describe('env config', () => {
+    it('should respect env fetch API configuration', async() => {
+      const { data, headers } = await fetchAxios.get('/', {
+        env: {
+          fetch() {
+            return {
+              headers: {
+                foo: '1'
+              },
+              text: async () => 'test'
+            }
+          }
+        }
+      });
+
+      assert.strictEqual(headers.get('foo'), '1');
+      assert.strictEqual(data, 'test');
+    });
+
+    it('should be able to request with lack of Request object', async() => {
+      const form = new FormData();
+
+      form.append('x', '1');
+
+      const { data, headers } = await fetchAxios.post('/', form, {
+        onUploadProgress() {
+          // dummy listener to activate streaming
+        },
+        env: {
+          Request: null,
+          fetch() {
+            return {
+              headers: {
+                foo: '1'
+              },
+              text: async () => 'test'
+            }
+          }
+        }
+      });
+
+      assert.strictEqual(headers.get('foo'), '1');
+      assert.strictEqual(data, 'test');
+    });
+
+    it('should be able to handle response with lack of Response object', async() => {
+      const { data, headers } = await fetchAxios.get('/', {
+        onDownloadProgress() {
+          // dummy listener to activate streaming
+        },
+        env: {
+          Request: null,
+          Response: null,
+          fetch() {
+            return {
+              headers: {
+                foo: '1'
+              },
+              text: async () => 'test'
+            }
+          }
+        }
+      });
+
+      assert.strictEqual(headers.get('foo'), '1');
+      assert.strictEqual(data, 'test');
+    });
+
+    it('should fallback to the global on undefined env value', async() => {
+      server = await startHTTPServer((req, res) => res.end('OK'));
+
+      const { data } = await fetchAxios.get('/', {
+        env: {
+          fetch: undefined
+        }
+      });
+
+      assert.strictEqual(data, 'OK');
+    });
+
+    it('should use current global fetch when env fetch is not specified', async() => {
+      const globalFetch = fetch;
+
+      fetch = async () => {
+        return {
+          headers: {
+            foo: '1'
+          },
+          text: async () => 'global'
+        }
+      };
+
+      try {
+        server = await startHTTPServer((req, res) => res.end('OK'));
+
+        const {data} = await fetchAxios.get('/', {
+          env: {
+            fetch: undefined
+          }
+        });
+
+        assert.strictEqual(data, 'global');
+      } finally {
+        fetch = globalFetch;
+      }
+    });
   });
 });

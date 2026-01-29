@@ -8,16 +8,18 @@ We celebrate diversity and inclusivity regardless of age, body size, disability,
 ## Our Standards
 
 Examples of positive behavior include:
-* Showing empathy and kindness toward others  
-* Being respectful of different opinions and experiences  
-* Accepting feedback gracefully and learning from it  
-* Taking responsibility for mistakes and offering sincere apologies  
+
+- Showing empathy and kindness toward others
+- Being respectful of different opinions and experiences
+- Accepting feedback gracefully and learning from it
+- Taking responsibility for mistakes and offering sincere apologies
 
 Unacceptable behaviors include:
-* Use of sexualized language, imagery, or advances  
-* Personal attacks, trolling, or insulting comments  
-* Publishing private information (such as email or address) without permission  
-* Any other conduct that would be considered inappropriate in a professional setting  
+
+- Use of sexualized language, imagery, or advances
+- Personal attacks, trolling, or insulting comments
+- Publishing private information (such as email or address) without permission
+- Any other conduct that would be considered inappropriate in a professional setting
 
 ## Enforcement
 
@@ -26,9 +28,9 @@ All complaints will be reviewed promptly and treated confidentially.
 
 ## Enforcement Guidelines
 
-1. **Correction** – A private warning and explanation of why the behavior was inappropriate.  
-2. **Warning** – A clear warning with consequences for continued behavior.  
-3. **Temporary Ban** – A temporary ban for repeated or severe violations.  
+1. **Correction** – A private warning and explanation of why the behavior was inappropriate.
+2. **Warning** – A clear warning with consequences for continued behavior.
+3. **Temporary Ban** – A temporary ban for repeated or severe violations.
 4. **Permanent Ban** – A permanent removal for repeated harassment or sustained inappropriate conduct.
 
 ---

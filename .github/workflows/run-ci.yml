@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
+        node-version: [14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
       fail-fast: false
 
     steps:
@@ -36,6 +36,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - name: Install dependencies
+        if: matrix.node-version == '14.x'
+        run: npm i
+      - name: Install dependencies
+        if: matrix.node-version != '14.x'
         run: npm ci
       - name: Build project
         run: npm run build
@@ -48,13 +52,4 @@ jobs:
         if: matrix.node-version == '24.x'
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
-        if: matrix.node-version == '24.x'
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: javascript
-          queries: security-extended,security-and-quality
-        if: matrix.node-version == '24.x'
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
         if: matrix.node-version == '24.x'

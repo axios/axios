@@ -43,6 +43,11 @@ describe('issues', function () {
 
   describe('7364', function () {
     it('fetch: should have status code in axios error', async function () {
+      const isFetchSupported = typeof fetch === 'function';
+      if (!isFetchSupported) {
+        this.skip();
+      }
+
       const server = http.createServer((req, res) => {
         res.statusCode = 400;
         res.end();

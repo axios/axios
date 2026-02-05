@@ -40,4 +40,56 @@ describe('issues', function () {
       }
     });
   });
+
+  describe('7364', function () {
+    it('fetch: should have status code in axios error', async function () {
+      const isFetchSupported = typeof fetch === 'function';
+      if (!isFetchSupported) {
+        this.skip();
+      }
+
+      const server = http.createServer((req, res) => {
+        res.statusCode = 400;
+        res.end();
+      }).listen(0);
+
+      const instance = axios.create({
+        baseURL: `http://localhost:${server.address().port}`,
+        adapter: "fetch",
+      });
+
+      try {
+        await instance.get("/status/400");
+      } catch (error) {
+        assert.equal(error.name, "AxiosError");
+        assert.equal(error.isAxiosError, true);
+        assert.equal(error.status, 400);
+      } finally {
+        server.close();
+      }
+    });
+
+    it('http: should have status code in axios error', async function () {
+      const server = http.createServer((req, res) => {
+        res.statusCode = 400;
+        res.end();
+      }).listen(0);
+
+      const instance = axios.create({
+        baseURL: `http://localhost:${server.address().port}`,
+        adapter: "http",
+      });
+
+      try {
+        await instance.get("/status/400");
+      } catch (error) {
+        assert.equal(error.name, "AxiosError");
+        assert.equal(error.isAxiosError, true);
+        assert.equal(error.status, 400);
+      } finally {
+        server.close();
+      }
+    });
+  });
+
 });

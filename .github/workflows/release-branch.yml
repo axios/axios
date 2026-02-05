@@ -7,11 +7,10 @@ on:
         type: choice
         description: Choose release type
         options:
-          - auto
           - patch
           - minor
           - major
-        default: auto
+        default: patch
       beta:
         type: boolean
         description: Prerelease

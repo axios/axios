@@ -1,6 +1,14 @@
-# Reporting a Vulnerability
+# Security Policy
 
-If you discover a security vulnerability in axios please disclose it via [our huntr page](https://huntr.dev/repos/axios/axios/). Bounty eligibility, CVE assignment, response times and past reports are all there.
+## Supported Versions
 
+The following versions will receive security updates promptly based on the maintainers' discretion.
 
-Thank you for improving the security of axios.
+| Version | Supported          |
+| ------- | ------------------ |
+| 0.x.x   | :white_check_mark: |
+| 1.x.x   | :white_check_mark: |
+
+## Reporting a Vulnerability
+
+To report a vulnerability, please use the GitHub disclosure in the security tab to alert us to a security issue.

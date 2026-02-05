@@ -1,4 +1,4 @@
-import axios from '../index';
+import axios from '../index.js';
 
 const URL = 'http://127.0.0.1:3000/api';
 const BODY = {

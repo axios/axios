@@ -16,15 +16,13 @@ Please update the tests to reflect your code changes. Pull requests will not be 
 
 ## Documentation
 
-Please update the [docs](README.md) accordingly so that there are no discrepancies between the API and the documentation.
+Please update the [documentation](https://axios-http.com/docs/intro) accordingly so that there are no discrepancies between the API and the documentation.
 
 ## Developing
 
-- `npm run test` run the jasmine and mocha tests
-- `npm run build` run webpack and bundle the source
-- `npm run version` prepare the code for release
-
-Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
+- `npm run test` runs the jasmine and mocha tests
+- `npm run build` runs rollup and bundles the source
+- `npm run version` prepares the code for release
 
 ## Running Examples
 

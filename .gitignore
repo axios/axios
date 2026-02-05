@@ -12,3 +12,5 @@ backup/
 /.husky/
 .npmrc
 .env
+dist/
+.vscode/

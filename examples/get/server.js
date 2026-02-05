@@ -27,7 +27,7 @@ const people = [
 
 export default function (req, res) {
   res.writeHead(200, {
-    'Content-Type': 'text/json'
+    'Content-Type': 'application/json'
   });
   res.write(JSON.stringify(people));
   res.end();

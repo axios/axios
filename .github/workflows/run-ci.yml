@@ -2,9 +2,12 @@ name: Continuous integration
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - "**"
+      - "!sponsors"
   push:
     branches:
+      - "**"
       - "!sponsors"
 
 permissions:

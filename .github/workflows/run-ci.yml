@@ -3,9 +3,9 @@ name: Continuous integration
 on:
   pull_request:
     branches:
-      - "*"
-      - "*/*"
-      - "**"
+      - "!sponsors"
+  push:
+    branches:
       - "!sponsors"
 
 permissions:

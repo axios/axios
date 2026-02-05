@@ -6,7 +6,6 @@ on:
       - "*"
       - "*/*"
       - "**"
-      - "!sponsors"
 
 permissions:
   contents: read

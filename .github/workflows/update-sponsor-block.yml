@@ -51,7 +51,7 @@ jobs:
           branch: sponsors
           delete-branch: true
           commit-message: "chore(sponsor): update sponsor block"
-          title: "[Chore] Update sponsor block"
+          title: "chore(docs): update sponsor block"
           body: |
             **New sponsor block update:**
             ${{ env.CONTENT }}

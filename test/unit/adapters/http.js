@@ -66,7 +66,7 @@ function toleranceRange(positive, negative) {
 const nodeVersion = process.versions.node.split('.').map(v => parseInt(v, 10));
 const nodeMajorVersion = nodeVersion[0];
 
-var noop = ()=> {};
+var noop = () => {};
 
 describe('supports http with nodejs', function () {
   afterEach(async function () {
@@ -541,7 +541,7 @@ describe('supports http with nodejs', function () {
       });
     });
 
-    describe('algorithms', ()=> {
+    describe('algorithms', () => {
       const responseBody ='str';
 
       for (const [typeName, zipped] of Object.entries({
@@ -783,7 +783,7 @@ describe('supports http with nodejs', function () {
       // consume the req stream
       req.on('data', noop);
       // and wait for the end before responding, otherwise an ECONNRESET error will be thrown
-      req.on('end', ()=> {
+      req.on('end', () => {
         res.end('OK');
       });
     }).listen(4444, function (err) {
@@ -1361,6 +1361,29 @@ describe('supports http with nodejs', function () {
     });
   });
 
+  describe('when invalid proxy options are provided', function () {
+    it('should throw error', function () {
+      const proxy = {
+        protocol: "http:",
+        host: "hostname.abc.xyz",
+        port: 3300,
+        auth: {
+          username: "",
+          password: "",
+        }
+      };
+
+      return axios.get('https://test-domain.abc', {proxy})
+        .then(function(){
+          assert.fail('Does not throw');
+        }, function (error) {
+          assert.strictEqual(error.message, 'Invalid proxy authorization');
+          assert.strictEqual(error.code, 'ERR_BAD_OPTION');
+          assert.deepStrictEqual(error.config.proxy, proxy);
+        })
+    });
+  });
+
   context('different options for direct proxy configuration (without env variables)', () => {
     const destination = 'www.example.com';
 
@@ -1821,7 +1844,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI).then(({data})=> {
+      axios.get(dataURI).then(({data}) => {
         assert.deepStrictEqual(data, buffer);
         done();
       }).catch(done);
@@ -1838,7 +1861,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI, {responseType: 'blob'}).then(async ({data})=> {
+      axios.get(dataURI, {responseType: 'blob'}).then(async ({data}) => {
         assert.strictEqual(data.type, 'application/octet-stream');
         assert.deepStrictEqual(await data.text(), '123');
         done();
@@ -1850,7 +1873,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI, {responseType: "text"}).then(({data})=> {
+      axios.get(dataURI, {responseType: "text"}).then(({data}) => {
         assert.deepStrictEqual(data, '123');
         done();
       }).catch(done);
@@ -1861,7 +1884,7 @@ describe('supports http with nodejs', function () {
 
       const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
 
-      axios.get(dataURI, {responseType: "stream"}).then(({data})=> {
+      axios.get(dataURI, {responseType: "stream"}).then(({data}) => {
         var str = '';
 
         data.on('data', function(response){
@@ -2026,7 +2049,7 @@ describe('supports http with nodejs', function () {
         maxRedirects: 0
       });
 
-      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+      samples.slice(skip).forEach(({rate, progress}, i, _samples) => {
         assert.ok(compareValues(rate, configRate),
           `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
             _samples.map(({rate}) => rate).join(', ')
@@ -2074,7 +2097,7 @@ describe('supports http with nodejs', function () {
         maxRedirects: 0
       });
 
-      samples.slice(skip).forEach(({rate, progress}, i, _samples)=> {
+      samples.slice(skip).forEach(({rate, progress}, i, _samples) => {
         assert.ok(compareValues(rate, configRate),
           `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${
             _samples.map(({rate}) => rate).join(', ')
@@ -2423,7 +2446,7 @@ describe('supports http with nodejs', function () {
     });
 
     it('should support request cancellation', async function (){
-      if (typeof AbortSignal !== 'function') {
+      if (typeof AbortSignal !== 'function' || !AbortSignal.timeout) {
         this.skip();
       }
 
@@ -2525,13 +2548,17 @@ describe('supports http with nodejs', function () {
 
       it("should use different sessions for different authorities", async() => {
         server = await startHTTPServer((req, res) => {
-          setTimeout(() => res.end('OK'), 1000);
+          setTimeout(() => {
+            res.end('OK');
+          }, 2000);
         }, {
           useHTTP2: true
         });
 
         server2 = await startHTTPServer((req, res) => {
-          setTimeout(() => res.end('OK'), 1000);
+          setTimeout(() => {
+            res.end('OK');
+          }, 2000);
         }, {
           useHTTP2: true,
           port: SERVER_PORT2
@@ -2559,7 +2586,9 @@ describe('supports http with nodejs', function () {
 
       it("should use different sessions for requests with different http2Options set", async() => {
         server = await startHTTPServer((req, res) => {
-          setTimeout(() => res.end('OK'), 1000);
+          setTimeout(() => {
+            res.end('OK')
+          }, 1000);
         }, {
           useHTTP2: true
         });
@@ -2639,6 +2668,8 @@ describe('supports http with nodejs', function () {
           }
         });
 
+        const data1 = await getStream(response1.data);
+
         await setTimeoutAsync(5000);
 
         const response2 = await http2Axios.get(LOCAL_SERVER_URL, {
@@ -2648,17 +2679,46 @@ describe('supports http with nodejs', function () {
           }
         });
 
+        const data2 = await getStream(response2.data);
+
         assert.notStrictEqual(response1.data.session, response2.data.session);
 
-        assert.deepStrictEqual(
-          await Promise.all([
-            getStream(response1.data),
-            getStream(response2.data)
-          ]),
-          ['OK', 'OK']
-        );
+        assert.strictEqual(data1, 'OK');
+        assert.strictEqual(data2, 'OK');
       });
     });
+  });
+
+  it('should not abort stream on settle rejection', async () => {
+    server = await startHTTPServer((req, res) => {
+      res.statusCode = 404;
+      res.end('OK');
+    });
+
+    try {
+      await axios.get(LOCAL_SERVER_URL, {
+        responseType: 'stream'
+      });
+
+      assert.fail('should be rejected');
+    } catch(err) {
+      assert.strictEqual(await getStream(err.response.data), 'OK');
+    }
+  });
+
+  describe('keep-alive', () => {
+    it('should not fail with "socket hang up" when using timeouts', async () => {
+      server = await startHTTPServer(async (req, res) => {
+        if (req.url === '/wait') {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+        res.end('ok');
+      })
+
+      const baseURL = LOCAL_SERVER_URL;
+      await axios.get('/1', {baseURL, timeout: 1000});
+      await axios.get(`/wait`, {baseURL, timeout: 0});
+    }, 15000);
   });
 });
 

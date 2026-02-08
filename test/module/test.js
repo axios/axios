@@ -44,7 +44,7 @@ const remove = async (file) => {
 
 describe('module', function () {
 
-  before(async ()=> {
+  before(async () => {
     console.log('✓ Creating build backup...');
     await fs.copy('./dist/', BACKUP_PATH);
     console.log('✓ Exec build script...');
@@ -149,10 +149,10 @@ describe('module', function () {
   });
 
   describe('typings', () => {
-    describe('ESM', ()=> {
+    describe('ESM', () => {
       const pkgPath = path.join(__dirname, './typings/esm');
 
-      after(async ()=> {
+      after(async () => {
         await remove(path.join(pkgPath, './node_modules'));
       });
 
@@ -166,10 +166,10 @@ describe('module', function () {
       });
     });
 
-    describe('CommonJS', ()=> {
+    describe('CommonJS', () => {
       const pkgPath = path.join(__dirname, './typings/cjs');
 
-      after(async ()=> {
+      after(async () => {
         await remove(path.join(pkgPath, './node_modules'));
       });
 

@@ -720,3 +720,12 @@ axios.get('/user', {
     return ['127.0.0.1', 4];
   }
 });
+
+// AxiosError.cause should be typed as Error to allow accessing .message
+axios.get('/user').catch((error: AxiosError) => {
+  if (error.cause) {
+    // This should not produce a type error - cause is typed as Error
+    const causeMessage: string | undefined = error.cause.message;
+    console.log(causeMessage);
+  }
+});

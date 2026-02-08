@@ -120,8 +120,8 @@ const generateFileReport = async (files, historyCount = 3) => {
 const generateBody = async ({files, template = './templates/pr.hbs'} = {}) => {
   const data = await generateFileReport(files);
 
-  Handlebars.registerHelper('filesize', (bytes)=> bytes != null ? prettyBytes(bytes) : '<unknown>');
-  Handlebars.registerHelper('percent', (value)=> Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : `---` );
+  Handlebars.registerHelper('filesize', (bytes) => bytes != null ? prettyBytes(bytes) : '<unknown>');
+  Handlebars.registerHelper('percent', (value) => Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : `---` );
 
   return Handlebars.compile(String(await fs.readFile(template)))(data);
 }

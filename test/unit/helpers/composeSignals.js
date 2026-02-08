@@ -32,7 +32,7 @@ describe('helpers::composeSignals', () => {
       signal.addEventListener('abort', resolve);
     });
 
-    assert.match(String(signal.reason), /timeout 100 of ms exceeded/);
+    assert.match(String(signal.reason), /timeout of 100ms exceeded/);
   });
 
   it('should return undefined if signals and timeout are not provided', async () => {

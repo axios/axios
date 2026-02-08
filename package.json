@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.13.4",
+  "version": "1.13.5",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "./dist/node/axios.cjs",
   "module": "./index.js",
@@ -183,8 +183,8 @@
     "Martti Laine (https://github.com/codeclown)",
     "Xianming Zhong (https://github.com/chinesedfan)",
     "Remco Haszing (https://github.com/remcohaszing)",
-    "Rikki Gibson (https://github.com/RikkiGibson)",
     "Willian Agostini (https://github.com/WillianAgostini)",
+    "Rikki Gibson (https://github.com/RikkiGibson)",
     "Ben Carp (https://github.com/carpben)"
   ],
   "sideEffects": false,

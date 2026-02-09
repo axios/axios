@@ -368,10 +368,12 @@ axios.interceptors.request.use((req) => {
 });
 
 const voidRequestInterceptorId = axios.interceptors.request.use(
+  // @ts-expect-error -- Must return an AxiosRequestConfig (or throw)
   (_response) => {},
   (error: any) => Promise.reject(error)
 );
 const voidResponseInterceptorId = axios.interceptors.response.use(
+  // @ts-expect-error -- Must return an AxiosResponse (or throw)
   (_response) => {},
   (error: any) => Promise.reject(error)
 );
@@ -623,9 +625,13 @@ axios.get('/user', {
   const _: AxiosAdapter = getAdapter('xhr');
   const __: AxiosAdapter = getAdapter(['xhr']);
 
+  // @ts-expect-error
   getAdapter();
+  // @ts-expect-error
   getAdapter(123);
+  // @ts-expect-error
   getAdapter([123]);
+  // @ts-expect-error
   getAdapter('xhr', 'http');
 }
 

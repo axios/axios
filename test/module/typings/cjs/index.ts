@@ -342,10 +342,12 @@ axios.interceptors.request.use((req) => {
 });
 
 const voidRequestInterceptorId = axios.interceptors.request.use(
+  // @ts-expect-error -- Must return an axios.AxiosRequestConfig (or throw)
   (_response) => {},
   (error: any) => Promise.reject(error)
 );
 const voidResponseInterceptorId = axios.interceptors.response.use(
+  // @ts-expect-error -- Must return an axios.AxiosResponse (or throw)
   (_response) => {},
   (error: any) => Promise.reject(error)
 );

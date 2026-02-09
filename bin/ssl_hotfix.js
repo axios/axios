@@ -1,4 +1,4 @@
-import {spawn} from 'child_process';
+import { spawn } from 'child_process';
 
 const args = process.argv.slice(2);
 
@@ -10,13 +10,15 @@ const isHotfixNeeded = match && match[1] > 16;
 
 isHotfixNeeded && console.warn('Setting --openssl-legacy-provider as ssl hotfix');
 
-const test = spawn('cross-env',
-  isHotfixNeeded ? ['NODE_OPTIONS=--openssl-legacy-provider', ...args] : args, {
+const test = spawn(
+  'cross-env',
+  isHotfixNeeded ? ['NODE_OPTIONS=--openssl-legacy-provider', ...args] : args,
+  {
     shell: true,
-    stdio: 'inherit'
+    stdio: 'inherit',
   }
 );
 
 test.on('exit', function (code) {
-  process.exit(code)
-})
+  process.exit(code);
+});

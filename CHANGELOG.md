@@ -31,38 +31,38 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/175160345?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ashvin Tiwari](https://github.com/ashvin2005 "+1752/-4 (#7218 #7218 )")
-- <img src="https://avatars.githubusercontent.com/u/71729144?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nikunj Mochi](https://github.com/mochinikunj "+940/-12 (#7294 #7294 )")
-- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh "+544/-102 (#7169 #7185 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [jasonsaayman](https://github.com/jasonsaayman "+317/-73 (#7334 #7298 )")
-- <img src="https://avatars.githubusercontent.com/u/377911?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Julian Dax](https://github.com/brodo "+99/-120 (#5558 )")
-- <img src="https://avatars.githubusercontent.com/u/184285082?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Akash Dhar Dubey](https://github.com/AKASHDHARDUBEY "+167/-0 (#7287 #7288 )")
-- <img src="https://avatars.githubusercontent.com/u/145687605?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Madhumita](https://github.com/madhumitaaa "+20/-68 (#7198 )")
-- <img src="https://avatars.githubusercontent.com/u/24915252?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tackoil](https://github.com/Tackoil "+80/-2 (#6269 )")
-- <img src="https://avatars.githubusercontent.com/u/145078271?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Justin Dhillon](https://github.com/justindhillon "+41/-41 (#6324 #6315 )")
-- <img src="https://avatars.githubusercontent.com/u/184138832?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rudransh](https://github.com/Rudrxxx "+71/-2 (#7257 )")
-- <img src="https://avatars.githubusercontent.com/u/146366930?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [WuMingDao](https://github.com/WuMingDao "+36/-36 (#7215 )")
-- <img src="https://avatars.githubusercontent.com/u/46827243?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [codenomnom](https://github.com/codenomnom "+70/-0 (#7201 #7201 )")
-- <img src="https://avatars.githubusercontent.com/u/189698992?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nandan Acharya](https://github.com/Nandann018-ux "+60/-10 (#7272 )")
-- <img src="https://avatars.githubusercontent.com/u/7225168?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Eric Dubé](https://github.com/KernelDeimos "+22/-40 (#7042 )")
-- <img src="https://avatars.githubusercontent.com/u/915045?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tibor Pilz](https://github.com/tiborpilz "+40/-4 (#5551 )")
-- <img src="https://avatars.githubusercontent.com/u/23138717?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Gabriel Quaresma](https://github.com/joaoGabriel55 "+31/-4 (#6314 )")
-- <img src="https://avatars.githubusercontent.com/u/21505?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Turadg Aleahmad](https://github.com/turadg "+23/-6 (#6265 )")
-- <img src="https://avatars.githubusercontent.com/u/4273631?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [JohnTitor](https://github.com/kiritosan "+14/-14 (#6155 )")
-- <img src="https://avatars.githubusercontent.com/u/39668736?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [rohit miryala](https://github.com/rohitmiryala "+22/-0 (#7250 )")
-- <img src="https://avatars.githubusercontent.com/u/30316250?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Wilson Mun](https://github.com/wmundev "+20/-0 (#6053 )")
-- <img src="https://avatars.githubusercontent.com/u/184506226?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [techcodie](https://github.com/techcodie "+7/-7 (#7236 )")
-- <img src="https://avatars.githubusercontent.com/u/187598667?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ved Vadnere](https://github.com/Archis009 "+5/-6 (#7283 )")
-- <img src="https://avatars.githubusercontent.com/u/115612815?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [svihpinc](https://github.com/svihpinc "+5/-3 (#6134 )")
-- <img src="https://avatars.githubusercontent.com/u/123884782?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [SANDESH LENDVE](https://github.com/mrsandy1965 "+3/-3 (#7246 )")
-- <img src="https://avatars.githubusercontent.com/u/12529395?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lubos](https://github.com/mrlubos "+5/-1 (#7312 )")
-- <img src="https://avatars.githubusercontent.com/u/709451?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jarred Sumner](https://github.com/Jarred-Sumner "+5/-1 (#5754 )")
-- <img src="https://avatars.githubusercontent.com/u/17907922?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Adam Hines](https://github.com/thebanjomatic "+2/-1 (#5756 )")
-- <img src="https://avatars.githubusercontent.com/u/177472603?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Subhan Kumar Rai](https://github.com/Subhan030 "+2/-1 (#7256 )")
-- <img src="https://avatars.githubusercontent.com/u/6473925?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Joseph Frazier](https://github.com/josephfrazier "+1/-1 (#7311 )")
-- <img src="https://avatars.githubusercontent.com/u/184906930?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [KT0803](https://github.com/KT0803 "+0/-2 (#7229 )")
-- <img src="https://avatars.githubusercontent.com/u/6703955?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Albie](https://github.com/AlbertoSadoc "+1/-1 (#5560 )")
-- <img src="https://avatars.githubusercontent.com/u/9452325?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jake Hayes](https://github.com/thejayhaykid "+1/-0 (#5999 )")
+- <img src="https://avatars.githubusercontent.com/u/175160345?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ashvin Tiwari](https://github.com/ashvin2005 '+1752/-4 (#7218 #7218 )')
+- <img src="https://avatars.githubusercontent.com/u/71729144?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nikunj Mochi](https://github.com/mochinikunj '+940/-12 (#7294 #7294 )')
+- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh '+544/-102 (#7169 #7185 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [jasonsaayman](https://github.com/jasonsaayman '+317/-73 (#7334 #7298 )')
+- <img src="https://avatars.githubusercontent.com/u/377911?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Julian Dax](https://github.com/brodo '+99/-120 (#5558 )')
+- <img src="https://avatars.githubusercontent.com/u/184285082?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Akash Dhar Dubey](https://github.com/AKASHDHARDUBEY '+167/-0 (#7287 #7288 )')
+- <img src="https://avatars.githubusercontent.com/u/145687605?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Madhumita](https://github.com/madhumitaaa '+20/-68 (#7198 )')
+- <img src="https://avatars.githubusercontent.com/u/24915252?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tackoil](https://github.com/Tackoil '+80/-2 (#6269 )')
+- <img src="https://avatars.githubusercontent.com/u/145078271?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Justin Dhillon](https://github.com/justindhillon '+41/-41 (#6324 #6315 )')
+- <img src="https://avatars.githubusercontent.com/u/184138832?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rudransh](https://github.com/Rudrxxx '+71/-2 (#7257 )')
+- <img src="https://avatars.githubusercontent.com/u/146366930?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [WuMingDao](https://github.com/WuMingDao '+36/-36 (#7215 )')
+- <img src="https://avatars.githubusercontent.com/u/46827243?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [codenomnom](https://github.com/codenomnom '+70/-0 (#7201 #7201 )')
+- <img src="https://avatars.githubusercontent.com/u/189698992?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nandan Acharya](https://github.com/Nandann018-ux '+60/-10 (#7272 )')
+- <img src="https://avatars.githubusercontent.com/u/7225168?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Eric Dubé](https://github.com/KernelDeimos '+22/-40 (#7042 )')
+- <img src="https://avatars.githubusercontent.com/u/915045?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tibor Pilz](https://github.com/tiborpilz '+40/-4 (#5551 )')
+- <img src="https://avatars.githubusercontent.com/u/23138717?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Gabriel Quaresma](https://github.com/joaoGabriel55 '+31/-4 (#6314 )')
+- <img src="https://avatars.githubusercontent.com/u/21505?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Turadg Aleahmad](https://github.com/turadg '+23/-6 (#6265 )')
+- <img src="https://avatars.githubusercontent.com/u/4273631?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [JohnTitor](https://github.com/kiritosan '+14/-14 (#6155 )')
+- <img src="https://avatars.githubusercontent.com/u/39668736?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [rohit miryala](https://github.com/rohitmiryala '+22/-0 (#7250 )')
+- <img src="https://avatars.githubusercontent.com/u/30316250?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Wilson Mun](https://github.com/wmundev '+20/-0 (#6053 )')
+- <img src="https://avatars.githubusercontent.com/u/184506226?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [techcodie](https://github.com/techcodie '+7/-7 (#7236 )')
+- <img src="https://avatars.githubusercontent.com/u/187598667?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ved Vadnere](https://github.com/Archis009 '+5/-6 (#7283 )')
+- <img src="https://avatars.githubusercontent.com/u/115612815?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [svihpinc](https://github.com/svihpinc '+5/-3 (#6134 )')
+- <img src="https://avatars.githubusercontent.com/u/123884782?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [SANDESH LENDVE](https://github.com/mrsandy1965 '+3/-3 (#7246 )')
+- <img src="https://avatars.githubusercontent.com/u/12529395?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lubos](https://github.com/mrlubos '+5/-1 (#7312 )')
+- <img src="https://avatars.githubusercontent.com/u/709451?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jarred Sumner](https://github.com/Jarred-Sumner '+5/-1 (#5754 )')
+- <img src="https://avatars.githubusercontent.com/u/17907922?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Adam Hines](https://github.com/thebanjomatic '+2/-1 (#5756 )')
+- <img src="https://avatars.githubusercontent.com/u/177472603?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Subhan Kumar Rai](https://github.com/Subhan030 '+2/-1 (#7256 )')
+- <img src="https://avatars.githubusercontent.com/u/6473925?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Joseph Frazier](https://github.com/josephfrazier '+1/-1 (#7311 )')
+- <img src="https://avatars.githubusercontent.com/u/184906930?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [KT0803](https://github.com/KT0803 '+0/-2 (#7229 )')
+- <img src="https://avatars.githubusercontent.com/u/6703955?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Albie](https://github.com/AlbertoSadoc '+1/-1 (#5560 )')
+- <img src="https://avatars.githubusercontent.com/u/9452325?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jake Hayes](https://github.com/thejayhaykid '+1/-0 (#5999 )')
 
 ## [1.13.2](https://github.com/axios/axios/compare/v1.13.1...v1.13.2) (2025-11-04)
 
@@ -77,8 +77,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+28/-9 (#7206 #7202 )")
-- <img src="https://avatars.githubusercontent.com/u/1174718?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kasper Isager Dalsgarð](https://github.com/kasperisager "+9/-9 (#7196 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+28/-9 (#7206 #7202 )')
+- <img src="https://avatars.githubusercontent.com/u/1174718?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kasper Isager Dalsgarð](https://github.com/kasperisager '+9/-9 (#7196 )')
 
 ## [1.13.1](https://github.com/axios/axios/compare/v1.13.0...v1.13.1) (2025-10-28)
 
@@ -88,8 +88,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh "+220/-111 (#7173 )")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+18/-1 (#7193 )")
+- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh '+220/-111 (#7173 )')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+18/-1 (#7193 )')
 
 # [1.13.0](https://github.com/axios/axios/compare/v1.12.2...v1.13.0) (2025-10-27)
 
@@ -104,23 +104,23 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+794/-180 (#7186 #7150 #7039 )")
-- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+24/-509 (#7032 )")
-- <img src="https://avatars.githubusercontent.com/u/195581631?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aviraj2929](https://github.com/Aviraj2929 "+211/-93 (#7136 #7135 #7134 #7112 )")
-- <img src="https://avatars.githubusercontent.com/u/181717941?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [prasoon patel](https://github.com/Prasoon52 "+167/-6 (#7099 )")
-- <img src="https://avatars.githubusercontent.com/u/141911040?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Samyak Dandge](https://github.com/Samy-in "+134/-0 (#7171 )")
-- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh "+53/-56 (#7170 )")
-- <img src="https://avatars.githubusercontent.com/u/146073621?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rahul Kumar](https://github.com/jaiyankargupta "+28/-28 (#7073 )")
-- <img src="https://avatars.githubusercontent.com/u/148716794?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Amit Verma](https://github.com/Amitverma0509 "+24/-13 (#7129 )")
-- <img src="https://avatars.githubusercontent.com/u/141427581?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Abhishek3880](https://github.com/abhishekmaniy "+23/-4 (#7119 #7117 #7116 #7115 )")
-- <img src="https://avatars.githubusercontent.com/u/91522146?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dhvani Maktuporia](https://github.com/Dhvani365 "+14/-5 (#7175 )")
-- <img src="https://avatars.githubusercontent.com/u/41838423?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Usama Ayoub](https://github.com/sam3690 "+4/-4 (#7133 )")
-- <img src="https://avatars.githubusercontent.com/u/79366821?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ikuy1203](https://github.com/ikuy1203 "+3/-3 (#7166 )")
-- <img src="https://avatars.githubusercontent.com/u/74639234?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nikhil Simon Toppo](https://github.com/Kirito-Excalibur "+1/-1 (#7172 )")
-- <img src="https://avatars.githubusercontent.com/u/200562195?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jane Wangari](https://github.com/Wangarijane "+1/-1 (#7155 )")
-- <img src="https://avatars.githubusercontent.com/u/78318848?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Supakorn Ieamgomol](https://github.com/Supakornn "+1/-1 (#7065 )")
-- <img src="https://avatars.githubusercontent.com/u/134518?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kian-Meng Ang](https://github.com/kianmeng "+1/-1 (#7046 )")
-- <img src="https://avatars.githubusercontent.com/u/13148112?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [UTSUMI Keiji](https://github.com/k-utsumi "+1/-1 (#7037 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+794/-180 (#7186 #7150 #7039 )')
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 '+24/-509 (#7032 )')
+- <img src="https://avatars.githubusercontent.com/u/195581631?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aviraj2929](https://github.com/Aviraj2929 '+211/-93 (#7136 #7135 #7134 #7112 )')
+- <img src="https://avatars.githubusercontent.com/u/181717941?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [prasoon patel](https://github.com/Prasoon52 '+167/-6 (#7099 )')
+- <img src="https://avatars.githubusercontent.com/u/141911040?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Samyak Dandge](https://github.com/Samy-in '+134/-0 (#7171 )')
+- <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh '+53/-56 (#7170 )')
+- <img src="https://avatars.githubusercontent.com/u/146073621?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rahul Kumar](https://github.com/jaiyankargupta '+28/-28 (#7073 )')
+- <img src="https://avatars.githubusercontent.com/u/148716794?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Amit Verma](https://github.com/Amitverma0509 '+24/-13 (#7129 )')
+- <img src="https://avatars.githubusercontent.com/u/141427581?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Abhishek3880](https://github.com/abhishekmaniy '+23/-4 (#7119 #7117 #7116 #7115 )')
+- <img src="https://avatars.githubusercontent.com/u/91522146?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dhvani Maktuporia](https://github.com/Dhvani365 '+14/-5 (#7175 )')
+- <img src="https://avatars.githubusercontent.com/u/41838423?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Usama Ayoub](https://github.com/sam3690 '+4/-4 (#7133 )')
+- <img src="https://avatars.githubusercontent.com/u/79366821?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ikuy1203](https://github.com/ikuy1203 '+3/-3 (#7166 )')
+- <img src="https://avatars.githubusercontent.com/u/74639234?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nikhil Simon Toppo](https://github.com/Kirito-Excalibur '+1/-1 (#7172 )')
+- <img src="https://avatars.githubusercontent.com/u/200562195?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jane Wangari](https://github.com/Wangarijane '+1/-1 (#7155 )')
+- <img src="https://avatars.githubusercontent.com/u/78318848?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Supakorn Ieamgomol](https://github.com/Supakornn '+1/-1 (#7065 )')
+- <img src="https://avatars.githubusercontent.com/u/134518?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kian-Meng Ang](https://github.com/kianmeng '+1/-1 (#7046 )')
+- <img src="https://avatars.githubusercontent.com/u/13148112?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [UTSUMI Keiji](https://github.com/k-utsumi '+1/-1 (#7037 )')
 
 ## [1.12.2](https://github.com/axios/axios/compare/v1.12.1...v1.12.2) (2025-09-14)
 
@@ -130,8 +130,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+247/-16 (#7030 #7022 #7024 )")
-- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+2/-6 (#7028 #7029 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+247/-16 (#7030 #7022 #7024 )')
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 '+2/-6 (#7028 #7029 )')
 
 ## [1.12.1](https://github.com/axios/axios/compare/v1.12.0...v1.12.1) (2025-09-12)
 
@@ -141,7 +141,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+10/-4 (#7020 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+10/-4 (#7020 )')
 
 # [1.12.0](https://github.com/axios/axios/compare/v1.11.0...v1.12.0) (2025-09-11)
 
@@ -165,16 +165,16 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini "+132/-16760 (#7002 #5926 #6782 )")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+4263/-293 (#7006 #7003 )")
-- <img src="https://avatars.githubusercontent.com/u/53833811?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [khani](https://github.com/mkhani01 "+111/-15 (#6982 )")
-- <img src="https://avatars.githubusercontent.com/u/7712804?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ameer Assadi](https://github.com/AmeerAssadi "+123/-0 (#7011 )")
-- <img src="https://avatars.githubusercontent.com/u/70265727?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Emiedonmokumo Dick-Boro](https://github.com/emiedonmokumo "+55/-35 (#6998 )")
-- <img src="https://avatars.githubusercontent.com/u/47859767?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Zeroday BYTE](https://github.com/opsysdebug "+8/-8 (#6980 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jason Saayman](https://github.com/jasonsaayman "+7/-7 (#6985 #6985 )")
-- <img src="https://avatars.githubusercontent.com/u/13010755?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [최예찬](https://github.com/HealGaren "+5/-7 (#5715 )")
-- <img src="https://avatars.githubusercontent.com/u/7002604?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Gligor Kotushevski](https://github.com/gligorkot "+3/-1 (#5627 )")
-- <img src="https://avatars.githubusercontent.com/u/15893?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aleksandar Dimitrov](https://github.com/adimit "+2/-1 (#5595 )")
+- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini '+132/-16760 (#7002 #5926 #6782 )')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+4263/-293 (#7006 #7003 )')
+- <img src="https://avatars.githubusercontent.com/u/53833811?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [khani](https://github.com/mkhani01 '+111/-15 (#6982 )')
+- <img src="https://avatars.githubusercontent.com/u/7712804?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ameer Assadi](https://github.com/AmeerAssadi '+123/-0 (#7011 )')
+- <img src="https://avatars.githubusercontent.com/u/70265727?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Emiedonmokumo Dick-Boro](https://github.com/emiedonmokumo '+55/-35 (#6998 )')
+- <img src="https://avatars.githubusercontent.com/u/47859767?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Zeroday BYTE](https://github.com/opsysdebug '+8/-8 (#6980 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jason Saayman](https://github.com/jasonsaayman '+7/-7 (#6985 #6985 )')
+- <img src="https://avatars.githubusercontent.com/u/13010755?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [최예찬](https://github.com/HealGaren '+5/-7 (#5715 )')
+- <img src="https://avatars.githubusercontent.com/u/7002604?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Gligor Kotushevski](https://github.com/gligorkot '+3/-1 (#5627 )')
+- <img src="https://avatars.githubusercontent.com/u/15893?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aleksandar Dimitrov](https://github.com/adimit '+2/-1 (#5595 )')
 
 # [1.11.0](https://github.com/axios/axios/compare/v1.10.0...v1.11.0) (2025-07-22)
 
@@ -186,11 +186,11 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12534341?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [izzy goldman](https://github.com/izzygld "+186/-93 (#6970 )")
-- <img src="https://avatars.githubusercontent.com/u/142807367?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Manish Sahani](https://github.com/manishsahanidev "+70/-0 (#6961 )")
-- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+12/-10 (#6938 #6939 )")
-- <img src="https://avatars.githubusercontent.com/u/392612?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [James Nail](https://github.com/jrnail23 "+13/-2 (#6956 )")
-- <img src="https://avatars.githubusercontent.com/u/163745239?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tejaswi1305](https://github.com/Tejaswi1305 "+1/-1 (#6894 )")
+- <img src="https://avatars.githubusercontent.com/u/12534341?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [izzy goldman](https://github.com/izzygld '+186/-93 (#6970 )')
+- <img src="https://avatars.githubusercontent.com/u/142807367?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Manish Sahani](https://github.com/manishsahanidev '+70/-0 (#6961 )')
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 '+12/-10 (#6938 #6939 )')
+- <img src="https://avatars.githubusercontent.com/u/392612?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [James Nail](https://github.com/jrnail23 '+13/-2 (#6956 )')
+- <img src="https://avatars.githubusercontent.com/u/163745239?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tejaswi1305](https://github.com/Tejaswi1305 '+1/-1 (#6894 )')
 
 # [1.10.0](https://github.com/axios/axios/compare/v1.9.0...v1.10.0) (2025-06-14)
 
@@ -206,13 +206,13 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+30/-19 (#6933 #6920 #6893 #6892 )")
-- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 "+2/-6 (#6922 #6923 )")
-- <img src="https://avatars.githubusercontent.com/u/48370490?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dimitrios Lazanas](https://github.com/dimitry-lzs "+4/-0 (#6917 )")
-- <img src="https://avatars.githubusercontent.com/u/71047946?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Adrian Knapp](https://github.com/AdrianKnapp "+2/-2 (#6867 )")
-- <img src="https://avatars.githubusercontent.com/u/16129206?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Howie Zhao](https://github.com/howiezhao "+3/-1 (#6872 )")
-- <img src="https://avatars.githubusercontent.com/u/6788611?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Uhyeon Park](https://github.com/warpdev "+1/-1 (#6883 )")
-- <img src="https://avatars.githubusercontent.com/u/20028934?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sampo Silvennoinen](https://github.com/stscoundrel "+1/-1 (#6913 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+30/-19 (#6933 #6920 #6893 #6892 )')
+- <img src="https://avatars.githubusercontent.com/u/189505037?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Noritaka Kobayashi](https://github.com/noritaka1166 '+2/-6 (#6922 #6923 )')
+- <img src="https://avatars.githubusercontent.com/u/48370490?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dimitrios Lazanas](https://github.com/dimitry-lzs '+4/-0 (#6917 )')
+- <img src="https://avatars.githubusercontent.com/u/71047946?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Adrian Knapp](https://github.com/AdrianKnapp '+2/-2 (#6867 )')
+- <img src="https://avatars.githubusercontent.com/u/16129206?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Howie Zhao](https://github.com/howiezhao '+3/-1 (#6872 )')
+- <img src="https://avatars.githubusercontent.com/u/6788611?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Uhyeon Park](https://github.com/warpdev '+1/-1 (#6883 )')
+- <img src="https://avatars.githubusercontent.com/u/20028934?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sampo Silvennoinen](https://github.com/stscoundrel '+1/-1 (#6913 )')
 
 # [1.9.0](https://github.com/axios/axios/compare/v1.8.4...v1.9.0) (2025-04-24)
 
@@ -232,12 +232,12 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+200/-34 (#6890 #6889 #6888 #6885 #6881 #6767 #6874 #6873 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+26/-1 ()")
-- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini "+21/-0 (#5707 )")
-- <img src="https://avatars.githubusercontent.com/u/2500247?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [George Cheng](https://github.com/Gerhut "+3/-3 (#5096 )")
-- <img src="https://avatars.githubusercontent.com/u/30260221?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [FatahChan](https://github.com/FatahChan "+2/-2 (#6855 )")
-- <img src="https://avatars.githubusercontent.com/u/49002?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ionuț G. Stan](https://github.com/igstan "+1/-1 (#6661 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+200/-34 (#6890 #6889 #6888 #6885 #6881 #6767 #6874 #6873 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+26/-1 ()')
+- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini '+21/-0 (#5707 )')
+- <img src="https://avatars.githubusercontent.com/u/2500247?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [George Cheng](https://github.com/Gerhut '+3/-3 (#5096 )')
+- <img src="https://avatars.githubusercontent.com/u/30260221?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [FatahChan](https://github.com/FatahChan '+2/-2 (#6855 )')
+- <img src="https://avatars.githubusercontent.com/u/49002?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ionuț G. Stan](https://github.com/igstan '+1/-1 (#6661 )')
 
 ## [1.8.4](https://github.com/axios/axios/compare/v1.8.3...v1.8.4) (2025-03-19)
 
@@ -247,7 +247,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/8029107?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Marc Hassan](https://github.com/mhassan1 "+5/-1 (#6833 )")
+- <img src="https://avatars.githubusercontent.com/u/8029107?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Marc Hassan](https://github.com/mhassan1 '+5/-1 (#6833 )')
 
 ## [1.8.3](https://github.com/axios/axios/compare/v1.8.2...v1.8.3) (2025-03-10)
 
@@ -258,9 +258,9 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/3238291?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ashcon Partovi](https://github.com/Electroid "+6/-0 (#6811 )")
-- <img src="https://avatars.githubusercontent.com/u/28559054?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [StefanBRas](https://github.com/StefanBRas "+4/-0 (#6818 )")
-- <img src="https://avatars.githubusercontent.com/u/8029107?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Marc Hassan](https://github.com/mhassan1 "+2/-2 (#6814 )")
+- <img src="https://avatars.githubusercontent.com/u/3238291?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ashcon Partovi](https://github.com/Electroid '+6/-0 (#6811 )')
+- <img src="https://avatars.githubusercontent.com/u/28559054?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [StefanBRas](https://github.com/StefanBRas '+4/-0 (#6818 )')
+- <img src="https://avatars.githubusercontent.com/u/8029107?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Marc Hassan](https://github.com/mhassan1 '+2/-2 (#6814 )')
 
 ## [1.8.2](https://github.com/axios/axios/compare/v1.8.1...v1.8.2) (2025-03-07)
 
@@ -270,7 +270,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/14166260?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Fasoro-Joseph Alexander](https://github.com/lexcorp16 "+1/-1 (#6810 )")
+- <img src="https://avatars.githubusercontent.com/u/14166260?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Fasoro-Joseph Alexander](https://github.com/lexcorp16 '+1/-1 (#6810 )')
 
 ## [1.8.1](https://github.com/axios/axios/compare/v1.8.0...v1.8.1) (2025-02-26)
 
@@ -280,7 +280,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+51/-47 (#6789 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+51/-47 (#6789 )')
 
 # [1.8.0](https://github.com/axios/axios/compare/v1.7.9...v1.8.0) (2025-02-25)
 
@@ -310,23 +310,23 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/7661715?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Toscano](https://github.com/GethosTheWalrus "+42/-8 (#6192 )")
-- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini "+26/-3 (#6788 #6777 )")
-- <img src="https://avatars.githubusercontent.com/u/72578270?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Naron](https://github.com/naronchen "+27/-0 (#5901 )")
-- <img src="https://avatars.githubusercontent.com/u/47430686?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [shravan || श्रvan](https://github.com/shravan20 "+7/-3 (#6116 )")
-- <img src="https://avatars.githubusercontent.com/u/145078271?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Justin Dhillon](https://github.com/justindhillon "+0/-7 (#6312 )")
-- <img src="https://avatars.githubusercontent.com/u/30925732?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [yionr](https://github.com/yionr "+5/-1 (#6129 )")
-- <img src="https://avatars.githubusercontent.com/u/534166?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shin&#x27;ya Ueoka](https://github.com/ueokande "+3/-3 (#5935 )")
-- <img src="https://avatars.githubusercontent.com/u/33569?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dan Dascalescu](https://github.com/dandv "+3/-3 (#5908 #6757 )")
-- <img src="https://avatars.githubusercontent.com/u/16476523?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nitin Ramnani](https://github.com/NitinRamnani "+2/-2 (#5938 )")
-- <img src="https://avatars.githubusercontent.com/u/152275799?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shay Molcho](https://github.com/shaymolcho "+2/-2 (#6770 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+0/-3 (#6732 )")
+- <img src="https://avatars.githubusercontent.com/u/7661715?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Toscano](https://github.com/GethosTheWalrus '+42/-8 (#6192 )')
+- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini '+26/-3 (#6788 #6777 )')
+- <img src="https://avatars.githubusercontent.com/u/72578270?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Naron](https://github.com/naronchen '+27/-0 (#5901 )')
+- <img src="https://avatars.githubusercontent.com/u/47430686?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [shravan || श्रvan](https://github.com/shravan20 '+7/-3 (#6116 )')
+- <img src="https://avatars.githubusercontent.com/u/145078271?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Justin Dhillon](https://github.com/justindhillon '+0/-7 (#6312 )')
+- <img src="https://avatars.githubusercontent.com/u/30925732?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [yionr](https://github.com/yionr '+5/-1 (#6129 )')
+- <img src="https://avatars.githubusercontent.com/u/534166?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shin&#x27;ya Ueoka](https://github.com/ueokande '+3/-3 (#5935 )')
+- <img src="https://avatars.githubusercontent.com/u/33569?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dan Dascalescu](https://github.com/dandv '+3/-3 (#5908 #6757 )')
+- <img src="https://avatars.githubusercontent.com/u/16476523?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Nitin Ramnani](https://github.com/NitinRamnani '+2/-2 (#5938 )')
+- <img src="https://avatars.githubusercontent.com/u/152275799?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shay Molcho](https://github.com/shaymolcho '+2/-2 (#6770 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+0/-3 (#6732 )')
 - fancy45daddy
-- <img src="https://avatars.githubusercontent.com/u/127725897?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Habip Akyol](https://github.com/habipakyol "+1/-1 (#6030 )")
-- <img src="https://avatars.githubusercontent.com/u/54869395?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Bailey Lissington](https://github.com/llamington "+1/-1 (#6771 )")
-- <img src="https://avatars.githubusercontent.com/u/14969290?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Bernardo da Eira Duarte](https://github.com/bernardoduarte "+1/-1 (#6480 )")
-- <img src="https://avatars.githubusercontent.com/u/117800149?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shivam Batham](https://github.com/Shivam-Batham "+1/-1 (#5949 )")
-- <img src="https://avatars.githubusercontent.com/u/67861627?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lipin Kariappa](https://github.com/lipinnnnn "+1/-1 (#5936 )")
+- <img src="https://avatars.githubusercontent.com/u/127725897?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Habip Akyol](https://github.com/habipakyol '+1/-1 (#6030 )')
+- <img src="https://avatars.githubusercontent.com/u/54869395?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Bailey Lissington](https://github.com/llamington '+1/-1 (#6771 )')
+- <img src="https://avatars.githubusercontent.com/u/14969290?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Bernardo da Eira Duarte](https://github.com/bernardoduarte '+1/-1 (#6480 )')
+- <img src="https://avatars.githubusercontent.com/u/117800149?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shivam Batham](https://github.com/Shivam-Batham '+1/-1 (#5949 )')
+- <img src="https://avatars.githubusercontent.com/u/67861627?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lipin Kariappa](https://github.com/lipinnnnn '+1/-1 (#5936 )')
 
 ## [1.7.9](https://github.com/axios/axios/compare/v1.7.8...v1.7.9) (2024-12-04)
 
@@ -336,7 +336,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+596/-108 (#6729 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+596/-108 (#6729 )')
 
 ## [1.7.8](https://github.com/axios/axios/compare/v1.7.7...v1.7.8) (2024-11-25)
 
@@ -356,24 +356,24 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/779047?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Remco Haszing](https://github.com/remcohaszing "+108/-596 (#6218 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+281/-19 (#6640 #6619 )")
-- <img src="https://avatars.githubusercontent.com/u/140250471?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aayush Yadav](https://github.com/aayushyadav020 "+124/-111 (#6617 )")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+12/-65 (#6714 )")
-- <img src="https://avatars.githubusercontent.com/u/479715?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ell Bradshaw](https://github.com/cincodenada "+29/-0 (#6489 )")
-- <img src="https://avatars.githubusercontent.com/u/60218780?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Amit Saini](https://github.com/amitsainii "+13/-3 (#5237 )")
-- <img src="https://avatars.githubusercontent.com/u/19817867?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tommaso Paulon](https://github.com/guuido "+14/-1 (#6680 )")
-- <img src="https://avatars.githubusercontent.com/u/63336443?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Akki](https://github.com/Aakash-Rana "+5/-5 (#6668 )")
-- <img src="https://avatars.githubusercontent.com/u/20028934?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sampo Silvennoinen](https://github.com/stscoundrel "+3/-3 (#6633 )")
-- <img src="https://avatars.githubusercontent.com/u/1174718?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kasper Isager Dalsgarð](https://github.com/kasperisager "+2/-2 (#6634 )")
-- <img src="https://avatars.githubusercontent.com/u/3709715?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Christian Clauss](https://github.com/cclauss "+4/-0 (#6683 )")
-- <img src="https://avatars.githubusercontent.com/u/1639119?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Pavan Welihinda](https://github.com/pavan168 "+2/-2 (#5222 )")
-- <img src="https://avatars.githubusercontent.com/u/5742900?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Taylor Flatt](https://github.com/taylorflatt "+2/-2 (#6615 )")
-- <img src="https://avatars.githubusercontent.com/u/79452224?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kenzo Wada](https://github.com/Kenzo-Wada "+2/-2 (#6608 )")
-- <img src="https://avatars.githubusercontent.com/u/50064240?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ngole Lawson](https://github.com/echelonnought "+3/-0 (#6644 )")
-- <img src="https://avatars.githubusercontent.com/u/1262198?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Haven](https://github.com/Baoyx007 "+3/-0 (#6590 )")
-- <img src="https://avatars.githubusercontent.com/u/149003676?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shrivali Dutt](https://github.com/shrivalidutt "+1/-1 (#6637 )")
-- <img src="https://avatars.githubusercontent.com/u/1304290?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Henco Appel](https://github.com/hencoappel "+1/-1 (#6605 )")
+- <img src="https://avatars.githubusercontent.com/u/779047?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Remco Haszing](https://github.com/remcohaszing '+108/-596 (#6218 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+281/-19 (#6640 #6619 )')
+- <img src="https://avatars.githubusercontent.com/u/140250471?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aayush Yadav](https://github.com/aayushyadav020 '+124/-111 (#6617 )')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+12/-65 (#6714 )')
+- <img src="https://avatars.githubusercontent.com/u/479715?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ell Bradshaw](https://github.com/cincodenada '+29/-0 (#6489 )')
+- <img src="https://avatars.githubusercontent.com/u/60218780?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Amit Saini](https://github.com/amitsainii '+13/-3 (#5237 )')
+- <img src="https://avatars.githubusercontent.com/u/19817867?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tommaso Paulon](https://github.com/guuido '+14/-1 (#6680 )')
+- <img src="https://avatars.githubusercontent.com/u/63336443?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Akki](https://github.com/Aakash-Rana '+5/-5 (#6668 )')
+- <img src="https://avatars.githubusercontent.com/u/20028934?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sampo Silvennoinen](https://github.com/stscoundrel '+3/-3 (#6633 )')
+- <img src="https://avatars.githubusercontent.com/u/1174718?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kasper Isager Dalsgarð](https://github.com/kasperisager '+2/-2 (#6634 )')
+- <img src="https://avatars.githubusercontent.com/u/3709715?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Christian Clauss](https://github.com/cclauss '+4/-0 (#6683 )')
+- <img src="https://avatars.githubusercontent.com/u/1639119?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Pavan Welihinda](https://github.com/pavan168 '+2/-2 (#5222 )')
+- <img src="https://avatars.githubusercontent.com/u/5742900?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Taylor Flatt](https://github.com/taylorflatt '+2/-2 (#6615 )')
+- <img src="https://avatars.githubusercontent.com/u/79452224?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Kenzo Wada](https://github.com/Kenzo-Wada '+2/-2 (#6608 )')
+- <img src="https://avatars.githubusercontent.com/u/50064240?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ngole Lawson](https://github.com/echelonnought '+3/-0 (#6644 )')
+- <img src="https://avatars.githubusercontent.com/u/1262198?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Haven](https://github.com/Baoyx007 '+3/-0 (#6590 )')
+- <img src="https://avatars.githubusercontent.com/u/149003676?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Shrivali Dutt](https://github.com/shrivalidutt '+1/-1 (#6637 )')
+- <img src="https://avatars.githubusercontent.com/u/1304290?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Henco Appel](https://github.com/hencoappel '+1/-1 (#6605 )')
 
 ## [1.7.7](https://github.com/axios/axios/compare/v1.7.6...v1.7.7) (2024-08-31)
 
@@ -384,8 +384,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/10539109?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rishi556](https://github.com/Rishi556 "+39/-1 (#5731 )")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+27/-7 (#6584 )")
+- <img src="https://avatars.githubusercontent.com/u/10539109?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rishi556](https://github.com/Rishi556 '+39/-1 (#5731 )')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+27/-7 (#6584 )')
 
 ## [1.7.6](https://github.com/axios/axios/compare/v1.7.5...v1.7.6) (2024-08-30)
 
@@ -396,9 +396,9 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+98/-46 (#6582 )")
-- <img src="https://avatars.githubusercontent.com/u/3534453?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jacques Germishuys](https://github.com/jacquesg "+5/-1 (#6524 )")
-- <img src="https://avatars.githubusercontent.com/u/53894505?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [kuroino721](https://github.com/kuroino721 "+3/-1 (#6575 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+98/-46 (#6582 )')
+- <img src="https://avatars.githubusercontent.com/u/3534453?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jacques Germishuys](https://github.com/jacquesg '+5/-1 (#6524 )')
+- <img src="https://avatars.githubusercontent.com/u/53894505?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [kuroino721](https://github.com/kuroino721 '+3/-1 (#6575 )')
 
 ## [1.7.5](https://github.com/axios/axios/compare/v1.7.4...v1.7.5) (2024-08-23)
 
@@ -411,9 +411,9 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+187/-83 (#6573 #6567 #6566 #6564 #6563 #6557 #6556 #6555 #6554 #6552 )")
-- <img src="https://avatars.githubusercontent.com/u/2495809?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Antonin Bas](https://github.com/antoninbas "+6/-6 (#6572 )")
-- <img src="https://avatars.githubusercontent.com/u/5406212?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Hans Otto Wirtz](https://github.com/hansottowirtz "+4/-1 (#6533 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+187/-83 (#6573 #6567 #6566 #6564 #6563 #6557 #6556 #6555 #6554 #6552 )')
+- <img src="https://avatars.githubusercontent.com/u/2495809?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Antonin Bas](https://github.com/antoninbas '+6/-6 (#6572 )')
+- <img src="https://avatars.githubusercontent.com/u/5406212?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Hans Otto Wirtz](https://github.com/hansottowirtz '+4/-1 (#6533 )')
 
 ## [1.7.4](https://github.com/axios/axios/compare/v1.7.3...v1.7.4) (2024-08-13)
 
@@ -424,8 +424,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/31389480?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lev Pachmanov](https://github.com/levpachmanov "+47/-11 (#6543 )")
-- <img src="https://avatars.githubusercontent.com/u/41283691?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Đỗ Trọng Hải](https://github.com/hainenber "+49/-4 (#6539 )")
+- <img src="https://avatars.githubusercontent.com/u/31389480?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lev Pachmanov](https://github.com/levpachmanov '+47/-11 (#6543 )')
+- <img src="https://avatars.githubusercontent.com/u/41283691?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Đỗ Trọng Hải](https://github.com/hainenber '+49/-4 (#6539 )')
 
 ## [1.7.3](https://github.com/axios/axios/compare/v1.7.2...v1.7.3) (2024-08-01)
 
@@ -437,9 +437,9 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+211/-159 (#6518 #6519 )")
-- <img src="https://avatars.githubusercontent.com/u/10867286?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Valerii Sidorenko](https://github.com/ValeraS "+3/-3 (#6515 )")
-- <img src="https://avatars.githubusercontent.com/u/8599535?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [prianYu](https://github.com/prianyu "+2/-2 (#6505 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+211/-159 (#6518 #6519 )')
+- <img src="https://avatars.githubusercontent.com/u/10867286?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Valerii Sidorenko](https://github.com/ValeraS '+3/-3 (#6515 )')
+- <img src="https://avatars.githubusercontent.com/u/8599535?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [prianYu](https://github.com/prianyu '+2/-2 (#6505 )')
 
 ## [1.7.2](https://github.com/axios/axios/compare/v1.7.1...v1.7.2) (2024-05-21)
 
@@ -449,7 +449,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+3/-3 (#6413 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+3/-3 (#6413 )')
 
 ## [1.7.1](https://github.com/axios/axios/compare/v1.7.0...v1.7.1) (2024-05-20)
 
@@ -459,7 +459,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+14/-9 (#6410 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+14/-9 (#6410 )')
 
 # [1.7.0](https://github.com/axios/axios/compare/v1.7.0-beta.2...v1.7.0) (2024-05-19)
 
@@ -473,9 +473,9 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+1015/-127 (#6371 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+30/-14 ()")
-- <img src="https://avatars.githubusercontent.com/u/16711696?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Alexandre ABRIOUX](https://github.com/alexandre-abrioux "+56/-6 (#6362 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+1015/-127 (#6371 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+30/-14 ()')
+- <img src="https://avatars.githubusercontent.com/u/16711696?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Alexandre ABRIOUX](https://github.com/alexandre-abrioux '+56/-6 (#6362 )')
 
 # [1.7.0-beta.2](https://github.com/axios/axios/compare/v1.7.0-beta.1...v1.7.0-beta.2) (2024-05-19)
 
@@ -487,7 +487,7 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+99/-46 (#6405 #6404 #6401 #6400 #6395 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+99/-46 (#6405 #6404 #6401 #6400 #6395 )')
 
 # [1.7.0-beta.1](https://github.com/axios/axios/compare/v1.7.0-beta.0...v1.7.0-beta.1) (2024-05-07)
 
@@ -499,8 +499,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/16711696?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Alexandre ABRIOUX](https://github.com/alexandre-abrioux "+56/-6 (#6362 )")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+42/-17 (#6380 #6377 )")
+- <img src="https://avatars.githubusercontent.com/u/16711696?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Alexandre ABRIOUX](https://github.com/alexandre-abrioux '+56/-6 (#6362 )')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+42/-17 (#6380 #6377 )')
 
 # [1.7.0-beta.0](https://github.com/axios/axios/compare/v1.6.8...v1.7.0-beta.0) (2024-04-28)
 
@@ -510,8 +510,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+1015/-127 (#6371 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+30/-14 ()")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+1015/-127 (#6371 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+30/-14 ()')
 
 ## [1.6.8](https://github.com/axios/axios/compare/v1.6.7...v1.6.8) (2024-03-15)
 
@@ -523,13 +523,13 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+4572/-3446 (#6238 )")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+30/-0 (#6231 )")
-- <img src="https://avatars.githubusercontent.com/u/68230846?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Mitchell](https://github.com/Creaous "+9/-9 (#6300 )")
-- <img src="https://avatars.githubusercontent.com/u/53797821?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Emmanuel](https://github.com/mannoeu "+2/-2 (#6196 )")
-- <img src="https://avatars.githubusercontent.com/u/44109284?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lucas Keller](https://github.com/ljkeller "+3/-0 (#6194 )")
-- <img src="https://avatars.githubusercontent.com/u/72791488?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aditya Mogili](https://github.com/ADITYA-176 "+1/-1 ()")
-- <img src="https://avatars.githubusercontent.com/u/46135319?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Miroslav Petrov](https://github.com/petrovmiroslav "+1/-1 (#6243 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+4572/-3446 (#6238 )')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+30/-0 (#6231 )')
+- <img src="https://avatars.githubusercontent.com/u/68230846?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Mitchell](https://github.com/Creaous '+9/-9 (#6300 )')
+- <img src="https://avatars.githubusercontent.com/u/53797821?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Emmanuel](https://github.com/mannoeu '+2/-2 (#6196 )')
+- <img src="https://avatars.githubusercontent.com/u/44109284?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lucas Keller](https://github.com/ljkeller '+3/-0 (#6194 )')
+- <img src="https://avatars.githubusercontent.com/u/72791488?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aditya Mogili](https://github.com/ADITYA-176 '+1/-1 ()')
+- <img src="https://avatars.githubusercontent.com/u/46135319?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Miroslav Petrov](https://github.com/petrovmiroslav '+1/-1 (#6243 )')
 
 ## [1.6.7](https://github.com/axios/axios/compare/v1.6.6...v1.6.7) (2024-01-25)
 
@@ -539,8 +539,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+30/-26 (#6203 )")
-- <img src="https://avatars.githubusercontent.com/u/73059627?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [zhoulixiang](https://github.com/zh-lx "+0/-3 (#6186 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+30/-26 (#6203 )')
+- <img src="https://avatars.githubusercontent.com/u/73059627?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [zhoulixiang](https://github.com/zh-lx '+0/-3 (#6186 )')
 
 ## [1.6.6](https://github.com/axios/axios/compare/v1.6.5...v1.6.6) (2024-01-24)
 
@@ -551,8 +551,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/1186084?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ilya Priven](https://github.com/ikonst "+91/-8 (#5987 )")
-- <img src="https://avatars.githubusercontent.com/u/1884246?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Zao Soula](https://github.com/zaosoula "+6/-6 (#5778 )")
+- <img src="https://avatars.githubusercontent.com/u/1186084?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ilya Priven](https://github.com/ikonst '+91/-8 (#5987 )')
+- <img src="https://avatars.githubusercontent.com/u/1884246?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Zao Soula](https://github.com/zaosoula '+6/-6 (#5778 )')
 
 ## [1.6.5](https://github.com/axios/axios/compare/v1.6.4...v1.6.5) (2024-01-05)
 
@@ -563,8 +563,8 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+41/-6 (#6176 #6175 )")
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+6/-1 ()")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+41/-6 (#6176 #6175 )')
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+6/-1 ()')
 
 ## [1.6.4](https://github.com/axios/axios/compare/v1.6.3...v1.6.4) (2024-01-03)
 
@@ -575,9 +575,9 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+34/-6 ()")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+34/-3 (#6172 #6167 )")
-- <img src="https://avatars.githubusercontent.com/u/1402060?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Guy Nesher](https://github.com/gnesher "+10/-10 (#6163 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+34/-6 ()')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+34/-3 (#6172 #6167 )')
+- <img src="https://avatars.githubusercontent.com/u/1402060?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Guy Nesher](https://github.com/gnesher '+10/-10 (#6163 )')
 
 ## [1.6.3](https://github.com/axios/axios/compare/v1.6.2...v1.6.3) (2023-12-26)
 
@@ -587,9 +587,9 @@
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman "+15/-6 (#6145 )")
-- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini "+17/-2 (#6132 )")
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+3/-0 (#6084 )")
+- <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+15/-6 (#6145 )')
+- <img src="https://avatars.githubusercontent.com/u/22686401?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Willian Agostini](https://github.com/WillianAgostini '+17/-2 (#6132 )')
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+3/-0 (#6084 )')
 
 ## [1.6.2](https://github.com/axios/axios/compare/v1.6.1...v1.6.2) (2023-11-14)
 
@@ -610,9 +610,9 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+271/-146 (#6081 #6080 #6079 #6078 #6046 #6064 #6063 )")
-- <img src="https://avatars.githubusercontent.com/u/79681367?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ng Choon Khon (CK)](https://github.com/ckng0221 "+4/-4 (#6073 )")
-- <img src="https://avatars.githubusercontent.com/u/9162827?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Muhammad Noman](https://github.com/mnomanmemon "+2/-2 (#6048 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+271/-146 (#6081 #6080 #6079 #6078 #6046 #6064 #6063 )')
+- <img src="https://avatars.githubusercontent.com/u/79681367?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ng Choon Khon (CK)](https://github.com/ckng0221 '+4/-4 (#6073 )')
+- <img src="https://avatars.githubusercontent.com/u/9162827?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Muhammad Noman](https://github.com/mnomanmemon '+2/-2 (#6048 )')
 
 ## [1.6.1](https://github.com/axios/axios/compare/v1.6.0...v1.6.1) (2023-11-08)
 
@@ -623,8 +623,8 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+432/-65 (#6059 #6056 #6055 )")
-- <img src="https://avatars.githubusercontent.com/u/3982806?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Fabian Meyer](https://github.com/meyfa "+5/-2 (#5835 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+432/-65 (#6059 #6056 #6055 )')
+- <img src="https://avatars.githubusercontent.com/u/3982806?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Fabian Meyer](https://github.com/meyfa '+5/-2 (#5835 )')
 
 ### PRs
 
@@ -656,9 +656,9 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+449/-114 (#6032 #6021 #6011 #5932 #5931 )")
-- <img src="https://avatars.githubusercontent.com/u/63700910?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Valentin Panov](https://github.com/valentin-panov "+4/-4 (#6028 )")
-- <img src="https://avatars.githubusercontent.com/u/76877078?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rinku Chaudhari](https://github.com/therealrinku "+1/-1 (#5889 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+449/-114 (#6032 #6021 #6011 #5932 #5931 )')
+- <img src="https://avatars.githubusercontent.com/u/63700910?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Valentin Panov](https://github.com/valentin-panov '+4/-4 (#6028 )')
+- <img src="https://avatars.githubusercontent.com/u/76877078?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Rinku Chaudhari](https://github.com/therealrinku '+1/-1 (#5889 )')
 
 ## [1.5.1](https://github.com/axios/axios/compare/v1.5.0...v1.5.1) (2023-09-26)
 
@@ -671,12 +671,12 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+89/-18 (#5919 #5917 )")
-- <img src="https://avatars.githubusercontent.com/u/110460234?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [David Dallas](https://github.com/DavidJDallas "+11/-5 ()")
-- <img src="https://avatars.githubusercontent.com/u/71556073?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sean Sattler](https://github.com/fb-sean "+2/-8 ()")
-- <img src="https://avatars.githubusercontent.com/u/4294069?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Mustafa Ateş Uzun](https://github.com/0o001 "+4/-4 ()")
-- <img src="https://avatars.githubusercontent.com/u/132928043?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Przemyslaw Motacki](https://github.com/sfc-gh-pmotacki "+2/-1 (#5892 )")
-- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+1/-1 ()")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+89/-18 (#5919 #5917 )')
+- <img src="https://avatars.githubusercontent.com/u/110460234?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [David Dallas](https://github.com/DavidJDallas '+11/-5 ()')
+- <img src="https://avatars.githubusercontent.com/u/71556073?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sean Sattler](https://github.com/fb-sean '+2/-8 ()')
+- <img src="https://avatars.githubusercontent.com/u/4294069?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Mustafa Ateş Uzun](https://github.com/0o001 '+4/-4 ()')
+- <img src="https://avatars.githubusercontent.com/u/132928043?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Przemyslaw Motacki](https://github.com/sfc-gh-pmotacki '+2/-1 (#5892 )')
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan '+1/-1 ()')
 
 ### PRs
 
@@ -703,10 +703,10 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+66/-29 (#5839 #5837 #5836 #5832 #5831 )")
-- <img src="https://avatars.githubusercontent.com/u/102841186?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [夜葬](https://github.com/geekact "+42/-0 (#5324 )")
-- <img src="https://avatars.githubusercontent.com/u/65978976?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jonathan Budiman](https://github.com/JBudiman00 "+30/-0 (#5788 )")
-- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-5 (#5791 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+66/-29 (#5839 #5837 #5836 #5832 #5831 )')
+- <img src="https://avatars.githubusercontent.com/u/102841186?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [夜葬](https://github.com/geekact '+42/-0 (#5324 )')
+- <img src="https://avatars.githubusercontent.com/u/65978976?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jonathan Budiman](https://github.com/JBudiman00 '+30/-0 (#5788 )')
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan '+3/-5 (#5791 )')
 
 ### PRs
 
@@ -735,9 +735,9 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+151/-16 (#5684 #5339 #5679 #5678 #5677 )")
-- <img src="https://avatars.githubusercontent.com/u/47537704?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Arthur Fiorette](https://github.com/arthurfiorette "+19/-19 (#5525 )")
-- <img src="https://avatars.githubusercontent.com/u/43876655?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [PIYUSH NEGI](https://github.com/npiyush97 "+2/-18 (#5670 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+151/-16 (#5684 #5339 #5679 #5678 #5677 )')
+- <img src="https://avatars.githubusercontent.com/u/47537704?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Arthur Fiorette](https://github.com/arthurfiorette '+19/-19 (#5525 )')
+- <img src="https://avatars.githubusercontent.com/u/43876655?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [PIYUSH NEGI](https://github.com/npiyush97 '+2/-18 (#5670 )')
 
 ### PRs
 
@@ -757,8 +757,8 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+48/-10 (#5665 #5661 #5663 )")
-- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+2/-0 (#5445 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+48/-10 (#5665 #5661 #5663 )')
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan '+2/-0 (#5445 )')
 
 ### PRs
 
@@ -778,7 +778,7 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+28/-10 (#5633 #5584 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+28/-10 (#5633 #5584 )')
 
 ### PRs
 
@@ -798,9 +798,9 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+38/-26 (#5564 )")
-- <img src="https://avatars.githubusercontent.com/u/19550000?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [lcysgsg](https://github.com/lcysgsg "+4/-0 (#5548 )")
-- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan "+3/-0 (#5444 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+38/-26 (#5564 )')
+- <img src="https://avatars.githubusercontent.com/u/19550000?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [lcysgsg](https://github.com/lcysgsg '+4/-0 (#5548 )')
+- <img src="https://avatars.githubusercontent.com/u/5492927?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Michael Di Prisco](https://github.com/Cadienvan '+3/-0 (#5444 )')
 
 ### PRs
 
@@ -821,8 +821,8 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+11/-7 (#5545 #5535 #5542 )")
-- <img src="https://avatars.githubusercontent.com/u/19842213?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [陈若枫](https://github.com/ruofee "+2/-2 (#5467 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+11/-7 (#5545 #5535 #5542 )')
+- <img src="https://avatars.githubusercontent.com/u/19842213?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [陈若枫](https://github.com/ruofee '+2/-2 (#5467 )')
 
 ### PRs
 
@@ -842,7 +842,7 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+2/-1 (#5530 #5528 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+2/-1 (#5530 #5528 )')
 
 ### PRs
 
@@ -862,7 +862,7 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+27/-8 (#5521 #5518 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+27/-8 (#5521 #5518 )')
 
 ### PRs
 
@@ -886,8 +886,8 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+352/-67 (#5514 #5512 #5510 #5509 #5508 #5316 #5507 )")
-- <img src="https://avatars.githubusercontent.com/u/35015993?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ItsNotGoodName](https://github.com/ItsNotGoodName "+43/-2 (#5497 )")
+- <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+352/-67 (#5514 #5512 #5510 #5509 #5508 #5316 #5507 )')
+- <img src="https://avatars.githubusercontent.com/u/35015993?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [ItsNotGoodName](https://github.com/ItsNotGoodName '+43/-2 (#5497 )')
 
 ### PRs
 
@@ -907,7 +907,7 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+24/-9 (#5503 #5502 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+24/-9 (#5503 #5502 )')
 
 ### PRs
 
@@ -926,8 +926,8 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+82/-54 (#5499 )")
-- ![avatar](https://avatars.githubusercontent.com/u/20516159?v=4&s=16) [Elliot Ford](https://github.com/EFord36 "+1/-1 (#5462 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+82/-54 (#5499 )')
+- ![avatar](https://avatars.githubusercontent.com/u/20516159?v=4&s=16) [Elliot Ford](https://github.com/EFord36 '+1/-1 (#5462 )')
 
 ### PRs
 
@@ -947,8 +947,8 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+242/-108 (#5486 #5482 )")
-- ![avatar](https://avatars.githubusercontent.com/u/9430821?v=4&s=16) [Daniel Hillmann](https://github.com/hilleer "+1/-1 (#5478 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+242/-108 (#5486 #5482 )')
+- ![avatar](https://avatars.githubusercontent.com/u/9430821?v=4&s=16) [Daniel Hillmann](https://github.com/hilleer '+1/-1 (#5478 )')
 
 ### PRs
 
@@ -967,7 +967,7 @@ This functionality is considered as a fix.
 
 ### Contributors to this release
 
-- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS "+938/-442 (#5456 #5455 #5453 #5451 #5449 #5447 #5446 #5443 #5442 #5439 #5420 )")
+- ![avatar](https://avatars.githubusercontent.com/u/12586868?v=4&s=16) [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+938/-442 (#5456 #5455 #5453 #5451 #5449 #5447 #5446 #5443 #5442 #5439 #5420 )')
 
 ### PRs
 

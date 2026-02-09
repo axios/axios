@@ -13,18 +13,23 @@ describe('defaults', function () {
     delete axios.defaults.baseURL;
     delete axios.defaults.headers.get['X-CUSTOM-HEADER'];
     delete axios.defaults.headers.post['X-CUSTOM-HEADER'];
-    document.cookie = XSRF_COOKIE_NAME + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
+    document.cookie =
+      XSRF_COOKIE_NAME + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
   });
 
   it('should transform request json', function () {
-    expect(defaults.transformRequest[0]({foo: 'bar'}, new AxiosHeaders())).toEqual('{"foo":"bar"}');
+    expect(defaults.transformRequest[0]({ foo: 'bar' }, new AxiosHeaders())).toEqual(
+      '{"foo":"bar"}'
+    );
   });
 
   it("should also transform request json when 'Content-Type' is 'application/json'", function () {
     const headers = new AxiosHeaders({
       'Content-Type': 'application/json',
     });
-    expect(defaults.transformRequest[0](JSON.stringify({ foo: 'bar' }), headers)).toEqual('{"foo":"bar"}');
+    expect(defaults.transformRequest[0](JSON.stringify({ foo: 'bar' }), headers)).toEqual(
+      '{"foo":"bar"}'
+    );
     expect(defaults.transformRequest[0]([42, 43], headers)).toEqual('[42,43]');
     expect(defaults.transformRequest[0]('foo', headers)).toEqual('"foo"');
     expect(defaults.transformRequest[0](42, headers)).toEqual('42');
@@ -33,12 +38,12 @@ describe('defaults', function () {
     expect(defaults.transformRequest[0](null, headers)).toEqual('null');
   });
 
-  it("should transform the plain data object to a FormData instance 'Content-Type' if header is 'multipart/form-data'", function() {
+  it("should transform the plain data object to a FormData instance 'Content-Type' if header is 'multipart/form-data'", function () {
     const headers = new AxiosHeaders({
-      'Content-Type': 'multipart/form-data'
+      'Content-Type': 'multipart/form-data',
     });
 
-    const payload = {x: 1};
+    const payload = { x: 1 };
 
     const transformed = defaults.transformRequest[0](payload, headers);
 
@@ -82,7 +87,7 @@ describe('defaults', function () {
 
   it('should use request config', function (done) {
     axios('/foo', {
-      baseURL: 'http://www.example.com'
+      baseURL: 'http://www.example.com',
     });
 
     getAjaxRequest().then(function (request) {
@@ -94,7 +99,7 @@ describe('defaults', function () {
   it('should use default config for custom instance', function (done) {
     const instance = axios.create({
       xsrfCookieName: XSRF_COOKIE_NAME,
-      xsrfHeaderName: 'X-CUSTOM-XSRF-TOKEN'
+      xsrfHeaderName: 'X-CUSTOM-XSRF-TOKEN',
     });
     document.cookie = instance.defaults.xsrfCookieName + '=foobarbaz';
 
@@ -130,22 +135,22 @@ describe('defaults', function () {
     const instance = axios.create({
       headers: {
         common: {
-          'X-COMMON-HEADER': 'commonHeaderValue'
+          'X-COMMON-HEADER': 'commonHeaderValue',
         },
         get: {
-          'X-GET-HEADER': 'getHeaderValue'
+          'X-GET-HEADER': 'getHeaderValue',
         },
         post: {
-          'X-POST-HEADER': 'postHeaderValue'
-        }
-      }
+          'X-POST-HEADER': 'postHeaderValue',
+        },
+      },
     });
 
     instance.get('/foo', {
       headers: {
         'X-FOO-HEADER': 'fooHeaderValue',
-        'X-BAR-HEADER': 'barHeaderValue'
-      }
+        'X-BAR-HEADER': 'barHeaderValue',
+      },
     });
 
     getAjaxRequest().then(function (request) {
@@ -154,7 +159,7 @@ describe('defaults', function () {
           'X-COMMON-HEADER': 'commonHeaderValue',
           'X-GET-HEADER': 'getHeaderValue',
           'X-FOO-HEADER': 'fooHeaderValue',
-          'X-BAR-HEADER': 'barHeaderValue'
+          'X-BAR-HEADER': 'barHeaderValue',
         }).toJSON()
       );
       done();

@@ -1,8 +1,7 @@
 import AxiosError from '../../../lib/core/AxiosError';
 
-
-describe('core::AxiosError', function() {
-  it('should create an Error with message, config, code, request, response, stack and isAxiosError', function() {
+describe('core::AxiosError', function () {
+  it('should create an Error with message, config, code, request, response, stack and isAxiosError', function () {
     const request = { path: '/foo' };
     const response = { status: 200, data: { foo: 'bar' } };
     const error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
@@ -15,7 +14,7 @@ describe('core::AxiosError', function() {
     expect(error.isAxiosError).toBe(true);
     expect(error.stack).toBeDefined();
   });
-  it('should create an Error that can be serialized to JSON', function() {
+  it('should create an Error that can be serialized to JSON', function () {
     // Attempting to serialize request and response results in
     //    TypeError: Converting circular structure to JSON
     const request = { path: '/foo' };
@@ -30,8 +29,8 @@ describe('core::AxiosError', function() {
     expect(json.response).toBe(undefined);
   });
 
-  describe('core::createError.from', function() {
-    it('should add config, config, request and response to error', function() {
+  describe('core::createError.from', function () {
+    it('should add config, config, request and response to error', function () {
       const error = new Error('Boom!');
       const request = { path: '/foo' };
       const response = { status: 200, data: { foo: 'bar' } };
@@ -44,26 +43,28 @@ describe('core::AxiosError', function() {
       expect(axiosError.isAxiosError).toBe(true);
     });
 
-    it('should return error', function() {
+    it('should return error', function () {
       const error = new Error('Boom!');
-      expect(AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError).toBeTruthy();
+      expect(
+        AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError
+      ).toBeTruthy();
     });
   });
 
-  it('should be a native error as checked by the NodeJS `isNativeError` function', function (){
-    if((typeof process !== 'undefined') && (process.release.name === 'node')){
-      let {isNativeError} = require('node:util/types');
-      expect(isNativeError(new AxiosError("My Axios Error"))).toBeTruthy();
+  it('should be a native error as checked by the NodeJS `isNativeError` function', function () {
+    if (typeof process !== 'undefined' && process.release.name === 'node') {
+      let { isNativeError } = require('node:util/types');
+      expect(isNativeError(new AxiosError('My Axios Error'))).toBeTruthy();
     }
   });
 
-  it('should create an error using one of the static class properties as an error code', function (){
-    const myError = new AxiosError("My Axios Error", AxiosError.ECONNABORTED);
+  it('should create an error using one of the static class properties as an error code', function () {
+    const myError = new AxiosError('My Axios Error', AxiosError.ECONNABORTED);
     expect(myError.code).toEqual(AxiosError.ECONNABORTED);
   });
 
   it('should have status property when response was passed to the constructor', () => {
-      const err = new AxiosError('test', 'foo', {}, {}, {status: 400});
-      expect(err.status).toBe(400);
+    const err = new AxiosError('test', 'foo', {}, {}, { status: 400 });
+    expect(err.status).toBe(400);
   });
 });

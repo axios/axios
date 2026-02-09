@@ -1,64 +1,63 @@
 import settle from '../../../lib/core/settle';
 
-describe('core::settle', function() {
+describe('core::settle', function () {
   let resolve;
   let reject;
 
-  beforeEach(function() {
+  beforeEach(function () {
     resolve = jasmine.createSpy('resolve');
     reject = jasmine.createSpy('reject');
   });
 
-  it('should resolve promise if status is not set', function() {
+  it('should resolve promise if status is not set', function () {
     const response = {
       config: {
-        validateStatus: function() {
+        validateStatus: function () {
           return true;
-        }
-      }
-    };
-    settle(resolve, reject, response);
-    expect(resolve).toHaveBeenCalledWith(response);
-    expect(reject).not.toHaveBeenCalled();
-  });
-
-  it('should resolve promise if validateStatus is not set', function() {
-    const response = {
-      status: 500,
-      config: {
-      }
-    };
-    settle(resolve, reject, response);
-    expect(resolve).toHaveBeenCalledWith(response);
-    expect(reject).not.toHaveBeenCalled();
-  });
-
-  it('should resolve promise if validateStatus returns true', function() {
-    const response = {
-      status: 500,
-      config: {
-        validateStatus: function() {
-          return true;
-        }
-      }
-    };
-    settle(resolve, reject, response);
-    expect(resolve).toHaveBeenCalledWith(response);
-    expect(reject).not.toHaveBeenCalled();
-  });
-
-  it('should reject promise if validateStatus returns false', function() {
-    const req = {
-      path: '/foo'
-    };
-    const response = {
-      status: 500,
-      config: {
-        validateStatus: function() {
-          return false;
-        }
+        },
       },
-      request: req
+    };
+    settle(resolve, reject, response);
+    expect(resolve).toHaveBeenCalledWith(response);
+    expect(reject).not.toHaveBeenCalled();
+  });
+
+  it('should resolve promise if validateStatus is not set', function () {
+    const response = {
+      status: 500,
+      config: {},
+    };
+    settle(resolve, reject, response);
+    expect(resolve).toHaveBeenCalledWith(response);
+    expect(reject).not.toHaveBeenCalled();
+  });
+
+  it('should resolve promise if validateStatus returns true', function () {
+    const response = {
+      status: 500,
+      config: {
+        validateStatus: function () {
+          return true;
+        },
+      },
+    };
+    settle(resolve, reject, response);
+    expect(resolve).toHaveBeenCalledWith(response);
+    expect(reject).not.toHaveBeenCalled();
+  });
+
+  it('should reject promise if validateStatus returns false', function () {
+    const req = {
+      path: '/foo',
+    };
+    const response = {
+      status: 500,
+      config: {
+        validateStatus: function () {
+          return false;
+        },
+      },
+      request: req,
     };
     settle(resolve, reject, response);
     expect(resolve).not.toHaveBeenCalled();
@@ -71,13 +70,13 @@ describe('core::settle', function() {
     expect(reason.response).toBe(response);
   });
 
-  it('should pass status to validateStatus', function() {
+  it('should pass status to validateStatus', function () {
     const validateStatus = jasmine.createSpy('validateStatus');
     const response = {
       status: 500,
       config: {
-        validateStatus: validateStatus
-      }
+        validateStatus: validateStatus,
+      },
     };
     settle(resolve, reject, response);
     expect(validateStatus).toHaveBeenCalledWith(500);

@@ -1,4 +1,4 @@
-import AxiosError from "../../lib/core/AxiosError";
+import AxiosError from '../../lib/core/AxiosError';
 
 describe('transform', function () {
   beforeEach(function () {
@@ -11,7 +11,7 @@ describe('transform', function () {
 
   it('should transform JSON to string', function (done) {
     const data = {
-      foo: 'bar'
+      foo: 'bar',
     };
 
     axios.post('/foo', data);
@@ -32,7 +32,7 @@ describe('transform', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: '{"foo": "bar"}'
+        responseText: '{"foo": "bar"}',
       });
 
       setTimeout(function () {
@@ -43,49 +43,53 @@ describe('transform', function () {
     });
   });
 
-  it('should throw a SyntaxError if JSON parsing failed and responseType is "json" if silentJSONParsing is false',
-    function (done) {
-      let thrown;
+  it('should throw a SyntaxError if JSON parsing failed and responseType is "json" if silentJSONParsing is false', function (done) {
+    let thrown;
 
-      axios({
-        url: '/foo',
-        responseType: 'json',
-        transitional: {silentJSONParsing: false}
-      }).then(function () {
+    axios({
+      url: '/foo',
+      responseType: 'json',
+      transitional: { silentJSONParsing: false },
+    }).then(
+      function () {
         done(new Error('should fail'));
-      }, function (err) {
+      },
+      function (err) {
         thrown = err;
-      });
-
-      getAjaxRequest().then(function (request) {
-        request.respondWith({
-          status: 200,
-          responseText: '{foo": "bar"}' // JSON SyntaxError
-        });
-
-        setTimeout(function () {
-          expect(thrown).toBeTruthy();
-          expect(thrown.name).toContain('SyntaxError');
-          expect(thrown.code).toEqual(AxiosError.ERR_BAD_RESPONSE);
-          done();
-        }, 100);
-      });
-    }
-  );
-
-  it('should send data as JSON if request content-type is application/json', function (done) {
-    let response;
-
-    axios.post('/foo', 123, {headers: {'Content-Type': 'application/json'}}).then(function (_response) {
-      response = _response;
-    }, function (err) {
-      done(err);
-    });
+      }
+    );
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: ''
+        responseText: '{foo": "bar"}', // JSON SyntaxError
+      });
+
+      setTimeout(function () {
+        expect(thrown).toBeTruthy();
+        expect(thrown.name).toContain('SyntaxError');
+        expect(thrown.code).toEqual(AxiosError.ERR_BAD_RESPONSE);
+        done();
+      }, 100);
+    });
+  });
+
+  it('should send data as JSON if request content-type is application/json', function (done) {
+    let response;
+
+    axios.post('/foo', 123, { headers: { 'Content-Type': 'application/json' } }).then(
+      function (_response) {
+        response = _response;
+      },
+      function (err) {
+        done(err);
+      }
+    );
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: '',
       });
 
       setTimeout(function () {
@@ -100,23 +104,28 @@ describe('transform', function () {
   it('should not assume JSON if responseType is not `json`', function (done) {
     let response;
 
-    axios.get('/foo', {
-      responseType: 'text',
-      transitional: {
-        forcedJSONParsing: false
-      }
-    }).then(function (_response) {
-      response = _response;
-    }, function (err) {
-      done(err);
-    });
+    axios
+      .get('/foo', {
+        responseType: 'text',
+        transitional: {
+          forcedJSONParsing: false,
+        },
+      })
+      .then(
+        function (_response) {
+          response = _response;
+        },
+        function (err) {
+          done(err);
+        }
+      );
 
     const rawData = '{"x":1}';
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: rawData
+        responseText: rawData,
       });
 
       setTimeout(function () {
@@ -129,13 +138,13 @@ describe('transform', function () {
 
   it('should override default transform', function (done) {
     const data = {
-      foo: 'bar'
+      foo: 'bar',
     };
 
     axios.post('/foo', data, {
       transformRequest: function (data) {
         return data;
-      }
+      },
     });
 
     getAjaxRequest().then(function (request) {
@@ -146,15 +155,13 @@ describe('transform', function () {
 
   it('should allow an Array of transformers', function (done) {
     const data = {
-      foo: 'bar'
+      foo: 'bar',
     };
 
     axios.post('/foo', data, {
-      transformRequest: axios.defaults.transformRequest.concat(
-        function (data) {
-          return data.replace('bar', 'baz');
-        }
-      )
+      transformRequest: axios.defaults.transformRequest.concat(function (data) {
+        return data.replace('bar', 'baz');
+      }),
     });
 
     getAjaxRequest().then(function (request) {
@@ -169,7 +176,7 @@ describe('transform', function () {
     axios('/foo', {
       transformRequest: function (data, headers) {
         headers['X-Authorization'] = token;
-      }
+      },
     });
 
     getAjaxRequest().then(function (request) {
@@ -178,18 +185,18 @@ describe('transform', function () {
     });
   });
 
-  it('should normalize \'content-type\' header when using a custom transformRequest', function (done) {
+  it("should normalize 'content-type' header when using a custom transformRequest", function (done) {
     const data = {
-      foo: 'bar'
+      foo: 'bar',
     };
 
     axios.post('/foo', data, {
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       transformRequest: [
         function () {
-          return 'aa=44'
-        }
-      ]
+          return 'aa=44';
+        },
+      ],
     });
 
     getAjaxRequest().then(function (request) {
@@ -201,27 +208,29 @@ describe('transform', function () {
   it('should return response.data as parsed JSON object when responseType is json', function (done) {
     const instance = axios.create({
       baseURL: '/api',
-      transformResponse: [function (data) {    
-        return data;
-      }],
+      transformResponse: [
+        function (data) {
+          return data;
+        },
+      ],
       responseType: 'json',
     });
-  
-    instance.get("my/endpoint", { responseType: 'json' })
-    .then(response => {
-      expect(typeof response).toBe('object');
-      done();
-    })
-    .catch(err => {
-      done(err);
-    });
-  
-    getAjaxRequest().then(function (request){
+
+    instance
+      .get('my/endpoint', { responseType: 'json' })
+      .then((response) => {
+        expect(typeof response).toBe('object');
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+
+    getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: '{"key1": "value1"}'
+        responseText: '{"key1": "value1"}',
       });
     });
   });
-  
 });

@@ -1,11 +1,11 @@
 import assert from 'assert';
 import * as axios from '../../index.js';
 import axiosFactory from '../../lib/axios.js';
-import utils from "../../lib/utils.js";
-import {fileURLToPath} from 'url';
+import utils from '../../lib/utils.js';
+import { fileURLToPath } from 'url';
 import path from 'path';
-import util from "util";
-import cp from "child_process";
+import util from 'util';
+import cp from 'child_process';
 import fs from 'fs-extra';
 
 const BACKUP_PATH = './backup/';
@@ -14,23 +14,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const exec = util.promisify(cp.exec);
 
-const spawn = (command, args) =>  new Promise((resolve, reject) => {
-  cp.spawn(command, args, {
-    shell : true,
-    stdio: 'inherit'
-  }).once('error', reject).on(
-    'close',
-    (code) => code ? reject(new Error(`Exit code ${code}`)) : resolve()
-  );
-});
+const spawn = (command, args) =>
+  new Promise((resolve, reject) => {
+    cp.spawn(command, args, {
+      shell: true,
+      stdio: 'inherit',
+    })
+      .once('error', reject)
+      .on('close', (code) => (code ? reject(new Error(`Exit code ${code}`)) : resolve()));
+  });
 
-const {Axios} = axiosFactory;
+const { Axios } = axiosFactory;
 
 const ignoreList = ['default'];
 
 const instance = axiosFactory.create({});
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const remove = async (file) => {
   console.log(`✓ Remove entry '${file}'...`);
@@ -40,10 +40,9 @@ const remove = async (file) => {
   } catch (err) {
     console.warn(err.message);
   }
-}
+};
 
 describe('module', function () {
-
   before(async () => {
     console.log('✓ Creating build backup...');
     await fs.copy('./dist/', BACKUP_PATH);
@@ -59,7 +58,6 @@ describe('module', function () {
   });
 
   describe('export', function () {
-
     it('should have consistent ESM export', function () {
       const namedExport = {};
       const factoryExport = {};
@@ -119,7 +117,7 @@ describe('module', function () {
       });
     });
 
-    describe('TS require(\'axios\')', () => {
+    describe("TS require('axios')", () => {
       const pkgPath = path.join(__dirname, './ts-require');
 
       after(async () => {
@@ -133,7 +131,7 @@ describe('module', function () {
       });
     });
 
-    describe('TS require(\'axios\').default', () => {
+    describe("TS require('axios').default", () => {
       const pkgPath = path.join(__dirname, './ts-require-default');
 
       after(async () => {
@@ -160,8 +158,8 @@ describe('module', function () {
         this.timeout(30000);
 
         await spawn(`npm test --prefix ${pkgPath}`, [], {
-          shell : true,
-          stdio: 'pipe'
+          shell: true,
+          stdio: 'pipe',
         });
       });
     });
@@ -177,8 +175,8 @@ describe('module', function () {
         this.timeout(30000);
 
         await spawn(`npm test --prefix ${pkgPath}`, [], {
-          shell : true,
-          stdio: 'pipe'
+          shell: true,
+          stdio: 'pipe',
         });
       });
     });

@@ -492,12 +492,14 @@ source.cancel('Operation has been canceled.');
 axios.get('/user').catch((error: AxiosError) => {
   if (axios.isAxiosError(error)) {
     const axiosError: AxiosError = error;
+    console.log(axiosError.message);
   }
 
   // named export
 
   if (isAxiosError(error)) {
     const axiosError: AxiosError = error;
+    console.log(axiosError.message);
   }
 });
 

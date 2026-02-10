@@ -446,6 +446,7 @@ source.cancel('Operation has been axios.Canceled.');
 axios.get('/user').catch((error) => {
   if (axios.isAxiosError(error)) {
     const axiosError: axios.AxiosError = error;
+    console.log(axiosError.message);
   }
 });
 

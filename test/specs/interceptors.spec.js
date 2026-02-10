@@ -609,7 +609,7 @@ describe('interceptors', function () {
       { synchronous: false }
     );
 
-    const syncIntercept = axios.interceptors.request.use(
+    axios.interceptors.request.use(
       function (config) {
         config.headers.sync = 'hello world';
         expect(asyncFlag).toBe(false);

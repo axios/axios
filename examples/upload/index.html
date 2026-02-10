@@ -31,17 +31,19 @@
         var config = {
           onUploadProgress: function (progressEvent) {
             var percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            output.className = 'container';
+            output.textContent = 'Upload progress: ' + percentCompleted + '%';
           }
         };
 
         axios.put('/upload/server', data, config)
           .then(function (res) {
             output.className = 'container';
-            output.innerHTML = res.data;
+            output.textContent = res.data;
           })
           .catch(function (err) {
             output.className = 'container text-danger';
-            output.innerHTML = err.message;
+            output.textContent = err.message;
           });
       };
     })();

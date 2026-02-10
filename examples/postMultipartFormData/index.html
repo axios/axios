@@ -505,23 +505,23 @@
           headers: passAsFormData ? { "Content-Type": "multipart/form-data" } : {},
         })
           .then(res => {
-            errorOutput.innerHTML = "Successfully posted!";
+            errorOutput.textContent = "Successfully posted!";
             errorOutput.classList.remove("text-danger");
             errorOutput.classList.add("text-success");
             errorOutput.classList.remove("hidden");
 
             // Display the response in the result section
-            resultContent.innerHTML = JSON.stringify(res.data, null, 2);
+            resultContent.textContent = JSON.stringify(res.data, null, 2);
           })
           .catch(err => {
             console.error("Error posting data:", err);
-            errorOutput.innerHTML = `${err.message}`;
+            errorOutput.textContent = `${err.message}`;
             errorOutput.classList.add("text-danger");
             errorOutput.classList.remove("text-success");
             errorOutput.classList.remove("hidden");
 
             // Display error in the result section
-            resultContent.innerHTML = `Error: ${err.message}\n\n${JSON.stringify(err.response?.data || {}, null, 2)}`;
+            resultContent.textContent = `Error: ${err.message}\n\n${JSON.stringify(err.response?.data || {}, null, 2)}`;
           });
       };
     })();

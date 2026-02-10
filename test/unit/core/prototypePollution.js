@@ -1,8 +1,8 @@
 "use strict";
 
-import assert from "assert";
-import utils from "../../../lib/utils.js";
-import mergeConfig from "../../../lib/core/mergeConfig.js";
+var assert = require('assert');
+var utils = require('../../../lib/utils');
+var mergeConfig = require('../../../lib/core/mergeConfig');
 
 describe("Prototype Pollution Protection", function () {
   afterEach(function () {

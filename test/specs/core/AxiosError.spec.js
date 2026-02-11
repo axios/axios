@@ -66,4 +66,26 @@ describe('core::AxiosError', function() {
       const err = new AxiosError('test', 'foo', {}, {}, {status: 400});
       expect(err.status).toBe(400);
   });
+
+  it('should have message property as enumerable for backward compatibility', () => {
+      const err = new AxiosError('Test error message', 'ERR_TEST', {foo: 'bar'});
+
+      // Test Object.keys() includes message
+      const keys = Object.keys(err);
+      expect(keys).toContain('message');
+
+      // Test Object.entries() includes message
+      const entries = Object.entries(err);
+      const messageEntry = entries.find(([key]) => key === 'message');
+      expect(messageEntry).toBeDefined();
+      expect(messageEntry[1]).toBe('Test error message');
+
+      // Test spread operator includes message
+      const spread = {...err};
+      expect(spread.message).toBe('Test error message');
+
+      // Verify message descriptor is enumerable
+      const descriptor = Object.getOwnPropertyDescriptor(err, 'message');
+      expect(descriptor.enumerable).toBe(true);
+  });
 });

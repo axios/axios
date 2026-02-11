@@ -615,6 +615,9 @@ These are the available config options for making requests. Only the `url` is re
 
     // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
     clarifyTimeoutError: false,
+
+    // use the legacy interceptor request/response ordering
+    legacyInterceptorReqResOrdering: true, // default
   },
 
   env: {
@@ -1065,7 +1068,7 @@ cancel();
 
 ### URLSearchParams
 
-By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [ Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
+By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) format instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers, and [Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
 const params = new URLSearchParams({ foo: "bar" });
@@ -1184,7 +1187,7 @@ const FormData = require("form-data");
 
 const form = new FormData();
 form.append("my_field", "my value");
-form.append("my_buffer", new Buffer(10));
+form.append("my_buffer", Buffer.alloc(10));
 form.append("my_file", fs.createReadStream("/foo/bar.jpg"));
 
 axios.post("https://example.com", form);
@@ -1225,7 +1228,7 @@ var FormData = require("form-data");
 axios
   .post(
     "https://httpbin.org/post",
-    { x: 1, buf: new Buffer(10) },
+    { x: 1, buf: Buffer.alloc(10) },
     {
       headers: {
         "Content-Type": "multipart/form-data",

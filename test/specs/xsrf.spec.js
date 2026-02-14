@@ -6,7 +6,8 @@ describe('xsrf', function () {
   });
 
   afterEach(function () {
-    document.cookie = axios.defaults.xsrfCookieName + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
+    document.cookie =
+      axios.defaults.xsrfCookieName + '=;expires=' + new Date(Date.now() - 86400000).toGMTString();
     jasmine.Ajax.uninstall();
   });
 
@@ -34,7 +35,7 @@ describe('xsrf', function () {
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
     axios('/foo', {
-      xsrfCookieName: null
+      xsrfCookieName: null,
     });
 
     getAjaxRequest().then(function (request) {
@@ -44,10 +45,10 @@ describe('xsrf', function () {
   });
 
   it('should not read cookies at all if xsrfCookieName is null', function (done) {
-    spyOn(cookies, "read");
+    spyOn(cookies, 'read');
 
     axios('/foo', {
-      xsrfCookieName: null
+      xsrfCookieName: null,
     });
 
     getAjaxRequest().then(function (request) {
@@ -71,7 +72,7 @@ describe('xsrf', function () {
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 
     axios('http://example.com/', {
-      withCredentials: true
+      withCredentials: true,
     });
 
     getAjaxRequest().then(function (request) {
@@ -80,15 +81,14 @@ describe('xsrf', function () {
     });
   });
 
-  describe('withXSRFToken option', function(){
-
+  describe('withXSRFToken option', function () {
     it('should set xsrf header for cross origin when withXSRFToken = true', function (done) {
       const token = '12345';
 
       document.cookie = axios.defaults.xsrfCookieName + '=' + token;
 
       axios('http://example.com/', {
-        withXSRFToken: true
+        withXSRFToken: true,
       });
 
       getAjaxRequest().then(function (request) {
@@ -103,7 +103,7 @@ describe('xsrf', function () {
       document.cookie = axios.defaults.xsrfCookieName + '=' + token;
 
       axios('/foo', {
-        withXSRFToken: false
+        withXSRFToken: false,
       });
 
       getAjaxRequest().then(function (request) {
@@ -118,7 +118,7 @@ describe('xsrf', function () {
       document.cookie = axios.defaults.xsrfCookieName + '=' + token;
 
       axios('/foo', {
-        withXSRFToken: false
+        withXSRFToken: false,
       });
 
       getAjaxRequest().then(function (request) {
@@ -134,7 +134,7 @@ describe('xsrf', function () {
 
       axios('/foo', {
         withXSRFToken: (config) => config.userFlag === 'yes',
-        userFlag: 'yes'
+        userFlag: 'yes',
       });
 
       getAjaxRequest().then(function (request) {

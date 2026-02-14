@@ -1,5 +1,15 @@
 import assert from 'assert';
-import axios, {CanceledError, AxiosError, AxiosHeaders, formToJSON, spread, isAxiosError, isCancel, all, toFormData} from 'axios';
+import axios, {
+  CanceledError,
+  AxiosError,
+  AxiosHeaders,
+  formToJSON,
+  spread,
+  isAxiosError,
+  isCancel,
+  all,
+  toFormData,
+} from 'axios';
 
 assert.strictEqual(typeof axios, 'function');
 

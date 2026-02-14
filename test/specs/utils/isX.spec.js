@@ -3,7 +3,7 @@ import utils from '../../../lib/utils';
 describe('utils::isX', function () {
   it('should validate Array', function () {
     expect(utils.isArray([])).toEqual(true);
-    expect(utils.isArray({length: 5})).toEqual(false);
+    expect(utils.isArray({ length: 5 })).toEqual(false);
   });
 
   it('should validate ArrayBuffer', function () {
@@ -25,7 +25,13 @@ describe('utils::isX', function () {
 
   it('should validate String', function () {
     expect(utils.isString('')).toEqual(true);
-    expect(utils.isString({toString: function () { return ''; }})).toEqual(false);
+    expect(
+      utils.isString({
+        toString: function () {
+          return '';
+        },
+      })
+    ).toEqual(false);
   });
 
   it('should validate Number', function () {

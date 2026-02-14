@@ -20,7 +20,7 @@ describe('requests', function () {
   it('should treat method value as lowercase string', function (done) {
     axios({
       url: '/foo',
-      method: 'POST'
+      method: 'POST',
     }).then(function (response) {
       expect(response.config.method).toBe('post');
       done();
@@ -28,7 +28,7 @@ describe('requests', function () {
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
-        status: 200
+        status: 200,
       });
     });
   });
@@ -45,7 +45,7 @@ describe('requests', function () {
 
   it('should allow data', function (done) {
     axios.delete('/foo', {
-      data: { foo: 'bar' }
+      data: { foo: 'bar' },
     });
 
     getAjaxRequest().then(function (request) {
@@ -63,7 +63,7 @@ describe('requests', function () {
     });
   });
 
-  describe('timeouts', function(){
+  describe('timeouts', function () {
     beforeEach(function () {
       jasmine.clock().install();
     });
@@ -75,14 +75,17 @@ describe('requests', function () {
     it('should handle timeouts', function (done) {
       axios({
         url: '/foo',
-        timeout: 100
-      }).then(function () {
-        fail(new Error('timeout error not caught'));
-      }, function (err) {
-        expect(err instanceof Error).toBe(true);
-        expect(err.code).toEqual('ECONNABORTED');
-        done();
-      });
+        timeout: 100,
+      }).then(
+        function () {
+          fail(new Error('timeout error not caught'));
+        },
+        function (err) {
+          expect(err instanceof Error).toBe(true);
+          expect(err.code).toEqual('ECONNABORTED');
+          done();
+        }
+      );
 
       jasmine.Ajax.requests.mostRecent().responseTimeout();
     });
@@ -93,15 +96,18 @@ describe('requests', function () {
           url: '/foo',
           timeout: 100,
           transitional: {
-            clarifyTimeoutError: true
+            clarifyTimeoutError: true,
+          },
+        }).then(
+          function () {
+            fail(new Error('timeout error not caught'));
+          },
+          function (err) {
+            expect(err instanceof Error).toBe(true);
+            expect(err.code).toEqual('ETIMEDOUT');
+            done();
           }
-        }).then(function () {
-          fail(new Error('timeout error not caught'));
-        }, function (err) {
-          expect(err instanceof Error).toBe(true);
-          expect(err.code).toEqual('ETIMEDOUT');
-          done();
-        });
+        );
 
         jasmine.Ajax.requests.mostRecent().responseTimeout();
       });
@@ -130,9 +136,7 @@ describe('requests', function () {
       done();
     };
 
-    axios('http://thisisnotaserver/foo')
-      .then(resolveSpy, rejectSpy)
-      .then(finish, finish);
+    axios('http://thisisnotaserver/foo').then(resolveSpy, rejectSpy).then(finish, finish);
   });
 
   it('should reject on abort', function (done) {
@@ -151,9 +155,7 @@ describe('requests', function () {
       done();
     };
 
-    axios('/foo')
-      .then(resolveSpy, rejectSpy)
-      .then(finish, finish);
+    axios('/foo').then(resolveSpy, rejectSpy).then(finish, finish);
 
     getAjaxRequest().then(function (request) {
       request.abort();
@@ -167,8 +169,9 @@ describe('requests', function () {
     axios('/foo', {
       validateStatus: function (status) {
         return status !== 500;
-      }
-    }).then(resolveSpy)
+      },
+    })
+      .then(resolveSpy)
       .catch(rejectSpy)
       .then(function () {
         expect(resolveSpy).not.toHaveBeenCalled();
@@ -185,7 +188,7 @@ describe('requests', function () {
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
-        status: 500
+        status: 500,
       });
     });
   });
@@ -197,8 +200,9 @@ describe('requests', function () {
     axios('/foo', {
       validateStatus: function (status) {
         return status === 500;
-      }
-    }).then(resolveSpy)
+      },
+    })
+      .then(resolveSpy)
       .catch(rejectSpy)
       .then(function () {
         expect(resolveSpy).toHaveBeenCalled();
@@ -208,7 +212,7 @@ describe('requests', function () {
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
-        status: 500
+        status: 500,
       });
     });
   });
@@ -217,7 +221,8 @@ describe('requests', function () {
     const resolveSpy = jasmine.createSpy('resolve');
     const rejectSpy = jasmine.createSpy('reject');
 
-    axios('file:///xxx').then(resolveSpy)
+    axios('file:///xxx')
+      .then(resolveSpy)
       .catch(rejectSpy)
       .then(function () {
         expect(resolveSpy).toHaveBeenCalled();
@@ -238,8 +243,9 @@ describe('requests', function () {
     const rejectSpy = jasmine.createSpy('reject');
 
     axios('/foo', {
-      validateStatus: null
-    }).then(resolveSpy)
+      validateStatus: null,
+    })
+      .then(resolveSpy)
       .catch(rejectSpy)
       .then(function () {
         expect(resolveSpy).toHaveBeenCalled();
@@ -249,7 +255,7 @@ describe('requests', function () {
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
-        status: 500
+        status: 500,
       });
     });
   });
@@ -259,8 +265,9 @@ describe('requests', function () {
     const rejectSpy = jasmine.createSpy('reject');
 
     axios('/foo', {
-      validateStatus: undefined
-    }).then(resolveSpy)
+      validateStatus: undefined,
+    })
+      .then(resolveSpy)
       .catch(rejectSpy)
       .then(function () {
         expect(resolveSpy).toHaveBeenCalled();
@@ -270,7 +277,7 @@ describe('requests', function () {
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
-        status: 500
+        status: 500,
       });
     });
   });
@@ -279,16 +286,19 @@ describe('requests', function () {
   it('should return JSON when rejecting', function (done) {
     let response;
 
-    axios('/api/account/signup', {
-      username: null,
-      password: null
-    }, {
-      method: 'post',
-      headers: {
-        'Accept': 'application/json'
+    axios(
+      '/api/account/signup',
+      {
+        username: null,
+        password: null,
+      },
+      {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+        },
       }
-    })
-    .catch(function (error) {
+    ).catch(function (error) {
       response = error.response;
     });
 
@@ -296,7 +306,7 @@ describe('requests', function () {
       request.respondWith({
         status: 400,
         statusText: 'Bad Request',
-        responseText: '{"error": "BAD USERNAME", "code": 1}'
+        responseText: '{"error": "BAD USERNAME", "code": 1}',
       });
 
       setTimeout(function () {
@@ -311,7 +321,7 @@ describe('requests', function () {
   it('should make cross domain http request', function (done) {
     let response;
 
-    axios.post('www.someurl.com/foo').then(function(res){
+    axios.post('www.someurl.com/foo').then(function (res) {
       response = res;
     });
 
@@ -321,8 +331,8 @@ describe('requests', function () {
         statusText: 'OK',
         responseText: '{"foo": "bar"}',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       setTimeout(function () {
@@ -334,7 +344,6 @@ describe('requests', function () {
       }, 100);
     });
   });
-
 
   it('should supply correct response', function (done) {
     let response;
@@ -349,8 +358,8 @@ describe('requests', function () {
         statusText: 'OK',
         responseText: '{"foo": "bar"}',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       setTimeout(function () {
@@ -366,17 +375,19 @@ describe('requests', function () {
   it('should not modify the config url with relative baseURL', function (done) {
     let config;
 
-    axios.get('/foo', {
-        baseURL: '/api'
-    }).catch(function (error) {
+    axios
+      .get('/foo', {
+        baseURL: '/api',
+      })
+      .catch(function (error) {
         config = error.config;
-    });
+      });
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 404,
         statusText: 'NOT FOUND',
-        responseText: 'Resource not found'
+        responseText: 'Resource not found',
       });
 
       setTimeout(function () {
@@ -391,13 +402,19 @@ describe('requests', function () {
     let response;
     const contentType = 'application/vnd.myapp.type+json';
 
-    axios.post('/foo', { prop: 'value' }, {
-      headers: {
-        'Content-Type': contentType
-      }
-    }).then(function (res) {
-      response = res;
-    });
+    axios
+      .post(
+        '/foo',
+        { prop: 'value' },
+        {
+          headers: {
+            'Content-Type': contentType,
+          },
+        }
+      )
+      .then(function (res) {
+        response = res;
+      });
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders['Content-Type']).toEqual(contentType);
@@ -443,14 +460,14 @@ describe('requests', function () {
     function str2ab(str) {
       const buff = new ArrayBuffer(str.length * 2);
       const view = new Uint16Array(buff);
-      for ( let i=0, l=str.length; i<l; i++) {
+      for (let i = 0, l = str.length; i < l; i++) {
         view[i] = str.charCodeAt(i);
       }
       return buff;
     }
 
     axios('/foo', {
-      responseType: 'arraybuffer'
+      responseType: 'arraybuffer',
     }).then(function (data) {
       response = data;
     });
@@ -458,7 +475,7 @@ describe('requests', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        response: str2ab('Hello world')
+        response: str2ab('Hello world'),
       });
 
       setTimeout(function () {
@@ -476,7 +493,9 @@ describe('requests', function () {
     axios.post('/foo', params);
 
     getAjaxRequest().then(function (request) {
-      expect(request.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded;charset=utf-8');
+      expect(request.requestHeaders['Content-Type']).toBe(
+        'application/x-www-form-urlencoded;charset=utf-8'
+      );
       expect(request.params).toBe('param1=value1&param2=value2');
       done();
     });
@@ -485,15 +504,14 @@ describe('requests', function () {
   it('should support HTTP protocol', function (done) {
     let response;
 
-    axios.get('/foo')
-      .then(function (res) {
-        response = res
-      })
+    axios.get('/foo').then(function (res) {
+      response = res;
+    });
 
     getAjaxRequest().then(function (request) {
       expect(request.method).toBe('GET');
       request.respondWith({
-        status: 200
+        status: 200,
       });
       done();
     });
@@ -501,26 +519,27 @@ describe('requests', function () {
 
   it('should support HTTPS protocol', function (done) {
     let response;
-    axios.get('https://www.google.com')
-      .then(function (res) {
-        response = res
-      })
+    axios.get('https://www.google.com').then(function (res) {
+      response = res;
+    });
 
     getAjaxRequest().then(function (request) {
       expect(request.method).toBe('GET');
       request.respondWith({
-        status: 200
+        status: 200,
       });
       done();
     });
   });
 
   it('should return unsupported protocol error message', function () {
-    return axios.get('ftp:localhost')
-      .then(function(){
+    return axios.get('ftp:localhost').then(
+      function () {
         fail('Does not throw');
-      }, function (error) {
-        expect(error.message).toEqual('Unsupported protocol ftp:')
-      })
+      },
+      function (error) {
+        expect(error.message).toEqual('Unsupported protocol ftp:');
+      }
+    );
   });
 });

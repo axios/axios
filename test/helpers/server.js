@@ -1,22 +1,20 @@
-import http from "http";
-import http2 from "http2";
-import stream from "stream";
-import getStream from "get-stream";
-import {Throttle} from "stream-throttle";
-import formidable from "formidable";
+import http from 'http';
+import http2 from 'http2';
+import stream from 'stream';
+import getStream from 'get-stream';
+import { Throttle } from 'stream-throttle';
+import formidable from 'formidable';
 import selfsigned from 'selfsigned';
-
 
 export const LOCAL_SERVER_URL = 'http://localhost:4444';
 
 export const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
-export const setTimeoutAsync = (ms) => new Promise(resolve=> setTimeout(resolve, ms));
+export const setTimeoutAsync = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const certificate = selfsigned.generate(null, { keySize: 2048 });
 
 export const startHTTPServer = (handlerOrOptions, options) => {
-
   const {
     handler,
     useBuffering = false,
@@ -26,45 +24,52 @@ export const startHTTPServer = (handlerOrOptions, options) => {
     useHTTP2,
     key = certificate.private,
     cert = certificate.cert,
-  } =
-    Object.assign(typeof handlerOrOptions === 'function' ? {
-      handler: handlerOrOptions
-    } : handlerOrOptions || {}, options);
+  } = Object.assign(
+    typeof handlerOrOptions === 'function'
+      ? {
+          handler: handlerOrOptions,
+        }
+      : handlerOrOptions || {},
+    options
+  );
 
   return new Promise((resolve, reject) => {
-    const serverHandler = handler || async function (req, res) {
-      try {
-        req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
+    const serverHandler =
+      handler ||
+      async function (req, res) {
+        try {
+          req.headers['content-length'] &&
+            res.setHeader('content-length', req.headers['content-length']);
 
-        let dataStream = req;
+          let dataStream = req;
 
-        if (useBuffering) {
-          dataStream = stream.Readable.from(await getStream(req));
+          if (useBuffering) {
+            dataStream = stream.Readable.from(await getStream(req));
+          }
+
+          let streams = [dataStream];
+
+          if (rate) {
+            streams.push(new Throttle({ rate }));
+          }
+
+          streams.push(res);
+
+          stream.pipeline(streams, (err) => {
+            err && console.log('Server warning: ' + err.message);
+          });
+        } catch (err) {
+          console.warn('HTTP server error:', err);
         }
+      };
 
-        let streams = [dataStream];
-
-        if (rate) {
-          streams.push(new Throttle({rate}))
-        }
-
-        streams.push(res);
-
-        stream.pipeline(streams, (err) => {
-          err && console.log('Server warning: ' + err.message)
-        });
-      } catch (err){
-        console.warn('HTTP server error:', err);
-      }
-    }
-
-    const server = useHTTP2 ?
-      http2.createSecureServer({key, cert} , serverHandler) :
-      http.createServer(serverHandler);
+    const server = useHTTP2
+      ? http2.createSecureServer({ key, cert }, serverHandler)
+      : http.createServer(serverHandler);
 
     const sessions = new Set();
 
-    if(useHTTP2) {
+    if (useHTTP2) {
       server.on('session', (session) => {
         sessions.add(session);
 
@@ -77,7 +82,7 @@ export const startHTTPServer = (handlerOrOptions, options) => {
         for (const session of sessions) {
           session.destroy();
         }
-      }
+      };
     } else {
       server.keepAliveTimeout = keepAlive;
     }
@@ -85,9 +90,8 @@ export const startHTTPServer = (handlerOrOptions, options) => {
     server.listen(port, function (err) {
       err ? reject(err) : resolve(this);
     });
-
   });
-}
+};
 
 export const stopHTTPServer = async (server, timeout = 10000) => {
   if (server) {
@@ -99,9 +103,9 @@ export const stopHTTPServer = async (server, timeout = 10000) => {
       server.closeAllSessions();
     }
 
-    await Promise.race([new Promise(resolve => server.close(resolve)), setTimeoutAsync(timeout)]);
+    await Promise.race([new Promise((resolve) => server.close(resolve)), setTimeoutAsync(timeout)]);
   }
-}
+};
 
 export const handleFormData = (req) => {
   return new Promise((resolve, reject) => {
@@ -112,52 +116,55 @@ export const handleFormData = (req) => {
         return reject(err);
       }
 
-      resolve({fields, files});
+      resolve({ fields, files });
     });
   });
-}
+};
 
-export const nodeVersion = process.versions.node.split('.').map(v => parseInt(v, 10));
+export const nodeVersion = process.versions.node.split('.').map((v) => parseInt(v, 10));
 
 export const generateReadable = (length = 1024 * 1024, chunkSize = 10 * 1024, sleep = 50) => {
-  return stream.Readable.from(async function* (){
-    let dataLength = 0;
+  return stream.Readable.from(
+    (async function* () {
+      let dataLength = 0;
 
-    while(dataLength < length) {
-      const leftBytes = length - dataLength;
+      while (dataLength < length) {
+        const leftBytes = length - dataLength;
 
-      const chunk = Buffer.alloc(leftBytes > chunkSize? chunkSize : leftBytes);
+        const chunk = Buffer.alloc(leftBytes > chunkSize ? chunkSize : leftBytes);
 
-      dataLength += chunk.length;
+        dataLength += chunk.length;
 
-      yield chunk;
+        yield chunk;
 
-      if (sleep) {
-        await setTimeoutAsync(sleep);
+        if (sleep) {
+          await setTimeoutAsync(sleep);
+        }
       }
-    }
-  }());
-}
+    })()
+  );
+};
 
 export const makeReadableStream = (chunk = 'chunk', n = 10, timeout = 100) => {
-  return new ReadableStream({
+  return new ReadableStream(
+    {
       async pull(controller) {
         await setTimeoutAsync(timeout);
         n-- ? controller.enqueue(chunk) : controller.close();
-      }
+      },
     },
     {
-      highWaterMark: 1
+      highWaterMark: 1,
     }
-  )
-}
+  );
+};
 
-export const makeEchoStream = (echo) => new WritableStream({
-  write(chunk) {
-    echo && console.log(`Echo chunk`, chunk);
-  }
-})
-
+export const makeEchoStream = (echo) =>
+  new WritableStream({
+    write(chunk) {
+      echo && console.log(`Echo chunk`, chunk);
+    },
+  });
 
 export const startTestServer = async (port) => {
   const handler = async (req) => {
@@ -171,11 +178,11 @@ export const startTestServer = async (port) => {
       params,
       method: req.method,
       headers: req.headers,
-    }
+    };
 
     const contentType = req.headers['content-type'] || '';
 
-    const {delay = 0} = params;
+    const { delay = 0 } = params;
 
     if (+delay) {
       await setTimeoutAsync(+delay);
@@ -185,44 +192,46 @@ export const startTestServer = async (port) => {
       case '/echo/json':
       default:
         if (contentType.startsWith('multipart/')) {
-          let {fields, files} = await handleFormData(req);
+          let { fields, files } = await handleFormData(req);
           response.form = fields;
           response.files = files;
         } else {
-          response.body = (await getStream(req, {encoding: 'buffer'})).toString('hex');
+          response.body = (await getStream(req, { encoding: 'buffer' })).toString('hex');
         }
 
         return {
-          body: response
-        }
+          body: response,
+        };
     }
   };
 
-  return await startHTTPServer((req, res) => {
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', `*`); // Allows all origins, or specify a domain like 'http://example.com'
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Allowed HTTP methods
-    res.setHeader('Access-Control-Allow-Headers', '*'); // Allowed request headers
-    res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight requests for 24 hours
+  return await startHTTPServer(
+    (req, res) => {
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', `*`); // Allows all origins, or specify a domain like 'http://example.com'
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Allowed HTTP methods
+      res.setHeader('Access-Control-Allow-Headers', '*'); // Allowed request headers
+      res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight requests for 24 hours
 
-    // Handle preflight requests (OPTIONS method)
-    if (req.method === 'OPTIONS') {
-      res.writeHead(204); // No content
-      res.end();
-      return;
-    }
+      // Handle preflight requests (OPTIONS method)
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204); // No content
+        res.end();
+        return;
+      }
 
-    Promise.resolve(handler(req, res)).then(response=>{
-      const {status = 200, headers = {}, body} = response || {};
+      Promise.resolve(handler(req, res)).then((response) => {
+        const { status = 200, headers = {}, body } = response || {};
 
+        res.statusCode = status;
 
-      res.statusCode = status;
+        Object.entries(headers).forEach((header, value) => {
+          res.setHeader(header, value);
+        });
 
-      Object.entries(headers).forEach((header, value) => {
-        res.setHeader(header, value);
+        res.end(JSON.stringify(body, null, 2));
       });
-
-      res.end(JSON.stringify(body, null, 2))
-    })
-  }, {port});
-}
+    },
+    { port }
+  );
+};

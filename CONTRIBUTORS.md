@@ -5,7 +5,7 @@ Thank you to all the wonderful people who have contributed to axios!
 ## Core Team
 
 - [Jay](https://github.com/jasonsaayman) - Lead Maintainer
-- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS) - Core Contributor  
+- [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS) - Core Contributor
 - [Matt Zabriskie](https://github.com/mzabriskie) - Creator
 
 ## Notable Contributors
@@ -18,4 +18,4 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ---
 
-*This list is manually maintained. If you've contributed and would like to be added, please submit a pull request!*
+_This list is manually maintained. If you've contributed and would like to be added, please submit a pull request!_

@@ -6,11 +6,11 @@ describe('helpers::toFormData', function () {
   it('should convert a flat object to FormData', function () {
     const data = {
       foo: 'bar',
-      baz: 123
+      baz: 123,
     };
 
     const formData = toFormData(data, new FormData());
-    
+
     assert.ok(formData instanceof FormData);
     // form-data package specific checks
     assert.ok(formData._streams.length > 0);
@@ -19,18 +19,18 @@ describe('helpers::toFormData', function () {
   it('should convert a nested object to FormData', function () {
     const data = {
       foo: {
-        bar: 'baz'
-      }
+        bar: 'baz',
+      },
     };
 
     const formData = toFormData(data, new FormData());
-    
+
     assert.ok(formData instanceof FormData);
   });
 
   it('should throw Error on circular reference', function () {
     const data = {
-      foo: 'bar'
+      foo: 'bar',
     };
     data.self = data;
 
@@ -44,7 +44,7 @@ describe('helpers::toFormData', function () {
 
   it('should handle arrays', function () {
     const data = {
-      arr: [1, 2, 3]
+      arr: [1, 2, 3],
     };
 
     const formData = toFormData(data, new FormData());

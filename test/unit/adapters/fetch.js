@@ -6,18 +6,18 @@ import {
   setTimeoutAsync,
   makeReadableStream,
   generateReadable,
-  makeEchoStream
+  makeEchoStream,
 } from '../../helpers/server.js';
 import axios from '../../../index.js';
-import stream from "stream";
-import { AbortController } from "abortcontroller-polyfill/dist/cjs-ponyfill.js";
-import util from "util";
+import stream from 'stream';
+import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
+import util from 'util';
 
 const pipelineAsync = util.promisify(stream.pipeline);
 
 const fetchAxios = axios.create({
   baseURL: LOCAL_SERVER_URL,
-  adapter: 'fetch'
+  adapter: 'fetch',
 });
 
 let server;
@@ -27,7 +27,7 @@ describe('supports fetch with nodejs', function () {
     if (typeof fetch !== 'function') {
       this.skip();
     }
-  })
+  });
 
   afterEach(async function () {
     await stopHTTPServer(server);
@@ -42,7 +42,7 @@ describe('supports fetch with nodejs', function () {
       server = await startHTTPServer((req, res) => res.end(originalData));
 
       const { data } = await fetchAxios.get('/', {
-        responseType: 'text'
+        responseType: 'text',
       });
 
       assert.deepStrictEqual(data, originalData);
@@ -54,10 +54,13 @@ describe('supports fetch with nodejs', function () {
       server = await startHTTPServer((req, res) => res.end(originalData));
 
       const { data } = await fetchAxios.get('/', {
-        responseType: 'arraybuffer'
+        responseType: 'arraybuffer',
       });
 
-      assert.deepStrictEqual(data, Uint8Array.from(await new TextEncoder().encode(originalData)).buffer);
+      assert.deepStrictEqual(
+        data,
+        Uint8Array.from(await new TextEncoder().encode(originalData)).buffer
+      );
     });
 
     it(`should support blob response type`, async () => {
@@ -66,7 +69,7 @@ describe('supports fetch with nodejs', function () {
       server = await startHTTPServer((req, res) => res.end(originalData));
 
       const { data } = await fetchAxios.get('/', {
-        responseType: 'blob'
+        responseType: 'blob',
       });
 
       assert.deepStrictEqual(data, new Blob([originalData]));
@@ -78,7 +81,7 @@ describe('supports fetch with nodejs', function () {
       server = await startHTTPServer((req, res) => res.end(originalData));
 
       const { data } = await fetchAxios.get('/', {
-        responseType: 'stream'
+        responseType: 'stream',
       });
 
       assert.ok(data instanceof ReadableStream, 'data is not instanceof ReadableStream');
@@ -96,7 +99,6 @@ describe('supports fetch with nodejs', function () {
       originalData.append('x', '123');
 
       server = await startHTTPServer(async (req, res) => {
-
         const response = await new Response(originalData);
 
         res.setHeader('Content-Type', response.headers.get('Content-Type'));
@@ -105,12 +107,15 @@ describe('supports fetch with nodejs', function () {
       });
 
       const { data } = await fetchAxios.get('/', {
-        responseType: 'formdata'
+        responseType: 'formdata',
       });
 
       assert.ok(data instanceof FormData, 'data is not instanceof FormData');
 
-      assert.deepStrictEqual(Object.fromEntries(data.entries()), Object.fromEntries(originalData.entries()));
+      assert.deepStrictEqual(
+        Object.fromEntries(data.entries()),
+        Object.fromEntries(originalData.entries())
+      );
     });
 
     it(`should support json response type`, async () => {
@@ -119,82 +124,89 @@ describe('supports fetch with nodejs', function () {
       server = await startHTTPServer((req, res) => res.end(JSON.stringify(originalData)));
 
       const { data } = await fetchAxios.get('/', {
-        responseType: 'json'
+        responseType: 'json',
       });
 
       assert.deepStrictEqual(data, originalData);
     });
   });
 
-  describe("progress", () => {
+  describe('progress', () => {
     describe('upload', function () {
       it('should support upload progress capturing', async function () {
         this.timeout(15000);
 
         server = await startHTTPServer({
-          rate: 100 * 1024
+          rate: 100 * 1024,
         });
 
         let content = '';
         const count = 10;
-        const chunk = "test";
+        const chunk = 'test';
         const chunkLength = Buffer.byteLength(chunk);
         const contentLength = count * chunkLength;
 
-        const readable = stream.Readable.from(async function* () {
-          let i = count;
+        const readable = stream.Readable.from(
+          (async function* () {
+            let i = count;
 
-          while (i-- > 0) {
-            await setTimeoutAsync(1100);
-            content += chunk;
-            yield chunk;
-          }
-        }());
+            while (i-- > 0) {
+              await setTimeoutAsync(1100);
+              content += chunk;
+              yield chunk;
+            }
+          })()
+        );
 
         const samples = [];
 
         const { data } = await fetchAxios.post('/', readable, {
           onUploadProgress: ({ loaded, total, progress, bytes, upload }) => {
-            console.log(`Upload Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`);
+            console.log(
+              `Upload Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`
+            );
 
             samples.push({
               loaded,
               total,
               progress,
               bytes,
-              upload
+              upload,
             });
           },
           headers: {
-            'Content-Length': contentLength
+            'Content-Length': contentLength,
           },
-          responseType: 'text'
+          responseType: 'text',
         });
 
         await setTimeoutAsync(500);
 
         assert.strictEqual(data, content);
 
-        assert.deepStrictEqual(samples, Array.from(function* () {
-          for (let i = 1; i <= 10; i++) {
-            yield ({
-              loaded: chunkLength * i,
-              total: contentLength,
-              progress: (chunkLength * i) / contentLength,
-              bytes: 4,
-              upload: true
-            });
-          }
-        }()));
+        assert.deepStrictEqual(
+          samples,
+          Array.from(
+            (function* () {
+              for (let i = 1; i <= 10; i++) {
+                yield {
+                  loaded: chunkLength * i,
+                  total: contentLength,
+                  progress: (chunkLength * i) / contentLength,
+                  bytes: 4,
+                  upload: true,
+                };
+              }
+            })()
+          )
+        );
       });
 
       it('should not fail with get method', async () => {
         server = await startHTTPServer((req, res) => res.end('OK'));
 
         const { data } = await fetchAxios.get('/', {
-          onUploadProgress() {
-
-          }
+          onUploadProgress() {},
         });
 
         assert.strictEqual(data, 'OK');
@@ -206,61 +218,70 @@ describe('supports fetch with nodejs', function () {
         this.timeout(15000);
 
         server = await startHTTPServer({
-          rate: 100 * 1024
+          rate: 100 * 1024,
         });
 
         let content = '';
         const count = 10;
-        const chunk = "test";
+        const chunk = 'test';
         const chunkLength = Buffer.byteLength(chunk);
         const contentLength = count * chunkLength;
 
-        const readable = stream.Readable.from(async function* () {
-          let i = count;
+        const readable = stream.Readable.from(
+          (async function* () {
+            let i = count;
 
-          while (i-- > 0) {
-            await setTimeoutAsync(1100);
-            content += chunk;
-            yield chunk;
-          }
-        }());
+            while (i-- > 0) {
+              await setTimeoutAsync(1100);
+              content += chunk;
+              yield chunk;
+            }
+          })()
+        );
 
         const samples = [];
 
         const { data } = await fetchAxios.post('/', readable, {
           onDownloadProgress: ({ loaded, total, progress, bytes, download }) => {
-            console.log(`Download Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`);
+            console.log(
+              `Download Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`
+            );
 
             samples.push({
               loaded,
               total,
               progress,
               bytes,
-              download
+              download,
             });
           },
           headers: {
-            'Content-Length': contentLength
+            'Content-Length': contentLength,
           },
           responseType: 'text',
-          maxRedirects: 0
+          maxRedirects: 0,
         });
 
         await setTimeoutAsync(500);
 
         assert.strictEqual(data, content);
 
-        assert.deepStrictEqual(samples, Array.from(function* () {
-          for (let i = 1; i <= 10; i++) {
-            yield ({
-              loaded: chunkLength * i,
-              total: contentLength,
-              progress: (chunkLength * i) / contentLength,
-              bytes: 4,
-              download: true
-            });
-          }
-        }()));
+        assert.deepStrictEqual(
+          samples,
+          Array.from(
+            (function* () {
+              for (let i = 1; i <= 10; i++) {
+                yield {
+                  loaded: chunkLength * i,
+                  total: contentLength,
+                  progress: (chunkLength * i) / contentLength,
+                  bytes: 4,
+                  download: true,
+                };
+              }
+            })()
+          )
+        );
       });
     });
   });
@@ -276,7 +297,7 @@ describe('supports fetch with nodejs', function () {
     assert.equal(res.data, 'Basic ' + base64);
   });
 
-  it("should support stream.Readable as a payload", async () => {
+  it('should support stream.Readable as a payload', async () => {
     server = await startHTTPServer();
 
     const { data } = await fetchAxios.post('/', stream.Readable.from('OK'));
@@ -288,7 +309,7 @@ describe('supports fetch with nodejs', function () {
     it('should be able to abort the request stream', async function () {
       server = await startHTTPServer({
         rate: 100000,
-        useBuffering: true
+        useBuffering: true,
       });
 
       const controller = new AbortController();
@@ -300,7 +321,7 @@ describe('supports fetch with nodejs', function () {
       await assert.rejects(async () => {
         await fetchAxios.post('/', makeReadableStream(), {
           responseType: 'stream',
-          signal: controller.signal
+          signal: controller.signal,
         });
       }, /CanceledError/);
     });
@@ -318,7 +339,7 @@ describe('supports fetch with nodejs', function () {
 
       const { data } = await fetchAxios.get('/', {
         responseType: 'stream',
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       await assert.rejects(async () => {
@@ -339,15 +360,14 @@ describe('supports fetch with nodejs', function () {
 
     await assert.rejects(async () => {
       await fetchAxios('/', {
-        timeout
-      })
+        timeout,
+      });
     }, /timeout/);
 
     const passed = Date.now() - ts;
 
     assert.ok(passed >= timeout - 5, `early cancellation detected (${passed} ms)`);
   });
-
 
   it('should combine baseURL and url', async () => {
     server = await startHTTPServer();
@@ -364,8 +384,8 @@ describe('supports fetch with nodejs', function () {
     const { data } = await fetchAxios.get('/?test=1', {
       params: {
         foo: 1,
-        bar: 2
-      }
+        bar: 2,
+      },
     });
 
     assert.strictEqual(data, '/?test=1&foo=1&bar=2');
@@ -384,11 +404,11 @@ describe('supports fetch with nodejs', function () {
   it('should get response headers', async () => {
     server = await startHTTPServer((req, res) => {
       res.setHeader('foo', 'bar');
-      res.end(req.url)
+      res.end(req.url);
     });
 
     const { headers } = await fetchAxios.get('/', {
-      responseType: 'stream'
+      responseType: 'stream',
     });
 
     assert.strictEqual(headers.get('foo'), 'bar');
@@ -411,25 +431,25 @@ describe('supports fetch with nodejs', function () {
   });
 
   describe('env config', () => {
-    it('should respect env fetch API configuration', async() => {
+    it('should respect env fetch API configuration', async () => {
       const { data, headers } = await fetchAxios.get('/', {
         env: {
           fetch() {
             return {
               headers: {
-                foo: '1'
+                foo: '1',
               },
-              text: async () => 'test'
-            }
-          }
-        }
+              text: async () => 'test',
+            };
+          },
+        },
       });
 
       assert.strictEqual(headers.get('foo'), '1');
       assert.strictEqual(data, 'test');
     });
 
-    it('should be able to request with lack of Request object', async() => {
+    it('should be able to request with lack of Request object', async () => {
       const form = new FormData();
 
       form.append('x', '1');
@@ -443,19 +463,19 @@ describe('supports fetch with nodejs', function () {
           fetch() {
             return {
               headers: {
-                foo: '1'
+                foo: '1',
               },
-              text: async () => 'test'
-            }
-          }
-        }
+              text: async () => 'test',
+            };
+          },
+        },
       });
 
       assert.strictEqual(headers.get('foo'), '1');
       assert.strictEqual(data, 'test');
     });
 
-    it('should be able to handle response with lack of Response object', async() => {
+    it('should be able to handle response with lack of Response object', async () => {
       const { data, headers } = await fetchAxios.get('/', {
         onDownloadProgress() {
           // dummy listener to activate streaming
@@ -466,49 +486,49 @@ describe('supports fetch with nodejs', function () {
           fetch() {
             return {
               headers: {
-                foo: '1'
+                foo: '1',
               },
-              text: async () => 'test'
-            }
-          }
-        }
+              text: async () => 'test',
+            };
+          },
+        },
       });
 
       assert.strictEqual(headers.get('foo'), '1');
       assert.strictEqual(data, 'test');
     });
 
-    it('should fallback to the global on undefined env value', async() => {
+    it('should fallback to the global on undefined env value', async () => {
       server = await startHTTPServer((req, res) => res.end('OK'));
 
       const { data } = await fetchAxios.get('/', {
         env: {
-          fetch: undefined
-        }
+          fetch: undefined,
+        },
       });
 
       assert.strictEqual(data, 'OK');
     });
 
-    it('should use current global fetch when env fetch is not specified', async() => {
+    it('should use current global fetch when env fetch is not specified', async () => {
       const globalFetch = fetch;
 
       fetch = async () => {
         return {
           headers: {
-            foo: '1'
+            foo: '1',
           },
-          text: async () => 'global'
-        }
+          text: async () => 'global',
+        };
       };
 
       try {
         server = await startHTTPServer((req, res) => res.end('OK'));
 
-        const {data} = await fetchAxios.get('/', {
+        const { data } = await fetchAxios.get('/', {
           env: {
-            fetch: undefined
-          }
+            fetch: undefined,
+          },
         });
 
         assert.strictEqual(data, 'global');

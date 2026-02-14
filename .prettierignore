@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Lock files
+package-lock.json
+**/package-lock.json
+
+# Generated / vendored
+*.min.js
+test/typescript/axios.js*
+
+# Misc
+*.iml
+.idea
+.DS_Store
+sauce_connect.log

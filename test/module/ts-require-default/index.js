@@ -1,7 +1,7 @@
 "use strict";
 const assert = require('assert');
 const axios = require('axios').default;
-const { CanceledError, AxiosError, AxiosHeaders, formToJSON, spread, isAxiosError, isCancel, all, toFormData } = axios;
+const { CanceledError, AxiosError, AxiosHeaders, formToJSON, spread, isAxiosError, isCancel, all, toFormData, } = axios;
 assert.strictEqual(typeof axios, 'function');
 assert.strictEqual(typeof CanceledError, 'function');
 assert.strictEqual(typeof AxiosError, 'function');

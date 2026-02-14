@@ -1,6 +1,6 @@
 import utils from '../../../lib/utils';
 
-const {forEach} = utils;
+const { forEach } = utils;
 
 describe('utils::forEach', function () {
   it('should loop over an array', function () {
@@ -19,7 +19,7 @@ describe('utils::forEach', function () {
     const obj = {
       b: 1,
       a: 2,
-      r: 3
+      r: 3,
     };
 
     forEach(obj, function (v, k) {
@@ -44,9 +44,12 @@ describe('utils::forEach', function () {
   it('should make an array out of non-array argument', function () {
     let count = 0;
 
-    forEach(function () {}, function () {
-      count++;
-    });
+    forEach(
+      function () {},
+      function () {
+        count++;
+      }
+    );
 
     expect(count).toEqual(1);
   });
@@ -54,7 +57,7 @@ describe('utils::forEach', function () {
   it('should handle non object prototype gracefully', function () {
     let count = 0;
     const data = Object.create(null);
-    data.foo = 'bar'
+    data.foo = 'bar';
 
     forEach(data, function () {
       count++;

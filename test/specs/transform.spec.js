@@ -76,6 +76,37 @@ describe('transform', function () {
     });
   });
 
+
+  it('should throw a SyntaxError if JSON parsing failed without explicit responseType if silentJSONParsing is false', function (done) {
+    let thrown;
+
+    axios({
+      url: '/foo',
+      transitional: { silentJSONParsing: false },
+    }).then(
+      function () {
+        done(new Error('should fail'));
+      },
+      function (err) {
+        thrown = err;
+      }
+    );
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        responseText: '{foo": "bar"}', // JSON SyntaxError
+      });
+
+      setTimeout(function () {
+        expect(thrown).toBeTruthy();
+        expect(thrown.name).toContain('SyntaxError');
+        expect(thrown.code).toEqual(AxiosError.ERR_BAD_RESPONSE);
+        done();
+      }, 100);
+    });
+  });
+
   it('should send data as JSON if request content-type is application/json', function (done) {
     let response;
 

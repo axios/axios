@@ -64,4 +64,37 @@ describe('transformResponse', function () {
       assert.strictEqual(result, data);
     });
   });
+  describe('silentJSONParsing', function () {
+    it('should throw on invalid JSON when silentJSONParsing is false and no explicit responseType', function () {
+      const data = '{invalid json}';
+      assert.throws(function () {
+        transformData.call(
+          {
+            data,
+            transitional: { silentJSONParsing: false, forcedJSONParsing: true },
+            response: {
+              headers: { 'content-type': 'application/json' },
+              status: 200,
+            },
+          },
+          defaults.transformResponse
+        );
+      });
+    });
+    it('should not throw on invalid JSON when silentJSONParsing is true (default)', function () {
+      const data = '{invalid json}';
+      const result = transformData.call(
+        {
+          data,
+          transitional: { silentJSONParsing: true, forcedJSONParsing: true },
+          response: {
+            headers: { 'content-type': 'application/json' },
+            status: 200,
+          },
+        },
+        defaults.transformResponse
+      );
+      assert.strictEqual(result, data);
+    });
+  });
 });

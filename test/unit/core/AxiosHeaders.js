@@ -1,30 +1,29 @@
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 import assert from 'assert';
 
-const [nodeMajorVersion] = process.versions.node.split('.').map(v => parseInt(v, 10));
+const [nodeMajorVersion] = process.versions.node.split('.').map((v) => parseInt(v, 10));
 
 describe('AxiosHeaders', function () {
   it('should support headers argument', function () {
     const headers = new AxiosHeaders({
       x: 1,
-      y: 2
+      y: 2,
     });
 
     assert.strictEqual(headers.get('x'), '1');
     assert.strictEqual(headers.get('y'), '2');
-  })
-
+  });
 
   describe('set', function () {
-    it('should support adding a single header', function(){
+    it('should support adding a single header', function () {
       const headers = new AxiosHeaders();
 
       headers.set('foo', 'bar');
 
       assert.strictEqual(headers.get('foo'), 'bar');
-    })
+    });
 
-    it('should support adding multiple headers', function(){
+    it('should support adding multiple headers', function () {
       const headers = new AxiosHeaders();
 
       headers.set({
@@ -36,7 +35,7 @@ describe('AxiosHeaders', function () {
       assert.strictEqual(headers.get('bar'), 'value2');
     });
 
-    it('should support adding multiple headers from raw headers string', function(){
+    it('should support adding multiple headers from raw headers string', function () {
       const headers = new AxiosHeaders();
 
       headers.set(`foo:value1\nbar:value2`);
@@ -45,7 +44,7 @@ describe('AxiosHeaders', function () {
       assert.strictEqual(headers.get('bar'), 'value2');
     });
 
-    it('should not rewrite header the header if the value is false', function(){
+    it('should not rewrite header the header if the value is false', function () {
       const headers = new AxiosHeaders();
 
       headers.set('foo', 'value1');
@@ -63,7 +62,7 @@ describe('AxiosHeaders', function () {
       assert.strictEqual(headers.get('foo'), 'value3');
     });
 
-    it('should not rewrite the header if its value is false, unless rewrite options is set to true', function(){
+    it('should not rewrite the header if its value is false, unless rewrite options is set to true', function () {
       const headers = new AxiosHeaders();
 
       headers.set('foo', false);
@@ -108,7 +107,7 @@ describe('AxiosHeaders', function () {
 
   it('should support uppercase name mapping for names overlapped by class methods', () => {
     const headers = new AxiosHeaders({
-      set: 'foo'
+      set: 'foo',
     });
 
     headers.set('get', 'bar');
@@ -118,7 +117,7 @@ describe('AxiosHeaders', function () {
   });
 
   describe('get', function () {
-    describe('filter', function() {
+    describe('filter', function () {
       it('should support RegExp', function () {
         const headers = new AxiosHeaders();
 
@@ -133,12 +132,18 @@ describe('AxiosHeaders', function () {
 
         headers.set('foo', 'bar=value1');
 
-        assert.strictEqual(headers.get('foo', (value, header) => {
-          assert.strictEqual(value, 'bar=value1');
-          assert.strictEqual(header, 'foo');
-          return value;
-        }), 'bar=value1');
-        assert.strictEqual(headers.get('foo', () => false), false);
+        assert.strictEqual(
+          headers.get('foo', (value, header) => {
+            assert.strictEqual(value, 'bar=value1');
+            assert.strictEqual(header, 'foo');
+            return value;
+          }),
+          'bar=value1'
+        );
+        assert.strictEqual(
+          headers.get('foo', () => false),
+          false
+        );
       });
     });
   });
@@ -168,12 +173,18 @@ describe('AxiosHeaders', function () {
 
         headers.set('foo', 'bar=value1');
 
-        assert.strictEqual(headers.has('foo', (value, header, headers) => {
-          assert.strictEqual(value, 'bar=value1');
-          assert.strictEqual(header, 'foo');
-          return true;
-        }), true);
-        assert.strictEqual(headers.has('foo', () => false), false);
+        assert.strictEqual(
+          headers.has('foo', (value, header, headers) => {
+            assert.strictEqual(value, 'bar=value1');
+            assert.strictEqual(header, 'foo');
+            return true;
+          }),
+          true
+        );
+        assert.strictEqual(
+          headers.has('foo', () => false),
+          false
+        );
       });
 
       it('should support string pattern', function () {
@@ -254,7 +265,10 @@ describe('AxiosHeaders', function () {
 
         assert.strictEqual(headers.has('foo'), true);
 
-        assert.strictEqual(headers.delete('foo', () => true), true);
+        assert.strictEqual(
+          headers.delete('foo', () => true),
+          true
+        );
 
         assert.strictEqual(headers.has('foo'), false);
       });
@@ -279,21 +293,21 @@ describe('AxiosHeaders', function () {
 
   describe('clear', () => {
     it('should clear all headers', () => {
-      const headers = new AxiosHeaders({x: 1, y:2});
+      const headers = new AxiosHeaders({ x: 1, y: 2 });
 
       headers.clear();
 
-      assert.deepStrictEqual({...headers.toJSON()}, {});
+      assert.deepStrictEqual({ ...headers.toJSON() }, {});
     });
 
     it('should clear matching headers if a matcher was specified', () => {
-      const headers = new AxiosHeaders({foo: 1, 'x-foo': 2, bar: 3});
+      const headers = new AxiosHeaders({ foo: 1, 'x-foo': 2, bar: 3 });
 
-      assert.deepStrictEqual({...headers.toJSON()}, {foo: '1', 'x-foo': '2', bar: '3'});
+      assert.deepStrictEqual({ ...headers.toJSON() }, { foo: '1', 'x-foo': '2', bar: '3' });
 
       headers.clear(/^x-/);
 
-      assert.deepStrictEqual({...headers.toJSON()}, {foo: '1', bar: '3'});
+      assert.deepStrictEqual({ ...headers.toJSON() }, { foo: '1', bar: '3' });
     });
   });
 
@@ -301,20 +315,23 @@ describe('AxiosHeaders', function () {
     it('should return headers object with original headers case', function () {
       const headers = new AxiosHeaders({
         Foo: 'x',
-        bAr: 'y'
+        bAr: 'y',
       });
 
-      assert.deepStrictEqual({...headers.toJSON()}, {
-        Foo: 'x',
-        bAr: 'y'
-      });
+      assert.deepStrictEqual(
+        { ...headers.toJSON() },
+        {
+          Foo: 'x',
+          bAr: 'y',
+        }
+      );
     });
   });
 
   describe('accessors', function () {
     it('should support get accessor', function () {
       const headers = new AxiosHeaders({
-        foo: 1
+        foo: 1,
       });
 
       headers.constructor.accessor('foo');
@@ -325,7 +342,7 @@ describe('AxiosHeaders', function () {
 
     it('should support set accessor', function () {
       const headers = new AxiosHeaders({
-        foo: 1
+        foo: 1,
       });
 
       headers.constructor.accessor('foo');
@@ -337,7 +354,7 @@ describe('AxiosHeaders', function () {
 
     it('should support has accessor', function () {
       const headers = new AxiosHeaders({
-        foo: 1
+        foo: 1,
       });
 
       headers.constructor.accessor('foo');
@@ -349,7 +366,7 @@ describe('AxiosHeaders', function () {
 
   it('should be caseless', function () {
     const headers = new AxiosHeaders({
-      fOo: 1
+      fOo: 1,
     });
 
     assert.strictEqual(headers.get('Foo'), '1');
@@ -365,7 +382,6 @@ describe('AxiosHeaders', function () {
     headers.delete('FOO');
 
     assert.strictEqual(headers.has('fOo'), false);
-
   });
 
   describe('normalize()', function () {
@@ -373,54 +389,66 @@ describe('AxiosHeaders', function () {
       const headers = new AxiosHeaders({
         fOo: 1,
         'x-foo': 2,
-        'y-bar-bAz': 3
+        'y-bar-bAz': 3,
       });
 
-      assert.deepStrictEqual({...headers.normalize(true).toJSON()}, {
-        Foo: '1',
-        'X-Foo': '2',
-        'Y-Bar-Baz': '3'
-      });
+      assert.deepStrictEqual(
+        { ...headers.normalize(true).toJSON() },
+        {
+          Foo: '1',
+          'X-Foo': '2',
+          'Y-Bar-Baz': '3',
+        }
+      );
     });
 
     it('should support external defined values', function () {
       const headers = new AxiosHeaders({
-        foo: '1'
+        foo: '1',
       });
 
       headers['Foo'] = 2;
 
       headers['bar'] = 3;
 
-      assert.deepStrictEqual({...headers.normalize().toJSON()}, {
-        foo: '2',
-        bar: '3'
-      });
+      assert.deepStrictEqual(
+        { ...headers.normalize().toJSON() },
+        {
+          foo: '2',
+          bar: '3',
+        }
+      );
     });
 
     it('should support array values', function () {
       const headers = new AxiosHeaders({
-        foo: [1,2,3]
+        foo: [1, 2, 3],
       });
 
-      assert.deepStrictEqual({...headers.normalize().toJSON()}, {
-        foo: ['1','2','3']
-      });
+      assert.deepStrictEqual(
+        { ...headers.normalize().toJSON() },
+        {
+          foo: ['1', '2', '3'],
+        }
+      );
     });
   });
 
   describe('AxiosHeaders.concat', function () {
     it('should concatenate plain headers into an AxiosHeader instance', function () {
-      const a = {a: 1};
-      const b = {b: 2};
-      const c = {c: 3};
+      const a = { a: 1 };
+      const b = { b: 2 };
+      const c = { c: 3 };
       const headers = AxiosHeaders.concat(a, b, c);
 
-      assert.deepStrictEqual({...headers.toJSON()}, {
-        a: '1',
-        b: '2',
-        c: '3'
-      });
+      assert.deepStrictEqual(
+        { ...headers.toJSON() },
+        {
+          a: '1',
+          b: '2',
+          c: '3',
+        }
+      );
     });
 
     it('should concatenate raw headers into an AxiosHeader instance', function () {
@@ -428,38 +456,41 @@ describe('AxiosHeaders', function () {
       const b = 'c:3\nx:4';
       const headers = AxiosHeaders.concat(a, b);
 
-      assert.deepStrictEqual({...headers.toJSON()}, {
-        a: '1',
-        b: '2',
-        c: '3',
-        x: '4'
-      });
+      assert.deepStrictEqual(
+        { ...headers.toJSON() },
+        {
+          a: '1',
+          b: '2',
+          c: '3',
+          x: '4',
+        }
+      );
     });
 
     it('should concatenate Axios headers into a new AxiosHeader instance', function () {
-      const a = new AxiosHeaders({x: 1});
-      const b = new AxiosHeaders({y: 2});
+      const a = new AxiosHeaders({ x: 1 });
+      const b = new AxiosHeaders({ y: 2 });
       const headers = AxiosHeaders.concat(a, b);
 
-      assert.deepStrictEqual({...headers.toJSON()}, {
-        x: '1',
-        y: '2'
-      });
+      assert.deepStrictEqual(
+        { ...headers.toJSON() },
+        {
+          x: '1',
+          y: '2',
+        }
+      );
     });
   });
 
   describe('toString', function () {
     it('should serialize AxiosHeader instance to a raw headers string', function () {
-      assert.deepStrictEqual(new AxiosHeaders({x:1, y:2}).toString(), 'x: 1\ny: 2');
+      assert.deepStrictEqual(new AxiosHeaders({ x: 1, y: 2 }).toString(), 'x: 1\ny: 2');
     });
   });
 
   describe('getSetCookie', function () {
     it('should return set-cookie', function () {
-      const headers = new AxiosHeaders(
-        'Set-Cookie: key=val;\n' +
-        'Set-Cookie: key2=val2;\n'
-      );
+      const headers = new AxiosHeaders('Set-Cookie: key=val;\n' + 'Set-Cookie: key2=val2;\n');
 
       assert.deepStrictEqual(headers.getSetCookie(), ['key=val;', 'key2=val2;']);
     });

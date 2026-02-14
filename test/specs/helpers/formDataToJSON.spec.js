@@ -9,9 +9,9 @@ describe('formDataToJSON', function () {
     expect(formDataToJSON(formData)).toEqual({
       foo: {
         bar: {
-          baz: '123'
-        }
-      }
+          baz: '123',
+        },
+      },
     });
   });
 
@@ -22,7 +22,7 @@ describe('formDataToJSON', function () {
     formData.append('foo', '2');
 
     expect(formDataToJSON(formData)).toEqual({
-      foo: ['1', '2']
+      foo: ['1', '2'],
     });
   });
 
@@ -33,7 +33,7 @@ describe('formDataToJSON', function () {
     formData.append('foo[]', '2');
 
     expect(formDataToJSON(formData)).toEqual({
-      foo: ['1', '2']
+      foo: ['1', '2'],
     });
   });
 
@@ -44,7 +44,7 @@ describe('formDataToJSON', function () {
     formData.append('foo[1]', '2');
 
     expect(formDataToJSON(formData)).toEqual({
-      foo: ['1', '2']
+      foo: ['1', '2'],
     });
   });
 
@@ -60,9 +60,9 @@ describe('formDataToJSON', function () {
       foo: ['1', '2'],
       constructor: {
         prototype: {
-          y: 'value'
-        }
-      }
+          y: 'value',
+        },
+      },
     });
 
     expect({}.x).toEqual(undefined);

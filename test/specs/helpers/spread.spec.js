@@ -18,4 +18,3 @@ describe('helpers::spread', function () {
     expect(value).toEqual(50);
   });
 });
-

@@ -9,4 +9,3 @@ describe('utils::trim', function () {
     expect(utils.trim('\tfoo\t')).toEqual('foo');
   });
 });
-

@@ -1,8 +1,8 @@
-import axios from "../../index";
+import axios from '../../index';
 
 function validateInvalidCharacterError(error) {
   expect(/character/i.test(error.message)).toEqual(true);
-};
+}
 
 describe('basicAuth', function () {
   // Validate an invalid character error
@@ -18,8 +18,8 @@ describe('basicAuth', function () {
     axios('/foo', {
       auth: {
         username: 'Aladdin',
-        password: 'open sesame'
-      }
+        password: 'open sesame',
+      },
     });
 
     setTimeout(function () {
@@ -33,8 +33,8 @@ describe('basicAuth', function () {
   it('should accept HTTP Basic auth credentials without the password parameter', function (done) {
     axios('/foo', {
       auth: {
-        username: 'Aladdin'
-      }
+        username: 'Aladdin',
+      },
     });
 
     setTimeout(function () {
@@ -49,14 +49,16 @@ describe('basicAuth', function () {
     axios('/foo', {
       auth: {
         username: 'Aladdin',
-        password: 'open ßç£☃sesame'
-      }
+        password: 'open ßç£☃sesame',
+      },
     });
 
     setTimeout(function () {
       const request = jasmine.Ajax.requests.mostRecent();
 
-      expect(request.requestHeaders['Authorization']).toEqual('Basic QWxhZGRpbjpvcGVuIMOfw6fCo+KYg3Nlc2FtZQ==');
+      expect(request.requestHeaders['Authorization']).toEqual(
+        'Basic QWxhZGRpbjpvcGVuIMOfw6fCo+KYg3Nlc2FtZQ=='
+      );
       done();
     }, 100);
   });
@@ -65,13 +67,19 @@ describe('basicAuth', function () {
     axios('/foo', {
       auth: {
         username: 'Aladßç£☃din',
-        password: 'open sesame'
-      }
-    }).then(function (response) {
-      done(new Error('Should not succeed to make a HTTP Basic auth request with non-latin1 chars in credentials.'));
-    }).catch(function (error) {
-      validateInvalidCharacterError(error);
-      done();
-    });
+        password: 'open sesame',
+      },
+    })
+      .then(function (response) {
+        done(
+          new Error(
+            'Should not succeed to make a HTTP Basic auth request with non-latin1 chars in credentials.'
+          )
+        );
+      })
+      .catch(function (error) {
+        validateInvalidCharacterError(error);
+        done();
+      });
   });
 });

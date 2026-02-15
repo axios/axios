@@ -185,6 +185,21 @@ describe('transform', function () {
     });
   });
 
+  it('should auto-serialize to url-encoded form with Pascal-case Content-Type header', function (done) {
+    const data = {
+      foo: 'bar',
+    };
+
+    axios.post('/foo', data, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.params).toEqual('foo=bar');
+      done();
+    });
+  });
+
   it("should normalize 'content-type' header when using a custom transformRequest", function (done) {
     const data = {
       foo: 'bar',

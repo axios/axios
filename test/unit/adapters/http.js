@@ -2115,6 +2115,40 @@ describe('supports http with nodejs', function () {
           .catch(done);
       });
     });
+
+    it('should post object data as url-encoded form with Pascal-case Content-Type header', function (done) {
+      var app = express();
+
+      var obj = {
+        arr1: ['1', '2', '3'],
+        arr2: ['1', ['2'], '3'],
+        obj: { x: '1', y: { z: '1' } },
+        users: [
+          { name: 'Peter', surname: 'griffin' },
+          { name: 'Thomas', surname: 'Anderson' },
+        ],
+      };
+
+      app.use(bodyParser.urlencoded({ extended: true }));
+
+      app.post('/', function (req, res, next) {
+        res.send(JSON.stringify(req.body));
+      });
+
+      server = app.listen(3001, function () {
+        return axios
+          .post('http://localhost:3001/', obj, {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          })
+          .then(function (res) {
+            assert.deepStrictEqual(res.data, obj);
+            done();
+          })
+          .catch(done);
+      });
+    });
   });
 
   it('should respect formSerializer config', function (done) {

@@ -56,10 +56,6 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "newTag=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Version bumped to: $NEW_VERSION"
-      - name: Bump bower etc
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run preversion
       - name: Build project
         run: npm run build
       - name: Publish to NPM

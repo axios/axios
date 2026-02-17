@@ -26,6 +26,20 @@ describe('interceptors', function () {
     });
   });
 
+  it('should default interceptor options when omitted or null', function () {
+    const omittedId = axios.interceptors.request.use(function (config) {
+      return config;
+    });
+    const nullId = axios.interceptors.request.use(function (config) {
+      return config;
+    }, null, null);
+
+    expect(axios.interceptors.request.handlers[omittedId].synchronous).toBe(false);
+    expect(axios.interceptors.request.handlers[omittedId].runWhen).toBe(null);
+    expect(axios.interceptors.request.handlers[nullId].synchronous).toBe(false);
+    expect(axios.interceptors.request.handlers[nullId].runWhen).toBe(null);
+  });
+
   it('should add a request interceptor (explicitly flagged as asynchronous)', function (done) {
     let asyncFlag = false;
     axios.interceptors.request.use(

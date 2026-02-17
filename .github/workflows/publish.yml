@@ -76,6 +76,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: bump version to ${{ steps.bump-version.outputs.newTag }}"
-            git push origin v0.x
+            git commit -m "chore: bump version to ${{ steps.bump-version.outputs.newTag }}" -n
+            git push origin v0.x --no-verify
           fi

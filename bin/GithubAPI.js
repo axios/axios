@@ -1,7 +1,7 @@
-import util from "util";
-import cp from "child_process";
-import {parseVersion} from "./helpers/parser.js";
-import githubAxios from "./githubAxios.js";
+import util from 'util';
+import cp from 'child_process';
+import { parseVersion } from './helpers/parser.js';
+import githubAxios from './githubAxios.js';
 import memoize from 'memoizee';
 
 const exec = util.promisify(cp.exec);
@@ -20,15 +20,19 @@ export default class GithubAPI {
     this.owner = owner;
     this.axios = githubAxios.create({
       baseURL: `https://api.github.com/repos/${this.owner}/${this.repo}/`,
-    })
+    });
   }
 
   async createComment(issue, body) {
-    return (await this.axios.post(`/issues/${issue}/comments`, {body})).data;
+    return (await this.axios.post(`/issues/${issue}/comments`, { body })).data;
   }
 
-  async getComments(issue, {desc = false, per_page= 100, page = 1} = {}) {
-    return (await this.axios.get(`/issues/${issue}/comments`, {params: {direction: desc ? 'desc' : 'asc', per_page, page}})).data;
+  async getComments(issue, { desc = false, per_page = 100, page = 1 } = {}) {
+    return (
+      await this.axios.get(`/issues/${issue}/comments`, {
+        params: { direction: desc ? 'desc' : 'asc', per_page, page },
+      })
+    ).data;
   }
 
   async getComment(id) {
@@ -36,11 +40,11 @@ export default class GithubAPI {
   }
 
   async updateComment(id, body) {
-    return (await this.axios.patch(`/issues/comments/${id}`, {body})).data;
+    return (await this.axios.patch(`/issues/comments/${id}`, { body })).data;
   }
 
   async appendLabels(issue, labels) {
-    return (await this.axios.post(`/issues/${issue}/labels`, {labels})).data;
+    return (await this.axios.post(`/issues/${issue}/labels`, { labels })).data;
   }
 
   async getUser(user) {
@@ -51,7 +55,7 @@ export default class GithubAPI {
     try {
       return (await this.axios.get(`/collaborators/${user}`)).status === 204;
     } catch (e) {
-
+      // Do nothing
     }
   }
 
@@ -67,8 +71,19 @@ export default class GithubAPI {
     return (await this.axios.get(`/pulls/${issue}`)).data;
   }
 
-  async getIssues({state= 'open', labels, sort = 'created', desc = false, per_page = 100, page = 1}) {
-    return (await this.axios.get(`/issues`, {params: {state, labels, sort, direction: desc ? 'desc' : 'asc', per_page, page}})).data;
+  async getIssues({
+    state = 'open',
+    labels,
+    sort = 'created',
+    desc = false,
+    per_page = 100,
+    page = 1,
+  }) {
+    return (
+      await this.axios.get(`/issues`, {
+        params: { state, labels, sort, direction: desc ? 'desc' : 'asc', per_page, page },
+      })
+    ).data;
   }
 
   async updateIssue(issue, data) {
@@ -77,55 +92,66 @@ export default class GithubAPI {
 
   async closeIssue(issue) {
     return this.updateIssue(issue, {
-      state: "closed"
-    })
+      state: 'closed',
+    });
   }
 
-  async getReleases({per_page = 30, page= 1} = {}) {
-    return (await this.axios.get(`/releases`, {params: {per_page, page}})).data;
+  async getReleases({ per_page = 30, page = 1 } = {}) {
+    return (await this.axios.get(`/releases`, { params: { per_page, page } })).data;
   }
 
   async getRelease(release = 'latest') {
-    return (await this.axios.get(parseVersion(release) ? `/releases/tags/${release}` : `/releases/${release}`)).data;
+    return (
+      await this.axios.get(
+        parseVersion(release) ? `/releases/tags/${release}` : `/releases/${release}`
+      )
+    ).data;
   }
 
-  async getTags({per_page = 30, page= 1} = {}) {
-    return (await this.axios.get(`/tags`, {params: {per_page, page}})).data;
+  async getTags({ per_page = 30, page = 1 } = {}) {
+    return (await this.axios.get(`/tags`, { params: { per_page, page } })).data;
   }
 
   async reopenIssue(issue) {
     return this.updateIssue(issue, {
-      state: "open"
-    })
+      state: 'open',
+    });
   }
 
   static async getTagRef(tag) {
     try {
       return (await exec(`git show-ref --tags "refs/tags/${tag}"`)).stdout.split(' ')[0];
     } catch (e) {
+      // Do nothing
     }
   }
 
   static async getLatestTag() {
-    try{
-      const {stdout} = await exec(`git for-each-ref refs/tags --sort=-taggerdate --format='%(refname)' --count=1`);
+    try {
+      const { stdout } = await exec(
+        `git for-each-ref refs/tags --sort=-taggerdate --format='%(refname)' --count=1`
+      );
 
       return stdout.split('/').pop();
-    } catch (e) {}
+    } catch (e) {
+      // Do nothing
+    }
   }
 
-  static normalizeTag(tag){
+  static normalizeTag(tag) {
     return tag ? 'v' + tag.replace(/^v/, '') : '';
   }
 }
 
-const {prototype} = GithubAPI;
+const { prototype } = GithubAPI;
 
-['getUser', 'isCollaborator'].forEach(methodName => {
-  prototype[methodName] = memoize(prototype[methodName], { promise: true })
+['getUser', 'isCollaborator'].forEach((methodName) => {
+  prototype[methodName] = memoize(prototype[methodName], { promise: true });
 });
 
-['get', 'post', 'put', 'delete', 'isAxiosError'].forEach((method) => prototype[method] = function(...args){
-  return this.axios[method](...args);
-});
-
+['get', 'post', 'put', 'delete', 'isAxiosError'].forEach(
+  (method) =>
+    (prototype[method] = function (...args) {
+      return this.axios[method](...args);
+    })
+);

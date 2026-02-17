@@ -1,4 +1,4 @@
-const {AxiosHeaders} = axios;
+const { AxiosHeaders } = axios;
 
 function testHeaderValue(headers, key, val) {
   let found = false;
@@ -49,10 +49,10 @@ describe('headers', function () {
 
     instance.defaults.headers.common['Content-Type'] = 'application/custom';
 
-    instance.patch('/foo', "");
+    instance.patch('/foo', '');
 
     const expectedHeaders = {
-      'Content-Type': "application/custom"
+      'Content-Type': 'application/custom',
     };
 
     return getAjaxRequest().then(function (request) {
@@ -71,43 +71,52 @@ describe('headers', function () {
 
     return getAjaxRequest().then(function (request) {
       for (const key in headers) {
-         expect(request.requestHeaders[key]).toEqual(headers[key]);
+        expect(request.requestHeaders[key]).toEqual(headers[key]);
       }
     });
   });
 
   it('should reset headers by null or explicit undefined', function (done) {
-    axios.create({
-      headers: {
-        common: {
-          'x-header-a': 'a',
-          'x-header-b': 'b',
-          'x-header-c': 'c'
+    axios
+      .create({
+        headers: {
+          common: {
+            'x-header-a': 'a',
+            'x-header-b': 'b',
+            'x-header-c': 'c',
+          },
+        },
+      })
+      .post(
+        '/foo',
+        { fizz: 'buzz' },
+        {
+          headers: {
+            'Content-Type': null,
+            'x-header-a': null,
+            'x-header-b': undefined,
+          },
         }
-      }
-    }).post('/foo', {fizz: 'buzz'}, {
-      headers: {
-        'Content-Type': null,
-        'x-header-a': null,
-        'x-header-b': undefined
-      }
-    }).catch(function (err) {
-      done(err);
-    });
+      )
+      .catch(function (err) {
+        done(err);
+      });
 
-    getAjaxRequest().then(function (request) {
-      testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
-      testHeaderValue(request.requestHeaders, 'x-header-a', undefined);
-      testHeaderValue(request.requestHeaders, 'x-header-b', undefined);
-      testHeaderValue(request.requestHeaders, 'x-header-c', 'c');
-      done();
-    }).catch(done);
+    getAjaxRequest()
+      .then(function (request) {
+        testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
+        testHeaderValue(request.requestHeaders, 'x-header-a', undefined);
+        testHeaderValue(request.requestHeaders, 'x-header-b', undefined);
+        testHeaderValue(request.requestHeaders, 'x-header-c', 'c');
+        done();
+      })
+      .catch(done);
   });
 
   it('should use application/json when posting an object', function (done) {
     axios.post('/foo/bar', {
       firstName: 'foo',
-      lastName: 'bar'
+      lastName: 'bar',
     });
 
     getAjaxRequest().then(function (request) {
@@ -137,15 +146,15 @@ describe('headers', function () {
     const instance = axios.create({
       headers: new AxiosHeaders({
         xFoo: 'foo',
-        xBar: 'bar'
-      })
+        xBar: 'bar',
+      }),
     });
 
     instance.get('/foo', {
       headers: {
         XFOO: 'foo2',
-        xBaz: 'baz'
-      }
+        xBaz: 'baz',
+      },
     });
 
     await getAjaxRequest().then(function (request) {
@@ -154,6 +163,5 @@ describe('headers', function () {
       expect(request.requestHeaders.xBaz).toEqual('baz');
       expect(request.requestHeaders.XFOO).toEqual(undefined);
     });
-
   });
 });

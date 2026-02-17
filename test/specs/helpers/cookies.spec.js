@@ -3,12 +3,15 @@ import cookies from '../../../lib/helpers/cookies';
 describe('helpers::cookies', function () {
   afterEach(function () {
     // Remove all the cookies
-    const expires = Date.now() - (60 * 60 * 24 * 7);
-    document.cookie.split(';').map(function (cookie) {
-      return cookie.split('=')[0];
-    }).forEach(function (name) {
-      document.cookie = name + '=; expires=' + new Date(expires).toGMTString();
-    });
+    const expires = Date.now() - 60 * 60 * 24 * 7;
+    document.cookie
+      .split(';')
+      .map(function (cookie) {
+        return cookie.split('=')[0];
+      })
+      .forEach(function (name) {
+        document.cookie = name + '=; expires=' + new Date(expires).toGMTString();
+      });
   });
 
   it('should write cookies', function () {

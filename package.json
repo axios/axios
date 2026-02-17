@@ -2,7 +2,7 @@
   "name": "axios",
   "version": "1.13.5",
   "description": "Promise based HTTP client for the browser and node.js",
-  "main": "./dist/node/axios.cjs",
+  "main": "./index.js",
   "module": "./index.js",
   "exports": {
     ".": {
@@ -63,7 +63,6 @@
     "prepublishOnly": "npm run test:build:version",
     "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
     "examples": "node ./examples/server.js",
-    "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "fix": "eslint --fix lib/**/*.js",
     "prepare": "husky install && npm run prepare:hooks",
     "prepare:hooks": "npx husky set .husky/commit-msg \"npx commitlint --edit $1\""
@@ -131,11 +130,13 @@
     "karma-sauce-launcher": "^4.3.6",
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.4.0",
+    "lint-staged": "^15.2.10",
     "memoizee": "^0.4.17",
     "minimist": "^1.2.8",
     "mocha": "^10.8.2",
     "multer": "^1.4.4",
     "pacote": "^20.0.0",
+    "prettier": "^3.8.1",
     "pretty-bytes": "^6.1.1",
     "rollup": "^2.79.2",
     "rollup-plugin-auto-external": "^2.0.0",
@@ -201,6 +202,9 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "lint-staged": {
+    "*.{js,cjs,mjs,ts,json,md,yml,yaml}": "prettier --write"
   },
   "c8": {
     "all": true,

@@ -52,7 +52,16 @@ jobs:
             npm version $(npm version | grep -Eo 'patch|minor' | head -1)
           else
             if [ "$BETA" = "true" ]; then
-              npm version $TYPE --preid=beta
+              CURRENT_VERSION=$(node -p "require('./package.json').version")
+              # If the current version is already a beta prerelease (e.g. 0.30.3-beta.0),
+              # use "prerelease" to bump to the next beta (e.g. 0.30.3-beta.1).
+              # Otherwise, create the first beta for the selected release type
+              # (e.g. from 0.30.2 to 0.30.3-beta.0 or 0.31.0-beta.0).
+              if echo "$CURRENT_VERSION" | grep -q "\-beta\."; then
+                npm version prerelease --preid=beta
+              else
+                npm version "$TYPE" --preid=beta
+              fi
             else
               npm version $TYPE
             fi

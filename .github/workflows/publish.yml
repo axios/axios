@@ -1,4 +1,4 @@
-name: Publish package to NPM
+name: Publish package to NPM v0.x
 
 on:
   workflow_dispatch:

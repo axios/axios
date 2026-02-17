@@ -659,7 +659,7 @@ interface AxiosInterceptorHandler<T> {
   fulfilled: AxiosInterceptorFulfilled<T>;
   rejected?: AxiosInterceptorRejected;
   synchronous: boolean;
-  runWhen: (config: AxiosRequestConfig) => boolean | null;
+  runWhen?: ((config: AxiosRequestConfig) => boolean) | null;
 }
 
 export interface AxiosInterceptorManager<V> {

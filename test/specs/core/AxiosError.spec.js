@@ -49,6 +49,23 @@ describe('core::AxiosError', function () {
         AxiosError.from(error, 'ESOMETHING', { foo: 'bar' }) instanceof AxiosError
       ).toBeTruthy();
     });
+
+    it('should preserve status property from original error when response is not provided', function () {
+      const error = new Error('Network Error');
+      error.status = 404;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK', { foo: 'bar' });
+      expect(axiosError.status).toBe(404);
+    });
+
+    it('should use response.status over error.status when response is provided', function () {
+      const error = new Error('Error');
+      error.status = 500;
+      const response = { status: 404 };
+
+      const axiosError = AxiosError.from(error, 'ERR_BAD_REQUEST', {}, null, response);
+      expect(axiosError.status).toBe(404);
+    });
   });
 
   it('should be a native error as checked by the NodeJS `isNativeError` function', function () {

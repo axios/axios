@@ -95,4 +95,21 @@ describe('formDataToJSON', () => {
     expect({}.x).toEqual(undefined);
     expect({}.y).toEqual(undefined);
   });
+
+  it('should not write through to inherited objects on Object.prototype', () => {
+    Object.prototype.injected = { hijack: true };
+
+    try {
+      const formData = new FormData();
+
+      formData.append('injected.hijack', 'STOLEN');
+
+      const result = formDataToJSON(formData);
+
+      expect(result.injected).toEqual({ hijack: 'STOLEN' });
+      expect(Object.prototype.injected.hijack).toEqual(true);
+    } finally {
+      delete Object.prototype.injected;
+    }
+  });
 });

@@ -68,4 +68,19 @@ describe('formDataToJSON', function () {
     expect({}.x).toEqual(undefined);
     expect({}.y).toEqual(undefined);
   });
+
+  it('should not traverse inherited properties when building paths', () => {
+    const formData = new FormData();
+
+    formData.append('constructor.prototype.polluted', 'true');
+    formData.append('safe', 'data');
+
+    const result = formDataToJSON(formData);
+
+    // constructor.prototype.polluted should be stored as data, not pollute Object.prototype
+    expect(result.safe).toEqual('data');
+    expect(result.constructor.prototype.polluted).toEqual('true');
+    expect({}.polluted).toEqual(undefined);
+    expect(Object.prototype.polluted).toEqual(undefined);
+  });
 });

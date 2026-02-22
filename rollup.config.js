@@ -34,7 +34,7 @@ const buildConfig = ({ es5, browser = true, minifiedVersion = true, alias, ...co
       }),
       json(),
       resolve({ browser }),
-      commonjs(),
+      commonjs({ strictRequires: 'auto', defaultIsModuleExports: true }),
 
       minified && terser(),
       minified && bundleSize(),
@@ -128,7 +128,7 @@ export default async () => {
         exports: 'default',
         banner,
       },
-      plugins: [autoExternal(), resolve(), commonjs()],
+      plugins: [autoExternal(), resolve(), commonjs({ strictRequires: 'auto', defaultIsModuleExports: true })],
     },
   ];
 };

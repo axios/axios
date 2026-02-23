@@ -26,6 +26,18 @@ describe('formDataToJSON', function () {
     });
   });
 
+  it('should convert 3+ repeatable values as a flat array', function () {
+    const formData = new FormData();
+
+    formData.append('select3', '301');
+    formData.append('select3', '302');
+    formData.append('select3', '303');
+
+    expect(formDataToJSON(formData)).toEqual({
+      select3: ['301', '302', '303'],
+    });
+  });
+
   it('should convert props with empty brackets to arrays', function () {
     const formData = new FormData();
 

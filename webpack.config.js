@@ -10,11 +10,11 @@ function generateConfig(name) {
       sourceMapFilename: name + '.map',
       library: 'axios',
       libraryTarget: 'umd',
-      globalObject: 'this'
+      globalObject: 'this',
     },
     node: false,
     devtool: 'source-map',
-    mode: compress ? 'production' : 'development'
+    mode: compress ? 'production' : 'development',
   };
   return config;
 }

@@ -1,499 +1,522 @@
 <!doctype html>
 <html>
+
 <head>
   <title>AXIOS | Sandbox</title>
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"/>
- <style type="text/css">
-      /* 
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
+  <style type="text/css">
+    /* 
    :root & Dark Mode Variables
     */
-      :root {
-        --bg-color: #f0f4ff; /* main page background */
-        --text-color: #1a1a1a; /* main text color */
-        --border-color: #cfd8ff; /* default borders */
-        --well-bg: rgba(255, 255, 255, 0.9); /* card & well background */
-        --input-bg: rgba(255, 255, 255, 0.95); /* input background */
-        --footer-text-color: #555;
-        --footer-heading-color: #1a1a1a;
-        --footer-link-color: #5b4bff;
-        --footer-link-hover-color: #3a2ecb;
-        --shadow-color: rgba(0, 0, 0, 0.1);
-        --primary-gradient: linear-gradient(135deg, #6a1bff, #00c3ff);
-        --btn-hover-gradient: linear-gradient(135deg, #5b00d1, #00aaff);
-        --glass-blur: blur(12px); /* for frosted glass effect */
-      }
+    :root {
+      --bg-color: #f0f4ff;
+      /* main page background */
+      --text-color: #1a1a1a;
+      /* main text color */
+      --border-color: #cfd8ff;
+      /* default borders */
+      --well-bg: rgba(255, 255, 255, 0.9);
+      /* card & well background */
+      --input-bg: rgba(255, 255, 255, 0.95);
+      /* input background */
+      --footer-text-color: #555;
+      --footer-heading-color: #1a1a1a;
+      --footer-link-color: #5b4bff;
+      --footer-link-hover-color: #3a2ecb;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --primary-gradient: linear-gradient(135deg, #6a1bff, #00c3ff);
+      --btn-hover-gradient: linear-gradient(135deg, #5b00d1, #00aaff);
+      --glass-blur: blur(12px);
+      /* for frosted glass effect */
+    }
 
-      body.dark-mode {
-        /* Dark mode overrides */
-        --bg-color: #0e0f1a;
-        --text-color: #e0e0ff;
-        --border-color: #444;
-        --well-bg: rgba(30, 30, 50, 0.7);
-        --input-bg: rgba(40, 40, 60, 0.85);
-        --footer-text-color: #aaa;
-        --footer-heading-color: #fff;
-        --footer-link-color: #7f8fff;
-        --footer-link-hover-color: #aabfff;
-        --shadow-color: rgba(0, 0, 0, 0.5);
-        --primary-gradient: linear-gradient(135deg, #9b59ff, #00d1ff);
-        --btn-hover-gradient: linear-gradient(135deg, #7d33ff, #00b7ff);
-      }
+    body.dark-mode {
+      /* Dark mode overrides */
+      --bg-color: #0e0f1a;
+      --text-color: #e0e0ff;
+      --border-color: #444;
+      --well-bg: rgba(30, 30, 50, 0.7);
+      --input-bg: rgba(40, 40, 60, 0.85);
+      --footer-text-color: #aaa;
+      --footer-heading-color: #fff;
+      --footer-link-color: #7f8fff;
+      --footer-link-hover-color: #aabfff;
+      --shadow-color: rgba(0, 0, 0, 0.5);
+      --primary-gradient: linear-gradient(135deg, #9b59ff, #00d1ff);
+      --btn-hover-gradient: linear-gradient(135deg, #7d33ff, #00b7ff);
+    }
 
-      /* 
+    /* 
    Global Styles
     */
-      * {
-        box-sizing: border-box;
-        transition: all 0.4s ease; /* smooth transitions everywhere */
-      }
+    * {
+      box-sizing: border-box;
+      transition: all 0.4s ease;
+      /* smooth transitions everywhere */
+    }
 
-     body {
-        margin: 0;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-      }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
     pre {
       min-height: 39px;
-      white-space: pre-wrap; /* wrap long lines instead of stretching the panel */
+      white-space: pre-wrap;
+      /* wrap long lines instead of stretching the panel */
       word-wrap: break-word;
       overflow: auto;
     }
 
-    .box{
+    .box {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-gap: 40px; /* Increased gap between input and response columns */
+      grid-gap: 40px;
+      /* Increased gap between input and response columns */
     }
 
     .response {
-      min-width: 0; /* prevents content overflow from pushing layout */
+      min-width: 0;
+      /* prevents content overflow from pushing layout */
       overflow-x: auto;
     }
 
-    .header{
+    .header {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem; /* Added space below the header */
+      margin-bottom: 2rem;
+      /* Added space below the header */
     }
 
-      /* 
+    /* 
    Input & Well Styles
     */
-      .well,
-      .form-control {
-        background: var(--well-bg);
-        margin-top: 5px;
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 14px 16px;
-        box-shadow: 0 10px 25px -8px var(--shadow-color);
-        backdrop-filter: var(--glass-blur); /* glass effect */
-      }
+    .well,
+    .form-control {
+      background: var(--well-bg);
+      margin-top: 5px;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 10px 25px -8px var(--shadow-color);
+      backdrop-filter: var(--glass-blur);
+      /* glass effect */
+    }
 
-      .form-control {
-        background: var(--input-bg);
-        color: var(--text-color);
-        border-radius: 16px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        outline: none; /* remove default bootstrap focus outline */
-      }
+    .form-control {
+      background: var(--input-bg);
+      color: var(--text-color);
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      outline: none;
+      /* remove default bootstrap focus outline */
+    }
 
-      .form-control::placeholder {
-        color: #9e9eef; /* subtle placeholder */
-      }
+    .form-control::placeholder {
+      color: #9e9eef;
+      /* subtle placeholder */
+    }
 
-      /* Modern neon focus effect */
-      .form-control:focus {
-        background: var(--input-bg); /* keep consistent */
-        border: 1px solid #ff00ff; /* neon border */
-        box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff; /* glowing focus */
-        color: var(--text-color);
-      }
+    /* Modern neon focus effect */
+    .form-control:focus {
+      background: var(--input-bg);
+      /* keep consistent */
+      border: 1px solid #ff00ff;
+      /* neon border */
+      box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+      /* glowing focus */
+      color: var(--text-color);
+    }
 
-      /* subtle placeholder fade on focus */
-      .form-control:focus::placeholder {
-        color: #ddd;
-      }
+    /* subtle placeholder fade on focus */
+    .form-control:focus::placeholder {
+      color: #ddd;
+    }
 
-      /* spacing between form groups */
-      .form-group {
-        margin-bottom: 1.75rem;
-      }
+    /* spacing between form groups */
+    .form-group {
+      margin-bottom: 1.75rem;
+    }
 
-      /* 
+    /* 
    Header & Box Layout
     */
-      .header {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2.5rem;
-        gap: 15px;
-      }
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      gap: 15px;
+    }
 
-      .box {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 40px;
-      }
+    .box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
 
-      /* 
+    /* 
    Theme Toggle Button
     */
-      #theme-toggle {
-        padding: 8px 18px;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        background: var(--primary-gradient);
-        color: #fff;
-        font-weight: 600;
-        box-shadow: 0 8px 20px -5px var(--shadow-color);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-      }
+    #theme-toggle {
+      padding: 8px 18px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: var(--primary-gradient);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 8px 20px -5px var(--shadow-color);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
 
-      #theme-toggle:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 25px -8px var(--shadow-color);
-      }
+    #theme-toggle:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px -8px var(--shadow-color);
+    }
 
-      /* 
+    /* 
    Footer Styles
     */
+    .footer {
+      max-width: 900px;
+      margin: 60px auto 40px auto;
+      padding: 2.5rem 3rem;
+      border-radius: 24px;
+      background: var(--well-bg);
+      box-shadow: 0 15px 35px -10px var(--shadow-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 25px;
+    }
+
+    .footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .footer-left .footer-brand-axios,
+    .footer-left .footer-brand-sandbox {
+      font-size: 1.2em;
+      font-weight: 700;
+      background: var(--primary-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .footer-left .footer-copyright {
+      font-size: 0.9em;
+      color: var(--footer-text-color);
+    }
+
+    .footer-nav ul {
+      display: flex;
+      gap: 25px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-wrap: wrap;
+    }
+
+    .footer-nav a {
+      color: var(--footer-link-color);
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.3s ease, transform 0.2s ease;
+    }
+
+    .footer-nav a:hover {
+      color: var(--footer-link-hover-color);
+      transform: translateY(-2px);
+      text-decoration: underline;
+    }
+
+    /* 
+   Buttons
+    */
+    .btn {
+      padding: 10px 25px;
+      border-radius: 50px;
+      font-weight: 600;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      background: var(--primary-gradient);
+      box-shadow: 0 10px 25px -8px var(--shadow-color);
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: var(--btn-hover-gradient);
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px -10px var(--shadow-color);
+    }
+
+    /* 
+   Code/Pre blocks
+    */
+    pre {
+      border-radius: 16px;
+      padding: 14px;
+      background: var(--well-bg);
+      box-shadow: inset 0 6px 12px -4px var(--shadow-color);
+      overflow: auto;
+    }
+
+    /* 
+   Responsive Layout
+    */
+    @media screen and (max-width: 1000px) {
+      .box {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
       .footer {
-        max-width: 900px;
-        margin: 60px auto 40px auto;
-        padding: 2.5rem 3rem;
-        border-radius: 24px;
-        background: var(--well-bg);
-        box-shadow: 0 15px 35px -10px var(--shadow-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 25px;
-      }
-
-      .footer-left {
-        display: flex;
         flex-direction: column;
-        gap: 6px;
-      }
-
-      .footer-left .footer-brand-axios,
-      .footer-left .footer-brand-sandbox {
-        font-size: 1.2em;
-        font-weight: 700;
-        background: var(--primary-gradient);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .footer-left .footer-copyright {
-        font-size: 0.9em;
-        color: var(--footer-text-color);
+        text-align: center;
+        padding: 2rem;
+        max-width: 90%;
       }
 
       .footer-nav ul {
-        display: flex;
-        gap: 25px;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        flex-wrap: wrap;
+        justify-content: center;
       }
-
-      .footer-nav a {
-        color: var(--footer-link-color);
-        font-weight: 500;
-        text-decoration: none;
-        transition: color 0.3s ease, transform 0.2s ease;
-      }
-
-      .footer-nav a:hover {
-        color: var(--footer-link-hover-color);
-        transform: translateY(-2px);
-        text-decoration: underline;
-      }
-
-      /* 
-   Buttons
-    */
-      .btn {
-        padding: 10px 25px;
-        border-radius: 50px;
-        font-weight: 600;
-        color: #fff;
-        border: none;
-        cursor: pointer;
-        background: var(--primary-gradient);
-        box-shadow: 0 10px 25px -8px var(--shadow-color);
-        transition: all 0.3s ease;
-      }
-
-      .btn:hover {
-        background: var(--btn-hover-gradient);
-        transform: translateY(-3px);
-        box-shadow: 0 14px 30px -10px var(--shadow-color);
-      }
-
-      /* 
-   Code/Pre blocks
-    */
-      pre {
-        border-radius: 16px;
-        padding: 14px;
-        background: var(--well-bg);
-        box-shadow: inset 0 6px 12px -4px var(--shadow-color);
-        overflow: auto;
-      }
-
-      /* 
-   Responsive Layout
-    */
-      @media screen and (max-width: 1000px) {
-        .box {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media screen and (max-width: 768px) {
-        .footer {
-          flex-direction: column;
-          text-align: center;
-          padding: 2rem;
-          max-width: 90%;
-        }
-
-        .footer-nav ul {
-          justify-content: center;
-        }
-      }
-    </style>
+    }
+  </style>
 </head>
+
 <body class="container">
-<div class="header">
-  <div style="display: flex; align-items: center;">
-    <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="100" height="60">
-    <h1> &nbsp;| Sandbox</h1>
-  </div>
-  <button id="theme-toggle">Toggle Theme</button>
-</div>
-
-<div class="box">
-  <div class="well">
-    <h3>Input</h3>
-    <form role="form" onsubmit="return false;">
-      <div class="form-group">
-        <label for="url">URL</label>
-        <input id="url" type="url" class="form-control" placeholder="/api"/>
-      </div>
-      <div class="form-group">
-        <label for="method">Method</label>
-        <select id="method" class="form-control">
-          <option value="GET">GET</option>
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="DELETE">DELETE</option>
-          <option value="HEAD">HEAD</option>
-          <option value="PATCH">PATCH</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="params">Params</label>
-        <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group" style="display: none;">
-        <label for="data">Data</label>
-        <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
-      </div>
-      <div class="form-group">
-        <label for="headers">Headers</label>
-        <textarea id="headers" class="form-control" placeholder='{"X-Requested-With": "XMLHttpRequest"}'></textarea>
-      </div>
-      <button id="submit" type="submit" class="btn btn-primary">Send Request</button>
-    </form>
+  <div class="header">
+    <div style="display: flex; align-items: center;">
+      <img src="https://axios-http.com/assets/logo.svg" alt="axios" width="100" height="60">
+      <h1> &nbsp;| Sandbox</h1>
+    </div>
+    <button id="theme-toggle">Toggle Theme</button>
   </div>
 
-  <div class="response">
+  <div class="box">
     <div class="well">
-      <h3>Request</h3>
-      <pre id="request">No Data</pre>
+      <h3>Input</h3>
+      <form role="form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="url">URL</label>
+          <input id="url" type="url" class="form-control" placeholder="/api" />
+        </div>
+        <div class="form-group">
+          <label for="method">Method</label>
+          <select id="method" class="form-control">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="HEAD">HEAD</option>
+            <option value="PATCH">PATCH</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="params">Params</label>
+          <textarea id="params" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
+        </div>
+        <div class="form-group" style="display: none;">
+          <label for="data">Data</label>
+          <textarea id="data" class="form-control" placeholder='{"foo": "bar", "baz": 123.45}'></textarea>
+        </div>
+        <div class="form-group">
+          <label for="headers">Headers</label>
+          <textarea id="headers" class="form-control" placeholder='{"X-Requested-With": "XMLHttpRequest"}'></textarea>
+        </div>
+        <button id="submit" type="submit" class="btn btn-primary">Send Request</button>
+      </form>
     </div>
 
-    <div class="well">
-      <h3>Response</h3>
-      <pre id="response">No Data</pre>
-    </div>
+    <div class="response">
+      <div class="well">
+        <h3>Request</h3>
+        <pre id="request">No Data</pre>
+      </div>
 
-    <div class="well">
-      <h3>Error</h3>
-      <pre id="error">None</pre>
+      <div class="well">
+        <h3>Response</h3>
+        <pre id="response">No Data</pre>
+      </div>
+
+      <div class="well">
+        <h3>Error</h3>
+        <pre id="error">None</pre>
+      </div>
     </div>
   </div>
-</div>
 
-<footer class="footer">
+  <footer class="footer">
     <div class="footer-left">
-        <p class="footer-brand-axios">AXIOS</p><p class="footer-brand-sandbox"> | Sandbox</p>
-        <p class="footer-copyright">© <span id="year">2025</span> Axios. All rights reserved.</p>
+      <p class="footer-brand-axios">AXIOS</p>
+      <p class="footer-brand-sandbox"> | Sandbox</p>
+      <p class="footer-copyright">© <span id="year">2025</span> Axios. All rights reserved.</p>
     </div>
     <nav class="footer-nav">
-        <ul>
-            <li><a href="https://axios-http.com/docs/intro" target="_blank" rel="noopener noreferrer">Docs</a></li>
-            <li><a href="https://github.com/axios/axios" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-            <li><a href="https://axios-http.com/" target="_blank" rel="noopener noreferrer">Website</a></li>
-        </ul>
+      <ul>
+        <li><a href="https://axios-http.com/docs/intro" target="_blank" rel="noopener noreferrer">Docs</a></li>
+        <li><a href="https://github.com/axios/axios" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="https://axios-http.com/" target="_blank" rel="noopener noreferrer">Website</a></li>
+      </ul>
     </nav>
-</footer>
+  </footer>
 
-<script src="/axios.js"></script>
-<script>
-  // Original sandbox script (untouched)
-  (function () {
-    var url = document.getElementById('url');
-    var method = document.getElementById('method');
-    var params = document.getElementById('params');
-    var data = document.getElementById('data');
-    var headers = document.getElementById('headers');
-    var submit = document.getElementById('submit');
-    var request = document.getElementById('request');
-    var response = document.getElementById('response');
-    var error = document.getElementById('error');
+  <script src="/axios.js"></script>
+  <script>
+    // Original sandbox script (untouched)
+    (function () {
+      var url = document.getElementById('url');
+      var method = document.getElementById('method');
+      var params = document.getElementById('params');
+      var data = document.getElementById('data');
+      var headers = document.getElementById('headers');
+      var submit = document.getElementById('submit');
+      var request = document.getElementById('request');
+      var response = document.getElementById('response');
+      var error = document.getElementById('error');
 
-    function acceptsData(method) {
-      return ['PATCH', 'POST', 'PUT'].indexOf(method) > -1;
-    }
-
-    function getUrl() {
-      return url.value.length === 0 ? '/api' : url.value;
-    }
-
-    function getParams() {
-      try {
-        return params.value.length === 0 ? null : JSON.parse(params.value);
-      } catch (e) {
-        error.textContent = "Invalid JSON in Params";
-        return null;
-      }
-    }
-
-    function getData() {
-      try {
-        return data.value.length === 0 ? null : JSON.parse(data.value);
-      } catch (e) {
-        error.textContent = "Invalid JSON in Data";
-        return null;
-      }
-    }
-
-    function getHeaders() {
-      try {
-        return headers.value.length === 0 ? null : JSON.parse(headers.value);
-      } catch (e) {
-        error.textContent = "Invalid JSON in Headers";
-        return null;
-      }
-    }
-
-    function syncWithLocalStorage() {
-      url.value = localStorage.getItem('url') || '/api';
-      method.value = localStorage.getItem('method') || 'GET';
-      params.value = localStorage.getItem('params') || '';
-      data.value = localStorage.getItem('data') || '';
-      headers.value = localStorage.getItem('headers') || '';
-    }
-
-    function syncParamsAndData() {
-      switch (method.value) {
-        case 'PATCH':
-        case 'POST':
-        case 'PUT':
-          params.parentNode.style.display = 'none';
-          data.parentNode.style.display = '';
-          break;
-        default:
-          params.parentNode.style.display = '';
-          data.parentNode.style.display = 'none';
-          break;
-      }
-    }
-
-    submit.onclick = function (event) {
-      event.preventDefault();
-
-      if (url.value === '') {
-        error.textContent = 'Please enter a valid URL';
-        return;
+      function acceptsData(method) {
+        return ['PATCH', 'POST', 'PUT'].indexOf(method) > -1;
       }
 
-      var options = {
-        url: getUrl(),
-        params: !acceptsData(method.value) ? getParams() : undefined,
-        data: acceptsData(method.value) ? getData() : undefined,
-        method: method.value,
-        headers: getHeaders()
+      function getUrl() {
+        return url.value.length === 0 ? '/api' : url.value;
+      }
+
+      function getParams() {
+        try {
+          return params.value.length === 0 ? null : JSON.parse(params.value);
+        } catch (e) {
+          error.textContent = "Invalid JSON in Params";
+          return null;
+        }
+      }
+
+      function getData() {
+        try {
+          return data.value.length === 0 ? null : JSON.parse(data.value);
+        } catch (e) {
+          error.textContent = "Invalid JSON in Data";
+          return null;
+        }
+      }
+
+      function getHeaders() {
+        try {
+          return headers.value.length === 0 ? null : JSON.parse(headers.value);
+        } catch (e) {
+          error.textContent = "Invalid JSON in Headers";
+          return null;
+        }
+      }
+
+      function syncWithLocalStorage() {
+        url.value = localStorage.getItem('url') || '/api';
+        method.value = localStorage.getItem('method') || 'GET';
+        params.value = localStorage.getItem('params') || '';
+        data.value = localStorage.getItem('data') || '';
+        headers.value = localStorage.getItem('headers') || '';
+      }
+
+      function syncParamsAndData() {
+        switch (method.value) {
+          case 'PATCH':
+          case 'POST':
+          case 'PUT':
+            params.parentNode.style.display = 'none';
+            data.parentNode.style.display = '';
+            break;
+          default:
+            params.parentNode.style.display = '';
+            data.parentNode.style.display = 'none';
+            break;
+        }
+      }
+
+      submit.onclick = function (event) {
+        event.preventDefault();
+
+        if (url.value === '') {
+          error.textContent = 'Please enter a valid URL';
+          return;
+        }
+
+        var options = {
+          url: getUrl(),
+          params: !acceptsData(method.value) ? getParams() : undefined,
+          data: acceptsData(method.value) ? getData() : undefined,
+          method: method.value,
+          headers: getHeaders()
+        };
+
+        request.textContent = JSON.stringify(options, null, 2);
+
+        axios(options)
+          .then(function (res) {
+            response.innerHTML = JSON.stringify(res.data, null, 2);
+            error.textContent = "None";
+          })
+          .catch(function (err) {
+            if (err.response) {
+              error.textContent = JSON.stringify(err.response.data, null, 2);
+              response.innerHTML = "Error in Response";
+            } else {
+              error.textContent = err.message;
+              response.innerHTML = "No Response Data";
+            }
+          });
       };
 
-      request.textContent = JSON.stringify(options, null, 2);
+      url.onchange = function () {
+        localStorage.setItem('url', url.value);
+      };
 
-      axios(options)
-        .then(function (res) {
-          response.innerHTML = JSON.stringify(res.data, null, 2);
-          error.textContent = "None";
-        })
-        .catch(function (err) {
-          if (err.response) {
-            error.textContent = JSON.stringify(err.response.data, null, 2);
-            response.innerHTML = "Error in Response";
-          } else {
-            error.textContent = err.message;
-            response.innerHTML = "No Response Data";
-          }
-        });
-    };
+      method.onchange = function () {
+        localStorage.setItem('method', method.value);
+        syncParamsAndData();
+      };
 
-    url.onchange = function () {
-      localStorage.setItem('url', url.value);
-    };
+      params.onchange = function () {
+        localStorage.setItem('params', params.value);
+      };
 
-    method.onchange = function () {
-      localStorage.setItem('method', method.value);
+      data.onchange = function () {
+        localStorage.setItem('data', data.value);
+      };
+
+      headers.onchange = function () {
+        localStorage.setItem('headers', headers.value);
+      };
+
+      syncWithLocalStorage();
       syncParamsAndData();
-    };
+    })();
 
-    params.onchange = function () {
-      localStorage.setItem('params', params.value);
-    };
+    // New script for theme toggle and footer year
+    (function () {
+      const themeToggle = document.getElementById('theme-toggle');
+      const yearSpan = document.getElementById('year');
 
-    data.onchange = function () {
-      localStorage.setItem('data', data.value);
-    };
-
-    headers.onchange = function () {
-      localStorage.setItem('headers', headers.value);
-    };
-
-    syncWithLocalStorage();
-    syncParamsAndData();
-  })();
-
-  // New script for theme toggle and footer year
-  (function() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const yearSpan = document.getElementById('year');
-
-    themeToggle.addEventListener('click', () => {
+      themeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
-    });
+      });
 
-    yearSpan.textContent = new Date().getFullYear();
-  })();
-</script>
+      yearSpan.textContent = new Date().getFullYear();
+    })();
+  </script>
 </body>
+
 </html>

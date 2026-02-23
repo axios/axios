@@ -19,7 +19,7 @@ const {
   HttpStatusCode,
   formToJSON,
   getAdapter,
-  mergeConfig
+  mergeConfig,
 } = axios;
 
 export {
@@ -39,5 +39,5 @@ export {
   HttpStatusCode,
   formToJSON,
   getAdapter,
-  mergeConfig
-}
+  mergeConfig,
+};

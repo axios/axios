@@ -4,7 +4,7 @@ import https from 'https';
 import net from 'net';
 import fs from 'fs';
 import path from 'path';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 import axios from '../../../index.js';
 
 /** __dirname replacement for ESM */
@@ -16,7 +16,7 @@ async function getClosedPort() {
   return await new Promise((resolve) => {
     const srv = net.createServer();
     srv.listen(0, '127.0.0.1', () => {
-      const {port} = srv.address();
+      const { port } = srv.address();
       srv.close(() => resolve(port));
     });
   });
@@ -48,7 +48,7 @@ describe('adapters – network-error details', function () {
 
   it('should expose self-signed TLS error and set error.cause', async function () {
     // Use the same certs already present for adapter tests in this folder
-    const keyPath  = path.join(__dirname, 'key.pem');
+    const keyPath = path.join(__dirname, 'key.pem');
     const certPath = path.join(__dirname, 'cert.pem');
 
     const key = fs.readFileSync(keyPath);
@@ -57,24 +57,30 @@ describe('adapters – network-error details', function () {
     const httpsServer = https.createServer({ key, cert }, (req, res) => res.end('ok'));
 
     await new Promise((resolve) => httpsServer.listen(0, '127.0.0.1', resolve));
-    const {port} = httpsServer.address();
+    const { port } = httpsServer.address();
 
     try {
       await axios.get(`https://127.0.0.1:${port}`, {
         timeout: 500,
-        httpsAgent: new https.Agent({ rejectUnauthorized: true }) // Explicit: reject self-signed
+        httpsAgent: new https.Agent({ rejectUnauthorized: true }), // Explicit: reject self-signed
       });
       assert.fail('request unexpectedly succeeded');
     } catch (err) {
       const codeStr = String(err.code);
       // OpenSSL/Node variants: SELF_SIGNED_CERT_IN_CHAIN, DEPTH_ZERO_SELF_SIGNED_CERT, UNABLE_TO_VERIFY_LEAF_SIGNATURE
-      assert.ok(/SELF_SIGNED|UNABLE_TO_VERIFY_LEAF_SIGNATURE|DEPTH_ZERO/.test(codeStr), 'unexpected TLS code: ' + codeStr);
+      assert.ok(
+        /SELF_SIGNED|UNABLE_TO_VERIFY_LEAF_SIGNATURE|DEPTH_ZERO/.test(codeStr),
+        'unexpected TLS code: ' + codeStr
+      );
 
       assert.ok('cause' in err, 'error.cause should exist');
       assert.ok(err.cause instanceof Error, 'cause should be an Error');
 
       const causeCode = String(err.cause && err.cause.code);
-      assert.ok(/SELF_SIGNED|UNABLE_TO_VERIFY_LEAF_SIGNATURE|DEPTH_ZERO/.test(causeCode), 'unexpected cause code: ' + causeCode);
+      assert.ok(
+        /SELF_SIGNED|UNABLE_TO_VERIFY_LEAF_SIGNATURE|DEPTH_ZERO/.test(causeCode),
+        'unexpected cause code: ' + causeCode
+      );
 
       assert.strictEqual(typeof err.message, 'string');
     } finally {

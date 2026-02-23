@@ -1,6 +1,6 @@
 import utils from '../../../lib/utils';
 
-const {toArray} = utils;
+const { toArray } = utils;
 
 describe('utils::kindOf', function () {
   it('should return object tag', function () {

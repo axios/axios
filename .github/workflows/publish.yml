@@ -3,7 +3,7 @@ name: Publish package to NPM
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v1.*.*'
 
 permissions:
   contents: write
@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 24.x
           cache: npm
-          registry-url: "https://registry.npmjs.org"
+          registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: npm ci
       - name: Build project

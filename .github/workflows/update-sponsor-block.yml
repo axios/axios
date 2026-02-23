@@ -33,7 +33,7 @@ jobs:
         run: npm ci
       - name: Check if sponsors require updates
         id: sponsors-requires-update
-        run: node ../../bin/update-sponsors.js
+        run: node ./bin/sponsors.js
       - name: Read sponsors.md file content
         run: |
           echo 'CONTENT<<EOF' >> $GITHUB_ENV
@@ -51,7 +51,7 @@ jobs:
           branch: sponsors
           delete-branch: true
           commit-message: "chore(sponsor): update sponsor block"
-          title: "[Chore] Update sponsor block"
+          title: "chore(docs): update sponsor block"
           body: |
             **New sponsor block update:**
             ${{ env.CONTENT }}

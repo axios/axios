@@ -1,9 +1,8 @@
 import adapters from '../../../lib/adapters/adapters.js';
 import assert from 'assert';
 
-
 describe('adapters', function () {
-  const store = {...adapters.adapters};
+  const store = { ...adapters.adapters };
 
   beforeEach(() => {
     Object.keys(adapters.adapters).forEach((name) => {
@@ -26,12 +25,12 @@ describe('adapters', function () {
 
   it('should detect adapter unavailable status', function () {
     adapters.adapters['testadapter'] = null;
-    assert.throws(() => adapters.getAdapter('testAdapter'), /is not available in the build/)
+    assert.throws(() => adapters.getAdapter('testAdapter'), /is not available in the build/);
   });
 
   it('should detect adapter unsupported status', function () {
     adapters.adapters['testadapter'] = false;
-    assert.throws(() => adapters.getAdapter('testAdapter'), /is not supported by the environment/)
+    assert.throws(() => adapters.getAdapter('testAdapter'), /is not supported by the environment/);
   });
 
   it('should pick suitable adapter from the list', function () {
@@ -40,7 +39,7 @@ describe('adapters', function () {
     Object.assign(adapters.adapters, {
       foo: false,
       bar: null,
-      baz: adapter
+      baz: adapter,
     });
 
     assert.strictEqual(adapters.getAdapter(['foo', 'bar', 'baz']), adapter);

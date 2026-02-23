@@ -3,9 +3,9 @@ import assert from 'assert';
 import axios from '../index.js';
 import axiosBuild from '../dist/node/axios.cjs';
 
-const {version} = JSON.parse(fs.readFileSync('./package.json'));
+const { version } = JSON.parse(fs.readFileSync('./package.json'));
 
-console.log('Checking versions...\n----------------------------')
+console.log('Checking versions...\n----------------------------');
 
 console.log(`Package version: v${version}`);
 console.log(`Axios version: v${axios.VERSION}`);
@@ -25,5 +25,3 @@ assert.strictEqual(
 );
 
 console.log('✔️ PASSED\n');
-
-

@@ -1,4 +1,4 @@
-import minimist from "minimist";
+import minimist from 'minimist';
 import RepoBot from '../RepoBot.js';
 import fs from 'fs/promises';
 
@@ -13,7 +13,6 @@ let { tag } = argv;
 
     tag = 'v' + version;
   } else if (typeof tag !== 'string') {
-
     throw new Error('tag must be a string');
   }
 
@@ -25,4 +24,3 @@ let { tag } = argv;
     console.warn('Error:', err.message);
   }
 })();
-

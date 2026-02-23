@@ -1,9 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
-import {renderContributorsList, getTagRef, renderPRsList} from './contributors.js';
+import { renderContributorsList, getTagRef, renderPRsList } from './contributors.js';
 import asyncReplace from 'string-replace-async';
-import {fileURLToPath} from "url";
-import {colorize} from "./helpers/colorize.js";
+import { fileURLToPath } from 'url';
+import { colorize } from './helpers/colorize.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -16,7 +16,7 @@ const injectSection = async (name, contributorsRE, injector, infile = '../CHANGE
   infile = path.resolve(__dirname, infile);
 
   const content = String(await fs.readFile(infile));
-  const headerRE = /^#+\s+\[([-_\d.\w]+)].+?$/mig;
+  const headerRE = /^#+\s+\[([-_\d.\w]+)].+?$/gim;
 
   let tag;
   let index = 0;
@@ -32,11 +32,11 @@ const injectSection = async (name, contributorsRE, injector, infile = '../CHANGE
     tag = nextTag;
     index = offset + match.length;
 
-    if(currentTag) {
+    if (currentTag) {
       if (hasSection) {
         console.log(colorize()`[${currentTag}]: ✓ OK`);
       } else {
-        const target = isFirstTag && (!await getTagRef(currentTag)) ? '' : currentTag;
+        const target = isFirstTag && !(await getTagRef(currentTag)) ? '' : currentTag;
 
         console.log(colorize()`[${currentTag}]: ❌ MISSED` + (!target ? ' (UNRELEASED)' : ''));
 
@@ -63,16 +63,12 @@ const injectSection = async (name, contributorsRE, injector, infile = '../CHANGE
   });
 
   await fs.writeFile(infile, newContent);
-}
+};
 
-await injectSection(
-  'PRs',
-  /^\s*### PRs/mi,
-  (tag) => tag ? '' : renderPRsList(tag, PRS_TEMPLATE, {awesome_threshold: 5, comments_threshold: 7}),
+await injectSection('PRs', /^\s*### PRs/im, (tag) =>
+  tag ? '' : renderPRsList(tag, PRS_TEMPLATE, { awesome_threshold: 5, comments_threshold: 7 })
 );
 
-await injectSection(
-  'contributors',
-  /^\s*### Contributors/mi,
-  (tag) => renderContributorsList(tag, CONTRIBUTORS_TEMPLATE)
+await injectSection('contributors', /^\s*### Contributors/im, (tag) =>
+  renderContributorsList(tag, CONTRIBUTORS_TEMPLATE)
 );

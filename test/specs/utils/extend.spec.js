@@ -1,11 +1,11 @@
 import utils from '../../../lib/utils';
 
-const {extend} = utils;
+const { extend } = utils;
 
 describe('utils::extend', function () {
   it('should be mutable', function () {
     const a = {};
-    const b = {foo: 123};
+    const b = { foo: 123 };
 
     extend(a, b);
 
@@ -13,8 +13,8 @@ describe('utils::extend', function () {
   });
 
   it('should extend properties', function () {
-    let a = {foo: 123, bar: 456};
-    const b = {bar: 789};
+    let a = { foo: 123, bar: 456 };
+    const b = { bar: 789 };
 
     a = extend(a, b);
 
@@ -24,7 +24,11 @@ describe('utils::extend', function () {
 
   it('should bind to thisArg', function () {
     const a = {};
-    const b = {getFoo: function getFoo() { return this.foo; }};
+    const b = {
+      getFoo: function getFoo() {
+        return this.foo;
+      },
+    };
     const thisArg = { foo: 'barbaz' };
 
     extend(a, b, thisArg);
@@ -33,4 +37,3 @@ describe('utils::extend', function () {
     expect(a.getFoo()).toEqual(thisArg.foo);
   });
 });
-

@@ -35,6 +35,16 @@ describe('helpers::composeSignals', () => {
     assert.match(String(signal.reason), /timeout of 100ms exceeded/);
   });
 
+  it('should abort immediately if a signal is already aborted', () => {
+    const controller = new AbortController();
+    controller.abort(new Error('already aborted'));
+
+    const signal = composeSignals([controller.signal]);
+
+    assert.ok(signal.aborted);
+    assert.match(String(signal.reason), /already aborted/);
+  });
+
   it('should return undefined if signals and timeout are not provided', async () => {
     const signal = composeSignals([]);
 

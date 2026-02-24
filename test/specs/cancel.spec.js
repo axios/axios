@@ -99,6 +99,7 @@ describe('cancel', function () {
 
   it('it should support cancellation using AbortController signal', function (done) {
     const controller = new envAbortController();
+    const abortReason = 'Operation has been canceled.';
 
     axios
       .get('/foo/bar', {
@@ -110,13 +111,14 @@ describe('cancel', function () {
         },
         function (thrown) {
           expect(thrown).toEqual(jasmine.any(Cancel));
+          expect(thrown.message).toBe(abortReason);
           done();
         }
       );
 
     getAjaxRequest().then(function (request) {
       // call cancel() when the request has been sent, but a response has not been received
-      controller.abort();
+      controller.abort(abortReason);
       setTimeout(function () {
         request.respondWith({
           status: 200,

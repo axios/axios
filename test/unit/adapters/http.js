@@ -2466,6 +2466,28 @@ describe('supports http with nodejs', function () {
   describe('request aborting', function () {
     //this.timeout(5000);
 
+    it('should propagate AbortSignal reason to the CanceledError message', async () => {
+      server = await startHTTPServer((req, res) => {
+        setTimeout(() => res.end('OK'), 1000);
+      });
+
+      const controller = new AbortController();
+      const abortReason = 'TimeoutError';
+
+      const reqPromise = axios.get(LOCAL_SERVER_URL, {
+        signal: controller.signal,
+        maxRedirects: 0,
+      });
+
+      setTimeout(() => {
+        controller.abort(abortReason);
+      }, 50);
+
+      await assert.rejects(reqPromise, (err) => {
+        return err && err.code === 'ERR_CANCELED' && err.message === abortReason;
+      });
+    });
+
     it('should be able to abort the response stream', async () => {
       server = await startHTTPServer({
         rate: 100_000,

@@ -120,4 +120,57 @@ describe('utils', function () {
       assert.strictEqual(result, null);
     });
   });
+
+  describe('utils::isReactNativeBlob', function () {
+    it('should return true for objects with uri property', function () {
+      assert.strictEqual(utils.isReactNativeBlob({ uri: 'file://path/to/file' }), true);
+      assert.strictEqual(utils.isReactNativeBlob({ uri: 'content://media/image' }), true);
+    });
+
+    it('should return true for React Native blob-like objects with optional name and type', function () {
+      assert.strictEqual(utils.isReactNativeBlob({ 
+        uri: 'file://path/to/file',
+        name: 'image.png',
+        type: 'image/png'
+      }), true);
+    });
+
+    it('should return false for objects without uri property', function () {
+      assert.strictEqual(utils.isReactNativeBlob({ path: 'file://path' }), false);
+      assert.strictEqual(utils.isReactNativeBlob({ url: 'http://example.com' }), false);
+      assert.strictEqual(utils.isReactNativeBlob({}), false);
+    });
+
+    it('should return false for non-objects', function () {
+      assert.strictEqual(utils.isReactNativeBlob(null), false);
+      assert.strictEqual(utils.isReactNativeBlob(undefined), false);
+      assert.strictEqual(utils.isReactNativeBlob('string'), false);
+      assert.strictEqual(utils.isReactNativeBlob(123), false);
+      assert.strictEqual(utils.isReactNativeBlob(false), false);
+    });
+
+    it('should return true even if uri is empty string', function () {
+      assert.strictEqual(utils.isReactNativeBlob({ uri: '' }), true);
+    });
+  });
+
+  describe('utils::isReactNative', function () {
+    it('should return true for FormData with getParts method', function () {
+      const mockReactNativeFormData = {
+        append: function() {},
+        getParts: function() { return []; }
+      };
+      assert.strictEqual(utils.isReactNative(mockReactNativeFormData), true);
+    });
+
+    it('should return false for standard FormData without getParts method', function () {
+      const standardFormData = new FormData();
+      assert.strictEqual(utils.isReactNative(standardFormData), false);
+    });
+
+    it('should return false for objects without getParts method', function () {
+      assert.strictEqual(utils.isReactNative({ append: function() {} }), false);
+      assert.strictEqual(utils.isReactNative({}), false);
+    });
+  });
 });

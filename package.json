@@ -95,7 +95,7 @@
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
     "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-babel": "^6.1.0",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-multi-entry": "^4.1.0",

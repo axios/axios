@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 import axios from '../../index';
 
 function validateInvalidCharacterError(error) {

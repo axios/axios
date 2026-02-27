@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import assert from 'assert';
 import toFormData from '../../../lib/helpers/toFormData.js';
 import FormData from 'form-data';

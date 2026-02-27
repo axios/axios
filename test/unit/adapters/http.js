@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import axios from '../../../index.js';
 import http from 'http';
 import https from 'https';

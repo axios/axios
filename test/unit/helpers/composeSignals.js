@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import assert from 'assert';
 import composeSignals from '../../../lib/helpers/composeSignals.js';
 

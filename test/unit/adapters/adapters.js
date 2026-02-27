@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import adapters from '../../../lib/adapters/adapters.js';
 import assert from 'assert';
 

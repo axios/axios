@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import buildFullPath from '../../../lib/core/buildFullPath';
 
 describe('helpers::buildFullPath', function () {

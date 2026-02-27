@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import assert from 'assert';
 import fromDataURI from '../../../lib/helpers/fromDataURI.js';
 

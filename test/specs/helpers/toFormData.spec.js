@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import toFormData from '../../../lib/helpers/toFormData';
 
 describe('toFormData', function () {

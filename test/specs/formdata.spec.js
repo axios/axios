@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import { retryNetwork } from '../helpers/retry.js';
 
 describe('FormData', function () {

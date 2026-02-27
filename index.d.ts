@@ -740,6 +740,7 @@ export interface AxiosInstance extends Axios {
   ): Promise<R>;
 
   create(config?: CreateAxiosDefaults): AxiosInstance;
+  create(): AxiosInstance;
   defaults: Omit<AxiosDefaults, "headers"> & {
     headers: HeadersDefaults & {
       [key: string]: AxiosHeaderValue;

@@ -135,7 +135,7 @@
     "minimist": "^1.2.8",
     "mocha": "^10.8.2",
     "multer": "^1.4.4",
-    "pacote": "^20.0.0",
+    "pacote": "^21.4.0",
     "prettier": "^3.8.1",
     "pretty-bytes": "^6.1.1",
     "rollup": "^2.79.2",

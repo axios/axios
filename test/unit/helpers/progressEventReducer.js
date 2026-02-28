@@ -22,6 +22,6 @@ describe('helpers::progressEventReducer', () => {
     assert.strictEqual(last.total, 100);
     assert.strictEqual(last.progress, 1);
     assert.strictEqual(last.upload, true);
-    assert.ok(last.bytes >= 0);
+    assert.strictEqual(last.bytes, 20);
   });
 });

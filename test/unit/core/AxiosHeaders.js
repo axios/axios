@@ -83,6 +83,30 @@ describe('AxiosHeaders', function () {
       assert.strictEqual(headers.get('x'), '123');
     });
 
+    it('should trim trailing CRLF from plain object header values', function () {
+      const headers = new AxiosHeaders();
+
+      headers.set({
+        'cache-control': 'no-cache\r',
+        expires: '-1\r\n',
+      });
+
+      assert.strictEqual(headers.get('cache-control'), 'no-cache');
+      assert.strictEqual(headers.get('expires'), '-1');
+    });
+
+    it('should trim trailing CRLF from iterable header values', function () {
+      const headers = new AxiosHeaders();
+
+      headers.set(new Map([
+        ['content-type', 'application/json; charset=utf-8\r'],
+        ['pragma', 'no-cache\r\n'],
+      ]));
+
+      assert.strictEqual(headers.get('content-type'), 'application/json; charset=utf-8');
+      assert.strictEqual(headers.get('pragma'), 'no-cache');
+    });
+
     it('should support setting multiple header values from an iterable source', function () {
       if (nodeMajorVersion < 18) {
         this.skip();

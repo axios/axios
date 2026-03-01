@@ -8,6 +8,7 @@ describe('static api', function () {
     expect(typeof axios.post).toEqual('function');
     expect(typeof axios.put).toEqual('function');
     expect(typeof axios.patch).toEqual('function');
+    expect(typeof axios.query).toEqual('function');
   });
 
   it('should have promise method helpers', function () {
@@ -71,6 +72,7 @@ describe('instance api', function () {
     expect(typeof instance.post).toEqual('function');
     expect(typeof instance.put).toEqual('function');
     expect(typeof instance.patch).toEqual('function');
+    expect(typeof instance.query).toEqual('function');
   });
 
   it('should have interceptors', function () {

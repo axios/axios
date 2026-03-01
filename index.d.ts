@@ -291,7 +291,9 @@ export type Method =
   | "link"
   | "LINK"
   | "unlink"
-  | "UNLINK";
+  | "UNLINK"
+  | "query"
+  | "QUERY";
 
 export type ResponseType =
   | "arraybuffer"
@@ -537,6 +539,7 @@ export interface HeadersDefaults {
   purge?: RawAxiosRequestHeaders;
   link?: RawAxiosRequestHeaders;
   unlink?: RawAxiosRequestHeaders;
+  query?: RawAxiosRequestHeaders;
 }
 
 export interface AxiosDefaults<D = any> extends Omit<
@@ -724,6 +727,16 @@ export class Axios {
     config?: AxiosRequestConfig<D>,
   ): Promise<R>;
   patchForm<T = any, R = AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>,
+  ): Promise<R>;
+  query<T = any, R = AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>,
+  ): Promise<R>;
+  queryForm<T = any, R = AxiosResponse<T>, D = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D>,

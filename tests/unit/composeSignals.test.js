@@ -2,10 +2,10 @@ import { describe, it } from 'vitest';
 import assert from 'assert';
 import composeSignals from '../../lib/helpers/composeSignals.js';
 
-describe('helpers::composeSignals', function () {
+describe('helpers::composeSignals', () => {
   const runIfAbortController = typeof AbortController === 'function' ? it : it.skip;
 
-  runIfAbortController('should abort when any of the signals abort', function () {
+  runIfAbortController('should abort when any of the signals abort', () => {
     let called;
 
     const controllerA = new AbortController();
@@ -13,7 +13,7 @@ describe('helpers::composeSignals', function () {
 
     const signal = composeSignals([controllerA.signal, controllerB.signal]);
 
-    signal.addEventListener('abort', function () {
+    signal.addEventListener('abort', () => {
       called = true;
     });
 
@@ -22,17 +22,17 @@ describe('helpers::composeSignals', function () {
     assert.ok(called);
   });
 
-  runIfAbortController('should abort on timeout', async function () {
+  runIfAbortController('should abort on timeout', async () => {
     const signal = composeSignals([], 100);
 
-    await new Promise(function (resolve) {
+    await new Promise((resolve) => {
       signal.addEventListener('abort', resolve);
     });
 
     assert.match(String(signal.reason), /timeout of 100ms exceeded/);
   });
 
-  it('should return undefined if signals and timeout are not provided', function () {
+  it('should return undefined if signals and timeout are not provided', () => {
     const signal = composeSignals([]);
 
     assert.strictEqual(signal, undefined);

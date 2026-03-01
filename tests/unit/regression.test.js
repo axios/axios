@@ -7,11 +7,11 @@ import http from 'http';
 import axios from '../../index.js';
 import platform from '../../lib/platform/index.js';
 
-describe('regression', function () {
-  describe('issues', function () {
-    describe('4999', function () {
+describe('regression', () => {
+  describe('issues', () => {
+    describe('4999', () => {
       // Depends on network: https://postman-echo.com
-      it('should not fail with query parsing', async function () {
+      it('should not fail with query parsing', async () => {
         const { data } = await axios.get('https://postman-echo.com/get?foo1=bar1&foo2=bar2');
 
         assert.strictEqual(data.args.foo1, 'bar1');
@@ -19,8 +19,8 @@ describe('regression', function () {
       });
     });
 
-    describe('5028', function () {
-      it('should handle set-cookie headers as an array', async function () {
+    describe('5028', () => {
+      it('should handle set-cookie headers as an array', async () => {
         const cookie1 =
           'something=else; path=/; expires=Wed, 12 Apr 2023 12:03:42 GMT; samesite=lax; secure; httponly';
         const cookie2 =
@@ -49,8 +49,8 @@ describe('regression', function () {
       });
     });
 
-    describe('7364', function () {
-      it('fetch: should have status code in axios error', async function () {
+    describe('7364', () => {
+      it('fetch: should have status code in axios error', async () => {
         const isFetchSupported = typeof fetch === 'function';
         if (!isFetchSupported) {
           vi.skip();
@@ -79,7 +79,7 @@ describe('regression', function () {
         }
       });
 
-      it('http: should have status code in axios error', async function () {
+      it('http: should have status code in axios error', async () => {
         const server = http
           .createServer((req, res) => {
             res.statusCode = 400;
@@ -119,7 +119,7 @@ describe('regression', function () {
     beforeEach(() => {
       fail = false;
       server = http
-        .createServer(function (req, res) {
+        .createServer((req, res) => {
           fail = true;
           res.end('rm -rf /');
         })
@@ -127,7 +127,7 @@ describe('regression', function () {
       evilPort = server.address().port;
 
       proxy = http
-        .createServer(function (req, res) {
+        .createServer((req, res) => {
           if (
             new URL(req.url, 'http://' + req.headers.host).toString() ===
             'http://localhost:' + evilPort + '/'
@@ -188,7 +188,7 @@ describe('regression', function () {
 
     beforeEach(() => {
       goodServer = http
-        .createServer(function (req, res) {
+        .createServer((req, res) => {
           res.write('good');
           res.end();
         })
@@ -196,7 +196,7 @@ describe('regression', function () {
       goodPort = goodServer.address().port;
 
       badServer = http
-        .createServer(function (req, res) {
+        .createServer((req, res) => {
           res.write('bad');
           res.end();
         })

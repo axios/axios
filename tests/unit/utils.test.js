@@ -4,21 +4,21 @@ import utils from '../../lib/utils.js';
 import FormData from 'form-data';
 import stream from 'stream';
 
-describe('utils', function () {
-  it('should validate Stream', function () {
+describe('utils', () => {
+  it('should validate Stream', () => {
     assert.strictEqual(utils.isStream(new stream.Readable()), true);
     assert.strictEqual(utils.isStream({ foo: 'bar' }), false);
   });
 
-  it('should validate Buffer', function () {
+  it('should validate Buffer', () => {
     assert.strictEqual(utils.isBuffer(Buffer.from('a')), true);
     assert.strictEqual(utils.isBuffer(null), false);
     assert.strictEqual(utils.isBuffer(undefined), false);
   });
 
-  describe('utils::isFormData', function () {
-    it('should detect the FormData instance provided by the `form-data` package', function () {
-      [1, 'str', {}, new RegExp()].forEach(function (thing) {
+  describe('utils::isFormData', () => {
+    it('should detect the FormData instance provided by the `form-data` package', () => {
+      [1, 'str', {}, new RegExp()].forEach((thing) => {
         assert.equal(utils.isFormData(thing), false);
       });
       assert.equal(utils.isFormData(new FormData()), true);
@@ -54,8 +54,8 @@ describe('utils', function () {
     });
   });
 
-  describe('toJSON', function () {
-    it('should convert to a plain object without circular references', function () {
+  describe('toJSON', () => {
+    it('should convert to a plain object without circular references', () => {
       const obj = { a: [0] };
       const source = { x: 1, y: 2, obj };
       source.circular1 = source;
@@ -68,7 +68,7 @@ describe('utils', function () {
       });
     });
 
-    it('should use objects with defined toJSON method without rebuilding', function () {
+    it('should use objects with defined toJSON method without rebuilding', () => {
       const objProp = {};
       const obj = {
         objProp,
@@ -88,8 +88,8 @@ describe('utils', function () {
     });
   });
 
-  describe('Buffer RangeError Fix', function () {
-    it('should handle large Buffer in isEmptyObject without RangeError', function () {
+  describe('Buffer RangeError Fix', () => {
+    it('should handle large Buffer in isEmptyObject without RangeError', () => {
       const largeBuffer = Buffer.alloc(1024 * 1024 * 200);
 
       const result = utils.isEmptyObject(largeBuffer);
@@ -97,7 +97,7 @@ describe('utils', function () {
       assert.strictEqual(result, false);
     });
 
-    it('should handle large Buffer in forEach without RangeError', function () {
+    it('should handle large Buffer in forEach without RangeError', () => {
       const largeBuffer = Buffer.alloc(1024 * 1024 * 200);
       let count = 0;
 
@@ -106,7 +106,7 @@ describe('utils', function () {
       assert.strictEqual(count, 0);
     });
 
-    it('should handle large Buffer in findKey without RangeError', function () {
+    it('should handle large Buffer in findKey without RangeError', () => {
       const largeBuffer = Buffer.alloc(1024 * 1024 * 200);
 
       const result = utils.findKey(largeBuffer, 'test');
@@ -115,27 +115,30 @@ describe('utils', function () {
     });
   });
 
-  describe('utils::isReactNativeBlob', function () {
-    it('should return true for objects with uri property', function () {
+  describe('utils::isReactNativeBlob', () => {
+    it('should return true for objects with uri property', () => {
       assert.strictEqual(utils.isReactNativeBlob({ uri: 'file://path/to/file' }), true);
       assert.strictEqual(utils.isReactNativeBlob({ uri: 'content://media/image' }), true);
     });
 
-    it('should return true for React Native blob-like objects with optional name and type', function () {
-      assert.strictEqual(utils.isReactNativeBlob({
-        uri: 'file://path/to/file',
-        name: 'image.png',
-        type: 'image/png'
-      }), true);
+    it('should return true for React Native blob-like objects with optional name and type', () => {
+      assert.strictEqual(
+        utils.isReactNativeBlob({
+          uri: 'file://path/to/file',
+          name: 'image.png',
+          type: 'image/png',
+        }),
+        true
+      );
     });
 
-    it('should return false for objects without uri property', function () {
+    it('should return false for objects without uri property', () => {
       assert.strictEqual(utils.isReactNativeBlob({ path: 'file://path' }), false);
       assert.strictEqual(utils.isReactNativeBlob({ url: 'http://example.com' }), false);
       assert.strictEqual(utils.isReactNativeBlob({}), false);
     });
 
-    it('should return false for non-objects', function () {
+    it('should return false for non-objects', () => {
       assert.strictEqual(utils.isReactNativeBlob(null), false);
       assert.strictEqual(utils.isReactNativeBlob(undefined), false);
       assert.strictEqual(utils.isReactNativeBlob('string'), false);
@@ -143,29 +146,29 @@ describe('utils', function () {
       assert.strictEqual(utils.isReactNativeBlob(false), false);
     });
 
-    it('should return true even if uri is empty string', function () {
+    it('should return true even if uri is empty string', () => {
       assert.strictEqual(utils.isReactNativeBlob({ uri: '' }), true);
     });
   });
 
-  describe('utils::isReactNative', function () {
-    it('should return true for FormData with getParts method', function () {
+  describe('utils::isReactNative', () => {
+    it('should return true for FormData with getParts method', () => {
       const mockReactNativeFormData = {
-        append: function () {},
-        getParts: function () {
+        append: () => {},
+        getParts: () => {
           return [];
-        }
+        },
       };
       assert.strictEqual(utils.isReactNative(mockReactNativeFormData), true);
     });
 
-    it('should return false for standard FormData without getParts method', function () {
+    it('should return false for standard FormData without getParts method', () => {
       const standardFormData = new FormData();
       assert.strictEqual(utils.isReactNative(standardFormData), false);
     });
 
-    it('should return false for objects without getParts method', function () {
-      assert.strictEqual(utils.isReactNative({ append: function () {} }), false);
+    it('should return false for objects without getParts method', () => {
+      assert.strictEqual(utils.isReactNative({ append: () => {} }), false);
       assert.strictEqual(utils.isReactNative({}), false);
     });
   });

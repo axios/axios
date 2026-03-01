@@ -3,21 +3,21 @@ import assert from 'assert';
 import FormData from 'form-data';
 import toFormData from '../../lib/helpers/toFormData.js';
 
-describe('helpers::toFormData', function () {
-  function createRNFormDataSpy() {
+describe('helpers::toFormData', () => {
+  const createRNFormDataSpy = () => {
     const calls = [];
     return {
       calls,
-      append(key, value) {
+      append: (key, value) => {
         calls.push([key, value]);
       },
-      getParts() {
+      getParts: () => {
         return [];
       },
     };
-  }
+  };
 
-  it('should convert a flat object to FormData', function () {
+  it('should convert a flat object to FormData', () => {
     const data = {
       foo: 'bar',
       baz: 123,
@@ -29,7 +29,7 @@ describe('helpers::toFormData', function () {
     assert.ok(formData._streams.length > 0);
   });
 
-  it('should convert a nested object to FormData', function () {
+  it('should convert a nested object to FormData', () => {
     const data = {
       foo: {
         bar: 'baz',
@@ -41,7 +41,7 @@ describe('helpers::toFormData', function () {
     assert.ok(formData instanceof FormData);
   });
 
-  it('should throw Error on circular reference', function () {
+  it('should throw Error on circular reference', () => {
     const data = {
       foo: 'bar',
     };
@@ -55,7 +55,7 @@ describe('helpers::toFormData', function () {
     }
   });
 
-  it('should handle arrays', function () {
+  it('should handle arrays', () => {
     const data = {
       arr: [1, 2, 3],
     };
@@ -64,7 +64,7 @@ describe('helpers::toFormData', function () {
     assert.ok(formData instanceof FormData);
   });
 
-  it('should append root-level React Native blob without recursion', function () {
+  it('should append root-level React Native blob without recursion', () => {
     const formData = createRNFormDataSpy();
 
     const blob = {
@@ -80,7 +80,7 @@ describe('helpers::toFormData', function () {
     assert.strictEqual(formData.calls[0][1], blob);
   });
 
-  it('should append nested React Native blob without recursion', function () {
+  it('should append nested React Native blob without recursion', () => {
     const formData = createRNFormDataSpy();
 
     const blob = {
@@ -96,7 +96,7 @@ describe('helpers::toFormData', function () {
     assert.strictEqual(formData.calls[0][1], blob);
   });
 
-  it('should append deeply nested React Native blob without recursion', function () {
+  it('should append deeply nested React Native blob without recursion', () => {
     const formData = createRNFormDataSpy();
 
     const blob = {
@@ -111,7 +111,7 @@ describe('helpers::toFormData', function () {
     assert.strictEqual(formData.calls[0][1], blob);
   });
 
-  it('should NOT recurse into React Native blob properties', function () {
+  it('should NOT recurse into React Native blob properties', () => {
     const formData = createRNFormDataSpy();
 
     const blob = {
@@ -122,19 +122,11 @@ describe('helpers::toFormData', function () {
 
     toFormData({ file: blob }, formData);
 
-    const keys = formData.calls.map(function (call) {
-      return call[0];
-    });
+    const keys = formData.calls.map((call) => call[0]);
 
     assert.deepStrictEqual(keys, ['file']);
-    assert.ok(!keys.some(function (key) {
-      return key.includes('uri');
-    }));
-    assert.ok(!keys.some(function (key) {
-      return key.includes('type');
-    }));
-    assert.ok(!keys.some(function (key) {
-      return key.includes('name');
-    }));
+    assert.ok(!keys.some((key) => key.includes('uri')));
+    assert.ok(!keys.some((key) => key.includes('type')));
+    assert.ok(!keys.some((key) => key.includes('name')));
   });
 });

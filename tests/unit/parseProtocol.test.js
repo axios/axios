@@ -3,8 +3,8 @@ import assert from 'assert';
 import utils from '../../lib/utils.js';
 import parseProtocol from '../../lib/helpers/parseProtocol.js';
 
-describe('helpers::parseProtocol', function () {
-  it('should parse protocol part if it exists', function () {
+describe('helpers::parseProtocol', () => {
+  it('should parse protocol part if it exists', () => {
     utils.forEach(
       {
         'http://username:password@example.com/': 'http',
@@ -20,7 +20,7 @@ describe('helpers::parseProtocol', function () {
         'mailto:jsmith@example.com': 'mailto',
         'chrome-extension://1234/<pageName>.html': 'chrome-extension',
       },
-      function (expectedProtocol, url) {
+      (expectedProtocol, url) => {
         assert.strictEqual(parseProtocol(url), expectedProtocol);
       }
     );

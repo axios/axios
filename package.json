@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.13.5",
+  "version": "1.13.6",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "./index.js",
   "module": "./index.js",
@@ -95,7 +95,7 @@
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
     "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-babel": "^6.1.0",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-multi-entry": "^4.1.0",

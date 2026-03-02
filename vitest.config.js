@@ -10,6 +10,7 @@ export default defineConfig({
           name: 'unit',
           environment: 'node',
           include: ['tests/unit/**/*.test.js'],
+          setupFiles: ['tests/setup/unit.setup.js'],
         },
       },
       {

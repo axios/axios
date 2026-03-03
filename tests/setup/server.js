@@ -43,7 +43,8 @@ export const startHTTPServer = (handlerOrOptions, options) => {
       handler ||
       async function (req, res) {
         try {
-          req.headers['content-length'] && res.setHeader('content-length', req.headers['content-length']);
+          req.headers['content-length'] &&
+            res.setHeader('content-length', req.headers['content-length']);
 
           let dataStream = req;
 

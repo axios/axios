@@ -10,7 +10,7 @@ import axios from '../../../index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function getClosedPort() {
+const getClosedPort = async () => {
   return await new Promise((resolve) => {
     const srv = net.createServer();
     srv.listen(0, '127.0.0.1', () => {
@@ -18,7 +18,7 @@ async function getClosedPort() {
       srv.close(() => resolve(port));
     });
   });
-}
+};
 
 describe('adapters - network-error details', () => {
   it('should expose ECONNREFUSED and set error.cause on connection refusal', async () => {
@@ -41,7 +41,7 @@ describe('adapters - network-error details', () => {
   });
 
   it('should expose self-signed TLS error and set error.cause', async () => {
-    const certsDir = path.resolve(__dirname, '../../../test/unit/adapters');
+    const certsDir = path.resolve(__dirname, '../../../tests/unit/adapters/');
     const keyPath = path.join(certsDir, 'key.pem');
     const certPath = path.join(certsDir, 'cert.pem');
 

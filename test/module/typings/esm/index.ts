@@ -7,6 +7,7 @@ import axios, {
   AxiosResponse,
   AxiosError,
   AxiosInstance,
+  AxiosInterceptorOptions,
   AxiosAdapter,
   Cancel,
   CancelTokenSource,
@@ -274,6 +275,13 @@ axios
 
 const instance1: AxiosInstance = axios.create();
 const instance2: AxiosInstance = instance1.create(config);
+
+type RequestInterceptorHandler = NonNullable<
+  AxiosInstance['interceptors']['request']['handlers']
+>[number];
+const runWhenFromHandler: RequestInterceptorHandler['runWhen'] = null;
+const runWhenFromOptions: AxiosInterceptorOptions['runWhen'] | null = runWhenFromHandler;
+void runWhenFromOptions;
 
 instance1(config).then(handleResponse).catch(handleError);
 

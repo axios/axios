@@ -253,6 +253,13 @@ axios
 const instance1: axios.AxiosInstance = axios.create();
 const instance2: axios.AxiosInstance = axios.create(config);
 
+type RequestInterceptorHandler = NonNullable<
+  axios.AxiosInstance['interceptors']['request']['handlers']
+>[number];
+const runWhenFromHandler: RequestInterceptorHandler['runWhen'] = null;
+const runWhenFromOptions: axios.AxiosInterceptorOptions['runWhen'] | null = runWhenFromHandler;
+void runWhenFromOptions;
+
 instance1(config).then(handleResponse).catch(handleError);
 
 instance1.request(config).then(handleResponse).catch(handleError);

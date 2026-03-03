@@ -649,7 +649,7 @@ declare namespace axios {
     fulfilled: AxiosInterceptorFulfilled<T>;
     rejected?: AxiosInterceptorRejected;
     synchronous: boolean;
-    runWhen?: (config: AxiosRequestConfig) => boolean;
+    runWhen: AxiosInterceptorOptions['runWhen'] | null;
   }
 
   interface AxiosInterceptorManager<V> {

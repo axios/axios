@@ -20,6 +20,7 @@ const {
   formToJSON,
   getAdapter,
   mergeConfig,
+  encode,
 } = axios;
 
 export {
@@ -40,4 +41,5 @@ export {
   formToJSON,
   getAdapter,
   mergeConfig,
+  encode,
 };

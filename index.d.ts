@@ -786,6 +786,8 @@ export function mergeConfig<D = any>(
   config2: AxiosRequestConfig<D>,
 ): AxiosRequestConfig<D>;
 
+export function encode(val: string): string;
+
 export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;
   CancelToken: CancelTokenStatic;
@@ -803,6 +805,7 @@ export interface AxiosStatic extends AxiosInstance {
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
   mergeConfig: typeof mergeConfig;
+  encode: typeof encode;
 }
 
 declare const axios: AxiosStatic;

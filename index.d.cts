@@ -708,6 +708,7 @@ declare namespace axios {
       config1: AxiosRequestConfig<D>,
       config2: AxiosRequestConfig<D>
     ): AxiosRequestConfig<D>;
+    encode(val: string): string;
   }
 }
 

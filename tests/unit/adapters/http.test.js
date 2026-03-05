@@ -5,6 +5,8 @@ import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import http from 'http';
 import stream from 'stream';
+import url from 'url';
+import zlib from 'zlib';
 
 describe('supports http with nodejs', () => {
   it('should support IPv4 literal strings', async () => {
@@ -360,5 +362,149 @@ describe('supports http with nodejs', () => {
     } finally {
       await stopHTTPServer(server);
     }
+  });
+
+  it('should wrap interceptor errors and keep stack', async () => {
+    const axiosInstance = axios.create();
+
+    axiosInstance.interceptors.request.use((res) => {
+      throw new Error('from request interceptor');
+    });
+
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end();
+      },
+      { port: 4444 }
+    );
+
+    try {
+      await assert.rejects(
+        async function stackTraceTest() {
+          await axiosInstance.get(`http://localhost:${server.address().port}/one`);
+        },
+        (error) => {
+          const matches = [...error.stack.matchAll(/stackTraceTest/g)];
+
+          assert.strictEqual(error.name, 'Error');
+          assert.strictEqual(error.message, 'from request interceptor');
+          assert.strictEqual(matches.length, 1, error.stack);
+
+          return true;
+        }
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should preserve the HTTP verb on redirect', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.method.toLowerCase() !== 'head') {
+          res.statusCode = 400;
+          res.end();
+          return;
+        }
+
+        var parsed = url.parse(req.url);
+        if (parsed.pathname === '/one') {
+          res.setHeader('Location', '/two');
+          res.statusCode = 302;
+          res.end();
+        } else {
+          res.end();
+        }
+      },
+      { port: 4444 }
+    );
+
+    try {
+      const response = await axios.head(`http://localhost:${server.address().port}/one`);
+      assert.strictEqual(response.status, 200);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  describe('compression', async () => {
+    it('should support transparent gunzip', async () => {
+      const data = {
+        firstName: 'Fred',
+        lastName: 'Flintstone',
+        emailAddr: 'fred@example.com',
+      };
+
+      const zipped = await new Promise((resolve, reject) => {
+        zlib.gzip(JSON.stringify(data), (error, compressed) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve(compressed);
+        });
+      });
+
+      const server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      });
+
+      try {
+        const { data: responseData } = await axios.get(`http://localhost:${server.address().port}/`);
+        assert.deepStrictEqual(responseData, data);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support gunzip error handling', async () => {
+      const server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end('invalid response');
+      });
+
+      try {
+        await assert.rejects(async () => {
+          await axios.get(`http://localhost:${server.address().port}/`);
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support disabling automatic decompression of response data', async () => {
+      const data = 'Test data';
+
+      const zipped = await new Promise((resolve, reject) => {
+        zlib.gzip(data, (error, compressed) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve(compressed);
+        });
+      });
+
+      const server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Type', 'text/html;charset=utf-8');
+        res.setHeader('Content-Encoding', 'gzip');
+        res.end(zipped);
+      });
+
+      try {
+        const response = await axios.get(`http://localhost:${server.address().port}/`, {
+          decompress: false,
+          responseType: 'arraybuffer',
+        });
+        assert.strictEqual(response.data.toString('base64'), zipped.toString('base64'));
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
   });
 });

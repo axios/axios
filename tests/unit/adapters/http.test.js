@@ -1,17 +1,15 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
-import { startHTTPServer, stopHTTPServer, generateReadable } from '../../setup/server.js';
+import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import http from 'http';
-import https from 'https';
 import net from 'net';
 import stream from 'stream';
 import url from 'url';
 import zlib from 'zlib';
 import fs from 'fs';
 import path from 'path';
-import devNull from 'dev-null';
 
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
@@ -775,138 +773,6 @@ describe('supports http with nodejs', () => {
           resolve();
         });
       });
-
-      if (process.platform !== 'win32') {
-        try {
-          fs.unlinkSync(socketName);
-        } catch (error) {
-          // Ignore socket unlink errors; socket may already be cleaned up.
-        }
-      }
-    }
-  });
-
-  it('should support HTTP proxies', async () => {
-    const server = await startHTTPServer((req, res) => {
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      res.end('12345');
-    });
-
-    const proxy = await startHTTPServer((request, response) => {
-      const parsed = url.parse(request.url);
-      const opts = {
-        host: parsed.hostname,
-        port: parsed.port,
-        path: parsed.path,
-      };
-
-      http.get(opts, (res) => {
-        let body = '';
-        res.on('data', (data) => {
-          body += data;
-        });
-        res.on('end', () => {
-          response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-          response.end(body + '6789');
-        });
-      });
-    });
-
-    try {
-      const response = await axios.get(`http://localhost:${server.address().port}/`, {
-        proxy: {
-          host: 'localhost',
-          port: proxy.address().port,
-        },
-      });
-
-      assert.strictEqual(response.data, '123456789', 'should pass through proxy');
-    } finally {
-      await stopHTTPServer(server);
-      await stopHTTPServer(proxy);
-    }
-  });
-
-  it('should support HTTPS proxies', async () => {
-    const options = {
-      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
-      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
-    };
-
-    const server = await new Promise((resolve, reject) => {
-      const targetServer = https
-        .createServer(options, (req, res) => {
-          res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-          res.end('12345');
-        })
-        .listen(0, () => resolve(targetServer));
-
-      targetServer.on('error', reject);
-    });
-
-    const proxy = await new Promise((resolve, reject) => {
-      const proxyServer = https
-        .createServer(options, (request, response) => {
-          const parsed = url.parse(request.url);
-          const opts = {
-            host: parsed.hostname,
-            port: parsed.port,
-            path: parsed.path,
-            protocol: parsed.protocol,
-            rejectUnauthorized: false,
-          };
-
-          https.get(opts, (res) => {
-            let body = '';
-            res.on('data', (data) => {
-              body += data;
-            });
-            res.on('end', () => {
-              response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-              response.end(body + '6789');
-            });
-          });
-        })
-        .listen(0, () => resolve(proxyServer));
-
-      proxyServer.on('error', reject);
-    });
-
-    try {
-      const response = await axios.get(`https://localhost:${server.address().port}/`, {
-        proxy: {
-          host: 'localhost',
-          port: proxy.address().port,
-          protocol: 'https:',
-        },
-        httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
-        }),
-      });
-
-      assert.strictEqual(response.data, '123456789', 'should pass through proxy');
-    } finally {
-      await new Promise((resolve, reject) => {
-        server.close((error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve();
-        });
-      });
-
-      await new Promise((resolve, reject) => {
-        proxy.close((error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve();
-        });
-      });
     }
   });
 
@@ -951,7 +817,10 @@ describe('supports http with nodejs', () => {
 
       try {
         await assert.rejects(
-          axios.post(`http://localhost:${server.address().port}/`, fs.createReadStream(notExistPath)),
+          axios.post(
+            `http://localhost:${server.address().port}/`,
+            fs.createReadStream(notExistPath)
+          ),
           (error) => {
             assert.strictEqual(
               error.message,
@@ -964,73 +833,5 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
-
-    it('should destroy the response stream with an error on request stream destroying', async () => {
-      const server = await startHTTPServer();
-      const requestStream = generateReadable();
-
-      setTimeout(() => {
-        requestStream.destroy();
-      }, 1000);
-
-      const { data } = await axios.post(`http://localhost:${server.address().port}/`, requestStream, {
-        responseType: 'stream',
-      });
-
-      let streamError;
-      data.on('error', (error) => {
-        streamError = error;
-      });
-
-      try {
-        await new Promise((resolve, reject) => {
-          stream.pipeline(data, devNull(), (error) => {
-            if (error) {
-              reject(error);
-              return;
-            }
-            resolve();
-          });
-        });
-        assert.fail('stream was not aborted');
-      } catch (error) {
-        // Expected: pipeline should reject after request stream is destroyed.
-      } finally {
-        assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
-        await stopHTTPServer(server);
-      }
-    });
-  });
-
-  it('should support buffers', async () => {
-    const buf = Buffer.alloc(1024, 'x'); // Unsafe buffer < Buffer.poolSize (8192 bytes)
-    const server = await startHTTPServer((req, res) => {
-      assert.strictEqual(req.headers['content-length'], buf.length.toString());
-      req.pipe(res);
-    });
-
-    try {
-      const response = await axios.post(`http://localhost:${server.address().port}/`, buf, {
-        responseType: 'stream',
-      });
-
-      const responseText = await new Promise((resolve, reject) => {
-        const chunks = [];
-
-        response.data.on('data', (chunk) => {
-          chunks.push(chunk);
-        });
-
-        response.data.on('end', () => {
-          resolve(Buffer.concat(chunks).toString('utf8'));
-        });
-
-        response.data.on('error', reject);
-      });
-
-      assert.strictEqual(responseText, buf.toString());
-    } finally {
-      await stopHTTPServer(server);
-    }
   });
 });

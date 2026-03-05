@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
-import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
+import { startHTTPServer, stopHTTPServer, generateReadable } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import http from 'http';
@@ -10,6 +10,7 @@ import url from 'url';
 import zlib from 'zlib';
 import fs from 'fs';
 import path from 'path';
+import devNull from 'dev-null';
 
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
@@ -830,6 +831,43 @@ describe('supports http with nodejs', () => {
           }
         );
       } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should destroy the response stream with an error on request stream destroying', async () => {
+      const server = await startHTTPServer();
+      const requestStream = generateReadable();
+
+      setTimeout(() => {
+        requestStream.destroy();
+      }, 1000);
+
+      const { data } = await axios.post(`http://localhost:${server.address().port}/`, requestStream, {
+        responseType: 'stream',
+      });
+
+      let streamError;
+      data.on('error', (error) => {
+        streamError = error;
+      });
+
+      try {
+        await new Promise((resolve, reject) => {
+          stream.pipeline(data, devNull(), (error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
+        });
+        assert.fail('stream was not aborted');
+      } catch (error) {
+        // Expected: the request stream is destroyed before completion.
+      } finally {
+        assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
         await stopHTTPServer(server);
       }
     });

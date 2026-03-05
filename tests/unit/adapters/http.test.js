@@ -316,29 +316,49 @@ describe('supports http with nodejs', () => {
       { port: 4000 }
     );
 
-    console.log('proxy server', proxy.address());
-    console.log('server server', server.address());
+    await axios.get(`http://localhost:${server.address().port}/`, {
+      proxy: {
+        host: 'localhost',
+        port: 4000,
+      },
+      maxRedirects: totalRedirectCount,
+      beforeRedirect: (options) => {
+        configBeforeRedirectCount += 1;
+      },
+    });
 
-    try {
-      const response = await axios.get(`http://localhost:${server.address().port}/`, {
-        proxy: {
-          host: 'localhost',
-          port: 4000,
-        },
-        maxRedirects: totalRedirectCount,
-        beforeRedirect: (options) => {
-          configBeforeRedirectCount += 1;
-        },
-      });
-      console.log(response);
-
-      assert.strictEqual(totalRedirectCount, configBeforeRedirectCount);
-      assert.strictEqual(totalRedirectCount + 1, proxyUseCount);
-    } catch (error) {
-      console.log(error);
-    }
+    assert.strictEqual(totalRedirectCount, configBeforeRedirectCount);
+    assert.strictEqual(totalRedirectCount + 1, proxyUseCount);
 
     await stopHTTPServer(server);
     await stopHTTPServer(proxy);
+  });
+
+  it('should wrap HTTP errors and keep stack', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.statusCode = 400;
+      res.end();
+    });
+
+    try {
+      await assert.rejects(
+        async function stackTraceTest() {
+          await axios.get(`http://localhost:${server.address().port}/`);
+        },
+        (error) => {
+          const matches = [...error.stack.matchAll(/stackTraceTest/g)];
+
+          assert.strictEqual(error.name, 'AxiosError');
+          assert.strictEqual(error.isAxiosError, true);
+          assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+          assert.strictEqual(error.message, 'Request failed with status code 400');
+          assert.strictEqual(matches.length, 1, error.stack);
+
+          return true;
+        }
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
   });
 });

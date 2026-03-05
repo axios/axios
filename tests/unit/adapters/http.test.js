@@ -507,4 +507,149 @@ describe('supports http with nodejs', () => {
       }
     });
   });
+
+  /// algos for later
+
+  it('should support UTF8', async () => {
+    const str = Array(100000).join('ж');
+
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end(str);
+    });
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`);
+      assert.strictEqual(response.data, str);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support basic auth', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.end(req.headers.authorization);
+    });
+
+    try {
+      const user = 'foo';
+      const headers = { Authorization: 'Bearer 1234' };
+      const response = await axios.get(`http://${user}@localhost:${server.address().port}/`, { headers });
+      const base64 = Buffer.from(`${user}:`, 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support basic auth with a header', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.end(req.headers.authorization);
+    });
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const headers = { AuThOrIzAtIoN: 'Bearer 1234' }; // wonky casing to ensure caseless comparison
+      const response = await axios.get(`http://localhost:${server.address().port}/`, { auth, headers });
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should provides a default User-Agent header', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.end(req.headers['user-agent']);
+    });
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`);
+      assert.ok(
+        /^axios\/[\d.]+[-]?[a-z]*[.]?[\d]+$/.test(response.data),
+        `User-Agent header does not match: ${response.data}`
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should allow the User-Agent header to be overridden', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.end(req.headers['user-agent']);
+    });
+
+    try {
+      const headers = { 'UsEr-AgEnT': 'foo bar' }; // wonky casing to ensure caseless comparison
+      const response = await axios.get(`http://localhost:${server.address().port}/`, { headers });
+      assert.strictEqual(response.data, 'foo bar');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should allow the Content-Length header to be overridden', async () => {
+    const server = await startHTTPServer((req, res) => {
+      assert.strictEqual(req.headers['content-length'], '42');
+      res.end();
+    });
+
+    try {
+      const headers = { 'CoNtEnT-lEnGtH': '42' }; // wonky casing to ensure caseless comparison
+      await axios.post(`http://localhost:${server.address().port}/`, 'foo', { headers });
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support max content length', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end(Array(5000).join('#'));
+    });
+
+    try {
+      await assert.rejects(
+        axios.get(`http://localhost:${server.address().port}/`, {
+          maxContentLength: 2000,
+          maxRedirects: 0,
+        }),
+        /maxContentLength size of 2000 exceeded/
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support max content length for redirected', async () => {
+    const str = Array(100000).join('ж');
+    const server = await startHTTPServer((req, res) => {
+      const parsed = url.parse(req.url);
+
+      if (parsed.pathname === '/two') {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end(str);
+        return;
+      }
+
+      res.setHeader('Location', '/two');
+      res.statusCode = 302;
+      res.end();
+    });
+
+    try {
+      await assert.rejects(
+        axios.get(`http://localhost:${server.address().port}/one`, {
+          maxContentLength: 2000,
+        }),
+        (error) => {
+          assert.strictEqual(error.message, 'maxContentLength size of 2000 exceeded');
+          return true;
+        }
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
 });

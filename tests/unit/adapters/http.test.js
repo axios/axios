@@ -4,9 +4,11 @@ import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import http from 'http';
+import net from 'net';
 import stream from 'stream';
 import url from 'url';
 import zlib from 'zlib';
+import fs from 'fs';
 
 describe('supports http with nodejs', () => {
   it('should support IPv4 literal strings', async () => {
@@ -453,7 +455,9 @@ describe('supports http with nodejs', () => {
       });
 
       try {
-        const { data: responseData } = await axios.get(`http://localhost:${server.address().port}/`);
+        const { data: responseData } = await axios.get(
+          `http://localhost:${server.address().port}/`
+        );
         assert.deepStrictEqual(responseData, data);
       } finally {
         await stopHTTPServer(server);
@@ -534,7 +538,9 @@ describe('supports http with nodejs', () => {
     try {
       const user = 'foo';
       const headers = { Authorization: 'Bearer 1234' };
-      const response = await axios.get(`http://${user}@localhost:${server.address().port}/`, { headers });
+      const response = await axios.get(`http://${user}@localhost:${server.address().port}/`, {
+        headers,
+      });
       const base64 = Buffer.from(`${user}:`, 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
     } finally {
@@ -550,7 +556,10 @@ describe('supports http with nodejs', () => {
     try {
       const auth = { username: 'foo', password: 'bar' };
       const headers = { AuThOrIzAtIoN: 'Bearer 1234' }; // wonky casing to ensure caseless comparison
-      const response = await axios.get(`http://localhost:${server.address().port}/`, { auth, headers });
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        auth,
+        headers,
+      });
       const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
     } finally {
@@ -652,4 +661,151 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should support max body length', async () => {
+    const data = Array(100000).join('ж');
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end();
+    });
+
+    try {
+      await assert.rejects(
+        axios.post(
+          `http://localhost:${server.address().port}/`,
+          {
+            data,
+          },
+          {
+            maxBodyLength: 2000,
+          }
+        ),
+        (error) => {
+          assert.strictEqual(error.message, 'Request body larger than maxBodyLength limit');
+          return true;
+        }
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should properly support default max body length (follow-redirects as well)', async () => {
+    // Taken from follow-redirects defaults.
+    const followRedirectsMaxBodyDefaults = 10 * 1024 * 1024;
+    const data = Array(2 * followRedirectsMaxBodyDefaults).join('ж');
+
+    const server = await startHTTPServer((req, res) => {
+      // Consume the req stream before responding to avoid ECONNRESET.
+      req.on('data', () => {});
+      req.on('end', () => {
+        res.end('OK');
+      });
+    });
+
+    try {
+      const response = await axios.post(`http://localhost:${server.address().port}/`, {
+        data,
+      });
+      assert.strictEqual(response.data, 'OK', 'should handle response');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should display error while parsing params', async () => {
+    const server = await startHTTPServer(() => {});
+
+    try {
+      await assert.rejects(
+        axios.get(`http://localhost:${server.address().port}/`, {
+          params: {
+            errorParam: new Date(undefined),
+          },
+        }),
+        (error) => {
+          assert.deepStrictEqual(error.exists, true);
+          return true;
+        }
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support sockets', async () => {
+    let socketName = './test.sock';
+
+    if (process.platform === 'win32') {
+      socketName = '\\\\.\\pipe\\libuv-test';
+    }
+
+    const server = await new Promise((resolve, reject) => {
+      const socketServer = net
+        .createServer((socket) => {
+          socket.on('data', () => {
+            socket.end('HTTP/1.1 200 OK\r\n\r\n');
+          });
+        })
+        .listen(socketName, () => resolve(socketServer));
+
+      socketServer.on('error', reject);
+    });
+
+    try {
+      const response = await axios({
+        socketPath: socketName,
+        url: 'http://localhost:4444/socket',
+      });
+      assert.strictEqual(response.status, 200);
+      assert.strictEqual(response.statusText, 'OK');
+    } finally {
+      await new Promise((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve();
+        });
+      });
+    }
+  });
+
+  describe('streams', () => {
+    it('should support streams', async () => {
+      const server = await startHTTPServer((req, res) => {
+        req.pipe(res);
+      });
+
+      try {
+        const currentFilePath = url.fileURLToPath(import.meta.url);
+        const response = await axios.post(
+          `http://localhost:${server.address().port}/`,
+          fs.createReadStream(currentFilePath),
+          {
+            responseType: 'stream',
+          }
+        );
+
+        const responseText = await new Promise((resolve, reject) => {
+          const chunks = [];
+
+          response.data.on('data', (chunk) => {
+            chunks.push(chunk);
+          });
+
+          response.data.on('end', () => {
+            resolve(Buffer.concat(chunks).toString('utf8'));
+          });
+
+          response.data.on('error', reject);
+        });
+
+        assert.strictEqual(responseText, fs.readFileSync(currentFilePath, 'utf8'));
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+  });
 });

@@ -78,7 +78,7 @@ describe('supports http with nodejs', () => {
 
     try {
       await assert.rejects(
-        axios.get(`http://127.0.0.1:${server.address().port}`, {
+        axios.get(`http://localhost:${server.address().port}`, {
           timeout: { strangeTimeout: 250 },
         }),
         (error) => {
@@ -104,7 +104,7 @@ describe('supports http with nodejs', () => {
 
     try {
       await assert.rejects(
-        axios.get(`http://127.0.0.1:${server.address().port}`, {
+        axios.get(`http://localhost:${server.address().port}`, {
           timeout: '250',
         }),
         (error) => {
@@ -130,7 +130,7 @@ describe('supports http with nodejs', () => {
 
     try {
       await assert.rejects(
-        axios.get(`http://127.0.0.1:${server.address().port}`, {
+        axios.get(`http://localhost:${server.address().port}`, {
           timeout: 250,
         }),
         (error) => {
@@ -156,7 +156,7 @@ describe('supports http with nodejs', () => {
 
     try {
       await assert.rejects(
-        axios.get(`http://127.0.0.1:${server.address().port}`, {
+        axios.get(`http://localhost:${server.address().port}`, {
           timeout: 250,
           timeoutErrorMessage: 'oops, timeout',
         }),
@@ -187,7 +187,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      const { data: responseData } = await axios.get(`http://127.0.0.1:${server.address().port}`);
+      const { data: responseData } = await axios.get(`http://localhost:${server.address().port}`);
       assert.deepStrictEqual(responseData, data);
     } finally {
       await stopHTTPServer(server);
@@ -212,7 +212,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      const { data: responseData } = await axios.get(`http://127.0.0.1:${server.address().port}`);
+      const { data: responseData } = await axios.get(`http://localhost:${server.address().port}`);
       assert.deepStrictEqual(responseData, data);
     } finally {
       await stopHTTPServer(server);
@@ -236,7 +236,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      const response = await axios.get(`http://127.0.0.1:${server.address().port}/one`, {
+      const response = await axios.get(`http://localhost:${server.address().port}/one`, {
         maxRedirects: 1,
       });
 
@@ -258,7 +258,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      const response = await axios.get(`http://127.0.0.1:${server.address().port}/one`, {
+      const response = await axios.get(`http://localhost:${server.address().port}/one`, {
         maxRedirects: 0,
       });
 
@@ -286,7 +286,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      await axios.get(`http://127.0.0.1:${server.address().port}`, {
+      await axios.get(`http://localhost:${server.address().port}`, {
         maxRedirects: 3,
       });
     } catch (error) {
@@ -308,7 +308,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      await axios.get(`http://127.0.0.1:${server.address().port}/one`, {
+      await axios.get(`http://localhost:${server.address().port}/one`, {
         maxRedirects: 3,
         beforeRedirect: (options, responseDetails) => {
           if (options.path === '/foo' && responseDetails.headers.location === '/foo') {
@@ -333,7 +333,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         requestCount += 1;
         if (requestCount <= totalRedirectCount) {
-          res.setHeader('Location', 'http://127.0.0.1:8080');
+          res.setHeader('Location', 'http://localhost:8080');
           res.writeHead(302);
         }
         res.end();
@@ -344,7 +344,7 @@ describe('supports http with nodejs', () => {
     const proxy = await startHTTPServer(
       (req, res) => {
         proxyUseCount += 1;
-        const targetUrl = new URL(req.url, `http://127.0.0.1:${server.address().port}`);
+        const targetUrl = new URL(req.url, `http://localhost:${server.address().port}`);
         const opts = {
           host: targetUrl.hostname,
           port: targetUrl.port,

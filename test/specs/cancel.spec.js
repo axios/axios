@@ -125,4 +125,32 @@ describe('cancel', function () {
       }, 0);
     });
   });
+
+  it('it should support pre-aborted AbortController signal with custom reason', function (done) {
+    const customReason = new Error('Pre-aborted custom reason');
+    const controller = new envAbortController();
+
+    try {
+      controller.abort(customReason);
+    } catch (e) {
+      controller.abort();
+    }
+
+    axios
+      .get('/foo/bar', {
+        signal: controller.signal,
+      })
+      .then(
+        function () {
+          done.fail('Has not been canceled');
+        },
+        function (thrown) {
+          expect(thrown).toEqual(jasmine.any(Cancel));
+          if (controller.signal.reason === customReason) {
+            expect(thrown.reason).toBe(customReason);
+          }
+          done();
+        }
+      );
+  });
 });

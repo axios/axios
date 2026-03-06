@@ -598,7 +598,144 @@ describe('supports http with nodejs', () => {
       }
     });
 
-    /// algos for later
+    describe('algorithms', () => {
+      const responseBody = 'str';
+
+      const gzip = (value) =>
+        new Promise((resolve, reject) => {
+          zlib.gzip(value, (error, compressed) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(compressed);
+          });
+        });
+
+      const deflate = (value) =>
+        new Promise((resolve, reject) => {
+          zlib.deflate(value, (error, compressed) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(compressed);
+          });
+        });
+
+      const deflateRaw = (value) =>
+        new Promise((resolve, reject) => {
+          zlib.deflateRaw(value, (error, compressed) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(compressed);
+          });
+        });
+
+      const brotliCompress = (value) =>
+        new Promise((resolve, reject) => {
+          zlib.brotliCompress(value, (error, compressed) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(compressed);
+          });
+        });
+
+      for (const [typeName, zipped] of Object.entries({
+        gzip: gzip(responseBody),
+        GZIP: gzip(responseBody),
+        compress: gzip(responseBody),
+        deflate: deflate(responseBody),
+        'deflate-raw': deflateRaw(responseBody),
+        br: brotliCompress(responseBody),
+      })) {
+        const type = typeName.split('-')[0];
+
+        describe(`${typeName} decompression`, () => {
+          it('should support decompression', async () => {
+            const server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.end(await zipped);
+            });
+
+            try {
+              const { data } = await axios.get(`http://localhost:${server.address().port}`);
+              assert.strictEqual(data, responseBody);
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
+
+          it(`should not fail if response content-length header is missing (${type})`, async () => {
+            const server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.removeHeader('Content-Length');
+              res.end(await zipped);
+            });
+
+            try {
+              const { data } = await axios.get(`http://localhost:${server.address().port}`);
+              assert.strictEqual(data, responseBody);
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
+
+          it('should not fail with chunked responses (without Content-Length header)', async () => {
+            const server = await startHTTPServer(async (req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.setHeader('Transfer-Encoding', 'chunked');
+              res.removeHeader('Content-Length');
+              res.write(await zipped);
+              res.end();
+            });
+
+            try {
+              const { data } = await axios.get(`http://localhost:${server.address().port}`);
+              assert.strictEqual(data, responseBody);
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
+
+          it('should not fail with an empty response without content-length header (Z_BUF_ERROR)', async () => {
+            const server = await startHTTPServer((req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.removeHeader('Content-Length');
+              res.end();
+            });
+
+            try {
+              const { data } = await axios.get(`http://localhost:${server.address().port}`);
+              assert.strictEqual(data, '');
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
+
+          it('should not fail with an empty response with content-length header (Z_BUF_ERROR)', async () => {
+            const server = await startHTTPServer((req, res) => {
+              res.setHeader('Content-Encoding', type);
+              res.end();
+            });
+
+            try {
+              await axios.get(`http://localhost:${server.address().port}`);
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
+        });
+      }
+    });
   });
 
   it('should support UTF8', async () => {

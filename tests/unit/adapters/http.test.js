@@ -857,9 +857,13 @@ describe('supports http with nodejs', () => {
         requestStream.destroy();
       }, 1000);
 
-      const { data } = await axios.post(`http://localhost:${server.address().port}/`, requestStream, {
-        responseType: 'stream',
-      });
+      const { data } = await axios.post(
+        `http://localhost:${server.address().port}/`,
+        requestStream,
+        {
+          responseType: 'stream',
+        }
+      );
 
       let streamError;
       data.on('error', (error) => {
@@ -925,27 +929,30 @@ describe('supports http with nodejs', () => {
       res.end('12345');
     });
 
-    const proxy = await startHTTPServer((request, response) => {
-      const parsed = new URL(request.url);
-      const opts = {
-        host: parsed.hostname,
-        port: parsed.port,
-        path: `${parsed.pathname}${parsed.search}`,
-      };
+    const proxy = await startHTTPServer(
+      (request, response) => {
+        const parsed = new URL(request.url);
+        const opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: `${parsed.pathname}${parsed.search}`,
+        };
 
-      http.get(opts, (res) => {
-        let body = '';
+        http.get(opts, (res) => {
+          let body = '';
 
-        res.on('data', (data) => {
-          body += data;
+          res.on('data', (data) => {
+            body += data;
+          });
+
+          res.on('end', () => {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '6789');
+          });
         });
-
-        res.on('end', () => {
-          response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-          response.end(body + '6789');
-        });
-      });
-    }, { port: 0 });
+      },
+      { port: 0 }
+    );
 
     try {
       const response = await axios.get(`http://localhost:${server.address().port}/`, {
@@ -955,7 +962,7 @@ describe('supports http with nodejs', () => {
         },
       });
 
-      assert.equal(response.data, '123456789', 'should pass through proxy');
+      assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
     } finally {
       await stopHTTPServer(server);
       await stopHTTPServer(proxy);
@@ -1038,7 +1045,7 @@ describe('supports http with nodejs', () => {
         }),
       });
 
-      assert.equal(response.data, '123456789', 'should pass through proxy');
+      assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
     } finally {
       await Promise.all([closeServer(server), closeServer(proxy)]);
     }
@@ -1058,7 +1065,7 @@ describe('supports http with nodejs', () => {
         proxy: false,
       });
 
-      assert.equal(response.data, '123456789', 'should not pass through proxy');
+      assert.strictEqual(Number(response.data), 123456789, 'should not pass through proxy');
     } finally {
       await stopHTTPServer(server);
 
@@ -1066,6 +1073,89 @@ describe('supports http with nodejs', () => {
         delete process.env.http_proxy;
       } else {
         process.env.http_proxy = originalHttpProxy;
+      }
+    }
+  });
+
+  it('should support proxy set via env var', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('4567');
+      },
+      { port: 0 }
+    );
+
+    const proxy = await startHTTPServer(
+      (request, response) => {
+        const parsed = new URL(request.url);
+        const opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: `${parsed.pathname}${parsed.search}`,
+        };
+
+        http.get(opts, (res) => {
+          let body = '';
+
+          res.on('data', (data) => {
+            body += data;
+          });
+
+          res.on('end', () => {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+      },
+      { port: 0 }
+    );
+
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`);
+
+      assert.strictEqual(
+        String(response.data),
+        '45671234',
+        'should use proxy set by process.env.http_proxy'
+      );
+    } finally {
+      await stopHTTPServer(server);
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
       }
     }
   });

@@ -1,6 +1,11 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
-import { startHTTPServer, stopHTTPServer, generateReadable } from '../../setup/server.js';
+import {
+  startHTTPServer,
+  stopHTTPServer,
+  handleFormData,
+  generateReadable,
+} from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import { __setProxy } from '../../../lib/adapters/http.js';
@@ -14,10 +19,17 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import devNull from 'dev-null';
+import FormDataLegacy from 'form-data';
+import formidable from 'formidable';
+import { FormData as FormDataPolyfill, Blob as BlobPolyfill } from 'formdata-node';
+import express from 'express';
+import multer from 'multer';
 
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
   const thisTestFilePath = path.join(adaptersTestsDir, 'http.test.js');
+  const FormDataSpecCompliant = typeof FormData !== 'undefined' ? FormData : FormDataPolyfill;
+  const BlobSpecCompliant = typeof Blob !== 'undefined' ? Blob : BlobPolyfill;
 
   it('should support IPv4 literal strings', async () => {
     const data = {
@@ -1936,12 +1948,287 @@ describe('supports http with nodejs', () => {
   });
 
   it('should return malformed URL', async () => {
-    await assert.rejects(
-      axios.get('tel:484-695-3408'),
-      (error) => {
-        assert.equal(error.message, 'Unsupported protocol tel:');
-        return true;
-      }
+    await assert.rejects(axios.get('tel:484-695-3408'), (error) => {
+      assert.equal(error.message, 'Unsupported protocol tel:');
+      return true;
+    });
+  });
+
+  it('should return unsupported protocol', async () => {
+    await assert.rejects(axios.get('ftp:google.com'), (error) => {
+      assert.equal(error.message, 'Unsupported protocol ftp:');
+      return true;
+    });
+  });
+
+  it('should supply a user-agent if one is not specified', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        assert.equal(req.headers['user-agent'], `axios/${axios.VERSION}`);
+        res.end();
+      },
+      { port: 8080 }
     );
+
+    try {
+      await axios.get(`http://localhost:${server.address().port}/`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should omit a user-agent if one is explicitly disclaimed', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        assert.equal('user-agent' in req.headers, false);
+        assert.equal('User-Agent' in req.headers, false);
+        res.end();
+      },
+      { port: 8080 }
+    );
+
+    try {
+      await axios.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          'User-Agent': null,
+        },
+      });
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should throw an error if http server that aborts a chunked request', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.write('chunk 1');
+
+        setTimeout(() => {
+          res.write('chunk 2');
+        }, 100);
+
+        setTimeout(() => {
+          res.destroy();
+        }, 200);
+      },
+      { port: 8080 }
+    );
+
+    try {
+      await assert.rejects(
+        axios.get(`http://localhost:${server.address().port}/aborted`, {
+          timeout: 500,
+        }),
+        (error) => {
+          assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
+          assert.strictEqual(error.message, 'stream has been aborted');
+
+          return true;
+        }
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should able to cancel multiple requests with CancelToken', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end('ok');
+      },
+      { port: 8080 }
+    );
+
+    try {
+      const source = axios.CancelToken.source();
+      const canceledStack = [];
+
+      const requests = [1, 2, 3, 4, 5].map(async (id) => {
+        try {
+          await axios.get('/foo/bar', {
+            baseURL: `http://localhost:${server.address().port}`,
+            cancelToken: source.token,
+          });
+        } catch (error) {
+          if (!axios.isCancel(error)) {
+            throw error;
+          }
+
+          canceledStack.push(id);
+        }
+      });
+
+      source.cancel('Aborted by user');
+
+      await Promise.all(requests);
+      assert.deepStrictEqual(canceledStack.sort(), [1, 2, 3, 4, 5]);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  describe('FormData', () => {
+    describe('form-data instance (https://www.npmjs.com/package/form-data)', () => {
+      it('should allow passing FormData', async () => {
+        const form = new FormDataLegacy();
+        const file1 = Buffer.from('foo', 'utf8');
+        const image = path.resolve(adaptersTestsDir, './axios.png');
+        const fileStream = fs.createReadStream(image);
+        const stat = fs.statSync(image);
+
+        form.append('foo', 'bar');
+        form.append('file1', file1, {
+          filename: 'bar.jpg',
+          filepath: 'temp/bar.jpg',
+          contentType: 'image/jpeg',
+        });
+        form.append('fileStream', fileStream);
+
+        const server = await startHTTPServer(
+          (req, res) => {
+            const receivedForm = new formidable.IncomingForm();
+
+            assert.ok(req.rawHeaders.some((header) => header.toLowerCase() === 'content-length'));
+
+            receivedForm.parse(req, (error, fields, files) => {
+              if (error) {
+                res.statusCode = 500;
+                res.end(error.message);
+                return;
+              }
+
+              res.end(
+                JSON.stringify({
+                  fields,
+                  files,
+                })
+              );
+            });
+          },
+          { port: 8080 }
+        );
+
+        try {
+          const response = await axios.post(`http://localhost:${server.address().port}/`, form, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+
+          assert.deepStrictEqual(response.data.fields, { foo: 'bar' });
+
+          assert.strictEqual(response.data.files.file1.mimetype, 'image/jpeg');
+          assert.strictEqual(response.data.files.file1.originalFilename, 'temp/bar.jpg');
+          assert.strictEqual(response.data.files.file1.size, 3);
+
+          assert.strictEqual(response.data.files.fileStream.mimetype, 'image/png');
+          assert.strictEqual(response.data.files.fileStream.originalFilename, 'axios.png');
+          assert.strictEqual(response.data.files.fileStream.size, stat.size);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+    });
+
+    describe('SpecCompliant FormData', () => {
+      it('should allow passing FormData', async () => {
+        const server = await startHTTPServer(
+          async (req, res) => {
+            const { fields, files } = await handleFormData(req);
+
+            res.end(
+              JSON.stringify({
+                fields,
+                files,
+              })
+            );
+          },
+          { port: 8080 }
+        );
+
+        try {
+          const form = new FormDataSpecCompliant();
+          const blobContent = 'blob-content';
+          const blob = new BlobSpecCompliant([blobContent], { type: 'image/jpeg' });
+
+          form.append('foo1', 'bar1');
+          form.append('foo2', 'bar2');
+          form.append('file1', blob);
+
+          const { data } = await axios.post(`http://localhost:${server.address().port}`, form, {
+            maxRedirects: 0,
+          });
+
+          assert.deepStrictEqual(data.fields, { foo1: 'bar1', foo2: 'bar2' });
+          assert.deepStrictEqual(typeof data.files.file1, 'object');
+
+          const { size, mimetype, originalFilename } = data.files.file1;
+
+          assert.deepStrictEqual(
+            { size, mimetype, originalFilename },
+            {
+              mimetype: 'image/jpeg',
+              originalFilename: 'blob',
+              size: Buffer.from(blobContent).byteLength,
+            }
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+    });
+  });
+
+  describe('toFormData helper', () => {
+    it('should properly serialize nested objects for parsing with multer.js (express.js)', async () => {
+      const app = express();
+      const obj = {
+        arr1: ['1', '2', '3'],
+        arr2: ['1', ['2'], '3'],
+        obj: { x: '1', y: { z: '1' } },
+        users: [
+          { name: 'Peter', surname: 'griffin' },
+          { name: 'Thomas', surname: 'Anderson' },
+        ],
+      };
+
+      app.post('/', multer().none(), (req, res) => {
+        res.send(JSON.stringify(req.body));
+      });
+
+      const server = await new Promise(
+        (resolve, reject) => {
+          const expressServer = app.listen(0, () => resolve(expressServer));
+          expressServer.on('error', reject);
+        },
+        { port: 8080 }
+      );
+
+      try {
+        await Promise.all(
+          [null, false, true].map((mode) =>
+            axios
+              .postForm(`http://localhost:${server.address().port}/`, obj, {
+                formSerializer: { indexes: mode },
+              })
+              .then((response) => {
+                assert.deepStrictEqual(response.data, obj, `Index mode ${mode}`);
+              })
+          )
+        );
+      } finally {
+        await new Promise((resolve, reject) => {
+          server.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
+        });
+      }
+    });
   });
 });

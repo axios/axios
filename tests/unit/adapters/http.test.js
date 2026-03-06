@@ -3508,26 +3508,29 @@ describe('supports http with nodejs', () => {
     });
   });
 
-  // it('should not abort stream on settle rejection', async () => {
-  //   const server = await startHTTPServer((req, res) => {
-  //     res.statusCode = 404;
-  //     res.end('OK');
-  //   });
+  it('should not abort stream on settle rejection', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.statusCode = 404;
+      res.end('OK');
+    });
 
-  //   try {
-  //     await assert.rejects(
-  //       axios.get(`http://localhost:${server.address().port}`, {
-  //         responseType: 'stream',
-  //       }),
-  //       async (error) => {
-  //         assert.strictEqual(await getStream(error.response.data), 'OK');
-  //         return true;
-  //       }
-  //     );
-  //   } finally {
-  //     await stopHTTPServer(server);
-  //   }
-  // });
+    try {
+      let error;
+
+      try {
+        await axios.get(`http://localhost:${server.address().port}`, {
+          responseType: 'stream',
+        });
+      } catch (err) {
+        error = err;
+      }
+
+      assert.ok(error, 'request should be rejected');
+      assert.strictEqual(await getStream(error.response.data), 'OK');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
 
   describe('keep-alive', () => {
     it('should not fail with "socket hang up" when using timeouts', async () => {

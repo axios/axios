@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 const Cancel = axios.Cancel;
 const CancelToken = axios.CancelToken;
 import { AbortController as _AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';

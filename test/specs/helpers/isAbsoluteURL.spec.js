@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import isAbsoluteURL from '../../../lib/helpers/isAbsoluteURL';
 
 describe('helpers::isAbsoluteURL', function () {

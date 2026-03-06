@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import formDataToJSON from '../../../lib/helpers/formDataToJSON';
 
 describe('formDataToJSON', function () {

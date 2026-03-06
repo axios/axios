@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import AxiosError from '../../../lib/core/AxiosError';
 import isAxiosError from '../../../lib/helpers/isAxiosError';
 

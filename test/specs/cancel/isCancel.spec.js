@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import isCancel from '../../../lib/cancel/isCancel';
 import CanceledError from '../../../lib/cancel/CanceledError';
 

@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import CanceledError from '../../../lib/cancel/CanceledError';
 
 describe('Cancel', function () {

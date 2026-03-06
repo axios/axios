@@ -1,3 +1,5 @@
+/* eslint-disable no-prototype-builtins */
+/* eslint-env mocha */
 'use strict';
 
 import assert from 'assert';

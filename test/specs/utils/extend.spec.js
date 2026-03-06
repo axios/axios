@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import utils from '../../../lib/utils';
 
 const { extend } = utils;

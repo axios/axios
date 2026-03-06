@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - name: Install dependencies
+      - name: Install dependencies Node 14
         if: matrix.node-version == '14.x'
         run: npm i
       - name: Install dependencies

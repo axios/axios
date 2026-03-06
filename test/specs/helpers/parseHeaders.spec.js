@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import parseHeaders from '../../../lib/helpers/parseHeaders';
 
 describe('helpers::parseHeaders', function () {

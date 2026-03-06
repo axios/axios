@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 import assert from 'assert';
 

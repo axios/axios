@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 import AxiosError from '../../lib/core/AxiosError';
 
 describe('transform', function () {

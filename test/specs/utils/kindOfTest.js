@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import { kindOfTest } from '../../../lib/utils';
 
 describe('utils::kindOfTest', function () {

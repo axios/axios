@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import buildURL from '../../../lib/helpers/buildURL';
 
 describe('helpers::buildURL', function () {

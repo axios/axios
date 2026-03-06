@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import axios from '../../../index.js';
 import http from 'http';
 import https from 'https';
@@ -2464,8 +2465,6 @@ describe('supports http with nodejs', function () {
   });
 
   describe('request aborting', function () {
-    //this.timeout(5000);
-
     it('should be able to abort the response stream', async () => {
       server = await startHTTPServer({
         rate: 100_000,

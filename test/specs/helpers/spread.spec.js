@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import spread from '../../../lib/helpers/spread';
 
 describe('helpers::spread', function () {

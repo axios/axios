@@ -1,3 +1,6 @@
+/* eslint-env mocha */
+/* global jasmine */
+
 // import AxiosHeaders from "../../lib/core/AxiosHeaders.js";
 // import isAbsoluteURL from '../../lib/helpers/isAbsoluteURL.js';
 

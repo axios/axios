@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 import _axios from '../../index.js';
 
 window.axios = _axios;

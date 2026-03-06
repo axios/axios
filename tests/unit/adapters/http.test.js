@@ -4,6 +4,7 @@ import { startHTTPServer, stopHTTPServer, generateReadable } from '../../setup/s
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import http from 'http';
+import https from 'https';
 import net from 'net';
 import stream from 'stream';
 import url from 'url';
@@ -958,6 +959,114 @@ describe('supports http with nodejs', () => {
     } finally {
       await stopHTTPServer(server);
       await stopHTTPServer(proxy);
+    }
+  });
+
+  it('should support HTTPS proxies', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const closeServer = (server) =>
+      new Promise((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve();
+        });
+      });
+
+    const server = await new Promise((resolve, reject) => {
+      const httpsServer = https
+        .createServer(tlsOptions, (req, res) => {
+          res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+          res.end('12345');
+        })
+        .listen(0, () => resolve(httpsServer));
+
+      httpsServer.on('error', reject);
+    });
+
+    const proxy = await new Promise((resolve, reject) => {
+      const httpsProxy = https
+        .createServer(tlsOptions, (request, response) => {
+          const targetUrl = new URL(request.url);
+          const opts = {
+            host: targetUrl.hostname,
+            port: targetUrl.port,
+            path: `${targetUrl.pathname}${targetUrl.search}`,
+            protocol: targetUrl.protocol,
+            rejectUnauthorized: false,
+          };
+
+          const proxyRequest = https.get(opts, (res) => {
+            let body = '';
+
+            res.on('data', (data) => {
+              body += data;
+            });
+
+            res.on('end', () => {
+              response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+              response.end(body + '6789');
+            });
+          });
+
+          proxyRequest.on('error', () => {
+            response.statusCode = 502;
+            response.end();
+          });
+        })
+        .listen(0, () => resolve(httpsProxy));
+
+      httpsProxy.on('error', reject);
+    });
+
+    try {
+      const response = await axios.get(`https://localhost:${server.address().port}/`, {
+        proxy: {
+          host: 'localhost',
+          port: proxy.address().port,
+          protocol: 'https:',
+        },
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      });
+
+      assert.equal(response.data, '123456789', 'should pass through proxy');
+    } finally {
+      await Promise.all([closeServer(server), closeServer(proxy)]);
+    }
+  });
+
+  it('should not pass through disabled proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    process.env.http_proxy = 'http://does-not-exists.example.com:4242/';
+
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('123456789');
+    });
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        proxy: false,
+      });
+
+      assert.equal(response.data, '123456789', 'should not pass through proxy');
+    } finally {
+      await stopHTTPServer(server);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
     }
   });
 });

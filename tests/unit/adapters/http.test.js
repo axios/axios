@@ -1760,4 +1760,28 @@ describe('supports http with nodejs', () => {
       }
     }
   });
+
+  describe('when invalid proxy options are provided', () => {
+    it('should throw error', async () => {
+      const proxy = {
+        protocol: 'http:',
+        host: 'hostname.abc.xyz',
+        port: 3300,
+        auth: {
+          username: '',
+          password: '',
+        },
+      };
+
+      await assert.rejects(
+        axios.get('https://test-domain.abc', { proxy }),
+        (error) => {
+          assert.strictEqual(error.message, 'Invalid proxy authorization');
+          assert.strictEqual(error.code, 'ERR_BAD_OPTION');
+          assert.deepStrictEqual(error.config.proxy, proxy);
+          return true;
+        }
+      );
+    });
+  });
 });

@@ -3,6 +3,7 @@ import assert from 'assert';
 import { startHTTPServer, stopHTTPServer, generateReadable } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
+import { __setProxy } from '../../../lib/adapters/http.js';
 import http from 'http';
 import https from 'https';
 import net from 'net';
@@ -1783,5 +1784,43 @@ describe('supports http with nodejs', () => {
         }
       );
     });
+  });
+
+  describe('different options for direct proxy configuration (without env variables)', () => {
+    const destination = 'www.example.com';
+
+    const testCases = [
+      {
+        description: 'hostname and trailing colon in protocol',
+        proxyConfig: { hostname: '127.0.0.1', protocol: 'http:', port: 80 },
+        expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination },
+      },
+      {
+        description: 'hostname and no trailing colon in protocol',
+        proxyConfig: { hostname: '127.0.0.1', protocol: 'http', port: 80 },
+        expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination },
+      },
+      {
+        description: 'both hostname and host -> hostname takes precedence',
+        proxyConfig: { hostname: '127.0.0.1', host: '0.0.0.0', protocol: 'http', port: 80 },
+        expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination },
+      },
+      {
+        description: 'only host and https protocol',
+        proxyConfig: { host: '0.0.0.0', protocol: 'https', port: 80 },
+        expectedOptions: { host: '0.0.0.0', protocol: 'https:', port: 80, path: destination },
+      },
+    ];
+
+    for (const test of testCases) {
+      it(test.description, () => {
+        const options = { headers: {}, beforeRedirects: {} };
+        __setProxy(options, test.proxyConfig, destination);
+
+        for (const [key, expected] of Object.entries(test.expectedOptions)) {
+          assert.strictEqual(options[key], expected);
+        }
+      });
+    }
   });
 });

@@ -597,9 +597,9 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
-  });
 
-  /// algos for later
+    /// algos for later
+  });
 
   it('should support UTF8', async () => {
     const str = Array(100000).join('ж');
@@ -2867,5 +2867,551 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
+  });
+
+  describe('HTTP2', () => {
+    const createHttp2Axios = (baseURL) =>
+      axios.create({
+        baseURL,
+        httpVersion: 2,
+        http2Options: {
+          rejectUnauthorized: false,
+        },
+      });
+
+    it('should merge request http2Options with its instance config', async () => {
+      const http2Axios = createHttp2Axios('https://127.0.0.1:8080');
+
+      const { data } = await http2Axios.get('/', {
+        http2Options: {
+          foo: 'test',
+        },
+        adapter: async (config) => {
+          return {
+            data: config.http2Options,
+          };
+        },
+      });
+
+      assert.deepStrictEqual(data, {
+        rejectUnauthorized: false,
+        foo: 'test',
+      });
+    });
+
+    it('should support http2 transport', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('OK');
+        },
+        {
+          useHTTP2: true,
+          port: 8080,
+        }
+      );
+
+      try {
+        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+        const { data } = await http2Axios.get(localServerURL);
+        assert.deepStrictEqual(data, 'OK');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support request payload', async () => {
+      const server = await startHTTPServer(null, {
+        useHTTP2: true,
+        port: 8080,
+      });
+
+      try {
+        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+        const payload = 'DATA';
+        const { data } = await http2Axios.post(localServerURL, payload);
+        assert.deepStrictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support FormData as a payload', async () => {
+      if (typeof FormData !== 'function') {
+        return;
+      }
+
+      const server = await startHTTPServer(
+        async (req, res) => {
+          const { fields, files } = await handleFormData(req);
+
+          res.end(
+            JSON.stringify({
+              fields,
+              files,
+            })
+          );
+        },
+        {
+          useHTTP2: true,
+          port: 8080,
+        }
+      );
+
+      try {
+        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+        const form = new FormData();
+        form.append('x', 'foo');
+        form.append('y', 'bar');
+
+        const { data } = await http2Axios.post(localServerURL, form);
+
+        assert.deepStrictEqual(data, {
+          fields: {
+            x: 'foo',
+            y: 'bar',
+          },
+          files: {},
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    describe('response types', () => {
+      const originalData = '{"test": "OK"}';
+      const fixtures = {
+        text: (value) => assert.strictEqual(value, originalData),
+        arraybuffer: (value) => assert.deepStrictEqual(value, Buffer.from(originalData)),
+        stream: async (value) => assert.deepStrictEqual(await getStream(value), originalData),
+        json: async (value) => assert.deepStrictEqual(value, JSON.parse(originalData)),
+      };
+
+      for (const [responseType, assertValue] of Object.entries(fixtures)) {
+        it(`should support ${responseType} response type`, async () => {
+          const server = await startHTTPServer(
+            (req, res) => {
+              res.end(originalData);
+            },
+            {
+              useHTTP2: true,
+              port: 8080,
+            }
+          );
+
+          try {
+            const localServerURL = `https://127.0.0.1:${server.address().port}`;
+            const http2Axios = createHttp2Axios(localServerURL);
+            const { data } = await http2Axios.get(localServerURL, {
+              responseType,
+            });
+            await assertValue(data);
+          } finally {
+            await stopHTTPServer(server);
+          }
+        });
+      }
+    });
+
+    it('should support request timeout', async () => {
+      let isAborted = false;
+      let aborted;
+      const promise = new Promise((resolve) => (aborted = resolve));
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          setTimeout(() => {
+            res.end('OK');
+          }, 15000);
+        },
+        {
+          useHTTP2: true,
+          port: 8080,
+        }
+      );
+
+      try {
+        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+
+        server.on('stream', (http2Stream) => {
+          http2Stream.once('aborted', () => {
+            isAborted = true;
+            aborted();
+          });
+        });
+
+        await assert.rejects(async () => {
+          await http2Axios.get(localServerURL, {
+            timeout: 500,
+          });
+        }, /timeout/);
+
+        await promise;
+        assert.ok(isAborted);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support request cancellation', async () => {
+      if (typeof AbortSignal !== 'function' || !AbortSignal.timeout) {
+        return;
+      }
+
+      let isAborted = false;
+      let aborted;
+      const promise = new Promise((resolve) => (aborted = resolve));
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          setTimeout(() => {
+            res.end('OK');
+          }, 15000);
+        },
+        {
+          useHTTP2: true,
+          port: 8080,
+        }
+      );
+
+      try {
+        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+
+        server.on('stream', (http2Stream) => {
+          http2Stream.once('aborted', () => {
+            isAborted = true;
+            aborted();
+          });
+        });
+
+        await assert.rejects(async () => {
+          await http2Axios.get(localServerURL, {
+            signal: AbortSignal.timeout(500),
+          });
+        }, /CanceledError: canceled/);
+
+        await promise;
+        assert.ok(isAborted);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support stream response cancellation', async () => {
+      let isAborted = false;
+      const source = axios.CancelToken.source();
+
+      let aborted;
+      const promise = new Promise((resolve) => (aborted = resolve));
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          generateReadable(10000, 100, 100).pipe(res);
+        },
+        {
+          useHTTP2: true,
+          port: 8080,
+        }
+      );
+
+      try {
+        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+
+        server.on('stream', (http2Stream) => {
+          http2Stream.once('aborted', () => {
+            isAborted = true;
+            aborted();
+          });
+        });
+
+        const { data } = await http2Axios.get(localServerURL, {
+          cancelToken: source.token,
+          responseType: 'stream',
+        });
+
+        setTimeout(() => source.cancel());
+
+        await assert.rejects(
+          new Promise((resolve, reject) => {
+            stream.pipeline(data, devNull(), (error) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+
+              resolve();
+            });
+          }),
+          /CanceledError: canceled/
+        );
+
+        await promise;
+        assert.ok(isAborted);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    describe('session', () => {
+      it('should reuse session for the target authority', async () => {
+        const server = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => res.end('OK'), 1000);
+          },
+          {
+            useHTTP2: true,
+            port: 8080,
+          }
+        );
+
+        try {
+          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const http2Axios = createHttp2Axios(localServerURL);
+
+          const [response1, response2] = await Promise.all([
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+            }),
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+            }),
+          ]);
+
+          assert.strictEqual(response1.data.session, response2.data.session);
+
+          assert.deepStrictEqual(
+            await Promise.all([getStream(response1.data), getStream(response2.data)]),
+            ['OK', 'OK']
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should use different sessions for different authorities', async () => {
+        const server = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => {
+              res.end('OK');
+            }, 2000);
+          },
+          {
+            useHTTP2: true,
+            port: 8080,
+          }
+        );
+
+        const server2 = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => {
+              res.end('OK');
+            }, 2000);
+          },
+          {
+            useHTTP2: true,
+            port: 8081,
+          }
+        );
+
+        try {
+          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL2 = `https://127.0.0.1:${server2.address().port}`;
+          const http2Axios = createHttp2Axios(localServerURL);
+
+          const [response1, response2] = await Promise.all([
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+            }),
+            http2Axios.get(localServerURL2, {
+              responseType: 'stream',
+            }),
+          ]);
+
+          assert.notStrictEqual(response1.data.session, response2.data.session);
+
+          assert.deepStrictEqual(
+            await Promise.all([getStream(response1.data), getStream(response2.data)]),
+            ['OK', 'OK']
+          );
+        } finally {
+          await Promise.all([stopHTTPServer(server), stopHTTPServer(server2)]);
+        }
+      });
+
+      it('should use different sessions for requests with different http2Options set', async () => {
+        const server = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => {
+              res.end('OK');
+            }, 1000);
+          },
+          {
+            useHTTP2: true,
+            port: 8080,
+          }
+        );
+
+        try {
+          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const http2Axios = createHttp2Axios(localServerURL);
+
+          const [response1, response2] = await Promise.all([
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+              http2Options: {},
+            }),
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+              http2Options: {
+                foo: 'test',
+              },
+            }),
+          ]);
+
+          assert.notStrictEqual(response1.data.session, response2.data.session);
+
+          assert.deepStrictEqual(
+            await Promise.all([getStream(response1.data), getStream(response2.data)]),
+            ['OK', 'OK']
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should use the same session for request with the same resolved http2Options set', async () => {
+        const server = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => res.end('OK'), 1000);
+          },
+          {
+            useHTTP2: true,
+            port: 8080,
+          }
+        );
+
+        try {
+          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const http2Axios = createHttp2Axios(localServerURL);
+
+          const responses = await Promise.all([
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+            }),
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+              http2Options: undefined,
+            }),
+            http2Axios.get(localServerURL, {
+              responseType: 'stream',
+              http2Options: {},
+            }),
+          ]);
+
+          assert.strictEqual(responses[1].data.session, responses[0].data.session);
+          assert.strictEqual(responses[2].data.session, responses[0].data.session);
+
+          assert.deepStrictEqual(await Promise.all(responses.map(({ data }) => getStream(data))), [
+            'OK',
+            'OK',
+            'OK',
+          ]);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should use different sessions after previous session timeout', async () => {
+        const server = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => res.end('OK'), 100);
+          },
+          {
+            useHTTP2: true,
+            port: 8080,
+          }
+        );
+
+        try {
+          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const http2Axios = createHttp2Axios(localServerURL);
+
+          const response1 = await http2Axios.get(localServerURL, {
+            responseType: 'stream',
+            http2Options: {
+              sessionTimeout: 1000,
+            },
+          });
+
+          const data1 = await getStream(response1.data);
+
+          await setTimeoutAsync(5000);
+
+          const response2 = await http2Axios.get(localServerURL, {
+            responseType: 'stream',
+            http2Options: {
+              sessionTimeout: 1000,
+            },
+          });
+
+          const data2 = await getStream(response2.data);
+
+          assert.notStrictEqual(response1.data.session, response2.data.session);
+          assert.strictEqual(data1, 'OK');
+          assert.strictEqual(data2, 'OK');
+        } finally {
+          await stopHTTPServer(server);
+        }
+      }, 15000);
+    });
+  });
+
+  // it('should not abort stream on settle rejection', async () => {
+  //   const server = await startHTTPServer((req, res) => {
+  //     res.statusCode = 404;
+  //     res.end('OK');
+  //   });
+
+  //   try {
+  //     await assert.rejects(
+  //       axios.get(`http://localhost:${server.address().port}`, {
+  //         responseType: 'stream',
+  //       }),
+  //       async (error) => {
+  //         assert.strictEqual(await getStream(error.response.data), 'OK');
+  //         return true;
+  //       }
+  //     );
+  //   } finally {
+  //     await stopHTTPServer(server);
+  //   }
+  // });
+
+  describe('keep-alive', () => {
+    it('should not fail with "socket hang up" when using timeouts', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          if (req.url === '/wait') {
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+          }
+
+          res.end('ok');
+        },
+        { port: 8080 }
+      );
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+        await axios.get('/1', { baseURL, timeout: 1000 });
+        await axios.get('/wait', { baseURL, timeout: 0 });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    }, 15000);
   });
 });

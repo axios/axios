@@ -18,7 +18,6 @@ import devNull from 'dev-null';
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
   const thisTestFilePath = path.join(adaptersTestsDir, 'http.test.js');
-  const nodeMajorVersion = Number.parseInt(process.versions.node.split('.')[0], 10);
 
   it('should support IPv4 literal strings', async () => {
     const data = {
@@ -1847,6 +1846,23 @@ describe('supports http with nodejs', () => {
           return true;
         }
       );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should combine baseURL and url', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.end();
+    });
+
+    try {
+      const response = await axios.get('/foo', {
+        baseURL: `http://localhost:${server.address().port}/`,
+      });
+
+      assert.equal(response.config.baseURL, `http://localhost:${server.address().port}/`);
+      assert.equal(response.config.url, '/foo');
     } finally {
       await stopHTTPServer(server);
     }

@@ -18,6 +18,7 @@ import devNull from 'dev-null';
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
   const thisTestFilePath = path.join(adaptersTestsDir, 'http.test.js');
+  const nodeMajorVersion = Number.parseInt(process.versions.node.split('.')[0], 10);
 
   it('should support IPv4 literal strings', async () => {
     const data = {
@@ -1774,15 +1775,12 @@ describe('supports http with nodejs', () => {
         },
       };
 
-      await assert.rejects(
-        axios.get('https://test-domain.abc', { proxy }),
-        (error) => {
-          assert.strictEqual(error.message, 'Invalid proxy authorization');
-          assert.strictEqual(error.code, 'ERR_BAD_OPTION');
-          assert.deepStrictEqual(error.config.proxy, proxy);
-          return true;
-        }
-      );
+      await assert.rejects(axios.get('https://test-domain.abc', { proxy }), (error) => {
+        assert.strictEqual(error.message, 'Invalid proxy authorization');
+        assert.strictEqual(error.code, 'ERR_BAD_OPTION');
+        assert.deepStrictEqual(error.config.proxy, proxy);
+        return true;
+      });
     });
   });
 
@@ -1821,6 +1819,36 @@ describe('supports http with nodejs', () => {
           assert.strictEqual(options[key], expected);
         }
       });
+    }
+  });
+
+  it('should support cancel', async () => {
+    const source = axios.CancelToken.source();
+
+    const server = await startHTTPServer((req, res) => {
+      // Call cancel() when the request has been sent but no response received.
+      source.cancel('Operation has been canceled.');
+    });
+
+    try {
+      await assert.rejects(
+        async function stackTraceTest() {
+          await axios.get(`http://localhost:${server.address().port}/`, {
+            cancelToken: source.token,
+          });
+        },
+        (thrown) => {
+          assert.ok(
+            thrown instanceof axios.Cancel,
+            'Promise must be rejected with a CanceledError object'
+          );
+          assert.equal(thrown.message, 'Operation has been canceled.');
+
+          return true;
+        }
+      );
+    } finally {
+      await stopHTTPServer(server);
     }
   });
 });

@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import AxiosError from '../../../lib/core/AxiosError';
 
 describe('core::AxiosError', function () {
@@ -86,24 +87,24 @@ describe('core::AxiosError', function () {
   });
 
   it('should have message property as enumerable for backward compatibility', () => {
-      const err = new AxiosError('Test error message', 'ERR_TEST', {foo: 'bar'});
+    const err = new AxiosError('Test error message', 'ERR_TEST', { foo: 'bar' });
 
-      // Test Object.keys() includes message
-      const keys = Object.keys(err);
-      expect(keys).toContain('message');
+    // Test Object.keys() includes message
+    const keys = Object.keys(err);
+    expect(keys).toContain('message');
 
-      // Test Object.entries() includes message
-      const entries = Object.entries(err);
-      const messageEntry = entries.find(([key]) => key === 'message');
-      expect(messageEntry).toBeDefined();
-      expect(messageEntry[1]).toBe('Test error message');
+    // Test Object.entries() includes message
+    const entries = Object.entries(err);
+    const messageEntry = entries.find(([key]) => key === 'message');
+    expect(messageEntry).toBeDefined();
+    expect(messageEntry[1]).toBe('Test error message');
 
-      // Test spread operator includes message
-      const spread = {...err};
-      expect(spread.message).toBe('Test error message');
+    // Test spread operator includes message
+    const spread = { ...err };
+    expect(spread.message).toBe('Test error message');
 
-      // Verify message descriptor is enumerable
-      const descriptor = Object.getOwnPropertyDescriptor(err, 'message');
-      expect(descriptor.enumerable).toBe(true);
+    // Verify message descriptor is enumerable
+    const descriptor = Object.getOwnPropertyDescriptor(err, 'message');
+    expect(descriptor.enumerable).toBe(true);
   });
 });

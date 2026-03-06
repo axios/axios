@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 describe('static api', function () {
   it('should have request method helpers', function () {
     expect(typeof axios.request).toEqual('function');

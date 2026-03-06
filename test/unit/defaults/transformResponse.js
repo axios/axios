@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import defaults from '../../../lib/defaults/index.js';
 import transformData from '../../../lib/core/transformData.js';
 import assert from 'assert';

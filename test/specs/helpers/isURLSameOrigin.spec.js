@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import isURLSameOrigin from '../../../lib/helpers/isURLSameOrigin';
 
 describe('helpers::isURLSameOrigin', function () {

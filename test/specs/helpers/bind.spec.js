@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import bind from '../../../lib/helpers/bind';
 
 describe('bind', function () {

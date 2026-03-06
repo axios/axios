@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 describe('requests', function () {
   beforeEach(function () {
     jasmine.Ajax.install();

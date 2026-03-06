@@ -75,21 +75,6 @@ export default async () => {
         banner,
       },
     }),
-    // browser ESM bundle for CDN with fetch adapter only
-    // Downsizing from 12.97 kB (gzip) to 12.23 kB (gzip)
-    /*    ...buildConfig({
-      input: namedInput,
-      output: {
-        file: `dist/esm/${outputFileName}-fetch.js`,
-        format: "esm",
-        preferConst: true,
-        exports: "named",
-        banner
-      },
-      alias: [
-        { find: './xhr.js', replacement: '../helpers/null.js' }
-      ]
-    }),*/
 
     // Browser UMD bundle for CDN
     ...buildConfig({
@@ -118,7 +103,7 @@ export default async () => {
       },
     }),
 
-    // Node.js commonjs bundle
+    // Node.js commonjs bundle (transpiled for Node 12)
     {
       input: defaultInput,
       output: {
@@ -128,7 +113,15 @@ export default async () => {
         exports: 'default',
         banner,
       },
-      plugins: [autoExternal(), resolve(), commonjs()],
+      plugins: [
+        autoExternal(),
+        resolve(),
+        commonjs(),
+        babel({
+          babelHelpers: 'bundled',
+          presets: [['@babel/preset-env', { targets: { node: '12' } }]],
+        }),
+      ],
     },
   ];
 };

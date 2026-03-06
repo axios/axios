@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import platform from '../../../lib/platform/index.js';
 import assert from 'assert';
 

@@ -3,6 +3,7 @@ import assert from 'assert';
 import {
   startHTTPServer,
   stopHTTPServer,
+  SERVER_HANDLER_STREAM_ECHO,
   handleFormData,
   setTimeoutAsync,
   generateReadable,
@@ -28,6 +29,7 @@ import multer from 'multer';
 import getStream from 'get-stream';
 import bodyParser from 'body-parser';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
+import { lookup } from 'dns';
 
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
@@ -2537,117 +2539,109 @@ describe('supports http with nodejs', () => {
   });
 
   describe('Rate limit', () => {
-    it(
-      'should support upload rate limit',
-      async () => {
-        const secs = 10;
-        const configRate = 100000;
-        const chunkLength = configRate * secs;
-        const server = await startHTTPServer();
+    it('should support upload rate limit', async () => {
+      const secs = 10;
+      const configRate = 100000;
+      const chunkLength = configRate * secs;
+      const server = await startHTTPServer();
 
-        try {
-          const buf = Buffer.alloc(chunkLength).fill('s');
-          const samples = [];
-          const skip = 4;
-          const compareValues = toleranceRange(50, 50);
+      try {
+        const buf = Buffer.alloc(chunkLength).fill('s');
+        const samples = [];
+        const skip = 4;
+        const compareValues = toleranceRange(50, 50);
 
-          const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
-            onUploadProgress: ({ loaded, total, progress, bytes, rate }) => {
-              samples.push({
-                loaded,
-                total,
-                progress,
-                bytes,
-                rate,
-              });
-            },
-            maxRate: [configRate],
-            responseType: 'text',
-            maxRedirects: 0,
-          });
+        const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
+          onUploadProgress: ({ loaded, total, progress, bytes, rate }) => {
+            samples.push({
+              loaded,
+              total,
+              progress,
+              bytes,
+              rate,
+            });
+          },
+          maxRate: [configRate],
+          responseType: 'text',
+          maxRedirects: 0,
+        });
 
-          samples.slice(skip).forEach(({ rate, progress }, i, _samples) => {
-            assert.ok(
-              compareValues(rate, configRate),
-              `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${_samples
-                .map((sample) => sample.rate)
-                .join(', ')}]`
-            );
+        samples.slice(skip).forEach(({ rate, progress }, i, _samples) => {
+          assert.ok(
+            compareValues(rate, configRate),
+            `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${_samples
+              .map((sample) => sample.rate)
+              .join(', ')}]`
+          );
 
-            const progressTicksRate = 2;
-            const expectedProgress = (i + skip) / secs / progressTicksRate;
+          const progressTicksRate = 2;
+          const expectedProgress = (i + skip) / secs / progressTicksRate;
 
-            assert.ok(
-              Math.abs(expectedProgress - progress) < 0.25,
-              `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${_samples
-                .map((sample) => sample.progress)
-                .join(', ')}]`
-            );
-          });
+          assert.ok(
+            Math.abs(expectedProgress - progress) < 0.25,
+            `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${_samples
+              .map((sample) => sample.progress)
+              .join(', ')}]`
+          );
+        });
 
-          assert.strictEqual(data, buf.toString(), 'content corrupted');
-        } finally {
-          await stopHTTPServer(server);
-        }
-      },
-      30000
-    );
+        assert.strictEqual(data, buf.toString(), 'content corrupted');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    }, 30000);
 
-    it(
-      'should support download rate limit',
-      async () => {
-        const secs = 10;
-        const configRate = 100000;
-        const chunkLength = configRate * secs;
-        const server = await startHTTPServer();
+    it('should support download rate limit', async () => {
+      const secs = 10;
+      const configRate = 100000;
+      const chunkLength = configRate * secs;
+      const server = await startHTTPServer();
 
-        try {
-          const buf = Buffer.alloc(chunkLength).fill('s');
-          const samples = [];
-          const skip = 4;
-          const compareValues = toleranceRange(50, 50);
+      try {
+        const buf = Buffer.alloc(chunkLength).fill('s');
+        const samples = [];
+        const skip = 4;
+        const compareValues = toleranceRange(50, 50);
 
-          const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
-            onDownloadProgress: ({ loaded, total, progress, bytes, rate }) => {
-              samples.push({
-                loaded,
-                total,
-                progress,
-                bytes,
-                rate,
-              });
-            },
-            maxRate: [0, configRate],
-            responseType: 'text',
-            maxRedirects: 0,
-          });
+        const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
+          onDownloadProgress: ({ loaded, total, progress, bytes, rate }) => {
+            samples.push({
+              loaded,
+              total,
+              progress,
+              bytes,
+              rate,
+            });
+          },
+          maxRate: [0, configRate],
+          responseType: 'text',
+          maxRedirects: 0,
+        });
 
-          samples.slice(skip).forEach(({ rate, progress }, i, _samples) => {
-            assert.ok(
-              compareValues(rate, configRate),
-              `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${_samples
-                .map((sample) => sample.rate)
-                .join(', ')}]`
-            );
+        samples.slice(skip).forEach(({ rate, progress }, i, _samples) => {
+          assert.ok(
+            compareValues(rate, configRate),
+            `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${_samples
+              .map((sample) => sample.rate)
+              .join(', ')}]`
+          );
 
-            const progressTicksRate = 3;
-            const expectedProgress = (i + skip) / secs / progressTicksRate;
+          const progressTicksRate = 3;
+          const expectedProgress = (i + skip) / secs / progressTicksRate;
 
-            assert.ok(
-              Math.abs(expectedProgress - progress) < 0.25,
-              `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${_samples
-                .map((sample) => sample.progress)
-                .join(', ')}]`
-            );
-          });
+          assert.ok(
+            Math.abs(expectedProgress - progress) < 0.25,
+            `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${_samples
+              .map((sample) => sample.progress)
+              .join(', ')}]`
+          );
+        });
 
-          assert.strictEqual(data, buf.toString(), 'content corrupted');
-        } finally {
-          await stopHTTPServer(server);
-        }
-      },
-      30000
-    );
+        assert.strictEqual(data, buf.toString(), 'content corrupted');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    }, 30000);
   });
 
   describe('request aborting', () => {
@@ -2716,5 +2710,162 @@ describe('supports http with nodejs', () => {
     } finally {
       await stopHTTPServer(server);
     }
+  });
+
+  describe('DNS', () => {
+    it('should support a custom DNS lookup function', async () => {
+      const server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+      const payload = 'test';
+      let isCalled = false;
+
+      try {
+        const { data } = await axios.post(
+          `http://fake-name.axios:${server.address().port}`,
+          payload,
+          {
+            lookup: (hostname, opt, cb) => {
+              isCalled = true;
+              cb(null, '127.0.0.1', 4);
+            },
+          }
+        );
+
+        assert.ok(isCalled);
+        assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support a custom DNS lookup function with address entry passing', async () => {
+      const server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+      const payload = 'test';
+      let isCalled = false;
+
+      try {
+        const { data } = await axios.post(
+          `http://fake-name.axios:${server.address().port}`,
+          payload,
+          {
+            lookup: (hostname, opt, cb) => {
+              isCalled = true;
+              cb(null, { address: '127.0.0.1', family: 4 });
+            },
+          }
+        );
+
+        assert.ok(isCalled);
+        assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support a custom DNS lookup function (async)', async () => {
+      const server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+      const payload = 'test';
+      let isCalled = false;
+
+      try {
+        const { data } = await axios.post(
+          `http://fake-name.axios:${server.address().port}`,
+          payload,
+          {
+            lookup: async (hostname, opt) => {
+              isCalled = true;
+              return ['127.0.0.1', 4];
+            },
+          }
+        );
+
+        assert.ok(isCalled);
+        assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support a custom DNS lookup function with address entry (async)', async () => {
+      const server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+      const payload = 'test';
+      let isCalled = false;
+
+      try {
+        const { data } = await axios.post(
+          `http://fake-name.axios:${server.address().port}`,
+          payload,
+          {
+            lookup: async (hostname, opt) => {
+              isCalled = true;
+              return { address: '127.0.0.1', family: 4 };
+            },
+          }
+        );
+
+        assert.ok(isCalled);
+        assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support a custom DNS lookup function that returns only IP address (async)', async () => {
+      const server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+      const payload = 'test';
+      let isCalled = false;
+
+      try {
+        const { data } = await axios.post(
+          `http://fake-name.axios:${server.address().port}`,
+          payload,
+          {
+            lookup: async (hostname, opt) => {
+              isCalled = true;
+              return '127.0.0.1';
+            },
+          }
+        );
+
+        assert.ok(isCalled);
+        assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should handle errors', async () => {
+      await assert.rejects(async () => {
+        await axios.get('https://no-such-domain-987654.com', {
+          lookup,
+        });
+      }, /ENOTFOUND/);
+    });
+  });
+
+  describe('JSON', () => {
+    it('should support reviver on JSON.parse', async () => {
+      const server = await startHTTPServer(
+        async (_, res) => {
+          res.end(
+            JSON.stringify({
+              foo: 'bar',
+            })
+          );
+        },
+        { port: 8080 }
+      );
+
+      try {
+        const { data } = await axios.get(`http://localhost:${server.address().port}`, {
+          parseReviver: (key, value) => {
+            return key === 'foo' ? 'success' : value;
+          },
+        });
+
+        assert.deepStrictEqual(data, { foo: 'success' });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
   });
 });

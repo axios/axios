@@ -9,6 +9,7 @@ import stream from 'stream';
 import url from 'url';
 import zlib from 'zlib';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import devNull from 'dev-null';
 
@@ -738,23 +739,35 @@ describe('supports http with nodejs', () => {
   });
 
   it('should support sockets', async () => {
-    let socketName = './test.sock';
+    let socketName = path.join(
+      os.tmpdir(),
+      `axios-test-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.sock`
+    );
 
     if (process.platform === 'win32') {
       socketName = '\\\\.\\pipe\\libuv-test';
     }
 
-    const server = await new Promise((resolve, reject) => {
-      const socketServer = net
-        .createServer((socket) => {
-          socket.on('data', () => {
-            socket.end('HTTP/1.1 200 OK\r\n\r\n');
-          });
-        })
-        .listen(socketName, () => resolve(socketServer));
+    let server;
+    try {
+      server = await new Promise((resolve, reject) => {
+        const socketServer = net
+          .createServer((socket) => {
+            socket.on('data', () => {
+              socket.end('HTTP/1.1 200 OK\r\n\r\n');
+            });
+          })
+          .listen(socketName, () => resolve(socketServer));
 
-      socketServer.on('error', reject);
-    });
+        socketServer.on('error', reject);
+      });
+    } catch (error) {
+      if (error && error.code === 'EPERM') {
+        return;
+      }
+
+      throw error;
+    }
 
     try {
       const response = await axios({
@@ -871,5 +884,80 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
+  });
+
+  it('should support buffers', async () => {
+    const buf = Buffer.alloc(1024, 'x'); // Unsafe buffer < Buffer.poolSize (8192 bytes)
+    const server = await startHTTPServer((req, res) => {
+      assert.strictEqual(req.headers['content-length'], buf.length.toString());
+      req.pipe(res);
+    });
+
+    try {
+      const response = await axios.post(`http://localhost:${server.address().port}/`, buf, {
+        responseType: 'stream',
+      });
+
+      const responseText = await new Promise((resolve, reject) => {
+        const chunks = [];
+
+        response.data.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+
+        response.data.on('end', () => {
+          resolve(Buffer.concat(chunks).toString('utf8'));
+        });
+
+        response.data.on('error', reject);
+      });
+
+      assert.strictEqual(responseText, buf.toString());
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support HTTP proxies', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      res.end('12345');
+    });
+
+    const proxy = await startHTTPServer((request, response) => {
+      const parsed = new URL(request.url);
+      const opts = {
+        host: parsed.hostname,
+        port: parsed.port,
+        path: `${parsed.pathname}${parsed.search}`,
+      };
+
+      http.get(opts, (res) => {
+        let body = '';
+
+        res.on('data', (data) => {
+          body += data;
+        });
+
+        res.on('end', () => {
+          response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+          response.end(body + '6789');
+        });
+      });
+    }, { port: 0 });
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        proxy: {
+          host: 'localhost',
+          port: proxy.address().port,
+        },
+      });
+
+      assert.equal(response.data, '123456789', 'should pass through proxy');
+    } finally {
+      await stopHTTPServer(server);
+      await stopHTTPServer(proxy);
+    }
   });
 });

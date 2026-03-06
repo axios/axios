@@ -638,7 +638,7 @@ export interface CancelTokenSource {
 
 export interface AxiosInterceptorOptions {
   synchronous?: boolean;
-  runWhen?: (config: InternalAxiosRequestConfig) => boolean;
+  runWhen?: (config: InternalAxiosRequestConfig) => boolean | null;
 }
 
 type AxiosInterceptorFulfilled<T> = (value: T) => T | Promise<T>;

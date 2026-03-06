@@ -1473,4 +1473,83 @@ describe('supports http with nodejs', () => {
       }
     }
   });
+
+  it('should not use proxy for domains in no_proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('4567');
+      },
+      { port: 8080 }
+    );
+
+    const proxy = await startHTTPServer(
+      (request, response) => {
+        const parsed = new URL(request.url);
+        const opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: `${parsed.pathname}${parsed.search}`,
+        };
+
+        http.get(opts, (res) => {
+          let body = '';
+
+          res.on('data', (data) => {
+            body += data;
+          });
+
+          res.on('end', () => {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(body + '1234');
+          });
+        });
+      },
+      { port: 8081 }
+    );
+
+    const noProxyValue = 'foo.com, localhost,bar.net , , quix.co';
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = noProxyValue;
+    process.env.NO_PROXY = noProxyValue;
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`);
+      assert.equal(response.data, '4567', 'should not use proxy for domains in no_proxy');
+    } finally {
+      await stopHTTPServer(server);
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
 });

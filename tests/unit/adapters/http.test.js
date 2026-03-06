@@ -1824,10 +1824,13 @@ describe('supports http with nodejs', () => {
   it('should support cancel', async () => {
     const source = axios.CancelToken.source();
 
-    const server = await startHTTPServer((req, res) => {
-      // Call cancel() when the request has been sent but no response received.
-      source.cancel('Operation has been canceled.');
-    });
+    const server = await startHTTPServer(
+      (req, res) => {
+        // Call cancel() when the request has been sent but no response received.
+        source.cancel('Operation has been canceled.');
+      },
+      { port: 8080 }
+    );
 
     try {
       await assert.rejects(
@@ -1852,9 +1855,12 @@ describe('supports http with nodejs', () => {
   });
 
   it('should combine baseURL and url', async () => {
-    const server = await startHTTPServer((req, res) => {
-      res.end();
-    });
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end();
+      },
+      { port: 8080 }
+    );
 
     try {
       const response = await axios.get('/foo', {
@@ -1866,5 +1872,76 @@ describe('supports http with nodejs', () => {
     } finally {
       await stopHTTPServer(server);
     }
+  });
+
+  it('should support HTTP protocol', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        setTimeout(() => {
+          res.end();
+        }, 1000);
+      },
+      { port: 8080 }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}`);
+      assert.equal(response.request.agent.protocol, 'http:');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support HTTPS protocol', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const server = await new Promise((resolve, reject) => {
+      const httpsServer = https
+        .createServer(
+          tlsOptions,
+          (req, res) => {
+            setTimeout(() => {
+              res.end();
+            }, 1000);
+          },
+          { port: 8080 }
+        )
+        .listen(8080, () => resolve(httpsServer));
+
+      httpsServer.on('error', reject);
+    });
+
+    try {
+      const response = await axios.get(`https://localhost:${server.address().port}`, {
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      });
+      assert.equal(response.request.agent.protocol, 'https:');
+    } finally {
+      await new Promise((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve();
+        });
+      });
+    }
+  });
+
+  it('should return malformed URL', async () => {
+    await assert.rejects(
+      axios.get('tel:484-695-3408'),
+      (error) => {
+        assert.equal(error.message, 'Unsupported protocol tel:');
+        return true;
+      }
+    );
   });
 });

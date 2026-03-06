@@ -12,6 +12,24 @@ describe('Cancel', function () {
       expect(cancel.toString()).toBe('CanceledError: Operation has been canceled.');
     });
   });
+
+  describe('reason', function () {
+    it('returns the reason provided to the constructor', function () {
+      const customReason = new Error('Custom reason for cancellation');
+      const cancel = new CanceledError(
+        'Operation has been canceled.',
+        undefined,
+        undefined,
+        customReason
+      );
+      expect(cancel.reason).toBe(customReason);
+    });
+
+    it('returns undefined if no reason is provided', function () {
+      const cancel = new CanceledError();
+      expect(cancel.reason).toBeUndefined();
+    });
+  });
   it('should be a native error as checked by the NodeJS `isNativeError` function', function () {
     if (typeof process !== 'undefined' && process.release.name === 'node') {
       let { isNativeError } = require('node:util/types');

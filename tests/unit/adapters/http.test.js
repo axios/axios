@@ -4,6 +4,7 @@ import {
   startHTTPServer,
   stopHTTPServer,
   handleFormData,
+  setTimeoutAsync,
   generateReadable,
 } from '../../setup/server.js';
 import axios from '../../../index.js';
@@ -26,12 +27,23 @@ import express from 'express';
 import multer from 'multer';
 import getStream from 'get-stream';
 import bodyParser from 'body-parser';
+import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
   const thisTestFilePath = path.join(adaptersTestsDir, 'http.test.js');
   const FormDataSpecCompliant = typeof FormData !== 'undefined' ? FormData : FormDataPolyfill;
   const BlobSpecCompliant = typeof Blob !== 'undefined' ? Blob : BlobPolyfill;
+  const isBlobSupported = typeof Blob !== 'undefined';
+
+  function toleranceRange(positive, negative) {
+    const p = 1 + positive / 100;
+    const n = 1 - negative / 100;
+
+    return (actualValue, value) => {
+      return actualValue > value ? actualValue <= value * p : actualValue >= value * n;
+    };
+  }
 
   it('should support IPv4 literal strings', async () => {
     const data = {
@@ -2342,5 +2354,367 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
+  });
+
+  describe('Data URL', () => {
+    it('should support requesting data URL as a Buffer', async () => {
+      const buffer = Buffer.from('123');
+      const dataURI = `data:application/octet-stream;base64,${buffer.toString('base64')}`;
+
+      const { data } = await axios.get(dataURI);
+      assert.deepStrictEqual(data, buffer);
+    });
+
+    it('should support requesting data URL as a Blob (if supported by the environment)', async () => {
+      if (!isBlobSupported) {
+        return;
+      }
+
+      const buffer = Buffer.from('123');
+      const dataURI = `data:application/octet-stream;base64,${buffer.toString('base64')}`;
+
+      const { data } = await axios.get(dataURI, { responseType: 'blob' });
+      assert.strictEqual(data.type, 'application/octet-stream');
+      assert.deepStrictEqual(await data.text(), '123');
+    });
+
+    it('should support requesting data URL as a String (text)', async () => {
+      const buffer = Buffer.from('123', 'utf-8');
+      const dataURI = `data:application/octet-stream;base64,${buffer.toString('base64')}`;
+
+      const { data } = await axios.get(dataURI, { responseType: 'text' });
+      assert.deepStrictEqual(data, '123');
+    });
+
+    it('should support requesting data URL as a Stream', async () => {
+      const buffer = Buffer.from('123', 'utf-8');
+      const dataURI = `data:application/octet-stream;base64,${buffer.toString('base64')}`;
+
+      const { data } = await axios.get(dataURI, { responseType: 'stream' });
+      assert.strictEqual(await getStream(data), '123');
+    });
+  });
+
+  describe('progress', () => {
+    describe('upload', () => {
+      it('should support upload progress capturing', async () => {
+        const server = await startHTTPServer(
+          {
+            rate: 100 * 1024,
+          },
+          { port: 8080 }
+        );
+
+        try {
+          let content = '';
+          const count = 10;
+          const chunk = 'test';
+          const chunkLength = Buffer.byteLength(chunk);
+          const contentLength = count * chunkLength;
+
+          const readable = stream.Readable.from(
+            (async function* () {
+              let i = count;
+
+              while (i-- > 0) {
+                await setTimeoutAsync(1100);
+                content += chunk;
+                yield chunk;
+              }
+            })()
+          );
+
+          const samples = [];
+
+          const { data } = await axios.post(`http://localhost:${server.address().port}`, readable, {
+            onUploadProgress: ({ loaded, total, progress, bytes, upload }) => {
+              samples.push({
+                loaded,
+                total,
+                progress,
+                bytes,
+                upload,
+              });
+            },
+            headers: {
+              'Content-Length': contentLength,
+            },
+            responseType: 'text',
+          });
+
+          assert.strictEqual(data, content);
+          assert.deepStrictEqual(
+            samples,
+            Array.from(
+              (function* () {
+                for (let i = 1; i <= 10; i++) {
+                  yield {
+                    loaded: chunkLength * i,
+                    total: contentLength,
+                    progress: (chunkLength * i) / contentLength,
+                    bytes: 4,
+                    upload: true,
+                  };
+                }
+              })()
+            )
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      }, 15000);
+    });
+
+    describe('download', () => {
+      it('should support download progress capturing', async () => {
+        const server = await startHTTPServer(
+          {
+            rate: 100 * 1024,
+          },
+          { port: 8080 }
+        );
+
+        try {
+          let content = '';
+          const count = 10;
+          const chunk = 'test';
+          const chunkLength = Buffer.byteLength(chunk);
+          const contentLength = count * chunkLength;
+
+          const readable = stream.Readable.from(
+            (async function* () {
+              let i = count;
+
+              while (i-- > 0) {
+                await setTimeoutAsync(1100);
+                content += chunk;
+                yield chunk;
+              }
+            })()
+          );
+
+          const samples = [];
+
+          const { data } = await axios.post(`http://localhost:${server.address().port}`, readable, {
+            onDownloadProgress: ({ loaded, total, progress, bytes, download }) => {
+              samples.push({
+                loaded,
+                total,
+                progress,
+                bytes,
+                download,
+              });
+            },
+            headers: {
+              'Content-Length': contentLength,
+            },
+            responseType: 'text',
+            maxRedirects: 0,
+          });
+
+          assert.strictEqual(data, content);
+          assert.deepStrictEqual(
+            samples,
+            Array.from(
+              (function* () {
+                for (let i = 1; i <= 10; i++) {
+                  yield {
+                    loaded: chunkLength * i,
+                    total: contentLength,
+                    progress: (chunkLength * i) / contentLength,
+                    bytes: 4,
+                    download: true,
+                  };
+                }
+              })()
+            )
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      }, 15000);
+    });
+  });
+
+  describe('Rate limit', () => {
+    it(
+      'should support upload rate limit',
+      async () => {
+        const secs = 10;
+        const configRate = 100000;
+        const chunkLength = configRate * secs;
+        const server = await startHTTPServer();
+
+        try {
+          const buf = Buffer.alloc(chunkLength).fill('s');
+          const samples = [];
+          const skip = 4;
+          const compareValues = toleranceRange(50, 50);
+
+          const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
+            onUploadProgress: ({ loaded, total, progress, bytes, rate }) => {
+              samples.push({
+                loaded,
+                total,
+                progress,
+                bytes,
+                rate,
+              });
+            },
+            maxRate: [configRate],
+            responseType: 'text',
+            maxRedirects: 0,
+          });
+
+          samples.slice(skip).forEach(({ rate, progress }, i, _samples) => {
+            assert.ok(
+              compareValues(rate, configRate),
+              `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${_samples
+                .map((sample) => sample.rate)
+                .join(', ')}]`
+            );
+
+            const progressTicksRate = 2;
+            const expectedProgress = (i + skip) / secs / progressTicksRate;
+
+            assert.ok(
+              Math.abs(expectedProgress - progress) < 0.25,
+              `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${_samples
+                .map((sample) => sample.progress)
+                .join(', ')}]`
+            );
+          });
+
+          assert.strictEqual(data, buf.toString(), 'content corrupted');
+        } finally {
+          await stopHTTPServer(server);
+        }
+      },
+      30000
+    );
+
+    it(
+      'should support download rate limit',
+      async () => {
+        const secs = 10;
+        const configRate = 100000;
+        const chunkLength = configRate * secs;
+        const server = await startHTTPServer();
+
+        try {
+          const buf = Buffer.alloc(chunkLength).fill('s');
+          const samples = [];
+          const skip = 4;
+          const compareValues = toleranceRange(50, 50);
+
+          const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
+            onDownloadProgress: ({ loaded, total, progress, bytes, rate }) => {
+              samples.push({
+                loaded,
+                total,
+                progress,
+                bytes,
+                rate,
+              });
+            },
+            maxRate: [0, configRate],
+            responseType: 'text',
+            maxRedirects: 0,
+          });
+
+          samples.slice(skip).forEach(({ rate, progress }, i, _samples) => {
+            assert.ok(
+              compareValues(rate, configRate),
+              `Rate sample at index ${i} is out of the expected range (${rate} / ${configRate}) [${_samples
+                .map((sample) => sample.rate)
+                .join(', ')}]`
+            );
+
+            const progressTicksRate = 3;
+            const expectedProgress = (i + skip) / secs / progressTicksRate;
+
+            assert.ok(
+              Math.abs(expectedProgress - progress) < 0.25,
+              `Progress sample at index ${i} is out of the expected range (${progress} / ${expectedProgress}) [${_samples
+                .map((sample) => sample.progress)
+                .join(', ')}]`
+            );
+          });
+
+          assert.strictEqual(data, buf.toString(), 'content corrupted');
+        } finally {
+          await stopHTTPServer(server);
+        }
+      },
+      30000
+    );
+  });
+
+  describe('request aborting', () => {
+    it('should be able to abort the response stream', async () => {
+      const server = await startHTTPServer({
+        rate: 100000,
+        useBuffering: true,
+      });
+
+      try {
+        const buf = Buffer.alloc(1024 * 1024);
+        const controller = new AbortController();
+
+        const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
+          responseType: 'stream',
+          signal: controller.signal,
+          maxRedirects: 0,
+        });
+
+        setTimeout(() => {
+          controller.abort();
+        }, 500);
+
+        let streamError;
+        data.on('error', (error) => {
+          streamError = error;
+        });
+
+        await assert.rejects(
+          new Promise((resolve, reject) => {
+            stream.pipeline(data, devNull(), (error) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+
+              resolve();
+            });
+          })
+        );
+
+        assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+  });
+
+  it('should properly handle synchronous errors inside the adapter', async () => {
+    await assert.rejects(() => axios.get('http://192.168.0.285'), /Invalid URL/);
+  });
+
+  it('should support function as paramsSerializer value', async () => {
+    const server = await startHTTPServer((req, res) => res.end(req.url));
+
+    try {
+      const { data } = await axios.post(`http://localhost:${server.address().port}`, 'test', {
+        params: {
+          x: 1,
+        },
+        paramsSerializer: () => 'foo',
+        maxRedirects: 0,
+      });
+
+      assert.strictEqual(data, '/?foo');
+    } finally {
+      await stopHTTPServer(server);
+    }
   });
 });

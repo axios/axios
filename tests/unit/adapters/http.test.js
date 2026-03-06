@@ -24,6 +24,8 @@ import formidable from 'formidable';
 import { FormData as FormDataPolyfill, Blob as BlobPolyfill } from 'formdata-node';
 import express from 'express';
 import multer from 'multer';
+import getStream from 'get-stream';
+import bodyParser from 'body-parser';
 
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
@@ -2228,6 +2230,116 @@ describe('supports http with nodejs', () => {
             resolve();
           });
         });
+      }
+    });
+  });
+
+  describe('Blob', () => {
+    it('should support Blob', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          res.end(await getStream(req));
+        },
+        { port: 8080 }
+      );
+
+      try {
+        const blobContent = 'blob-content';
+        const blob = new BlobSpecCompliant([blobContent], { type: 'image/jpeg' });
+
+        const { data } = await axios.post(`http://localhost:${server.address().port}`, blob, {
+          maxRedirects: 0,
+        });
+
+        assert.deepStrictEqual(data, blobContent);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+  });
+
+  describe('URLEncoded Form', () => {
+    it('should post object data as url-encoded form if content-type is application/x-www-form-urlencoded', async () => {
+      const app = express();
+      const obj = {
+        arr1: ['1', '2', '3'],
+        arr2: ['1', ['2'], '3'],
+        obj: { x: '1', y: { z: '1' } },
+        users: [
+          { name: 'Peter', surname: 'griffin' },
+          { name: 'Thomas', surname: 'Anderson' },
+        ],
+      };
+
+      app.use(bodyParser.urlencoded({ extended: true }));
+
+      app.post('/', (req, res) => {
+        res.send(JSON.stringify(req.body));
+      });
+
+      const server = await new Promise(
+        (resolve, reject) => {
+          const expressServer = app.listen(0, () => resolve(expressServer));
+          expressServer.on('error', reject);
+        },
+        { port: 8080 }
+      );
+
+      try {
+        const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        });
+        assert.deepStrictEqual(response.data, obj);
+      } finally {
+        await new Promise((resolve, reject) => {
+          server.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
+        });
+      }
+    });
+
+    it('should respect formSerializer config', async () => {
+      const obj = {
+        arr1: ['1', '2', '3'],
+        arr2: ['1', ['2'], '3'],
+      };
+
+      const form = new URLSearchParams();
+      form.append('arr1[0]', '1');
+      form.append('arr1[1]', '2');
+      form.append('arr1[2]', '3');
+      form.append('arr2[0]', '1');
+      form.append('arr2[1][0]', '2');
+      form.append('arr2[2]', '3');
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          req.pipe(res);
+        },
+        { port: 8080 }
+      );
+
+      try {
+        const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          formSerializer: {
+            indexes: true,
+          },
+        });
+
+        assert.strictEqual(response.data, form.toString());
+      } finally {
+        await stopHTTPServer(server);
       }
     });
   });

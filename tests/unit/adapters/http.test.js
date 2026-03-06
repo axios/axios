@@ -1631,4 +1631,133 @@ describe('supports http with nodejs', () => {
       }
     }
   });
+
+  it('should support HTTP proxy auth', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end();
+      },
+      { port: 8080 }
+    );
+
+    const proxy = await startHTTPServer(
+      (request, response) => {
+        const parsed = new URL(request.url);
+        const opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: `${parsed.pathname}${parsed.search}`,
+        };
+        const proxyAuth = request.headers['proxy-authorization'];
+
+        http.get(opts, (res) => {
+          res.on('data', () => {});
+
+          res.on('end', () => {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(proxyAuth);
+          });
+        });
+      },
+      { port: 8081 }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        proxy: {
+          host: 'localhost',
+          port: proxy.address().port,
+          auth: {
+            username: 'user',
+            password: 'pass',
+          },
+        },
+      });
+
+      const base64 = Buffer.from('user:pass', 'utf8').toString('base64');
+      assert.equal(response.data, `Basic ${base64}`, 'should authenticate to the proxy');
+    } finally {
+      await stopHTTPServer(server);
+      await stopHTTPServer(proxy);
+    }
+  });
+
+  it('should support proxy auth from env', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end();
+      },
+      { port: 8080 }
+    );
+
+    const proxy = await startHTTPServer(
+      (request, response) => {
+        const parsed = new URL(request.url);
+        const opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: `${parsed.pathname}${parsed.search}`,
+        };
+        const proxyAuth = request.headers['proxy-authorization'];
+
+        http.get(opts, (res) => {
+          res.on('data', () => {});
+
+          res.on('end', () => {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(proxyAuth);
+          });
+        });
+      },
+      { port: 8081 }
+    );
+
+    const proxyUrl = `http://user:pass@localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`);
+      const base64 = Buffer.from('user:pass', 'utf8').toString('base64');
+      assert.equal(
+        response.data,
+        `Basic ${base64}`,
+        'should authenticate to the proxy set by process.env.http_proxy'
+      );
+    } finally {
+      await stopHTTPServer(server);
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
 });

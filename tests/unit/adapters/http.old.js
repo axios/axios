@@ -392,13 +392,13 @@ describe('supports http with nodejs', () => {
           res.end();
         });
       },
-      { port: 4000 }
+      { port: 8081 }
     );
 
     await axios.get(`http://localhost:${server.address().port}/`, {
       proxy: {
         host: 'localhost',
-        port: 4000,
+        port: 8081,
       },
       maxRedirects: totalRedirectCount,
       beforeRedirect: (options) => {
@@ -678,11 +678,14 @@ describe('supports http with nodejs', () => {
           });
 
           it(`should not fail if response content-length header is missing (${type})`, async () => {
-            const server = await startHTTPServer(async (req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.removeHeader('Content-Length');
-              res.end(await zipped);
-            });
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.removeHeader('Content-Length');
+                res.end(await zipped);
+              },
+              { port: 8080 }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);
@@ -693,13 +696,16 @@ describe('supports http with nodejs', () => {
           });
 
           it('should not fail with chunked responses (without Content-Length header)', async () => {
-            const server = await startHTTPServer(async (req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.setHeader('Transfer-Encoding', 'chunked');
-              res.removeHeader('Content-Length');
-              res.write(await zipped);
-              res.end();
-            });
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.setHeader('Transfer-Encoding', 'chunked');
+                res.removeHeader('Content-Length');
+                res.write(await zipped);
+                res.end();
+              },
+              { port: 8080 }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);
@@ -710,11 +716,14 @@ describe('supports http with nodejs', () => {
           });
 
           it('should not fail with an empty response without content-length header (Z_BUF_ERROR)', async () => {
-            const server = await startHTTPServer((req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.removeHeader('Content-Length');
-              res.end();
-            });
+            const server = await startHTTPServer(
+              (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.removeHeader('Content-Length');
+                res.end();
+              },
+              { port: 8080 }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);
@@ -725,10 +734,13 @@ describe('supports http with nodejs', () => {
           });
 
           it('should not fail with an empty response with content-length header (Z_BUF_ERROR)', async () => {
-            const server = await startHTTPServer((req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.end();
-            });
+            const server = await startHTTPServer(
+              (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.end();
+              },
+              { port: 8080 }
+            );
 
             try {
               await axios.get(`http://localhost:${server.address().port}`);
@@ -1210,7 +1222,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 0 }
+      { port: 8081 }
     );
 
     try {
@@ -2786,10 +2798,13 @@ describe('supports http with nodejs', () => {
 
   describe('request aborting', () => {
     it('should be able to abort the response stream', async () => {
-      const server = await startHTTPServer({
-        rate: 100000,
-        useBuffering: true,
-      });
+      const server = await startHTTPServer(
+        {
+          rate: 100000,
+          useBuffering: true,
+        },
+        { port: 8080 }
+      );
 
       try {
         const buf = Buffer.alloc(1024 * 1024);
@@ -2835,7 +2850,7 @@ describe('supports http with nodejs', () => {
   });
 
   it('should support function as paramsSerializer value', async () => {
-    const server = await startHTTPServer((req, res) => res.end(req.url));
+    const server = await startHTTPServer((req, res) => res.end(req.url), { port: 8080 });
 
     try {
       const { data } = await axios.post(`http://localhost:${server.address().port}`, 'test', {

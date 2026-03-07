@@ -661,10 +661,13 @@ describe('supports http with nodejs', () => {
 
         describe(`${typeName} decompression`, () => {
           it('should support decompression', async () => {
-            const server = await startHTTPServer(async (req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.end(await zipped);
-            });
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.end(await zipped);
+              },
+              { port: 8080 }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);

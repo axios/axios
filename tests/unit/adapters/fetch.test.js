@@ -27,7 +27,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     it('should support text response type', async () => {
       const originalData = 'my data';
 
-      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8080 });
+      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8001 });
 
       try {
         const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
@@ -43,7 +43,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     it('should support arraybuffer response type', async () => {
       const originalData = 'my data';
 
-      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8080 });
+      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8002 });
 
       try {
         const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
@@ -62,7 +62,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     it('should support blob response type', async () => {
       const originalData = 'my data';
 
-      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8080 });
+      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8003 });
 
       try {
         const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
@@ -78,7 +78,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     it('should support stream response type', async () => {
       const originalData = 'my data';
 
-      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8080 });
+      const server = await startHTTPServer((req, res) => res.end(originalData), { port: 8004 });
 
       try {
         const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
@@ -108,7 +108,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
           res.end(await response.text());
         },
-        { port: 8080 }
+        { port: 8005 }
       );
 
       try {
@@ -131,7 +131,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       const originalData = { x: 'my data' };
 
       const server = await startHTTPServer((req, res) => res.end(JSON.stringify(originalData)), {
-        port: 8080,
+        port: 8005,
       });
 
       try {
@@ -153,7 +153,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           {
             rate: 100 * 1024,
           },
-          { port: 8080 }
+          { port: 8006 }
         );
 
         try {
@@ -227,7 +227,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       }, 15000);
 
       it('should not fail with get method', async () => {
-        const server = await startHTTPServer((req, res) => res.end('OK'), { port: 8080 });
+        const server = await startHTTPServer((req, res) => res.end('OK'), { port: 8007 });
 
         try {
           const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
@@ -248,7 +248,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             rate: 100 * 1024,
           },
           {
-            port: 0,
+            port: 8008,
           }
         );
 
@@ -327,7 +327,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
   it('should support basic auth', async () => {
     const server = await startHTTPServer((req, res) => res.end(req.headers.authorization), {
-      port: 8080,
+      port: 8009,
     });
 
     try {
@@ -345,7 +345,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   it('should support stream.Readable as a payload', async () => {
-    const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: 8080 });
+    const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: 8010 });
 
     try {
       const { data } = await fetchAxios.post(
@@ -366,7 +366,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           rate: 100000,
           useBuffering: true,
         },
-        { port: 8080 }
+        { port: 8011 }
       );
 
       try {
@@ -398,7 +398,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             // Client-side abort intentionally closes the stream early in this test.
           });
         },
-        { port: 8080 }
+        { port: 8012 }
       );
 
       try {
@@ -428,7 +428,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await setTimeoutAsync(1000);
         res.end('OK');
       },
-      { port: 8080 }
+      { port: 8013 }
     );
 
     try {
@@ -451,7 +451,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   it('should combine baseURL and url', async () => {
-    const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: 8080 });
+    const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: 8014 });
     try {
       const res = await fetchAxios(`http://localhost:${server.address().port}/foo`);
 
@@ -463,7 +463,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   it('should support params', async () => {
-    const server = await startHTTPServer((req, res) => res.end(req.url), { port: 8080 });
+    const server = await startHTTPServer((req, res) => res.end(req.url), { port: 8015 });
     try {
       const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/?test=1`, {
         params: {
@@ -494,7 +494,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         res.setHeader('foo', 'bar');
         res.end(req.url);
       },
-      { port: 8080 }
+      { port: 8016 }
     );
 
     try {
@@ -519,7 +519,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           assert.match(contentType, /^multipart\/form-data; boundary=/i);
           res.end('OK');
         },
-        { port: 8080 }
+        { port: 8017 }
       );
 
       try {
@@ -599,7 +599,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
 
     it('should fallback to the global on undefined env value', async () => {
-      const server = await startHTTPServer((req, res) => res.end('OK'), { port: 8080 });
+      const server = await startHTTPServer((req, res) => res.end('OK'), { port: 8018 });
 
       try {
         const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
@@ -626,7 +626,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         };
       });
 
-      const server = await startHTTPServer((req, res) => res.end('OK'), { port: 8080 });
+      const server = await startHTTPServer((req, res) => res.end('OK'), { port: 8019 });
 
       try {
         const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {

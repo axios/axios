@@ -1,7 +1,7 @@
 const axios = require('axios');
 const assert = require('assert');
 
-const {CanceledError, AxiosError, AxiosHeaders} = axios;
+const { CanceledError, AxiosError, AxiosHeaders } = axios;
 
 assert.strictEqual(typeof axios, 'function');
 assert.strictEqual(typeof CanceledError, 'function');

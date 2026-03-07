@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 describe('promise', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -17,7 +19,7 @@ describe('promise', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: '{"hello":"world"}'
+        responseText: '{"hello":"world"}',
       });
 
       setTimeout(function () {
@@ -51,14 +53,17 @@ describe('promise', function () {
 
     axios
       .all([123, 456])
-      .then(axios.spread(function (a, b) {
-        sum = a + b;
-        fulfilled = true;
-        return 'hello world';
-      }))
+      .then(
+        axios.spread(function (a, b) {
+          sum = a + b;
+          fulfilled = true;
+          return 'hello world';
+        })
+      )
       .then(function (res) {
         result = res;
-      }).catch(done);
+      })
+      .catch(done);
 
     setTimeout(function () {
       expect(fulfilled).toEqual(true);

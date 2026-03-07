@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 describe('interceptors', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -28,11 +30,15 @@ describe('interceptors', function () {
 
   it('should add a request interceptor (explicitly flagged as asynchronous)', function (done) {
     let asyncFlag = false;
-    axios.interceptors.request.use(function (config) {
-      config.headers.test = 'added by interceptor';
-      expect(asyncFlag).toBe(true);
-      return config;
-    }, null, { synchronous: false });
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.test = 'added by interceptor';
+        expect(asyncFlag).toBe(true);
+        return config;
+      },
+      null,
+      { synchronous: false }
+    );
 
     axios('/foo');
     asyncFlag = true;
@@ -45,11 +51,15 @@ describe('interceptors', function () {
 
   it('should add a request interceptor that is executed synchronously when flag is provided', function (done) {
     let asyncFlag = false;
-    axios.interceptors.request.use(function (config) {
-      config.headers.test = 'added by synchronous interceptor';
-      expect(asyncFlag).toBe(false);
-      return config;
-    }, null, { synchronous: true });
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.test = 'added by synchronous interceptor';
+        expect(asyncFlag).toBe(false);
+        return config;
+      },
+      null,
+      { synchronous: true }
+    );
 
     axios('/foo');
     asyncFlag = true;
@@ -68,11 +78,15 @@ describe('interceptors', function () {
       return config;
     });
 
-    axios.interceptors.request.use(function (config) {
-      config.headers.test = 'added by synchronous interceptor';
-      expect(asyncFlag).toBe(true);
-      return config;
-    }, null, { synchronous: true });
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.test = 'added by synchronous interceptor';
+        expect(asyncFlag).toBe(true);
+        return config;
+      },
+      null,
+      { synchronous: true }
+    );
 
     axios.interceptors.request.use(function (config) {
       config.headers.test = 'added by the async interceptor';
@@ -91,14 +105,75 @@ describe('interceptors', function () {
     });
   });
 
+  it('should execute request interceptor in legacy order', function (done) {
+    let sequence = '';
+    axios.interceptors.request.use(function (config) {
+      sequence += '1';
+      return config;
+    });
+
+    axios.interceptors.request.use(function (config) {
+      sequence += '2';
+      return config;
+    });
+
+    axios.interceptors.request.use(function (config) {
+      sequence += '3';
+      return config;
+    });
+
+    axios({
+      url: '/foo',
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(sequence).toBe('321');
+      done();
+    });
+  });
+
+  it('should execute request interceptor in order', function (done) {
+    let sequence = '';
+    axios.interceptors.request.use(function (config) {
+      sequence += '1';
+      return config;
+    });
+
+    axios.interceptors.request.use(function (config) {
+      sequence += '2';
+      return config;
+    });
+
+    axios.interceptors.request.use(function (config) {
+      sequence += '3';
+      return config;
+    });
+
+    axios({
+      url: '/foo',
+      transitional: {
+        legacyInterceptorReqResOrdering: false,
+      },
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(sequence).toBe('123');
+      done();
+    });
+  });
+
   it('runs the interceptor if runWhen function is provided and resolves to true', function (done) {
     function onGetCall(config) {
       return config.method === 'get';
     }
-    axios.interceptors.request.use(function (config) {
-      config.headers.test = 'special get headers';
-      return config;
-    }, null, { runWhen: onGetCall });
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.test = 'special get headers';
+        return config;
+      },
+      null,
+      { runWhen: onGetCall }
+    );
 
     axios('/foo');
 
@@ -112,15 +187,19 @@ describe('interceptors', function () {
     function onPostCall(config) {
       return config.method === 'post';
     }
-    axios.interceptors.request.use(function (config) {
-      config.headers.test = 'special get headers';
-      return config;
-    }, null, { runWhen: onPostCall });
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.test = 'special get headers';
+        return config;
+      },
+      null,
+      { runWhen: onPostCall }
+    );
 
     axios('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(request.requestHeaders.test).toBeUndefined()
+      expect(request.requestHeaders.test).toBeUndefined();
       done();
     });
   });
@@ -131,23 +210,31 @@ describe('interceptors', function () {
     function onPostCall(config) {
       return config.method === 'post';
     }
-    axios.interceptors.request.use(function (config) {
-      config.headers.test = 'special get headers';
-      return config;
-    }, null, { synchronous: false, runWhen: onPostCall });
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.test = 'special get headers';
+        return config;
+      },
+      null,
+      { synchronous: false, runWhen: onPostCall }
+    );
 
-    axios.interceptors.request.use(function (config) {
-      config.headers.sync = 'hello world';
-      expect(asyncFlag).toBe(false);
-      return config;
-    }, null, { synchronous: true });
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.sync = 'hello world';
+        expect(asyncFlag).toBe(false);
+        return config;
+      },
+      null,
+      { synchronous: true }
+    );
 
     axios('/foo');
-    asyncFlag = true
+    asyncFlag = true;
 
     getAjaxRequest().then(function (request) {
-      expect(request.requestHeaders.test).toBeUndefined()
-      expect(request.requestHeaders.sync).toBe('hello world')
+      expect(request.requestHeaders.test).toBeUndefined();
+      expect(request.requestHeaders.sync).toBe('hello world');
       done();
     });
   });
@@ -155,9 +242,13 @@ describe('interceptors', function () {
   it('should add a request interceptor with an onRejected block that is called if interceptor code fails', function (done) {
     const rejectedSpy = jasmine.createSpy('rejectedSpy');
     const error = new Error('deadly error');
-    axios.interceptors.request.use(function () {
-      throw error;
-    }, rejectedSpy, { synchronous: true });
+    axios.interceptors.request.use(
+      function () {
+        throw error;
+      },
+      rejectedSpy,
+      { synchronous: true }
+    );
 
     axios('/foo').catch(done);
 
@@ -171,7 +262,7 @@ describe('interceptors', function () {
     axios.interceptors.request.use(function () {
       return {
         url: '/bar',
-        method: 'post'
+        method: 'post',
       };
     });
 
@@ -242,7 +333,7 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
       });
 
       setTimeout(function () {
@@ -271,7 +362,7 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
       });
 
       setTimeout(function () {
@@ -286,7 +377,7 @@ describe('interceptors', function () {
 
     axios.interceptors.response.use(function () {
       return {
-        data: 'stuff'
+        data: 'stuff',
       };
     });
 
@@ -297,7 +388,7 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
       });
 
       setTimeout(function () {
@@ -327,7 +418,7 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
       });
 
       setTimeout(function () {
@@ -338,22 +429,20 @@ describe('interceptors', function () {
   });
 
   describe('given you add multiple response interceptors', function () {
-
     describe('and when the response was fulfilled', function () {
-
       function fireRequestAndExpect(expectation) {
         let response;
-        axios('/foo').then(function(data) {
+        axios('/foo').then(function (data) {
           response = data;
         });
         getAjaxRequest().then(function (request) {
           request.respondWith({
             status: 200,
-            responseText: 'OK'
+            responseText: 'OK',
           });
 
-          setTimeout(function() {
-            expectation(response)
+          setTimeout(function () {
+            expectation(response);
           }, 100);
         });
       }
@@ -383,11 +472,11 @@ describe('interceptors', function () {
         });
       });
 
-      it('then only the last interceptor\'s result is returned', function (done) {
-        axios.interceptors.response.use(function() {
+      it("then only the last interceptor's result is returned", function (done) {
+        axios.interceptors.response.use(function () {
           return 'response 1';
         });
-        axios.interceptors.response.use(function() {
+        axios.interceptors.response.use(function () {
           return 'response 2';
         });
 
@@ -397,11 +486,11 @@ describe('interceptors', function () {
         });
       });
 
-      it('then every interceptor receives the result of it\'s predecessor', function (done) {
-        axios.interceptors.response.use(function() {
+      it("then every interceptor receives the result of it's predecessor", function (done) {
+        axios.interceptors.response.use(function () {
           return 'response 1';
         });
-        axios.interceptors.response.use(function(response) {
+        axios.interceptors.response.use(function (response) {
           return [response, 'response 2'];
         });
 
@@ -412,25 +501,24 @@ describe('interceptors', function () {
       });
 
       describe('and when the fulfillment-interceptor throws', function () {
-
         function fireRequestCatchAndExpect(expectation) {
-          axios('/foo').catch(function(data) {
+          axios('/foo').catch(function (data) {
             // dont handle result
           });
           getAjaxRequest().then(function (request) {
             request.respondWith({
               status: 200,
-              responseText: 'OK'
+              responseText: 'OK',
             });
 
-            setTimeout(function() {
-              expectation()
+            setTimeout(function () {
+              expectation();
             }, 100);
           });
         }
 
         it('then the following fulfillment-interceptor is not called', function (done) {
-          axios.interceptors.response.use(function() {
+          axios.interceptors.response.use(function () {
             throw Error('throwing interceptor');
           });
           const interceptor2 = jasmine.createSpy('interceptor2');
@@ -443,10 +531,10 @@ describe('interceptors', function () {
         });
 
         it('then the following rejection-interceptor is called', function (done) {
-          axios.interceptors.response.use(function() {
+          axios.interceptors.response.use(function () {
             throw Error('throwing interceptor');
           });
-          const unusedFulfillInterceptor = function() {};
+          const unusedFulfillInterceptor = function () {};
           const rejectIntercept = jasmine.createSpy('rejectIntercept');
           axios.interceptors.response.use(unusedFulfillInterceptor, rejectIntercept);
 
@@ -457,12 +545,12 @@ describe('interceptors', function () {
         });
 
         it('once caught, another following fulfill-interceptor is called again (just like in a promise chain)', function (done) {
-          axios.interceptors.response.use(function() {
+          axios.interceptors.response.use(function () {
             throw Error('throwing interceptor');
           });
 
-          const unusedFulfillInterceptor = function() {};
-          const catchingThrowingInterceptor = function() {};
+          const unusedFulfillInterceptor = function () {};
+          const catchingThrowingInterceptor = function () {};
           axios.interceptors.response.use(unusedFulfillInterceptor, catchingThrowingInterceptor);
 
           const interceptor3 = jasmine.createSpy('interceptor3');
@@ -502,7 +590,7 @@ describe('interceptors', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: 'OK'
+        responseText: 'OK',
       });
 
       setTimeout(function () {
@@ -514,27 +602,34 @@ describe('interceptors', function () {
 
   it('should remove async interceptor before making request and execute synchronously', function (done) {
     let asyncFlag = false;
-    const asyncIntercept = axios.interceptors.request.use(function (config) {
-      config.headers.async = 'async it!';
-      return config;
-    }, null, { synchronous: false });
+    const asyncIntercept = axios.interceptors.request.use(
+      function (config) {
+        config.headers.async = 'async it!';
+        return config;
+      },
+      null,
+      { synchronous: false }
+    );
 
-    const syncIntercept = axios.interceptors.request.use(function (config) {
-      config.headers.sync = 'hello world';
-      expect(asyncFlag).toBe(false);
-      return config;
-    }, null, { synchronous: true });
-
+    axios.interceptors.request.use(
+      function (config) {
+        config.headers.sync = 'hello world';
+        expect(asyncFlag).toBe(false);
+        return config;
+      },
+      null,
+      { synchronous: true }
+    );
 
     axios.interceptors.request.eject(asyncIntercept);
 
-    axios('/foo')
-    asyncFlag = true
+    axios('/foo');
+    asyncFlag = true;
 
     getAjaxRequest().then(function (request) {
       expect(request.requestHeaders.async).toBeUndefined();
       expect(request.requestHeaders.sync).toBe('hello world');
-      done()
+      done();
     });
   });
 
@@ -545,7 +640,7 @@ describe('interceptors', function () {
     });
 
     axios.post('/foo', {
-      foo: 'bar'
+      foo: 'bar',
     });
 
     getAjaxRequest().then(function (request) {
@@ -556,7 +651,7 @@ describe('interceptors', function () {
 
   it('should modify base URL in request interceptor', function (done) {
     const instance = axios.create({
-      baseURL: 'http://test.com/'
+      baseURL: 'http://test.com/',
     });
 
     instance.interceptors.request.use(function (config) {
@@ -574,11 +669,11 @@ describe('interceptors', function () {
 
   it('should clear all request interceptors', function () {
     const instance = axios.create({
-      baseURL: 'http://test.com/'
+      baseURL: 'http://test.com/',
     });
 
     instance.interceptors.request.use(function (config) {
-      return config
+      return config;
     });
 
     instance.interceptors.request.clear();
@@ -588,11 +683,11 @@ describe('interceptors', function () {
 
   it('should clear all response interceptors', function () {
     const instance = axios.create({
-      baseURL: 'http://test.com/'
+      baseURL: 'http://test.com/',
     });
 
     instance.interceptors.response.use(function (config) {
-      return config
+      return config;
     });
 
     instance.interceptors.response.clear();

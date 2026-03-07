@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import utils from '../../../lib/utils';
 
 describe('utils::trim', function () {
@@ -9,4 +10,3 @@ describe('utils::trim', function () {
     expect(utils.trim('\tfoo\t')).toEqual('foo');
   });
 });
-

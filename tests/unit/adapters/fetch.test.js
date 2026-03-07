@@ -243,9 +243,14 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
     describe('download', () => {
       it('should support download progress capturing', async () => {
-        const server = await startHTTPServer({
-          rate: 100 * 1024,
-        });
+        const server = await startHTTPServer(
+          {
+            rate: 100 * 1024,
+          },
+          {
+            port: 0,
+          }
+        );
 
         try {
           let content = '';
@@ -268,26 +273,30 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
           const samples = [];
 
-          const { data } = await fetchAxios.post('/', readable, {
-            onDownloadProgress: ({ loaded, total, progress, bytes, download }) => {
-              console.log(
-                `Download Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`
-              );
+          const { data } = await fetchAxios.post(
+            `http://localhost:${server.address().port}/`,
+            readable,
+            {
+              onDownloadProgress: ({ loaded, total, progress, bytes, download }) => {
+                console.log(
+                  `Download Progress ${loaded} from ${total} bytes (${(progress * 100).toFixed(1)}%)`
+                );
 
-              samples.push({
-                loaded,
-                total,
-                progress,
-                bytes,
-                download,
-              });
-            },
-            headers: {
-              'Content-Length': contentLength,
-            },
-            responseType: 'text',
-            maxRedirects: 0,
-          });
+                samples.push({
+                  loaded,
+                  total,
+                  progress,
+                  bytes,
+                  download,
+                });
+              },
+              headers: {
+                'Content-Length': contentLength,
+              },
+              responseType: 'text',
+              maxRedirects: 0,
+            }
+          );
 
           await setTimeoutAsync(500);
 

@@ -19,19 +19,20 @@ describe('helpers::buildURL', () => {
   it('should support sending raw params to custom serializer func', () => {
     const serializer = vi.fn().mockReturnValue('foo=bar');
     const params = { foo: 'bar' };
+    const options = {
+      serialize: serializer,
+    };
     expect(
       buildURL(
         '/foo',
         {
           foo: 'bar',
         },
-        {
-          serialize: serializer,
-        }
+        options
       )
     ).toEqual('/foo?foo=bar');
     expect(serializer).toHaveBeenCalledTimes(1);
-    expect(serializer).toHaveBeenCalledWith(params);
+    expect(serializer).toHaveBeenCalledWith(params, options);
   });
 
   it('should support object params', () => {

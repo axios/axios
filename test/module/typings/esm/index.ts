@@ -364,6 +364,8 @@ axios.interceptors.request.use((req) => {
   // https://github.com/axios/axios/issues/5415
   req.headers.set('foo', 'bar');
   req.headers['Content-Type'] = 123;
+  // @ts-expect-error -- header values must be AxiosHeaderValue
+  req.headers.someCustomHeader = Promise.resolve('foo');
   return req;
 });
 

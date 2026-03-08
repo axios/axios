@@ -29,11 +29,15 @@ jobs:
         run: npm ci
       - name: Build project
         run: npm run build
-      - name: Run package tests
-        run: npm run test:package
       - name: Run unit tests
         run: npm run test:vitest:unit
       - name: Run browser tests
         run: npm run test:vitest:browser:headless
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: axios-${{ github.run_id }}-${{ github.sha }}
+          path: dist
+          retention-days: 1

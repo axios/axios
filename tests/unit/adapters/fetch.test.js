@@ -3,7 +3,6 @@ import assert from 'assert';
 import {
   startHTTPServer,
   stopHTTPServer,
-  LOCAL_SERVER_URL,
   setTimeoutAsync,
   makeReadableStream,
   generateReadable,
@@ -16,6 +15,7 @@ import util from 'util';
 import NodeFormData from 'form-data';
 
 const SERVER_PORT = 8010;
+const LOCAL_SERVER_URL = `http://localhost:${SERVER_PORT}`;
 
 const pipelineAsync = util.promisify(stream.pipeline);
 
@@ -463,10 +463,10 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   it('should combine baseURL and url', async () => {
     const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: SERVER_PORT });
     try {
-      const res = await fetchAxios(`http://localhost:${server.address().port}/foo`);
+      const res = await fetchAxios('/foo');
 
       assert.equal(res.config.baseURL, LOCAL_SERVER_URL);
-      assert.equal(res.config.url, `http://localhost:${server.address().port}/foo`);
+      assert.equal(res.config.url, '/foo');
     } finally {
       await stopHTTPServer(server);
     }

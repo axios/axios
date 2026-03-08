@@ -3,8 +3,8 @@ import utils from '../../../lib/utils.js';
 
 const { toArray } = utils;
 
-describe('utils::kindOf', () => {
-  it('should return object tag', () => {
+describe('utils::toArray', () => {
+  it('should return null or an array copy depending on input', () => {
     expect(toArray()).toEqual(null);
     expect(toArray([])).toEqual([]);
     expect(toArray([1])).toEqual([1]);

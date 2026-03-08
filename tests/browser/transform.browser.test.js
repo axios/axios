@@ -254,9 +254,7 @@ describe('transform (vitest browser)', () => {
     request.respondWith({
       status: 200,
       responseText: '{"key1": "value1"}',
-      headers: {
-        'content-type': 'application/json',
-      },
+      responseHeaders: 'content-type: application/json',
     });
 
     const response = await responsePromise;

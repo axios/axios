@@ -1,0 +1,19 @@
+{
+  "name": "@axios/integration-tests",
+  "version": "1.0.0",
+  "description": "Integration tests for axios",
+  "private": true,
+  "scripts": {
+    "test:compatability:cjs:vitest": "vitest run --config vitest.config.cjs --project compatability",
+    "test:compatability:esm:vitest": "vitest run --config vitest.config.js --project compatability"
+  },
+  "keywords": [],
+  "author": "axios team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "file:../.."
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}

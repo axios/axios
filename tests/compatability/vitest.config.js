@@ -8,7 +8,7 @@ export default defineConfig({
         test: {
           name: 'compatability',
           environment: 'node',
-          include: ['tests/**/*.test.js'],
+          include: ['tests/**/*.compat.test.js'],
           setupFiles: [],
         },
       },

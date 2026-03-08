@@ -8,7 +8,7 @@ module.exports = defineConfig({
         test: {
           name: 'compatability',
           environment: 'node',
-          include: ['tests/**/*.test.js'],
+          include: ['tests/**/*.compat.test.cjs'],
           setupFiles: [],
         },
       },

@@ -52,6 +52,7 @@
     "test:vitest": "vitest run",
     "test:vitest:unit": "vitest run --project unit",
     "test:vitest:browser": "vitest run --project browser",
+    "test:vitest:browser:headless": "vitest run --project browser-headless",
     "test:vitest:watch": "vitest",
     "test:package": "npm run test:eslint && npm run test:exports",
     "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",

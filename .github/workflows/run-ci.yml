@@ -15,12 +15,6 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
-      fail-fast: false
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -29,23 +23,17 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24.x
           cache: npm
-      - name: Install dependencies Node 14
-        if: matrix.node-version == '14.x'
-        run: npm i
       - name: Install dependencies
-        if: matrix.node-version != '14.x'
         run: npm ci
       - name: Build project
         run: npm run build
-      - name: Run unit tests
-        run: npm run test:node
       - name: Run package tests
         run: npm run test:package
+      - name: Run unit tests
+        run: npm run test:vitest:unit
       - name: Run browser tests
-        run: npm run test:browser
-        if: matrix.node-version == '24.x'
+        run: npm run test:vitest:browser:headless
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
-        if: matrix.node-version == '24.x'

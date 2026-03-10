@@ -70,7 +70,7 @@ jobs:
           path: dist
       - name: Install CJS smoke test dependencies
         working-directory: tests/smoke/cjs
-        run: npm ci
+        run: npm install
       - name: Run CJS smoke tests
         working-directory: tests/smoke/cjs
         run: npm run test:smoke:cjs:mocha

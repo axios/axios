@@ -3,6 +3,8 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
+const NODE_VERSION = process.versions.node;
+
 function createPendingTransport() {
   let requestCount = 0;
 
@@ -32,6 +34,10 @@ function createPendingTransport() {
 
 describe('cancel compat (dist export only)', () => {
   it('supports cancellation with AbortController (pre-aborted signal)', async () => {
+    if (NODE_VERSION < '16.0.0') {
+      this.skip();
+    }
+
     const { transport, getRequestCount } = createPendingTransport();
     const controller = new AbortController();
     controller.abort();
@@ -53,6 +59,10 @@ describe('cancel compat (dist export only)', () => {
   });
 
   it('supports cancellation with AbortController (in-flight)', async () => {
+    if (NODE_VERSION < '16.0.0') {
+      this.skip();
+    }
+
     const { transport, getRequestCount } = createPendingTransport();
     const controller = new AbortController();
 

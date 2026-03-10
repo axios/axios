@@ -1,6 +1,7 @@
 const http = require('http');
 const axios = require('axios');
-const { describe, it, afterEach, expect } = require('mocha');
+const { describe, it, afterEach } = require('mocha');
+const { expect } = require('chai');
 
 function startServer(handler) {
   return new Promise((resolve) => {
@@ -65,7 +66,7 @@ describe('auth compat (dist export only)', () => {
 
     const expected = `Basic ${Buffer.from('janedoe:s00pers3cret', 'utf8').toString('base64')}`;
 
-    expect(response.data).toBe(expected);
+    expect(response.data).to.equal(expected);
   });
 
   it('supports auth without password', async () => {
@@ -77,7 +78,7 @@ describe('auth compat (dist export only)', () => {
 
     const expected = `Basic ${Buffer.from('Aladdin:', 'utf8').toString('base64')}`;
 
-    expect(response.data).toBe(expected);
+    expect(response.data).to.equal(expected);
   });
 
   it('overwrites an existing Authorization header when auth is provided', async () => {
@@ -93,7 +94,7 @@ describe('auth compat (dist export only)', () => {
 
     const expected = `Basic ${Buffer.from('foo:bar', 'utf8').toString('base64')}`;
 
-    expect(response.data).toBe(expected);
+    expect(response.data).to.equal(expected);
   });
 
   it('uses URL credentials when auth config is not provided (node adapter behavior)', async () => {
@@ -110,7 +111,7 @@ describe('auth compat (dist export only)', () => {
 
     const expected = `Basic ${Buffer.from('urluser:urlpass', 'utf8').toString('base64')}`;
 
-    expect(response.data).toBe(expected);
+    expect(response.data).to.equal(expected);
   });
 
   it('prefers auth config over URL credentials', async () => {
@@ -131,6 +132,6 @@ describe('auth compat (dist export only)', () => {
 
     const expected = `Basic ${Buffer.from('configuser:configpass', 'utf8').toString('base64')}`;
 
-    expect(response.data).toBe(expected);
+    expect(response.data).to.equal(expected);
   });
 });

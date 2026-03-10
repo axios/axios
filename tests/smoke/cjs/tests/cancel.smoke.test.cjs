@@ -1,6 +1,7 @@
 const { EventEmitter } = require('events');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createPendingTransport() {
   let requestCount = 0;
@@ -35,35 +36,40 @@ describe('cancel compat (dist export only)', () => {
     const controller = new AbortController();
     controller.abort();
 
-    await expect(
-      axios.get('http://example.com/resource', {
+    try {
+      const request = axios.get('http://example.com/resource', {
         signal: controller.signal,
         transport,
         proxy: false,
-      })
-    ).rejects.toMatchObject({
-      code: 'ERR_CANCELED',
-    });
+      });
 
-    expect(getRequestCount()).toBe(0);
+      controller.abort();
+      await request;
+    } catch (error) {
+      expect(error).to.have.property('code', 'ERR_CANCELED');
+    }
+
+    expect(getRequestCount()).to.equal(0);
   });
 
   it('supports cancellation with AbortController (in-flight)', async () => {
     const { transport, getRequestCount } = createPendingTransport();
     const controller = new AbortController();
 
-    const request = axios.get('http://example.com/resource', {
-      signal: controller.signal,
-      transport,
-      proxy: false,
-    });
+    try {
+      const request = axios.get('http://example.com/resource', {
+        signal: controller.signal,
+        transport,
+        proxy: false,
+      });
 
-    controller.abort();
+      controller.abort();
+      await request;
+    } catch (error) {
+      expect(error).to.have.property('code', 'ERR_CANCELED');
+    }
 
-    await expect(request).rejects.toMatchObject({
-      code: 'ERR_CANCELED',
-    });
-    expect(getRequestCount()).toBe(1);
+    expect(getRequestCount()).to.equal(1);
   });
 
   it('supports cancellation with CancelToken (pre-canceled token)', async () => {
@@ -79,9 +85,9 @@ describe('cancel compat (dist export only)', () => {
       })
       .catch((err) => err);
 
-    expect(axios.isCancel(error)).toBe(true);
-    expect(error.code).toBe('ERR_CANCELED');
-    expect(getRequestCount()).toBe(0);
+    expect(axios.isCancel(error)).to.be.true;
+    expect(error.code).to.equal('ERR_CANCELED');
+    expect(getRequestCount()).to.equal(0);
   });
 
   it('supports cancellation with CancelToken (in-flight)', async () => {
@@ -98,8 +104,8 @@ describe('cancel compat (dist export only)', () => {
 
     const error = await request.catch((err) => err);
 
-    expect(axios.isCancel(error)).toBe(true);
-    expect(error.code).toBe('ERR_CANCELED');
-    expect(getRequestCount()).toBe(1);
+    expect(axios.isCancel(error)).to.be.true;
+    expect(error.code).to.equal('ERR_CANCELED');
+    expect(getRequestCount()).to.equal(1);
   });
 });

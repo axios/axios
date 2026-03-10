@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createTransportCapture() {
   let capturedOptions;
@@ -54,8 +55,8 @@ describe('basic compat (dist export only)', () => {
       })
     );
 
-    expect(options.method).toBe('GET');
-    expect(options.path).toBe('/users');
+    expect(options.method).to.equal('GET');
+    expect(options.path).to.equal('/users');
   });
 
   it('supports get()', async () => {
@@ -63,8 +64,8 @@ describe('basic compat (dist export only)', () => {
       axios.get('http://example.com/items?limit=10', { transport, proxy: false })
     );
 
-    expect(options.method).toBe('GET');
-    expect(options.path).toBe('/items?limit=10');
+    expect(options.method).to.equal('GET');
+    expect(options.path).to.equal('/items?limit=10');
   });
 
   it('supports delete()', async () => {
@@ -72,8 +73,8 @@ describe('basic compat (dist export only)', () => {
       axios.delete('http://example.com/items/1', { transport, proxy: false })
     );
 
-    expect(options.method).toBe('DELETE');
-    expect(options.path).toBe('/items/1');
+    expect(options.method).to.equal('DELETE');
+    expect(options.path).to.equal('/items/1');
   });
 
   it('supports head()', async () => {
@@ -81,8 +82,8 @@ describe('basic compat (dist export only)', () => {
       axios.head('http://example.com/health', { transport, proxy: false })
     );
 
-    expect(options.method).toBe('HEAD');
-    expect(options.path).toBe('/health');
+    expect(options.method).to.equal('HEAD');
+    expect(options.path).to.equal('/health');
   });
 
   it('supports options()', async () => {
@@ -90,8 +91,8 @@ describe('basic compat (dist export only)', () => {
       axios.options('http://example.com/items', { transport, proxy: false })
     );
 
-    expect(options.method).toBe('OPTIONS');
-    expect(options.path).toBe('/items');
+    expect(options.method).to.equal('OPTIONS');
+    expect(options.path).to.equal('/items');
   });
 
   it('supports post()', async () => {
@@ -106,8 +107,8 @@ describe('basic compat (dist export only)', () => {
       )
     );
 
-    expect(options.method).toBe('POST');
-    expect(options.path).toBe('/items');
+    expect(options.method).to.equal('POST');
+    expect(options.path).to.equal('/items');
   });
 
   it('supports put()', async () => {
@@ -122,8 +123,8 @@ describe('basic compat (dist export only)', () => {
       )
     );
 
-    expect(options.method).toBe('PUT');
-    expect(options.path).toBe('/items/1');
+    expect(options.method).to.equal('PUT');
+    expect(options.path).to.equal('/items/1');
   });
 
   it('supports patch()', async () => {
@@ -138,7 +139,7 @@ describe('basic compat (dist export only)', () => {
       )
     );
 
-    expect(options.method).toBe('PATCH');
-    expect(options.path).toBe('/items/1');
+    expect(options.method).to.equal('PATCH');
+    expect(options.path).to.equal('/items/1');
   });
 });

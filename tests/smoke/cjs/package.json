@@ -4,15 +4,16 @@
   "description": "CJS smoke tests for axios",
   "private": true,
   "scripts": {
-    "test:smoke:cjs:mocha": "mocha \"tests/**/*.smoke.test.js\""
+    "test:smoke:cjs:mocha": "mocha \"tests/**/*.smoke.test.cjs\""
   },
   "keywords": [],
   "author": "axios team",
   "license": "MIT",
   "dependencies": {
-    "axios": "file:../../.."
+    "axios": "file:../../../dist/node/axios.cjs"
   },
   "devDependencies": {
-    "mocha": "^9.2.2"
+    "mocha": "9.2.2",
+    "chai": "4.5.0"
   }
 }

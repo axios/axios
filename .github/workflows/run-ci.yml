@@ -40,7 +40,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
-          name: axios-${{ github.run_id }}-${{ github.sha }}
+          name: axios
           path: dist
           retention-days: 1
 
@@ -64,9 +64,9 @@ jobs:
           cache: npm
           cache-dependency-path: tests/smoke/cjs/package-lock.json
       - name: Download build artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
-          name: axios-${{ github.run_id }}-${{ github.sha }}
+          name: axios
           path: dist
       - name: Install CJS smoke test dependencies
         working-directory: tests/smoke/cjs

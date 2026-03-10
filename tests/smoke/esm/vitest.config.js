@@ -6,9 +6,9 @@ export default defineConfig({
     projects: [
       {
         test: {
-          name: 'compatability',
+          name: 'smoke',
           environment: 'node',
-          include: ['tests/esm/**/*.compat.test.js'],
+          include: ['tests/esm/**/*.smoke.test.js'],
           setupFiles: [],
         },
       },

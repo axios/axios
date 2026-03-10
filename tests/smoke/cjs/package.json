@@ -10,7 +10,7 @@
   "author": "axios team",
   "license": "MIT",
   "dependencies": {
-    "axios": "file:../../../dist/node/axios.cjs"
+    "axios": "file:../../../dist/"
   },
   "devDependencies": {
     "mocha": "9.2.2",

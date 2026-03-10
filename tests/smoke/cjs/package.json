@@ -4,7 +4,7 @@
   "description": "CJS smoke tests for axios",
   "private": true,
   "scripts": {
-    "test:smoke:cjs:mocha": "vitest run --config vitest.config.js --project smoke"
+    "test:smoke:cjs:mocha": "mocha \"tests/**/*.smoke.test.js\""
   },
   "keywords": [],
   "author": "axios team",

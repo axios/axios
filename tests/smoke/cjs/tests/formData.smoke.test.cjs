@@ -4,8 +4,9 @@ const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
 const NODE_VERSION = parseInt(process.versions.node.split('.')[0]);
+const describeWithFormData = NODE_VERSION < 18 ? describe.skip : describe;
 
-function createCaptureTransport(buildResponse) {
+const createCaptureTransport = (buildResponse) => {
   return {
     request(options, onResponse) {
       const chunks = [];
@@ -50,17 +51,13 @@ function createCaptureTransport(buildResponse) {
       return req;
     },
   };
-}
+};
 
-function bodyAsUtf8(value) {
+const bodyAsUtf8 = (value) => {
   return Buffer.isBuffer(value) ? value.toString('utf8') : String(value);
-}
+};
 
-describe('formData compat (dist export only)', () => {
-  if (NODE_VERSION < 18) {
-    this.skip();
-  }
-
+describeWithFormData('formData compat (dist export only)', () => {
   it('supports posting FormData instances', async () => {
     const form = new FormData();
     form.append('username', 'janedoe');

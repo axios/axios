@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createTransportCapture() {
+const createTransportCapture = () => {
   let capturedOptions;
 
   const transport = {
@@ -37,7 +37,7 @@ function createTransportCapture() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
 describe('rateLimit compat (dist export only)', () => {
   it('accepts numeric maxRate config', async () => {

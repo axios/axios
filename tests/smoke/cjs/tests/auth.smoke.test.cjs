@@ -3,7 +3,7 @@ const axios = require('axios');
 const { describe, it, afterEach } = require('mocha');
 const { expect } = require('chai');
 
-function startServer(handler) {
+const startServer = (handler) => {
   return new Promise((resolve) => {
     const server = http.createServer(handler);
 
@@ -11,9 +11,9 @@ function startServer(handler) {
       resolve(server);
     });
   });
-}
+};
 
-function stopServer(server) {
+const stopServer = (server) => {
   if (!server || !server.listening) {
     return Promise.resolve();
   }
@@ -27,7 +27,7 @@ function stopServer(server) {
       resolve();
     });
   });
-}
+};
 
 describe('auth compat (dist export only)', () => {
   let server;
@@ -37,7 +37,7 @@ describe('auth compat (dist export only)', () => {
     server = undefined;
   });
 
-  async function requestWithConfig(config) {
+  const requestWithConfig = async (config) => {
     server = await startServer((req, res) => {
       res.setHeader('Content-Type', 'text/plain');
       res.end(req.headers.authorization || '');
@@ -54,7 +54,7 @@ describe('auth compat (dist export only)', () => {
         config || {}
       )
     );
-  }
+  };
 
   it('sets Basic Authorization header from auth credentials', async () => {
     const response = await requestWithConfig({

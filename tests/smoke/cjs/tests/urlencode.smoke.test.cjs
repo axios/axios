@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createEchoTransport() {
+const createEchoTransport = () => {
   let capturedOptions;
 
   const transport = {
@@ -53,7 +53,7 @@ function createEchoTransport() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
 describe('urlencode compat (dist export only)', () => {
   it('serializes params into request URL', async () => {

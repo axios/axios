@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createTransport(config) {
+const createTransport = (config) => {
   const opts = config || {};
 
   return {
@@ -52,7 +52,7 @@ function createTransport(config) {
       return req;
     },
   };
-}
+};
 
 describe('error compat (dist export only)', () => {
   it('rejects with AxiosError for non-2xx responses by default', async () => {

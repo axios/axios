@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function normalizeHeaders(headers) {
+const normalizeHeaders = (headers) => {
   const result = {};
 
   Object.entries(headers || {}).forEach(([key, value]) => {
@@ -12,9 +12,9 @@ function normalizeHeaders(headers) {
   });
 
   return result;
-}
+};
 
-function createTransportCapture() {
+const createTransportCapture = () => {
   let capturedOptions;
 
   const transport = {
@@ -47,7 +47,7 @@ function createTransportCapture() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
 describe('headers compat (dist export only)', () => {
   it('sends default Accept header', async () => {

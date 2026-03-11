@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createTransportCapture(responseBody) {
+const createTransportCapture = (responseBody) => {
   const calls = [];
 
   const transport = {
@@ -37,7 +37,7 @@ function createTransportCapture(responseBody) {
     transport,
     getCalls: () => calls,
   };
-}
+};
 
 describe('instance compat (dist export only)', () => {
   it('creates isolated instances with separate defaults', async () => {

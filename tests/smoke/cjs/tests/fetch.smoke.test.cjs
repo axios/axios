@@ -3,8 +3,9 @@ const { it, describe } = require('mocha');
 const { expect } = require('chai');
 
 const NODE_VERSION = parseInt(process.versions.node.split('.')[0]);
+const describeWithFetch = NODE_VERSION < 18 ? describe.skip : describe;
 
-function createFetchMock(responseFactory) {
+const createFetchMock = (responseFactory) => {
   const calls = [];
 
   const mockFetch = async (input, init) => {
@@ -24,13 +25,9 @@ function createFetchMock(responseFactory) {
     mockFetch,
     getCalls: () => calls,
   };
-}
+};
 
-describe('fetch compat (dist export only)', () => {
-  if (NODE_VERSION < 18) {
-    this.skip();
-  }
-
+describeWithFetch('fetch compat (dist export only)', () => {
   it('uses fetch adapter and resolves JSON response', async () => {
     const { mockFetch, getCalls } = createFetchMock();
 

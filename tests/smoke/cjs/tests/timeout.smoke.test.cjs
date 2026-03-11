@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createTransport(config) {
+const createTransport = (config) => {
   const opts = config || {};
 
   return {
@@ -43,7 +43,7 @@ function createTransport(config) {
       return req;
     },
   };
-}
+};
 
 describe('timeout compat (dist export only)', () => {
   it('rejects with ECONNABORTED on timeout', async () => {

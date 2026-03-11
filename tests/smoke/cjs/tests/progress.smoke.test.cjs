@@ -3,7 +3,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createProgressTransport(config) {
+const createProgressTransport = (config) => {
   const opts = config || {};
   const responseChunks = opts.responseChunks || ['ok'];
   const responseHeaders = opts.responseHeaders || {};
@@ -54,7 +54,7 @@ function createProgressTransport(config) {
       return req;
     },
   };
-}
+};
 
 describe('progress compat (dist export only)', () => {
   it('emits upload progress events for stream payloads', async () => {

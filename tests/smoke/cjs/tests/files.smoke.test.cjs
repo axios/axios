@@ -3,7 +3,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createCaptureTransport(buildResponse) {
+const createCaptureTransport = (buildResponse) => {
   return {
     request(options, onResponse) {
       const chunks = [];
@@ -48,7 +48,7 @@ function createCaptureTransport(buildResponse) {
       return req;
     },
   };
-}
+};
 
 describe('files compat (dist export only)', () => {
   it('supports posting Buffer payloads', async () => {

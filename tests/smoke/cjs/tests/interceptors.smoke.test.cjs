@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createTransport(responseBody) {
+const createTransport = (responseBody) => {
   const calls = [];
 
   const transport = {
@@ -37,7 +37,7 @@ function createTransport(responseBody) {
     transport,
     getCalls: () => calls,
   };
-}
+};
 
 describe('interceptors compat (dist export only)', () => {
   it('applies request interceptors before dispatch', async () => {

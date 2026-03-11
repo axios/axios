@@ -4,7 +4,7 @@ const axios = require('axios');
 const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
-function createTransportCapture() {
+const createTransportCapture = () => {
   let capturedOptions;
 
   const transport = {
@@ -37,14 +37,14 @@ function createTransportCapture() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
-async function runRequest(run) {
+const runRequest = async (run) => {
   const { transport, getCapturedOptions } = createTransportCapture();
   await run(transport);
 
   return getCapturedOptions();
-}
+};
 
 describe('basic compat (dist export only)', () => {
   it('supports the simplest axios(url) request pattern', async () => {

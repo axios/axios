@@ -4,8 +4,9 @@ const { describe, it } = require('mocha');
 const { expect } = require('chai');
 
 const NODE_VERSION = parseInt(process.versions.node.split('.')[0]);
+const itWithAbortController = NODE_VERSION < 16 ? it.skip : it;
 
-function createPendingTransport() {
+const createPendingTransport = () => {
   let requestCount = 0;
 
   const transport = {
@@ -30,39 +31,34 @@ function createPendingTransport() {
     transport,
     getRequestCount: () => requestCount,
   };
-}
+};
 
 describe('cancel compat (dist export only)', () => {
-  it('supports cancellation with AbortController (pre-aborted signal)', async function () {
-    if (NODE_VERSION < 16) {
-      this.skip();
-    }
-
-    const { transport, getRequestCount } = createPendingTransport();
-    const controller = new AbortController();
-    controller.abort();
-
-    try {
-      const request = axios.get('http://example.com/resource', {
-        signal: controller.signal,
-        transport,
-        proxy: false,
-      });
-
+  itWithAbortController(
+    'supports cancellation with AbortController (pre-aborted signal)',
+    async () => {
+      const { transport, getRequestCount } = createPendingTransport();
+      const controller = new AbortController();
       controller.abort();
-      await request;
-    } catch (error) {
-      expect(error).to.have.property('code', 'ERR_CANCELED');
+
+      try {
+        const request = axios.get('http://example.com/resource', {
+          signal: controller.signal,
+          transport,
+          proxy: false,
+        });
+
+        controller.abort();
+        await request;
+      } catch (error) {
+        expect(error).to.have.property('code', 'ERR_CANCELED');
+      }
+
+      expect(getRequestCount()).to.equal(0);
     }
+  );
 
-    expect(getRequestCount()).to.equal(0);
-  });
-
-  it('supports cancellation with AbortController (in-flight)', async function () {
-    if (NODE_VERSION < 16) {
-      this.skip();
-    }
-
+  itWithAbortController('supports cancellation with AbortController (in-flight)', async () => {
     const { transport, getRequestCount } = createPendingTransport();
     const controller = new AbortController();
 

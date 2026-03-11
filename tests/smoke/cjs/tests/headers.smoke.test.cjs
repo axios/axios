@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function normalizeHeaders(headers) {
   const result = {};
@@ -58,7 +59,7 @@ describe('headers compat (dist export only)', () => {
     });
 
     const headers = normalizeHeaders(getCapturedOptions().headers);
-    expect(headers.accept).toBe('application/json, text/plain, */*');
+    expect(headers.accept).to.equal('application/json, text/plain, */*');
   });
 
   it('supports custom headers', async () => {
@@ -74,8 +75,8 @@ describe('headers compat (dist export only)', () => {
     });
 
     const headers = normalizeHeaders(getCapturedOptions().headers);
-    expect(headers['x-trace-id']).toBe('trace-123');
-    expect(headers.authorization).toBe('Bearer token-abc');
+    expect(headers['x-trace-id']).to.equal('trace-123');
+    expect(headers.authorization).to.equal('Bearer token-abc');
   });
 
   it('treats header names as case-insensitive when overriding', async () => {
@@ -91,7 +92,7 @@ describe('headers compat (dist export only)', () => {
     });
 
     const headers = normalizeHeaders(getCapturedOptions().headers);
-    expect(headers.authorization).toBe('Bearer new-token');
+    expect(headers.authorization).to.equal('Bearer new-token');
   });
 
   it('sets content-type for json post payloads', async () => {
@@ -107,7 +108,7 @@ describe('headers compat (dist export only)', () => {
     );
 
     const headers = normalizeHeaders(getCapturedOptions().headers);
-    expect(headers['content-type']).toContain('application/json');
+    expect(headers['content-type']).to.contain('application/json');
   });
 
   it('does not force content-type for get requests without body', async () => {
@@ -119,6 +120,6 @@ describe('headers compat (dist export only)', () => {
     });
 
     const headers = normalizeHeaders(getCapturedOptions().headers);
-    expect(headers['content-type']).toBeUndefined();
+    expect(headers['content-type']).to.be.undefined;
   });
 });

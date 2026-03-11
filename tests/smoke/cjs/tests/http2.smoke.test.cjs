@@ -1,5 +1,6 @@
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 describe('http2 compat (dist export only)', () => {
   it('keeps instance-level httpVersion and http2Options in request config', async () => {
@@ -24,8 +25,8 @@ describe('http2 compat (dist export only)', () => {
       }),
     });
 
-    expect(response.data.httpVersion).toBe(2);
-    expect(response.data.http2Options).toEqual({
+    expect(response.data.httpVersion).to.equal(2);
+    expect(response.data.http2Options).to.deep.equal({
       rejectUnauthorized: false,
     });
   });
@@ -54,7 +55,7 @@ describe('http2 compat (dist export only)', () => {
       }),
     });
 
-    expect(response.data).toEqual({
+    expect(response.data).to.deep.equal({
       rejectUnauthorized: false,
       sessionTimeout: 5000,
       customFlag: true,
@@ -80,6 +81,6 @@ describe('http2 compat (dist export only)', () => {
       }),
     });
 
-    expect(response.data.httpVersion).toBe(1);
+    expect(response.data.httpVersion).to.equal(1);
   });
 });

@@ -1,6 +1,7 @@
 const { Readable, Writable, PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createProgressTransport(config) {
   const opts = config || {};
@@ -74,8 +75,8 @@ describe('progress compat (dist export only)', () => {
       }),
     });
 
-    expect(samples.length).toBeGreaterThan(0);
-    expect(samples[samples.length - 1]).toMatchObject({
+    expect(samples.length).to.be.greaterThan(0);
+    expect(samples[samples.length - 1]).to.deep.include({
       loaded: total,
       total,
       upload: true,
@@ -101,9 +102,9 @@ describe('progress compat (dist export only)', () => {
       }),
     });
 
-    expect(response.data).toBe('abcdef');
-    expect(samples.length).toBeGreaterThan(0);
-    expect(samples[samples.length - 1]).toMatchObject({
+    expect(response.data).to.equal('abcdef');
+    expect(samples.length).to.be.greaterThan(0);
+    expect(samples[samples.length - 1]).to.deep.include({
       loaded: total,
       total,
       download: true,

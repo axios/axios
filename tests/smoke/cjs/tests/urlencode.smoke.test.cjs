@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createEchoTransport() {
   let capturedOptions;
@@ -67,7 +68,7 @@ describe('urlencode compat (dist export only)', () => {
       },
     });
 
-    expect(response.data.path).toBe('/search?q=axios+docs&page=2');
+    expect(response.data.path).to.equal('/search?q=axios+docs&page=2');
   });
 
   it('supports custom paramsSerializer function', async () => {
@@ -80,7 +81,7 @@ describe('urlencode compat (dist export only)', () => {
       paramsSerializer: () => 'fixed=1',
     });
 
-    expect(response.data.path).toBe('/search?fixed=1');
+    expect(response.data.path).to.equal('/search?fixed=1');
   });
 
   it('supports URLSearchParams payloads', async () => {
@@ -94,8 +95,8 @@ describe('urlencode compat (dist export only)', () => {
       transport,
     });
 
-    expect(response.data.body).toBe('name=axios&mode=compat');
-    expect(response.data.contentType).toContain('application/x-www-form-urlencoded');
+    expect(response.data.body).to.equal('name=axios&mode=compat');
+    expect(response.data.contentType).to.contain('application/x-www-form-urlencoded');
   });
 
   it('serializes object payload when content-type is application/x-www-form-urlencoded', async () => {
@@ -116,8 +117,8 @@ describe('urlencode compat (dist export only)', () => {
       }
     );
 
-    expect(response.data.body).toBe('name=axios&mode=compat');
-    expect(response.data.contentType).toContain('application/x-www-form-urlencoded');
+    expect(response.data.body).to.equal('name=axios&mode=compat');
+    expect(response.data.contentType).to.contain('application/x-www-form-urlencoded');
   });
 
   it('respects formSerializer options for index formatting', async () => {
@@ -140,6 +141,6 @@ describe('urlencode compat (dist export only)', () => {
       }
     );
 
-    expect(response.data.body).toBe('arr%5B0%5D=1&arr%5B1%5D=2');
+    expect(response.data.body).to.equal('arr%5B0%5D=1&arr%5B1%5D=2');
   });
 });

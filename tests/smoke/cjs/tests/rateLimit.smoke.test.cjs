@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createTransportCapture() {
   let capturedOptions;
@@ -51,7 +52,7 @@ describe('rateLimit compat (dist export only)', () => {
       }),
     });
 
-    expect(response.data.maxRate).toBe(1024);
+    expect(response.data.maxRate).to.equal(1024);
   });
 
   it('accepts tuple maxRate config [upload, download]', async () => {
@@ -66,7 +67,7 @@ describe('rateLimit compat (dist export only)', () => {
       }),
     });
 
-    expect(response.data.maxRate).toEqual([2048, 4096]);
+    expect(response.data.maxRate).to.deep.equal([2048, 4096]);
   });
 
   it('merges instance and request maxRate values', async () => {
@@ -85,7 +86,7 @@ describe('rateLimit compat (dist export only)', () => {
       }),
     });
 
-    expect(response.data.maxRate).toEqual([3000, 4000]);
+    expect(response.data.maxRate).to.deep.equal([3000, 4000]);
   });
 
   it('supports maxRate in node transport flow without errors', async () => {
@@ -97,8 +98,8 @@ describe('rateLimit compat (dist export only)', () => {
       transport,
     });
 
-    expect(response.status).toBe(200);
-    expect(getCapturedOptions().method).toBe('GET');
-    expect(getCapturedOptions().path).toBe('/rate');
+    expect(response.status).to.equal(200);
+    expect(getCapturedOptions().method).to.equal('GET');
+    expect(getCapturedOptions().path).to.equal('/rate');
   });
 });

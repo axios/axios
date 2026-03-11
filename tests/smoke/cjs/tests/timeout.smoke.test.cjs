@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createTransport(config) {
   const opts = config || {};
@@ -54,9 +55,9 @@ describe('timeout compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.code).toBe('ECONNABORTED');
-    expect(err.message).toBe('timeout of 25ms exceeded');
+    expect(axios.isAxiosError(err)).to.equal(true);
+    expect(err.code).to.equal('ECONNABORTED');
+    expect(err.message).to.equal('timeout of 25ms exceeded');
   });
 
   it('uses timeoutErrorMessage when provided', async () => {
@@ -69,9 +70,9 @@ describe('timeout compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.code).toBe('ECONNABORTED');
-    expect(err.message).toBe('custom timeout');
+    expect(axios.isAxiosError(err)).to.equal(true);
+    expect(err.code).to.equal('ECONNABORTED');
+    expect(err.message).to.equal('custom timeout');
   });
 
   it('accepts timeout as a numeric string', async () => {
@@ -83,9 +84,9 @@ describe('timeout compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.code).toBe('ECONNABORTED');
-    expect(err.message).toBe('timeout of 30ms exceeded');
+    expect(axios.isAxiosError(err)).to.equal(true);
+    expect(err.code).to.equal('ECONNABORTED');
+    expect(err.message).to.equal('timeout of 30ms exceeded');
   });
 
   it('rejects with ERR_BAD_OPTION_VALUE when timeout is not parsable', async () => {
@@ -97,9 +98,9 @@ describe('timeout compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.code).toBe('ERR_BAD_OPTION_VALUE');
-    expect(err.message).toBe('error trying to parse `config.timeout` to int');
+    expect(axios.isAxiosError(err)).to.equal(true);
+    expect(err.code).to.equal('ERR_BAD_OPTION_VALUE');
+    expect(err.message).to.equal('error trying to parse `config.timeout` to int');
   });
 
   it('does not time out when timeout is 0', async () => {
@@ -109,7 +110,7 @@ describe('timeout compat (dist export only)', () => {
       transport: createTransport({ body: '{"ok":true}' }),
     });
 
-    expect(response.status).toBe(200);
-    expect(response.data).toEqual({ ok: true });
+    expect(response.status).to.equal(200);
+    expect(response.data).to.deep.equal({ ok: true });
   });
 });

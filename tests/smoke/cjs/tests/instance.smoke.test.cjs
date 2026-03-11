@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createTransportCapture(responseBody) {
   const calls = [];
@@ -59,10 +60,10 @@ describe('instance compat (dist export only)', () => {
     await clientB.get('/users', { transport, proxy: false });
 
     const [callA, callB] = getCalls();
-    expect(callA.path).toBe('/api-a/users');
-    expect(callB.path).toBe('/api-b/users');
-    expect(callA.headers['X-App']).toBe('A');
-    expect(callB.headers['X-App']).toBe('B');
+    expect(callA.path).to.equal('/api-a/users');
+    expect(callB.path).to.equal('/api-b/users');
+    expect(callA.headers['X-App']).to.equal('A');
+    expect(callB.headers['X-App']).to.equal('B');
   });
 
   it('supports callable instance form instance(config)', async () => {
@@ -78,9 +79,9 @@ describe('instance compat (dist export only)', () => {
       proxy: false,
     });
 
-    expect(getCalls()).toHaveLength(1);
-    expect(getCalls()[0].method).toBe('GET');
-    expect(getCalls()[0].path).toBe('/status');
+    expect(getCalls()).to.have.lengthOf(1);
+    expect(getCalls()[0].method).to.equal('GET');
+    expect(getCalls()[0].path).to.equal('/status');
   });
 
   it('applies instance request interceptors', async () => {
@@ -97,8 +98,8 @@ describe('instance compat (dist export only)', () => {
 
     await client.get('/intercepted', { transport, proxy: false });
 
-    expect(getCalls()).toHaveLength(1);
-    expect(getCalls()[0].headers['X-From-Interceptor']).toBe('yes');
+    expect(getCalls()).to.have.lengthOf(1);
+    expect(getCalls()[0].headers['X-From-Interceptor']).to.equal('yes');
   });
 
   it('applies instance response interceptors', async () => {
@@ -119,7 +120,7 @@ describe('instance compat (dist export only)', () => {
       proxy: false,
     });
 
-    expect(response.data).toEqual({
+    expect(response.data).to.deep.equal({
       name: 'axios',
       intercepted: true,
     });
@@ -140,6 +141,6 @@ describe('instance compat (dist export only)', () => {
       },
     });
 
-    expect(uri).toBe('http://example.com/api/users?apiKey=abc&page=2');
+    expect(uri).to.equal('http://example.com/api/users?apiKey=abc&page=2');
   });
 });

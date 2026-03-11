@@ -1,6 +1,7 @@
 const { PassThrough, Readable, Writable } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createCaptureTransport(buildResponse) {
   return {
@@ -60,7 +61,7 @@ describe('files compat (dist export only)', () => {
       })),
     });
 
-    expect(response.data.echoed).toBe(source.toString('base64'));
+    expect(response.data.echoed).to.equal(source.toString('base64'));
   });
 
   it('supports posting Uint8Array payloads', async () => {
@@ -73,7 +74,7 @@ describe('files compat (dist export only)', () => {
       })),
     });
 
-    expect(response.data.echoed).toEqual([1, 2, 3, 4, 255]);
+    expect(response.data.echoed).to.deep.equal([1, 2, 3, 4, 255]);
   });
 
   it('supports posting Readable stream payloads', async () => {
@@ -92,8 +93,8 @@ describe('files compat (dist export only)', () => {
       })),
     });
 
-    expect(response.data.text).toBe('hello stream world');
-    expect(response.data.contentType).toContain('application/octet-stream');
+    expect(response.data.text).to.equal('hello stream world');
+    expect(response.data.contentType).to.contain('application/octet-stream');
   });
 
   it('supports binary downloads with responseType=arraybuffer', async () => {
@@ -108,7 +109,7 @@ describe('files compat (dist export only)', () => {
       })),
     });
 
-    expect(Buffer.isBuffer(response.data)).toBe(true);
-    expect(response.data.equals(binary)).toBe(true);
+    expect(Buffer.isBuffer(response.data)).to.equal(true);
+    expect(response.data.equals(binary)).to.equal(true);
   });
 });

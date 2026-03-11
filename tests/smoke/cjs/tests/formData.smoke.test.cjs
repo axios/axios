@@ -1,6 +1,9 @@
 const { Writable, PassThrough } = require('stream');
 const axios = require('axios');
-const { describeIf, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
+
+const NODE_VERSION = parseInt(process.versions.node.split('.')[0]);
 
 function createCaptureTransport(buildResponse) {
   return {
@@ -53,9 +56,11 @@ function bodyAsUtf8(value) {
   return Buffer.isBuffer(value) ? value.toString('utf8') : String(value);
 }
 
-const hasFormData = typeof FormData === 'function';
+describe('formData compat (dist export only)', () => {
+  if (NODE_VERSION < 18) {
+    this.skip();
+  }
 
-describeIf(hasFormData)('formData compat (dist export only)', () => {
   it('supports posting FormData instances', async () => {
     const form = new FormData();
     form.append('username', 'janedoe');
@@ -72,11 +77,11 @@ describeIf(hasFormData)('formData compat (dist export only)', () => {
       })),
     });
 
-    expect(response.data.contentType).toContain('multipart/form-data');
-    expect(response.data.payload).toContain('name="username"');
-    expect(response.data.payload).toContain('janedoe');
-    expect(response.data.payload).toContain('name="role"');
-    expect(response.data.payload).toContain('admin');
+    expect(response.data.contentType).to.contain('multipart/form-data');
+    expect(response.data.payload).to.contain('name="username"');
+    expect(response.data.payload).to.contain('janedoe');
+    expect(response.data.payload).to.contain('name="role"');
+    expect(response.data.payload).to.contain('admin');
   });
 
   it('supports axios.postForm helper', async () => {
@@ -99,10 +104,10 @@ describeIf(hasFormData)('formData compat (dist export only)', () => {
       }
     );
 
-    expect(response.data.contentType).toContain('multipart/form-data');
-    expect(response.data.payload).toContain('name="project"');
-    expect(response.data.payload).toContain('axios');
-    expect(response.data.payload).toContain('name="mode"');
-    expect(response.data.payload).toContain('compat');
+    expect(response.data.contentType).to.contain('multipart/form-data');
+    expect(response.data.payload).to.contain('name="project"');
+    expect(response.data.payload).to.contain('axios');
+    expect(response.data.payload).to.contain('name="mode"');
+    expect(response.data.payload).to.contain('compat');
   });
 });

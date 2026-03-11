@@ -1,5 +1,8 @@
 const axios = require('axios');
-const { it, expect, describeIf } = require('mocha');
+const { it, describe } = require('mocha');
+const { expect } = require('chai');
+
+const NODE_VERSION = parseInt(process.versions.node.split('.')[0]);
 
 function createFetchMock(responseFactory) {
   const calls = [];
@@ -23,10 +26,11 @@ function createFetchMock(responseFactory) {
   };
 }
 
-const hasFetchPrimitives =
-  typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
+describe('fetch compat (dist export only)', () => {
+  if (NODE_VERSION < 18) {
+    this.skip();
+  }
 
-describeIf(hasFetchPrimitives)('fetch compat (dist export only)', () => {
   it('uses fetch adapter and resolves JSON response', async () => {
     const { mockFetch, getCalls } = createFetchMock();
 
@@ -39,9 +43,9 @@ describeIf(hasFetchPrimitives)('fetch compat (dist export only)', () => {
       },
     });
 
-    expect(response.data).toEqual({ ok: true });
-    expect(response.status).toBe(200);
-    expect(getCalls()).toHaveLength(1);
+    expect(response.data).to.deep.equal({ ok: true });
+    expect(response.status).to.equal(200);
+    expect(getCalls()).to.have.lengthOf(1);
   });
 
   it('sends method, headers and body for post requests', async () => {
@@ -89,11 +93,11 @@ describeIf(hasFetchPrimitives)('fetch compat (dist export only)', () => {
       }
     );
 
-    expect(getCalls()).toHaveLength(1);
-    expect(response.data.url).toBe('https://example.com/items');
-    expect(response.data.method).toBe('POST');
-    expect(response.data.contentType).toContain('application/json');
-    expect(response.data.body).toBe(JSON.stringify({ name: 'widget' }));
+    expect(getCalls()).to.have.lengthOf(1);
+    expect(response.data.url).to.equal('https://example.com/items');
+    expect(response.data.method).to.equal('POST');
+    expect(response.data.contentType).to.include('application/json');
+    expect(response.data.body).to.equal(JSON.stringify({ name: 'widget' }));
   });
 
   it('rejects non-2xx fetch responses by default', async () => {
@@ -117,8 +121,8 @@ describeIf(hasFetchPrimitives)('fetch compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.response.status).toBe(500);
+    expect(axios.isAxiosError(err)).to.be.true;
+    expect(err.response.status).to.equal(500);
   });
 
   it('supports cancellation with AbortController in fetch mode', async () => {
@@ -138,7 +142,7 @@ describeIf(hasFetchPrimitives)('fetch compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isCancel(err)).toBe(true);
-    expect(err.code).toBe('ERR_CANCELED');
+    expect(axios.isCancel(err)).to.be.true;
+    expect(err.code).to.equal('ERR_CANCELED');
   });
 });

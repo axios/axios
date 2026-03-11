@@ -33,9 +33,9 @@ function createPendingTransport() {
 }
 
 describe('cancel compat (dist export only)', () => {
-  it('supports cancellation with AbortController (pre-aborted signal)', async () => {
+  it('supports cancellation with AbortController (pre-aborted signal)', async function () {
     if (NODE_VERSION < 16) {
-      return;
+      this.skip();
     }
 
     const { transport, getRequestCount } = createPendingTransport();
@@ -58,9 +58,9 @@ describe('cancel compat (dist export only)', () => {
     expect(getRequestCount()).to.equal(0);
   });
 
-  it('supports cancellation with AbortController (in-flight)', async () => {
+  it('supports cancellation with AbortController (in-flight)', async function () {
     if (NODE_VERSION < 16) {
-      return;
+      this.skip();
     }
 
     const { transport, getRequestCount } = createPendingTransport();

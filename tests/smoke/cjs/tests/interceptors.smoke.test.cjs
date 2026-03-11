@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createTransport(responseBody) {
   const calls = [];
@@ -59,9 +60,9 @@ describe('interceptors compat (dist export only)', () => {
       proxy: false,
     });
 
-    expect(getCalls()).toHaveLength(1);
-    expect(getCalls()[0].headers['X-One']).toBe('1');
-    expect(getCalls()[0].headers['X-Two']).toBe('2');
+    expect(getCalls()).to.have.lengthOf(1);
+    expect(getCalls()[0].headers['X-One']).to.equal('1');
+    expect(getCalls()[0].headers['X-Two']).to.equal('2');
   });
 
   it('applies response interceptors in registration order', async () => {
@@ -83,7 +84,7 @@ describe('interceptors compat (dist export only)', () => {
       proxy: false,
     });
 
-    expect(response.data.n).toBe(20);
+    expect(response.data.n).to.equal(20);
   });
 
   it('supports ejecting request interceptors', async () => {
@@ -103,8 +104,8 @@ describe('interceptors compat (dist export only)', () => {
       proxy: false,
     });
 
-    expect(getCalls()).toHaveLength(1);
-    expect(getCalls()[0].headers['X-Ejected']).toBeUndefined();
+    expect(getCalls()).to.have.lengthOf(1);
+    expect(getCalls()[0].headers['X-Ejected']).to.be.undefined;
   });
 
   it('supports async request interceptors', async () => {
@@ -123,7 +124,7 @@ describe('interceptors compat (dist export only)', () => {
       proxy: false,
     });
 
-    expect(getCalls()[0].headers['X-Async']).toBe('true');
+    expect(getCalls()[0].headers['X-Async']).to.equal('true');
   });
 
   it('propagates errors thrown by request interceptors', async () => {
@@ -141,8 +142,8 @@ describe('interceptors compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(err).toBeInstanceOf(Error);
-    expect(err.message).toContain('blocked-by-interceptor');
-    expect(getCalls()).toHaveLength(0);
+    expect(err).to.be.instanceOf(Error);
+    expect(err.message).to.contain('blocked-by-interceptor');
+    expect(getCalls()).to.have.lengthOf(0);
   });
 });

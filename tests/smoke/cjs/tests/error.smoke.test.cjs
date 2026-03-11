@@ -1,7 +1,8 @@
 const { EventEmitter } = require('events');
 const { PassThrough } = require('stream');
 const axios = require('axios');
-const { describe, it, expect } = require('mocha');
+const { describe, it } = require('mocha');
+const { expect } = require('chai');
 
 function createTransport(config) {
   const opts = config || {};
@@ -68,9 +69,9 @@ describe('error compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.response.status).toBe(500);
-    expect(err.message).toContain('500');
+    expect(axios.isAxiosError(err)).to.be.true;
+    expect(err.response.status).to.equal(500);
+    expect(err.message).to.include('500');
   });
 
   it('resolves when validateStatus allows non-2xx responses', async () => {
@@ -86,8 +87,8 @@ describe('error compat (dist export only)', () => {
       }),
     });
 
-    expect(response.status).toBe(500);
-    expect(response.data).toEqual({ ok: false });
+    expect(response.status).to.equal(500);
+    expect(response.data).to.deep.equal({ ok: false });
   });
 
   it('wraps transport errors as AxiosError', async () => {
@@ -100,9 +101,9 @@ describe('error compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.message).toContain('socket hang up');
-    expect(err.toJSON).toBeTypeOf('function');
+    expect(axios.isAxiosError(err)).to.be.true;
+    expect(err.message).to.include('socket hang up');
+    expect(err.toJSON).to.be.a('function');
   });
 
   it('rejects with ECONNABORTED on timeout', async () => {
@@ -114,9 +115,9 @@ describe('error compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.code).toBe('ECONNABORTED');
-    expect(err.message).toBe('timeout of 10ms exceeded');
+    expect(axios.isAxiosError(err)).to.be.true;
+    expect(err.code).to.equal('ECONNABORTED');
+    expect(err.message).to.equal('timeout of 10ms exceeded');
   });
 
   it('uses timeoutErrorMessage when provided', async () => {
@@ -129,8 +130,8 @@ describe('error compat (dist export only)', () => {
       })
       .catch((e) => e);
 
-    expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.code).toBe('ECONNABORTED');
-    expect(err.message).toBe('custom timeout message');
+    expect(axios.isAxiosError(err)).to.be.true;
+    expect(err.code).to.equal('ECONNABORTED');
+    expect(err.message).to.equal('custom timeout message');
   });
 });

@@ -26,7 +26,7 @@ const createTransportCapture = (responseBody) => {
         res.headers = { 'content-type': 'application/json' };
         res.req = req;
         onResponse(res);
-        res.end(responseBody || '{"ok":true}');
+        res.end(responseBody ? responseBody : '{"ok":true}');
       };
 
       return req;

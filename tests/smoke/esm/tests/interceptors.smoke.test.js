@@ -26,7 +26,7 @@ const createTransport = (responseBody) => {
         res.headers = { 'content-type': 'application/json' };
         res.req = req;
         onResponse(res);
-        res.end(responseBody || '{"value":"ok"}');
+        res.end(responseBody ? responseBody : '{"value":"ok"}');
       };
 
       return req;

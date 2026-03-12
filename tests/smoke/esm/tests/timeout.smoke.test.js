@@ -37,7 +37,7 @@ const createTransport = (config) => {
         res.req = req;
 
         onResponse(res);
-        res.end(opts.body || '{"ok":true}');
+        res.end(opts.body === undefined ? '{"ok":true}' : opts.body);
       };
 
       return req;

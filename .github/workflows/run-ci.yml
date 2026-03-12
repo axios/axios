@@ -77,3 +77,36 @@ jobs:
       - name: Run CJS smoke tests
         working-directory: tests/smoke/cjs
         run: npm run test:smoke:cjs:mocha
+
+  esm-smoke-tests:
+    name: ESM smoke tests (Node ${{ matrix.node-version }})
+    needs: ci
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: tests/smoke/esm/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: axios
+          path: dist
+      - name: Install ESM smoke test dependencies
+        working-directory: tests/smoke/esm
+        run: npm install
+      - name: Run ESM smoke tests
+        working-directory: tests/smoke/esm
+        run: npm run test:smoke:esm:mocha

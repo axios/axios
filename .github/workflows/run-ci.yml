@@ -109,4 +109,4 @@ jobs:
         run: npm install
       - name: Run ESM smoke tests
         working-directory: tests/smoke/esm
-        run: npm run test:smoke:esm:mocha
+        run: npm run test:smoke:esm:vitest

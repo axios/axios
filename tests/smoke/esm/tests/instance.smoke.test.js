@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 import axios from 'axios';
 
-function createTransportCapture(responseBody = '{"ok":true}') {
+const createTransportCapture = (responseBody) => {
   const calls = [];
 
   const transport = {
@@ -25,7 +26,7 @@ function createTransportCapture(responseBody = '{"ok":true}') {
         res.headers = { 'content-type': 'application/json' };
         res.req = req;
         onResponse(res);
-        res.end(responseBody);
+        res.end(responseBody || '{"ok":true}');
       };
 
       return req;
@@ -36,7 +37,7 @@ function createTransportCapture(responseBody = '{"ok":true}') {
     transport,
     getCalls: () => calls,
   };
-}
+};
 
 describe('instance compat (dist export only)', () => {
   it('creates isolated instances with separate defaults', async () => {
@@ -108,10 +109,9 @@ describe('instance compat (dist export only)', () => {
     });
 
     client.interceptors.response.use((response) => {
-      response.data = {
-        ...response.data,
+      response.data = Object.assign({}, response.data, {
         intercepted: true,
-      };
+      });
       return response;
     });
 

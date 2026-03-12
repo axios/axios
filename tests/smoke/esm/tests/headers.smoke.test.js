@@ -1,19 +1,20 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 import axios from 'axios';
 
-function normalizeHeaders(headers = {}) {
+const normalizeHeaders = (headers) => {
   const result = {};
 
-  Object.entries(headers).forEach(([key, value]) => {
+  Object.entries(headers || {}).forEach(([key, value]) => {
     result[key.toLowerCase()] = value;
   });
 
   return result;
-}
+};
 
-function createTransportCapture() {
+const createTransportCapture = () => {
   let capturedOptions;
 
   const transport = {
@@ -46,7 +47,7 @@ function createTransportCapture() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
 describe('headers compat (dist export only)', () => {
   it('sends default Accept header', async () => {

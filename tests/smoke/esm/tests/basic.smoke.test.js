@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 import axios from 'axios';
 
-function createTransportCapture() {
+const createTransportCapture = () => {
   let capturedOptions;
 
   const transport = {
@@ -36,14 +37,14 @@ function createTransportCapture() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
-async function runRequest(run) {
+const runRequest = async (run) => {
   const { transport, getCapturedOptions } = createTransportCapture();
   await run(transport);
 
   return getCapturedOptions();
-}
+};
 
 describe('basic compat (dist export only)', () => {
   it('supports the simplest axios(url) request pattern', async () => {

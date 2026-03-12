@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
+
 import http from 'http';
 import axios from 'axios';
 
-function startServer(handler) {
+const startServer = (handler) => {
   return new Promise((resolve) => {
     const server = http.createServer(handler);
 
@@ -10,9 +11,9 @@ function startServer(handler) {
       resolve(server);
     });
   });
-}
+};
 
-function stopServer(server) {
+const stopServer = (server) => {
   if (!server || !server.listening) {
     return Promise.resolve();
   }
@@ -26,7 +27,7 @@ function stopServer(server) {
       resolve();
     });
   });
-}
+};
 
 describe('auth compat (dist export only)', () => {
   let server;
@@ -36,7 +37,7 @@ describe('auth compat (dist export only)', () => {
     server = undefined;
   });
 
-  async function requestWithConfig(config = {}) {
+  const requestWithConfig = async (config) => {
     server = await startServer((req, res) => {
       res.setHeader('Content-Type', 'text/plain');
       res.end(req.headers.authorization || '');
@@ -44,11 +45,16 @@ describe('auth compat (dist export only)', () => {
 
     const { port } = server.address();
 
-    return axios.get(`http://127.0.0.1:${port}/`, {
-      proxy: false,
-      ...config,
-    });
-  }
+    return axios.get(
+      `http://127.0.0.1:${port}/`,
+      Object.assign(
+        {
+          proxy: false,
+        },
+        config || {}
+      )
+    );
+  };
 
   it('sets Basic Authorization header from auth credentials', async () => {
     const response = await requestWithConfig({

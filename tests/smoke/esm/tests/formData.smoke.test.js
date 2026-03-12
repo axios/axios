@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+
 import { Writable, PassThrough } from 'stream';
 import axios from 'axios';
 
-function createCaptureTransport(buildResponse) {
+const createCaptureTransport = (buildResponse) => {
   return {
     request(options, onResponse) {
       const chunks = [];
@@ -35,27 +36,25 @@ function createCaptureTransport(buildResponse) {
         const response = buildResponse ? buildResponse(body, options) : {};
 
         const res = new PassThrough();
-        res.statusCode = response.statusCode ?? 200;
-        res.statusMessage = response.statusMessage ?? 'OK';
-        res.headers = response.headers ?? { 'content-type': 'application/json' };
+        res.statusCode = response.statusCode !== undefined ? response.statusCode : 200;
+        res.statusMessage = response.statusMessage || 'OK';
+        res.headers = response.headers || { 'content-type': 'application/json' };
         res.req = req;
 
         onResponse(res);
-        res.end(response.body ?? JSON.stringify({ ok: true }));
+        res.end(response.body || JSON.stringify({ ok: true }));
       };
 
       return req;
     },
   };
-}
+};
 
-function bodyAsUtf8(value) {
+const bodyAsUtf8 = (value) => {
   return Buffer.isBuffer(value) ? value.toString('utf8') : String(value);
-}
+};
 
-const hasFormData = typeof FormData === 'function';
-
-describe.runIf(hasFormData)('formData compat (dist export only)', () => {
+describe('formData compat (dist export only)', () => {
   it('supports posting FormData instances', async () => {
     const form = new FormData();
     form.append('username', 'janedoe');
@@ -65,7 +64,8 @@ describe.runIf(hasFormData)('formData compat (dist export only)', () => {
       proxy: false,
       transport: createCaptureTransport((body, options) => ({
         body: JSON.stringify({
-          contentType: options.headers?.['Content-Type'] || options.headers?.['content-type'],
+          contentType:
+            options.headers && (options.headers['Content-Type'] || options.headers['content-type']),
           payload: bodyAsUtf8(body),
         }),
       })),
@@ -89,7 +89,9 @@ describe.runIf(hasFormData)('formData compat (dist export only)', () => {
         proxy: false,
         transport: createCaptureTransport((body, options) => ({
           body: JSON.stringify({
-            contentType: options.headers?.['Content-Type'] || options.headers?.['content-type'],
+            contentType:
+              options.headers &&
+              (options.headers['Content-Type'] || options.headers['content-type']),
             payload: bodyAsUtf8(body),
           }),
         })),

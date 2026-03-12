@@ -10,7 +10,7 @@
   "author": "axios team",
   "license": "MIT",
   "dependencies": {
-    "axios": "file:../../.."
+    "axios": "file:../../../"
   },
   "devDependencies": {
     "vitest": "^4.0.18"

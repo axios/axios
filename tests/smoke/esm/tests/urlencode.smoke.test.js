@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 import axios from 'axios';
 
-function createEchoTransport() {
+const createEchoTransport = () => {
   let capturedOptions;
 
   const transport = {
@@ -37,7 +38,9 @@ function createEchoTransport() {
           JSON.stringify({
             path: options.path,
             body: Buffer.concat(chunks).toString('utf8'),
-            contentType: options.headers?.['Content-Type'] || options.headers?.['content-type'],
+            contentType:
+              options.headers &&
+              (options.headers['Content-Type'] || options.headers['content-type']),
           })
         );
       };
@@ -50,7 +53,7 @@ function createEchoTransport() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
 describe('urlencode compat (dist export only)', () => {
   it('serializes params into request URL', async () => {

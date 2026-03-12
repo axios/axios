@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 import axios from 'axios';
 
-function createTransportCapture() {
+const createTransportCapture = () => {
   let capturedOptions;
 
   const transport = {
@@ -36,7 +37,7 @@ function createTransportCapture() {
     transport,
     getCapturedOptions: () => capturedOptions,
   };
-}
+};
 
 describe('rateLimit compat (dist export only)', () => {
   it('accepts numeric maxRate config', async () => {

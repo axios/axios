@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
+
 import axios from 'axios';
 
-function createFetchMock(responseFactory) {
+const createFetchMock = (responseFactory) => {
   const calls = [];
 
-  const mockFetch = async (input, init = {}) => {
-    calls.push({ input, init });
+  const mockFetch = async (input, init) => {
+    calls.push({ input, init: init || {} });
 
     if (responseFactory) {
-      return responseFactory(input, init);
+      return responseFactory(input, init || {});
     }
 
     return new Response(JSON.stringify({ ok: true }), {
@@ -21,12 +22,9 @@ function createFetchMock(responseFactory) {
     mockFetch,
     getCalls: () => calls,
   };
-}
+};
 
-const hasFetchPrimitives =
-  typeof fetch === 'function' && typeof Request === 'function' && typeof Response === 'function';
-
-describe.runIf(hasFetchPrimitives)('fetch compat (dist export only)', () => {
+describe('fetch compat (dist export only)', () => {
   it('uses fetch adapter and resolves JSON response', async () => {
     const { mockFetch, getCalls } = createFetchMock();
 
@@ -45,38 +43,36 @@ describe.runIf(hasFetchPrimitives)('fetch compat (dist export only)', () => {
   });
 
   it('sends method, headers and body for post requests', async () => {
-    const { mockFetch, getCalls } = createFetchMock(
-      async (input, init) => {
-        const requestInit = init || {};
-        const isRequest = input && typeof input !== 'string';
-        const method = isRequest ? input.method : requestInit.method;
+    const { mockFetch, getCalls } = createFetchMock(async (input, init) => {
+      const requestInit = init || {};
+      const isRequest = input && typeof input !== 'string';
+      const method = isRequest ? input.method : requestInit.method;
 
-        // Request.body is a stream in fetch implementations, so read it as text.
-        const body = isRequest && typeof input.clone === 'function'
+      const body =
+        isRequest && typeof input.clone === 'function'
           ? await input.clone().text()
           : requestInit.body;
 
-        let contentType;
-        if (isRequest && input.headers) {
-          contentType = input.headers.get('content-type');
-        } else if (requestInit.headers) {
-          contentType = requestInit.headers['Content-Type'] || requestInit.headers['content-type'];
-        }
-
-        return new Response(
-          JSON.stringify({
-            url: typeof input === 'string' ? input : input.url,
-            method,
-            contentType,
-            body,
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
+      let contentType;
+      if (isRequest && input.headers) {
+        contentType = input.headers.get('content-type');
+      } else if (requestInit.headers) {
+        contentType = requestInit.headers['Content-Type'] || requestInit.headers['content-type'];
       }
-    );
+
+      return new Response(
+        JSON.stringify({
+          url: typeof input === 'string' ? input : input.url,
+          method,
+          contentType,
+          body,
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    });
 
     const response = await axios.post(
       'https://example.com/items',

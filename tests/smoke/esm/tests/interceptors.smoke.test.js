@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 import axios from 'axios';
 
-function createTransport(responseBody = '{"value":"ok"}') {
+const createTransport = (responseBody) => {
   const calls = [];
 
   const transport = {
@@ -25,7 +26,7 @@ function createTransport(responseBody = '{"value":"ok"}') {
         res.headers = { 'content-type': 'application/json' };
         res.req = req;
         onResponse(res);
-        res.end(responseBody);
+        res.end(responseBody || '{"value":"ok"}');
       };
 
       return req;
@@ -36,7 +37,7 @@ function createTransport(responseBody = '{"value":"ok"}') {
     transport,
     getCalls: () => calls,
   };
-}
+};
 
 describe('interceptors compat (dist export only)', () => {
   it('applies request interceptors before dispatch', async () => {

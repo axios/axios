@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import axios from 'axios';
 
 describe('http2 compat (dist export only)', () => {

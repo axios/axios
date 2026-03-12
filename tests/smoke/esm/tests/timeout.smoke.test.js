@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import { PassThrough } from 'stream';
 import axios from 'axios';
 
-function createTransport({ triggerTimeout = false, body = '{"ok":true}' } = {}) {
+const createTransport = (config) => {
+  const opts = config || {};
+
   return {
     request(_options, onResponse) {
       const req = new EventEmitter();
@@ -22,7 +25,7 @@ function createTransport({ triggerTimeout = false, body = '{"ok":true}' } = {}) 
       req.close = req.destroy;
 
       req.end = () => {
-        if (triggerTimeout && req._timeoutCallback) {
+        if (opts.triggerTimeout && req._timeoutCallback) {
           req._timeoutCallback();
           return;
         }
@@ -34,13 +37,13 @@ function createTransport({ triggerTimeout = false, body = '{"ok":true}' } = {}) 
         res.req = req;
 
         onResponse(res);
-        res.end(body);
+        res.end(opts.body || '{"ok":true}');
       };
 
       return req;
     },
   };
-}
+};
 
 describe('timeout compat (dist export only)', () => {
   it('rejects with ECONNABORTED on timeout', async () => {

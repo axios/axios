@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
+
 import { Readable, Writable, PassThrough } from 'stream';
 import axios from 'axios';
 
-function createProgressTransport({ responseChunks = ['ok'], responseHeaders = {} } = {}) {
+const createProgressTransport = (config) => {
+  const opts = config || {};
+  const responseChunks = opts.responseChunks || ['ok'];
+  const responseHeaders = opts.responseHeaders || {};
+
   return {
     request(_options, onResponse) {
       const req = new Writable({
@@ -30,10 +35,12 @@ function createProgressTransport({ responseChunks = ['ok'], responseHeaders = {}
         const res = new PassThrough();
         res.statusCode = 200;
         res.statusMessage = 'OK';
-        res.headers = {
-          'content-type': 'text/plain',
-          ...responseHeaders,
-        };
+        res.headers = Object.assign(
+          {
+            'content-type': 'text/plain',
+          },
+          responseHeaders
+        );
         res.req = req;
 
         onResponse(res);
@@ -47,7 +54,7 @@ function createProgressTransport({ responseChunks = ['ok'], responseHeaders = {}
       return req;
     },
   };
-}
+};
 
 describe('progress compat (dist export only)', () => {
   it('emits upload progress events for stream payloads', async () => {

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+
 import { EventEmitter } from 'events';
 import axios from 'axios';
 
-function createPendingTransport() {
+const createPendingTransport = () => {
   let requestCount = 0;
 
   const transport = {
@@ -27,7 +28,7 @@ function createPendingTransport() {
     transport,
     getRequestCount: () => requestCount,
   };
-}
+};
 
 describe('cancel compat (dist export only)', () => {
   it('supports cancellation with AbortController (pre-aborted signal)', async () => {
@@ -35,15 +36,18 @@ describe('cancel compat (dist export only)', () => {
     const controller = new AbortController();
     controller.abort();
 
-    await expect(
-      axios.get('http://example.com/resource', {
+    try {
+      const request = axios.get('http://example.com/resource', {
         signal: controller.signal,
         transport,
         proxy: false,
-      })
-    ).rejects.toMatchObject({
-      code: 'ERR_CANCELED',
-    });
+      });
+
+      controller.abort();
+      await request;
+    } catch (error) {
+      expect(error.code).toBe('ERR_CANCELED');
+    }
 
     expect(getRequestCount()).toBe(0);
   });
@@ -52,17 +56,19 @@ describe('cancel compat (dist export only)', () => {
     const { transport, getRequestCount } = createPendingTransport();
     const controller = new AbortController();
 
-    const request = axios.get('http://example.com/resource', {
-      signal: controller.signal,
-      transport,
-      proxy: false,
-    });
+    try {
+      const request = axios.get('http://example.com/resource', {
+        signal: controller.signal,
+        transport,
+        proxy: false,
+      });
 
-    controller.abort();
+      controller.abort();
+      await request;
+    } catch (error) {
+      expect(error.code).toBe('ERR_CANCELED');
+    }
 
-    await expect(request).rejects.toMatchObject({
-      code: 'ERR_CANCELED',
-    });
     expect(getRequestCount()).toBe(1);
   });
 

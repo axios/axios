@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+
 import { PassThrough, Readable, Writable } from 'stream';
 import axios from 'axios';
 
-function createCaptureTransport(buildResponse) {
+const createCaptureTransport = (buildResponse) => {
   return {
     request(options, onResponse) {
       const chunks = [];
@@ -34,20 +35,20 @@ function createCaptureTransport(buildResponse) {
         const response = buildResponse ? buildResponse(body, options) : {};
 
         const res = new PassThrough();
-        res.statusCode = response.statusCode ?? 200;
-        res.statusMessage = response.statusMessage ?? 'OK';
-        res.headers = response.headers ?? { 'content-type': 'application/json' };
+        res.statusCode = response.statusCode !== undefined ? response.statusCode : 200;
+        res.statusMessage = response.statusMessage || 'OK';
+        res.headers = response.headers || { 'content-type': 'application/json' };
         res.req = req;
 
         onResponse(res);
-        res.end(response.body ?? JSON.stringify({ size: body.length }));
+        res.end(response.body || JSON.stringify({ size: body.length }));
       };
 
       req.on('error', () => {});
       return req;
     },
   };
-}
+};
 
 describe('files compat (dist export only)', () => {
   it('supports posting Buffer payloads', async () => {
@@ -86,7 +87,8 @@ describe('files compat (dist export only)', () => {
       transport: createCaptureTransport((body, options) => ({
         body: JSON.stringify({
           text: body.toString('utf8'),
-          contentType: options.headers?.['Content-Type'] || options.headers?.['content-type'],
+          contentType:
+            options.headers && (options.headers['Content-Type'] || options.headers['content-type']),
         }),
       })),
     });

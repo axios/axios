@@ -126,7 +126,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
-          persist-credentials: true
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:

@@ -2329,6 +2329,29 @@ describe('supports http with nodejs', () => {
       });
     });
 
+    it('should propagate errors if getLength fails', async () => {
+      const form = new FormDataLegacy();
+
+      form.getLength = (cb) => {
+        cb(new Error('getLength failure test'));
+      };
+
+      const server = await startHTTPServer(() => {}, { port: SERVER_PORT });
+
+      try {
+        await assert.rejects(
+          axios.post(`http://localhost:${server.address().port}/`, form),
+          (error) => {
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+            assert.strictEqual(error.message, 'getLength failure test');
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
     describe('SpecCompliant FormData', () => {
       it('should allow passing FormData', async () => {
         const server = await startHTTPServer(

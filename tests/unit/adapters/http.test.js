@@ -2342,6 +2342,7 @@ describe('supports http with nodejs', () => {
         await assert.rejects(
           axios.post(`http://localhost:${server.address().port}/`, form),
           (error) => {
+            assert.strictEqual(error.isAxiosError, true);
             assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
             assert.strictEqual(error.message, 'getLength failure test');
             return true;

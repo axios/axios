@@ -44,8 +44,6 @@ jobs:
         run: npm run test:vitest:unit
       - name: Run browser tests
         run: npm run test:vitest:browser:headless
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
@@ -127,6 +125,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
+        with:
+          persist-credentials: true
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:

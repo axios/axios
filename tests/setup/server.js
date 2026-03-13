@@ -6,8 +6,6 @@ import { Throttle } from 'stream-throttle';
 import formidable from 'formidable';
 import selfsigned from 'selfsigned';
 
-export const LOCAL_SERVER_URL = 'http://localhost:4444';
-
 export const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
 export const setTimeoutAsync = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

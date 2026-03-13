@@ -1,0 +1,19 @@
+{
+  "name": "@axios/cjs-smoke-tests",
+  "version": "1.0.0",
+  "description": "CJS smoke tests for axios",
+  "private": true,
+  "scripts": {
+    "test:smoke:cjs:mocha": "mocha \"tests/**/*.smoke.test.cjs\""
+  },
+  "keywords": [],
+  "author": "axios team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "file:../../../"
+  },
+  "devDependencies": {
+    "mocha": "9.2.2",
+    "chai": "4.5.0"
+  }
+}

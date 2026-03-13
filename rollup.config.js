@@ -3,7 +3,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
-import autoExternal from 'rollup-plugin-auto-external';
 import bundleSize from 'rollup-plugin-bundle-size';
 import aliasPlugin from '@rollup/plugin-alias';
 import path from 'path';
@@ -59,6 +58,18 @@ const buildConfig = ({ es5, browser = true, minifiedVersion = true, alias, ...co
   return configs;
 };
 
+const nodeCjsExternal = (id) => {
+  if (id === 'proxy-from-env') {
+    return false;
+  }
+
+  if (id.startsWith('.') || path.isAbsolute(id) || id.startsWith('\0')) {
+    return false;
+  }
+
+  return true;
+};
+
 export default async () => {
   const year = new Date().getFullYear();
   const banner = `/*! Axios v${lib.version} Copyright (c) ${year} ${lib.author} and contributors */`;
@@ -106,6 +117,7 @@ export default async () => {
     // Node.js commonjs bundle (transpiled for Node 12)
     {
       input: defaultInput,
+      external: nodeCjsExternal,
       output: {
         file: `dist/node/${name}.cjs`,
         format: 'cjs',
@@ -114,7 +126,6 @@ export default async () => {
         banner,
       },
       plugins: [
-        autoExternal(),
         resolve(),
         commonjs(),
         babel({

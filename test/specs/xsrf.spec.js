@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 import cookies from '../../lib/helpers/cookies';
 
 describe('xsrf', function () {

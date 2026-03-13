@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 import defaults from '../../lib/defaults';
 import AxiosHeaders from '../../lib/core/AxiosHeaders';
 

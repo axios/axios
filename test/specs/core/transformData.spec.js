@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import transformData from '../../../lib/core/transformData';
 
 describe('core::transformData', function () {

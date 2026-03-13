@@ -497,6 +497,23 @@ These are the available config options for making requests. Only the `url` is re
   // `undefined` (default) - set XSRF header only for the same origin requests
   withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
+  // `withXSRFToken` controls whether Axios reads the XSRF cookie and sets the XSRF header.
+  // - `undefined` (default): the XSRF header is set only for same-origin requests.
+  // - `true`: attempt to set the XSRF header for all requests (including cross-origin).
+  // - `false`: never set the XSRF header.
+  // - function: a callback that receives the request `config` and returns `true`,
+  //   `false`, or `undefined` to decide per-request behavior.
+  //
+  // Note about `withCredentials`: `withCredentials` controls whether cross-site
+  // requests include credentials (cookies and HTTP auth). In older Axios versions,
+  // setting `withCredentials: true` implicitly caused Axios to set the XSRF header
+  // for cross-origin requests. Newer Axios separates these concerns: to allow the
+  // XSRF header to be sent for cross-origin requests you should set both
+  // `withCredentials: true` and `withXSRFToken: true`.
+  //
+  // Example:
+  // axios.get('/user', { withCredentials: true, withXSRFToken: true });
+
   // `onUploadProgress` allows handling of progress events for uploads
   // browser & node.js
   onUploadProgress: function ({loaded, total, progress, bytes, estimated, rate, upload = true}) {

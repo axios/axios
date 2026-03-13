@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import settle from '../../../lib/core/settle';
 
 describe('core::settle', function () {

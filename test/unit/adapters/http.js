@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import axios from '../../../index.js';
 import http from 'http';
 import https from 'https';
@@ -2464,8 +2465,6 @@ describe('supports http with nodejs', function () {
   });
 
   describe('request aborting', function () {
-    //this.timeout(5000);
-
     it('should be able to abort the response stream', async () => {
       server = await startHTTPServer({
         rate: 100_000,
@@ -3045,6 +3044,37 @@ describe('supports http with nodejs', function () {
 
         assert.strictEqual(data1, 'OK');
         assert.strictEqual(data2, 'OK');
+      });
+
+      it('should close connection after sessionTimeout ends', async () => {
+        server = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => res.end('OK'), 100);
+          },
+          {
+            useHTTP2: true,
+          }
+        );
+
+        const response = await http2Axios.get(LOCAL_SERVER_URL, {
+          responseType: 'stream',
+          http2Options: {
+            sessionTimeout: 1000,
+          },
+        });
+
+        assert.strictEqual(response.data.session.closed, false);
+
+        let sessionClosed = false;
+        response.data.session.once('close', () => {
+          sessionClosed = true;
+        });
+
+        const data = await getStream(response.data);
+        assert.strictEqual(data, 'OK');
+
+        await setTimeoutAsync(1100);
+        assert.strictEqual(sessionClosed, true);
       });
     });
   });

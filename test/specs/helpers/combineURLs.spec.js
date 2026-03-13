@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import combineURLs from '../../../lib/helpers/combineURLs';
 
 describe('helpers::combineURLs', function () {

@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import cookies from '../../../lib/helpers/cookies';
 
 describe('helpers::cookies', function () {

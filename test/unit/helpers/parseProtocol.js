@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import assert from 'assert';
 import utils from '../../../lib/utils.js';
 import parseProtocol from '../../../lib/helpers/parseProtocol.js';

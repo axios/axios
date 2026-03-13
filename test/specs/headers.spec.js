@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 const { AxiosHeaders } = axios;
 
 function testHeaderValue(headers, key, val) {

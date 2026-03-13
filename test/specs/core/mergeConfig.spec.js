@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import defaults from '../../../lib/defaults';
 import mergeConfig from '../../../lib/core/mergeConfig';
 import { AxiosHeaders } from '../../../index.js';

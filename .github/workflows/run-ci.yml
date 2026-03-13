@@ -13,7 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
+  build-and-run-vitest:
+    name: Build and run vitest
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -46,7 +47,7 @@ jobs:
 
   cjs-smoke-tests:
     name: CJS smoke tests (Node ${{ matrix.node-version }})
-    needs: ci
+    needs: build-and-run-vitest
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -80,7 +81,7 @@ jobs:
 
   esm-smoke-tests:
     name: ESM smoke tests (Node ${{ matrix.node-version }})
-    needs: ci
+    needs: build-and-run-vitest
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

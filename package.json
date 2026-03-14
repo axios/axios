@@ -112,7 +112,7 @@
     "lint-staged": "^15.2.10",
     "memoizee": "^0.4.17",
     "minimist": "^1.2.8",
-    "multer": "^1.4.4",
+    "multer": "^2.1.1",
     "pacote": "^20.0.0",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",

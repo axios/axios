@@ -24,14 +24,14 @@ describe('ESM importing', () => {
   });
 
   it('should import CanceledError from axios', () => {
-    expect(typeof axios.CanceledError).toStrictEqual(CanceledError);
+    expect(axios.CanceledError).toStrictEqual(CanceledError);
   });
 
   it('should import AxiosError from axios', () => {
-    expect(typeof axios.AxiosError).toStrictEqual(AxiosError);
+    expect(axios.AxiosError).toStrictEqual(AxiosError);
   });
 
   it('should import AxiosHeaders from axios', () => {
-    expect(typeof axios.AxiosHeaders).toStrictEqual(AxiosHeaders);
+    expect(axios.AxiosHeaders).toStrictEqual(AxiosHeaders);
   });
 });

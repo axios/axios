@@ -107,7 +107,7 @@
     "get-stream": "^3.0.0",
     "gulp": "^4.0.2",
     "handlebars": "^4.7.8",
-    "husky": "^9.0.0",
+    "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "memoizee": "^0.4.17",
     "minimist": "^1.2.8",

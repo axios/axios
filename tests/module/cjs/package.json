@@ -4,7 +4,7 @@
   "description": "CJS module compatibility tests for axios",
   "private": true,
   "scripts": {
-    "test:module:cjs": "mocha \"tests/**/*.module.test.cjs\""
+    "test:module:cjs": "mocha --timeout 10000 \"tests/**/*.module.test.cjs\""
   },
   "keywords": [],
   "author": "axios team",

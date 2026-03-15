@@ -16,7 +16,14 @@ const createTempFixture = (suiteRoot, name, sourcePath, tsconfig, packageJson) =
 };
 
 const cleanupTempFixture = (dirPath) => {
-  fs.rmSync(dirPath, { recursive: true, force: true });
+  if (typeof fs.rmSync === 'function') {
+    fs.rmSync(dirPath, { recursive: true, force: true });
+    return;
+  }
+
+  if (fs.existsSync(dirPath)) {
+    fs.rmdirSync(dirPath, { recursive: true });
+  }
 };
 
 module.exports = {

@@ -2428,6 +2428,54 @@ describe('supports http with nodejs', () => {
         });
       }
     });
+
+    it('should only match explicit routes for express 5 form handlers', async () => {
+      const app = express();
+
+      app.post('/', multer().none(), (req, res) => {
+        res.status(200).send(JSON.stringify({ route: 'root', body: req.body }));
+      });
+
+      app.post('/unexpected', multer().none(), (req, res) => {
+        res.status(418).send('wrong-route');
+      });
+
+      const server = await new Promise(
+        (resolve, reject) => {
+          const expressServer = app.listen(0, () => resolve(expressServer));
+          expressServer.on('error', reject);
+        },
+        { port: SERVER_PORT }
+      );
+
+      const rootUrl = `http://localhost:${server.address().port}`;
+
+      try {
+        const rootResponse = await axios.postForm(rootUrl, { foo: 'bar' });
+        assert.strictEqual(rootResponse.status, 200);
+        assert.deepStrictEqual(rootResponse.data, { route: 'root', body: { foo: 'bar' } });
+
+        await assert.rejects(
+          () => axios.postForm(`${rootUrl}/unexpected`, { foo: 'bar' }),
+          (error) => {
+            assert.strictEqual(error.response.status, 418);
+            assert.strictEqual(error.response.data, 'wrong-route');
+            return true;
+          }
+        );
+      } finally {
+        await new Promise((resolve, reject) => {
+          server.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
+        });
+      }
+    });
   });
 
   describe('Blob', () => {
@@ -2536,6 +2584,73 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(response.data, form.toString());
       } finally {
         await stopHTTPServer(server);
+      }
+    });
+
+    it('should parse nested urlencoded payloads and ignore mismatched content-type', async () => {
+      const app = express();
+
+      app.use(bodyParser.urlencoded({ extended: true }));
+
+      app.post('/', (req, res) => {
+        const parserRanBeforeHandler = Boolean(req.body && Object.keys(req.body).length);
+
+        res.send(
+          JSON.stringify({
+            parserRanBeforeHandler,
+            body: req.body,
+          })
+        );
+      });
+
+      const server = await new Promise(
+        (resolve, reject) => {
+          const expressServer = app.listen(0, () => resolve(expressServer));
+          expressServer.on('error', reject);
+        },
+        { port: SERVER_PORT }
+      );
+
+      const rootUrl = `http://localhost:${server.address().port}/`;
+      const payload = 'user[name]=Peter&tags[]=a&tags[]=b';
+
+      try {
+        const parsedResponse = await axios.post(rootUrl, payload, {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        });
+
+        assert.deepStrictEqual(parsedResponse.data, {
+          parserRanBeforeHandler: true,
+          body: {
+            user: { name: 'Peter' },
+            tags: ['a', 'b'],
+          },
+        });
+
+        const ignoredResponse = await axios.post(rootUrl, payload, {
+          headers: {
+            'content-type': 'text/plain',
+          },
+        });
+
+        assert.strictEqual(ignoredResponse.data.parserRanBeforeHandler, false);
+        assert.notDeepStrictEqual(ignoredResponse.data.body, {
+          user: { name: 'Peter' },
+          tags: ['a', 'b'],
+        });
+      } finally {
+        await new Promise((resolve, reject) => {
+          server.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
+        });
       }
     });
   });

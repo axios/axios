@@ -57,8 +57,7 @@
     "start": "node ./sandbox/server.js",
     "examples": "node ./examples/server.js",
     "fix": "eslint --fix lib/**/*.js",
-    "prepare": "husky install && npm run prepare:hooks",
-    "prepare:hooks": "npx husky set .husky/commit-msg \"npx commitlint --edit $1\""
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -108,7 +107,7 @@
     "get-stream": "^3.0.0",
     "gulp": "^4.0.2",
     "handlebars": "^4.7.8",
-    "husky": "^8.0.3",
+    "husky": "^9.0.0",
     "lint-staged": "^15.2.10",
     "memoizee": "^0.4.17",
     "minimist": "^1.2.8",

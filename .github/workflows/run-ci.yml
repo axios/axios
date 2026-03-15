@@ -64,9 +64,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/smoke/cjs/package-lock.json
-      - name: Install dependencies
-        if: matrix.node-version == 16 || matrix.node-version == 18
-        run: npm ci
+      # - name: Install dependencies
+      #   if: matrix.node-version == 16 || matrix.node-version == 18
+      #   run: npm ci
       - name: Download build artifact
         uses: actions/download-artifact@v8
         with:
@@ -98,8 +98,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/smoke/esm/package-lock.json
-      - name: Install dependencies
-        run: npm ci
+      # - name: Install dependencies
+      #   run: npm ci
       - name: Download build artifact
         uses: actions/download-artifact@v8
         with:

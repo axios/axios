@@ -36,13 +36,16 @@ jobs:
         run: npm run test:vitest:unit
       - name: Run browser tests
         run: npm run test:vitest:browser:headless
+      - name: Pack npm tarball
+        run: npm pack
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
-      - name: Upload build artifact
+      - name: Upload npm pack artifact
         uses: actions/upload-artifact@v7
         with:
-          name: axios
-          path: dist
+          name: axios-tarball
+          path: axios-*.tgz
+          if-no-files-found: error
           retention-days: 1
 
   cjs-smoke-tests:
@@ -64,17 +67,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/smoke/cjs/package-lock.json
-      - name: Install dependencies
-        if: matrix.node-version == 16 || matrix.node-version == 18
-        run: npm ci
-      - name: Download build artifact
+      - name: Download npm pack artifact
         uses: actions/download-artifact@v8
         with:
-          name: axios
-          path: dist
+          name: axios-tarball
+          path: artifacts
       - name: Install CJS smoke test dependencies
         working-directory: tests/smoke/cjs
         run: npm install
+      - name: Install packed axios
+        working-directory: tests/smoke/cjs
+        run: npm install --no-save ../../../artifacts/axios-*.tgz
       - name: Run CJS smoke tests
         working-directory: tests/smoke/cjs
         run: npm run test:smoke:cjs:mocha
@@ -98,16 +101,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/smoke/esm/package-lock.json
-      - name: Install dependencies
-        run: npm ci
-      - name: Download build artifact
+      - name: Download npm pack artifact
         uses: actions/download-artifact@v8
         with:
-          name: axios
-          path: dist
+          name: axios-tarball
+          path: artifacts
       - name: Install ESM smoke test dependencies
         working-directory: tests/smoke/esm
         run: npm install
+      - name: Install packed axios
+        working-directory: tests/smoke/esm
+        run: npm install --no-save ../../../artifacts/axios-*.tgz
       - name: Run ESM smoke tests
         working-directory: tests/smoke/esm
         run: npm run test:smoke:esm:vitest

@@ -9,9 +9,6 @@
   "keywords": [],
   "author": "axios team",
   "license": "MIT",
-  "dependencies": {
-    "axios": "file:../../../"
-  },
   "devDependencies": {
     "vitest": "4.1.0"
   }

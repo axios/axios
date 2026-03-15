@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { runCommand } = require('./run-command.cjs');
 
 const createTempFixture = (suiteRoot, name, sourcePath, tsconfig, packageJson) => {
   const tempRoot = fs.mkdtempSync(path.join(suiteRoot, `.tmp-module-${name}-`));
@@ -17,7 +16,7 @@ const createTempFixture = (suiteRoot, name, sourcePath, tsconfig, packageJson) =
 };
 
 const cleanupTempFixture = (dirPath) => {
-  runCommand('rm', ['-rf', dirPath]);
+  fs.rmSync(dirPath, { recursive: true, force: true });
 };
 
 module.exports = {

@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { runCommand } from './run-command.js';
 
 export const createTempFixture = (suiteRoot, name, sourcePath, tsconfig, packageJson) => {
   const tempRoot = fs.mkdtempSync(path.join(suiteRoot, `.tmp-module-${name}-`));
@@ -17,5 +16,5 @@ export const createTempFixture = (suiteRoot, name, sourcePath, tsconfig, package
 };
 
 export const cleanupTempFixture = (dirPath) => {
-  runCommand('rm', ['-rf', dirPath]);
+  fs.rmSync(dirPath, { recursive: true, force: true });
 };

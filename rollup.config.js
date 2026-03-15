@@ -1,12 +1,14 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
 import bundleSize from 'rollup-plugin-bundle-size';
 import aliasPlugin from '@rollup/plugin-alias';
 import path from 'path';
+import { createRequire } from 'module';
 
+const require = createRequire(import.meta.url);
 const lib = require('./package.json');
 const outputFileName = 'axios';
 const name = 'axios';
@@ -35,7 +37,10 @@ const buildConfig = ({ es5, browser = true, minifiedVersion = true, alias, ...co
       resolve({ browser }),
       commonjs(),
 
-      minified && terser(),
+      minified &&
+        terser({
+          maxWorkers: 1,
+        }),
       minified && bundleSize(),
       ...(es5
         ? [
@@ -81,7 +86,6 @@ export default async () => {
       output: {
         file: `dist/esm/${outputFileName}.js`,
         format: 'esm',
-        preferConst: true,
         exports: 'named',
         banner,
       },
@@ -121,7 +125,6 @@ export default async () => {
       output: {
         file: `dist/node/${name}.cjs`,
         format: 'cjs',
-        preferConst: true,
         exports: 'default',
         banner,
       },

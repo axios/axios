@@ -3674,10 +3674,13 @@ describe('supports http with nodejs', () => {
   });
 
   it('should not abort stream on settle rejection', async () => {
-    const server = await startHTTPServer((req, res) => {
-      res.statusCode = 404;
-      res.end('OK');
-    });
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.statusCode = 404;
+        res.end('OK');
+      },
+      { port: SERVER_PORT }
+    );
 
     try {
       let error;

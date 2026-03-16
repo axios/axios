@@ -3524,12 +3524,8 @@ describe('supports http with nodejs', () => {
           const http2Axios = createHttp2Axios(localServerURL);
 
           const [response1, response2] = await Promise.all([
-            http2Axios.get(localServerURL, {
-              responseType: 'stream',
-            }),
-            http2Axios.get(localServerURL2, {
-              responseType: 'stream',
-            }),
+            http2Axios.get(localServerURL, {}),
+            http2Axios.get(localServerURL2, {}),
           ]);
 
           assert.notStrictEqual(response1.data.session, response2.data.session);

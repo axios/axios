@@ -1,0 +1,18 @@
+{
+  "name": "@axios/cjs-module-tests",
+  "version": "1.0.0",
+  "description": "CJS module compatibility tests for axios",
+  "private": true,
+  "scripts": {
+    "test:module:cjs": "mocha --timeout 10000 \"tests/**/*.module.test.cjs\""
+  },
+  "keywords": [],
+  "author": "axios team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.11.3",
+    "chai": "4.5.0",
+    "mocha": "9.2.2",
+    "typescript": "^4.9.5"
+  }
+}

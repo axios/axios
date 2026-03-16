@@ -624,7 +624,12 @@ These are the available config options for making requests. Only the `url` is re
   transitional: {
     // silent JSON parsing mode
     // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
-    // `false` - throw SyntaxError if JSON parsing failed (Note: responseType must be set to 'json')
+    // `false` - throw SyntaxError if JSON parsing failed
+    // Important: this option only takes effect when `responseType` is explicitly set to 'json'.
+    // When `responseType` is omitted (defaults to no value), axios uses `forcedJSONParsing`
+    // to attempt JSON parsing, but will silently return the raw string on failure regardless
+    // of this setting. To have invalid JSON throw errors, use:
+    //   { responseType: 'json', transitional: { silentJSONParsing: false } }
     silentJSONParsing: true, // default value for the current Axios version
 
     // try to parse the response string as JSON even if `responseType` is not 'json'

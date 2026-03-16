@@ -2061,6 +2061,39 @@ describe('supports http with nodejs', function () {
           }, done);
         });
       });
+
+      it('should only match explicit routes for express 5 form handlers', function (done) {
+        var app = express();
+
+        app.post('/', multer().none(), function (req, res) {
+          res.status(200).send(JSON.stringify({ route: 'root', body: req.body }));
+        });
+
+        app.post('/unexpected', multer().none(), function (req, res) {
+          res.status(418).send('wrong-route');
+        });
+
+        server = app.listen(3001, function () {
+          var rootUrl = 'http://localhost:3001';
+
+          axios
+            .postForm(rootUrl, { foo: 'bar' })
+            .then(function (res) {
+              assert.strictEqual(res.status, 200);
+              assert.deepStrictEqual(res.data, { route: 'root', body: { foo: 'bar' } });
+
+              return axios.postForm(rootUrl + '/unexpected', { foo: 'bar' });
+            })
+            .then(function () {
+              done(new Error('Expected route /unexpected to reject'));
+            })
+            .catch(function (err) {
+              assert.strictEqual(err.response.status, 418);
+              assert.strictEqual(err.response.data, 'wrong-route');
+              done();
+            });
+        });
+      });
     });
   });
 
@@ -2111,6 +2144,54 @@ describe('supports http with nodejs', function () {
           })
           .then(function (res) {
             assert.deepStrictEqual(res.data, obj);
+            done();
+          })
+          .catch(done);
+      });
+    });
+
+    it('should parse nested urlencoded payloads and ignore mismatched content-type', function (done) {
+      var app = express();
+
+      app.use(bodyParser.urlencoded({ extended: true }));
+
+      app.post('/', function (req, res) {
+        var parserRanBeforeHandler = Boolean(req.body && Object.keys(req.body).length);
+
+        res.send(JSON.stringify({
+          parserRanBeforeHandler: parserRanBeforeHandler,
+          body: req.body,
+        }));
+      });
+
+      server = app.listen(3001, function () {
+        var payload = 'user[name]=Peter&tags[]=a&tags[]=b';
+        var parsedBody = {
+          user: { name: 'Peter' },
+          tags: ['a', 'b'],
+        };
+
+        axios
+          .post('http://localhost:3001/', payload, {
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded',
+            },
+          })
+          .then(function (res) {
+            assert.deepStrictEqual(res.data, {
+              parserRanBeforeHandler: true,
+              body: parsedBody,
+            });
+
+            return axios.post('http://localhost:3001/', payload, {
+              headers: {
+                'content-type': 'text/plain',
+              },
+            });
+          })
+          .then(function (res) {
+            assert.strictEqual(res.data.parserRanBeforeHandler, false);
+            assert.notDeepStrictEqual(res.data.body, parsedBody);
             done();
           })
           .catch(done);

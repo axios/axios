@@ -9,6 +9,7 @@ import {
   makeEchoStream,
 } from '../../setup/server.js';
 import axios from '../../../index.js';
+import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import util from 'util';
@@ -649,6 +650,34 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       } finally {
         vi.stubGlobal('fetch', globalFetch);
         await stopHTTPServer(server);
+      }
+    });
+  });
+
+  describe('capability probe cleanup', () => {
+    it('should cancel the ReadableStream created during the request stream probe', () => {
+      // The fetch adapter factory probes for request-stream support by creating
+      // a ReadableStream as a Request body.  Previously the stream was never
+      // cancelled, leaving a dangling pull-algorithm promise (async resource leak
+      // visible via `--detect-async-leaks` or Node.js async_hooks).
+      //
+      // Calling getFetch with a unique env triggers a fresh factory() execution
+      // (including the probe).  We spy on ReadableStream.prototype.cancel to
+      // verify it is invoked during the probe.
+
+      const cancelSpy = vi.spyOn(ReadableStream.prototype, 'cancel');
+
+      try {
+        // Unique fetch function ensures cache miss → factory() re-runs the probe.
+        const uniqueFetch = async () => new Response('ok');
+        getFetch({ env: { fetch: uniqueFetch } });
+
+        assert.ok(
+          cancelSpy.mock.calls.length > 0,
+          'ReadableStream.prototype.cancel should be called during the capability probe'
+        );
+      } finally {
+        cancelSpy.mockRestore();
       }
     });
   });

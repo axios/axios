@@ -3179,6 +3179,18 @@ describe('supports http with nodejs', () => {
         },
       });
 
+    const getStreamContent = async (readable) => {
+      try {
+        return await getStream(readable);
+      } catch (error) {
+        if (error?.code === 'ERR_STREAM_PREMATURE_CLOSE' && error.bufferedData != null) {
+          return Buffer.from(error.bufferedData).toString();
+        }
+
+        throw error;
+      }
+    };
+
     it('should merge request http2Options with its instance config', async () => {
       const http2Axios = createHttp2Axios('https://127.0.0.1:8080');
 
@@ -3535,7 +3547,7 @@ describe('supports http with nodejs', () => {
           assert.notStrictEqual(response1.data.session, response2.data.session);
 
           assert.deepStrictEqual(
-            await Promise.all([getStream(response1.data), getStream(response2.data)]),
+            await Promise.all([getStreamContent(response1.data), getStreamContent(response2.data)]),
             ['OK', 'OK']
           );
         } finally {
@@ -3576,7 +3588,7 @@ describe('supports http with nodejs', () => {
           assert.notStrictEqual(response1.data.session, response2.data.session);
 
           assert.deepStrictEqual(
-            await Promise.all([getStream(response1.data), getStream(response2.data)]),
+            await Promise.all([getStreamContent(response1.data), getStreamContent(response2.data)]),
             ['OK', 'OK']
           );
         } finally {

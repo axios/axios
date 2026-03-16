@@ -211,7 +211,7 @@ export const startTestServer = async (port) => {
           response.form = fields;
           response.files = files;
         } else {
-          response.body = (await getStream(req)).toString('hex');
+          response.body = (await getStreamAsBuffer(req)).toString('hex');
         }
 
         return {

@@ -30,10 +30,11 @@ type AxiosHeaderParser = (
   header: string,
 ) => any;
 
+// Utility type for typed header access
+export type TypedAxiosHeaders = AxiosHeaders & Record<string, AxiosHeaderValue>;
+
 export class AxiosHeaders {
   constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
-
-  [key: string]: any;
 
   set(
     headerName?: string,
@@ -422,7 +423,7 @@ export interface AxiosRequestConfig<D = any> {
   allowAbsoluteUrls?: boolean;
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
-  headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
+  headers?: RawAxiosRequestHeaders | AxiosHeaders;
   params?: any;
   paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
   data?: D;

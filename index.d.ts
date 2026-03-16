@@ -271,27 +271,9 @@ export enum HttpStatusCode {
   NetworkAuthenticationRequired = 511,
 }
 
-export type Method =
-  | "get"
-  | "GET"
-  | "delete"
-  | "DELETE"
-  | "head"
-  | "HEAD"
-  | "options"
-  | "OPTIONS"
-  | "post"
-  | "POST"
-  | "put"
-  | "PUT"
-  | "patch"
-  | "PATCH"
-  | "purge"
-  | "PURGE"
-  | "link"
-  | "LINK"
-  | "unlink"
-  | "UNLINK";
+type UppercaseMethod = "GET" | "DELETE" | "HEAD" | "OPTIONS" | "POST" | "PUT" | "PATCH" | "PURGE" | "LINK" | "UNLINK";
+
+export type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
 export type ResponseType =
   | "arraybuffer"

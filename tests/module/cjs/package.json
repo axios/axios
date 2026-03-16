@@ -13,6 +13,6 @@
     "@types/node": "^18.11.3",
     "chai": "4.5.0",
     "mocha": "9.2.2",
-    "typescript": "^4.9.5"
+    "typescript": "^5.9.3"
   }
 }

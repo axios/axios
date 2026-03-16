@@ -352,7 +352,7 @@ declare namespace axios {
 
   type UppercaseResponseEncoding = "ASCII" | "ANSI" | "BINARY" | "BASE64" | "BASE64URL" | "HEX" | "LATIN1" | "UCS-2" | "UCS2" | "UTF-8" | "UTF8" | "UTF16LE";
 
-  export type responseEncoding = (UppercaseResponseEncoding | Lowercase<UppercaseResponseEncoding>) & {};
+  type responseEncoding = (UppercaseResponseEncoding | Lowercase<UppercaseResponseEncoding>) & {};
 
   interface TransitionalOptions {
     silentJSONParsing?: boolean;

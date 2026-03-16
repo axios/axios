@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 // https://snyk.io/vuln/SNYK-JS-AXIOS-1038255
 // https://github.com/axios/axios/issues/3407
 // https://github.com/axios/axios/issues/3369

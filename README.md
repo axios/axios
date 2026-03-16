@@ -497,6 +497,23 @@ These are the available config options for making requests. Only the `url` is re
   // `undefined` (default) - set XSRF header only for the same origin requests
   withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
+  // `withXSRFToken` controls whether Axios reads the XSRF cookie and sets the XSRF header.
+  // - `undefined` (default): the XSRF header is set only for same-origin requests.
+  // - `true`: attempt to set the XSRF header for all requests (including cross-origin).
+  // - `false`: never set the XSRF header.
+  // - function: a callback that receives the request `config` and returns `true`,
+  //   `false`, or `undefined` to decide per-request behavior.
+  //
+  // Note about `withCredentials`: `withCredentials` controls whether cross-site
+  // requests include credentials (cookies and HTTP auth). In older Axios versions,
+  // setting `withCredentials: true` implicitly caused Axios to set the XSRF header
+  // for cross-origin requests. Newer Axios separates these concerns: to allow the
+  // XSRF header to be sent for cross-origin requests you should set both
+  // `withCredentials: true` and `withXSRFToken: true`.
+  //
+  // Example:
+  // axios.get('/user', { withCredentials: true, withXSRFToken: true });
+
   // `onUploadProgress` allows handling of progress events for uploads
   // browser & node.js
   onUploadProgress: function ({loaded, total, progress, bytes, estimated, rate, upload = true}) {
@@ -607,7 +624,12 @@ These are the available config options for making requests. Only the `url` is re
   transitional: {
     // silent JSON parsing mode
     // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
-    // `false` - throw SyntaxError if JSON parsing failed (Note: responseType must be set to 'json')
+    // `false` - throw SyntaxError if JSON parsing failed
+    // Important: this option only takes effect when `responseType` is explicitly set to 'json'.
+    // When `responseType` is omitted (defaults to no value), axios uses `forcedJSONParsing`
+    // to attempt JSON parsing, but will silently return the raw string on failure regardless
+    // of this setting. To have invalid JSON throw errors, use:
+    //   { responseType: 'json', transitional: { silentJSONParsing: false } }
     silentJSONParsing: true, // default value for the current Axios version
 
     // try to parse the response string as JSON even if `responseType` is not 'json'

@@ -1,0 +1,18 @@
+{
+  "name": "@axios/esm-module-tests",
+  "version": "1.0.0",
+  "description": "ESM module compatibility tests for axios",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:module:esm": "vitest run --config vitest.config.js --project module"
+  },
+  "keywords": [],
+  "author": "axios team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^4.9.5",
+    "vitest": "4.1.0"
+  }
+}

@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import assert from 'assert';
 import http from 'http';
 import axios from '../../../index.js';

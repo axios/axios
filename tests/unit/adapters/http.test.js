@@ -3568,7 +3568,7 @@ describe('supports http with nodejs', () => {
             http2Axios.get(localServerURL, {
               responseType: 'stream',
               http2Options: {
-                foo: 'test',
+                sessionTimeout: 2000,
               },
             }),
           ]);

@@ -68,7 +68,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      const { data: responseData } = await axios.get(`http://localhost:${server.address().port}`);
+      const { data: responseData } = await axios.get(`http://127.0.0.1:${server.address().port}`);
       assert.deepStrictEqual(responseData, data);
     } finally {
       await stopHTTPServer(server);

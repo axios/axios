@@ -68,7 +68,7 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      const { data: responseData } = await axios.get(`http://127.0.0.1:${server.address().port}`);
+      const { data: responseData } = await axios.get(`http://localhost:${server.address().port}`);
       assert.deepStrictEqual(responseData, data);
     } finally {
       await stopHTTPServer(server);
@@ -3180,7 +3180,7 @@ describe('supports http with nodejs', () => {
       });
 
     it('should merge request http2Options with its instance config', async () => {
-      const http2Axios = createHttp2Axios('https://127.0.0.1:8080');
+      const http2Axios = createHttp2Axios('https://localhost:8080');
 
       const { data } = await http2Axios.get('/', {
         http2Options: {
@@ -3211,7 +3211,7 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
         const { data } = await http2Axios.get(localServerURL);
         assert.deepStrictEqual(data, 'OK');
@@ -3227,7 +3227,7 @@ describe('supports http with nodejs', () => {
       });
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
         const payload = 'DATA';
         const { data } = await http2Axios.post(localServerURL, payload);
@@ -3260,7 +3260,7 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
         const form = new FormData();
         form.append('x', 'foo');
@@ -3302,7 +3302,7 @@ describe('supports http with nodejs', () => {
           );
 
           try {
-            const localServerURL = `https://127.0.0.1:${server.address().port}`;
+            const localServerURL = `https://localhost:${server.address().port}`;
             const http2Axios = createHttp2Axios(localServerURL);
             const { data } = await http2Axios.get(localServerURL, {
               responseType,
@@ -3333,7 +3333,7 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
 
         server.on('stream', (http2Stream) => {
@@ -3378,7 +3378,7 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
 
         server.on('stream', (http2Stream) => {
@@ -3419,7 +3419,7 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
 
         server.on('stream', (http2Stream) => {
@@ -3470,7 +3470,7 @@ describe('supports http with nodejs', () => {
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const [response1, response2] = await Promise.all([
@@ -3519,8 +3519,8 @@ describe('supports http with nodejs', () => {
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
-          const localServerURL2 = `https://127.0.0.1:${server2.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
+          const localServerURL2 = `https://localhost:${server2.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const [response1, response2] = await Promise.all([
@@ -3557,13 +3557,15 @@ describe('supports http with nodejs', () => {
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const [response1, response2] = await Promise.all([
             http2Axios.get(localServerURL, {
               responseType: 'stream',
-              http2Options: {},
+              http2Options: {
+                sessionTimeout: 2000,
+              },
             }),
             http2Axios.get(localServerURL, {
               responseType: 'stream',
@@ -3596,7 +3598,7 @@ describe('supports http with nodejs', () => {
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const responses = await Promise.all([
@@ -3638,7 +3640,7 @@ describe('supports http with nodejs', () => {
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const response1 = await http2Axios.get(localServerURL, {

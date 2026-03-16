@@ -3648,6 +3648,7 @@ describe('supports http with nodejs', () => {
             },
           });
 
+          const session1 = response1.data.session;
           const data1 = await getStream(response1.data);
 
           await setTimeoutAsync(5000);
@@ -3659,9 +3660,10 @@ describe('supports http with nodejs', () => {
             },
           });
 
+          const session2 = response2.data.session;
           const data2 = await getStream(response2.data);
 
-          assert.notStrictEqual(response1.data.session, response2.data.session);
+          assert.notStrictEqual(session1, session2);
           assert.strictEqual(data1, 'OK');
           assert.strictEqual(data2, 'OK');
         } finally {

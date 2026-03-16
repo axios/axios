@@ -3562,25 +3562,19 @@ describe('supports http with nodejs', () => {
 
           const [response1, response2] = await Promise.all([
             http2Axios.get(localServerURL, {
-              responseType: 'stream',
               http2Options: {
                 sessionTimeout: 2000,
               },
             }),
             http2Axios.get(localServerURL, {
-              responseType: 'stream',
               http2Options: {
                 sessionTimeout: 4000,
               },
             }),
           ]);
 
-          assert.notStrictEqual(response1.data.session, response2.data.session);
-
-          assert.deepStrictEqual(
-            await Promise.all([getStream(response1.data), getStream(response2.data)]),
-            ['OK', 'OK']
-          );
+          assert.notStrictEqual(response1.request.session, response2.request.session);
+          assert.deepStrictEqual([response1.data, response2.data], ['OK', 'OK']);
         } finally {
           await stopHTTPServer(server);
         }

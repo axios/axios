@@ -111,7 +111,7 @@
     "formdata-node": "^5.0.1",
     "formidable": "^2.1.5",
     "fs-extra": "^10.1.0",
-    "get-stream": "^3.0.0",
+    "get-stream": "^9.0.1",
     "globals": "^17.4.0",
     "gulp": "^4.0.2",
     "handlebars": "^4.7.8",

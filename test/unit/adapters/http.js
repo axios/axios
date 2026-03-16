@@ -2158,10 +2158,12 @@ describe('supports http with nodejs', function () {
       app.post('/', function (req, res) {
         var parserRanBeforeHandler = Boolean(req.body && Object.keys(req.body).length);
 
-        res.send(JSON.stringify({
-          parserRanBeforeHandler: parserRanBeforeHandler,
-          body: req.body,
-        }));
+        res.send(
+          JSON.stringify({
+            parserRanBeforeHandler: parserRanBeforeHandler,
+            body: req.body,
+          })
+        );
       });
 
       server = app.listen(3001, function () {

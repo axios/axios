@@ -1,7 +1,7 @@
 import http from 'http';
 import http2 from 'http2';
 import stream from 'stream';
-import getStream from 'get-stream';
+import getStream, { getStreamAsBuffer } from 'get-stream';
 import { Throttle } from 'stream-throttle';
 import formidable from 'formidable';
 import selfsigned from 'selfsigned';
@@ -196,7 +196,7 @@ export const startTestServer = async (port) => {
           response.form = fields;
           response.files = files;
         } else {
-          response.body = (await getStream(req, { encoding: 'buffer' })).toString('hex');
+          response.body = (await getStreamAsBuffer(req)).toString('hex');
         }
 
         return {

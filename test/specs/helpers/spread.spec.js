@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import spread from '../../../lib/helpers/spread';
 
 describe('helpers::spread', function () {
@@ -18,4 +19,3 @@ describe('helpers::spread', function () {
     expect(value).toEqual(50);
   });
 });
-

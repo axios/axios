@@ -1,4 +1,4 @@
-
+/* eslint-env mocha */
 describe('static api', function () {
   it('should have request method helpers', function () {
     expect(typeof axios.request).toEqual('function');
@@ -43,7 +43,7 @@ describe('static api', function () {
     expect(typeof axios.isCancel).toEqual('function');
   });
 
-  it('should have getUri method', function() {
+  it('should have getUri method', function () {
     expect(typeof axios.getUri).toEqual('function');
   });
 

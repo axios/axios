@@ -1,5 +1,6 @@
-import platform from "../../../lib/platform/index.js";
-import assert from "assert";
+/* eslint-env mocha */
+import platform from '../../../lib/platform/index.js';
+import assert from 'assert';
 
 describe('generateString', function () {
   it('should generate a string of the specified length using the default alphabet', function () {

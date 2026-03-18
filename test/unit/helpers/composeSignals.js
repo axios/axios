@@ -1,3 +1,4 @@
+/* eslint-env mocha */
 import assert from 'assert';
 import composeSignals from '../../../lib/helpers/composeSignals.js';
 
@@ -28,7 +29,7 @@ describe('helpers::composeSignals', () => {
   it('should abort on timeout', async () => {
     const signal = composeSignals([], 100);
 
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       signal.addEventListener('abort', resolve);
     });
 

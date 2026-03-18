@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 describe('progress events', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -10,12 +12,12 @@ describe('progress events', function () {
   it('should add a download progress handler', function (done) {
     const progressSpy = jasmine.createSpy('progress');
 
-    axios('/foo', { onDownloadProgress: progressSpy } );
+    axios('/foo', { onDownloadProgress: progressSpy });
 
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: '{"foo": "bar"}'
+        responseText: '{"foo": "bar"}',
       });
       expect(progressSpy).toHaveBeenCalled();
       done();
@@ -25,7 +27,7 @@ describe('progress events', function () {
   it('should add a upload progress handler', function (done) {
     const progressSpy = jasmine.createSpy('progress');
 
-    axios('/foo', { onUploadProgress: progressSpy } );
+    axios('/foo', { onUploadProgress: progressSpy });
 
     getAjaxRequest().then(function (request) {
       // Jasmine AJAX doesn't trigger upload events. Waiting for upstream fix
@@ -45,7 +47,7 @@ describe('progress events', function () {
       expect(downloadProgressSpy).not.toHaveBeenCalled();
       request.respondWith({
         status: 200,
-        responseText: '{"foo": "bar"}'
+        responseText: '{"foo": "bar"}',
       });
       expect(downloadProgressSpy).toHaveBeenCalled();
       done();
@@ -64,7 +66,7 @@ describe('progress events', function () {
     getAjaxRequest().then(function (request) {
       request.respondWith({
         status: 200,
-        responseText: '{"foo": "bar"}'
+        responseText: '{"foo": "bar"}',
       });
       expect(progressSpy).toHaveBeenCalled();
       done();
@@ -102,7 +104,7 @@ describe('progress events', function () {
       expect(downloadProgressSpy).not.toHaveBeenCalled();
       request.respondWith({
         status: 200,
-        responseText: '{"foo": "bar"}'
+        responseText: '{"foo": "bar"}',
       });
       expect(downloadProgressSpy).toHaveBeenCalled();
       done();

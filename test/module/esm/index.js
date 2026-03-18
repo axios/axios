@@ -1,5 +1,5 @@
 import assert from 'assert';
-import axios, {CanceledError, AxiosError, AxiosHeaders} from 'axios';
+import axios, { CanceledError, AxiosError, AxiosHeaders } from 'axios';
 import settle from 'axios/unsafe/core/settle.js';
 
 assert.strictEqual(typeof axios, 'function');

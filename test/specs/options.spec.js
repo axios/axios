@@ -1,3 +1,6 @@
+/* eslint-env mocha */
+/* global jasmine */
+
 // import AxiosHeaders from "../../lib/core/AxiosHeaders.js";
 // import isAbsoluteURL from '../../lib/helpers/isAbsoluteURL.js';
 
@@ -22,8 +25,8 @@ describe('options', function () {
   it('should accept headers', function (done) {
     axios('/foo', {
       headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+        'X-Requested-With': 'XMLHttpRequest',
+      },
     });
 
     getAjaxRequest().then(function (request) {
@@ -36,8 +39,8 @@ describe('options', function () {
     axios('/foo', {
       params: {
         foo: 123,
-        bar: 456
-      }
+        bar: 456,
+      },
     });
 
     getAjaxRequest().then(function (request) {
@@ -49,8 +52,8 @@ describe('options', function () {
   it('should allow overriding default headers', function (done) {
     axios('/foo', {
       headers: {
-        'Accept': 'foo/bar'
-      }
+        Accept: 'foo/bar',
+      },
     });
 
     getAjaxRequest().then(function (request) {
@@ -61,10 +64,10 @@ describe('options', function () {
 
   it('should accept base URL', function (done) {
     const instance = axios.create({
-      baseURL: 'http://test.com/'
+      baseURL: 'http://test.com/',
     });
 
-    instance.get('/foo')
+    instance.get('/foo');
     getAjaxRequest().then(function (request) {
       expect(request.url).toBe('http://test.com/foo');
       done();
@@ -75,13 +78,15 @@ describe('options', function () {
     spyOn(window.console, 'warn');
 
     const instance = axios.create({
-      baseUrl: 'http://example.com/'
+      baseUrl: 'http://example.com/',
     });
 
     instance.get('/foo');
 
     getAjaxRequest().then(function (request) {
-      expect(window.console.warn).toHaveBeenCalledWith('baseUrl is likely a misspelling of baseURL');
+      expect(window.console.warn).toHaveBeenCalledWith(
+        'baseUrl is likely a misspelling of baseURL'
+      );
       expect(request.url).toBe('/foo');
       done();
     });
@@ -89,7 +94,7 @@ describe('options', function () {
 
   it('should ignore base URL if request URL is absolute', function (done) {
     const instance = axios.create({
-      baseURL: 'http://someurl.com/'
+      baseURL: 'http://someurl.com/',
     });
 
     instance.get('http://someotherurl.com/');
@@ -103,7 +108,7 @@ describe('options', function () {
   it('should combine the URLs if base url and request url exist and allowAbsoluteUrls is false', function (done) {
     const instance = axios.create({
       baseURL: 'http://someurl.com/',
-      allowAbsoluteUrls: false
+      allowAbsoluteUrls: false,
     });
 
     instance.get('http://someotherurl.com/');
@@ -112,10 +117,9 @@ describe('options', function () {
       expect(request.url).toBe('http://someurl.com/http://someotherurl.com/');
       done();
     });
-
   });
 
-  it('should change only the baseURL of the specified instance', function() {
+  it('should change only the baseURL of the specified instance', function () {
     const instance1 = axios.create();
     const instance2 = axios.create();
 
@@ -124,7 +128,7 @@ describe('options', function () {
     expect(instance2.defaults.baseURL).not.toBe('http://instance1.example.com/');
   });
 
-  it('should change only the headers of the specified instance', function() {
+  it('should change only the headers of the specified instance', function () {
     const instance1 = axios.create();
     const instance2 = axios.create();
 
@@ -140,6 +144,8 @@ describe('options', function () {
 
     expect(axios.defaults.headers.common['Content-Type']).toBe(undefined);
     expect(instance1.defaults.headers.common['Content-Type']).toBe('application/xml');
-    expect(instance2.defaults.headers.common['Content-Type']).toBe('application/x-www-form-urlencoded');
+    expect(instance2.defaults.headers.common['Content-Type']).toBe(
+      'application/x-www-form-urlencoded'
+    );
   });
 });

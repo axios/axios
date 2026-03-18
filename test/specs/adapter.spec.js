@@ -1,4 +1,5 @@
-
+/* eslint-env mocha */
+/* global jasmine */
 describe('adapter', function () {
   beforeEach(function () {
     jasmine.Ajax.install();
@@ -18,16 +19,16 @@ describe('adapter', function () {
           request.onreadystatechange = function () {
             resolve({
               config: config,
-              request: request
+              request: request,
             });
           };
 
           request.send(null);
         });
-      }
+      },
     }).catch(done);
 
-    getAjaxRequest().then(function(request) {
+    getAjaxRequest().then(function (request) {
       expect(request.url).toBe('/bar');
       done();
     });
@@ -44,19 +45,19 @@ describe('adapter', function () {
           request.onreadystatechange = function () {
             resolve({
               config: config,
-              request: request
+              request: request,
             });
           };
 
           expect(asyncFlag).toBe(false);
           request.send(null);
         });
-      }
+      },
     }).catch(done);
 
     asyncFlag = true;
 
-    getAjaxRequest().then(function() {
+    getAjaxRequest().then(function () {
       done();
     });
   });
@@ -78,19 +79,19 @@ describe('adapter', function () {
           request.onreadystatechange = function () {
             resolve({
               config: config,
-              request: request
+              request: request,
             });
           };
 
           expect(asyncFlag).toBe(true);
           request.send(null);
         });
-      }
+      },
     }).catch(done);
 
     asyncFlag = true;
 
-    getAjaxRequest().then(function() {
+    getAjaxRequest().then(function () {
       done();
     });
   });

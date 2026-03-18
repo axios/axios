@@ -1,4 +1,5 @@
-import {kindOfTest} from '../../../lib/utils';
+/* eslint-env mocha */
+import { kindOfTest } from '../../../lib/utils';
 
 describe('utils::kindOfTest', function () {
   it('should return true if the type is matched', function () {

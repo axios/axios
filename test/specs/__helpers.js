@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+/* global jasmine */
 import _axios from '../../index.js';
 
 window.axios = _axios;
@@ -6,7 +8,7 @@ window.axios = _axios;
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
 jasmine.getEnv().defaultTimeoutInterval = 60000;
 
-window.TEST_SERVER_URL = "http://localhost:3000";
+window.TEST_SERVER_URL = 'http://localhost:3000';
 
 // Get Ajax request using an increasing timeout to retry
 window.getAjaxRequest = (function () {

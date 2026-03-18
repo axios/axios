@@ -1,6 +1,7 @@
+/* eslint-env mocha */
 import utils from '../../../lib/utils';
 
-const {kindOf} = utils;
+const { kindOf } = utils;
 
 describe('utils::kindOf', function () {
   it('should return object tag', function () {

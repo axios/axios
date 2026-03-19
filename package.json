@@ -109,7 +109,7 @@
     "eslint": "^10.0.3",
     "express": "^5.2.1",
     "formdata-node": "^5.0.1",
-    "formidable": "^2.1.5",
+    "formidable": "^3.2.4",
     "fs-extra": "^10.1.0",
     "get-stream": "^9.0.1",
     "globals": "^17.4.0",

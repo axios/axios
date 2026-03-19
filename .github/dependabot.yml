@@ -1,30 +1,35 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     groups:
       github-actions:
         patterns:
-          - "*"  # Group all Actions updates into a single larger pull request
+          - '*'
+    labels:
+      - 'commit::chore'
+      - 'type::automated-pr'
     schedule:
-      interval: "weekly"
-  # Upgrade for npm packages, minor and patch versions only
-  - package-ecosystem: "npm"
-    directory: "/"
+      interval: 'weekly'
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 5
     groups:
       production_dependencies:
-        dependency-type: "production"
+        dependency-type: 'production'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       development_dependencies:
-        dependency-type: "development"
+        dependency-type: 'development'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
     ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    labels:
+      - 'commit::chore'
+      - 'type::automated-pr'

@@ -151,6 +151,7 @@
   "dependencies": {
     "follow-redirects": "^1.15.11",
     "form-data": "^4.0.5",
+    "https-proxy-agent": "^8.0.0",
     "proxy-from-env": "^2.1.0"
   },
   "contributors": [

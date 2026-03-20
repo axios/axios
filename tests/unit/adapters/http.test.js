@@ -1253,6 +1253,10 @@ describe('supports http with nodejs', () => {
 
     const closeServer = (server) =>
       new Promise((resolve, reject) => {
+        if (typeof server.closeAllConnections === 'function') {
+          server.closeAllConnections();
+        }
+
         server.close((error) => {
           if (error) {
             reject(error);
@@ -1332,6 +1336,223 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
     } finally {
       await Promise.all([closeServer(server), closeServer(proxy)]);
+    }
+  });
+
+  it('should use CONNECT tunnel for HTTPS target via HTTP proxy', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const targetServer = await new Promise((resolve, reject) => {
+      const server = https
+        .createServer(tlsOptions, (req, res) => {
+          res.end('secure-data');
+        })
+        .listen(0, () => resolve(server));
+
+      server.on('error', reject);
+    });
+
+    let connectSeen = false;
+    let plaintextForwardSeen = false;
+
+    const proxyServer = await new Promise((resolve, reject) => {
+      const server = http
+        .createServer((request, response) => {
+          plaintextForwardSeen = true;
+          response.statusCode = 500;
+          response.end('unexpected plaintext proxying');
+        })
+        .on('connect', (req, clientSocket, head) => {
+          connectSeen = true;
+          const serverSocket = net.connect(targetServer.address().port, 'localhost', () => {
+            clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+            if (head && head.length) {
+              serverSocket.write(head);
+            }
+            serverSocket.pipe(clientSocket);
+            clientSocket.pipe(serverSocket);
+          });
+        })
+        .listen(0, () => resolve(server));
+
+      server.on('error', reject);
+    });
+
+    try {
+      const response = await axios.get(`https://localhost:${targetServer.address().port}/`, {
+        proxy: {
+          host: 'localhost',
+          port: proxyServer.address().port,
+          protocol: 'http:',
+        },
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      });
+
+      assert.strictEqual(connectSeen, true, 'proxy should receive CONNECT request');
+      assert.strictEqual(
+        plaintextForwardSeen,
+        false,
+        'proxy should not receive plaintext HTTPS request data'
+      );
+      assert.strictEqual(String(response.data), 'secure-data');
+    } finally {
+      await Promise.all([stopHTTPServer(targetServer, 200), stopHTTPServer(proxyServer, 200)]);
+    }
+  });
+
+  it('should include Proxy-Authorization in CONNECT for authenticated HTTP proxy', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const targetServer = await new Promise((resolve, reject) => {
+      const server = https
+        .createServer(tlsOptions, (req, res) => {
+          res.end('ok');
+        })
+        .listen(0, () => resolve(server));
+
+      server.on('error', reject);
+    });
+
+    let proxyAuthorization;
+
+    const proxyServer = await new Promise((resolve, reject) => {
+      const server = http
+        .createServer()
+        .on('connect', (req, clientSocket, head) => {
+          proxyAuthorization = req.headers['proxy-authorization'];
+          const serverSocket = net.connect(targetServer.address().port, 'localhost', () => {
+            clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+            if (head && head.length) {
+              serverSocket.write(head);
+            }
+            serverSocket.pipe(clientSocket);
+            clientSocket.pipe(serverSocket);
+          });
+        })
+        .listen(0, () => resolve(server));
+
+      server.on('error', reject);
+    });
+
+    try {
+      await axios.get(`https://localhost:${targetServer.address().port}/`, {
+        proxy: {
+          host: 'localhost',
+          port: proxyServer.address().port,
+          protocol: 'http:',
+          auth: {
+            username: 'user',
+            password: 'secret',
+          },
+        },
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      });
+
+      assert.ok(proxyAuthorization, 'Proxy-Authorization should be set on CONNECT request');
+      assert.strictEqual(
+        proxyAuthorization,
+        'Basic ' + Buffer.from('user:secret').toString('base64')
+      );
+    } finally {
+      await Promise.all([stopHTTPServer(targetServer, 200), stopHTTPServer(proxyServer, 200)]);
+    }
+  });
+
+  it('should use CONNECT tunnel for HTTPS redirect via HTTP proxy', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const httpsTargetServer = await new Promise((resolve, reject) => {
+      const server = https
+        .createServer(tlsOptions, (req, res) => {
+          res.end('redirected-data');
+        })
+        .listen(0, () => resolve(server));
+
+      server.on('error', reject);
+    });
+
+    const redirectServer = await startHTTPServer(
+      (req, res) => {
+        res.writeHead(302, { Location: `https://localhost:${httpsTargetServer.address().port}/` });
+        res.end();
+      },
+      { port: 0 }
+    );
+
+    let connectCount = 0;
+
+    const proxyServer = await new Promise((resolve, reject) => {
+      const server = http
+        .createServer((request, response) => {
+          const parsed = new URL(request.url);
+          const opts = {
+            host: parsed.hostname,
+            port: parsed.port,
+            path: `${parsed.pathname}${parsed.search}`,
+            method: request.method,
+          };
+
+          const proxyRequest = http.request(opts, (res) => {
+            response.writeHead(res.statusCode || 500, res.headers);
+            stream.pipeline(res, response, () => {});
+          });
+
+          proxyRequest.on('error', () => {
+            response.statusCode = 502;
+            response.end();
+          });
+
+          request.pipe(proxyRequest);
+        })
+        .on('connect', (req, clientSocket, head) => {
+          connectCount += 1;
+          const serverSocket = net.connect(httpsTargetServer.address().port, 'localhost', () => {
+            clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+            if (head && head.length) {
+              serverSocket.write(head);
+            }
+            serverSocket.pipe(clientSocket);
+            clientSocket.pipe(serverSocket);
+          });
+        })
+        .listen(0, () => resolve(server));
+
+      server.on('error', reject);
+    });
+
+    try {
+      const response = await axios.get(`http://localhost:${redirectServer.address().port}/`, {
+        proxy: {
+          host: 'localhost',
+          port: proxyServer.address().port,
+          protocol: 'http:',
+        },
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      });
+
+      assert.ok(connectCount >= 1, 'CONNECT should be used for HTTPS redirect');
+      assert.strictEqual(String(response.data), 'redirected-data');
+    } finally {
+      await Promise.all([
+        stopHTTPServer(redirectServer, 200),
+        stopHTTPServer(httpsTargetServer, 200),
+        stopHTTPServer(proxyServer, 200),
+      ]);
     }
   });
 

@@ -16,14 +16,8 @@ import util from 'util';
 import NodeFormData from 'form-data';
 
 const SERVER_PORT = 8010;
-const LOCAL_SERVER_URL = `http://localhost:${SERVER_PORT}`;
 
 const pipelineAsync = util.promisify(stream.pipeline);
-
-const fetchAxios = axios.create({
-  baseURL: LOCAL_SERVER_URL,
-  adapter: 'fetch',
-});
 
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
   describe('responses', () => {
@@ -35,7 +29,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           responseType: 'text',
         });
 
@@ -53,7 +51,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           responseType: 'arraybuffer',
         });
 
@@ -74,7 +76,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           responseType: 'blob',
         });
 
@@ -92,7 +98,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           responseType: 'stream',
         });
 
@@ -123,7 +133,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       );
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           responseType: 'formdata',
         });
 
@@ -146,7 +160,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           responseType: 'json',
         });
 
@@ -188,7 +206,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
           const samples = [];
 
-          const { data } = await fetchAxios.post(
+          const instance = axios.create({
+            adapter: 'fetch',
+          });
+
+          const { data } = await instance.post(
             `http://localhost:${server.address().port}/`,
             readable,
             {
@@ -241,7 +263,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
 
         try {
-          const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+          const instance = axios.create({
+            adapter: 'fetch',
+          });
+
+          const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
             onUploadProgress() {},
           });
 
@@ -284,7 +310,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
           const samples = [];
 
-          const { data } = await fetchAxios.post(
+          const instance = axios.create({
+            adapter: 'fetch',
+          });
+
+          const { data } = await instance.post(
             `http://localhost:${server.address().port}/`,
             readable,
             {
@@ -359,7 +389,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: SERVER_PORT });
 
     try {
-      const { data } = await fetchAxios.post(
+      const instance = axios.create({
+        adapter: 'fetch',
+      });
+
+      const { data } = await instance.post(
         `http://localhost:${server.address().port}/`,
         stream.Readable.from('OK')
       );
@@ -388,14 +422,14 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         }, 500);
 
         await assert.rejects(async () => {
-          await fetchAxios.post(
-            `http://localhost:${server.address().port}/`,
-            makeReadableStream(),
-            {
-              responseType: 'stream',
-              signal: controller.signal,
-            }
-          );
+          const instance = axios.create({
+            adapter: 'fetch',
+          });
+
+          await instance.post(`http://localhost:${server.address().port}/`, makeReadableStream(), {
+            responseType: 'stream',
+            signal: controller.signal,
+          });
         }, /CanceledError/);
       } finally {
         await stopHTTPServer(server);
@@ -419,7 +453,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           controller.abort(new Error('test'));
         }, 800);
 
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           responseType: 'stream',
           signal: controller.signal,
         });
@@ -448,7 +486,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       const ts = Date.now();
 
       await assert.rejects(async () => {
-        await fetchAxios(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        await instance.get(`http://localhost:${server.address().port}/`, {
           timeout,
         });
       }, /timeout/);
@@ -464,9 +506,14 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   it('should combine baseURL and url', async () => {
     const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: SERVER_PORT });
     try {
-      const res = await fetchAxios('/foo');
+      const instance = axios.create({
+        baseURL: `http://localhost:${server.address().port}`,
+        adapter: 'fetch',
+      });
 
-      assert.equal(res.config.baseURL, LOCAL_SERVER_URL);
+      const res = await instance.get(`/foo`);
+
+      assert.equal(res.config.baseURL, `http://localhost:${server.address().port}`);
       assert.equal(res.config.url, '/foo');
     } finally {
       await stopHTTPServer(server);
@@ -476,7 +523,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   it('should support params', async () => {
     const server = await startHTTPServer((req, res) => res.end(req.url), { port: SERVER_PORT });
     try {
-      const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/?test=1`, {
+      const instance = axios.create({
+        adapter: 'fetch',
+      });
+
+      const { data } = await instance.get(`http://localhost:${server.address().port}/?test=1`, {
         params: {
           foo: 1,
           bar: 2,
@@ -491,7 +542,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
   it('should handle fetch failed error as an AxiosError with ERR_NETWORK code', async () => {
     try {
-      await fetchAxios('http://notExistsUrl.in.nowhere');
+      const instance = axios.create({
+        adapter: 'fetch',
+      });
+
+      await instance.get('http://notExistsUrl.in.nowhere');
+
       assert.fail('should fail');
     } catch (err) {
       assert.strictEqual(String(err), 'AxiosError: Network Error');
@@ -509,7 +565,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     );
 
     try {
-      const { headers } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+      const instance = axios.create({
+        adapter: 'fetch',
+      });
+
+      const { headers } = await instance.get(`http://localhost:${server.address().port}/`, {
         responseType: 'stream',
       });
 
@@ -534,7 +594,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       );
 
       try {
-        await fetchAxios.post(`http://localhost:${server.address().port}/form`, form);
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        await instance.post(`http://localhost:${server.address().port}/form`, form);
       } finally {
         await stopHTTPServer(server);
       }
@@ -543,7 +607,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
   describe('env config', () => {
     it('should respect env fetch API configuration', async () => {
-      const { data, headers } = await fetchAxios.get('/', {
+      const instance = axios.create({
+        adapter: 'fetch',
+      });
+
+      const { data, headers } = await instance.get(`http://localhost:${SERVER_PORT}/`, {
         env: {
           fetch() {
             return {
@@ -565,7 +633,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       form.append('x', '1');
 
-      const { data, headers } = await fetchAxios.post('/', form, {
+      const instance = axios.create({
+        adapter: 'fetch',
+      });
+
+      const { data, headers } = await instance.post('/', form, {
         onUploadProgress() {
           // dummy listener to activate streaming
         },
@@ -587,7 +659,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
 
     it('should be able to handle response with lack of Response object', async () => {
-      const { data, headers } = await fetchAxios.get('/', {
+      const instance = axios.create({
+        adapter: 'fetch',
+      });
+
+      const { data, headers } = await instance.get('/', {
         onDownloadProgress() {
           // dummy listener to activate streaming
         },
@@ -613,7 +689,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           env: {
             fetch: undefined,
           },
@@ -640,7 +720,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
 
       try {
-        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        const instance = axios.create({
+          adapter: 'fetch',
+        });
+
+        const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
           env: {
             fetch: undefined,
           },

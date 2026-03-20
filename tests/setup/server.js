@@ -3,7 +3,7 @@ import http2 from 'http2';
 import stream from 'stream';
 import getStream, { getStreamAsBuffer } from 'get-stream';
 import { Throttle } from 'stream-throttle';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import selfsigned from 'selfsigned';
 
 export const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
@@ -124,7 +124,7 @@ export const stopAllTrackedHTTPServers = async (timeout = 10000) => {
 
 export const handleFormData = (req) => {
   return new Promise((resolve, reject) => {
-    const form = new formidable.IncomingForm();
+    const form = new IncomingForm();
 
     form.parse(req, (err, fields, files) => {
       if (err) {

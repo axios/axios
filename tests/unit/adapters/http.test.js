@@ -22,7 +22,7 @@ import os from 'os';
 import path from 'path';
 import devNull from 'dev-null';
 import FormDataLegacy from 'form-data';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import { FormData as FormDataPolyfill, Blob as BlobPolyfill } from 'formdata-node';
 import express from 'express';
 import multer from 'multer';
@@ -2285,7 +2285,7 @@ describe('supports http with nodejs', () => {
 
         const server = await startHTTPServer(
           (req, res) => {
-            const receivedForm = new formidable.IncomingForm();
+            const receivedForm = new IncomingForm();
 
             assert.ok(req.rawHeaders.some((header) => header.toLowerCase() === 'content-length'));
 
@@ -2314,15 +2314,15 @@ describe('supports http with nodejs', () => {
             },
           });
 
-          assert.deepStrictEqual(response.data.fields, { foo: 'bar' });
+          assert.deepStrictEqual(response.data.fields, { foo: ['bar'] });
 
-          assert.strictEqual(response.data.files.file1.mimetype, 'image/jpeg');
-          assert.strictEqual(response.data.files.file1.originalFilename, 'temp/bar.jpg');
-          assert.strictEqual(response.data.files.file1.size, 3);
+          assert.strictEqual(response.data.files.file1[0].mimetype, 'image/jpeg');
+          assert.strictEqual(response.data.files.file1[0].originalFilename, 'temp/bar.jpg');
+          assert.strictEqual(response.data.files.file1[0].size, 3);
 
-          assert.strictEqual(response.data.files.fileStream.mimetype, 'image/png');
-          assert.strictEqual(response.data.files.fileStream.originalFilename, 'axios.png');
-          assert.strictEqual(response.data.files.fileStream.size, stat.size);
+          assert.strictEqual(response.data.files.fileStream[0].mimetype, 'image/png');
+          assert.strictEqual(response.data.files.fileStream[0].originalFilename, 'axios.png');
+          assert.strictEqual(response.data.files.fileStream[0].size, stat.size);
         } finally {
           await stopHTTPServer(server);
         }
@@ -2358,10 +2358,10 @@ describe('supports http with nodejs', () => {
             maxRedirects: 0,
           });
 
-          assert.deepStrictEqual(data.fields, { foo1: 'bar1', foo2: 'bar2' });
-          assert.deepStrictEqual(typeof data.files.file1, 'object');
+          assert.deepStrictEqual(data.fields, { foo1: ['bar1'], foo2: ['bar2'] });
+          assert.deepStrictEqual(typeof data.files.file1[0], 'object');
 
-          const { size, mimetype, originalFilename } = data.files.file1;
+          const { size, mimetype, originalFilename } = data.files.file1[0];
 
           assert.deepStrictEqual(
             { size, mimetype, originalFilename },
@@ -3270,8 +3270,8 @@ describe('supports http with nodejs', () => {
 
         assert.deepStrictEqual(data, {
           fields: {
-            x: 'foo',
-            y: 'bar',
+            x: ['foo'],
+            y: ['bar'],
           },
           files: {},
         });

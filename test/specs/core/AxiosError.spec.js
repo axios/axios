@@ -67,6 +67,17 @@ describe('core::AxiosError', function () {
       const axiosError = AxiosError.from(error, 'ERR_BAD_REQUEST', {}, null, response);
       expect(axiosError.status).toBe(404);
     });
+
+    it('should serialize custom properties in toJSON() (issue #6511)', function() {
+      const error = new Error('Network Error');
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK', null, null, null, {
+        requestId: 'abc-123',
+        traceId: 'xyz-789'
+      });
+      const json = axiosError.toJSON();
+      expect(json.requestId).toBe('abc-123');
+      expect(json.traceId).toBe('xyz-789');
+    });
   });
 
   it('should be a native error as checked by the NodeJS `isNativeError` function', function () {

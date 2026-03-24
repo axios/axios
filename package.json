@@ -144,7 +144,7 @@
     "dev-null": "^0.1.1",
     "eslint": "^10.1.0",
     "express": "^5.2.1",
-    "formdata-node": "^5.0.1",
+    "formdata-node": "^6.0.3",
     "formidable": "^3.2.4",
     "fs-extra": "^11.3.4",
     "get-stream": "^9.0.1",

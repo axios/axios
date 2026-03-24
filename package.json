@@ -162,7 +162,7 @@
     "pretty-bytes": "^7.1.0",
     "rollup": "^4.60.0",
     "rollup-plugin-bundle-size": "^1.0.3",
-    "selfsigned": "^3.0.1",
+    "selfsigned": "^5.5.0",
     "stream-throttle": "^0.1.3",
     "string-replace-async": "^3.0.2",
     "tar-stream": "^3.1.8",

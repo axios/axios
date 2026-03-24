@@ -149,7 +149,7 @@
     "fs-extra": "^11.3.4",
     "get-stream": "^9.0.1",
     "globals": "^17.4.0",
-    "gulp": "^4.0.2",
+    "gulp": "^5.0.1",
     "handlebars": "^4.7.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",

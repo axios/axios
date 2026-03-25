@@ -46,8 +46,6 @@ jobs:
         run: npm run test:vitest:browser:headless
       - name: Pack npm tarball
         run: npm pack
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
       - name: Upload npm pack artifact
         uses: actions/upload-artifact@v7
         with:

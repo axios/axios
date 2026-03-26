@@ -32,11 +32,11 @@ type ContentType =
   | 'application/octet-stream';
 
 type CommonResponseHeadersList =
-  | 'Server'
-  | 'Content-Type'
-  | 'Content-Length'
-  | 'Cache-Control'
-  | 'Content-Encoding';
+  | 'server'
+  | 'content-type'
+  | 'content-length'
+  | 'cache-control'
+  | 'content-encoding';
 
 type BrowserProgressEvent = any;
 

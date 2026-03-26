@@ -154,11 +154,11 @@ export type RawAxiosRequestHeaders = Partial<
 export type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
 
 type CommonResponseHeadersList =
-  | "Server"
-  | "Content-Type"
-  | "Content-Length"
-  | "Cache-Control"
-  | "Content-Encoding";
+  | "server"
+  | "content-type"
+  | "content-length"
+  | "cache-control"
+  | "content-encoding";
 
 type RawCommonResponseHeaders = {
   [Key in CommonResponseHeadersList]: AxiosHeaderValue;

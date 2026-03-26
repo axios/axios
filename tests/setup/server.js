@@ -10,14 +10,16 @@ export const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
 export const setTimeoutAsync = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const certificate = selfsigned.generate(null, { keySize: 2048 });
+const certificatePromise = selfsigned.generate(null, { keySize: 2048 });
 const trackedServers = new Set();
 
 const untrackServer = (server) => {
   trackedServers.delete(server);
 };
 
-export const startHTTPServer = (handlerOrOptions, options) => {
+export const startHTTPServer = async (handlerOrOptions, options) => {
+  const certificate = await certificatePromise;
+
   const {
     handler,
     useBuffering = false,

@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.13.6",
+  "version": "1.14.0",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "./dist/node/axios.cjs",
   "module": "./index.js",
@@ -78,9 +78,9 @@
   "author": "Matt Zabriskie",
   "contributors": [
     "Matt Zabriskie (https://github.com/mzabriskie)",
+    "Jay (https://github.com/jasonsaayman)",
     "Dmitriy Mozgovoy (https://github.com/DigitalBrainJS)",
     "Nick Uraltsev (https://github.com/nickuraltsev)",
-    "Jay (https://github.com/jasonsaayman)",
     "Emily Morehouse (https://github.com/emilyemorehouse)",
     "Rubén Norte (https://github.com/rubennorte)",
     "Justin Beckwith (https://github.com/JustinBeckwith)",

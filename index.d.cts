@@ -220,6 +220,16 @@ declare class Axios {
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
+  query<T = any, R = axios.AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: axios.AxiosRequestConfig<D>
+  ): Promise<R>;
+  queryForm<T = any, R = axios.AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: axios.AxiosRequestConfig<D>
+  ): Promise<R>;
 }
 
 declare enum HttpStatusCode {
@@ -364,7 +374,9 @@ declare namespace axios {
     | 'link'
     | 'LINK'
     | 'unlink'
-    | 'UNLINK';
+    | 'UNLINK'
+    | 'query'
+    | 'QUERY';
 
   type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata';
 

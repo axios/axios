@@ -12,6 +12,14 @@ describe('static api', () => {
     assert.strictEqual(typeof axios.post, 'function');
     assert.strictEqual(typeof axios.put, 'function');
     assert.strictEqual(typeof axios.patch, 'function');
+    assert.strictEqual(typeof axios.query, 'function');
+  });
+
+  it('should have request method form helpers', () => {
+    assert.strictEqual(typeof axios.postForm, 'function');
+    assert.strictEqual(typeof axios.putForm, 'function');
+    assert.strictEqual(typeof axios.patchForm, 'function');
+    assert.strictEqual(typeof axios.queryForm, 'function');
   });
 
   it('should have promise method helpers', async () => {
@@ -88,6 +96,7 @@ describe('instance api', () => {
     assert.strictEqual(typeof instance.post, 'function');
     assert.strictEqual(typeof instance.put, 'function');
     assert.strictEqual(typeof instance.patch, 'function');
+    assert.strictEqual(typeof instance.query, 'function');
   });
 
   it('should have interceptors', () => {

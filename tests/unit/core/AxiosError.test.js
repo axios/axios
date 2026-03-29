@@ -19,10 +19,8 @@ describe('core::AxiosError', () => {
   });
 
   it('serializes to JSON safely', () => {
-    // request/response are intentionally omitted from the serialized shape
-    // to avoid circular-reference problems.
     const request = { path: '/foo' };
-    const response = { status: 200, data: { foo: 'bar' } };
+    const response = { status: 200, statusText: 'OK', data: { foo: 'bar' }, headers: { 'content-type': 'application/json' } };
     const error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
     const json = error.toJSON();
 
@@ -31,7 +29,59 @@ describe('core::AxiosError', () => {
     expect(json.code).toBe('ESOMETHING');
     expect(json.status).toBe(200);
     expect(json.request).toBeUndefined();
-    expect(json.response).toBeUndefined();
+    expect(json.response).toEqual({
+      data: { foo: 'bar' },
+      status: 200,
+      statusText: 'OK',
+      headers: { 'content-type': 'application/json' },
+    });
+  });
+
+  it('serializes response as null when no response is present', () => {
+    const error = new AxiosError('Network Error', 'ERR_NETWORK', { foo: 'bar' });
+    const json = error.toJSON();
+
+    expect(json.response).toBeNull();
+  });
+
+  it('serializes response without config or request to avoid circular references', () => {
+    const config = { url: '/test' };
+    const request = { path: '/test' };
+    const response = {
+      data: 'error body',
+      status: 500,
+      statusText: 'Internal Server Error',
+      headers: { 'x-request-id': 'abc123' },
+      config,
+      request,
+    };
+    const error = new AxiosError('Server Error', 'ERR_BAD_RESPONSE', config, request, response);
+    const json = error.toJSON();
+
+    // response should not include config or request (circular reference prevention)
+    expect(json.response.config).toBeUndefined();
+    expect(json.response.request).toBeUndefined();
+    // but should include the useful fields
+    expect(json.response.data).toBe('error body');
+    expect(json.response.status).toBe(500);
+    expect(json.response.statusText).toBe('Internal Server Error');
+    expect(json.response.headers).toEqual({ 'x-request-id': 'abc123' });
+  });
+
+  it('produces JSON.stringify-safe output', () => {
+    const config = { url: '/test' };
+    const request = { path: '/test' };
+    const response = {
+      data: { message: 'Not Found' },
+      status: 404,
+      statusText: 'Not Found',
+      headers: {},
+      config,
+      request,
+    };
+    const error = new AxiosError('Not Found', 'ERR_BAD_REQUEST', config, request, response);
+
+    expect(() => JSON.stringify(error.toJSON())).not.toThrow();
   });
 
   describe('AxiosError.from', () => {

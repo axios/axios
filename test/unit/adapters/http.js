@@ -13,6 +13,7 @@ import path from 'path';
 import { lookup } from 'dns';
 let server, server2, proxy;
 import AxiosError from '../../../lib/core/AxiosError.js';
+import CanceledError from '../../../lib/cancel/CanceledError.js';
 import FormDataLegacy from 'form-data';
 import formidable from 'formidable';
 import express from 'express';
@@ -2577,6 +2578,23 @@ describe('supports http with nodejs', function () {
       await assert.rejects(() => pipelineAsync([data, devNull()]));
 
       assert.strictEqual(streamError && streamError.code, 'ERR_CANCELED');
+    });
+
+    it('should support pre-aborted signal with custom reason', async function () {
+      if (typeof AbortSignal !== 'function' || !AbortSignal.abort) {
+        this.skip();
+      }
+
+      const customReason = new Error('Pre-aborted custom reason');
+      const signal = AbortSignal.abort(customReason);
+
+      await assert.rejects(async () => {
+        await axios.get(LOCAL_SERVER_URL, {
+          signal
+        });
+      }, (err) => {
+        return err instanceof CanceledError && err.reason === customReason;
+      });
     });
   });
 

@@ -2503,7 +2503,7 @@ describe('supports http with nodejs', () => {
   });
 
   describe('URLEncoded Form', () => {
-    it('should post object data as url-encoded form if content-type is application/x-www-form-urlencoded', async () => {
+    it('should post object data as url-encoded form regardless of content-type header casing', async () => {
       const app = express();
       const obj = {
         arr1: ['1', '2', '3'],
@@ -2530,12 +2530,15 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        });
-        assert.deepStrictEqual(response.data, obj);
+        for (const headerName of ['content-type', 'Content-Type']) {
+          const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
+            headers: {
+              [headerName]: 'application/x-www-form-urlencoded',
+            },
+          });
+
+          assert.deepStrictEqual(response.data, obj);
+        }
       } finally {
         await new Promise((resolve, reject) => {
           server.close((error) => {

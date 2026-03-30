@@ -6,7 +6,7 @@ on:
     types:
       - webhook
   schedule:
-    - cron: "0 1 * * *"
+    - cron: '0 1 * * *'
 
 permissions:
   contents: write
@@ -33,7 +33,7 @@ jobs:
         run: npm ci
       - name: Check if sponsors require updates
         id: sponsors-requires-update
-        run: node ./scripts/sponsors/update-readme-sponsors.mjs
+        run: node ./scripts/update-readme-sponsors.mjs
       - name: Check tracked README sponsor diff
         id: readme-tracked-change
         run: |
@@ -58,8 +58,8 @@ jobs:
         with:
           branch: sponsors
           delete-branch: true
-          commit-message: "chore(sponsor): update sponsor block"
-          title: "chore(docs): update sponsor block"
+          commit-message: 'chore(sponsor): update sponsor block'
+          title: 'chore(docs): update sponsor block'
           body: |
             **New sponsor block update:**
             ${{ env.CONTENT }}

@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import _axios from '../../index.js';
+import _axios from '../index.js';
 
 const axios = _axios.create({
   headers: {

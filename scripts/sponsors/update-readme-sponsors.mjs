@@ -1,7 +1,5 @@
 import fs from 'fs/promises';
-import _axios from '../index.js';
-import { exec } from './repo.js';
-import { colorize } from './helpers/colorize.js';
+import _axios from '../../index.js';
 
 const axios = _axios.create({
   headers: {
@@ -27,6 +25,15 @@ const getWithRetry = (url, retries = 3) => {
   return doRequest();
 };
 
+const setGithubOutput = async (key, value) => {
+  if (!process.env.GITHUB_OUTPUT) {
+    console.warn(`GITHUB_OUTPUT is not set; skipping output ${key}=${value}`);
+    return;
+  }
+
+  await fs.appendFile(process.env.GITHUB_OUTPUT, `${key}=${value}\n`);
+};
+
 const updateReadmeSponsors = async (url, path, marker = '<!--<div>marker</div>-->') => {
   let fileContent = (await fs.readFile(path)).toString();
 
@@ -41,14 +48,14 @@ const updateReadmeSponsors = async (url, path, marker = '<!--<div>marker</div>--
     const currentSponsorContent = fileContent.slice(0, index);
 
     if (currentSponsorContent !== sponsorContent) {
-      console.log(colorize()`Sponsor block in [${path}] is outdated`);
+      console.log(`Sponsor block in [${path}] is outdated`);
       await fs.writeFile(path, sponsorContent + readmeContent);
       return sponsorContent;
-    } else {
-      console.log(colorize()`Sponsor block in [${path}] is up to date`);
     }
+
+    console.log(`Sponsor block in [${path}] is up to date`);
   } else {
-    console.warn(colorize()`Can not find marker (${marker}) in ${path} to inject sponsor block`);
+    console.warn(`Can not find marker (${marker}) in ${path} to inject sponsor block`);
   }
 
   return false;
@@ -57,7 +64,7 @@ const updateReadmeSponsors = async (url, path, marker = '<!--<div>marker</div>--
 (async (url) => {
   const newContent = await updateReadmeSponsors(url, './README.md');
 
-  await exec(`echo "changed=${newContent ? 'true' : 'false'}" >> $GITHUB_OUTPUT`);
+  await setGithubOutput('changed', newContent ? 'true' : 'false');
   if (newContent !== false) {
     await fs.mkdir('./temp').catch(() => {});
     await fs.writeFile('./temp/sponsors.md', newContent);

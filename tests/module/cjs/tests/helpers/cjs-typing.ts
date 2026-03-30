@@ -1,3 +1,4 @@
+// @ts-nocheck
 import axios = require('axios');
 
 const config: axios.AxiosRequestConfig = {

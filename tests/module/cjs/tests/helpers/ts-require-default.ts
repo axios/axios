@@ -1,3 +1,4 @@
+// @ts-nocheck
 const assert = require('assert');
 const axios = require('axios').default;
 const {

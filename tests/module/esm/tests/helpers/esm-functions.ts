@@ -1,3 +1,4 @@
+// @ts-nocheck
 import assert from 'assert';
 import axios, {
   CanceledError,

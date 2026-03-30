@@ -20,7 +20,7 @@ const tsconfig = {
 
 describe('module ts-require compatibility', () => {
   it('compiles and executes require("axios") imports', () => {
-    const sourcePath = path.join(repoRoot, 'test/module/ts-require/index.ts');
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/ts-require.ts');
     const fixturePath = createTempFixture(suiteRoot, 'ts-require', sourcePath, tsconfig);
 
     try {

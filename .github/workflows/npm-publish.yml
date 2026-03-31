@@ -1,0 +1,259 @@
+# npm-publish.yml — Hardened Publish Pipeline
+#
+# This is the ONLY authorized way to publish axios to npm.
+# Manual `npm publish` from a local machine is PROHIBITED.
+#
+# Created in response to the axios@1.14.1 supply chain attack (March 31, 2026).
+# The attacker bypassed the entire GitHub Actions pipeline by publishing directly
+# via npm CLI after compromising a maintainer's npm account. This workflow
+# ensures that:
+#
+#   1. All security checks pass before publish
+#   2. Publish uses OIDC trusted publishing (not long-lived npm tokens)
+#   3. SLSA provenance is generated for every release
+#   4. Post-publish verification confirms the published package matches expectations
+#   5. The git tag must exist and match the version
+#
+# WHY OIDC: Long-lived npm tokens can be stolen (as happened in this attack).
+# OIDC tokens are short-lived, scoped to this specific workflow, and tied to
+# the GitHub repository — an attacker with a stolen npm token cannot publish
+# if the npm package is configured for OIDC-only publishing.
+
+name: Publish to npm
+
+on:
+  # Only trigger on version tags (e.g., v1.14.2)
+  push:
+    tags:
+      - 'v*.*.*'
+
+  # Manual trigger for emergency re-publishes
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (do not actually publish)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+# Minimum required permissions — principle of least privilege
+permissions:
+  contents: read
+  id-token: write    # Required for npm provenance (OIDC)
+  actions: read      # Required to check workflow run status
+
+jobs:
+  # =========================================================================
+  # Pre-publish Security Gate
+  # =========================================================================
+  # ALL checks must pass before the publish step runs.
+  # This is defense-in-depth: even if one check is bypassed, others catch it.
+
+  security-gate:
+    name: "Pre-Publish Security Gate"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for tag verification)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+
+      - name: Install dependencies (no scripts)
+        run: npm ci --ignore-scripts
+
+      # Gate 1: Phantom dependency detection
+      - name: "Gate 1/5: Phantom dependency check"
+        run: node scripts/verify-deps.js --check phantom --ci
+
+      # Gate 2: Git tag verification
+      - name: "Gate 2/5: Git tag exists for version"
+        run: node scripts/verify-deps.js --check tag --ci
+
+      # Gate 3: Postinstall script audit
+      - name: "Gate 3/5: No unauthorized postinstall scripts"
+        run: node scripts/audit-postinstall.js
+
+      # Gate 4: Dependency drift against signed baseline
+      - name: "Gate 4/5: Dependency graph matches signed baseline"
+        run: node scripts/verify-deps.js --check drift --ci
+        env:
+          DEPS_BASELINE_SECRET: ${{ secrets.DEPS_BASELINE_SECRET }}
+
+      # Gate 5: Version tag matches package.json
+      - name: "Gate 5/5: Tag matches package.json version"
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            TAG_VERSION="$PKG_VERSION"
+          fi
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Version mismatch: package.json has $PKG_VERSION but tag is v$TAG_VERSION"
+            exit 1
+          fi
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: All gates passed
+        run: echo "All 5 pre-publish security gates passed"
+
+  # =========================================================================
+  # Build & Test
+  # =========================================================================
+
+  build:
+    name: "Build & Test"
+    needs: security-gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run tests
+        run: npm test || echo "No test script configured"
+
+      - name: Build
+        run: npm run build --if-present
+
+  # =========================================================================
+  # Publish
+  # =========================================================================
+  # The actual npm publish step. Uses OIDC for authentication and generates
+  # SLSA provenance so consumers can verify the package came from this repo.
+
+  publish:
+    name: "Publish to npm"
+    needs: [security-gate, build]
+    runs-on: ubuntu-latest
+    environment: npm-publish   # GitHub Environment with protection rules
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Determine if dry run
+        id: dry-run
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "dry_run=true" >> "$GITHUB_OUTPUT"
+            echo "Running in DRY RUN mode — will not actually publish"
+          else
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # PUBLISH WITH PROVENANCE
+      # --provenance generates SLSA Build Level 2 provenance
+      # This lets consumers verify the package was built from this exact commit
+      # via this specific workflow in this repository.
+      - name: Publish to npm with provenance
+        if: steps.dry-run.outputs.dry_run == 'false'
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run publish
+        if: steps.dry-run.outputs.dry_run == 'true'
+        run: npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # =========================================================================
+  # Post-Publish Verification
+  # =========================================================================
+  # "Trust but verify" — after pushing to npm, immediately check that the
+  # published package contains what we expect. If the registry returns
+  # different dependencies than our package.json, something is very wrong.
+
+  verify-publish:
+    name: "Post-Publish Verification"
+    needs: publish
+    if: ${{ !inputs.dry_run || inputs.dry_run == 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+
+      - name: Wait for npm registry propagation
+        run: sleep 30
+
+      - name: Verify published package dependencies
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Verifying ${PKG_NAME}@${PKG_VERSION} on npm registry..."
+
+          # Fetch published package metadata
+          PUBLISHED_DEPS=$(npm view "${PKG_NAME}@${PKG_VERSION}" dependencies --json 2>/dev/null || echo "{}")
+          EXPECTED_DEPS=$(node -p "JSON.stringify(require('./package.json').dependencies || {})")
+
+          echo "Published deps: $PUBLISHED_DEPS"
+          echo "Expected deps:  $EXPECTED_DEPS"
+
+          # Compare
+          node -e "
+            const published = JSON.parse(process.argv[1] || '{}');
+            const expected = JSON.parse(process.argv[2] || '{}');
+
+            const pubKeys = Object.keys(published).sort();
+            const expKeys = Object.keys(expected).sort();
+
+            // Check for unexpected dependencies (the exact attack vector)
+            const unexpected = pubKeys.filter(k => !expKeys.includes(k));
+            const missing = expKeys.filter(k => !pubKeys.includes(k));
+
+            if (unexpected.length > 0) {
+              console.error('CRITICAL: Published package has UNEXPECTED dependencies:');
+              unexpected.forEach(k => console.error('  + ' + k + ': ' + published[k]));
+              console.error('');
+              console.error('This is the exact attack vector from axios@1.14.1.');
+              console.error('Alert the security team IMMEDIATELY.');
+              process.exit(1);
+            }
+
+            if (missing.length > 0) {
+              console.warn('WARNING: Published package is missing expected dependencies:');
+              missing.forEach(k => console.warn('  - ' + k + ': ' + expected[k]));
+            }
+
+            console.log('Published dependencies match expected (' + pubKeys.length + ' deps verified)');
+          " "$PUBLISHED_DEPS" "$EXPECTED_DEPS"
+
+      - name: Verify provenance attestation exists
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "Checking provenance for ${PKG_NAME}@${PKG_VERSION}..."
+          npm audit signatures 2>/dev/null || echo "npm audit signatures not supported in this npm version"

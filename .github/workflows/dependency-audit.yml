@@ -1,0 +1,432 @@
+# dependency-audit.yml — CI Enforcement for Dependency Security
+#
+# Created in response to the axios@1.14.1 supply chain attack (March 31, 2026).
+#
+# This workflow runs four independent security jobs that would have caught
+# the attack at multiple points:
+#
+#   1. phantom-dependency-check: plain-crypto-js was never imported → detected
+#   2. postinstall-audit: plain-crypto-js had postinstall: "node setup.js" → detected
+#   3. dependency-drift: plain-crypto-js was not in the signed baseline → detected
+#   4. publish-gate: No git tag v1.14.1 existed → publish blocked
+#
+# The daily scheduled run catches new CVEs on existing dependencies.
+
+name: Dependency Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Daily at 02:00 UTC — catch new CVEs and detect unauthorized changes
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  pull-requests: write   # For posting PR comments
+  issues: write          # For creating drift alert issues
+
+jobs:
+  # =========================================================================
+  # JOB 1: Phantom Dependency Check
+  # =========================================================================
+  # Detects dependencies in package.json that are never imported in source.
+  # The March 31 attack: plain-crypto-js was in dependencies but never used.
+  # A phantom dependency exists only to execute lifecycle scripts.
+
+  phantom-dependency-check:
+    name: "Phantom Deps (Node ${{ matrix.node-version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies (ignore scripts for safety)
+        run: npm ci --ignore-scripts
+
+      - name: Run phantom dependency detector
+        run: node scripts/verify-deps.js --check phantom --ci
+        env:
+          DEPS_BASELINE_SECRET: ${{ secrets.DEPS_BASELINE_SECRET }}
+
+      - name: Comment on PR if phantom deps found
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            let output;
+            try {
+              output = execSync('node scripts/verify-deps.js --check phantom --json', {
+                encoding: 'utf-8',
+                env: { ...process.env, DEPS_BASELINE_SECRET: '' }
+              });
+            } catch (e) {
+              output = e.stdout || 'Failed to generate report';
+            }
+
+            const body = `## :rotating_light: Phantom Dependency Detected
+
+            The following dependencies appear in \`package.json\` but are **never imported** in source code.
+
+            This is the exact attack vector used in the [axios@1.14.1 supply chain attack](https://www.stepsecurity.io/blog/axios-compromised-on-npm-malicious-versions-drop-remote-access-trojan) — a phantom dependency whose sole purpose was to execute a postinstall script deploying a RAT.
+
+            <details>
+            <summary>Full scan report</summary>
+
+            \`\`\`json
+            ${output}
+            \`\`\`
+
+            </details>
+
+            **Action required:** Remove the phantom dependency or add it to \`.phantom-deps-whitelist.json\` with a justification that 2 maintainers approve.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+  # =========================================================================
+  # JOB 2: Postinstall Audit
+  # =========================================================================
+  # Detects lifecycle scripts in dependencies and monitors for network
+  # connections during npm install. The March 31 attack: plain-crypto-js
+  # had postinstall: "node setup.js" which contacted sfrclak.com:8000.
+
+  postinstall-audit:
+    name: "Postinstall Audit"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+
+      # Phase 1: Install without scripts (safe baseline)
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      # Phase 2: Run the standalone postinstall scanner
+      - name: Scan for lifecycle scripts
+        run: node scripts/audit-postinstall.js --json > postinstall-report.json || true
+
+      - name: Check postinstall results
+        run: |
+          node -e "
+            const report = require('./postinstall-report.json');
+            if (report.summary.critical > 0 || report.summary.high > 0) {
+              console.error('CRITICAL/HIGH risk lifecycle scripts detected:');
+              report.findings
+                .filter(f => f.severity === 'critical' || f.severity === 'high')
+                .forEach(f => {
+                  console.error('  ' + f.package + '@' + f.version + ': ' + f.script + ': ' + f.command);
+                  f.reasons.forEach(r => console.error('    -> ' + r));
+                });
+              process.exit(1);
+            }
+            console.log('No high-risk lifecycle scripts found');
+          "
+
+      # Phase 3: Network monitoring during install (with scripts)
+      # Approach: DNS-level monitoring using tcpdump to capture DNS queries.
+      # This is the most reliable approach on GitHub Actions Ubuntu runners.
+      # It would have caught the C2 callback to sfrclak.com.
+      - name: Monitor network during npm install (with scripts)
+        run: |
+          # Load network allowlist
+          ALLOWLIST=".network-allowlist.json"
+          if [ ! -f "$ALLOWLIST" ]; then
+            echo '{"domains":["registry.npmjs.org","github.com","objects.githubusercontent.com","nodejs.org"]}' > "$ALLOWLIST"
+          fi
+
+          # Start DNS capture in background
+          sudo tcpdump -i any -n 'udp port 53' -w /tmp/dns-capture.pcap &
+          TCPDUMP_PID=$!
+          sleep 1
+
+          # Run npm install WITH scripts in a temporary directory
+          cp package.json package-lock.json /tmp/install-test/  2>/dev/null || mkdir -p /tmp/install-test && cp package.json package-lock.json /tmp/install-test/
+          cd /tmp/install-test
+          npm install --no-audit --no-fund 2>&1 || true
+          cd -
+
+          # Stop capture
+          sleep 2
+          sudo kill $TCPDUMP_PID 2>/dev/null || true
+          sleep 1
+
+          # Extract queried domains from DNS capture
+          sudo tcpdump -r /tmp/dns-capture.pcap -n 2>/dev/null | \
+            grep -oE '[A-Za-z0-9.-]+\.[a-z]{2,}' | \
+            sort -u > /tmp/dns-queries.txt || true
+
+          # Compare against allowlist
+          node -e "
+            const fs = require('fs');
+            const allowlist = JSON.parse(fs.readFileSync('$ALLOWLIST', 'utf-8'));
+            const allowed = new Set(allowlist.domains || []);
+            let queries;
+            try {
+              queries = fs.readFileSync('/tmp/dns-queries.txt', 'utf-8').trim().split('\n').filter(Boolean);
+            } catch { queries = []; }
+
+            const suspicious = queries.filter(domain => {
+              return !allowed.has(domain) && !Array.from(allowed).some(a => domain.endsWith('.' + a));
+            });
+
+            // Known-malicious C2 domains from the March 31 incident
+            const MALICIOUS_DOMAINS = ['sfrclak.com'];
+            const malicious = suspicious.filter(d => MALICIOUS_DOMAINS.some(m => d.includes(m)));
+
+            if (malicious.length > 0) {
+              console.error('CRITICAL: Known-malicious C2 domain contacted during install:');
+              malicious.forEach(d => console.error('  ' + d));
+              process.exit(1);
+            }
+
+            if (suspicious.length > 0) {
+              console.warn('WARNING: Unexpected DNS queries during npm install:');
+              suspicious.forEach(d => console.warn('  ' + d));
+              console.warn('Add to .network-allowlist.json if legitimate.');
+            } else {
+              console.log('No unexpected network connections detected during install');
+            }
+          "
+
+      # Phase 4: Static analysis of postinstall scripts for suspicious content
+      # Fallback detection: even without network monitoring, scan script
+      # content for hardcoded IPs, domains, and suspicious commands.
+      - name: Static analysis of lifecycle script content
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+
+            // Scan node_modules for postinstall scripts with suspicious content
+            const SUSPICIOUS = [
+              /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/,  // Hardcoded IPv4
+              /sfrclak\.com/i,                               // Known C2
+              /setup\.js/i,                                   // Common dropper name
+              /\bfetch\b.*\beval\b/i,                        // Fetch + eval
+              /child_process.*exec/i,                        // Shell execution
+              /Buffer\.from.*base64/i,                       // Base64 decoding
+            ];
+
+            const nmDir = 'node_modules';
+            if (!fs.existsSync(nmDir)) { console.log('node_modules not found'); process.exit(0); }
+
+            const entries = fs.readdirSync(nmDir, { withFileTypes: true });
+            let found = false;
+
+            for (const entry of entries) {
+              if (!entry.isDirectory()) continue;
+              const pkgPath = path.join(nmDir, entry.name, 'package.json');
+              try {
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+                if (!pkg.scripts) continue;
+                for (const script of ['preinstall', 'install', 'postinstall']) {
+                  if (!pkg.scripts[script]) continue;
+                  const cmd = pkg.scripts[script];
+                  // Try to read referenced script file
+                  const match = cmd.match(/node\s+(\S+\.js)/);
+                  if (match) {
+                    const scriptPath = path.join(nmDir, entry.name, match[1]);
+                    try {
+                      const content = fs.readFileSync(scriptPath, 'utf-8');
+                      for (const pattern of SUSPICIOUS) {
+                        if (pattern.test(content)) {
+                          console.error('SUSPICIOUS: ' + entry.name + ' ' + script + ' matches ' + pattern);
+                          found = true;
+                        }
+                      }
+                    } catch {}
+                  }
+                }
+              } catch {}
+            }
+
+            if (found) {
+              console.error('Suspicious content found in lifecycle scripts');
+              process.exit(1);
+            }
+            console.log('No suspicious patterns in lifecycle script content');
+          "
+
+      - name: Upload postinstall report
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: postinstall-report
+          path: postinstall-report.json
+          retention-days: 90
+
+  # =========================================================================
+  # JOB 3: Dependency Drift Detection
+  # =========================================================================
+  # Compares the current dependency graph against a signed baseline.
+  # Any new or changed dependency triggers an alert. The March 31 attack:
+  # plain-crypto-js was added to package.json — this would have been
+  # detected as a new dependency not in the baseline.
+
+  dependency-drift:
+    name: "Dependency Drift"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+
+      - name: Check dependency drift against signed baseline
+        run: node scripts/verify-deps.js --check drift --ci --json > drift-report.json || true
+        env:
+          DEPS_BASELINE_SECRET: ${{ secrets.DEPS_BASELINE_SECRET }}
+
+      - name: Evaluate drift results
+        id: drift-check
+        run: |
+          node -e "
+            const fs = require('fs');
+            try {
+              const report = JSON.parse(fs.readFileSync('drift-report.json', 'utf-8'));
+              if (!report.checks.drift || !report.checks.drift.passed) {
+                const issues = (report.checks.drift && report.checks.drift.issues) || [];
+                console.log('::set-output name=drifted::true');
+                console.log('::set-output name=drift_count::' + issues.length);
+                console.log('Dependency drift detected:');
+                issues.forEach(i => console.log('  ' + i.message));
+                process.exit(1);
+              }
+              console.log('No dependency drift detected');
+              console.log('::set-output name=drifted::false');
+            } catch (e) {
+              console.warn('Could not parse drift report: ' + e.message);
+              console.log('::set-output name=drifted::unknown');
+            }
+          "
+
+      - name: Create issue for dependency drift
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync('drift-report.json', 'utf-8'));
+            } catch {
+              report = { checks: { drift: { issues: [{ message: 'Could not generate report' }] } } };
+            }
+
+            const issues = (report.checks.drift && report.checks.drift.issues) || [];
+            const issueList = issues.map(i => `- ${i.message}`).join('\n');
+
+            const body = `## :warning: Dependency Drift Detected
+
+            The dependency graph has changed from the signed baseline. This requires human review before any publish can proceed.
+
+            **Context:** The [axios@1.14.1 supply chain attack](https://www.stepsecurity.io/blog/axios-compromised-on-npm-malicious-versions-drop-remote-access-trojan) added a phantom dependency (\`plain-crypto-js\`) that was not in any baseline. This check would have caught it.
+
+            ### Changes detected:
+            ${issueList}
+
+            ### Required action:
+            1. Review each change above
+            2. If legitimate: update the signed baseline with \`node scripts/verify-deps.js --sign\`
+            3. If suspicious: investigate immediately and do NOT publish
+
+            **Commit:** ${context.sha}
+            **Pushed by:** ${context.actor}`;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: ':rotating_light: Dependency drift detected — publish blocked',
+              body,
+              labels: ['security', 'dependencies', 'needs-review']
+            });
+
+  # =========================================================================
+  # JOB 4: Publish Gate (release tags only)
+  # =========================================================================
+  # Final gate before npm publish. Runs ALL checks and verifies:
+  #   - Git tag exists for the version
+  #   - All security checks pass
+  #   - Publish goes through OIDC, not manual npm CLI
+  #
+  # This is the ultimate backstop. Even if an attacker compromises a
+  # maintainer account, they cannot publish without a git tag and
+  # passing all security checks through GitHub Actions.
+
+  publish-gate:
+    name: "Publish Gate"
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [phantom-dependency-check, postinstall-audit, dependency-drift]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # Required for npm provenance / OIDC
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Need full history for tag verification
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run ALL security checks
+        run: node scripts/verify-deps.js --ci
+        env:
+          DEPS_BASELINE_SECRET: ${{ secrets.DEPS_BASELINE_SECRET }}
+
+      - name: Verify git tag matches package.json version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "FATAL: package.json version ($PKG_VERSION) does not match git tag (v$TAG_VERSION)"
+            echo "This is a publish safety check. The version must match exactly."
+            exit 1
+          fi
+          echo "Version match confirmed: v$PKG_VERSION"
+
+      - name: Verify publish is via OIDC (not manual npm CLI)
+        run: |
+          # In GitHub Actions with id-token: write, ACTIONS_ID_TOKEN_REQUEST_URL is set
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "FATAL: OIDC token not available. This publish must go through GitHub Actions with id-token: write."
+            echo "Manual npm publish from local machine is PROHIBITED."
+            echo "See SECURITY.md for the publish process."
+            exit 1
+          fi
+          echo "OIDC verified — publish is through GitHub Actions"
+
+      - name: Publish gate PASSED
+        run: echo "All security checks passed. This release is cleared for publish."

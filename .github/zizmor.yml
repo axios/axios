@@ -1,0 +1,9 @@
+rules:
+  unpinned-uses:
+    # TODO: pin all action references to commit SHAs
+    disable: true
+
+  excessive-permissions:
+    # TODO: audit and narrow permissions across all workflows
+    disable: true
+

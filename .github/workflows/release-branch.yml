@@ -213,10 +213,12 @@ jobs:
       - name: Bump version with NPM version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TYPE: ${{ github.event.inputs.type }}
+          INPUT_BETA: ${{ github.event.inputs.beta }}
         id: bump-version
         run: |
-          TYPE=${{ github.event.inputs.type }}
-          BETA=${{ github.event.inputs.beta }}
+          TYPE="${INPUT_TYPE}"
+          BETA="${INPUT_BETA}"
           if [ "$TYPE" = "auto" ]; then
             npm version $(npm version | grep -Eo 'patch|minor|major' | head -1)
           else

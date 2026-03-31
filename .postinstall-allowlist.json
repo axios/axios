@@ -1,0 +1,6 @@
+{
+  "_comment": "Postinstall Script Allowlist — packages whose lifecycle scripts are approved.",
+  "_policy": "Allowlisted by script SHA-256 HASH, not by name. If an allowed package changes its script content, the hash won't match and it will be flagged. This prevents an attacker from replacing an allowed script.",
+  "_threat_model": "plain-crypto-js@4.2.1 had postinstall: 'node setup.js' which deployed a cross-platform RAT. Only packages with a legitimate need for lifecycle scripts (e.g., native addons using node-gyp) should be allowlisted.",
+  "_last_reviewed": "2026-03-31"
+}

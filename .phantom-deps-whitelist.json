@@ -1,0 +1,6 @@
+{
+  "_comment": "Phantom Dependencies Whitelist — packages in package.json that are legitimately not imported in source.",
+  "_policy": "Adding to this list requires approval from 2 maintainers. Each entry must have a justification.",
+  "_threat_model": "The axios@1.14.1 attack used plain-crypto-js as a phantom dependency. Any entry here bypasses the phantom dependency detector, so additions must be scrutinized.",
+  "_last_reviewed": "2026-03-31"
+}

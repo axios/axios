@@ -1,0 +1,13 @@
+{
+  "_comment": "Network Allowlist — domains permitted during npm install with scripts enabled.",
+  "_policy": "Any DNS query to a domain NOT on this list during npm install will be flagged. The March 31 attack contacted sfrclak.com:8000 — this would have been caught.",
+  "_last_reviewed": "2026-03-31",
+  "domains": [
+    "registry.npmjs.org",
+    "github.com",
+    "objects.githubusercontent.com",
+    "nodejs.org",
+    "api.github.com",
+    "codeload.github.com"
+  ]
+}

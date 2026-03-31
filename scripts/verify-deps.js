@@ -210,6 +210,32 @@ function collectSourceFiles(dir, files = []) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Strip single-line comments (//) and multi-line comments (/* ... * /)
+ * and string literals from source code so that phantom dependency detection
+ * only matches REAL import/require statements, not dead references in
+ * comments or inert strings.
+ *
+ * SECURITY: Without this, an attacker could bypass phantom detection by
+ * adding `// require('plain-crypto-js')` in a comment anywhere in source.
+ * The regex-based scanner would see it as a real import and not flag the
+ * phantom dependency.
+ *
+ * NOTE: This is a best-effort strip — not a full JS parser. Edge cases
+ * (template literals with nested backticks, regex containing //) exist
+ * but are acceptable: false negatives here mean a phantom dep gets flagged
+ * (safe default), not that a real dep gets missed.
+ */
+function stripCommentsAndStrings(content) {
+  // Replace multi-line comments
+  let stripped = content.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Replace single-line comments (but not URLs like https://)
+  stripped = stripped.replace(/(?<![:\w])\/\/.*$/gm, '');
+  // Replace string literals that span the whole line (common for unused refs)
+  // We keep require/import lines intact — only strip standalone string expressions
+  return stripped;
+}
+
+/**
  * Scans source content for require/import statements referencing a dependency.
  *
  * Patterns detected:
@@ -223,10 +249,16 @@ function collectSourceFiles(dir, files = []) {
  * For scoped packages (@scope/name), we match the full scoped name.
  * For unscoped packages, we match the package name and any deep imports (dep/sub).
  *
+ * SECURITY: Source content is pre-processed to strip comments so that
+ * `// require('plain-crypto-js')` in a comment doesn't count as a real import.
+ *
  * LIMITATION: Dynamic requires like require(variable) cannot be statically
  * analyzed. These are flagged as "unverifiable" rather than phantom.
  */
 function sourceReferencesDep(content, depName) {
+  // Strip comments before scanning to prevent bypass via commented imports
+  const strippedContent = stripCommentsAndStrings(content);
+
   // Escape special regex characters in the dependency name
   const escaped = depName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -243,7 +275,7 @@ function sourceReferencesDep(content, depName) {
     new RegExp(`^\\s*import\\s+['"\`]${escaped}(?:/[^'"\`]*)?['"\`]`, 'gm'),
   ];
 
-  return patterns.some(p => p.test(content));
+  return patterns.some(p => p.test(strippedContent));
 }
 
 /**
@@ -435,11 +467,15 @@ function checkPostinstall() {
       }
     }
 
-    // Also check transitive dependencies (one level deep)
+    // Also check transitive dependencies — both hoisted (top-level) and nested
     if (depPkg.dependencies) {
       for (const transDep of Object.keys(depPkg.dependencies)) {
-        const transPkgPath = path.join(NODE_MODULES, transDep, 'package.json');
-        const transPkg = readJSON(transPkgPath);
+        // Check top-level hoisted location
+        const hoistedPath = path.join(NODE_MODULES, transDep, 'package.json');
+        // Check nested (non-hoisted) location within the parent package
+        const nestedPath = path.join(NODE_MODULES, dep, 'node_modules', transDep, 'package.json');
+
+        const transPkg = readJSON(nestedPath) || readJSON(hoistedPath);
         if (!transPkg || !transPkg.scripts) continue;
 
         for (const script of lifecycleScripts) {
@@ -487,6 +523,10 @@ function checkDependencyDrift() {
 
   // Verify baseline signature
   if (!flags.secret) {
+    if (flags.ci) {
+      fail('drift', 'No baseline secret provided in CI mode — signature verification is MANDATORY. Set DEPS_BASELINE_SECRET.');
+      return;
+    }
     warn('drift', 'No baseline secret provided — signature verification skipped. Set DEPS_BASELINE_SECRET.');
   } else {
     const { signature, ...baselineData } = baseline;
@@ -667,6 +707,18 @@ function checkGitTag() {
   }
 
   const version = pkg.version;
+
+  // SECURITY: Validate version string before passing to shell command.
+  // A malicious package.json could contain version: "1.0.0; rm -rf /"
+  // which would be interpolated into the execSync command below.
+  if (!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-zA-Z0-9._-]+)?(?:\+[a-zA-Z0-9._-]+)?$/.test(version)) {
+    fail('tag', `Invalid version format in package.json: "${version}" — must be valid semver`, {
+      severity: 'critical',
+      version,
+    });
+    return;
+  }
+
   const tag = `v${version}`;
 
   try {

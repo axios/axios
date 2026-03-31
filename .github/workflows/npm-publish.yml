@@ -126,7 +126,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run tests
-        run: npm test || echo "No test script configured"
+        run: npm test
 
       - name: Build
         run: npm run build --if-present
@@ -215,8 +215,18 @@ jobs:
 
           echo "Verifying ${PKG_NAME}@${PKG_VERSION} on npm registry..."
 
-          # Fetch published package metadata
-          PUBLISHED_DEPS=$(npm view "${PKG_NAME}@${PKG_VERSION}" dependencies --json 2>/dev/null || echo "{}")
+          # Fetch published package metadata — FAIL if npm view fails
+          # A registry error here must not be silently treated as "no deps"
+          PUBLISHED_DEPS=$(npm view "${PKG_NAME}@${PKG_VERSION}" dependencies --json 2>&1)
+          if [ $? -ne 0 ]; then
+            echo "FATAL: npm view failed — cannot verify published package"
+            echo "Output: $PUBLISHED_DEPS"
+            exit 1
+          fi
+          # npm view returns empty string (not {}) when there are no deps
+          if [ -z "$PUBLISHED_DEPS" ]; then
+            PUBLISHED_DEPS="{}"
+          fi
           EXPECTED_DEPS=$(node -p "JSON.stringify(require('./package.json').dependencies || {})")
 
           echo "Published deps: $PUBLISHED_DEPS"
@@ -244,8 +254,10 @@ jobs:
             }
 
             if (missing.length > 0) {
-              console.warn('WARNING: Published package is missing expected dependencies:');
-              missing.forEach(k => console.warn('  - ' + k + ': ' + expected[k]));
+              console.error('CRITICAL: Published package is MISSING expected dependencies:');
+              missing.forEach(k => console.error('  - ' + k + ': ' + expected[k]));
+              console.error('This may indicate a registry-level issue or build problem.');
+              process.exit(1);
             }
 
             console.log('Published dependencies match expected (' + pubKeys.length + ' deps verified)');

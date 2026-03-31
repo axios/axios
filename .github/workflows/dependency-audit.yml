@@ -17,6 +17,8 @@ name: Dependency Security Audit
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*.*.*'   # publish-gate needs to run on tag pushes
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -298,35 +300,31 @@ jobs:
           node-version: 20
 
       - name: Check dependency drift against signed baseline
-        run: node scripts/verify-deps.js --check drift --ci --json > drift-report.json || true
+        id: drift-scan
+        run: |
+          # Run the drift check and capture exit code.
+          # We save the report for the issue-creation step, but do NOT suppress failures.
+          node scripts/verify-deps.js --check drift --ci --json > drift-report.json
         env:
           DEPS_BASELINE_SECRET: ${{ secrets.DEPS_BASELINE_SECRET }}
 
       - name: Evaluate drift results
+        if: failure() && steps.drift-scan.outcome == 'failure'
         id: drift-check
         run: |
           node -e "
             const fs = require('fs');
-            try {
-              const report = JSON.parse(fs.readFileSync('drift-report.json', 'utf-8'));
-              if (!report.checks.drift || !report.checks.drift.passed) {
-                const issues = (report.checks.drift && report.checks.drift.issues) || [];
-                console.log('::set-output name=drifted::true');
-                console.log('::set-output name=drift_count::' + issues.length);
-                console.log('Dependency drift detected:');
-                issues.forEach(i => console.log('  ' + i.message));
-                process.exit(1);
-              }
-              console.log('No dependency drift detected');
-              console.log('::set-output name=drifted::false');
-            } catch (e) {
-              console.warn('Could not parse drift report: ' + e.message);
-              console.log('::set-output name=drifted::unknown');
+            const report = JSON.parse(fs.readFileSync('drift-report.json', 'utf-8'));
+            if (!report.checks.drift || !report.checks.drift.passed) {
+              const issues = (report.checks.drift && report.checks.drift.issues) || [];
+              console.log('Dependency drift detected:');
+              issues.forEach(i => console.log('  ' + i.message));
+              process.exit(1);
             }
           "
 
       - name: Create issue for dependency drift
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |

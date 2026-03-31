@@ -171,13 +171,25 @@ function hashContent(content) {
 /**
  * Read the actual script file content if the postinstall command references
  * a local file (e.g., "node setup.js"). Returns the file content or null.
+ *
+ * SECURITY: The resolved path is constrained to pkgDir to prevent ../ traversal.
+ * An attacker could craft a postinstall command like "node ../../etc/passwd" to
+ * exfiltrate local file contents in scan output. We resolve the full path and
+ * verify it stays within the package directory.
  */
 function readScriptFile(pkgDir, command) {
   // Common patterns: "node setup.js", "node scripts/install.js", "./install.sh"
   const match = command.match(/(?:node\s+)?([^\s&|;]+\.(?:js|sh|py|ts|mjs))/i);
   if (!match) return null;
 
-  const scriptPath = path.join(pkgDir, match[1]);
+  const scriptPath = path.resolve(pkgDir, match[1]);
+  const resolvedPkgDir = path.resolve(pkgDir);
+
+  // SECURITY: Prevent path traversal — script must be inside its own package dir
+  if (!scriptPath.startsWith(resolvedPkgDir + path.sep) && scriptPath !== resolvedPkgDir) {
+    return null; // Path traversal attempt — silently reject
+  }
+
   try {
     return fs.readFileSync(scriptPath, 'utf-8');
   } catch {
@@ -187,12 +199,24 @@ function readScriptFile(pkgDir, command) {
 
 /**
  * Enumerate all packages in node_modules, including scoped packages.
+ * Recursively scans nested node_modules to catch non-hoisted transitive deps.
+ *
+ * SECURITY: npm may not hoist all packages to the top-level node_modules.
+ * Non-hoisted (nested) packages with lifecycle scripts would evade a
+ * top-level-only scan. We recurse into every package's own node_modules/
+ * to ensure full coverage.
+ *
  * Returns array of { name, dir, pkg } objects.
  */
-function enumeratePackages(nodeModulesDir) {
+function enumeratePackages(nodeModulesDir, visited = new Set()) {
   const packages = [];
 
   if (!fs.existsSync(nodeModulesDir)) return packages;
+
+  // Prevent infinite loops from symlinks
+  const realDir = fs.realpathSync(nodeModulesDir);
+  if (visited.has(realDir)) return packages;
+  visited.add(realDir);
 
   let entries;
   try {
@@ -219,6 +243,9 @@ function enumeratePackages(nodeModulesDir) {
               dir: pkgDir,
               pkg: pkgJson,
             });
+            // Recurse into nested node_modules
+            const nestedNM = path.join(pkgDir, 'node_modules');
+            packages.push(...enumeratePackages(nestedNM, visited));
           }
         }
       } catch { /* skip unreadable scope dirs */ }
@@ -231,6 +258,9 @@ function enumeratePackages(nodeModulesDir) {
           dir: pkgDir,
           pkg: pkgJson,
         });
+        // Recurse into nested node_modules
+        const nestedNM = path.join(pkgDir, 'node_modules');
+        packages.push(...enumeratePackages(nestedNM, visited));
       }
     }
   }
@@ -323,9 +353,25 @@ function scan() {
       }
 
       // CHECK 6: Allowlist verification (by hash, not name)
-      const isAllowlisted = allowlist[name] &&
-        allowlist[name].scriptHash === commandHash &&
-        (!contentHash || !allowlist[name].contentHash || allowlist[name].contentHash === contentHash);
+      // SECURITY: Both commandHash AND contentHash must match when contentHash
+      // is available. A missing contentHash in the allowlist does NOT suppress
+      // content drift — this prevents an attacker from changing the actual script
+      // file while keeping the same package.json command string.
+      let isAllowlisted = false;
+      if (allowlist[name] && allowlist[name].scriptHash === commandHash) {
+        if (contentHash) {
+          // Script file exists: allowlist MUST include a matching contentHash
+          isAllowlisted = allowlist[name].contentHash === contentHash;
+          if (!isAllowlisted) {
+            // Command matches but file content doesn't — potential tampering
+            if (severity === 'info') severity = 'high';
+            reasons.push('Allowlisted command hash matches but script file content differs — possible tampering');
+          }
+        } else {
+          // No script file to verify (inline command only) — command hash match is sufficient
+          isAllowlisted = true;
+        }
+      }
 
       if (isAllowlisted && severity !== 'critical') {
         severity = 'info';

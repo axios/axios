@@ -130,8 +130,8 @@ Additionally, check for:
 
 ### Safe Axios Versions
 
-- 1.x users: `axios@1.14.0` or later patched versions
-- 0.x users: `axios@0.30.3` or later patched versions
+- 1.x users: `axios@1.14.0` (**not** 1.14.1, which is compromised) or later patched versions
+- 0.x users: `axios@0.30.3` (**not** 0.30.4, which is compromised) or later patched versions
 
 ---
 

@@ -226,13 +226,47 @@ function collectSourceFiles(dir, files = []) {
  * (safe default), not that a real dep gets missed.
  */
 function stripCommentsAndStrings(content) {
-  // Replace multi-line comments
+  // We need to strip comments AND non-import string literals so that:
+  //   // require('evil-pkg')           → stripped (comment)
+  //   const s = "require('evil-pkg')"  → stripped (string literal)
+  //   require('legit-pkg')             → kept (real import)
+  //   import x from 'legit-pkg'        → kept (real import)
+  //
+  // Strategy: process line-by-line. For each line:
+  //   1. Strip multi-line comment regions
+  //   2. Strip single-line comments
+  //   3. If the line contains a real require/import keyword, keep it as-is
+  //   4. Otherwise, strip string literals (they can't contain real imports)
+  //
+  // This is conservative: if a line has both a real import AND a string containing
+  // another package name, we keep the whole line. That's safe because it means
+  // the real import is detected (no false phantom) and the string-embedded name
+  // also counts (false negative = dep not flagged as phantom = safe direction).
+
+  // Step 1: Strip multi-line comments
   let stripped = content.replace(/\/\*[\s\S]*?\*\//g, '');
-  // Replace single-line comments (but not URLs like https://)
-  stripped = stripped.replace(/(?<![:\w])\/\/.*$/gm, '');
-  // Replace string literals that span the whole line (common for unused refs)
-  // We keep require/import lines intact — only strip standalone string expressions
-  return stripped;
+
+  // Step 2: Process line by line
+  const lines = stripped.split('\n');
+  const result = [];
+
+  for (const line of lines) {
+    // Strip single-line comments (but not URLs like https://)
+    let clean = line.replace(/(?<![:\w])\/\/.*$/, '');
+
+    // If line does NOT contain a real import/require keyword, strip string literals
+    // to prevent false matches from strings like: const msg = "use require('x')"
+    if (!/\b(?:require|import)\s*[\s(]/.test(clean)) {
+      // Replace single and double-quoted strings
+      clean = clean.replace(/"(?:[^"\\]|\\.)*"/g, '""');
+      clean = clean.replace(/'(?:[^'\\]|\\.)*'/g, "''");
+      clean = clean.replace(/`(?:[^`\\]|\\.)*`/g, '``');
+    }
+
+    result.push(clean);
+  }
+
+  return result.join('\n');
 }
 
 /**

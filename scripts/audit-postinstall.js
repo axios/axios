@@ -183,15 +183,33 @@ function readScriptFile(pkgDir, command) {
   if (!match) return null;
 
   const scriptPath = path.resolve(pkgDir, match[1]);
-  const resolvedPkgDir = path.resolve(pkgDir);
 
-  // SECURITY: Prevent path traversal — script must be inside its own package dir
-  if (!scriptPath.startsWith(resolvedPkgDir + path.sep) && scriptPath !== resolvedPkgDir) {
-    return null; // Path traversal attempt — silently reject
+  // SECURITY: Use realpathSync to canonicalize BOTH paths, resolving symlinks.
+  // Without this, a symlink inside pkgDir can point outside the package directory
+  // and fs.readFileSync would follow it, bypassing the lexical prefix check.
+  let realScriptPath;
+  try {
+    realScriptPath = fs.realpathSync(scriptPath);
+  } catch {
+    return null; // File doesn't exist — nothing to read
+  }
+
+  let realPkgDir;
+  try {
+    realPkgDir = fs.realpathSync(pkgDir);
+  } catch {
+    return null;
+  }
+
+  // SECURITY: Prevent path traversal — canonicalized script path must be
+  // inside the canonicalized package dir. This catches both ../ traversal
+  // AND symlink-based escapes.
+  if (!realScriptPath.startsWith(realPkgDir + path.sep) && realScriptPath !== realPkgDir) {
+    return null; // Path traversal or symlink escape — silently reject
   }
 
   try {
-    return fs.readFileSync(scriptPath, 'utf-8');
+    return fs.readFileSync(realScriptPath, 'utf-8');
   } catch {
     return null;
   }
@@ -305,8 +323,14 @@ function scan() {
       const scriptContent = readScriptFile(dir, command);
       const contentHash = scriptContent ? hashContent(scriptContent) : null;
 
-      // Store in current state
-      const stateKey = `${name}:${script}`;
+      // Store in current state.
+      // SECURITY: Use the relative path from node_modules root as part of the key,
+      // not just the package name. The same package can appear at multiple locations
+      // in a nested node_modules tree (e.g., node_modules/a/node_modules/b vs
+      // node_modules/b). Using only name:script would cause collisions where one
+      // instance overwrites another, hiding or misreporting changes.
+      const relDir = path.relative(config.dir, dir);
+      const stateKey = `${relDir}:${script}`;
       currentState[stateKey] = {
         command,
         commandHash,

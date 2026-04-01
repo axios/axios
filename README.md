@@ -561,14 +561,13 @@ These are the available config options for making requests. Only the `url` is re
       options.auth = "user:password";
     }
   },
-```
-```md 
-Security note:
-The beforeRedirect hook runs after sensitive headers are stripped during redirects.
-Re-injecting credentials without checking the destination can expose sensitive data.
-Only add credentials for trusted HTTPS destinations.
-Avoid re-adding credentials on downgraded redirects.
-```
+
+// Security note:
+// The beforeRedirect hook runs after sensitive headers are stripped during redirects.
+// Re-injecting credentials without checking the destination can expose sensitive data.
+// Only add credentials for trusted HTTPS destinations.
+// Avoid re-adding credentials on downgraded redirects.
+
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.

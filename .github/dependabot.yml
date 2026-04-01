@@ -11,6 +11,8 @@ updates:
       - 'type::automated-pr'
     schedule:
       interval: 'weekly'
+    cooldown:
+      default-days: 7
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
@@ -33,3 +35,5 @@ updates:
     labels:
       - 'commit::chore'
       - 'type::automated-pr'
+    cooldown:
+      default-days: 7

@@ -552,6 +552,7 @@ These are the available config options for making requests. Only the `url` is re
   // to inspect the latest response headers,
   // or to cancel the request by throwing an error
   // If maxRedirects is set to 0, `beforeRedirect` is not used.
+  ```js
   beforeRedirect: (options, { headers }) => {
     if (
       options.hostname === "example.com" &&
@@ -560,6 +561,7 @@ These are the available config options for making requests. Only the `url` is re
       options.auth = "user:password";
     }
   },
+  ```
 
 Security note:
 The beforeRedirect hook runs after sensitive headers are stripped during redirects.

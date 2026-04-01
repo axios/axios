@@ -6,7 +6,7 @@ on:
     types:
       - webhook
   schedule:
-    - cron: "0 1 * * *"
+    - cron: '0 1 * * *'
 
 permissions:
   contents: write
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
       - name: git config
@@ -25,7 +25,7 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: 24.x
           cache: npm
@@ -33,25 +33,33 @@ jobs:
         run: npm ci
       - name: Check if sponsors require updates
         id: sponsors-requires-update
-        run: node ./bin/sponsors.js
+        run: node ./scripts/update-readme-sponsors.mjs
+      - name: Check tracked README sponsor diff
+        id: readme-tracked-change
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "readme_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "readme_changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Read sponsors.md file content
         run: |
           echo 'CONTENT<<EOF' >> $GITHUB_ENV
           cat ./temp/sponsors.md >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
         shell: bash
-        if: steps.sponsors-requires-update.outputs.changed == 'true'
+        if: steps.sponsors-requires-update.outputs.changed == 'true' && steps.readme-tracked-change.outputs.readme_changed == 'true'
       - name: Echo sponsors content
         run: |
           echo "$CONTENT"
-        if: steps.sponsors-requires-update.outputs.changed == 'true'
+        if: steps.sponsors-requires-update.outputs.changed == 'true' && steps.readme-tracked-change.outputs.readme_changed == 'true'
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           branch: sponsors
           delete-branch: true
-          commit-message: "chore(sponsor): update sponsor block"
-          title: "chore(docs): update sponsor block"
+          commit-message: 'chore(sponsor): update sponsor block'
+          title: 'chore(docs): update sponsor block'
           body: |
             **New sponsor block update:**
             ${{ env.CONTENT }}
@@ -61,4 +69,4 @@ jobs:
             type::automated-pr
           signoff: false
           draft: false
-        if: steps.sponsors-requires-update.outputs.changed == 'true'
+        if: steps.sponsors-requires-update.outputs.changed == 'true' && steps.readme-tracked-change.outputs.readme_changed == 'true'

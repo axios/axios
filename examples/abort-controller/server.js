@@ -1,8 +1,6 @@
-import url from 'url';
-
 export default function (req, res) {
-  const parsedUrl = url.parse(req.url, true);
-  const delay = parsedUrl.query.delay || 3000;
+  const parsedUrl = new URL(req.url, 'http://localhost');
+  const delay = parsedUrl.searchParams.get('delay') || 3000;
 
   setTimeout(() => {
     res.writeHead(200, {

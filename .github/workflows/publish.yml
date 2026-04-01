@@ -6,7 +6,7 @@ on:
       - 'v1.*.*'
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:

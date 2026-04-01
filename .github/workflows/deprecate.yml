@@ -24,7 +24,8 @@ jobs:
 
       - name: Deprecate selected version
         run: |
-          echo "Deprecating axios@${{ github.event.inputs.version }}"
-          npm deprecate axios@${{ github.event.inputs.version }} "🚨 SECURITY: compromised dependency (plain-crypto-js). DO NOT USE. Downgrade to 1.13.6"
+          echo "Deprecating axios@$VERSION"
+          npm deprecate "axios@$VERSION" "🚨 SECURITY: compromised dependency (plain-crypto-js). DO NOT USE. Downgrade to 1.13.6"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ github.event.inputs.version }}

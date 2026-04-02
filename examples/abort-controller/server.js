@@ -1,8 +1,13 @@
-import url from 'url';
-
 export default function (req, res) {
-  const parsedUrl = url.parse(req.url, true);
-  const delay = parsedUrl.query.delay || 3000;
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(req.url, 'http://localhost');
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Invalid URL');
+    return;
+  }
+  const delay = parsedUrl.searchParams.get('delay') || 3000;
 
   setTimeout(() => {
     res.writeHead(200, {

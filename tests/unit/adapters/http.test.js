@@ -15,7 +15,6 @@ import http from 'http';
 import https from 'https';
 import net from 'net';
 import stream from 'stream';
-import url from 'url';
 import zlib from 'zlib';
 import fs from 'fs';
 import os from 'os';
@@ -492,7 +491,7 @@ describe('supports http with nodejs', () => {
           return;
         }
 
-        var parsed = url.parse(req.url);
+        var parsed = new URL(req.url, 'http://localhost');
         if (parsed.pathname === '/one') {
           res.setHeader('Location', '/two');
           res.statusCode = 302;
@@ -899,7 +898,7 @@ describe('supports http with nodejs', () => {
     const str = Array(100000).join('ж');
     const server = await startHTTPServer(
       (req, res) => {
-        const parsed = url.parse(req.url);
+        const parsed = new URL(req.url, 'http://localhost');
 
         if (parsed.pathname === '/two') {
           res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -2503,7 +2502,7 @@ describe('supports http with nodejs', () => {
   });
 
   describe('URLEncoded Form', () => {
-    it('should post object data as url-encoded form if content-type is application/x-www-form-urlencoded', async () => {
+    it('should post object data as url-encoded form regardless of content-type header casing', async () => {
       const app = express();
       const obj = {
         arr1: ['1', '2', '3'],
@@ -2530,12 +2529,15 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        });
-        assert.deepStrictEqual(response.data, obj);
+        for (const headerName of ['content-type', 'Content-Type']) {
+          const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
+            headers: {
+              [headerName]: 'application/x-www-form-urlencoded',
+            },
+          });
+
+          assert.deepStrictEqual(response.data, obj);
+        }
       } finally {
         await new Promise((resolve, reject) => {
           server.close((error) => {

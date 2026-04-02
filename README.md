@@ -553,10 +553,20 @@ These are the available config options for making requests. Only the `url` is re
   // or to cancel the request by throwing an error
   // If maxRedirects is set to 0, `beforeRedirect` is not used.
   beforeRedirect: (options, { headers }) => {
-    if (options.hostname === "example.com") {
-      options.auth = "user:password";
+    const redirectUrl = `${options.protocol}//${options.hostname}`;
+
+    if (
+      options.hostname === "example.com" &&
+      new URL(redirectUrl).protocol === "https:"
+    ) {
+    options.auth = "user:password";
     }
   },
+  // Security note:
+  // The `beforeRedirect` hook runs after sensitive headers are stripped during redirects.
+  //The `follow-redirects` library removes credentials on protocol downgrade (HTTPS → HTTP) for security.
+  //Since `beforeRedirect` runs after this, re-injecting credentials without checking the   protocol can expose sensitive data.
+  //Always ensure credentials are only added for trusted HTTPS destinations.
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "node16",
     "lib": ["dom", "es2015"],
-    "types": [],
+    "types": ["mocha", "node"],
     "strict": true,
     "noEmit": true
   }

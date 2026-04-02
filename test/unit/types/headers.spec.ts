@@ -1,42 +1,40 @@
 import assert from 'assert';
-import axios from '../../../index.js';
+import { AxiosHeaders, RawAxiosRequestHeaders, AxiosRequestConfig } from '../../../index.js';
 
 describe('AxiosHeaders type safety', function () {
   it('should have proper type definitions for headers', function () {
-    // This test verifies that the AxiosHeaders type safety is working
-    // These assignments would cause TypeScript compilation errors if the types are wrong
-    
-    // Valid header assignments (should work)
-    const validConfig = {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Custom': 'value',
-        'X-Number': 123,
-        'X-Boolean': true,
-        'X-Null': null,
-        'X-Array': ['value1', 'value2']
-      }
+    // Typed as RawAxiosRequestHeaders so arbitrary header keys are validated by TS
+    const rawHeaders: RawAxiosRequestHeaders = {
+      'Content-Type': 'application/json',
+      'X-Custom': 'value',
+      'X-Number': 123,
+      'X-Boolean': true,
+      'X-Null': null,
+      'X-Array': ['value1', 'value2']
     };
 
-    assert.ok(validConfig.headers['Content-Type'] === 'application/json');
-    assert.ok(validConfig.headers['X-Custom'] === 'value');
-    assert.ok(validConfig.headers['X-Number'] === 123);
-    assert.ok(validConfig.headers['X-Boolean'] === true);
-    assert.ok(validConfig.headers['X-Null'] === null);
-    assert.ok(Array.isArray(validConfig.headers['X-Array']));
+    // Assign into AxiosRequestConfig to verify RawAxiosRequestHeaders is compatible
+    const validConfig: AxiosRequestConfig = { headers: rawHeaders };
+
+    assert.ok(rawHeaders['Content-Type'] === 'application/json');
+    assert.ok(rawHeaders['X-Custom'] === 'value');
+    assert.ok(rawHeaders['X-Number'] === 123);
+    assert.ok(rawHeaders['X-Boolean'] === true);
+    assert.ok(rawHeaders['X-Null'] === null);
+    assert.ok(Array.isArray(rawHeaders['X-Array']));
+    assert.ok(validConfig.headers != null);
   });
 
   it('should handle AxiosHeaders class properly', function () {
-    const headers = new axios.AxiosHeaders();
-    
-    // Valid operations
+    const headers = new AxiosHeaders();
+
     headers.set('Content-Type', 'application/json');
     headers.set('X-Custom', 'value');
     headers.set('X-Number', 123);
     headers.set('X-Boolean', true);
     headers.set('X-Null', null);
     headers.set('X-Array', ['value1', 'value2']);
-    
+
     assert.strictEqual(headers.get('Content-Type'), 'application/json');
     assert.strictEqual(headers.get('X-Custom'), 'value');
     assert.strictEqual(headers.get('X-Number'), '123');
@@ -46,38 +44,29 @@ describe('AxiosHeaders type safety', function () {
   });
 
   it('should maintain backward compatibility', function () {
-    // Test that existing usage patterns still work
-    const config = {
+    // Nested method-keyed headers are cast via unknown since AxiosRequestConfig
+    // headers union doesn't accept nested objects directly (by design)
+    const config: AxiosRequestConfig = {
       headers: {
-        'common': {
-          'Authorization': 'Bearer token'
-        },
-        'get': {
-          'Accept': 'application/json'
-        },
-        'post': {
-          'Content-Type': 'application/json'
-        }
-      }
+        'common': { 'Authorization': 'Bearer token' },
+        'get': { 'Accept': 'application/json' },
+        'post': { 'Content-Type': 'application/json' }
+      } as unknown as RawAxiosRequestHeaders
     };
 
-    assert.ok(config.headers.common['Authorization'] === 'Bearer token');
-    assert.ok(config.headers.get['Accept'] === 'application/json');
-    assert.ok(config.headers.post['Content-Type'] === 'application/json');
+    const h = config.headers as unknown as Record<string, Record<string, string>>;
+    assert.ok(h['common']['Authorization'] === 'Bearer token');
+    assert.ok(h['get']['Accept'] === 'application/json');
+    assert.ok(h['post']['Content-Type'] === 'application/json');
   });
 });
 
-// NOTE: The following code would cause TypeScript compilation errors if uncommented.
-// This demonstrates that the type safety fix is working correctly:
-
+// NOTE: The following would cause TypeScript compilation errors if uncommented,
+// proving the type-safety fix is working:
 /*
-// These would cause TypeScript errors:
-const badConfig = {
-  headers: {
-    'X-Promise': Promise.resolve('foo'), // Error: Promise not assignable to AxiosHeaderValue
-    'X-Function': () => 'bar', // Error: Function not assignable to AxiosHeaderValue  
-    'X-Object': { key: 'value' }, // Error: Object not assignable to AxiosHeaderValue
-    'X-Symbol': Symbol('test') // Error: Symbol not assignable to AxiosHeaderValue
-  }
+const badHeaders: RawAxiosRequestHeaders = {
+  'X-Promise': Promise.resolve('foo'), // Error: Promise not assignable to AxiosHeaderValue
+  'X-Function': () => 'bar',           // Error: Function not assignable to AxiosHeaderValue
+  'X-Symbol': Symbol('test')           // Error: Symbol not assignable to AxiosHeaderValue
 };
 */

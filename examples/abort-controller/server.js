@@ -1,5 +1,12 @@
 export default function (req, res) {
-  const parsedUrl = new URL(req.url, 'http://localhost');
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(req.url, 'http://localhost');
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Invalid URL');
+    return;
+  }
   const delay = parsedUrl.searchParams.get('delay') || 3000;
 
   setTimeout(() => {

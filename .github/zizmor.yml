@@ -1,5 +1,0 @@
-rules:
-  excessive-permissions:
-    # TODO: audit and narrow permissions across all workflows
-    disable: true
-

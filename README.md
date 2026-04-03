@@ -1866,12 +1866,13 @@ export async function load({ fetch }) {
 }
 ```
 
-## 🔥 HTTP2
+### 🔥 HTTP/2
 
-In version `1.13.0`, experimental `HTTP2` support was added to the `http` adapter.
-The `httpVersion` option is now available to select the protocol version used.
-Additional native options for the internal `session.request()` call can be passed via the `http2Options` config.
-This config also includes the custom `sessionTimeout` parameter, which defaults to `1000ms`.
+Axios currently uses Node.js HTTP/HTTPS modules and does not provide built-in HTTP/2 support.
+
+Options like `httpVersion` are not recognized and will be ignored.
+
+If HTTP/2 functionality is required, consider using alternative libraries or custom adapters.
 
 ```js
 const form = new FormData();

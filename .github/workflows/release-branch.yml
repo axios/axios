@@ -17,8 +17,7 @@ on:
         default: false
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   build-and-run-vitest:
@@ -26,11 +25,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          persist-credentials: true
+          persist-credentials: false
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: 24.x
           cache: npm
@@ -47,7 +46,7 @@ jobs:
       - name: Pack npm tarball
         run: npm pack
       - name: Upload npm pack artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: axios-tarball
           path: axios-*.tgz
@@ -64,17 +63,17 @@ jobs:
         node-version: [12, 14, 16, 18]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          persist-credentials: true
+          persist-credentials: false
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/smoke/cjs/package-lock.json
       - name: Download npm pack artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
@@ -98,17 +97,17 @@ jobs:
         node-version: [20, 22, 24]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          persist-credentials: true
+          persist-credentials: false
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/smoke/esm/package-lock.json
       - name: Download npm pack artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
@@ -132,17 +131,17 @@ jobs:
         node-version: [12, 14, 16, 18]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          persist-credentials: true
+          persist-credentials: false
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/module/cjs/package-lock.json
       - name: Download npm pack artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
@@ -166,17 +165,17 @@ jobs:
         node-version: [20, 22, 24]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          persist-credentials: true
+          persist-credentials: false
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: tests/module/esm/package-lock.json
       - name: Download npm pack artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
@@ -194,13 +193,16 @@ jobs:
     name: Bump version and create PR
     needs: [build-and-run-vitest, cjs-smoke-tests, esm-smoke-tests]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: 24.x
           cache: npm
@@ -213,10 +215,12 @@ jobs:
       - name: Bump version with NPM version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TYPE: ${{ github.event.inputs.type }}
+          INPUT_BETA: ${{ github.event.inputs.beta }}
         id: bump-version
         run: |
-          TYPE=${{ github.event.inputs.type }}
-          BETA=${{ github.event.inputs.beta }}
+          TYPE="${INPUT_TYPE}"
+          BETA="${INPUT_BETA}"
           if [ "$TYPE" = "auto" ]; then
             npm version $(npm version | grep -Eo 'patch|minor|major' | head -1)
           else
@@ -234,7 +238,7 @@ jobs:
       - name: Build project
         run: npm run build
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           branch: 'release'
           commit-message: 'chore(release): prepare release ${{ steps.bump-version.outputs.newTag }}'

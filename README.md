@@ -1,4 +1,4 @@
-<h3 align="center"> 💎 Platinum sponsors <br> </h3> <table align="center"><tr><td align="center" width="50%"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="90px" height="90px" src="https://axios-http.com/assets/sponsors/opencollective/ed51c2ee8f1b70aa3484d6dd678652134079a036.png" alt="THANKS.DEV"/> </a> <p align="center" title="We&#x27;re passionate about making open source sustainable. Scan your dependancy tree to better understand which open source projects need funding the most. Maintainers can also register their projects to become eligible for funding.">We&#x27;re passionate about making open source sustainable. Scan your dependancy tree to better understand which open source projects need funding the...</p> <p align="center"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>thanks.dev</b></a> </p>
+<h3 align="center"> 💎 Platinum sponsors <br> </h3> <table align="center"><tr><td align="center" width="50%"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="90px" height="90px" src="https://axios-http.com/assets/sponsors/opencollective/ed51c2ee8f1b70aa3484d6dd678652134079a036.png" alt="THANKS.DEV"/> </a> <p align="center" title="We&#x27;re passionate about making open source sustainable. Scan your dependency tree to better understand which open source projects need funding the most. Maintainers can also register their projects to become eligible for funding.">We&#x27;re passionate about making open source sustainable. Scan your dependency tree to better understand which open source projects need funding the...</p> <p align="center"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>thanks.dev</b></a> </p>
 </td><td align="center" width="50%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
 </td></tr></table>
 <h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.principal.com</b></a> </p>
@@ -8,7 +8,7 @@
 </td><td align="center" width="33.333333333333336%"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="62px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e1625cb54e10ee40180c99d1495a462e9d6664a4.png" alt="Buzzoid - Buy Instagram Followers"/> </a> <p align="center" title="At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#x27;s #1 IG service since 2012.">At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rate...</p> <p align="center"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>buzzoid.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e699ec99f7df3a203ddbc49d3c7712a907e628ea.png" alt="Poprey - Buy Instagram Likes"/> </a> <p align="center" title="Buy Instagram Likes">Buy Instagram Likes</p> <p align="center"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>poprey.com</b></a> </p>
 </td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="71px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/16450b4dc0deb9dab5a511bf2bc8b8b4ac33412f.png" alt="Requestly"/> </a> <p align="center" title="A lightweight open-source API Development, Testing &amp; Mocking platform">A lightweight open-source API Development, Testing &amp; Mocking platform</p> <p align="center"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>requestly.com</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
+</td><td align="center" width="33.333333333333336%"> <a href="https://rxdb.info/?utm_source&#x3D;opencollective&amp;utm_medium&#x3D;banner&amp;utm_campaign&#x3D;opencollective_sponsor&amp;utm_content&#x3D;logo" style="padding: 10px; display: inline-block" target="_blank"> <img width="158px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/b28cc6ed919b414cb5f3d4a6d666cb8e06c5ff07.png" alt="RxDB"/> </a> <p align="center" title="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, E...</p> <p align="center"> <a href="https://rxdb.info/?utm_source&#x3D;opencollective&amp;utm_medium&#x3D;banner&amp;utm_campaign&#x3D;opencollective_sponsor&amp;utm_content&#x3D;logo" target="_blank"><b>rxdb.info</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
 </td></tr></table>
 
@@ -552,7 +552,9 @@ These are the available config options for making requests. Only the `url` is re
   // to inspect the latest response headers,
   // or to cancel the request by throwing an error
   // If maxRedirects is set to 0, `beforeRedirect` is not used.
+
   beforeRedirect: (options, { headers }) => {
+<<<<<<< HEAD
     const redirectUrl = `${options.protocol}//${options.hostname}`;
 
     if (
@@ -560,6 +562,13 @@ These are the available config options for making requests. Only the `url` is re
       new URL(redirectUrl).protocol === "https:"
     ) {
     options.auth = "user:password";
+=======
+    if (
+      options.hostname === "example.com" &&
+      options.protocol === "https:"
+    ) {
+      options.auth = "user:password";
+>>>>>>> 395a1604be016fd54c86dee32dc1a6bab118467f
     }
   },
   // Security note:
@@ -567,6 +576,13 @@ These are the available config options for making requests. Only the `url` is re
   //The `follow-redirects` library removes credentials on protocol downgrade (HTTPS → HTTP) for security.
   //Since `beforeRedirect` runs after this, re-injecting credentials without checking the   protocol can expose sensitive data.
   //Always ensure credentials are only added for trusted HTTPS destinations.
+
+// Security note:
+// The beforeRedirect hook runs after sensitive headers are stripped during redirects.
+// Re-injecting credentials without checking the destination can expose sensitive data.
+// Only add credentials for trusted HTTPS destinations.
+// Avoid re-adding credentials on downgraded redirects.
+
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.

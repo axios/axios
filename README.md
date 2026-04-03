@@ -1883,11 +1883,6 @@ const { data, headers, status } = await axios.post(
   "https://httpbin.org/post",
   form,
   {
-    httpVersion: 2,
-    http2Options: {
-      // rejectUnauthorized: false,
-      // sessionTimeout: 1000
-    },
     onUploadProgress(e) {
       console.log("upload progress", e);
     },
@@ -1895,7 +1890,7 @@ const { data, headers, status } = await axios.post(
       console.log("download progress", e);
     },
     responseType: "arraybuffer",
-  },
+  }
 );
 ```
 

@@ -554,21 +554,11 @@ These are the available config options for making requests. Only the `url` is re
   // If maxRedirects is set to 0, `beforeRedirect` is not used.
 
   beforeRedirect: (options, { headers }) => {
-<<<<<<< HEAD
-    const redirectUrl = `${options.protocol}//${options.hostname}`;
-
-    if (
-      options.hostname === "example.com" &&
-      new URL(redirectUrl).protocol === "https:"
-    ) {
-    options.auth = "user:password";
-=======
     if (
       options.hostname === "example.com" &&
       options.protocol === "https:"
     ) {
       options.auth = "user:password";
->>>>>>> 395a1604be016fd54c86dee32dc1a6bab118467f
     }
   },
   // Security note:

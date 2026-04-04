@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Documentation for the Axios HTTP client",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",

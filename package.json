@@ -111,6 +111,7 @@
     "test:smoke:esm:vitest": "npm --prefix tests/smoke/esm run test:smoke:esm:vitest",
     "test:module:cjs": "npm --prefix tests/module/cjs run test:module:cjs",
     "test:module:esm": "npm --prefix tests/module/esm run test:module:esm",
+    "docs:dev": "cd docs && npm run docs:dev",
     "start": "node ./sandbox/server.js",
     "examples": "node ./examples/server.js",
     "lint": "eslint lib/**/*.js",

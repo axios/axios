@@ -68,6 +68,9 @@ export default defineConfig({
           { text: 'Interceptors', link: '/pages/advanced/interceptors' },
           { text: 'Error handling', link: '/pages/advanced/error-handling' },
           { text: 'Cancellation', link: '/pages/advanced/cancellation' },
+          { text: 'Authentication', link: '/pages/advanced/authentication' },
+          { text: 'Retry & error recovery', link: '/pages/advanced/retry' },
+          { text: 'Testing', link: '/pages/advanced/testing' },
           {
             text: 'x-www-form-urlencoded format',
             link: '/pages/advanced/x-www-form-urlencoded-format',
@@ -83,7 +86,7 @@ export default defineConfig({
           },
           {
             text: 'Progress capturing 🔥',
-            link: '/pages/advanced/progress-caputing',
+            link: '/pages/advanced/progress-capturing',
           },
           { text: 'Rate limiting 🔥', link: '/pages/advanced/rate-limiting' },
           {
@@ -100,8 +103,8 @@ export default defineConfig({
             ],
           },
           {
-            text: 'Fetch adaptor 🔥',
-            link: '/pages/advanced/fetch-adaptor',
+            text: 'Fetch adapter 🔥',
+            link: '/pages/advanced/fetch-adapter',
           },
           { text: 'HTTP2 🔥', link: '/pages/advanced/http2' },
           { text: 'Promises', link: '/pages/advanced/promises' },

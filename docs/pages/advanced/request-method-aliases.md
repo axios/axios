@@ -79,3 +79,52 @@ The `patch` method is used to make a PATCH request. It takes a URL, an optional 
 ```ts
 axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
+
+## Form data shorthand methods
+
+These methods are equivalent to their counterparts above, but preset `Content-Type` to `multipart/form-data`. They are the recommended way to upload files or submit HTML forms.
+
+### `postForm`
+
+```ts
+axios.postForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+```
+
+```js
+// Upload a file from a browser file input
+await axios.postForm("/api/upload", {
+  file: document.querySelector("#fileInput").files[0],
+  description: "Profile photo",
+});
+```
+
+### `putForm`
+
+```ts
+axios.putForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+```
+
+```js
+// Replace a resource with form data
+await axios.putForm("/api/users/1/avatar", {
+  avatar: document.querySelector("#avatarInput").files[0],
+});
+```
+
+### `patchForm`
+
+```ts
+axios.patchForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+```
+
+```js
+// Update specific fields using form data
+await axios.patchForm("/api/users/1", {
+  displayName: "New Name",
+  avatar: document.querySelector("#avatarInput").files[0],
+});
+```
+
+::: tip
+`postForm`, `putForm`, and `patchForm` accept all the same data types as their base methods — plain objects, `FormData`, `FileList`, and `HTMLFormElement`. See [File posting](/pages/advanced/file-posting) for more examples.
+:::

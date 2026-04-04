@@ -12,14 +12,14 @@ axios.post("/foo", params);
 
 ## Query string <Badge type="danger" text="Very old" />
 
-For older browsers, you can use the [`querystring`](https://github.com/ljharb/qs) library to serialize objects to the `application/x-www-form-urlencoded` format.
+For older browsers or environments without `URLSearchParams`, you can use the [`qs`](https://github.com/ljharb/qs) library to serialize objects to the `application/x-www-form-urlencoded` format.
 
 ```js
 const qs = require("qs");
 axios.post("/foo", qs.stringify({ bar: 123 }));
 ```
 
-In very old versions of Node.js, you can use the `querystring` module that comes with Node.js.
+In very old versions of Node.js, you can use the built-in `querystring` module that ships with Node.js. Note that this module has been deprecated in Node.js v16 — prefer `URLSearchParams` or `qs` for new code.
 
 ```js
 const querystring = require("querystring");

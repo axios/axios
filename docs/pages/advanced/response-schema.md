@@ -1,38 +1,64 @@
 # Response schema
 
-Below is the standard axios response schema that will be returned from an HTTP request. The response schema is the same for both the browser and node.js environments.
-
-### `data`
-
-The response data from the server. When using `transformResponse`, this will be the result of the last transform.
-
-### `status`
-
-The HTTP status code from the server response.
-
-### `statusText`
-
-The HTTP status message from the server response.
-
-### `headers`
-
-The headers that the server responded with. All header names are lower cased.
-
-### `config`
-
-The config that was provided to `axios` for the request.
-
-### `request`
-
-The request that generated this response. It is the last `ClientRequest` instance in node.js (in redirects) and an `XMLHttpRequest` instance in the browser.
+Every axios request resolves to a response object with the following shape. The schema is consistent across both browser and Node.js environments.
 
 ```js
 {
+  // The response data provided by the server.
+  // When using `transformResponse`, this will be the result of the last transform.
   data: {},
+
+  // The HTTP status code from the server response (e.g. 200, 404, 500).
   status: 200,
-  statusText: 'OK',
+
+  // The HTTP status message matching the status code (e.g. "OK", "Not Found").
+  statusText: "OK",
+
+  // The response headers sent by the server.
+  // Header names are lower-cased. You can access them using bracket or dot notation.
   headers: {},
+
+  // The axios config that was used for this request, including baseURL,
+  // headers, timeout, params, and any other options you provided.
   config: {},
-  request: {}
+
+  // The underlying request object.
+  // In Node.js: the last `http.ClientRequest` instance (after any redirects).
+  // In the browser: the `XMLHttpRequest` instance.
+  request: {},
 }
+```
+
+## Accessing response fields
+
+In practice you will usually destructure just the parts you need:
+
+```js
+const { data, status, headers } = await axios.get("/api/users/1");
+
+console.log(status);          // 200
+console.log(headers["content-type"]); // "application/json; charset=utf-8"
+console.log(data);            // { id: 1, name: "Jay", email: "jay@example.com" }
+```
+
+## Checking the status code
+
+axios resolves the promise for any 2xx response and rejects for anything outside that range by default. You can customise this with the `validateStatus` config option:
+
+```js
+const response = await axios.get("/api/resource", {
+  validateStatus: (status) => status < 500, // resolve for anything below 500
+});
+```
+
+## Accessing response headers
+
+All response header names are lower-cased, regardless of how the server sent them:
+
+```js
+const response = await axios.get("/api/resource");
+
+// These are equivalent
+const contentType = response.headers["content-type"];
+const contentType2 = response.headers.get("content-type");
 ```

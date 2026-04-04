@@ -57,3 +57,64 @@ for (const [header, value] of headers) {
 // bar 2
 // baz 3
 ```
+
+## Setting headers on a request
+
+The most common place to set headers is the `headers` option in your request config or instance config:
+
+```js
+// On a single request
+await axios.get("/api/data", {
+  headers: {
+    "Accept-Language": "en-US",
+    "X-Request-ID": "abc123",
+  },
+});
+
+// On an instance (applied to every request)
+const api = axios.create({
+  headers: {
+    "X-App-Version": "2.0.0",
+  },
+});
+```
+
+## Setting headers in an interceptor
+
+Interceptors are the right place to attach dynamic headers like auth tokens, because the token may not be available when the instance is first created:
+
+```js
+api.interceptors.request.use((config) => {
+  const token = getAuthToken(); // read at request time
+  config.headers.set("Authorization", `Bearer ${token}`);
+  return config;
+});
+```
+
+## Reading response headers
+
+Response headers are available on `response.headers` as an `AxiosHeaders` instance. All header names are lower-cased:
+
+```js
+const response = await axios.get("/api/data");
+
+console.log(response.headers["content-type"]);
+// application/json; charset=utf-8
+
+console.log(response.headers.get("x-request-id"));
+// abc123
+```
+
+## Removing a default header
+
+To opt out of a header that axios sets by default (such as `Content-Type` or `User-Agent`), set its value to `false`:
+
+```js
+await axios.post("/api/data", payload, {
+  headers: {
+    "Content-Type": false, // let the browser set it automatically (e.g. for FormData)
+  },
+});
+```
+
+For more detail on the full `AxiosHeaders` method API, see the [Header methods](/pages/advanced/header-methods) page.

@@ -170,11 +170,51 @@ The `Cancel` class is an alias for the `CanceledError` class. It is exported for
 
 ### `isCancel`
 
-A function that checks if an error is a `CanceledError`.
+A function that checks if an error is a `CanceledError`. Useful for distinguishing intentional cancellations from unexpected errors.
+
+```ts
+isCancel(value: any): boolean;
+```
+
+```js
+import axios from "axios";
+
+const controller = new AbortController();
+
+axios.get("/api/data", { signal: controller.signal }).catch((error) => {
+  if (axios.isCancel(error)) {
+    console.log("Request was cancelled:", error.message);
+  } else {
+    console.error("Unexpected error:", error);
+  }
+});
+
+controller.abort("User navigated away");
+```
 
 ### `isAxiosError`
 
-A function that checks if an error is an `AxiosError`.
+A function that checks if an error is an `AxiosError`. Use this in `catch` blocks to safely access axios-specific error properties like `error.response` and `error.config`.
+
+```ts
+isAxiosError(value: any): value is AxiosError;
+```
+
+```js
+import axios from "axios";
+
+try {
+  await axios.get("/api/resource");
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    // error.response, error.config, error.code are all available
+    console.error("HTTP error", error.response?.status, error.message);
+  } else {
+    // A non-axios error (e.g. a programming mistake)
+    throw error;
+  }
+}
+```
 
 ### `all` <Badge type="danger" text="Deprecated in favour of Promise.all" />
 
@@ -192,25 +232,97 @@ spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
 
 ### `toFormData`
 
-A function that converts an object to a `FormData` object. This function is useful when you want to send form data in an HTTP request.
+Converts a plain JavaScript object (or a nested one) to a `FormData` instance. Useful when you want to programmatically build multipart form data from an object.
+
+```ts
+toFormData(sourceObj: object, formData?: FormData, options?: FormSerializerOptions): FormData;
+```
+
+```js
+import { toFormData } from "axios";
+
+const data = { name: "Jay", avatar: fileBlob };
+const form = toFormData(data);
+// form is now a FormData instance ready to post
+await axios.post("/api/users", form);
+```
 
 ### `formToJSON`
 
-A function that converts a `FormData` object to a JSON object. This function is useful when you want to convert form data to a JSON object.
+Converts a `FormData` instance back to a plain JavaScript object. Useful for reading form data in a structured format.
+
+```ts
+formToJSON(form: FormData): object;
+```
+
+```js
+import { formToJSON } from "axios";
+
+const form = new FormData();
+form.append("name", "Jay");
+form.append("role", "admin");
+
+const obj = formToJSON(form);
+console.log(obj); // { name: "Jay", role: "admin" }
+```
 
 ### `getAdapter`
 
-A function that returns the current adapter that is being used by the `axios` instance.
+Resolves and returns an adapter function by name or by passing an array of candidate names. axios uses this internally to select the best available adapter for the current environment.
+
+```ts
+getAdapter(adapters: string | string[]): AxiosAdapter;
+```
+
+```js
+import { getAdapter } from "axios";
+
+// Get the fetch adapter explicitly
+const fetchAdapter = getAdapter("fetch");
+
+// Get the best available adapter from a priority list
+const adapter = getAdapter(["fetch", "xhr", "http"]);
+```
 
 ### `mergeConfig`
 
-A function that merges two configuration objects. This function is used internally by the `axios` instance to merge the default configuration with the user-provided configuration.
+Merges two axios config objects together, applying the same deep-merge strategy that axios uses internally when combining defaults with per-request options. Later values take precedence.
+
+```ts
+mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): AxiosRequestConfig<T>;
+```
+
+```js
+import { mergeConfig } from "axios";
+
+const base = { baseURL: "https://api.example.com", timeout: 5000 };
+const override = { timeout: 10000, headers: { "X-Custom": "value" } };
+
+const merged = mergeConfig(base, override);
+// { baseURL: "https://api.example.com", timeout: 10000, headers: { "X-Custom": "value" } }
+```
 
 ## Constants
 
 ### `HttpStatusCode`
 
-An object that contains a list of HTTP status codes and their corresponding status messages. This object is used to map status codes to status messages in the `AxiosError` class.
+An object that contains a list of HTTP status codes as named constants. Use this to write readable conditionals instead of bare numbers.
+
+```js
+import axios, { HttpStatusCode } from "axios";
+
+try {
+  const response = await axios.get("/api/resource");
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    if (error.response?.status === HttpStatusCode.NotFound) {
+      console.error("Resource not found");
+    } else if (error.response?.status === HttpStatusCode.Unauthorized) {
+      console.error("Authentication required");
+    }
+  }
+}
+```
 
 ## Miscellaneous
 

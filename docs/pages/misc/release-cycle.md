@@ -36,11 +36,11 @@ The project will now strictly adhere to semantic versioning. This means that eac
 
 ### Deprecation
 
-When a new version of the project is released for example v1.x.x, the previous major version will be marked as deprecated. This means that no new features or bug fixes will be added to the deprecated version, and users are encouraged to upgrade to the latest version. Deprecation will occur after 3 months of the release of the `next` version which will happing in conjunction with the next scheduled release. Thus allowing users 6 months to upgrade to the latest version.
+When a new version of the project is released for example v1.x.x, the previous major version will be marked as deprecated. This means that no new features or bug fixes will be added to the deprecated version, and users are encouraged to upgrade to the latest version. Deprecation will occur after 3 months of the release of the `next` version which will happen in conjunction with the next scheduled release. Thus allowing users 6 months to upgrade to the latest version.
 
 ### Security updates
 
-Security updates will be released as soon as possible after the patch has been developed and tested. We will notify users of the release via the project's GitHub repository. We will also publish the release notes and security advisories on the project's GitHub releases page. We will also depreciate all versions that contain the security vulnerability.
+Security updates will be released as soon as possible after the patch has been developed and tested. We will notify users of the release via the project's GitHub repository. We will also publish the release notes and security advisories on the project's GitHub releases page. We will also deprecate all versions that contain the security vulnerability.
 
 ### Backporting
 

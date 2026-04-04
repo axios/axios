@@ -23,5 +23,8 @@
     "dayjs": "^1.11.13",
     "patch-package": "^8.0.1",
     "vue": "^3.5.32"
+  },
+  "overrides": {
+    "esbuild": "^0.25.0"
   }
 }

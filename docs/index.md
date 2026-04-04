@@ -113,7 +113,7 @@ const capitalizeFirstLetter = (word) => {
   flex-direction: column;
   grid-column: span 1 / span 1;
   border-radius: 0.5rem;
-  border: 1px solid var(--card-border-color) !important;
+  border: 1px solid var(--vp-c-gutter) !important;
   text-align: center;
   background-color: var(--card-background-color) !important;
   width: 11.5rem;
@@ -255,7 +255,7 @@ const capitalizeFirstLetter = (word) => {
   border-left: 0px;
   border-bottom: 0px;
   border-style: solid;
-  border-color: var(--card-between-border-color);
+  border-color: var(--vp-c-gutter);
   width: 0; 
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -278,7 +278,7 @@ const capitalizeFirstLetter = (word) => {
   border-bottom: 0px;
   border-right: 0px;
   border-style: solid;
-  border-color: var(--card-between-border-color);
+  border-color: var(--vp-c-gutter);
   width: 0;
   font-size: 0.875rem;
   line-height: 1.25rem;

@@ -103,6 +103,7 @@ export default defineConfig({
             text: 'Fetch adaptor 🔥',
             link: '/pages/advanced/fetch-adaptor',
           },
+          { text: 'HTTP2 🔥', link: '/pages/advanced/http2' },
           { text: 'Promises', link: '/pages/advanced/promises' },
           { text: 'TypeScript', link: '/pages/advanced/type-script' },
         ],

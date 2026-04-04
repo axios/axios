@@ -1,0 +1,31 @@
+name: Auths commit verification
+
+on:
+  push:
+    branches: [v1.x]
+  pull_request:
+    branches: ["**"]
+
+permissions: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify commits with Auths
+        uses: auths-dev/auths-verify-github-action@v1 # TODO: pin to SHA once stable
+        with:
+          allowed-signers: .auths/allowed_signers
+          fail-on-unsigned: 'false'
+          skip-merge-commits: 'true'
+          post-pr-comment: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}

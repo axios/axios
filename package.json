@@ -109,6 +109,7 @@
     "test:vitest:watch": "vitest",
     "test:smoke:cjs:vitest": "npm --prefix tests/smoke/cjs run test:smoke:cjs:mocha",
     "test:smoke:esm:vitest": "npm --prefix tests/smoke/esm run test:smoke:esm:vitest",
+    "test:smoke:deno": "deno task --cwd tests/smoke/deno test",
     "test:module:cjs": "npm --prefix tests/module/cjs run test:module:cjs",
     "test:module:esm": "npm --prefix tests/module/esm run test:module:esm",
     "docs:dev": "cd docs && npm run docs:dev",

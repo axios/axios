@@ -1,0 +1,1300 @@
+{
+  "backer": [
+    {
+      "name": "Leonardo Kewitz",
+      "imageUrl": "https://images.opencollective.com/leokewitz/f20630b/avatar.png",
+      "description": "I'm a Software Engineer who advocates for simplicity and readability, I strive for elegant solutions leveraging different languages and paradigms.",
+      "tier": "backer",
+      "slug": "leokewitz",
+      "website": "https://kewitz.js.org/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Open Collective",
+      "imageUrl": "https://images.opencollective.com/opencollective/b23105c/logo.png",
+      "description": "We are on a mission to create a new generation of association, transparent by design",
+      "tier": "backer",
+      "slug": "opencollective",
+      "website": "https://opencollective.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/opencollect?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Benjamin Piouffle",
+      "imageUrl": "https://images.opencollective.com/betree/eb1a3dd/avatar.png",
+      "description": "Full-time @opencollective. Founder / core-contributor @CaptainFact. Usually working with Elixir, React, and NodeJS.",
+      "tier": "backer",
+      "slug": "betree",
+      "website": "https://benjamin.piouffle.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Takeru Ichii",
+      "imageUrl": "https://images.opencollective.com/takeru-ichii/c6be635/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "takeru-ichii",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Mesh Payments",
+      "imageUrl": "https://images.opencollective.com/meshpayments/e216d5a/logo.png",
+      "description": "Mesh Payments cardless solution allows companies to enjoy full visibility, control, and in-depth payment intelligence",
+      "tier": "backer",
+      "slug": "meshpayments",
+      "website": "https://meshpayments.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/meshpayments?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Orbit",
+      "imageUrl": "https://images.opencollective.com/orbit-love/b1e6d01/logo.png",
+      "description": "Mission control for communities",
+      "tier": "backer",
+      "slug": "orbit-love",
+      "website": "https://www.orbit.love/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/orbitmodel?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "kohta ito",
+      "imageUrl": "https://images.opencollective.com/kohta-ito/c5cc50b/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "kohta-ito",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Orbit",
+      "imageUrl": "https://images.opencollective.com/orbit-love/b1e6d01/logo.png",
+      "description": "Mission control for communities",
+      "tier": "backer",
+      "slug": "orbit-love",
+      "website": "https://www.orbit.love/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/orbitmodel?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Yuhei FUJITA",
+      "imageUrl": "https://images.opencollective.com/fjt/3955659/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "fjt",
+      "website": "https://fujita.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/Yuhei_FUJITA?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "DLTx Labs Pty Ltd",
+      "imageUrl": "https://images.opencollective.com/dltxio/d2c191e/logo.png",
+      "description": "DLTx Labs is a blockchain focused software development house and venture studio based in Brisbane, Australia.",
+      "tier": "backer",
+      "slug": "dltxio",
+      "website": "https://dltx.io/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/dltxio?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Kazuhiro Kobayashi",
+      "imageUrl": "https://images.opencollective.com/kzhrk/e4448b3/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "kzhrk",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "38elements",
+      "imageUrl": "https://images.opencollective.com/38elements/5dfbefe/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "38elements",
+      "website": "https://japanese-document.github.io/lit/api-LitElement.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/38elements?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Sentry",
+      "imageUrl": "https://images.opencollective.com/sentry/9620d33/logo.png",
+      "description": "We help software teams build better software, faster. From error tracking to performance monitoring, developers can see what actually matters, solve quicker, and learn continuously about their applications - from the frontend to the backend.",
+      "tier": "backer",
+      "slug": "sentry",
+      "website": "https://sentry.io/welcome/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/getsentry?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Corellium",
+      "imageUrl": "https://images.opencollective.com/corellium/aa8c228/logo.png",
+      "description": "Accelerate your development work on iOS, Android and beyond with the power of ARM-based virtual devices.",
+      "tier": "backer",
+      "slug": "corellium",
+      "website": "https://www.corellium.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/corelliumhq?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Andy Loughran",
+      "imageUrl": "https://images.opencollective.com/andylockran/5d59da6/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "andylockran",
+      "website": "https://andylockran.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/andylockran?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "kei sakamoto",
+      "imageUrl": "https://images.opencollective.com/guest-8c25700c/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "guest-8c25700c",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Suhail Doshi",
+      "imageUrl": "https://images.opencollective.com/guest-1ac61aed/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "guest-1ac61aed",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Alan Wang",
+      "imageUrl": "https://images.opencollective.com/user-731a6d6b/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "user-731a6d6b",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Julio Jordán",
+      "imageUrl": "https://images.opencollective.com/juliojordan/avatar.png",
+      "description": "Sync person, async code. He/him.",
+      "tier": "backer",
+      "slug": "juliojordan",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "neuland - Büro für Informatik",
+      "imageUrl": "https://images.opencollective.com/neuland/1dc766b/logo.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "neuland",
+      "website": "https://www.neuland-bfi.de/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/neuland?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Jeremy Combs",
+      "imageUrl": "https://images.opencollective.com/jmcombs/22a314a/avatar.png",
+      "description": "Cisco Collaboration Junkie who is enjoying (attempting) software development to further Collaboration.",
+      "tier": "backer",
+      "slug": "jmcombs",
+      "website": "https://wwjcdo.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/dreinidaho?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Guest",
+      "imageUrl": "https://images.opencollective.com/guest-b81fd6d3/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "guest-b81fd6d3",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Raider.IO",
+      "imageUrl": "https://images.opencollective.com/raiderio_wow/7a380a3/logo.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "raiderio_wow",
+      "website": "https://raider.io/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/RaiderIO_WoW?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Midtown Rulers",
+      "imageUrl": "https://images.opencollective.com/midtownrulers/8c856fb/logo.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "midtownrulers",
+      "website": "https://midtownrulers.org/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "SerpApi",
+      "imageUrl": "https://images.opencollective.com/serp_api/19b487e/logo.png",
+      "description": "API to get search engine results with ease.",
+      "tier": "backer",
+      "slug": "serp_api",
+      "website": "https://serpapi.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/serp_api?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "GitHub Sponsors",
+      "imageUrl": "https://images.opencollective.com/github-sponsors/dc0ae97/logo.png",
+      "description": "Connect your Collective to GitHub Sponsors: https://docs.opencollective.com/help/collectives/github-sponsors",
+      "tier": "backer",
+      "slug": "github-sponsors",
+      "website": "https://github.com/sponsors/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "intra-mart",
+      "imageUrl": "https://images.opencollective.com/intra-mart/a417d71/logo.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "intra-mart",
+      "website": "https://dev.intra-mart.jp/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/intramart_dev?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "MFB Technologies",
+      "imageUrl": "https://images.opencollective.com/mfbtech/3c62a0c/logo.png",
+      "description": "Develop cutting edge software for litigators.",
+      "tier": "backer",
+      "slug": "mfbtech",
+      "website": "https://mfbtech.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/mfb_tech?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Tomasz",
+      "imageUrl": "https://images.opencollective.com/tomasz-kleszczewski/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "tomasz-kleszczewski",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Lay",
+      "imageUrl": "https://images.opencollective.com/brownsugar/c324dd1/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "brownsugar",
+      "website": "https://brownsugar.tw/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Bervianto Leo Pratama",
+      "imageUrl": "https://images.opencollective.com/berviantoleo/3437bf2/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "berviantoleo",
+      "website": "https://berviantoleo.my.id/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/berviantoleo?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "DigitalOcean",
+      "imageUrl": "https://images.opencollective.com/digitalocean/dc2d83b/logo.png",
+      "description": "The easiest ☁️ platform to deploy, manage & scale applications of any size.",
+      "tier": "backer",
+      "slug": "digitalocean",
+      "website": "https://www.digitalocean.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/digitalocean?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Quicko",
+      "imageUrl": "https://images.opencollective.com/quicko/7bd1dc9/logo.png",
+      "description": "On a mission to help India save, pay & file taxes!",
+      "tier": "backer",
+      "slug": "quicko",
+      "website": "https://quicko.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/howtoquicko?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Lowdefy",
+      "imageUrl": "https://images.opencollective.com/lowdefy/aa6698f/logo.png",
+      "description": "Create custom web apps in minutes",
+      "tier": "backer",
+      "slug": "lowdefy",
+      "website": "https://lowdefy.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/lowdefy?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "Guest",
+      "imageUrl": "https://images.opencollective.com/guest-73375f18/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "guest-73375f18",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "AllBoosts",
+      "imageUrl": "https://images.opencollective.com/allboosts/6422f54/logo.png",
+      "description": "All Games, All Boosts, One Platform.",
+      "tier": "backer",
+      "slug": "allboosts",
+      "website": "https://allboosts.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Incognito",
+      "imageUrl": "https://images.opencollective.com/user-5d607d62/avatar.png",
+      "description": null,
+      "tier": "backer",
+      "slug": "user-5d607d62",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Gama Casino",
+      "imageUrl": "https://images.opencollective.com/gama-casino/a085f51/logo.png",
+      "description": "We offer entertainment for the rich, namely online casinos.",
+      "tier": "backer",
+      "slug": "gama-casino",
+      "website": "https://gamasio.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Krakenstream",
+      "imageUrl": "https://images.opencollective.com/krakenstream-com/5fda96b/avatar.png",
+      "description": "Buy Twitch viewers",
+      "tier": "backer",
+      "slug": "krakenstream-com",
+      "website": "https://krakenstream.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    }
+  ],
+  "bronze": [
+    {
+      "name": "WebScraping.AI",
+      "imageUrl": "https://images.opencollective.com/webscraping-ai/671e30d/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "webscraping-ai",
+      "website": "https://webscraping.ai/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/webscraping_ai?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "inkedin",
+      "imageUrl": "https://images.opencollective.com/inkedin/40e0c14/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "inkedin",
+      "website": "https://inkedin.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "nongamstopbets.com",
+      "imageUrl": "https://images.opencollective.com/nongamstopbets-uk/7271d84/logo.png",
+      "description": "Entertainment",
+      "tier": "bronze",
+      "slug": "nongamstopbets-uk",
+      "website": "https://www.nongamstopbets.com/casinos-not-on-gamstop/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "NonStop Casino",
+      "imageUrl": "https://images.opencollective.com/nonstop-casino/5a4c348/logo.png",
+      "description": "Sites Not on GamStop",
+      "tier": "bronze",
+      "slug": "nonstop-casino",
+      "website": "https://uk.nonstopcasino.org/non-gamstop-casinos/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Proxidize",
+      "imageUrl": "https://images.opencollective.com/proxidize/3658b39/logo.png",
+      "description": "Proxidize is a mobile proxy creation and management platform that provides all needed components from hardware to cloud software and SIM cards.",
+      "tier": "bronze",
+      "slug": "proxidize",
+      "website": "https://proxidize.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/proxidizeHQ?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "OnlineCasinoProfy",
+      "imageUrl": "https://images.opencollective.com/onlinecasinoprofy/85c222c/avatar.png",
+      "description": "OnlineCasinoProfy is your guide to the world of gambling.",
+      "tier": "bronze",
+      "slug": "onlinecasinoprofy",
+      "website": "https://polskiekasynaonline24.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Casino Bonussen Nederland",
+      "imageUrl": "https://images.opencollective.com/casino-bonussen-nederland/c859283/logo.png",
+      "description": "HelloBonuses.com bekijkt de beste Nederlandse online casino's en de eerlijke casino bonussen. We lezen de kleine lettertjes hardop voor je.",
+      "tier": "bronze",
+      "slug": "casino-bonussen-nederland",
+      "website": "https://www.hellobonuses.com/nl/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buy Youtube Views - Views4You",
+      "imageUrl": "https://images.opencollective.com/buy-youtube-views-views4you/6364714/logo.png",
+      "description": "Enhance your online presence and boost your video's performance with Views4You, the trusted source to buy YouTube views and skyrocket your engagement.",
+      "tier": "bronze",
+      "slug": "buy-youtube-views-views4you",
+      "website": "https://views4you.com/buy-youtube-views/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "SidesMedia",
+      "imageUrl": "https://images.opencollective.com/sidesmedia/45fac3a/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "sidesmedia",
+      "website": "https://sidesmedia.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "EarthWeb",
+      "imageUrl": "https://images.opencollective.com/earthweb1/1752601/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "earthweb1",
+      "website": "https://earthweb.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Buy YouTube Views by JeffBullas",
+      "imageUrl": "https://images.opencollective.com/buy-youtube-views-by-jeffbullas/bdd0280/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "buy-youtube-views-by-jeffbullas",
+      "website": "https://www.jeffbullas.com/buy-youtube-views/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Proxy Coupons",
+      "imageUrl": "https://images.opencollective.com/proxy-coupons/9dd588f/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "proxy-coupons",
+      "website": "https://proxy.coupons/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Read more on the best sites to Buy YouTube Subscribers",
+      "imageUrl": "https://images.opencollective.com/read-more-on-the-best-sites-to-buy-youtube-subscribers/c8c52fa/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "read-more-on-the-best-sites-to-buy-youtube-subscribers",
+      "website": "https://www.santacruzsentinel.com/2024/03/26/buy-youtube-subscribers-2/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Siti Non AAMS",
+      "imageUrl": "https://images.opencollective.com/siti-non-aams/520019c/logo.png",
+      "description": "Scopri i migliori siti non AAMS per un'esperienza di gioco senza limiti e con bonus irresistibili!",
+      "tier": "bronze",
+      "slug": "siti-non-aams",
+      "website": "https://bsc.news/post/siti-scommesse-non-aams?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Buy Youtube Views",
+      "imageUrl": "https://images.opencollective.com/get-youtube-views/c92b6ff/logo.png",
+      "description": "Buy Youtube Views from the #1 rated company. Our exclusive high quality Youtube views come with a lifetime guarantee. Free views trial available.",
+      "tier": "bronze",
+      "slug": "get-youtube-views",
+      "website": "https://mysocialfollowing.com/youtube/views.php?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Writing Metier",
+      "imageUrl": "https://images.opencollective.com/writing-metier/762e081/logo.png",
+      "description": "Writing is our job, our passion, our love and of course, our métier. Welcome to the world of Writing Metier OU - professional copywriting services.",
+      "tier": "bronze",
+      "slug": "writing-metier",
+      "website": "https://writingmetier.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/writingmetier?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Aussie Casino Experts",
+      "imageUrl": "https://images.opencollective.com/aussie-casino-experts/270d615/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "aussie-casino-experts",
+      "website": "https://aussiecasinoexperts.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Teravision Technologies",
+      "imageUrl": "https://images.opencollective.com/teravision-technologies/a0bb15c/avatar.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "teravision-technologies",
+      "website": "https://www.teravisiontech.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "UpGrow",
+      "imageUrl": "https://images.opencollective.com/upgrow/9eec4da/logo.png",
+      "description": "UpGrow is the Best Instagram Growth Service in 2024. Get more real Instagram followers with our AI-powered growth engine to get 10x faster results. ",
+      "tier": "bronze",
+      "slug": "upgrow",
+      "website": "https://www.upgrow.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    }
+  ],
+  "silver": [
+    {
+      "name": "CasinoReviews",
+      "imageUrl": "https://images.opencollective.com/casinoreviews/f0877d1/logo.png",
+      "description": "Home to unbiased analysis on the biggest and the most aspiring names in iGaming,opinion pieces from experts, and interviews with industry leaders.",
+      "tier": "silver",
+      "slug": "casinoreviews",
+      "website": "https://www.casinoreviews.net/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "BairesDev",
+      "imageUrl": "https://images.opencollective.com/bairesdev/48bb773/logo.png",
+      "description": "We are the leading Nearshore Technology Solutions company. We architect and engineer scalable and high-performing software solutions.",
+      "tier": "silver",
+      "slug": "bairesdev",
+      "website": "https://www.bairesdev.com/sponsoring-open-source-projects/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/bairesdev?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Enric Baltasar",
+      "imageUrl": "https://images.opencollective.com/enric-baltasar/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "enric-baltasar",
+      "website": null,
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Ігрові автомати",
+      "imageUrl": "https://images.opencollective.com/igrovye-avtomaty-ua/96bfde3/logo.png",
+      "description": "ігрові автомати беткінг",
+      "tier": "silver",
+      "slug": "igrovye-avtomaty-ua",
+      "website": "https://betking.com.ua/games/all-slots/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Chudovo",
+      "imageUrl": "https://images.opencollective.com/chudovo/3c866f5/logo.png",
+      "description": "Chudovo - international software development company with representative offices in Kyiv, Cologne, New York, Tallinn and London. It has been working on the market since 2006. Company has domain expertise in video security, logistics, medicine, finance and",
+      "tier": "silver",
+      "slug": "chudovo",
+      "website": "https://chudovo.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "OnlineCasinosSpelen",
+      "imageUrl": "https://images.opencollective.com/onlinecasinosspelen/4ce3830/logo.png",
+      "description": "OnlineCasinosSpelen",
+      "tier": "silver",
+      "slug": "onlinecasinosspelen",
+      "website": "https://onlinecasinosspelen.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "CasinoZonderRegistratie.net",
+      "imageUrl": "https://images.opencollective.com/czrnet/24e6252/logo.png",
+      "description": "CasinoZonderRegistratie.net - Nederlandse Top Casino's",
+      "tier": "silver",
+      "slug": "czrnet",
+      "website": "https://casinozonderregistratie.net/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Nieuwe-Casinos.net",
+      "imageUrl": "https://images.opencollective.com/nieuwecasinos/ee150d6/logo.png",
+      "description": "Beoordelen van nieuwe online casino's 2023",
+      "tier": "silver",
+      "slug": "nieuwecasinos",
+      "website": "https://nieuwe-casinos.net/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "CzC",
+      "imageUrl": "https://images.opencollective.com/user-5b30aec2/f10fca3/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "user-5b30aec2",
+      "website": "https://casinoszondercruks.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Онлайн казино 777",
+      "imageUrl": "https://images.opencollective.com/casinoinua/c691599/logo.png",
+      "description": "Онлайн казино 777 Україна",
+      "tier": "silver",
+      "slug": "casinoinua",
+      "website": "https://777.ua/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "YTMP3",
+      "imageUrl": "https://images.opencollective.com/ytmp3/4a8db94/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "ytmp3",
+      "website": "https://ytmp3.page/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "https://uk.nongamstopcasinos.net",
+      "imageUrl": "https://images.opencollective.com/https-nongamstopcasinos-net/01aa99b/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "https-nongamstopcasinos-net",
+      "website": "https://uk.nongamstopcasinos.net/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "NZ online casinos",
+      "imageUrl": "https://images.opencollective.com/nz-online-casinos/0916ae0/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "nz-online-casinos",
+      "website": "https://nzcasino.creativefreedom.org.nz/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "try bookies not on GamStop",
+      "imageUrl": "https://images.opencollective.com/try-bookies-not-on-gamstop/f4a3306/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "try-bookies-not-on-gamstop",
+      "website": "https://gb.nongamstopbookiesuk.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Bestnongamstopcasinosuk.com",
+      "imageUrl": "https://images.opencollective.com/user-a524d8be/9b18e4a/avatar.png",
+      "description": "https://bestnongamstopcasinosuk.com",
+      "tier": "silver",
+      "slug": "user-a524d8be",
+      "website": "https://bestnongamstopcasinosuk.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "SSSTwitter",
+      "imageUrl": "https://images.opencollective.com/ssstwitter/9924968/logo.png",
+      "description": "Twitter Video Downloader HD Tool allows you to store tweets on your device (mobile or PC) for free.",
+      "tier": "silver",
+      "slug": "ssstwitter",
+      "website": "https://ssstwitter.online/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Andre Vaughn",
+      "imageUrl": "https://images.opencollective.com/twicsy-followers/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "twicsy-followers",
+      "website": "https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Buy Instagram Followers Twicsy",
+      "imageUrl": "https://images.opencollective.com/buy-instagram-followers-twicsy/b4c5d7f/logo.png",
+      "description": "Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site to buy followers from the likes of US Magazine.",
+      "tier": "silver",
+      "slug": "buy-instagram-followers-twicsy",
+      "website": "https://twicsy.com/buy-instagram-followers?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Fortune Tiger",
+      "imageUrl": "https://images.opencollective.com/fortune-tiger2/d821e05/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "fortune-tiger2",
+      "website": "https://fortune-tiger-br.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Parimatch",
+      "imageUrl": "https://images.opencollective.com/parimatch3/c87e839/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "parimatch3",
+      "website": "https://parimattchbr.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Social followers",
+      "imageUrl": "https://images.opencollective.com/socialfollowersuk/e327e52/avatar.png",
+      "description": " Our diverse range of services are designed for popular social media platforms such as Instagram, TikTok, Facebook, Threads, and YouTube.",
+      "tier": "silver",
+      "slug": "socialfollowersuk",
+      "website": "https://www.socialfollowers.uk/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "187990323015587",
+      "imageUrl": "https://images.opencollective.com/adam-smith-1879903/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "adam-smith-1879903",
+      "website": "https://qbtoolhub.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "EarthWeb",
+      "imageUrl": "https://images.opencollective.com/earthweb1/1752601/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "earthweb1",
+      "website": "https://earthweb.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Top Rating casino",
+      "imageUrl": "https://images.opencollective.com/topratingcasino/bb0b43a/avatar.png",
+      "description": "TopRating.casino ➢ Путеводитель по онлайн-казино в Украине",
+      "tier": "silver",
+      "slug": "topratingcasino",
+      "website": "https://toprating.casino/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Buy Instagram followers Insfollowpro",
+      "imageUrl": "https://images.opencollective.com/insfollowpro/a070619/logo.png",
+      "description": "Insfollowpro sells Instagram followers, likes, views.",
+      "tier": "silver",
+      "slug": "insfollowpro",
+      "website": "https://insfollowpro.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Bountii",
+      "imageUrl": "https://images.opencollective.com/bountii/7cd628b/logo.png",
+      "description": "At Bountii, we believe that everyone deserves to get the most out of their hard-earned money. That’s why we’ve dedicated ourselves to scouring the internet to bring you the best deals, discounts, and coupons from your favorite stores and brands.",
+      "tier": "silver",
+      "slug": "bountii",
+      "website": "https://bountii.co/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://x.com/bountii?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": false
+    },
+    {
+      "name": "legjobbmagyarcasino.com",
+      "imageUrl": "https://images.opencollective.com/legjobbmagyarcasinocom/1ede028/logo.png",
+      "description": "Online Casino Reviews",
+      "tier": "silver",
+      "slug": "legjobbmagyarcasinocom",
+      "website": "https://legjobbmagyarcasino.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buy X(Twitter) Followers from Bulkoid",
+      "imageUrl": "https://images.opencollective.com/buy-x-twitter-followers/6d000f2/logo.png",
+      "description": "Find the social proof you need to reach your audience! Boost conversions. Quickly buy Twitter Followers & more with no sign-up. Taking you to the next",
+      "tier": "silver",
+      "slug": "buy-x-twitter-followers",
+      "website": "https://bulkoid.com/buy-twitter-followers?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "HHC Vaper",
+      "imageUrl": "https://images.opencollective.com/hhc-vaper/9f9df9e/logo.png",
+      "description": "HHCVaper.com bietet Premium HHC Vapes, Gummies und Cartridges für Konsum.",
+      "tier": "silver",
+      "slug": "hhc-vaper",
+      "website": "https://hhcvaper.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Buy YouTube Subscribers on YouTube with SidesMedia",
+      "imageUrl": "https://images.opencollective.com/buy-youtube-subscribers-on-youtube-with-sidesmedia/45fac3a/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "buy-youtube-subscribers-on-youtube-with-sidesmedia",
+      "website": "https://sidesmedia.com/buy-youtube-subscribers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Viralyft",
+      "imageUrl": "https://images.opencollective.com/viralyft/b853d22/avatar.png",
+      "description": "Buy Instagram Followers, Likes, Views & Comments",
+      "tier": "silver",
+      "slug": "viralyft",
+      "website": "https://viralyft.com/buy-instagram-followers?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "SocialBoss",
+      "imageUrl": "https://images.opencollective.com/socialboss/a644520/logo.png",
+      "description": "We help improve visibility in social networks. ",
+      "tier": "silver",
+      "slug": "socialboss",
+      "website": "https://socialboss.org/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Airbnb",
+      "imageUrl": "https://images.opencollective.com/airbnb/d327d66/logo.png",
+      "description": "Airbnb was born in 2007 when two Hosts welcomed three guests to their San Francisco home, and has since grown to over 4 million Hosts who have welcomed more than 1 billion guest arrivals in almost every country across the globe.",
+      "tier": "silver",
+      "slug": "airbnb",
+      "website": "https://www.airbnb.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/airbnbeng?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Daily Star UK Casinos",
+      "imageUrl": "https://images.opencollective.com/dailystar-ukcouk/fec3df7/avatar.png",
+      "description": "https://dailystar-uk.co.uk",
+      "tier": "silver",
+      "slug": "dailystar-ukcouk",
+      "website": "https://dailystar-uk.co.uk/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "BuyTopLikes",
+      "imageUrl": "https://images.opencollective.com/buytoplikes/1113536/logo.png",
+      "description": "We offer various services for Instagram users, including purchasing likes, followers, views, and comments to boost engagement and visibility.",
+      "tier": "silver",
+      "slug": "buytoplikes",
+      "website": "https://buytoplikes.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Deepnude AI",
+      "imageUrl": "https://images.opencollective.com/deepnude-ai/9d24526/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "deepnude-ai",
+      "website": "https://clothoff.io/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Free Chip No Deposit",
+      "imageUrl": "https://images.opencollective.com/free-chip-no-deposit/dd08c50/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "free-chip-no-deposit",
+      "website": "https://free-chip-no-deposit.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "casinochileonline.net",
+      "imageUrl": "https://images.opencollective.com/casinochileonlinenet/52355f7/logo.png",
+      "description": "Online Casino Review",
+      "tier": "silver",
+      "slug": "casinochileonlinenet",
+      "website": "https://casinochileonline.net/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "nejlepsiceskacasina.com",
+      "imageUrl": "https://images.opencollective.com/nejlepsiceskacasinacom/3eb2ad7/logo.png",
+      "description": "Online Casino Review",
+      "tier": "silver",
+      "slug": "nejlepsiceskacasinacom",
+      "website": "https://nejlepsiceskacasina.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "slovenskeonlinecasino.com",
+      "imageUrl": "https://images.opencollective.com/slovenskeonlinecasinocom/524b90a/logo.png",
+      "description": "Online casino reviews",
+      "tier": "silver",
+      "slug": "slovenskeonlinecasinocom",
+      "website": "https://slovenskeonlinecasino.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Viralyft",
+      "imageUrl": "https://images.opencollective.com/viralyft7/6d8bc89/logo.png",
+      "description": "Buy YouTube Views",
+      "tier": "silver",
+      "slug": "viralyft7",
+      "website": "https://viralyft.com/buy-youtube-views?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Buy YouTube views",
+      "imageUrl": "https://images.opencollective.com/poprey-likes/3391887/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "poprey-likes",
+      "website": "https://poprey.com/buy-youtube-views?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Slotozilla Deutschland",
+      "imageUrl": "https://images.opencollective.com/slotozilla-deutschland/d137949/logo.png",
+      "description": "SlotoZilla ist eine unabhängige Website mit kostenlosen Spielautomaten und Slotbewertungen. Wir bieten keine Glücksspiele um echtes Geld an.",
+      "tier": "silver",
+      "slug": "slotozilla-deutschland",
+      "website": "https://www.slotozilla.com/de/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "FitclubFinder",
+      "imageUrl": "https://images.opencollective.com/fitclubfinder/b6c5b09/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "fitclubfinder",
+      "website": "https://fitclubfinder.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "CreditCaptain – Leading AI Credit Repair Service",
+      "imageUrl": "https://images.opencollective.com/creditcaptain/7f7d6f2/logo.png",
+      "description": "CreditCaptain is the leading credit repair service that helps consumers quickly improve their credit scores, using AI for 10x better & faster results.",
+      "tier": "silver",
+      "slug": "creditcaptain",
+      "website": "https://www.creditcaptain.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": false
+    },
+    {
+      "name": "Buy Instagram Likes & Views",
+      "imageUrl": "https://images.opencollective.com/tiktok-expert-buy-tiktok-followers/36f9a9b/logo.png",
+      "description": "Help users to find best and cheapest site to buy Instagram Followers",
+      "tier": "silver",
+      "slug": "tiktok-expert-buy-tiktok-followers",
+      "website": "https://www.reddit.com/r/TikTokExpert/comments/1dpyujh/whats_the_best_site_to_buy_instagram_likes_views/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "buzzvoice.com",
+      "imageUrl": "https://images.opencollective.com/buzzvoicecom/c7477dd/logo.png",
+      "description": "Buzzvoice is your one-stop shop for all your social media marketing needs. With Buzzvoice, you can buy followers, comments, likes, video views and more!",
+      "tier": "silver",
+      "slug": "buzzvoicecom",
+      "website": "https://buzzvoice.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Eldiario",
+      "imageUrl": "https://images.opencollective.com/eldiario/027a498/logo.png",
+      "description": "Generate QR codes",
+      "tier": "silver",
+      "slug": "eldiario",
+      "website": "https://www.eldiario.es/madrid/somos/canal-empresas/crear-codigo-qr-de-un-pdf_1_11815280.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Graming",
+      "imageUrl": "https://images.opencollective.com/graming/3eb6b3b/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "graming",
+      "website": "https://graming.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Ігрові автомати",
+      "imageUrl": "https://images.opencollective.com/casino-ua/11d7447/avatar.png",
+      "description": "Слоти в казино ЮА",
+      "tier": "silver",
+      "slug": "casino-ua",
+      "website": "https://casino.ua/casino/slots/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Betking",
+      "imageUrl": "https://images.opencollective.com/betking/59924a1/logo.png",
+      "description": "Онлайн казино та БК (ставки на спорт) в Україні",
+      "tier": "silver",
+      "slug": "betking",
+      "website": "https://betking.com.ua/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Betking",
+      "imageUrl": "https://images.opencollective.com/betking/59924a1/logo.png",
+      "description": "Онлайн казино та БК (ставки на спорт) в Україні",
+      "tier": "silver",
+      "slug": "betking",
+      "website": "https://betking.com.ua/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Ставки на спорт",
+      "imageUrl": "https://images.opencollective.com/stavki-na-sport-ua/ecee984/logo.png",
+      "description": "Нова українська букмекерська контора",
+      "tier": "silver",
+      "slug": "stavki-na-sport-ua",
+      "website": "https://betking.com.ua/sports-book/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Букмекер",
+      "imageUrl": "https://images.opencollective.com/bukmeker/309f296/logo.png",
+      "description": "Ставки на спорт, БК в Україні",
+      "tier": "silver",
+      "slug": "bukmeker",
+      "website": "https://betking.com.ua/sports-book/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "SocialBoss - Buy Instagram Likes",
+      "imageUrl": "https://images.opencollective.com/socialboss-buy-instagram-likes/13fcede/logo.png",
+      "description": "Promote your Instagram with SocialBoss. High-quality likes for your Instagram profile.",
+      "tier": "silver",
+      "slug": "socialboss-buy-instagram-likes",
+      "website": "https://socialboss.org/buy-instagram-likes/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Casino Online C19",
+      "imageUrl": "https://images.opencollective.com/casino-online-chile/91f1057/avatar.png",
+      "description": "",
+      "tier": "silver",
+      "slug": "casino-online-chile",
+      "website": "https://www.c19.cl/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "PayID-Pokies-Sites.com",
+      "imageUrl": "https://images.opencollective.com/payid-pokies-sitescom/aaa6701/logo.png",
+      "description": "Useful guides about PayID pokies and casino sites for Australians",
+      "tier": "silver",
+      "slug": "payid-pokies-sitescom",
+      "website": "https://payid-pokies-sites.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Boostlikes",
+      "imageUrl": "https://images.opencollective.com/booster/6cd5cd8/logo.png",
+      "description": "Boostlikes helps small business get more visibility on Social Media Platforms e.g. Facebook, Twitter and Instagram.",
+      "tier": "silver",
+      "slug": "booster",
+      "website": "https://boostlikes.uk/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Goread.io",
+      "imageUrl": "https://images.opencollective.com/goread_io/eb6337d/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "goread_io",
+      "website": "https://goread.io/buy-instagram-followers?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/goread_io?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "eestionlinekasiinod.org",
+      "imageUrl": "https://images.opencollective.com/eestionlinekasiinod-org/a3c015c/logo.png",
+      "description": "online casino review",
+      "tier": "silver",
+      "slug": "eestionlinekasiinod-org",
+      "website": "https://eestionlinekasiinod.org/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "payid casino",
+      "imageUrl": "https://images.opencollective.com/payid-casino/4bfb336/logo.png",
+      "description": "payid casinos",
+      "tier": "silver",
+      "slug": "payid-casino",
+      "website": "https://payid-pokies.net/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    }
+  ],
+  "gold": [
+    {
+      "name": "Stytch",
+      "imageUrl": "https://images.opencollective.com/stytch/9cd1bb7/logo.png",
+      "description": null,
+      "tier": "gold",
+      "slug": "stytch",
+      "website": "https://stytch.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/stytchauth?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Principal Financial Group",
+      "imageUrl": "https://images.opencollective.com/principal/431e690/logo.png",
+      "description": null,
+      "tier": "gold",
+      "slug": "principal",
+      "website": "https://www.principal.com/about-us?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/Principal?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Descope",
+      "imageUrl": "https://images.opencollective.com/descope/35eadab/logo.png",
+      "description": "Hi, we're Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.",
+      "tier": "gold",
+      "slug": "descope",
+      "website": "https://www.descope.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": "https://twitter.com/descopeinc?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "active": true
+    },
+    {
+      "name": "Tokmax",
+      "imageUrl": "https://images.opencollective.com/tokmax/27df6a3/logo.png",
+      "description": "At Tokmax, we are dedicated to being the leading platform for enhancing TikTok engagement. Whether you're an emerging creator or an established influe",
+      "tier": "gold",
+      "slug": "tokmax",
+      "website": "https://tokmax.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buy Youtube Subscribers",
+      "imageUrl": "https://images.opencollective.com/youtube-subscribers-ssmarket/5b126c4/logo.png",
+      "description": "SS Market offers professional social media services that rapidly increase your YouTube subscriber count, elevating your channel to a powerful position.",
+      "tier": "gold",
+      "slug": "youtube-subscribers-ssmarket",
+      "website": "https://ssmarket.net/buy-youtube-subscribers?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buy Instagram Followers",
+      "imageUrl": "https://images.opencollective.com/bestsitesbuyinstagramfollowers/d6844ba/logo.png",
+      "description": "Ookfy is the best place to buy Instagram followers, likes & views. You can buy Real & Non-Drop Instagram followers from Ookfy.",
+      "tier": "gold",
+      "slug": "bestsitesbuyinstagramfollowers",
+      "website": "https://www.linkedin.com/pulse/7-best-sites-buy-instagram-followers-2024-100-non-drop-arvinder-singh-u6goc/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Tubidy",
+      "imageUrl": "https://images.opencollective.com/musicza/3e93401/logo.png",
+      "description": "Tubidy: Free Music and Video Downloads | MP3, MP4",
+      "tier": "gold",
+      "slug": "musicza",
+      "website": "https://musicza.co.za/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Poprey - Buy Instagram Likes",
+      "imageUrl": "https://images.opencollective.com/instagram-likes/2a72a03/avatar.png",
+      "description": "Buy Instagram Likes",
+      "tier": "gold",
+      "slug": "instagram-likes",
+      "website": "https://poprey.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Famety - Buy Instagram Followers",
+      "imageUrl": "https://images.opencollective.com/famety-buy-instagram-followers/37314f4/logo.png",
+      "description": "At Famety, you can grow your social media following quickly, safely, and easily with just a few clicks. Rated the world’s #1 social media service since 2013.",
+      "tier": "gold",
+      "slug": "famety-buy-instagram-followers",
+      "website": "https://www.famety.com/buy-youtube-comments?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buzzoid - Buy Instagram Followers",
+      "imageUrl": "https://images.opencollective.com/buzzoid-buy-instagram-followers/4e17449/logo.png",
+      "description": "At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world's #1 IG service since 2012.",
+      "tier": "gold",
+      "slug": "buzzoid-buy-instagram-followers",
+      "website": "https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    }
+  ]
+}

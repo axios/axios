@@ -22,7 +22,7 @@
  *   device keychain.
  *
  * Usage:
- *   npm install -g @auths-dev/sdk
+ *   brew tap auths-dev/auths-cli && brew install auths
  *   node auths-attack-simulation.mjs
  */
 
@@ -121,7 +121,8 @@ function main() {
     console.log("The 'auths' CLI is not installed.");
     console.log();
     console.log('Install it with:');
-    console.log('  npm install -g @auths-dev/sdk');
+    console.log('  brew tap auths-dev/auths-cli && brew install auths');
+    console.log('  (or: cargo install auths_cli)');
     console.log();
     console.log('Or visit: https://github.com/auths-dev/auths');
     process.exit(0);

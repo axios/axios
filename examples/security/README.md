@@ -27,7 +27,7 @@ The simulation script recreates the attack scenario and demonstrates how Auths
 verification catches the unauthorized commit:
 
 ```bash
-npm install -g @auths-dev/sdk
+brew tap auths-dev/auths-cli && brew install auths
 node auths-attack-simulation.mjs
 ```
 

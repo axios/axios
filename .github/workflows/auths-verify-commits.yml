@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
 
       - name: Verify commits with Auths
-        uses: auths-dev/auths-verify-github-action@v1 # TODO: pin to SHA once stable
+        uses: auths-dev/auths-verify-github-action@57e304ef368d30474e5b6a04106cacde6a8ce492 # v1
         with:
           allowed-signers: .auths/allowed_signers
           fail-on-unsigned: 'false'

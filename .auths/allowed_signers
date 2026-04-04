@@ -4,7 +4,7 @@
 # commits for this repository using Auths (https://github.com/auths-dev/auths).
 #
 # With Auths, every commit carries an Ed25519 signature bound to the
-# maintainer's KERI-based decentralized identifier (DID). This creates a
+# maintainer's decentralized identifier (DID). This creates a
 # cryptographic chain of custody that cannot be forged with stolen registry
 # credentials alone.
 #
@@ -12,11 +12,12 @@
 #   <DID>@auths.local namespaces="git" ssh-ed25519 <base64-public-key>
 #
 # To add your key:
-#   1. Install Auths:    npm install -g @auths-dev/sdk
-#   2. Create identity:  auths init
-#   3. Configure Git:    auths git setup
-#   4. Export signers:   auths git allowed-signers --output .auths/allowed_signers
-#   5. Commit and push this file
+#   1. Install Auths CLI:
+#       Homebrew: brew tap auths-dev/auths-cli && brew install auths
+#       Cargo:    cargo install auths_cli
+#   2. Create identity:   auths init
+#   3. Export signers:    auths signers sync --output .auths/allowed_signers
+#   4. Commit and push this file
 #
 # Documentation: https://github.com/auths-dev/auths/blob/main/docs/guides/platforms/ci-cd.md
 #

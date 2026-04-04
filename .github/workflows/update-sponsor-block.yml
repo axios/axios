@@ -32,7 +32,7 @@ jobs:
           node-version: 24.x
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Check if sponsors require updates
         id: sponsors-requires-update
         run: node ./scripts/update-readme-sponsors.mjs

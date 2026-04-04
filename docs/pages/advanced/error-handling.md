@@ -17,14 +17,14 @@ Below is a list of potential axios identified error
 | ------------------------- | --------------------------------------------------------------------------------------------- |
 | ERR_BAD_OPTION_VALUE      | Invalid or unsupported value provided in axios configuration.                                 |
 | ERR_BAD_OPTION            | Invalid option provided in axios configuration.                                               |
-| ECONNABORTED              | Request timed out due to exceeding timeout specified in axios configuration.                  |
-| ETIMEDOUT                 | Request timed out due to exceeding default axios timelimit.                                   |
-| ERR_NETWORK               | Network-related issue.                                                                        |
+| ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin. |
+| ETIMEDOUT                 | Request timed out due to exceeding the default axios timelimit. `transitional.clarifyTimeoutError` must be set to `true`, otherwise a generic `ECONNABORTED` error will be thrown instead |
+| ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request is redirected too many times; exceeds max redirects specified in axios configuration. |
 | ERR_DEPRECATED            | Deprecated feature or method used in axios.                                                   |
-| ERR_BAD_RESPONSE          | Response cannot be parsed properly or is in an unexpected format.                             |
-| ERR_BAD_REQUEST           | Requested has unexpected format or missing required parameters.                               |
-| ERR_CANCELED              | Feature or method is canceled explicitly by the user.                                         |
+| ERR_BAD_RESPONSE          | Response cannot be parsed properly or is in an unexpected format. Usually related to a response with `5xx` status code. |
+| ERR_BAD_REQUEST           | The request has an unexpected format or is missing required parameters. Usually related to a response with `4xx` status code. |
+| ERR_CANCELED              | Feature or method is canceled explicitly by the user using an AbortSignal (or a CancelToken). |
 | ERR_NOT_SUPPORT           | Feature or method not supported in the current axios environment.                             |
 | ERR_INVALID_URL           | Invalid URL provided for axios request.                                                       |
 

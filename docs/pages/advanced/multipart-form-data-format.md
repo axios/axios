@@ -16,7 +16,7 @@ const FormData = require("form-data");
 
 const form = new FormData();
 form.append("my_field", "my value");
-form.append("my_buffer", new Buffer(10));
+form.append("my_buffer", Buffer.alloc(10));
 form.append("my_file", fs.createReadStream("/foo/bar.jpg"));
 
 axios.post("https://example.com", form);
@@ -51,7 +51,7 @@ var FormData = require("form-data");
 axios
   .post(
     "https://httpbin.org/post",
-    { x: 1, buf: new Buffer(10) },
+    { x: 1, buf: Buffer.alloc(10) },
     {
       headers: {
         "Content-Type": "multipart/form-data",

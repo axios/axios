@@ -12,16 +12,22 @@ You can use axios in your project in a few different ways. The most common way i
 npm install axios
 ```
 
+#### Using pnpm
+
+```bash
+pnpm install axios
+```
+
 #### Using yarn
 
 ```bash
 yarn add axios
 ```
 
-#### Using bower
+#### Using bun
 
 ```bash
-bower install axios
+bun install axios
 ```
 
 #### Using jsDelivr
@@ -29,7 +35,7 @@ bower install axios
 When using jsDelivr we recommend using the minified version as well as pinning the version number to avoid unexpected changes. If you would like to use the latest version you can do so by dropping the version number. This is strongly discouraged for production use as it can lead to unexpected changes in your application.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@<x.x.x>/dist/axios.min.js"></script>
 ```
 
 #### Using unpkg
@@ -37,7 +43,7 @@ When using jsDelivr we recommend using the minified version as well as pinning t
 When using unpkg we recommend using the minified version as well as pinning the version number to avoid unexpected changes. If you would like to use the latest version you can do so by dropping the version number. This is strongly discouraged for production use as it can lead to unexpected changes in your application.
 
 ```html
-<script src="https://unpkg.com/axios@1.7.2/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@<x.x.x>/dist/axios.min.js"></script>
 ```
 
 ## Making your first request

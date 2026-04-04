@@ -14,6 +14,10 @@ The `method` is the HTTP method to use for the request. The default method is `G
 
 The `baseURL` is the base URL to be prepended to the `url` unless the `url` is an absolute URL. This is useful for making requests to the same domain without having to repeat the domain name and any api or version prefix.
 
+### `allowAbsoluteUrls`
+
+The `allowAbsoluteUrls` determines whether or not absolute URLs will override a configured `baseUrl`. When set to true (default), absolute values for `url` will override `baseUrl`. When set to false, absolute values for `url` will always be prepended by `baseUrl`.
+
 ### `transformRequest`
 
 The `transformRequest` function allows you to modify the request data before it is sent to the server. This function is called with the request data as its only argument. This is only applicable for request methods `PUT`, `POST`, `PATCH` and `DELETE`. The last function in the array must return a string or an instance of Buffer, ArrayBuffer FormData or Stream.
@@ -206,6 +210,7 @@ The `transitional` property allows you to enable or disable certain transitional
 - `silentJSONParsing`: If set to `true`, axios will not log a warning when it encounters invalid JSON responses, setting the return value to null. This is useful when you are working with APIs that return invalid JSON.
 - `forcedJSONParsing`: Forces axios to parse JSON responses as JSON, even if the response is not valid JSON. This is useful when you are working with APIs that return invalid JSON.
 - `clarifyTimeoutError`: Clarifies the error message when a request times out. This is useful when you are debugging timeout issues.
+- `legacyInterceptorReqResOrdering`: When set to true we will use the legacy interceptor request/response ordering.
 
 ### `env`
 
@@ -228,6 +233,7 @@ The `maxRate` property defines the maximum number of requests that can be made p
   url: "/posts",
   method: "get",
   baseURL: "https://jsonplaceholder.typicode.com",
+  allowAbsoluteUrls: true,
   transformRequest: [function (data, headers) {
     return data;
   }],
@@ -314,6 +320,7 @@ The `maxRate` property defines the maximum number of requests that can be made p
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    legacyInterceptorReqResOrdering: true,
   },
   env: {
     FormData: window?.FormData || global?.FormData

@@ -17,7 +17,6 @@
     "vitepress": "^1.6.4"
   },
   "devDependencies": {
-    "axios": "^1.7.9",
     "chalk": "^5.3.0",
     "dayjs": "^1.11.13",
     "patch-package": "^8.0.1",

@@ -50,7 +50,9 @@ The above form will be submitted as:
   "foo": "1",
   "deep": {
     "prop": "2",
-    "prop spaced": "3"
+    "prop": {
+      "spaced": "3"
+    }
   },
   "baz": ["4", "5"],
   "user": {

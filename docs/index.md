@@ -15,7 +15,7 @@ hero:
       link: /pages/getting-started/first-steps
     - theme: alt
       text: API reference
-      link: /pages/internals/api-reference
+      link: /pages/advanced/api-reference
 
 features:
   - title: Simple implementation

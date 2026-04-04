@@ -101,8 +101,9 @@ axios.interceptors.request.use(
 
 You may add multiple interceptors to the same request or response. The following will hold true for multiple interceptors in the same chain in the order below:
 
-- each interceptor is executed
-- they are executed in the order they were added
+- Each interceptor is executed
+- Request interceptors are executed in reverse order (LIFO).
+- Response interceptors are executed in the order they were added (FIFO).
 - only the last interceptor's result is returned
 - every interceptor receives the result of its predecessor
 - when the fulfilment-interceptor throws

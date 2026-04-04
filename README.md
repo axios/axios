@@ -1866,15 +1866,18 @@ export async function load({ fetch }) {
 }
 ```
 
-#### HTTP/2 Support
+## 🔥 HTTP2
 
-Axios has experimental HTTP/2 support in the Node.js `http` adapter (introduced in v1.13.0).
+In version `1.13.0`, experimental HTTP/2 support was added to the `http` adapter.
 
-Options like `httpVersion` and `http2Options` may work only in specific environments and adapters, and are not consistently supported across all Axios usage scenarios.
+Axios can support HTTP/2 when using the Node.js `http` adapter, depending on the runtime environment and availability of underlying APIs.
 
-In environments without compatible HTTP/2 support (or when using other adapters), these options may be ignored.
+Support depends on:
+- Node.js version and capabilities
+- Adapter being used (`http` adapter)
+- Availability of HTTP/2 APIs in the runtime
 
-Users should not assume full HTTP/2 support across all environments.
+Options like `httpVersion` and `http2Options` may not behave consistently across all environments (e.g., Bun or Deno) and should be used with care.
 
 ```js
 const form = new FormData();

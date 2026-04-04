@@ -78,7 +78,7 @@
       "slug": "fjt",
       "website": "https://fujita.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/Yuhei_FUJITA?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": false
+      "active": true
     },
     {
       "name": "DLTx Labs Pty Ltd",
@@ -1333,16 +1333,6 @@
       "website": "https://www.creditcaptain.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": false
-    },
-    {
-      "name": "superluxuryreps",
-      "imageUrl": "https://images.opencollective.com/superluxuryreps/378b62f/avatar.png",
-      "description": null,
-      "tier": "silver",
-      "slug": "superluxuryreps",
-      "website": "https://superluxuryreps.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
     },
     {
       "name": "iedcdubai",

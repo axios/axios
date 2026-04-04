@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@splidejs/splide": "^4.1.4",
+    "axios": "^1.14.0",
     "vitepress": "^1.6.4"
   },
   "devDependencies": {

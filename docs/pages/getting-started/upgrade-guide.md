@@ -15,7 +15,7 @@ In v1.x, the import statement has been changed to use the `default` export. This
 
 ### Changes to the interceptor system
 
-In v1.x you would need to leverage the type `InternalAxiosRequestConfig` to type the `config` parameter in the `request` interceptor. This is because the `config` parameter is now typed as `AxiosRequestConfig` which is a public type.
+In v1.x you need to leverage the type `InternalAxiosRequestConfig` to type the `config` parameter in the `request` interceptor. This is because the `config` parameter is now typed as `InternalAxiosRequestConfig` instead of the public `AxiosRequestConfig` type.
 
 ```diff
 - axios.interceptors.request.use((config: AxiosRequestConfig) => {
@@ -62,11 +62,11 @@ v1.x introduced several breaking changes to how URL parameters are serialized. T
 **`params` are now percent-encoded by default.** If your backend expected raw brackets from qs-style encoding, you may need to configure a custom serializer:
 
 ```js
-import qs from "qs";
+import qs from 'qs';
 
 axios.create({
   paramsSerializer: {
-    serialize: (params) => qs.stringify(params, { arrayFormat: "brackets" }),
+    serialize: (params) => qs.stringify(params, { arrayFormat: 'brackets' }),
   },
 });
 ```

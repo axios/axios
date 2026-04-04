@@ -1,6 +1,6 @@
 # File posting
 
-axios makes file uploads straightforward. Files are always sent as `multipart/form-data`.
+axios makes file uploads straightforward. Use `postForm` or `FormData` when you need `multipart/form-data` uploads.
 
 ## Single file (browser)
 

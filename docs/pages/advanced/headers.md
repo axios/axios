@@ -1,6 +1,6 @@
 # Headers <Badge type="tip" text="New" />
 
-Axios exposes it's own AxiosHeaders class to manipulate headers using a Map-like API that guarantees case-insensitive keys. This class is used internally by Axios to manage headers, but it's also exposed to the user for convenience. Although HTTP headers are case-insensitive, Axios will retain the case of the original header for stylistic reasons and for a workaround when servers mistakenly consider the header's case. The old method of directly manipulating the headers object is still available, but deprecated and not recommended for future usage.
+Axios exposes its own AxiosHeaders class to manipulate headers using a Map-like API that guarantees case-insensitive keys. This class is used internally by Axios to manage headers, but it's also exposed to the user for convenience. Although HTTP headers are case-insensitive, Axios will retain the case of the original header for stylistic reasons and for a workaround when servers mistakenly consider the header's case. The old method of directly manipulating the headers object is still available, but deprecated and not recommended for future usage.
 
 ## Working with headers
 
@@ -44,9 +44,9 @@ You can iterate over an AxiosHeaders using any iterable method, like for-of loop
 
 ```js
 const headers = new AxiosHeaders({
-  foo: "1",
-  bar: "2",
-  baz: "3",
+  foo: '1',
+  bar: '2',
+  baz: '3',
 });
 
 for (const [header, value] of headers) {
@@ -64,17 +64,17 @@ The most common place to set headers is the `headers` option in your request con
 
 ```js
 // On a single request
-await axios.get("/api/data", {
+await axios.get('/api/data', {
   headers: {
-    "Accept-Language": "en-US",
-    "X-Request-ID": "abc123",
+    'Accept-Language': 'en-US',
+    'X-Request-ID': 'abc123',
   },
 });
 
 // On an instance (applied to every request)
 const api = axios.create({
   headers: {
-    "X-App-Version": "2.0.0",
+    'X-App-Version': '2.0.0',
   },
 });
 ```
@@ -86,7 +86,7 @@ Interceptors are the right place to attach dynamic headers like auth tokens, bec
 ```js
 api.interceptors.request.use((config) => {
   const token = getAuthToken(); // read at request time
-  config.headers.set("Authorization", `Bearer ${token}`);
+  config.headers.set('Authorization', `Bearer ${token}`);
   return config;
 });
 ```
@@ -96,12 +96,12 @@ api.interceptors.request.use((config) => {
 Response headers are available on `response.headers` as an `AxiosHeaders` instance. All header names are lower-cased:
 
 ```js
-const response = await axios.get("/api/data");
+const response = await axios.get('/api/data');
 
-console.log(response.headers["content-type"]);
+console.log(response.headers['content-type']);
 // application/json; charset=utf-8
 
-console.log(response.headers.get("x-request-id"));
+console.log(response.headers.get('x-request-id'));
 // abc123
 ```
 
@@ -110,9 +110,9 @@ console.log(response.headers.get("x-request-id"));
 To opt out of a header that axios sets by default (such as `Content-Type` or `User-Agent`), set its value to `false`:
 
 ```js
-await axios.post("/api/data", payload, {
+await axios.post('/api/data', payload, {
   headers: {
-    "Content-Type": false, // let the browser set it automatically (e.g. for FormData)
+    'Content-Type': false, // let the browser set it automatically (e.g. for FormData)
   },
 });
 ```

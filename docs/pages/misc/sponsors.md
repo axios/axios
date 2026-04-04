@@ -26,7 +26,7 @@ const capitalizeFirstLetter = (word) => {
               <span :class="$style[`tagSponsor${capitalizeFirstLetter(sponsor.tier)}`]">{{ capitalizeFirstLetter(sponsor.tier) }}</span>
             </dd>
           </dl>
-          <a :href="sponsor.website" target="_blank" :class="$style.sponsorName">{{ sponsor.name }}</a>
+          <a :href="sponsor.website" rel="noopener noreferrer" target="_blank" :class="$style.sponsorName">{{ sponsor.name }}</a>
         </div>
       </div>
     </div>

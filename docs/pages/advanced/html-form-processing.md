@@ -3,30 +3,23 @@
 You can also post a form directly from a HTML form element. This is useful when you have a form in your page and you want to submit it without any JavaScript code.
 
 ```js
-await axios.postForm(
-  "https://httpbin.org/post",
-  document.querySelector("#htmlForm")
-);
+await axios.postForm('https://httpbin.org/post', document.querySelector('#htmlForm'));
 ```
 
 `FormData` and `HTMLForm` objects can also be posted as `JSON` by explicitly setting the `Content-Type` header to `application/json`:
 
 ```js
-await axios.post(
-  "https://httpbin.org/post",
-  document.querySelector("#htmlForm"),
-  {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }
-);
+await axios.post('https://httpbin.org/post', document.querySelector('#htmlForm'), {
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 ```
 
 An example of a form that is valid and can be submitted by the above code is:
 
 ```html
-<form id="form">
+<form id="htmlForm">
   <input type="text" name="foo" value="1" />
   <input type="text" name="deep.prop" value="2" />
   <input type="text" name="deep prop spaced" value="3" />
@@ -50,9 +43,7 @@ The above form will be submitted as:
   "foo": "1",
   "deep": {
     "prop": "2",
-    "prop": {
-      "spaced": "3"
-    }
+    "prop spaced": "3"
   },
   "baz": ["4", "5"],
   "user": {

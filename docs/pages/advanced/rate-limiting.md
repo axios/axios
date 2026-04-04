@@ -4,7 +4,7 @@ axios supports bandwidth limiting in the Node.js environment via the HTTP adapte
 
 ## `maxRate`
 
-The `maxRate` option accepts either a number (bytes per second) or a two-element array of numbers `[uploadRate, downloadRate]`. When a single number is passed, the same limit applies to both upload and download.
+The `maxRate` option accepts either a number (bytes per second) or an array where the first value is the upload limit and the second value is the download limit. Use `[uploadRate]` to limit upload only, or `[uploadRate, downloadRate]` to limit both directions. When a single number is passed, the same limit applies to both upload and download.
 
 ```js
 // Limit both upload and download to 100 KB/s

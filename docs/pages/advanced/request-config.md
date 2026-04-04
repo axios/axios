@@ -177,7 +177,7 @@ Use `false` to disable proxies, ignoring environment variables. `auth` indicates
 proxy: {
   protocol: "https",
   host: "127.0.0.1",
-  hostname: "localhost" // Takes precedence over "host" if both are defined
+  hostname: "localhost", // Takes precedence over "host" if both are defined
   port: 9000,
   auth: {
     username: "mikeymike",

@@ -3,10 +3,10 @@
 The `fetch` adapter is a new adapter that we have introduced as of version 1.7.0. This provides a way to use axios with the `fetch` API thus giving you the best of both worlds. By default, `fetch` will be used if `xhr` and `http` adapters are not available in the build, or not supported by the environment. To use it by default, it must be selected explicitly by setting the `adapter` option to `fetch` when creating an instance of axios.
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 const instance = axios.create({
-  adapter: "fetch",
+  adapter: 'fetch',
 });
 ```
 
@@ -25,16 +25,16 @@ When using a custom `fetch` function, you may also need to supply matching `Requ
 ### Basic example
 
 ```js
-import customFetchFunction from "customFetchModule";
+import customFetchFunction from 'customFetchModule';
 
 const instance = axios.create({
-  adapter: "fetch",
+  adapter: 'fetch',
   onDownloadProgress(e) {
-    console.log("downloadProgress", e);
+    console.log('downloadProgress', e);
   },
   env: {
     fetch: customFetchFunction,
-    Request: null,  // undefined → use the global constructor
+    Request: null, // null -> disable the constructor
     Response: null,
   },
 });
@@ -45,20 +45,20 @@ const instance = axios.create({
 [Tauri](https://tauri.app/plugin/http-client/) provides a platform `fetch` function that bypasses browser CORS restrictions for requests made from the native layer. The example below shows a minimal setup for using axios inside a Tauri app with that custom fetch.
 
 ```js
-import { fetch } from "@tauri-apps/plugin-http";
-import axios from "axios";
+import { fetch } from '@tauri-apps/plugin-http';
+import axios from 'axios';
 
 const instance = axios.create({
-  adapter: "fetch",
+  adapter: 'fetch',
   onDownloadProgress(e) {
-    console.log("downloadProgress", e);
+    console.log('downloadProgress', e);
   },
   env: {
     fetch,
   },
 });
 
-const { data } = await instance.get("https://google.com");
+const { data } = await instance.get('https://google.com');
 ```
 
 ### Using with SvelteKit
@@ -67,17 +67,14 @@ const { data } = await instance.get("https://google.com");
 
 ```js
 export async function load({ fetch }) {
-  const { data: post } = await axios.get(
-    "https://jsonplaceholder.typicode.com/posts/1",
-    {
-      adapter: "fetch",
-      env: {
-        fetch,
-        Request: null,
-        Response: null,
-      },
+  const { data: post } = await axios.get('https://jsonplaceholder.typicode.com/posts/1', {
+    adapter: 'fetch',
+    env: {
+      fetch,
+      Request: null,
+      Response: null,
     },
-  );
+  });
 
   return { post };
 }

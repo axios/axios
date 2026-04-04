@@ -116,7 +116,6 @@ export default defineConfig({
         items: [
           { text: 'SemVer', link: '/pages/misc/semver' },
           { text: 'Security', link: '/pages/misc/security' },
-          { text: 'Release cycle', link: '/pages/misc/release-cycle' },
         ],
       },
     ],

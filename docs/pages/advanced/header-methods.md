@@ -32,8 +32,8 @@ console.log(headers);
 The `set` method is used to set headers on the instance of `AxiosHeaders`. The method can be called with a single header name and value, an object with multiple headers, or a string with headers separated by a newline character. The method also accepts an optional `rewrite` parameter that controls the behaviour of setting the header.
 
 ```js
-set(headerName, value: Axios, rewrite?: boolean);
-set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean);
+set(headerName, value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher);
+set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string) => boolean);
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
 ```
 
@@ -50,7 +50,7 @@ The option can also accept a user-defined function that determines whether the v
 The `get` method is used to retrieve the value of a header. The method can be called with a single header name, an optional matcher, or a parser. The matcher is defaulted to `true`. The parser can be a regular expression that is used to extract the value from the header.
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
 ```
 

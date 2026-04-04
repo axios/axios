@@ -5,9 +5,9 @@
 By default, axios serializes JavaScript objects to `JSON`. To send data in the [`application/x-www-form-urlencoded` format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) instead, you can use the [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) API, which is [supported](http://www.caniuse.com/#feat=urlsearchparams) in the vast majority of browsers,and [Node](https://nodejs.org/api/url.html#url_class_urlsearchparams) starting with v10 (released in 2018).
 
 ```js
-const params = new URLSearchParams({ foo: "bar" });
-params.append("extraparam", "value");
-axios.post("/foo", params);
+const params = new URLSearchParams({ foo: 'bar' });
+params.append('extraparam', 'value');
+axios.post('/foo', params);
 ```
 
 ## Query string <Badge type="danger" text="Very old" />
@@ -15,15 +15,15 @@ axios.post("/foo", params);
 For older browsers or environments without `URLSearchParams`, you can use the [`qs`](https://github.com/ljharb/qs) library to serialize objects to the `application/x-www-form-urlencoded` format.
 
 ```js
-const qs = require("qs");
-axios.post("/foo", qs.stringify({ bar: 123 }));
+const qs = require('qs');
+axios.post('/foo', qs.stringify({ bar: 123 }));
 ```
 
 In very old versions of Node.js, you can use the built-in `querystring` module that ships with Node.js. Note that this module has been deprecated in Node.js v16 — prefer `URLSearchParams` or `qs` for new code.
 
 ```js
-const querystring = require("querystring");
-axios.post("https://something.com/", querystring.stringify({ foo: "bar" }));
+const querystring = require('querystring');
+axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
 
 ## Automatic serialization to URLSearchParams <Badge type="tip" text="New" />
@@ -36,13 +36,13 @@ const data = {
   arr: [1, 2, 3],
   arr2: [1, [2], 3],
   users: [
-    { name: "Peter", surname: "Griffin" },
-    { name: "Thomas", surname: "Anderson" },
+    { name: 'Peter', surname: 'Griffin' },
+    { name: 'Thomas', surname: 'Anderson' },
   ],
 };
 
-await axios.postForm("https://postman-echo.com/post", data, {
-  headers: { "content-type": "application/x-www-form-urlencoded" },
+await axios.postForm('https://postman-echo.com/post', data, {
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
 });
 ```
 
@@ -55,9 +55,8 @@ The `data` object will be automatically serialized to `URLSearchParams` and sent
   "arr2[0]": "1",
   "arr2[1][0]": "2",
   "arr2[2]": "3",
-  "arr3[]": ["1", "2", "3"],
   "users[0][name]": "Peter",
-  "users[0][surname]": "griffin",
+  "users[0][surname]": "Griffin",
   "users[1][name]": "Thomas",
   "users[1][surname]": "Anderson"
 }
@@ -70,7 +69,7 @@ var app = express();
 
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
-app.post("/", function (req, res, next) {
+app.post('/', function (req, res, next) {
   // echo body as JSON
   res.send(JSON.stringify(req.body));
 });

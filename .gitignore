@@ -14,3 +14,5 @@ backup/
 dist/
 .vscode/
 openspec/
+docs/.vitepress/dist
+docs/.vitepress/cache

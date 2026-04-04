@@ -4,6 +4,7 @@
   "description": "Documentation for the Axios HTTP client",
   "license": "MIT",
   "type": "module",
+  "private": true,
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",

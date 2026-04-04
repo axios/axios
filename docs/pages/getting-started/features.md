@@ -14,11 +14,11 @@ axios provides first class support for the Fetch API, which is a modern replacem
 
 ## Browser support
 
-axios supports all modern and old browsers, including Chrome, Firefox, Safari, and Edge. axios can be used in browser as old as Internet Explorer 11, which makes it a great choice for building web applications that need to support a wide range of browsers.
+axios supports all modern and select older browsers, including Chrome, Firefox, Safari, and Edge. axios is a great choice for building web applications that need to support a wide range of browsers.
 
 ## Node.js support
 
-axios also supports a wide range Node.js versions with tested compatibility as far back as v10.x, making it a good choice in environments where upgrading to the latest Node.js version might not be possible or practical.
+axios also supports a wide range Node.js versions with tested compatibility as far back as v12.x, making it a good choice in environments where upgrading to the latest Node.js version might not be possible or practical.
 
 ## Additional features
 

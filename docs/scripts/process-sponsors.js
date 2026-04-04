@@ -190,16 +190,6 @@ const formatActiveSponsorData = (sponsorsData) => {
     .filter((sponsor) => !config.sponsorsToIgnore.includes(sponsor.name));
 
   return processedData;
-
-  const sponsorsByTier = {};
-
-  for (const sponsor of processedData) {
-    sponsorsByTier[sponsor.tier] ||= [];
-
-    sponsorsByTier[sponsor.tier].push(sponsor);
-  }
-
-  return sponsorsByTier;
 };
 
 /**
@@ -239,16 +229,6 @@ const formatAllSponsorData = (sponsorsData) => {
     .filter((sponsor) => !config.sponsorsToIgnore.includes(sponsor.name));
 
   return processedData;
-
-  const sponsorsByTier = {};
-
-  for (const sponsor of processedData) {
-    sponsorsByTier[sponsor.tier] ||= [];
-
-    sponsorsByTier[sponsor.tier].push(sponsor);
-  }
-
-  return sponsorsByTier;
 };
 
 /**

@@ -78,6 +78,7 @@ The `responseType` indicates the type of data that the server will respond with.
 - text
 - stream
 - blob (browser only)
+- formdata (fetch adapter only)
 
 ### `responseEncoding` <Badge type="warning" text="Node.js only" />
 
@@ -224,7 +225,7 @@ The `formSerializer` function allows you to serialize the `data` object before i
 
 ### `maxRate` <Badge type="warning" text="Node.js only" />
 
-The `maxRate` property defines the maximum number of requests that can be made per second. This is useful for rate limiting requests. This is passed in the form of an array with the first element being upload rate and the second element being download rate.
+The `maxRate` property defines the maximum **bandwidth** (in bytes per second) for upload and/or download. It accepts either a single number (applied to both directions) or a two-element array `[uploadRate, downloadRate]` where each element is a byte-per-second limit. For example, `100 * 1024` means 100 KB/s. See [Rate limiting](/pages/advanced/rate-limiting) for examples.
 
 ## Full request config example
 

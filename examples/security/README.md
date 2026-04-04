@@ -21,10 +21,24 @@ KERI-based decentralized identifiers (DIDs). With Auths:
 - Stealing npm credentials is insufficient without the signing key
 - Verification happens locally — no network calls to a central authority
 
+## How Auths Addresses the Attack
+
+The real attack bypassed Git entirely — the attacker published directly to npm with
+no corresponding commit or GitHub release tag. Commit-level signing alone would not
+have caught a registry-only publish. However, Auths establishes a verifiable chain:
+every legitimate release must trace back to a signed commit by an authorized
+maintainer. A package published without a matching signed commit has no valid
+attestation chain and would be flagged by consumers and CI pipelines that verify
+signatures.
+
+This workflow adds the commit-signing layer. A full deployment would also use
+`auths artifact sign` in the release workflow to bind published packages to signed
+commits, closing the gap completely.
+
 ## Running the Simulation
 
-The simulation script recreates the attack scenario and demonstrates how Auths
-verification catches the unauthorized commit:
+The simulation script demonstrates the commit-signing layer — it shows that commits
+from unauthorized parties are detected:
 
 ```bash
 brew tap auths-dev/auths-cli && brew install auths

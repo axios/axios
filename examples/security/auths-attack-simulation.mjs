@@ -14,12 +14,19 @@
  *      hook that downloaded and executed a cross-platform RAT
  *   6. Neither malicious version appears in GitHub release tags
  *
- * Why Auths prevents this:
- *   With Auths, every release artifact carries an Ed25519 signature from the
- *   maintainer's cryptographic identity (KERI-based DID). Stealing the npm
- *   token or account credentials is insufficient — the attacker cannot produce
- *   a valid signature without the maintainer's private key stored in their
- *   device keychain.
+ * How Auths closes this gap:
+ *   The real attack bypassed Git entirely — the attacker published directly to
+ *   npm with no corresponding commit. Auths establishes a policy that every
+ *   legitimate release must trace back to a signed commit by an authorized
+ *   maintainer. A package published without a matching signed commit has no
+ *   valid attestation chain and would be flagged by consumers and CI pipelines
+ *   that verify signatures.
+ *
+ *   This simulation demonstrates the commit-signing layer: it shows that
+ *   commits from unauthorized parties are detected. In a full Auths deployment,
+ *   the release workflow would also sign the artifact itself (via `auths
+ *   artifact sign`), binding the published package to both the maintainer's
+ *   identity and a specific signed commit.
  *
  * Usage:
  *   brew tap auths-dev/auths-cli && brew install auths
@@ -169,12 +176,13 @@ function main() {
   console.log('-'.repeat(70));
   console.log('RESULT: The attacker\'s unsigned commit would have been flagged.');
   console.log();
-  console.log('In the real attack, the attacker used compromised npm credentials to');
-  console.log('publish malicious packages directly to the registry. Neither version');
-  console.log('appears in the GitHub release tags. With Auths, even if account');
-  console.log('credentials are stolen, the attacker cannot produce a valid Ed25519');
-  console.log('signature — the private key is bound to the maintainer\'s device');
-  console.log('keychain and never leaves it.');
+  console.log('NOTE: The real March 31 attack bypassed Git entirely — the attacker');
+  console.log('published directly to npm with no commit at all. This simulation');
+  console.log('demonstrates the commit-signing layer of Auths. In a full deployment,');
+  console.log('the release workflow also signs the artifact itself (auths artifact');
+  console.log('sign), binding the package to a specific signed commit. A package');
+  console.log('published without a matching signed commit has no valid attestation');
+  console.log('chain and would be rejected by consumers verifying signatures.');
   console.log();
   console.log('Learn more: https://github.com/auths-dev/auths');
   console.log('='.repeat(70));

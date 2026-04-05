@@ -1570,6 +1570,38 @@ for (const [header, value] of headers) {
 // baz 3
 ```
 
+### Preserving a specific header case
+
+Header names are case-insensitive, but `AxiosHeaders` keeps the case of the first matching key it sees.
+If you need a specific case for non-standard case-sensitive servers, define a case preset with `undefined` and then set the value later:
+
+```js
+const api = axios.create();
+
+api.defaults.headers.common = {
+  'content-type': undefined,
+  accept: undefined,
+};
+
+await api.put(url, data, {
+  headers: {
+    'Content-Type': 'application/octet-stream',
+    Accept: 'application/json',
+  },
+});
+```
+
+You can also compose the same behavior with `AxiosHeaders.concat`:
+
+```js
+const headers = axios.AxiosHeaders.concat(
+  { 'content-type': undefined },
+  { 'Content-Type': 'application/octet-stream' }
+);
+
+await axios.put(url, data, { headers });
+```
+
 ### new AxiosHeaders(headers?)
 
 Constructs a new `AxiosHeaders` instance.

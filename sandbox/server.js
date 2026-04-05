@@ -1,5 +1,4 @@
 import fs from 'fs';
-import url from 'url';
 import path from 'path';
 import http from 'http';
 
@@ -76,8 +75,8 @@ function handleApiRequest(req, res) {
 function requestHandler(req, res) {
   req.setEncoding('utf8');
 
-  const parsed = url.parse(req.url, true);
-  let pathname = parsed.pathname;
+  const parsed = new URL(req.url, 'http://localhost');
+  const pathname = parsed.pathname;
 
   console.log('[' + new Date() + ']', req.method, pathname);
 

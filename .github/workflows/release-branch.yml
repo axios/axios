@@ -205,12 +205,15 @@ jobs:
         with:
           name: axios-tarball
           path: artifacts
-      - name: Install Bun smoke test dependencies
-        working-directory: tests/smoke/bun
-        run: npm install --ignore-scripts
       - name: Install packed axios
-        working-directory: tests/smoke/bun
-        run: npm install --no-save ../../../artifacts/axios-*.tgz
+        env:
+          TMPDIR: ${{ runner.temp }}
+          BUN_INSTALL_CACHE_DIR: ${{ runner.temp }}/bun-cache
+        run: |
+          mkdir -p "$BUN_INSTALL_CACHE_DIR"
+          mv artifacts/axios-*.tgz artifacts/axios.tgz
+          cd tests/smoke/bun
+          bun add file:../../../artifacts/axios.tgz
       - name: Run Bun smoke tests
         working-directory: tests/smoke/bun
         run: bun test
@@ -232,9 +235,13 @@ jobs:
           name: axios-tarball
           path: artifacts
       - name: Prepare packed axios dist
-        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist ./dist
+        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
+      - name: Install Deno smoke test dependencies
+        working-directory: tests/smoke/deno
+        run: deno install
       - name: Run Deno smoke tests
-        run: deno task --cwd tests/smoke/deno test
+        working-directory: tests/smoke/deno
+        run: deno task test
 
   bump-version-and-create-pr:
     name: Bump version and create PR

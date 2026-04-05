@@ -29,12 +29,12 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Build project
         run: npm run build
-      # - name: Install Playwright with deps
-      #   run: npx playwright install --with-deps
-      # - name: Run unit tests
-      #   run: npm run test:vitest:unit
-      # - name: Run browser tests
-      #   run: npm run test:vitest:browser:headless
+      - name: Install Playwright with deps
+        run: npx playwright install --with-deps
+      - name: Run unit tests
+        run: npm run test:vitest:unit
+      - name: Run browser tests
+        run: npm run test:vitest:browser:headless
       - name: Pack npm tarball
         run: npm pack
       - name: Dependency Review

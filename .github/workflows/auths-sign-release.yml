@@ -1,0 +1,65 @@
+name: Auths sign release artifacts
+
+# Runs on version tags (matching the existing publish workflow trigger).
+# Signs the built artifacts before they are published to npm,
+# creating .auths.json attestation files that consumers can verify.
+#
+# To activate:
+#   1. Store AUTHS_CI_TOKEN as a repository secret
+#      (generate with: auths init --profile ci --github-action)
+#   2. Remove the 'if: false' guard below
+
+on:
+  push:
+    tags:
+      - 'v1.*.*'
+
+permissions: {}
+
+jobs:
+  sign:
+    name: Sign release artifacts
+    if: false # Remove this line to activate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24.x
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Sign artifacts with Auths
+        uses: auths-dev/sign@v1
+        with:
+          token: ${{ secrets.AUTHS_CI_TOKEN }}
+          files: |
+            dist/*.js
+            dist/*.mjs
+            dist/*.cjs
+            package.json
+          verify: true
+          note: 'npm release ${{ github.ref_name }}'
+
+      # After this step, each matched file has a corresponding .auths.json
+      # attestation. These can be:
+      #   - Published alongside the package (e.g., as GitHub Release assets)
+      #   - Uploaded to the Auths registry (auths artifact publish)
+      #   - Verified by consumers: auths artifact verify dist/axios.js
+
+      - name: Publish to NPM
+        run: npm publish --provenance --access public

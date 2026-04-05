@@ -3,8 +3,8 @@
 layout: home
 
 hero:
-  name: "axios docs"
-  text: "axios is a simple HTTP client for the browser and Node.js"
+  name: 'axios docs'
+  text: 'axios is a simple HTTP client for the browser and Node.js'
   image:
     dark: /logo.svg
     light: /logo-light.svg
@@ -43,6 +43,20 @@ onMounted(() => {
       gap: 10,
       snap: true,
       pagination: false,
+      breakpoints: {
+        1200: {
+          perPage: 4,
+        },
+        960: {
+          perPage: 3,
+        },
+        640: {
+          perPage: 2,
+        },
+        480: {
+          perPage: 1,
+        },
+      },
     }
   ).mount();
 });
@@ -116,12 +130,15 @@ const capitalizeFirstLetter = (word) => {
   border: 1px solid var(--vp-c-gutter) !important;
   text-align: center;
   background-color: var(--card-background-color) !important;
-  width: 11.5rem;
+  width: 100%;
+  max-width: 11.5rem;
   scroll-snap-align: center;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   flex-shrink: 0 !important;
   margin-bottom: 0.5rem !important;
   margin-top: 0.5rem !important;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .imgWrapper {

@@ -89,6 +89,32 @@
     "url": "https://github.com/axios/axios/issues"
   },
   "homepage": "https://axios-http.com",
+  "scripts": {
+    "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
+    "version": "npm run build && git add package.json",
+    "preversion": "gulp version",
+    "test": "npm run test:vitest",
+    "test:vitest": "vitest run",
+    "test:vitest:unit": "vitest run --project unit",
+    "test:vitest:browser": "vitest run --project browser",
+    "test:vitest:browser:headless": "vitest run --project browser-headless",
+    "test:vitest:watch": "vitest",
+    "test:smoke:cjs:vitest": "npm --prefix tests/smoke/cjs run test:smoke:cjs:mocha",
+    "test:smoke:esm:vitest": "npm --prefix tests/smoke/esm run test:smoke:esm:vitest",
+    "test:module:cjs": "npm --prefix tests/module/cjs run test:module:cjs",
+    "test:module:esm": "npm --prefix tests/module/esm run test:module:esm",
+    "docs:dev": "cd docs && npm run docs:dev",
+    "start": "node ./sandbox/server.js",
+    "examples": "node ./examples/server.js",
+    "lint": "eslint lib/**/*.js",
+    "fix": "eslint --fix lib/**/*.js",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "follow-redirects": "^1.15.11",
+    "form-data": "^4.0.5",
+    "proxy-from-env": "^2.1.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.28.6",
     "@babel/preset-env": "^7.28.6",

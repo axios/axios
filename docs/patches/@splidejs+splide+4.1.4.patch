@@ -1,0 +1,12 @@
+diff --git a/node_modules/@splidejs/splide/package.json b/node_modules/@splidejs/splide/package.json
+index 677e6d0..d274e39 100644
+--- a/node_modules/@splidejs/splide/package.json
++++ b/node_modules/@splidejs/splide/package.json
+@@ -4,6 +4,7 @@
+   "description": "Splide is a lightweight, flexible and accessible slider/carousel. No dependencies, no Lighthouse errors.",
+   "author": "Naotoshi Fujita",
+   "license": "MIT",
++  "type": "module",
+   "main": "dist/js/splide.cjs.js",
+   "module": "dist/js/splide.esm.js",
+   "types": "dist/types/index.d.ts",

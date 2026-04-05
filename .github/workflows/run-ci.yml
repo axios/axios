@@ -200,7 +200,7 @@ jobs:
           name: axios-tarball
           path: artifacts
       - name: Prepare packed axios dist
-        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist ./dist
+        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
       - name: Install Bun smoke test dependencies
         working-directory: tests/smoke/bun
         run: bun install --no-lock --no-save
@@ -225,7 +225,7 @@ jobs:
           name: axios-tarball
           path: artifacts
       - name: Prepare packed axios dist
-        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist ./dist
+        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
       - name: Install Deno smoke test dependencies
         run: deno task --cwd tests/smoke/deno install
       - name: Run Deno smoke tests

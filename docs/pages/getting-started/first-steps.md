@@ -33,7 +33,7 @@ bun add axios
 #### Using deno
 
 ```bash
-deno install axios
+deno install npm:axios
 ```
 
 #### Using jsDelivr

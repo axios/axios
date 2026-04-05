@@ -203,7 +203,7 @@ jobs:
         run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
       - name: Install Bun smoke test dependencies
         working-directory: tests/smoke/bun
-        run: bun install --no-lock --no-save
+        run: bun install
       - name: Install packed axios
         working-directory: tests/smoke/bun
         run: bun add ../../../artifacts/axios-*.tgz

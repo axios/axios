@@ -1,61 +1,78 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import {terser} from "rollup-plugin-terser";
+import terser from '@rollup/plugin-terser';
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
-import autoExternal from 'rollup-plugin-auto-external';
 import bundleSize from 'rollup-plugin-bundle-size';
 import aliasPlugin from '@rollup/plugin-alias';
 import path from 'path';
+import { createRequire } from 'module';
 
-const lib = require("./package.json");
+const require = createRequire(import.meta.url);
+const lib = require('./package.json');
 const outputFileName = 'axios';
-const name = "axios";
+const name = 'axios';
 const namedInput = './index.js';
 const defaultInput = './lib/axios.js';
 
-const buildConfig = ({es5, browser = true, minifiedVersion = true, alias, ...config}) => {
-  const {file} = config.output;
+const buildConfig = ({ es5, browser = true, minifiedVersion = true, alias, ...config }) => {
+  const { file } = config.output;
   const ext = path.extname(file);
   const basename = path.basename(file, ext);
   const extArr = ext.split('.');
   extArr.shift();
 
-
-  const build = ({minified}) => ({
+  const build = ({ minified }) => ({
     input: namedInput,
     ...config,
     output: {
       ...config.output,
-      file: `${path.dirname(file)}/${basename}.${(minified ? ['min', ...extArr] : extArr).join('.')}`
+      file: `${path.dirname(file)}/${basename}.${(minified ? ['min', ...extArr] : extArr).join('.')}`,
     },
     plugins: [
       aliasPlugin({
-        entries: alias || []
+        entries: alias || [],
       }),
       json(),
-      resolve({browser}),
+      resolve({ browser }),
       commonjs(),
 
-      minified && terser(),
+      minified &&
+        terser({
+          maxWorkers: 1,
+        }),
       minified && bundleSize(),
-      ...(es5 ? [babel({
-        babelHelpers: 'bundled',
-        presets: ['@babel/preset-env']
-      })] : []),
+      ...(es5
+        ? [
+            babel({
+              babelHelpers: 'bundled',
+              presets: ['@babel/preset-env'],
+            }),
+          ]
+        : []),
       ...(config.plugins || []),
-    ]
+    ],
   });
 
-  const configs = [
-    build({minified: false}),
-  ];
+  const configs = [build({ minified: false })];
 
   if (minifiedVersion) {
-    configs.push(build({minified: true}))
+    configs.push(build({ minified: true }));
   }
 
   return configs;
+};
+
+const nodeCjsExternal = (id) => {
+  if (id === 'proxy-from-env') {
+    return false;
+  }
+
+  if (id.startsWith('.') || path.isAbsolute(id) || id.startsWith('\0')) {
+    return false;
+  }
+
+  return true;
 };
 
 export default async () => {
@@ -68,27 +85,11 @@ export default async () => {
       input: namedInput,
       output: {
         file: `dist/esm/${outputFileName}.js`,
-        format: "esm",
-        preferConst: true,
-        exports: "named",
-        banner
-      }
-    }),
-    // browser ESM bundle for CDN with fetch adapter only
-    // Downsizing from 12.97 kB (gzip) to 12.23 kB (gzip)
-/*    ...buildConfig({
-      input: namedInput,
-      output: {
-        file: `dist/esm/${outputFileName}-fetch.js`,
-        format: "esm",
-        preferConst: true,
-        exports: "named",
-        banner
+        format: 'esm',
+        exports: 'named',
+        banner,
       },
-      alias: [
-        { find: './xhr.js', replacement: '../helpers/null.js' }
-      ]
-    }),*/
+    }),
 
     // Browser UMD bundle for CDN
     ...buildConfig({
@@ -97,10 +98,10 @@ export default async () => {
       output: {
         file: `dist/${outputFileName}.js`,
         name,
-        format: "umd",
-        exports: "default",
-        banner
-      }
+        format: 'umd',
+        exports: 'default',
+        banner,
+      },
     }),
 
     // Browser CJS bundle
@@ -111,27 +112,30 @@ export default async () => {
       output: {
         file: `dist/browser/${name}.cjs`,
         name,
-        format: "cjs",
-        exports: "default",
-        banner
-      }
+        format: 'cjs',
+        exports: 'default',
+        banner,
+      },
     }),
 
-    // Node.js commonjs bundle
+    // Node.js commonjs bundle (transpiled for Node 12)
     {
       input: defaultInput,
+      external: nodeCjsExternal,
       output: {
         file: `dist/node/${name}.cjs`,
-        format: "cjs",
-        preferConst: true,
-        exports: "default",
-        banner
+        format: 'cjs',
+        exports: 'default',
+        banner,
       },
       plugins: [
-        autoExternal(),
         resolve(),
-        commonjs()
-      ]
-    }
-  ]
+        commonjs(),
+        babel({
+          babelHelpers: 'bundled',
+          presets: [['@babel/preset-env', { targets: { node: '12' } }]],
+        }),
+      ],
+    },
+  ];
 };

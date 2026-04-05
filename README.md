@@ -458,6 +458,8 @@ These are the available config options for making requests. Only the `url` is re
 
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials
+  // This only controls whether the browser sends credentials.
+  // It does not control whether the XSRF header is added.
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
@@ -497,7 +499,11 @@ These are the available config options for making requests. Only the `url` is re
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
+  // `withXSRFToken` defines whether to send the XSRF header in browser requests.
   // `undefined` (default) - set XSRF header only for the same origin requests
+  // `true` - always set XSRF header, including for cross-origin requests
+  // `false` - never set XSRF header
+  // function - resolve with custom logic; receives the internal config object
   withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
   // `withXSRFToken` controls whether Axios reads the XSRF cookie and sets the XSRF header.

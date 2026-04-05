@@ -230,6 +230,8 @@ jobs:
       - name: Prepare packed axios dist
         run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
       - name: Install Deno smoke test dependencies
-        run: deno task --cwd tests/smoke/deno install
+        working-directory: tests/smoke/deno
+        run: deno install
       - name: Run Deno smoke tests
-        run: deno task --cwd tests/smoke/deno test
+        working-directory: tests/smoke/deno
+        run: deno task test

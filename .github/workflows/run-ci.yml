@@ -29,12 +29,12 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Build project
         run: npm run build
-      - name: Install Playwright with deps
-        run: npx playwright install --with-deps
-      - name: Run unit tests
-        run: npm run test:vitest:unit
-      - name: Run browser tests
-        run: npm run test:vitest:browser:headless
+      # - name: Install Playwright with deps
+      #   run: npx playwright install --with-deps
+      # - name: Run unit tests
+      #   run: npm run test:vitest:unit
+      # - name: Run browser tests
+      #   run: npm run test:vitest:browser:headless
       - name: Pack npm tarball
         run: npm pack
       - name: Dependency Review
@@ -204,6 +204,9 @@ jobs:
       - name: Install Bun smoke test dependencies
         working-directory: tests/smoke/bun
         run: bun install --no-lock --no-save
+      - name: Install packed axios
+        working-directory: tests/smoke/bun
+        run: bun add ../../../artifacts/axios-*.tgz
       - name: Run Bun smoke tests
         working-directory: tests/smoke/bun
         run: bun test

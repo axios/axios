@@ -199,9 +199,13 @@ jobs:
         with:
           name: axios-tarball
           path: artifacts
+      - name: Unpack axios tarball
+        run: |
+          mkdir -p artifacts/unpacked
+          tar -xzf artifacts/axios-*.tgz -C artifacts/unpacked
       - name: Install packed axios
         working-directory: tests/smoke/bun
-        run: bun add ../../../artifacts/axios-*.tgz
+        run: bun add ../../../artifacts/unpacked/package
       - name: Install Bun smoke test dependencies
         working-directory: tests/smoke/bun
         run: bun install

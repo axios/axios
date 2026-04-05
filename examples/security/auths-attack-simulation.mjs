@@ -1,7 +1,7 @@
 /**
  * Auths Attack Simulation: Axios March 31, 2026 Supply Chain Incident
  *
- * Demonstrates how Auths cryptographic commit verification would have detected
+ * Demonstrates how Auths cryptographic verification would have detected
  * the unauthorized npm publish that compromised Axios v1.14.1 and v0.30.4.
  *
  * What happened:
@@ -17,106 +17,36 @@
  * How Auths closes this gap:
  *   The real attack bypassed Git entirely — the attacker published directly to
  *   npm with no corresponding commit. Auths establishes a policy that every
- *   legitimate release must trace back to a signed commit by an authorized
- *   maintainer. A package published without a matching signed commit has no
- *   valid attestation chain and would be flagged by consumers and CI pipelines
- *   that verify signatures.
+ *   legitimate release must trace back to a signed action by an authorized
+ *   maintainer. A package published without a valid signature from a known
+ *   maintainer identity has no valid attestation and would be rejected.
  *
- *   This simulation demonstrates the commit-signing layer: it shows that
- *   commits from unauthorized parties are detected. In a full Auths deployment,
- *   the release workflow would also sign the artifact itself (via `auths
- *   artifact sign`), binding the published package to both the maintainer's
- *   identity and a specific signed commit.
+ *   This simulation uses the Auths Node SDK to demonstrate the core
+ *   cryptographic primitive: sign an action with a maintainer's key, then
+ *   show that verification succeeds for the legitimate release and fails
+ *   for an unauthorized or tampered one.
  *
  * Usage:
- *   brew tap auths-dev/auths-cli && brew install auths
+ *   npm install @auths-dev/sdk
  *   node auths-attack-simulation.mjs
+ *
+ * Requires: @auths-dev/sdk
  */
 
-import { execSync, execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-
-function checkAuthsCli() {
-  try {
-    execSync('which auths', { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
+let sdk;
+try {
+  sdk = await import('@auths-dev/sdk');
+} catch {
+  console.log("The '@auths-dev/sdk' package is not installed.");
+  console.log();
+  console.log('Install it with:');
+  console.log('  npm install @auths-dev/sdk');
+  console.log();
+  console.log('Or visit: https://github.com/auths-dev/auths');
+  process.exit(0);
 }
 
-function run(args, cwd) {
-  return execFileSync(args[0], args.slice(1), {
-    cwd,
-    encoding: 'utf-8',
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
-}
-
-function runSafe(args, cwd) {
-  try {
-    return { stdout: run(args, cwd), exitCode: 0 };
-  } catch (err) {
-    return {
-      stdout: err.stdout || '',
-      stderr: err.stderr || '',
-      exitCode: err.status || 1,
-    };
-  }
-}
-
-function setupTestRepo(tmpDir) {
-  const repo = join(tmpDir, 'axios-simulation');
-  mkdirSync(repo, { recursive: true });
-
-  // Initialize repo
-  run(['git', 'init'], repo);
-  run(['git', 'config', 'user.email', 'maintainer@example.com'], repo);
-  run(['git', 'config', 'user.name', 'Axios Maintainer'], repo);
-
-  // Generate a test Ed25519 keypair for the "legitimate maintainer"
-  const keyPath = join(tmpDir, 'test_key');
-  run(['ssh-keygen', '-t', 'ed25519', '-f', keyPath, '-N', '', '-q'], tmpDir);
-
-  // Configure git to sign with this key
-  run(['git', 'config', 'gpg.format', 'ssh'], repo);
-  run(['git', 'config', 'user.signingkey', keyPath], repo);
-
-  // Create allowed_signers file
-  const pubKey = readFileSync(`${keyPath}.pub`, 'utf-8').trim();
-  const signersDir = join(repo, '.auths');
-  mkdirSync(signersDir, { recursive: true });
-  writeFileSync(join(signersDir, 'allowed_signers'), `maintainer@example.com ${pubKey}\n`);
-
-  run([
-    'git', 'config', 'gpg.ssh.allowedSignersFile',
-    join(signersDir, 'allowed_signers'),
-  ], repo);
-
-  // Commit 1: Legitimate signed release (v1.14.0)
-  writeFileSync(join(repo, 'package.json'), JSON.stringify({
-    name: 'axios',
-    version: '1.14.0',
-  }, null, 2) + '\n');
-  run(['git', 'add', '.'], repo);
-  run(['git', 'commit', '-S', '-m', 'release: v1.14.0 (legitimate, signed)'], repo);
-
-  // Commit 2: Attacker's malicious commit (unsigned)
-  run(['git', 'config', 'commit.gpgSign', 'false'], repo);
-  writeFileSync(join(repo, 'package.json'), JSON.stringify({
-    name: 'axios',
-    version: '1.14.1',
-    dependencies: {
-      'plain-crypto-js': '^4.2.1',  // Malicious dependency
-    },
-  }, null, 2) + '\n');
-  run(['git', 'add', '.'], repo);
-  run(['git', 'commit', '-m', 'release: v1.14.1 (MALICIOUS — unsigned)'], repo);
-
-  return repo;
-}
+const { generateInmemoryKeypair, signActionRaw, verifyActionEnvelope } = sdk;
 
 function main() {
   console.log('='.repeat(70));
@@ -124,65 +54,86 @@ function main() {
   console.log('='.repeat(70));
   console.log();
 
-  if (!checkAuthsCli()) {
-    console.log("The 'auths' CLI is not installed.");
-    console.log();
-    console.log('Install it with:');
-    console.log('  brew tap auths-dev/auths-cli && brew install auths');
-    console.log('  (or: cargo install auths_cli)');
-    console.log();
-    console.log('Or visit: https://github.com/auths-dev/auths');
-    process.exit(0);
-  }
+  // Generate ephemeral identities — no filesystem, no keychain needed
+  const maintainer = generateInmemoryKeypair();
+  const attacker = generateInmemoryKeypair();
 
-  const tmpDir = mkdtempSync(join(tmpdir(), 'auths-axios-'));
-
-  console.log('[1] Setting up simulation repository...');
-  const repo = setupTestRepo(tmpDir);
-  console.log('    Created repo with 2 commits:');
-  console.log('    - v1.14.0: Legitimate release, signed by maintainer');
-  console.log('    - v1.14.1: Attacker\'s malicious version, unsigned');
+  // ── Step 1: Legitimate maintainer signs a release ──────────────────
+  console.log('[1] Legitimate maintainer signs release v1.14.0...');
   console.log();
 
-  // Verify the legitimate commit
-  console.log('[2] Verifying legitimate commit (v1.14.0)...');
-  const legit = runSafe([
-    'auths', 'verify', 'HEAD~2..HEAD~1',
-    '--allowed-signers', '.auths/allowed_signers',
-  ], repo);
-  if (legit.exitCode === 0) {
-    console.log('  PASSED: Commit is signed by an authorized maintainer');
-  } else {
-    console.log('  Result:', (legit.stdout || legit.stderr).trim());
-  }
+  const releasePayload = JSON.stringify({
+    package: 'axios',
+    version: '1.14.0',
+    digest: 'sha256:abc123def456...',
+    registry: 'npm',
+  });
+
+  const legitimateEnvelope = signActionRaw(
+    maintainer.privateKeyHex, 'release', releasePayload, maintainer.did,
+  );
+
+  let result = verifyActionEnvelope(legitimateEnvelope, maintainer.publicKeyHex);
+  console.log(`    Signed by: ${maintainer.did}`);
+  console.log(`    Verification: ${result.valid ? 'PASSED' : 'FAILED'}`);
   console.log();
 
-  // Verify the malicious commit
-  console.log('[3] Verifying attacker\'s commit (v1.14.1)...');
-  const malicious = runSafe([
-    'auths', 'verify', 'HEAD~1..HEAD',
-    '--allowed-signers', '.auths/allowed_signers',
-  ], repo);
-  if (malicious.exitCode !== 0) {
-    console.log('  BLOCKED: Unsigned commit detected');
-    if (malicious.stdout) console.log(`  Output: ${malicious.stdout.trim()}`);
-    if (malicious.stderr) console.log(`  Detail: ${malicious.stderr.trim()}`);
-  } else {
-    console.log('  PASSED: All commits verified');
-  }
+  // ── Step 2: Attacker publishes with stolen npm credentials ─────────
+  console.log('[2] Attacker publishes v1.14.1 using stolen npm credentials...');
+  console.log('    (Attacker has registry credentials but NOT the maintainer\'s signing key)');
   console.log();
 
-  // Summary
+  const maliciousPayload = JSON.stringify({
+    package: 'axios',
+    version: '1.14.1',
+    digest: 'sha256:malicious_payload_hash...',
+    registry: 'npm',
+    dependencies: { 'plain-crypto-js': '^4.2.1' },
+  });
+
+  // Attacker signs with their own key — NOT the maintainer's
+  const attackerEnvelope = signActionRaw(
+    attacker.privateKeyHex, 'release', maliciousPayload, attacker.did,
+  );
+
+  // Verify against the MAINTAINER's public key (the only trusted key)
+  result = verifyActionEnvelope(attackerEnvelope, maintainer.publicKeyHex);
+  console.log(`    Signed by: ${attacker.did}`);
+  console.log(`    Verification against maintainer key: ${result.valid ? 'PASSED' : 'FAILED'}`);
+  if (result.error) console.log(`    Reason: ${result.error}`);
+  console.log();
+
+  // ── Step 3: Show tampered legitimate envelope also fails ───────────
+  console.log('[3] Attacker tampers with a legitimately-signed envelope...');
+  console.log();
+
+  const envelope = JSON.parse(legitimateEnvelope);
+  envelope.payload.version = '1.14.1';
+  envelope.payload.digest = 'sha256:malicious_payload_hash...';
+  const tamperedJson = JSON.stringify(envelope);
+
+  result = verifyActionEnvelope(tamperedJson, maintainer.publicKeyHex);
+  console.log(`    Original signer: ${maintainer.did}`);
+  console.log(`    Tampered payload version: 1.14.1`);
+  console.log(`    Verification: ${result.valid ? 'PASSED' : 'FAILED'}`);
+  if (result.error) console.log(`    Reason: ${result.error}`);
+  console.log();
+
+  // ── Summary ────────────────────────────────────────────────────────
   console.log('-'.repeat(70));
-  console.log('RESULT: The attacker\'s unsigned commit would have been flagged.');
+  console.log('SUMMARY');
+  console.log();
+  console.log('  v1.14.0 (legitimate, signed by maintainer): VERIFIED');
+  console.log('  v1.14.1 (attacker\'s key, not trusted):      REJECTED');
+  console.log('  v1.14.1 (tampered legitimate envelope):     REJECTED');
   console.log();
   console.log('NOTE: The real March 31 attack bypassed Git entirely — the attacker');
   console.log('published directly to npm with no commit at all. This simulation');
-  console.log('demonstrates the commit-signing layer of Auths. In a full deployment,');
-  console.log('the release workflow also signs the artifact itself (auths artifact');
-  console.log('sign), binding the package to a specific signed commit. A package');
-  console.log('published without a matching signed commit has no valid attestation');
-  console.log('chain and would be rejected by consumers verifying signatures.');
+  console.log('demonstrates the cryptographic primitive that Auths provides: only');
+  console.log('the holder of the maintainer\'s private key can produce a valid');
+  console.log('signature. In a full deployment, the CI/CD pipeline would use');
+  console.log('\'auths artifact sign\' to bind the published package to the');
+  console.log('maintainer\'s identity, and consumers would verify before installing.');
   console.log();
   console.log('Learn more: https://github.com/auths-dev/auths');
   console.log('='.repeat(70));

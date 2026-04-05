@@ -206,9 +206,6 @@ jobs:
       - name: Install packed axios
         working-directory: tests/smoke/bun
         run: bun add ../../../artifacts/unpacked/package
-      - name: Install Bun smoke test dependencies
-        working-directory: tests/smoke/bun
-        run: bun install
       - name: Run Bun smoke tests
         working-directory: tests/smoke/bun
         run: bun test

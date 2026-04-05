@@ -1011,15 +1011,25 @@ async function fetchWithTimeout() {
   try {
     const response = await axios.get("https://example.com/data", {
       timeout: 5000, // 5 seconds
+      transitional: {
+        // set to true if you prefer ETIMEDOUT over ECONNABORTED
+        clarifyTimeoutError: false,
+      },
     });
 
     console.log("Response:", response.data);
   } catch (error) {
-    if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
-      console.error("❌ Request timed out!");
-    } else {
-      console.error("❌ Error:", error.message);
+    if (axios.isAxiosError(error)) {
+      if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+        console.error("Request timed out. Please try again.");
+        return;
+      }
+
+      console.error("Axios error:", error.message);
+      return;
     }
+
+    console.error("Unexpected error:", error);
   }
 }
 ```

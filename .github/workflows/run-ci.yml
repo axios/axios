@@ -199,14 +199,12 @@ jobs:
         with:
           name: axios-tarball
           path: artifacts
-      - name: Prepare packed axios dist
-        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
-      - name: Install Bun smoke test dependencies
-        working-directory: tests/smoke/bun
-        run: bun install
       - name: Install packed axios
         working-directory: tests/smoke/bun
         run: bun add ../../../artifacts/axios-*.tgz
+      - name: Install Bun smoke test dependencies
+        working-directory: tests/smoke/bun
+        run: bun install
       - name: Run Bun smoke tests
         working-directory: tests/smoke/bun
         run: bun test

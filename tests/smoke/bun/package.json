@@ -3,8 +3,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest",
-    "axios": "file:../../../dist"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"

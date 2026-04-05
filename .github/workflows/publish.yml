@@ -24,7 +24,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Build project
         run: npm run build
       - name: Publish to NPM

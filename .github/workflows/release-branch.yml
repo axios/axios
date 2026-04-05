@@ -34,7 +34,7 @@ jobs:
           node-version: 24.x
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Build project
         run: npm run build
       - name: Install Playwright with deps
@@ -79,7 +79,7 @@ jobs:
           path: artifacts
       - name: Install CJS smoke test dependencies
         working-directory: tests/smoke/cjs
-        run: npm install
+        run: npm install --ignore-scripts
       - name: Install packed axios
         working-directory: tests/smoke/cjs
         run: npm install --no-save ../../../artifacts/axios-*.tgz
@@ -113,7 +113,7 @@ jobs:
           path: artifacts
       - name: Install ESM smoke test dependencies
         working-directory: tests/smoke/esm
-        run: npm install
+        run: npm install --ignore-scripts
       - name: Install packed axios
         working-directory: tests/smoke/esm
         run: npm install --no-save ../../../artifacts/axios-*.tgz
@@ -147,7 +147,7 @@ jobs:
           path: artifacts
       - name: Install CJS module test dependencies
         working-directory: tests/module/cjs
-        run: npm install
+        run: npm install --ignore-scripts
       - name: Install packed axios
         working-directory: tests/module/cjs
         run: npm install --no-save ../../../artifacts/axios-*.tgz
@@ -181,7 +181,7 @@ jobs:
           path: artifacts
       - name: Install ESM module test dependencies
         working-directory: tests/module/esm
-        run: npm install
+        run: npm install --ignore-scripts
       - name: Install packed axios
         working-directory: tests/module/esm
         run: npm install --no-save ../../../artifacts/axios-*.tgz
@@ -207,7 +207,7 @@ jobs:
           node-version: 24.x
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Configure git identity
         run: |
           git config --global user.name "github-actions[bot]"

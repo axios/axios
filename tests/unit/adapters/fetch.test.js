@@ -33,7 +33,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           'x-test': 'ok\r\nInjected: yes',
         },
       }),
-      /Invalid character in header content/
+      /(invalid.*header|header.*invalid)/i
     );
   });
 

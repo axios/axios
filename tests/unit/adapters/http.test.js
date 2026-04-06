@@ -125,6 +125,17 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should reject request headers containing CRLF characters', async () => {
+    await assert.rejects(
+      axios.get('http://localhost:1/', {
+        headers: {
+          'x-test': 'ok\r\nInjected: yes',
+        },
+      }),
+      /Invalid character in header content/
+    );
+  });
+
   it('should parse the timeout property', async () => {
     const server = await startHTTPServer(
       (req, res) => {

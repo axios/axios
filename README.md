@@ -567,6 +567,11 @@ These are the available config options for making requests. Only the `url` is re
       options.auth = "user:password";
     }
   },
+  // Security note:
+  // The `beforeRedirect` hook runs after sensitive headers are stripped during redirects.
+  //The `follow-redirects` library removes credentials on protocol downgrade (HTTPS → HTTP) for security.
+  //Since `beforeRedirect` runs after this, re-injecting credentials without checking the   protocol can expose sensitive data.
+  //Always ensure credentials are only added for trusted HTTPS destinations.
 
 // Security note:
 // The beforeRedirect hook runs after sensitive headers are stripped during redirects.
@@ -681,6 +686,15 @@ These are the available config options for making requests. Only the `url` is re
   ]
 }
 ```
+## 🔥 HTTP/2 Support
+
+Axios has experimental HTTP/2 support available via the Node.js HTTP adapter.
+
+Support depends on the runtime environment and Node.js version. Features like redirects and some behaviors may not be fully supported with HTTP/2.
+
+Options like `httpVersion` and `http2Options` are adapter-specific and may not work consistently across all environments.
+
+If HTTP/2 functionality is required, ensure your runtime environment supports it or consider using alternative libraries or custom adapters.
 
 ## Response Schema
 
@@ -1902,12 +1916,15 @@ export async function load({ fetch }) {
 }
 ```
 
-## 🔥 HTTP2
+#### HTTP/2 Support
 
-In version `1.13.0`, experimental `HTTP2` support was added to the `http` adapter.
-The `httpVersion` option is now available to select the protocol version used.
-Additional native options for the internal `session.request()` call can be passed via the `http2Options` config.
-This config also includes the custom `sessionTimeout` parameter, which defaults to `1000ms`.
+Axios supports HTTP/2 via the Node.js `http` adapter (introduced in v1.13.0).
+
+This support depends on the runtime environment. Since Axios relies on Node.js APIs, HTTP/2 functionality is available in supported Node.js versions, but may not work in other environments (such as Bun or Deno).
+
+Options like `httpVersion` and `http2Options` are adapter-specific and may not behave consistently across all environments.
+
+Note: HTTP/2 redirects are currently not supported by the HTTP/2 adapter.
 
 ```js
 const form = new FormData();
@@ -1918,11 +1935,6 @@ const { data, headers, status } = await axios.post(
   "https://httpbin.org/post",
   form,
   {
-    httpVersion: 2,
-    http2Options: {
-      // rejectUnauthorized: false,
-      // sessionTimeout: 1000
-    },
     onUploadProgress(e) {
       console.log("upload progress", e);
     },
@@ -1930,7 +1942,7 @@ const { data, headers, status } = await axios.post(
       console.log("download progress", e);
     },
     responseType: "arraybuffer",
-  },
+  }
 );
 ```
 

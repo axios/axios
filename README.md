@@ -680,13 +680,15 @@ These are the available config options for making requests. Only the `url` is re
   ]
 }
 ```
-### HTTP/2 Support
+## 🔥 HTTP/2 Support
 
-Axios currently uses Node.js HTTP/HTTPS modules and does not natively support HTTP/2.
+Axios has experimental HTTP/2 support available via the Node.js HTTP adapter.
 
-Options like `httpVersion` are not recognized and will be ignored.
+Support depends on the runtime environment and Node.js version. Features like redirects and some behaviors may not be fully supported with HTTP/2.
 
-If HTTP/2 functionality is required, consider using alternative libraries or custom adapters.
+Options like `httpVersion` and `http2Options` are adapter-specific and may not work consistently across all environments.
+
+If HTTP/2 functionality is required, ensure your runtime environment supports it or consider using alternative libraries or custom adapters.
 
 ## Response Schema
 

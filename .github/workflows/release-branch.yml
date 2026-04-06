@@ -189,9 +189,64 @@ jobs:
         working-directory: tests/module/esm
         run: npm run test:module:esm
 
+  bun-smoke-tests:
+    name: Bun smoke tests
+    needs: build-and-run-vitest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Setup bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      - name: Download npm pack artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: axios-tarball
+          path: artifacts
+      - name: Install packed axios
+        env:
+          TMPDIR: ${{ runner.temp }}
+          BUN_INSTALL_CACHE_DIR: ${{ runner.temp }}/bun-cache
+        run: |
+          mkdir -p "$BUN_INSTALL_CACHE_DIR"
+          mv artifacts/axios-*.tgz artifacts/axios.tgz
+          cd tests/smoke/bun
+          bun add file:../../../artifacts/axios.tgz
+      - name: Run Bun smoke tests
+        working-directory: tests/smoke/bun
+        run: bun test
+
+  deno-smoke-tests:
+    name: Deno smoke tests
+    needs: build-and-run-vitest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Setup deno
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+      - name: Download npm pack artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: axios-tarball
+          path: artifacts
+      - name: Prepare packed axios dist
+        run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
+      - name: Install Deno smoke test dependencies
+        working-directory: tests/smoke/deno
+        run: deno install
+      - name: Run Deno smoke tests
+        working-directory: tests/smoke/deno
+        run: deno task test
+
   bump-version-and-create-pr:
     name: Bump version and create PR
-    needs: [build-and-run-vitest, cjs-smoke-tests, esm-smoke-tests]
+    needs:
+      [build-and-run-vitest, cjs-smoke-tests, esm-smoke-tests, bun-smoke-tests, deno-smoke-tests]
     runs-on: ubuntu-latest
     permissions:
       contents: write

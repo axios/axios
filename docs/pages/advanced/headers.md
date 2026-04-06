@@ -79,6 +79,39 @@ const api = axios.create({
 });
 ```
 
+## Preserving a specific header case
+
+Axios header names are case-insensitive, but `AxiosHeaders` keeps the case of the first matching key it sees. If you need a specific case for a server with non-standard case-sensitive behavior, define a case preset in defaults and then set values as usual.
+
+```js
+const api = axios.create();
+
+api.defaults.headers.common = {
+  'content-type': undefined,
+  accept: undefined,
+};
+
+await api.put(url, data, {
+  headers: {
+    'Content-Type': 'application/octet-stream',
+    Accept: 'application/json',
+  },
+});
+```
+
+You can also do this with `AxiosHeaders` directly when composing headers:
+
+```js
+import axios, { AxiosHeaders } from 'axios';
+
+const headers = AxiosHeaders.concat(
+  { 'content-type': undefined },
+  { 'Content-Type': 'application/octet-stream' }
+);
+
+await axios.put(url, data, { headers });
+```
+
 ## Setting headers in an interceptor
 
 Interceptors are the right place to attach dynamic headers like auth tokens, because the token may not be available when the instance is first created:

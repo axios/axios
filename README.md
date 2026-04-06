@@ -458,6 +458,8 @@ These are the available config options for making requests. Only the `url` is re
 
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials
+  // This only controls whether the browser sends credentials.
+  // It does not control whether the XSRF header is added.
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
@@ -497,7 +499,11 @@ These are the available config options for making requests. Only the `url` is re
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
+  // `withXSRFToken` defines whether to send the XSRF header in browser requests.
   // `undefined` (default) - set XSRF header only for the same origin requests
+  // `true` - always set XSRF header, including for cross-origin requests
+  // `false` - never set XSRF header
+  // function - resolve with custom logic; receives the internal config object
   withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
   // `withXSRFToken` controls whether Axios reads the XSRF cookie and sets the XSRF header.
@@ -1019,15 +1025,25 @@ async function fetchWithTimeout() {
   try {
     const response = await axios.get("https://example.com/data", {
       timeout: 5000, // 5 seconds
+      transitional: {
+        // set to true if you prefer ETIMEDOUT over ECONNABORTED
+        clarifyTimeoutError: false,
+      },
     });
 
     console.log("Response:", response.data);
   } catch (error) {
-    if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
-      console.error("❌ Request timed out!");
-    } else {
-      console.error("❌ Error:", error.message);
+    if (axios.isAxiosError(error)) {
+      if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+        console.error("Request timed out. Please try again.");
+        return;
+      }
+
+      console.error("Axios error:", error.message);
+      return;
     }
+
+    console.error("Unexpected error:", error);
   }
 }
 ```
@@ -1576,6 +1592,38 @@ for (const [header, value] of headers) {
 // foo 1
 // bar 2
 // baz 3
+```
+
+### Preserving a specific header case
+
+Header names are case-insensitive, but `AxiosHeaders` keeps the case of the first matching key it sees.
+If you need a specific case for non-standard case-sensitive servers, define a case preset with `undefined` and then set the value later:
+
+```js
+const api = axios.create();
+
+api.defaults.headers.common = {
+  'content-type': undefined,
+  accept: undefined,
+};
+
+await api.put(url, data, {
+  headers: {
+    'Content-Type': 'application/octet-stream',
+    Accept: 'application/json',
+  },
+});
+```
+
+You can also compose the same behavior with `AxiosHeaders.concat`:
+
+```js
+const headers = axios.AxiosHeaders.concat(
+  { 'content-type': undefined },
+  { 'Content-Type': 'application/octet-stream' }
+);
+
+await axios.put(url, data, { headers });
 ```
 
 ### new AxiosHeaders(headers?)

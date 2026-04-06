@@ -27,7 +27,13 @@ yarn add axios
 #### Using bun
 
 ```bash
-bun install axios
+bun add axios
+```
+
+#### Using deno
+
+```bash
+deno install npm:axios
 ```
 
 #### Using jsDelivr

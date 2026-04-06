@@ -45,6 +45,8 @@ The rewrite argument controls the overwriting behaviour:
 
 The option can also accept a user-defined function that determines whether the value should be overwritten or not. The function receives the current value, header name, and the headers object as arguments.
 
+`AxiosHeaders` keeps the case of the first matching key it sees. You can use this to preserve specific header casing by seeding a key with `undefined` and then setting values later. See [Preserving a specific header case](/pages/advanced/headers#preserving-a-specific-header-case).
+
 ## Get
 
 The `get` method is used to retrieve the value of a header. The method can be called with a single header name, an optional matcher, or a parser. The matcher is defaulted to `true`. The parser can be a regular expression that is used to extract the value from the header.
@@ -58,26 +60,26 @@ An example of some of the possible usages of the `get` method is shown below:
 
 ```js
 const headers = new AxiosHeaders({
-  "Content-Type": "multipart/form-data; boundary=Asrf456BGe4h",
+  'Content-Type': 'multipart/form-data; boundary=Asrf456BGe4h',
 });
 
-console.log(headers.get("Content-Type"));
+console.log(headers.get('Content-Type'));
 // multipart/form-data; boundary=Asrf456BGe4h
 
-console.log(headers.get("Content-Type", true)); // parse key-value pairs from a string separated with \s,;= delimiters:
+console.log(headers.get('Content-Type', true)); // parse key-value pairs from a string separated with \s,;= delimiters:
 // [Object: null prototype] {
 //   'multipart/form-data': undefined,
 //    boundary: 'Asrf456BGe4h'
 // }
 
 console.log(
-  headers.get("Content-Type", (value, name, headers) => {
-    return String(value).replace(/a/g, "ZZZ");
+  headers.get('Content-Type', (value, name, headers) => {
+    return String(value).replace(/a/g, 'ZZZ');
   })
 );
 // multipZZZrt/form-dZZZtZZZ; boundZZZry=Asrf456BGe4h
 
-console.log(headers.get("Content-Type", /boundary=(\w+)/)?.[0]);
+console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
 
@@ -123,11 +125,11 @@ If the headers object was changed directly, it can cause duplicates with the sam
 
 ```js
 const headers = new AxiosHeaders({
-  foo: "1",
+  foo: '1',
 });
 
-headers.Foo = "2";
-headers.FOO = "3";
+headers.Foo = '2';
+headers.FOO = '3';
 
 console.log(headers.toJSON()); // [Object: null prototype] { foo: '1', Foo: '2', FOO: '3' }
 console.log(headers.normalize().toJSON()); // [Object: null prototype] { foo: '3' }
@@ -141,6 +143,15 @@ Returns `this` for chaining.
 ## Concat
 
 Merges the instance with targets into a new AxiosHeaders instance. If the target is a string, it will be parsed as RAW HTTP headers. If the target is an AxiosHeaders instance, it will be merged with the current instance.
+
+This is useful for case presets when composing headers. For example:
+
+```js
+const headers = AxiosHeaders.concat(
+  { 'content-type': undefined },
+  { 'Content-Type': 'application/octet-stream' }
+);
+```
 
 ```js
 concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;

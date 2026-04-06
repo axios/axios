@@ -20,6 +20,8 @@ axios supports all modern and select older browsers, including Chrome, Firefox, 
 
 axios also supports a wide range Node.js versions with tested compatibility as far back as v12.x, making it a good choice in environments where upgrading to the latest Node.js version might not be possible or practical.
 
+In addition to Node.js, axios has Bun and Deno smoke tests that validate key runtime behavior and improve confidence in cross-runtime compatibility.
+
 ## Additional features
 
 - Supports the Promise API

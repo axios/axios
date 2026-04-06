@@ -78,7 +78,7 @@
       "slug": "fjt",
       "website": "https://fujita.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/Yuhei_FUJITA?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": true
+      "active": false
     },
     {
       "name": "DLTx Labs Pty Ltd",
@@ -138,7 +138,7 @@
       "slug": "andylockran",
       "website": "https://andylockran.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/andylockran?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": true
+      "active": false
     },
     {
       "name": "kei sakamoto",
@@ -218,7 +218,7 @@
       "slug": "raiderio_wow",
       "website": "https://raider.io/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/RaiderIO_WoW?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": true
+      "active": false
     },
     {
       "name": "Midtown Rulers",
@@ -268,7 +268,7 @@
       "slug": "mfbtech",
       "website": "https://mfbtech.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/mfb_tech?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": true
+      "active": false
     },
     {
       "name": "Tomasz",
@@ -1335,6 +1335,16 @@
       "active": false
     },
     {
+      "name": "FBPostLikes",
+      "imageUrl": "https://images.opencollective.com/pankaj-jangir/c5dee33/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "pankaj-jangir",
+      "website": "https://www.fbpostlikes.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "iedcdubai",
       "imageUrl": "https://images.opencollective.com/iedcdubai-ae/62ea64d/avatar.png",
       "description": null,
@@ -1585,6 +1595,16 @@
       "active": true
     },
     {
+      "name": "super clone watches",
+      "imageUrl": "https://images.opencollective.com/super-clone-prestige/e681745/logo.png",
+      "description": "Information technology",
+      "tier": "silver",
+      "slug": "super-clone-prestige",
+      "website": "https://finance.yahoo.com/news/best-website-super-clone-watches-073500706.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "Kasino Kurko: Uudet nettikasinot",
       "imageUrl": "https://images.opencollective.com/kurko-uudetnettikasinot/a293576/logo.png",
       "description": "KasinoKurko on Suomen uusien kasinoiden asiantuntija.",
@@ -1681,6 +1701,16 @@
       "tier": "silver",
       "slug": "chilecasinoonline",
       "website": "https://chilecasinoonline.cl/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "buzzvoice.com",
+      "imageUrl": "https://images.opencollective.com/buzzvoicecom/c7477dd/logo.png",
+      "description": "Buzzvoice is your one-stop shop for all your social media marketing needs. With Buzzvoice, you can buy followers, comments, likes, video views and more!",
+      "tier": "silver",
+      "slug": "buzzvoicecom",
+      "website": "https://buzzvoice.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -1823,6 +1853,18 @@
       "tier": "gold",
       "slug": "buzzoid-buy-instagram-followers",
       "website": "https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    }
+  ],
+  "platinum": [
+    {
+      "name": "Hopper Security",
+      "imageUrl": "https://images.opencollective.com/hopper-security/c4f7de2/avatar.png",
+      "description": null,
+      "tier": "platinum",
+      "slug": "hopper-security",
+      "website": null,
       "twitter": null,
       "active": true
     }

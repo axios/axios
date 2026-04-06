@@ -271,6 +271,10 @@ const mainProcess = async () => {
       );
 
       if (!isSponsorInAllSponsors) {
+        if (!sponsorsByTier[sponsor.tier]) {
+          sponsorsByTier[sponsor.tier] ||= [];
+        }
+
         sponsorsByTier[sponsor.tier].push({
           ...sponsor,
           active: true,

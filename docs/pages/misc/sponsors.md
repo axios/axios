@@ -5,7 +5,7 @@ layout: page
 <script setup>
 import allSponsors from '../../data/sponsors.json';
 
-const sponsors = [...allSponsors.gold, ...allSponsors.silver, ...allSponsors.bronze, ...allSponsors.backer];
+const sponsors = [...allSponsors.platinum, ...allSponsors.gold, ...allSponsors.silver, ...allSponsors.bronze, ...allSponsors.backer];
 
 const capitalizeFirstLetter = (word) => {
   return String(word).charAt(0).toUpperCase() + String(word).slice(1);
@@ -79,6 +79,23 @@ const capitalizeFirstLetter = (word) => {
   text-wrap-style: pretty;
   display: -webkit-box;
   text-align: center;
+}
+
+.tagSponsorPlatinum {
+  display: inline-flex;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  align-items: center;
+  border-radius: 9999px;
+  box-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  --tw-ring-inset: inset;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: #000;
+  background-color: #E5E7EB;
 }
 
 .tagSponsorGold {

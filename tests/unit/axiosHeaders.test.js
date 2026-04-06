@@ -85,19 +85,38 @@ describe('AxiosHeaders', () => {
     });
 
     const runIfNode18OrHigher = nodeMajorVersion >= 18 ? it : it.skip;
-    runIfNode18OrHigher('should support setting multiple header values from an iterable source', () => {
+    runIfNode18OrHigher(
+      'should support setting multiple header values from an iterable source',
+      () => {
+        const headers = new AxiosHeaders();
+        const nativeHeaders = new Headers();
+
+        nativeHeaders.append('set-cookie', 'foo');
+        nativeHeaders.append('set-cookie', 'bar');
+        nativeHeaders.append('set-cookie', 'baz');
+        nativeHeaders.append('y', 'qux');
+
+        headers.set(nativeHeaders);
+
+        assert.deepStrictEqual(headers.get('set-cookie'), ['foo', 'bar', 'baz']);
+        assert.strictEqual(headers.get('y'), 'qux');
+      }
+    );
+
+    it('should throw on CRLF in header value', () => {
       const headers = new AxiosHeaders();
-      const nativeHeaders = new Headers();
 
-      nativeHeaders.append('set-cookie', 'foo');
-      nativeHeaders.append('set-cookie', 'bar');
-      nativeHeaders.append('set-cookie', 'baz');
-      nativeHeaders.append('y', 'qux');
+      assert.throws(() => {
+        headers.set('x-test', 'safe\r\nInjected: true');
+      }, /Invalid character in header content/);
+    });
 
-      headers.set(nativeHeaders);
+    it('should throw on CRLF in any array header value', () => {
+      const headers = new AxiosHeaders();
 
-      assert.deepStrictEqual(headers.get('set-cookie'), ['foo', 'bar', 'baz']);
-      assert.strictEqual(headers.get('y'), 'qux');
+      assert.throws(() => {
+        headers.set('set-cookie', ['safe=1', 'unsafe=1\nInjected: true']);
+      }, /Invalid character in header content/);
     });
   });
 

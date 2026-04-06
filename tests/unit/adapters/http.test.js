@@ -1738,6 +1738,114 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should not use proxy for localhost with trailing dot when listed in no_proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    let proxyRequests = 0;
+    const proxy = await startHTTPServer(
+      (_, response) => {
+        proxyRequests += 1;
+        response.end('proxied');
+      },
+      { port: PROXY_PORT }
+    );
+
+    const noProxyValue = 'localhost,127.0.0.1,::1';
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = noProxyValue;
+    process.env.NO_PROXY = noProxyValue;
+
+    try {
+      await assert.rejects(axios.get('http://localhost.:1/', { timeout: 100 }));
+      assert.equal(proxyRequests, 0, 'should not use proxy for localhost with trailing dot');
+    } finally {
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
+  it('should not use proxy for bracketed IPv6 loopback when listed in no_proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    let proxyRequests = 0;
+    const proxy = await startHTTPServer(
+      (_, response) => {
+        proxyRequests += 1;
+        response.end('proxied');
+      },
+      { port: PROXY_PORT }
+    );
+
+    const noProxyValue = 'localhost,127.0.0.1,::1';
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = noProxyValue;
+    process.env.NO_PROXY = noProxyValue;
+
+    try {
+      await assert.rejects(axios.get('http://[::1]:1/', { timeout: 100 }));
+      assert.equal(proxyRequests, 0, 'should not use proxy for IPv6 loopback');
+    } finally {
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
   it('should use proxy for domains not in no_proxy', async () => {
     const originalHttpProxy = process.env.http_proxy;
     const originalHTTPProxy = process.env.HTTP_PROXY;

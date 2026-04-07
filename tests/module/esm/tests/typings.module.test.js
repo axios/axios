@@ -17,7 +17,7 @@ const tsconfig = {
 
 describe('module esm typings compatibility', () => {
   it('type-checks esm axios typings', () => {
-    const sourcePath = path.join(repoRoot, 'test/module/typings/esm/index.ts');
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-index.ts');
     const fixturePath = createTempFixture(suiteRoot, 'typings-esm', sourcePath, tsconfig, {
       type: 'module',
     });

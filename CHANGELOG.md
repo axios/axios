@@ -180,7 +180,7 @@
 
 ### Bug Fixes
 
-- form-data npm pakcage ([#6970](https://github.com/axios/axios/issues/6970)) ([e72c193](https://github.com/axios/axios/commit/e72c193722530db538b19e5ddaaa4544d226b253))
+- form-data npm package ([#6970](https://github.com/axios/axios/issues/6970)) ([e72c193](https://github.com/axios/axios/commit/e72c193722530db538b19e5ddaaa4544d226b253))
 - prevent RangeError when using large Buffers ([#6961](https://github.com/axios/axios/issues/6961)) ([a2214ca](https://github.com/axios/axios/commit/a2214ca1bc60540baf2c80573cea3a0ff91ba9d1))
 - **types:** resolve type discrepancies between ESM and CJS TypeScript declaration files ([#6956](https://github.com/axios/axios/issues/6956)) ([8517aa1](https://github.com/axios/axios/commit/8517aa16f8d082fc1d5309c642220fa736159110))
 

@@ -1,3 +1,8 @@
+<h3 align="center"> 💎 Platinum sponsors <br> </h3> <table align="center"><tr><td align="center" width="50%"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="90px" height="90px" src="https://axios-http.com/assets/sponsors/opencollective/ed51c2ee8f1b70aa3484d6dd678652134079a036.png" alt="THANKS.DEV"/> </a> <p align="center" title="We&#x27;re passionate about making open source sustainable. Scan your dependancy tree to better understand which open source projects need funding the most. Maintainers can also register their projects to become eligible for funding.">We&#x27;re passionate about making open source sustainable. Scan your dependancy tree to better understand which open source projects need funding the...</p> <p align="center"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>thanks.dev</b></a> </p>
+</td><td align="center" width="50%"> <a href="https://opencollective.com/hopper-security?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="90px" height="90px" src="https://axios-http.com/assets/sponsors/opencollective/180d02a83ee99448f850e39eed6dbb95f56000ba.png" alt="Hopper Security"/> </a> <p align="center"> </p>
+</td></tr></table><table align="center"><tr><td align="center" width="50%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
+</td><td align="center" width="50%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
+</td></tr></table>
 <h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.principal.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="85px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/dfa9670ad5e66eea17315332453c7f4e3a3b5905.png" alt="Buy Instagram Followers Twicsy"/> </a> <p align="center" title="Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site to buy followers from the likes of US Magazine.">Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site...</p> <p align="center"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>twicsy.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Docs</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Community</b></a> </p>
@@ -5,7 +10,7 @@
 </td><td align="center" width="33.333333333333336%"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="62px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e1625cb54e10ee40180c99d1495a462e9d6664a4.png" alt="Buzzoid - Buy Instagram Followers"/> </a> <p align="center" title="At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#x27;s #1 IG service since 2012.">At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rate...</p> <p align="center"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>buzzoid.com</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e699ec99f7df3a203ddbc49d3c7712a907e628ea.png" alt="Poprey - Buy Instagram Likes"/> </a> <p align="center" title="Buy Instagram Likes">Buy Instagram Likes</p> <p align="center"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>poprey.com</b></a> </p>
 </td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="71px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/16450b4dc0deb9dab5a511bf2bc8b8b4ac33412f.png" alt="Requestly"/> </a> <p align="center" title="A lightweight open-source API Development, Testing &amp; Mocking platform">A lightweight open-source API Development, Testing &amp; Mocking platform</p> <p align="center"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>requestly.com</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
+</td><td align="center" width="33.333333333333336%"> <a href="https://rxdb.info/?utm_source&#x3D;opencollective&amp;utm_medium&#x3D;banner&amp;utm_campaign&#x3D;opencollective_sponsor&amp;utm_content&#x3D;logo" style="padding: 10px; display: inline-block" target="_blank"> <img width="158px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/b28cc6ed919b414cb5f3d4a6d666cb8e06c5ff07.png" alt="RxDB"/> </a> <p align="center" title="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, E...</p> <p align="center"> <a href="https://rxdb.info/?utm_source&#x3D;opencollective&amp;utm_medium&#x3D;banner&amp;utm_campaign&#x3D;opencollective_sponsor&amp;utm_content&#x3D;logo" target="_blank"><b>rxdb.info</b></a> </p>
 </td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
 </td></tr></table>
 
@@ -455,6 +460,8 @@ These are the available config options for making requests. Only the `url` is re
 
   // `withCredentials` indicates whether or not cross-site Access-Control requests
   // should be made using credentials
+  // This only controls whether the browser sends credentials.
+  // It does not control whether the XSRF header is added.
   withCredentials: false, // default
 
   // `adapter` allows custom handling of requests which makes testing easier.
@@ -494,7 +501,11 @@ These are the available config options for making requests. Only the `url` is re
   // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
+  // `withXSRFToken` defines whether to send the XSRF header in browser requests.
   // `undefined` (default) - set XSRF header only for the same origin requests
+  // `true` - always set XSRF header, including for cross-origin requests
+  // `false` - never set XSRF header
+  // function - resolve with custom logic; receives the internal config object
   withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined),
 
   // `withXSRFToken` controls whether Axios reads the XSRF cookie and sets the XSRF header.
@@ -549,11 +560,27 @@ These are the available config options for making requests. Only the `url` is re
   // to inspect the latest response headers,
   // or to cancel the request by throwing an error
   // If maxRedirects is set to 0, `beforeRedirect` is not used.
+
   beforeRedirect: (options, { headers }) => {
-    if (options.hostname === "example.com") {
+    if (
+      options.hostname === "example.com" &&
+      options.protocol === "https:"
+    ) {
       options.auth = "user:password";
     }
   },
+  // Security note:
+  // The `beforeRedirect` hook runs after sensitive headers are stripped during redirects.
+  //The `follow-redirects` library removes credentials on protocol downgrade (HTTPS → HTTP) for security.
+  //Since `beforeRedirect` runs after this, re-injecting credentials without checking the   protocol can expose sensitive data.
+  //Always ensure credentials are only added for trusted HTTPS destinations.
+
+// Security note:
+// The beforeRedirect hook runs after sensitive headers are stripped during redirects.
+// Re-injecting credentials without checking the destination can expose sensitive data.
+// Only add credentials for trusted HTTPS destinations.
+// Avoid re-adding credentials on downgraded redirects.
+
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
@@ -661,6 +688,15 @@ These are the available config options for making requests. Only the `url` is re
   ]
 }
 ```
+## 🔥 HTTP/2 Support
+
+Axios has experimental HTTP/2 support available via the Node.js HTTP adapter.
+
+Support depends on the runtime environment and Node.js version. Features like redirects and some behaviors may not be fully supported with HTTP/2.
+
+Options like `httpVersion` and `http2Options` are adapter-specific and may not work consistently across all environments.
+
+If HTTP/2 functionality is required, ensure your runtime environment supports it or consider using alternative libraries or custom adapters.
 
 ## Response Schema
 
@@ -991,15 +1027,25 @@ async function fetchWithTimeout() {
   try {
     const response = await axios.get("https://example.com/data", {
       timeout: 5000, // 5 seconds
+      transitional: {
+        // set to true if you prefer ETIMEDOUT over ECONNABORTED
+        clarifyTimeoutError: false,
+      },
     });
 
     console.log("Response:", response.data);
   } catch (error) {
-    if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
-      console.error("❌ Request timed out!");
-    } else {
-      console.error("❌ Error:", error.message);
+    if (axios.isAxiosError(error)) {
+      if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+        console.error("Request timed out. Please try again.");
+        return;
+      }
+
+      console.error("Axios error:", error.message);
+      return;
     }
+
+    console.error("Unexpected error:", error);
   }
 }
 ```
@@ -1550,6 +1596,38 @@ for (const [header, value] of headers) {
 // baz 3
 ```
 
+### Preserving a specific header case
+
+Header names are case-insensitive, but `AxiosHeaders` keeps the case of the first matching key it sees.
+If you need a specific case for non-standard case-sensitive servers, define a case preset with `undefined` and then set the value later:
+
+```js
+const api = axios.create();
+
+api.defaults.headers.common = {
+  'content-type': undefined,
+  accept: undefined,
+};
+
+await api.put(url, data, {
+  headers: {
+    'Content-Type': 'application/octet-stream',
+    Accept: 'application/json',
+  },
+});
+```
+
+You can also compose the same behavior with `AxiosHeaders.concat`:
+
+```js
+const headers = axios.AxiosHeaders.concat(
+  { 'content-type': undefined },
+  { 'Content-Type': 'application/octet-stream' }
+);
+
+await axios.put(url, data, { headers });
+```
+
 ### new AxiosHeaders(headers?)
 
 Constructs a new `AxiosHeaders` instance.
@@ -1840,12 +1918,15 @@ export async function load({ fetch }) {
 }
 ```
 
-## 🔥 HTTP2
+#### HTTP/2 Support
 
-In version `1.13.0`, experimental `HTTP2` support was added to the `http` adapter.
-The `httpVersion` option is now available to select the protocol version used.
-Additional native options for the internal `session.request()` call can be passed via the `http2Options` config.
-This config also includes the custom `sessionTimeout` parameter, which defaults to `1000ms`.
+Axios supports HTTP/2 via the Node.js `http` adapter (introduced in v1.13.0).
+
+This support depends on the runtime environment. Since Axios relies on Node.js APIs, HTTP/2 functionality is available in supported Node.js versions, but may not work in other environments (such as Bun or Deno).
+
+Options like `httpVersion` and `http2Options` are adapter-specific and may not behave consistently across all environments.
+
+Note: HTTP/2 redirects are currently not supported by the HTTP/2 adapter.
 
 ```js
 const form = new FormData();
@@ -1856,11 +1937,6 @@ const { data, headers, status } = await axios.post(
   "https://httpbin.org/post",
   form,
   {
-    httpVersion: 2,
-    http2Options: {
-      // rejectUnauthorized: false,
-      // sessionTimeout: 1000
-    },
     onUploadProgress(e) {
       console.log("upload progress", e);
     },
@@ -1868,7 +1944,7 @@ const { data, headers, status } = await axios.post(
       console.log("download progress", e);
     },
     responseType: "arraybuffer",
-  },
+  }
 );
 ```
 

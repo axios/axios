@@ -16,7 +16,7 @@ const tsconfig = {
 
 describe('module cjs typings compatibility', () => {
   it('type-checks commonjs axios typings', () => {
-    const sourcePath = path.join(repoRoot, 'test/module/typings/cjs/index.ts');
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-typing.ts');
     const fixturePath = createTempFixture(suiteRoot, 'typings-cjs', sourcePath, tsconfig);
 
     try {

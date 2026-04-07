@@ -15,14 +15,13 @@ import http from 'http';
 import https from 'https';
 import net from 'net';
 import stream from 'stream';
-import url from 'url';
 import zlib from 'zlib';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import devNull from 'dev-null';
 import FormDataLegacy from 'form-data';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import { FormData as FormDataPolyfill, Blob as BlobPolyfill } from 'formdata-node';
 import express from 'express';
 import multer from 'multer';
@@ -124,6 +123,17 @@ describe('supports http with nodejs', () => {
     } finally {
       await stopHTTPServer(server);
     }
+  });
+
+  it('should reject request headers containing CRLF characters', async () => {
+    await assert.rejects(
+      axios.get('http://localhost:1/', {
+        headers: {
+          'x-test': 'ok\r\nInjected: yes',
+        },
+      }),
+      /Invalid character in header content/
+    );
   });
 
   it('should parse the timeout property', async () => {
@@ -492,7 +502,7 @@ describe('supports http with nodejs', () => {
           return;
         }
 
-        var parsed = url.parse(req.url);
+        var parsed = new URL(req.url, 'http://localhost');
         if (parsed.pathname === '/one') {
           res.setHeader('Location', '/two');
           res.statusCode = 302;
@@ -899,7 +909,7 @@ describe('supports http with nodejs', () => {
     const str = Array(100000).join('ж');
     const server = await startHTTPServer(
       (req, res) => {
-        const parsed = url.parse(req.url);
+        const parsed = new URL(req.url, 'http://localhost');
 
         if (parsed.pathname === '/two') {
           res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -1739,6 +1749,114 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should not use proxy for localhost with trailing dot when listed in no_proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    let proxyRequests = 0;
+    const proxy = await startHTTPServer(
+      (_, response) => {
+        proxyRequests += 1;
+        response.end('proxied');
+      },
+      { port: PROXY_PORT }
+    );
+
+    const noProxyValue = 'localhost,127.0.0.1,::1';
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = noProxyValue;
+    process.env.NO_PROXY = noProxyValue;
+
+    try {
+      await assert.rejects(axios.get('http://localhost.:1/', { timeout: 100 }));
+      assert.equal(proxyRequests, 0, 'should not use proxy for localhost with trailing dot');
+    } finally {
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
+  it('should not use proxy for bracketed IPv6 loopback when listed in no_proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    let proxyRequests = 0;
+    const proxy = await startHTTPServer(
+      (_, response) => {
+        proxyRequests += 1;
+        response.end('proxied');
+      },
+      { port: PROXY_PORT }
+    );
+
+    const noProxyValue = 'localhost,127.0.0.1,::1';
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = noProxyValue;
+    process.env.NO_PROXY = noProxyValue;
+
+    try {
+      await assert.rejects(axios.get('http://[::1]:1/', { timeout: 100 }));
+      assert.equal(proxyRequests, 0, 'should not use proxy for IPv6 loopback');
+    } finally {
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
   it('should use proxy for domains not in no_proxy', async () => {
     const originalHttpProxy = process.env.http_proxy;
     const originalHTTPProxy = process.env.HTTP_PROXY;
@@ -2285,7 +2403,7 @@ describe('supports http with nodejs', () => {
 
         const server = await startHTTPServer(
           (req, res) => {
-            const receivedForm = new formidable.IncomingForm();
+            const receivedForm = new IncomingForm();
 
             assert.ok(req.rawHeaders.some((header) => header.toLowerCase() === 'content-length'));
 
@@ -2314,15 +2432,15 @@ describe('supports http with nodejs', () => {
             },
           });
 
-          assert.deepStrictEqual(response.data.fields, { foo: 'bar' });
+          assert.deepStrictEqual(response.data.fields, { foo: ['bar'] });
 
-          assert.strictEqual(response.data.files.file1.mimetype, 'image/jpeg');
-          assert.strictEqual(response.data.files.file1.originalFilename, 'temp/bar.jpg');
-          assert.strictEqual(response.data.files.file1.size, 3);
+          assert.strictEqual(response.data.files.file1[0].mimetype, 'image/jpeg');
+          assert.strictEqual(response.data.files.file1[0].originalFilename, 'temp/bar.jpg');
+          assert.strictEqual(response.data.files.file1[0].size, 3);
 
-          assert.strictEqual(response.data.files.fileStream.mimetype, 'image/png');
-          assert.strictEqual(response.data.files.fileStream.originalFilename, 'axios.png');
-          assert.strictEqual(response.data.files.fileStream.size, stat.size);
+          assert.strictEqual(response.data.files.fileStream[0].mimetype, 'image/png');
+          assert.strictEqual(response.data.files.fileStream[0].originalFilename, 'axios.png');
+          assert.strictEqual(response.data.files.fileStream[0].size, stat.size);
         } finally {
           await stopHTTPServer(server);
         }
@@ -2358,10 +2476,10 @@ describe('supports http with nodejs', () => {
             maxRedirects: 0,
           });
 
-          assert.deepStrictEqual(data.fields, { foo1: 'bar1', foo2: 'bar2' });
-          assert.deepStrictEqual(typeof data.files.file1, 'object');
+          assert.deepStrictEqual(data.fields, { foo1: ['bar1'], foo2: ['bar2'] });
+          assert.deepStrictEqual(typeof data.files.file1[0], 'object');
 
-          const { size, mimetype, originalFilename } = data.files.file1;
+          const { size, mimetype, originalFilename } = data.files.file1[0];
 
           assert.deepStrictEqual(
             { size, mimetype, originalFilename },
@@ -2503,7 +2621,7 @@ describe('supports http with nodejs', () => {
   });
 
   describe('URLEncoded Form', () => {
-    it('should post object data as url-encoded form if content-type is application/x-www-form-urlencoded', async () => {
+    it('should post object data as url-encoded form regardless of content-type header casing', async () => {
       const app = express();
       const obj = {
         arr1: ['1', '2', '3'],
@@ -2530,12 +2648,15 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        });
-        assert.deepStrictEqual(response.data, obj);
+        for (const headerName of ['content-type', 'Content-Type']) {
+          const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
+            headers: {
+              [headerName]: 'application/x-www-form-urlencoded',
+            },
+          });
+
+          assert.deepStrictEqual(response.data, obj);
+        }
       } finally {
         await new Promise((resolve, reject) => {
           server.close((error) => {
@@ -3270,8 +3391,8 @@ describe('supports http with nodejs', () => {
 
         assert.deepStrictEqual(data, {
           fields: {
-            x: 'foo',
-            y: 'bar',
+            x: ['foo'],
+            y: ['bar'],
           },
           files: {},
         });

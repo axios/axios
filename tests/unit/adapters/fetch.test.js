@@ -26,6 +26,17 @@ const fetchAxios = axios.create({
 });
 
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
+  it('should reject request headers containing CRLF characters', async () => {
+    await assert.rejects(
+      fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+        headers: {
+          'x-test': 'ok\r\nInjected: yes',
+        },
+      }),
+      /(invalid.*header|header.*invalid)/i
+    );
+  });
+
   describe('responses', () => {
     it('should support text response type', async () => {
       const originalData = 'my data';

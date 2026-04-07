@@ -132,7 +132,8 @@ type CommonRequestHeadersList =
   | "Content-Length"
   | "User-Agent"
   | "Content-Encoding"
-  | "Authorization";
+  | "Authorization"
+  | "Location";
 
 type ContentType =
   | AxiosHeaderValue

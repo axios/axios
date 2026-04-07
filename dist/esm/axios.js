@@ -1,4 +1,4 @@
-// axios v0.30.2 Copyright (c) 2025 Matt Zabriskie
+// axios v0.30.3 Copyright (c) 2026 Matt Zabriskie
 var bind = function bind(fn, thisArg) {
   return function wrap() {
     return fn.apply(thisArg, arguments);
@@ -313,6 +313,10 @@ function forEach(obj, fn) {
 function merge(/* obj1, obj2, obj3, ... */) {
   var result = {};
   function assignValue(val, key) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      return;
+    }
+
     if (isPlainObject(result[key]) && isPlainObject(val)) {
       result[key] = merge(result[key], val);
     } else if (isPlainObject(val)) {
@@ -1898,7 +1902,10 @@ var mergeConfig = function mergeConfig(config1, config2) {
   };
 
   utils.forEach(Object.keys(config1).concat(Object.keys(config2)), function computeConfigValue(prop) {
-    var merge = mergeMap[prop] || mergeDeepProperties;
+    if (prop === '__proto__' || prop === 'constructor' || prop === 'prototype') {
+      return;
+    }
+    var merge = utils.hasOwnProperty(mergeMap, prop) ? mergeMap[prop] : mergeDeepProperties;
     var configValue = merge(prop);
     (utils.isUndefined(configValue) && merge !== mergeDirectKeys) || (config[prop] = configValue);
   });
@@ -1907,7 +1914,7 @@ var mergeConfig = function mergeConfig(config1, config2) {
 };
 
 var data = {
-  "version": "0.30.2"
+  version: "0.30.3",
 };
 
 var VERSION = data.version;

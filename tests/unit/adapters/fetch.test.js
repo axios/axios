@@ -550,6 +550,54 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await stopHTTPServer(server);
       }
     });
+
+    it('should remove manually set Content-Type without boundary for FormData', async () => {
+      const form = new FormData();
+      form.append('foo', 'bar');
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          const contentType = req.headers['content-type'];
+          assert.match(contentType, /^multipart\/form-data; boundary=/i);
+          res.end('OK');
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await fetchAxios.post(`http://localhost:${server.address().port}/form`, form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should preserve Content-Type if it already has boundary', async () => {
+      const form = new FormData();
+      form.append('foo', 'bar');
+
+      const customBoundary = '----CustomBoundary123';
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          const contentType = req.headers['content-type'];
+          assert.ok(contentType.includes(customBoundary));
+          res.end('OK');
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await fetchAxios.post(`http://localhost:${server.address().port}/form`, form, {
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${customBoundary}`,
+          },
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
   });
 
   describe('env config', () => {

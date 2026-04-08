@@ -20,7 +20,8 @@ type CommonRequestHeadersList =
   | 'Content-Length'
   | 'User-Agent'
   | 'Content-Encoding'
-  | 'Authorization';
+  | 'Authorization'
+  | 'Location';
 
 type ContentType =
   | axios.AxiosHeaderValue
@@ -588,7 +589,7 @@ declare namespace axios {
 
   interface AxiosInterceptorOptions {
     synchronous?: boolean;
-    runWhen?: (config: InternalAxiosRequestConfig) => boolean;
+    runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
   }
 
   type AxiosInterceptorFulfilled<T> = (value: T) => T | Promise<T>;
@@ -609,7 +610,7 @@ declare namespace axios {
     fulfilled: AxiosInterceptorFulfilled<T>;
     rejected?: AxiosInterceptorRejected;
     synchronous: boolean;
-    runWhen?: (config: AxiosRequestConfig) => boolean;
+    runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
   }
 
   interface AxiosInterceptorManager<V> {

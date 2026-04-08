@@ -13,5 +13,7 @@ backup/
 .env
 dist/
 .vscode/
-docs/
 openspec/
+.opencode/
+docs/.vitepress/dist
+docs/.vitepress/cache

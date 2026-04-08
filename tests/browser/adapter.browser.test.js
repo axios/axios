@@ -14,6 +14,7 @@ class MockXMLHttpRequest {
     this.upload = {
       addEventListener() {},
     };
+    this.requestHeaders = {};
   }
 
   open(method, url, async = true) {
@@ -22,7 +23,9 @@ class MockXMLHttpRequest {
     this.async = async;
   }
 
-  setRequestHeader() {}
+  setRequestHeader(key, value) {
+    this.requestHeaders[key] = value;
+  }
 
   addEventListener() {}
 
@@ -174,5 +177,17 @@ describe('adapter (vitest browser)', () => {
     const request = await waitForRequest();
     request.respondWith();
     await responsePromise;
+  });
+
+  it('should reject request headers containing CRLF characters', async () => {
+    await expect(
+      axios('/foo', {
+        headers: {
+          'x-test': 'ok\r\nInjected: yes',
+        },
+      })
+    ).rejects.toThrow(/Invalid character in header content/);
+
+    expect(requests.length).toBe(0);
   });
 });

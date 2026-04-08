@@ -1,0 +1,30 @@
+{
+  "name": "axios",
+  "version": "1.0.0",
+  "description": "Documentation for the Axios HTTP client",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview",
+    "docs:update:sponsors": "node ./scripts/process-sponsors.js",
+    "prod:build": "npm run docs:update:sponsors && npm run docs:build",
+    "postinstall": "patch-package --exclude nothing"
+  },
+  "dependencies": {
+    "@splidejs/splide": "^4.1.4",
+    "axios": "^1.14.0",
+    "vitepress": "^1.6.4"
+  },
+  "devDependencies": {
+    "chalk": "^5.3.0",
+    "dayjs": "^1.11.13",
+    "patch-package": "^8.0.1",
+    "vue": "^3.5.32"
+  },
+  "overrides": {
+    "esbuild": "^0.25.0"
+  }
+}

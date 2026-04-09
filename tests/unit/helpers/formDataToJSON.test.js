@@ -27,6 +27,32 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it('should keep repeatable values flat for 3+ entries', () => {
+    const formData = new FormData();
+
+    formData.append('select3', '301');
+    formData.append('select3', '302');
+    formData.append('select3', '303');
+
+    expect(formDataToJSON(formData)).toEqual({
+      select3: ['301', '302', '303'],
+    });
+  });
+
+  it('should keep nested repeatable values flat for 3+ entries', () => {
+    const formData = new FormData();
+
+    formData.append('foo[bar]', '1');
+    formData.append('foo[bar]', '2');
+    formData.append('foo[bar]', '3');
+
+    expect(formDataToJSON(formData)).toEqual({
+      foo: {
+        bar: ['1', '2', '3'],
+      },
+    });
+  });
+
   it('should convert props with empty brackets to arrays', () => {
     const formData = new FormData();
 

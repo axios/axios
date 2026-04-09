@@ -333,6 +333,7 @@ export interface TransitionalOptions {
   forcedJSONParsing?: boolean;
   clarifyTimeoutError?: boolean;
   legacyInterceptorReqResOrdering?: boolean;
+  useAxiosRedirects: boolean;
 }
 
 export interface GenericAbortSignal {
@@ -415,6 +416,19 @@ export interface LookupAddressEntry {
 
 export type LookupAddress = string | LookupAddressEntry;
 
+export interface AxiosRedirectMeta {
+  status: number;
+  headers: AxiosHeaders;
+  config: InternalAxiosRequestConfig,
+  redirectsCount: number;
+  maxRedirects: number;
+  url: string;
+  redirectTo: string;
+  response: AxiosResponse,
+  sanitize: () => void;
+}
+
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: StringLiteralsOrString<Method>;
@@ -442,13 +456,13 @@ export interface AxiosRequestConfig<D = any> {
   maxBodyLength?: number;
   maxRedirects?: number;
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-  beforeRedirect?: (
+  beforeRedirect?: ((
     options: Record<string, any>,
     responseDetails: {
       headers: Record<string, string>;
       statusCode: HttpStatusCode;
     },
-  ) => void;
+  ) => void) | ((redirectMeta: AxiosRedirectMeta) => false | void);
   socketPath?: string | null;
   transport?: any;
   httpAgent?: any;

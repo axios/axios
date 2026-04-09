@@ -132,7 +132,8 @@ type CommonRequestHeadersList =
   | "Content-Length"
   | "User-Agent"
   | "Content-Encoding"
-  | "Authorization";
+  | "Authorization"
+  | "Location";
 
 type ContentType =
   | AxiosHeaderValue
@@ -271,27 +272,9 @@ export enum HttpStatusCode {
   NetworkAuthenticationRequired = 511,
 }
 
-export type Method =
-  | "get"
-  | "GET"
-  | "delete"
-  | "DELETE"
-  | "head"
-  | "HEAD"
-  | "options"
-  | "OPTIONS"
-  | "post"
-  | "POST"
-  | "put"
-  | "PUT"
-  | "patch"
-  | "PATCH"
-  | "purge"
-  | "PURGE"
-  | "link"
-  | "LINK"
-  | "unlink"
-  | "UNLINK";
+type UppercaseMethod = "GET" | "DELETE" | "HEAD" | "OPTIONS" | "POST" | "PUT" | "PATCH" | "PURGE" | "LINK" | "UNLINK";
+
+export type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
 export type ResponseType =
   | "arraybuffer"
@@ -302,31 +285,9 @@ export type ResponseType =
   | "stream"
   | "formdata";
 
-export type responseEncoding =
-  | "ascii"
-  | "ASCII"
-  | "ansi"
-  | "ANSI"
-  | "binary"
-  | "BINARY"
-  | "base64"
-  | "BASE64"
-  | "base64url"
-  | "BASE64URL"
-  | "hex"
-  | "HEX"
-  | "latin1"
-  | "LATIN1"
-  | "ucs-2"
-  | "UCS-2"
-  | "ucs2"
-  | "UCS2"
-  | "utf-8"
-  | "UTF-8"
-  | "utf8"
-  | "UTF8"
-  | "utf16le"
-  | "UTF16LE";
+type UppercaseResponseEncoding = "ASCII" | "ANSI" | "BINARY" | "BASE64" | "BASE64URL" | "HEX" | "LATIN1" | "UCS-2" | "UCS2" | "UTF-8" | "UTF8" | "UTF16LE";
+
+export type responseEncoding = (UppercaseResponseEncoding | Lowercase<UppercaseResponseEncoding>) & {};
 
 export interface TransitionalOptions {
   silentJSONParsing?: boolean;
@@ -638,7 +599,7 @@ export interface CancelTokenSource {
 
 export interface AxiosInterceptorOptions {
   synchronous?: boolean;
-  runWhen?: (config: InternalAxiosRequestConfig) => boolean;
+  runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
 }
 
 type AxiosInterceptorFulfilled<T> = (value: T) => T | Promise<T>;
@@ -659,7 +620,7 @@ interface AxiosInterceptorHandler<T> {
   fulfilled: AxiosInterceptorFulfilled<T>;
   rejected?: AxiosInterceptorRejected;
   synchronous: boolean;
-  runWhen: (config: AxiosRequestConfig) => boolean | null;
+  runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
 }
 
 export interface AxiosInterceptorManager<V> {

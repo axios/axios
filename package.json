@@ -1,9 +1,14 @@
 {
   "name": "axios",
-  "version": "1.13.6",
+  "version": "1.15.0",
   "description": "Promise based HTTP client for the browser and node.js",
-  "main": "./index.js",
+  "main": "./dist/node/axios.cjs",
   "module": "./index.js",
+  "type": "module",
+  "types": "index.d.ts",
+  "jsdelivr": "dist/axios.min.js",
+  "unpkg": "dist/axios.min.js",
+  "typings": "./index.d.ts",
   "exports": {
     ".": {
       "types": {
@@ -42,30 +47,17 @@
     "./dist/browser/axios.cjs": "./dist/browser/axios.cjs",
     "./dist/node/axios.cjs": "./dist/node/axios.cjs"
   },
-  "type": "module",
-  "types": "index.d.ts",
-  "scripts": {
-    "test": "npm run test:node && npm run test:browser && npm run test:package",
-    "test:node": "npm run test:mocha",
-    "test:node:coverage": "c8 npm run test:mocha",
-    "test:browser": "npm run test:karma",
-    "test:package": "npm run test:eslint && npm run test:exports",
-    "test:eslint": "node bin/ssl_hotfix.js eslint lib/**/*.js",
-    "test:mocha": "node bin/ssl_hotfix.js mocha test/unit/**/*.js --timeout 30000 --exit",
-    "test:exports": "node bin/ssl_hotfix.js mocha test/module/test.js --timeout 30000 --exit",
-    "test:karma": "node ./bin/run-karma-tests.js",
-    "test:karma:firefox": "node bin/ssl_hotfix.js cross-env LISTEN_ADDR=:: Browsers=Firefox karma start karma.conf.cjs --single-run",
-    "test:karma:server": "node bin/ssl_hotfix.js cross-env karma start karma.conf.cjs",
-    "test:build:version": "node ./bin/check-build-version.js",
-    "start": "node ./sandbox/server.js",
-    "preversion": "gulp version",
-    "version": "npm run build && git add package.json",
-    "prepublishOnly": "npm run test:build:version",
-    "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
-    "examples": "node ./examples/server.js",
-    "fix": "eslint --fix lib/**/*.js",
-    "prepare": "husky install && npm run prepare:hooks",
-    "prepare:hooks": "npx husky set .husky/commit-msg \"npx commitlint --edit $1\""
+  "browser": {
+    "./dist/node/axios.cjs": "./dist/browser/axios.cjs",
+    "./lib/adapters/http.js": "./lib/helpers/null.js",
+    "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
+    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js"
+  },
+  "react-native": {
+    "./dist/node/axios.cjs": "./dist/browser/axios.cjs",
+    "./lib/adapters/http.js": "./lib/helpers/null.js",
+    "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
+    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js"
   },
   "repository": {
     "type": "git",
@@ -84,102 +76,11 @@
     "client"
   ],
   "author": "Matt Zabriskie",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/axios/axios/issues"
-  },
-  "homepage": "https://axios-http.com",
-  "devDependencies": {
-    "@babel/core": "^7.28.6",
-    "@babel/preset-env": "^7.28.6",
-    "@commitlint/cli": "^20.3.1",
-    "@commitlint/config-conventional": "^20.3.1",
-    "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-babel": "^6.1.0",
-    "@rollup/plugin-commonjs": "^15.1.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-multi-entry": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^9.0.0",
-    "abortcontroller-polyfill": "^1.7.8",
-    "auto-changelog": "^2.5.0",
-    "body-parser": "^1.20.4",
-    "c8": "^10.1.3",
-    "chalk": "^5.6.2",
-    "coveralls": "^3.1.1",
-    "cross-env": "^7.0.3",
-    "dev-null": "^0.1.1",
-    "es6-promise": "^4.2.8",
-    "eslint": "^8.57.1",
-    "express": "^4.22.1",
-    "formdata-node": "^5.0.1",
-    "formidable": "^2.1.5",
-    "fs-extra": "^10.1.0",
-    "get-stream": "^3.0.0",
-    "gulp": "^4.0.2",
-    "handlebars": "^4.7.8",
-    "husky": "^8.0.3",
-    "istanbul-instrumenter-loader": "^3.0.1",
-    "jasmine-core": "^2.99.1",
-    "karma": "^6.4.4",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-firefox-launcher": "^2.1.3",
-    "karma-jasmine": "^1.1.2",
-    "karma-jasmine-ajax": "^0.1.13",
-    "karma-rollup-preprocessor": "^7.0.8",
-    "karma-safari-launcher": "^1.0.0",
-    "karma-sauce-launcher": "^4.3.6",
-    "karma-sinon": "^1.0.5",
-    "karma-sourcemap-loader": "^0.4.0",
-    "lint-staged": "^15.2.10",
-    "memoizee": "^0.4.17",
-    "minimist": "^1.2.8",
-    "mocha": "^10.8.2",
-    "multer": "^1.4.4",
-    "pacote": "^20.0.0",
-    "prettier": "^3.8.1",
-    "pretty-bytes": "^6.1.1",
-    "rollup": "^2.79.2",
-    "rollup-plugin-auto-external": "^2.0.0",
-    "rollup-plugin-bundle-size": "^1.0.3",
-    "rollup-plugin-terser": "^7.0.2",
-    "selfsigned": "^3.0.1",
-    "sinon": "^4.5.0",
-    "stream-throttle": "^0.1.3",
-    "string-replace-async": "^3.0.2",
-    "tar-stream": "^3.1.7",
-    "typescript": "^4.9.5"
-  },
-  "browser": {
-    "./dist/node/axios.cjs": "./dist/browser/axios.cjs",
-    "./lib/adapters/http.js": "./lib/helpers/null.js",
-    "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
-    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js"
-  },
-  "react-native": {
-    "./dist/node/axios.cjs": "./dist/browser/axios.cjs",
-    "./lib/adapters/http.js": "./lib/helpers/null.js",
-    "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
-    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js"
-  },
-  "jsdelivr": "dist/axios.min.js",
-  "unpkg": "dist/axios.min.js",
-  "typings": "./index.d.ts",
-  "dependencies": {
-    "follow-redirects": "^1.15.11",
-    "form-data": "^4.0.5",
-    "proxy-from-env": "^1.1.0"
-  },
-  "bundlesize": [
-    {
-      "path": "./dist/axios.min.js",
-      "threshold": "5kB"
-    }
-  ],
   "contributors": [
     "Matt Zabriskie (https://github.com/mzabriskie)",
+    "Jay (https://github.com/jasonsaayman)",
     "Dmitriy Mozgovoy (https://github.com/DigitalBrainJS)",
     "Nick Uraltsev (https://github.com/nickuraltsev)",
-    "Jay (https://github.com/jasonsaayman)",
     "Emily Morehouse (https://github.com/emilyemorehouse)",
     "Rubén Norte (https://github.com/rubennorte)",
     "Justin Beckwith (https://github.com/JustinBeckwith)",
@@ -191,6 +92,86 @@
     "Ben Carp (https://github.com/carpben)"
   ],
   "sideEffects": false,
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/axios/axios/issues"
+  },
+  "homepage": "https://axios-http.com",
+  "scripts": {
+    "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
+    "version": "npm run build && git add package.json",
+    "preversion": "gulp version",
+    "test": "npm run test:vitest",
+    "test:vitest": "vitest run",
+    "test:vitest:unit": "vitest run --project unit",
+    "test:vitest:browser": "vitest run --project browser",
+    "test:vitest:browser:headless": "vitest run --project browser-headless",
+    "test:vitest:watch": "vitest",
+    "test:smoke:cjs:vitest": "npm --prefix tests/smoke/cjs run test:smoke:cjs:mocha",
+    "test:smoke:esm:vitest": "npm --prefix tests/smoke/esm run test:smoke:esm:vitest",
+    "test:smoke:deno": "deno task --cwd tests/smoke/deno test",
+    "test:smoke:bun": "bun test --cwd tests/smoke/bun",
+    "test:module:cjs": "npm --prefix tests/module/cjs run test:module:cjs",
+    "test:module:esm": "npm --prefix tests/module/esm run test:module:esm",
+    "docs:dev": "cd docs && npm run docs:dev",
+    "start": "node ./sandbox/server.js",
+    "examples": "node ./examples/server.js",
+    "lint": "eslint lib/**/*.js",
+    "fix": "eslint --fix lib/**/*.js",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "follow-redirects": "^1.15.11",
+    "form-data": "^4.0.5",
+    "proxy-from-env": "^2.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
+    "@commitlint/cli": "^20.4.4",
+    "@commitlint/config-conventional": "^20.4.4",
+    "@eslint/js": "^10.0.1",
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-babel": "^7.0.0",
+    "@rollup/plugin-commonjs": "^29.0.2",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "@vitest/browser": "^4.1.1",
+    "@vitest/browser-playwright": "^4.1.1",
+    "abortcontroller-polyfill": "^1.7.8",
+    "auto-changelog": "^2.5.0",
+    "body-parser": "^2.2.2",
+    "chalk": "^5.6.2",
+    "cross-env": "^10.1.0",
+    "dev-null": "^0.1.1",
+    "eslint": "^10.1.0",
+    "express": "^5.2.1",
+    "formdata-node": "^6.0.3",
+    "formidable": "^3.2.4",
+    "fs-extra": "^11.3.4",
+    "get-stream": "^9.0.1",
+    "globals": "^17.4.0",
+    "gulp": "^5.0.1",
+    "handlebars": "^4.7.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "memoizee": "^0.4.17",
+    "minimist": "^1.2.8",
+    "multer": "^2.1.1",
+    "pacote": "^21.5.0",
+    "playwright": "^1.58.2",
+    "prettier": "^3.8.1",
+    "pretty-bytes": "^7.1.0",
+    "rollup": "^4.60.0",
+    "rollup-plugin-bundle-size": "^1.0.3",
+    "selfsigned": "^5.5.0",
+    "stream-throttle": "^0.1.3",
+    "string-replace-async": "^3.0.2",
+    "tar-stream": "^3.1.8",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.1"
+  },
   "commitlint": {
     "rules": {
       "header-max-length": [
@@ -205,22 +186,5 @@
   },
   "lint-staged": {
     "*.{js,cjs,mjs,ts,json,md,yml,yaml}": "prettier --write"
-  },
-  "c8": {
-    "all": true,
-    "include": [
-      "lib/**/*.js",
-      "lib/**/*.ts"
-    ],
-    "exclude": [
-      "test",
-      "sandbox"
-    ],
-    "reporter": [
-      "text",
-      "lcov",
-      "html"
-    ],
-    "report-dir": "./coverage"
   }
 }

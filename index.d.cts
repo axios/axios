@@ -39,6 +39,8 @@ type CommonResponseHeadersList =
   | 'Cache-Control'
   | 'Content-Encoding';
 
+type CommonResponseHeaderKey = CommonResponseHeadersList | Lowercase<CommonResponseHeadersList>;
+
 type BrowserProgressEvent = any;
 
 declare class AxiosHeaders {
@@ -307,7 +309,7 @@ declare namespace axios {
   type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
   type RawCommonResponseHeaders = {
-    [Key in CommonResponseHeadersList]: AxiosHeaderValue;
+    [Key in CommonResponseHeaderKey]: AxiosHeaderValue;
   } & {
     'set-cookie': string[];
   };
@@ -345,13 +347,35 @@ declare namespace axios {
     protocol?: string;
   }
 
-  type UppercaseMethod = "GET" | "DELETE" | "HEAD" | "OPTIONS" | "POST" | "PUT" | "PATCH" | "PURGE" | "LINK" | "UNLINK";
+  type UppercaseMethod =
+    | 'GET'
+    | 'DELETE'
+    | 'HEAD'
+    | 'OPTIONS'
+    | 'POST'
+    | 'PUT'
+    | 'PATCH'
+    | 'PURGE'
+    | 'LINK'
+    | 'UNLINK';
 
   type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
   type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata';
 
-  type UppercaseResponseEncoding = "ASCII" | "ANSI" | "BINARY" | "BASE64" | "BASE64URL" | "HEX" | "LATIN1" | "UCS-2" | "UCS2" | "UTF-8" | "UTF8" | "UTF16LE";
+  type UppercaseResponseEncoding =
+    | 'ASCII'
+    | 'ANSI'
+    | 'BINARY'
+    | 'BASE64'
+    | 'BASE64URL'
+    | 'HEX'
+    | 'LATIN1'
+    | 'UCS-2'
+    | 'UCS2'
+    | 'UTF-8'
+    | 'UTF8'
+    | 'UTF16LE';
 
   type responseEncoding = (UppercaseResponseEncoding | Lowercase<UppercaseResponseEncoding>) & {};
 

@@ -84,6 +84,18 @@ export interface TransitionalOptions {
   clarifyTimeoutError?: boolean;
 }
 
+export interface AxiosProgressEvent {
+  loaded: number;
+  total?: number;
+  progress?: number;
+  bytes: number;
+  rate?: number;
+  estimated?: number;
+  upload?: boolean;
+  download?: boolean;
+  event?: any;
+}
+
 export interface GenericAbortSignal {
   aborted: boolean;
   onabort: ((...args: any) => any) | null;
@@ -151,8 +163,8 @@ export interface AxiosRequestConfig<D = any> {
   responseEncoding?: responseEncoding | string;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
-  onUploadProgress?: (progressEvent: ProgressEvent) => void;
-  onDownloadProgress?: (progressEvent: ProgressEvent) => void;
+  onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
+  onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void;
   maxContentLength?: number;
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;

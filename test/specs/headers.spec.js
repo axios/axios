@@ -112,4 +112,17 @@ describe('headers', function () {
       done();
     });
   });
+
+  it('should sanitize headers containing invalid characters', function (done) {
+    axios('/foo', {
+      headers: {
+        'x-test': ' ok\r\nInjected: yes\t'
+      }
+    });
+
+    getAjaxRequest().then(function (request) {
+      testHeaderValue(request.requestHeaders, 'x-test', 'okInjected: yes');
+      done();
+    });
+  });
 });

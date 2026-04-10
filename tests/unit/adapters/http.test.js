@@ -126,15 +126,32 @@ describe('supports http with nodejs', () => {
     }
   });
 
-  it('should reject request headers containing CRLF characters', async () => {
-    await assert.rejects(
-      axios.get('http://localhost:1/', {
-        headers: {
-          'x-test': 'ok\r\nInjected: yes',
-        },
-      }),
-      /Invalid character in header content/
+  it('should sanitize request headers containing CRLF characters', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            xTest: req.headers['x-test'],
+            injected: req.headers.injected ?? null,
+          })
+        );
+      },
+      { port: SERVER_PORT }
     );
+
+    try {
+      const { data } = await axios.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          'x-test': '\tok\r\nInjected: yes ',
+        },
+      });
+
+      assert.strictEqual(data.xTest, 'okInjected: yes');
+      assert.strictEqual(data.injected, null);
+    } finally {
+      await stopHTTPServer(server);
+    }
   });
 
   it('should parse the timeout property', async () => {

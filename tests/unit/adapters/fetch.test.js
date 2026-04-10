@@ -26,15 +26,34 @@ const fetchAxios = axios.create({
 });
 
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
-  it('should reject request headers containing CRLF characters', async () => {
-    await assert.rejects(
-      fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
-        headers: {
-          'x-test': 'ok\r\nInjected: yes',
-        },
-      }),
-      /(invalid.*header|header.*invalid)/i
+  it('should sanitize request headers containing CRLF characters', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            xTest: req.headers['x-test'],
+            injected: req.headers.injected ?? null,
+          })
+        );
+      },
+      {
+        port: SERVER_PORT,
+      }
     );
+
+    try {
+      const { data } = await fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+        headers: {
+          'x-test': '\tok\r\nInjected: yes ',
+        },
+      });
+
+      assert.strictEqual(data.xTest, 'okInjected: yes');
+      assert.strictEqual(data.injected, null);
+    } finally {
+      await stopHTTPServer(server);
+    }
   });
 
   describe('responses', () => {

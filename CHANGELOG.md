@@ -1,5 +1,70 @@
 # Changelog
 
+## [1.15.0](https://github.com/axios/axios/compare/v1.14.0...v1.15.0) (2026-04-07)
+
+### Bug Fixes
+
+- unrestricted cloud metadata exfiltration via header injection chain ([#10660](https://github.com/axios/axios/issues/10660)) ([3631854](https://github.com/axios/axios/commit/363185461b90b1b78845dc8a99a1f103d9b122a1))
+- no_proxy hostname normalization bypass leads to ssrf ([#10661](https://github.com/axios/axios/issues/10661)) ([fb3befb](https://github.com/axios/axios/commit/fb3befb6daac6cad26b2e54094d0f2d9e47f24df))
+- **ci:** add zizmor scanner and fix workflow security findings ([#10618](https://github.com/axios/axios/issues/10618)) ([a04dd96](https://github.com/axios/axios/commit/a04dd96dbbc31f8b8ff2658706a92224b8956ce9))
+- **ci:** use OIDC for npm publish instead of token auth ([#10619](https://github.com/axios/axios/issues/10619)) ([ebf3036](https://github.com/axios/axios/commit/ebf30369328b61c7ea9d152d4d5afa7d26e59c06))
+
+### Features
+
+- add checks to support deno and bun ([#10652](https://github.com/axios/axios/issues/10652)) ([2f52f6b](https://github.com/axios/axios/commit/2f52f6b13b62de580700eedfa653be38c46e7de9))
+- unify docs to main repo ([#10649](https://github.com/axios/axios/issues/10649)) ([054c1f3](https://github.com/axios/axios/commit/054c1f30fd1973a04e69b517e194fea5418d8169))
+- update sponsors script for more consistency ([#10583](https://github.com/axios/axios/issues/10583)) ([2d14d8a](https://github.com/axios/axios/commit/2d14d8a30068d79bd06794ed8234859a519bb0b7))
+
+### Reverts
+
+- "chore(ci): add deprecate action; ([#10591](https://github.com/axios/axios/issues/10591))" ([#10617](https://github.com/axios/axios/issues/10617)) ([a40f8d3](https://github.com/axios/axios/commit/a40f8d3398aad497d3db17aed9a36aca16297052))
+
+## [1.14.0](https://github.com/axios/axios/compare/v1.13.6...v1.14.0) (2026-03-27)
+
+### Bug Fixes
+
+- formidable dependency vulnerable to arbitrary file write ([#7533](https://github.com/axios/axios/issues/7533)) ([4d8931c](https://github.com/axios/axios/commit/4d8931ca8a92e53c5dcf02cf46d1016a10e60ec0))
+- axios breaks commonjs compatibility main entry ([#7532](https://github.com/axios/axios/issues/7532)) ([bcfd299](https://github.com/axios/axios/commit/bcfd2997dc93b56669dd03b29b83d8a868797937))
+- **fetch:** cancel ReadableStream body after request stream capability probe ([#7515](https://github.com/axios/axios/issues/7515)) ([94e1543](https://github.com/axios/axios/commit/94e1543576aec5381607dde6f3356a9073dc97bf))
+- proxy from env v2 fix ([#7499](https://github.com/axios/axios/issues/7499)) ([e943f6c](https://github.com/axios/axios/commit/e943f6c54581deb983f065b05b9af757ebb0ca5d))
+- **http:** closing detached http2 session on timeout ([#7457](https://github.com/axios/axios/issues/7457)) ([f7a4ee2](https://github.com/axios/axios/commit/f7a4ee21d5d62e472b33cbadf351467b19776a3c))
+- **headers:** trim trailing CRLF in normalized header values ([#7456](https://github.com/axios/axios/issues/7456)) ([688826f](https://github.com/axios/axios/commit/688826facdf0c51073bf5712432ff0fc3b396db6))
+
+## [1.13.6](https://github.com/axios/axios/compare/v1.13.5...v1.13.6) (2026-02-27)
+
+### Bug Fixes
+
+- **core:** copy status from source error in AxiosError.from ([#7403](https://github.com/axios/axios/issues/7403)) ([d51accb](https://github.com/axios/axios/commit/d51accbea1faef6e3b74c7dfa636704a2332bfbb))
+- safe FormData detection for WeChat Mini Program ([#7306](https://github.com/axios/axios/issues/7306)) ([#7324](https://github.com/axios/axios/issues/7324)) ([672491d](https://github.com/axios/axios/commit/672491db34b5575d2abb1c3f91382bc1f45ae7b7))
+- make AxiosError.message property enumerable ([#7392](https://github.com/axios/axios/issues/7392)) ([822e3e4](https://github.com/axios/axios/commit/822e3e40b4f9287b5a787f5d1dfb3ae7f8a0faa3))
+- fix export for React Native and Browserify ([#7386](https://github.com/axios/axios/issues/7386)) ([335b79f](https://github.com/axios/axios/commit/335b79ffb6d67336b2c6836893848eb247568b6a))
+
+### Features
+
+- support react native blob objects ([#5764](https://github.com/axios/axios/issues/5764)) ([885b4af](https://github.com/axios/axios/commit/885b4af6f5dd6ab7977b207fdf61a7e89af69e69))
+
+## [1.13.5](https://github.com/axios/axios/compare/v1.13.4...v1.13.5) (2026-02-08)
+
+### Bug Fixes
+
+- Denial of Service via __proto__ Key in mergeConfig ([#7369](https://github.com/axios/axios/issues/7369)) ([28c7215](https://github.com/axios/axios/commit/28c721588c7a77e7503d0a434e016f852c597b57))
+- status is missing in AxiosError on and after v1.13.3 ([#7368](https://github.com/axios/axios/issues/7368)) ([696fa75](https://github.com/axios/axios/commit/696fa753c5366afbd21859c294c64c9ff2b359ab))
+
+### Features
+
+- add input validation to isAbsoluteURL ([#7326](https://github.com/axios/axios/issues/7326)) ([475e75a](https://github.com/axios/axios/commit/475e75a260668d227aec9f77735a49748c9041ff))
+
+## [1.13.4](https://github.com/axios/axios/compare/v1.13.3...v1.13.4) (2026-01-27)
+
+### Bug Fixes
+
+- issues with version 1.13.3 ([#7352](https://github.com/axios/axios/issues/7352)) ([ee90dfc](https://github.com/axios/axios/commit/ee90dfc28abffbb61e24974b2bd3139a4a40ac76))
+- added a option to choose between legacy and the new request/response interceptor ordering ([569f028](https://github.com/axios/axios/commit/569f028a5878faaec8d7d138ba686aac407bda4c))
+
+### Chores
+
+- ci and build refactor ([#7340](https://github.com/axios/axios/issues/7340))
+
 ## [1.13.3](https://github.com/axios/axios/compare/v1.13.2...v1.13.3) (2026-01-20)
 
 ### Bug Fixes
@@ -91,7 +156,7 @@
 - <img src="https://avatars.githubusercontent.com/u/128113546?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Anchal Singh](https://github.com/imanchalsingh '+220/-111 (#7173 )')
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+18/-1 (#7193 )')
 
-# [1.13.0](https://github.com/axios/axios/compare/v1.12.2...v1.13.0) (2025-10-27)
+## [1.13.0](https://github.com/axios/axios/compare/v1.12.2...v1.13.0) (2025-10-27)
 
 ### Bug Fixes
 
@@ -143,7 +208,7 @@
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+10/-4 (#7020 )')
 
-# [1.12.0](https://github.com/axios/axios/compare/v1.11.0...v1.12.0) (2025-09-11)
+## [1.12.0](https://github.com/axios/axios/compare/v1.11.0...v1.12.0) (2025-09-11)
 
 ### Bug Fixes
 
@@ -176,7 +241,7 @@
 - <img src="https://avatars.githubusercontent.com/u/7002604?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Gligor Kotushevski](https://github.com/gligorkot '+3/-1 (#5627 )')
 - <img src="https://avatars.githubusercontent.com/u/15893?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Aleksandar Dimitrov](https://github.com/adimit '+2/-1 (#5595 )')
 
-# [1.11.0](https://github.com/axios/axios/compare/v1.10.0...v1.11.0) (2025-07-22)
+## [1.11.0](https://github.com/axios/axios/compare/v1.10.0...v1.11.0) (2025-07-22)
 
 ### Bug Fixes
 
@@ -192,7 +257,7 @@
 - <img src="https://avatars.githubusercontent.com/u/392612?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [James Nail](https://github.com/jrnail23 '+13/-2 (#6956 )')
 - <img src="https://avatars.githubusercontent.com/u/163745239?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Tejaswi1305](https://github.com/Tejaswi1305 '+1/-1 (#6894 )')
 
-# [1.10.0](https://github.com/axios/axios/compare/v1.9.0...v1.10.0) (2025-06-14)
+## [1.10.0](https://github.com/axios/axios/compare/v1.9.0...v1.10.0) (2025-06-14)
 
 ### Bug Fixes
 
@@ -214,7 +279,7 @@
 - <img src="https://avatars.githubusercontent.com/u/6788611?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Uhyeon Park](https://github.com/warpdev '+1/-1 (#6883 )')
 - <img src="https://avatars.githubusercontent.com/u/20028934?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Sampo Silvennoinen](https://github.com/stscoundrel '+1/-1 (#6913 )')
 
-# [1.9.0](https://github.com/axios/axios/compare/v1.8.4...v1.9.0) (2025-04-24)
+## [1.9.0](https://github.com/axios/axios/compare/v1.8.4...v1.9.0) (2025-04-24)
 
 ### Bug Fixes
 
@@ -282,7 +347,7 @@
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+51/-47 (#6789 )')
 
-# [1.8.0](https://github.com/axios/axios/compare/v1.7.9...v1.8.0) (2025-02-25)
+## [1.8.0](https://github.com/axios/axios/compare/v1.7.9...v1.8.0) (2025-02-25)
 
 ### Bug Fixes
 
@@ -461,7 +526,7 @@
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+14/-9 (#6410 )')
 
-# [1.7.0](https://github.com/axios/axios/compare/v1.7.0-beta.2...v1.7.0) (2024-05-19)
+## [1.7.0](https://github.com/axios/axios/compare/v1.7.0-beta.2...v1.7.0) (2024-05-19)
 
 ### Features
 
@@ -477,7 +542,7 @@
 - <img src="https://avatars.githubusercontent.com/u/4814473?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Jay](https://github.com/jasonsaayman '+30/-14 ()')
 - <img src="https://avatars.githubusercontent.com/u/16711696?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Alexandre ABRIOUX](https://github.com/alexandre-abrioux '+56/-6 (#6362 )')
 
-# [1.7.0-beta.2](https://github.com/axios/axios/compare/v1.7.0-beta.1...v1.7.0-beta.2) (2024-05-19)
+## [1.7.0-beta.2](https://github.com/axios/axios/compare/v1.7.0-beta.1...v1.7.0-beta.2) (2024-05-19)
 
 ### Bug Fixes
 
@@ -489,7 +554,7 @@
 
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+99/-46 (#6405 #6404 #6401 #6400 #6395 )')
 
-# [1.7.0-beta.1](https://github.com/axios/axios/compare/v1.7.0-beta.0...v1.7.0-beta.1) (2024-05-07)
+## [1.7.0-beta.1](https://github.com/axios/axios/compare/v1.7.0-beta.0...v1.7.0-beta.1) (2024-05-07)
 
 ### Bug Fixes
 
@@ -502,7 +567,7 @@
 - <img src="https://avatars.githubusercontent.com/u/16711696?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Alexandre ABRIOUX](https://github.com/alexandre-abrioux '+56/-6 (#6362 )')
 - <img src="https://avatars.githubusercontent.com/u/12586868?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Dmitriy Mozgovoy](https://github.com/DigitalBrainJS '+42/-17 (#6380 #6377 )')
 
-# [1.7.0-beta.0](https://github.com/axios/axios/compare/v1.6.8...v1.7.0-beta.0) (2024-04-28)
+## [1.7.0-beta.0](https://github.com/axios/axios/compare/v1.6.8...v1.7.0-beta.0) (2024-04-28)
 
 ### Features
 
@@ -637,7 +702,7 @@ You should now use withXSRFToken along with withCredential to get the old behavi
 This functionality is considered as a fix.
 ```
 
-# [1.6.0](https://github.com/axios/axios/compare/v1.5.1...v1.6.0) (2023-10-26)
+## [1.6.0](https://github.com/axios/axios/compare/v1.5.1...v1.6.0) (2023-10-26)
 
 ### Bug Fixes
 
@@ -687,7 +752,7 @@ This functionality is considered as a fix.
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
 ```
 
-# [1.5.0](https://github.com/axios/axios/compare/v1.4.0...v1.5.0) (2023-08-26)
+## [1.5.0](https://github.com/axios/axios/compare/v1.4.0...v1.5.0) (2023-08-26)
 
 ### Bug Fixes
 
@@ -717,7 +782,7 @@ This functionality is considered as a fix.
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
 ```
 
-# [1.4.0](https://github.com/axios/axios/compare/v1.3.6...v1.4.0) (2023-04-27)
+## [1.4.0](https://github.com/axios/axios/compare/v1.3.6...v1.4.0) (2023-04-27)
 
 ### Bug Fixes
 
@@ -873,7 +938,7 @@ This functionality is considered as a fix.
 ⚠️ Critical vulnerability fix. See https://security.snyk.io/vuln/SNYK-JS-AXIOS-6032459
 ```
 
-# [1.3.0](https://github.com/axios/axios/compare/v1.2.6...v1.3.0) (2023-01-31)
+## [1.3.0](https://github.com/axios/axios/compare/v1.2.6...v1.3.0) (2023-01-31)
 
 ### Bug Fixes
 

@@ -42,6 +42,30 @@ describe('helpers::shouldBypassProxy', () => {
     expect(shouldBypassProxy('http://[::1]:8080/')).toBe(true);
   });
 
+  it('should bypass proxy for 127.0.0.1 when no_proxy contains localhost', () => {
+    setNoProxy('localhost');
+
+    expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(true);
+  });
+
+  it('should bypass proxy for [::1] when no_proxy contains localhost', () => {
+    setNoProxy('localhost');
+
+    expect(shouldBypassProxy('http://[::1]:7777/')).toBe(true);
+  });
+
+  it('should bypass proxy for localhost when no_proxy contains 127.0.0.1', () => {
+    setNoProxy('127.0.0.1');
+
+    expect(shouldBypassProxy('http://localhost:7777/')).toBe(true);
+  });
+
+  it('should bypass proxy for localhost when no_proxy contains ::1', () => {
+    setNoProxy('::1');
+
+    expect(shouldBypassProxy('http://localhost:7777/')).toBe(true);
+  });
+
   it('should match wildcard and explicit ports', () => {
     setNoProxy('*.example.com,localhost:8080');
 

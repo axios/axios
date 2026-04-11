@@ -55,6 +55,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: v0.x
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
@@ -62,10 +63,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --ignore-scripts
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
       - name: Bump version
         id: bump
         run: |
@@ -73,24 +70,16 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "branch=release/version-$VERSION" >> "$GITHUB_OUTPUT"
-      - name: Create release branch and commit
-        run: |
-          git checkout -b "${STEPS_BUMP_OUTPUTS_BRANCH}"
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to v${STEPS_BUMP_OUTPUTS_VERSION}"
-          git push origin "${STEPS_BUMP_OUTPUTS_BRANCH}"
-        env:
-          STEPS_BUMP_OUTPUTS_BRANCH: ${{ steps.bump.outputs.branch }}
-          STEPS_BUMP_OUTPUTS_VERSION: ${{ steps.bump.outputs.version }}
       - name: Create pull request
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          STEPS_BUMP_OUTPUTS_VERSION: ${{ steps.bump.outputs.version }}
-        run: |
-          gh pr create \
-            --base v0.x \
-            --title "chore: release v${STEPS_BUMP_OUTPUTS_VERSION}" \
-            --body "Automated version bump to v${STEPS_BUMP_OUTPUTS_VERSION}." \
-            --label "type::automated-pr" \
-            --label "priority::high" \
-            --label "commit::chore"
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump version to v${{ steps.bump.outputs.version }}"
+          branch: ${{ steps.bump.outputs.branch }}
+          base: v0.x
+          title: "chore: release v${{ steps.bump.outputs.version }}"
+          body: "Automated version bump to v${{ steps.bump.outputs.version }}."
+          labels: |
+            type::automated-pr
+            priority::high
+            commit::chore

@@ -29,4 +29,4 @@ jobs:
       - name: Build project
         run: npm run build
       - name: Publish to NPM
-        run: npm publish --provenance --access public --tag v0.x
+        run: npm publish --provenance --access public --tag v0x

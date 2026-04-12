@@ -479,6 +479,22 @@ declare namespace axios {
 
   type LookupAddress = string | LookupAddressEntry;
 
+  interface AxiosRedirectMeta {
+    status: number;
+    headers: AxiosHeaders;
+    config: InternalAxiosRequestConfig,
+    redirectsCount: number;
+    maxRedirects: number;
+    url: URL;
+    redirectTo: URL;
+    response: AxiosResponse,
+    sanitize: () => void;
+  }
+
+  export interface AxiosRequestMeta {
+    redirectsCount?: number;
+  }
+
   interface AxiosRequestConfig<D = any> {
     url?: string;
     method?: Method | string;
@@ -506,10 +522,10 @@ declare namespace axios {
     maxBodyLength?: number;
     maxRedirects?: number;
     maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-    beforeRedirect?: (
+    beforeRedirect?: ((
       options: Record<string, any>,
       responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode }
-    ) => void;
+    ) => void) | ((redirectMeta: AxiosRedirectMeta) => false | void);
     socketPath?: string | null;
     transport?: any;
     httpAgent?: any;
@@ -563,6 +579,7 @@ declare namespace axios {
 
   interface InternalAxiosRequestConfig<D = any> extends AxiosRequestConfig<D> {
     headers: AxiosRequestHeaders;
+    meta: AxiosRequestMeta;
   }
 
   interface HeadersDefaults {

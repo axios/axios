@@ -422,10 +422,14 @@ export interface AxiosRedirectMeta {
   config: InternalAxiosRequestConfig,
   redirectsCount: number;
   maxRedirects: number;
-  url: string;
-  redirectTo: string;
+  url: URL;
+  redirectTo: URL;
   response: AxiosResponse,
   sanitize: () => void;
+}
+
+export interface AxiosRequestMeta {
+  redirectsCount?: number;
 }
 
 
@@ -537,6 +541,7 @@ export interface InternalAxiosRequestConfig<
   D = any,
 > extends AxiosRequestConfig<D> {
   headers: AxiosRequestHeaders;
+  meta: AxiosRequestMeta;
 }
 
 export interface HeadersDefaults {

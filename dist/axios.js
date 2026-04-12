@@ -1,4 +1,4 @@
-// axios v0.30.3 Copyright (c) 2026 Matt Zabriskie
+// axios v0.31.0 Copyright (c) 2026 Matt Zabriskie
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -140,7 +140,15 @@
    * @return {boolean} True if value is a empty Object, otherwise false
    */
   function isEmptyObject(val) {
-    return val && Object.keys(val).length === 0 && Object.getPrototypeOf(val) === Object.prototype;
+    if (!isPlainObject(val)) {
+      return false;
+    }
+    for (var key in val) {
+      if (Object.prototype.hasOwnProperty.call(val, key)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -1730,6 +1738,25 @@
     return !!(value && value.__CANCEL__);
   };
 
+  var INVALID_HEADER_VALUE_RE = /[^\x09\x20-\x7E\x80-\xFF]/g;
+  var BOUNDARY_WHITESPACE_RE = /^[\x09\x20]+|[\x09\x20]+$/g;
+
+  function sanitizeHeaderValue(value) {
+    if (value === false || value == null) {
+      return value;
+    }
+
+    if (utils.isArray(value)) {
+      return value.map(sanitizeHeaderValue);
+    }
+
+    return String(value)
+      .replace(INVALID_HEADER_VALUE_RE, '')
+      .replace(BOUNDARY_WHITESPACE_RE, '');
+  }
+
+  var sanitizeHeaderValue_1 = sanitizeHeaderValue;
+
   /**
    * Throws a `CanceledError` if cancellation has been requested.
    */
@@ -1780,6 +1807,10 @@
         delete config.headers[method];
       }
     );
+
+    utils.forEach(config.headers, function sanitizeHeaderConfigValue(value, header) {
+      config.headers[header] = sanitizeHeaderValue_1(value);
+    });
 
     var adapter = config.adapter || defaults_1.adapter;
 
@@ -1920,7 +1951,7 @@
   };
 
   var data = {
-    version: "0.30.3",
+    "version": "0.31.0"
   };
 
   var VERSION = data.version;

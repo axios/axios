@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node bin/ssl_hotfix.js grunt test && node bin/ssl_hotfix.js dtslint --localTs node_modules/typescript/lib",
     "start": "node ./sandbox/server.js",
-    "preversion": "grunt version",
+    "preversion": "grunt version && npm test",
     "build": "cross-env NODE_ENV=production grunt build",
     "examples": "node ./examples/server.js",
     "coveralls": "cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",

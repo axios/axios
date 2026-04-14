@@ -20,7 +20,7 @@ This release delivers two critical security patches targeting header injection a
 
 ## 🔧 Maintenance & Chores
 
-* **CI Security Hardening:** Added [zizmor](https://github.com/zizmorcore/zizmor) GitHub Actions security scanner; switched npm publish to OIDC Trusted Publishing (removing the long-lived `NODE_AUTH_TOKEN`); pinned all action references to full commit SHAs; narrowed workflow permissions to least privilege; gated the publish step behind a dedicated `npm-publish` environment; and blocked the sponsor-block workflow from running on forks. (__#10618__, __#10619__, __#10627__, __#10637__, __#10641__, __#10666__)
+* **CI Security Hardening:** Added [zizmor](https://github.com/zizmor/zizmor) GitHub Actions security scanner; switched npm publish to OIDC Trusted Publishing (removing the long-lived `NODE_AUTH_TOKEN`); pinned all action references to full commit SHAs; narrowed workflow permissions to least privilege; gated the publish step behind a dedicated `npm-publish` environment; and blocked the sponsor-block workflow from running on forks. (__#10618__, __#10619__, __#10627__, __#10637__, __#10641__, __#10666__)
 
 * **Docs:** Clarified HTTP/2 support and the unsupported `httpVersion` option; added documentation for header case preservation; improved the `beforeRedirect` example to prevent accidental credential leakage. (__#10644__, __#10654__, __#10624__)
 

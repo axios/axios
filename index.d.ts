@@ -23,7 +23,7 @@ type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: s
 export class AxiosHeaders {
   constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 
-  [key: string]: any;
+  [key: string]: AxiosHeaderValue | AxiosHeaderMatcher | AxiosHeaderParser | ((...args: unknown[]) => unknown) | undefined;
 
   set(
     headerName?: string,

@@ -1333,11 +1333,11 @@ FormData serializer supports additional options via `config.formSerializer: obje
   - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
   - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - add brackets with indexes (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
-  - `maxDepth: number = 100` - maximum object nesting depth the serializer will recurse into. If the
-    input object exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is
-    thrown instead of overflowing the call stack. This protects server-side applications from DoS
-    attacks via deeply nested payloads ([GHSA-62hf-57xw-28j9](https://github.com/axios/axios/security/advisories/GHSA-62hf-57xw-28j9)).
-    Set to `Infinity` to disable the limit and restore pre-fix behaviour.
+- `maxDepth: number = 100` - maximum object nesting depth the serializer will recurse into. If the
+  input object exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is
+  thrown instead of overflowing the call stack. This protects server-side applications from DoS
+  attacks via deeply nested payloads ([GHSA-62hf-57xw-28j9](https://github.com/axios/axios/security/advisories/GHSA-62hf-57xw-28j9)).
+  Set to `Infinity` to disable the limit and restore pre-fix behaviour.
 
   ```js
   // Raise the limit for a schema that genuinely nests deeper than 100 levels:

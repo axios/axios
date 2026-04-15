@@ -83,16 +83,16 @@ FormData 序列化器通过 `config.formSerializer` 对象属性支持以下额�
   - `null` - 不添加方括号（`arr: 1`，`arr: 2`，`arr: 3`）
   - `false`（默认）- 添加空方括号（`arr[]: 1`，`arr[]: 2`，`arr[]: 3`）
   - `true` - 添加带索引的方括号（`arr[0]: 1`，`arr[1]: 2`，`arr[2]: 3`）
-  - `maxDepth: number = 100` - 序列化器递归的最大对象嵌套深度。如果输入超过此深度，将抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`。这可以保护服务端应用免受深层嵌套载荷的 DoS 攻击。设置为 `Infinity` 可禁用此限制。
+- `maxDepth: number = 100` - 序列化器递归的最大对象嵌套深度。如果输入超过此深度，将抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`。这可以保护服务端应用免受深层嵌套载荷的 DoS 攻击。设置为 `Infinity` 可禁用此限制。
 
-  ```js
-  // 当 schema 确实需要超过 100 层嵌套时，可提高限制：
-  axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
-  ```
+```js
+// 当 schema 确实需要超过 100 层嵌套时，可提高限制：
+axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+```
 
-  ::: warning 安全提示
-  默认限制 100 是有意为之。将客户端控制的 JSON 作为 `data` 转发给 axios 的服务端代码，如果没有此保护，容易发生调用栈溢出。除非你的 schema 确实需要，否则不要提高 `maxDepth`。
-  :::
+::: warning 安全提示
+默认限制 100 是有意为之。将客户端控制的 JSON 作为 `data` 转发给 axios 的服务端代码，如果没有此保护，容易发生调用栈溢出。除非你的 schema 确实需要，否则不要提高 `maxDepth`。
+:::
 
 例如，对于以下对象：
 

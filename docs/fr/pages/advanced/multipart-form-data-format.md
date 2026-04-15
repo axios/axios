@@ -83,16 +83,16 @@ Le sérialiseur FormData supporte des options supplémentaires via la propriét�
   - `null` - ne pas ajouter de crochets (`arr: 1`, `arr: 2`, `arr: 3`)
   - `false` (défaut) - ajouter des crochets vides (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - ajouter des crochets avec index (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
-  - `maxDepth: number = 100` - profondeur maximale d'imbrication des objets dans laquelle le sérialiseur va récurser. Si l'entrée dépasse cette profondeur, une `AxiosError` avec `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` est levée. Cela protège les applications côté serveur contre les attaques DoS via des charges utiles profondément imbriquées. Définir à `Infinity` pour désactiver la limite.
+- `maxDepth: number = 100` - profondeur maximale d'imbrication des objets dans laquelle le sérialiseur va récurser. Si l'entrée dépasse cette profondeur, une `AxiosError` avec `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` est levée. Cela protège les applications côté serveur contre les attaques DoS via des charges utiles profondément imbriquées. Définir à `Infinity` pour désactiver la limite.
 
-  ```js
-  // Autoriser une imbrication plus profonde pour les schémas qui dépassent légitimement 100 niveaux :
-  axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
-  ```
+```js
+// Autoriser une imbrication plus profonde pour les schémas qui dépassent légitimement 100 niveaux :
+axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+```
 
-  ::: warning Note de sécurité
-  La limite par défaut de 100 est intentionnelle. Le code côté serveur qui transfère du JSON contrôlé par le client vers axios en tant que `data` est vulnérable à un débordement de pile d'appels sans cette protection. N'augmentez `maxDepth` que si votre schéma le nécessite réellement.
-  :::
+::: warning Note de sécurité
+La limite par défaut de 100 est intentionnelle. Le code côté serveur qui transfère du JSON contrôlé par le client vers axios en tant que `data` est vulnérable à un débordement de pile d'appels sans cette protection. N'augmentez `maxDepth` que si votre schéma le nécessite réellement.
+:::
 
 Par exemple, si nous avons un objet comme celui-ci :
 

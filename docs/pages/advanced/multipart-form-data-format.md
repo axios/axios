@@ -83,16 +83,16 @@ FormData serializer supports additional options via config.formSerializer: objec
   - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
   - `false` (default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - add brackets with indexes (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
-  - `maxDepth: number = 100` - maximum object nesting depth the serializer will recurse into. If the input exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is thrown. This protects server-side applications from DoS attacks via deeply nested payloads. Set to `Infinity` to disable the limit.
+- `maxDepth: number = 100` - maximum object nesting depth the serializer will recurse into. If the input exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is thrown. This protects server-side applications from DoS attacks via deeply nested payloads. Set to `Infinity` to disable the limit.
 
-  ```js
-  // Allow deeper nesting for schemas that legitimately exceed 100 levels:
-  axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
-  ```
+```js
+// Allow deeper nesting for schemas that legitimately exceed 100 levels:
+axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+```
 
-  ::: warning Security note
-  The default limit of 100 is intentional. Server-side code that forwards client-controlled JSON to axios as `data` is vulnerable to a call-stack overflow without this guard. Only raise `maxDepth` if your schema genuinely requires it.
-  :::
+::: warning Security note
+The default limit of 100 is intentional. Server-side code that forwards client-controlled JSON to axios as `data` is vulnerable to a call-stack overflow without this guard. Only raise `maxDepth` if your schema genuinely requires it.
+:::
 
 For example, if we have an object like this:
 

@@ -221,7 +221,15 @@ The `env` property allows you to set some configuration options. For example the
 
 ### `formSerializer`
 
-The `formSerializer` function allows you to serialize the `data` object before it is sent to the server. There are a few options available for this function, so please refer to the full request config example at the end of this page.
+The `formSerializer` option allows you to configure how plain objects are serialized to `multipart/form-data` when used as request `data`. Available options:
+
+- `visitor` — custom visitor function called recursively for each value
+- `dots` — use dot notation instead of bracket notation
+- `metaTokens` — preserve special key endings such as `{}`
+- `indexes` — control bracket format for array keys (`null` / `false` / `true`)
+- `maxDepth` _(default: `100`)_ — maximum nesting depth before throwing `AxiosError` with code `ERR_FORM_DATA_DEPTH_EXCEEDED`. Set to `Infinity` to disable.
+
+See the [multipart/form-data](/pages/advanced/multipart-form-data-format) page for full details, and the full request config example at the end of this page.
 
 ### `maxRate` <Badge type="warning" text="Node.js only" />
 
@@ -257,7 +265,11 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
       // (1) indexes: null (leads to no brackets)
       // (2) (default) indexes: false (leads to empty brackets)
       // (3) indexes: true (leads to brackets with indexes).
-    indexes: false
+    indexes: false,
+
+    // Maximum object nesting depth when serializing params. Throws AxiosError
+    // (ERR_FORM_DATA_DEPTH_EXCEEDED) if exceeded. Default: 100. Set to Infinity to disable.
+    maxDepth: 100
 
   },
   data: {
@@ -341,6 +353,10 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
         // false - empty brackets
         // true - brackets with indexes
       indexes: boolean;
+
+      // Maximum object nesting depth. Throws AxiosError (ERR_FORM_DATA_DEPTH_EXCEEDED)
+      // if exceeded. Default: 100. Set to Infinity to disable.
+      maxDepth: 100;
   },
   maxRate: [
     100 * 1024, // 100KB/s upload limit,

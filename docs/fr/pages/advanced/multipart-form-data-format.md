@@ -87,7 +87,7 @@ Le sérialiseur FormData supporte des options supplémentaires via la propriét�
 
 ```js
 // Autoriser une imbrication plus profonde pour les schémas qui dépassent légitimement 100 niveaux :
-axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+axios.postForm('/api', data, { formSerializer: { maxDepth: 200 } });
 ```
 
 ::: warning Note de sécurité

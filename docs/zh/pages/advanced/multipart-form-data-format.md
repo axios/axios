@@ -4,22 +4,22 @@ axios 支持以 `multipart/form-data` 格式发送请求，这种格式常用于
 
 ```js
 const formData = new FormData();
-formData.append("foo", "bar");
+formData.append('foo', 'bar');
 
-axios.post("https://httpbin.org/post", formData);
+axios.post('https://httpbin.org/post', formData);
 ```
 
 在 Node.js 中，可以使用 `form-data` 库，如下所示：
 
 ```js
-const FormData = require("form-data");
+const FormData = require('form-data');
 
 const form = new FormData();
-form.append("my_field", "my value");
-form.append("my_buffer", Buffer.alloc(10));
-form.append("my_file", fs.createReadStream("/foo/bar.jpg"));
+form.append('my_field', 'my value');
+form.append('my_buffer', Buffer.alloc(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 
-axios.post("https://example.com", form);
+axios.post('https://example.com', form);
 ```
 
 ## 自动序列化为 FormData <Badge type="tip" text="新特性" />
@@ -27,15 +27,15 @@ axios.post("https://example.com", form);
 从 v0.27.0 起，如果请求的 Content-Type 请求头设置为 `multipart/form-data`，axios 支持自动将对象序列化为 FormData 对象。这意味着你可以直接将 JavaScript 对象传入 axios 请求配置的 `data` 属性。例如，向 POST 请求传递数据时：
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 axios
   .post(
-    "https://httpbin.org/post",
+    'https://httpbin.org/post',
     { x: 1 },
     {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     }
   )
@@ -45,16 +45,16 @@ axios
 在 Node.js 构建中，默认使用 ([`form-data`](https://github.com/form-data/form-data)) 作为 polyfill。你可以通过设置 `env.FormData` 配置变量来覆盖 FormData 类，但大多数情况下不需要这样做：
 
 ```js
-const axios = require("axios");
-var FormData = require("form-data");
+const axios = require('axios');
+var FormData = require('form-data');
 
 axios
   .post(
-    "https://httpbin.org/post",
+    'https://httpbin.org/post',
     { x: 1, buf: Buffer.alloc(10) },
     {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     }
   )
@@ -83,6 +83,16 @@ FormData 序列化器通过 `config.formSerializer` 对象属性支持以下额�
   - `null` - 不添加方括号（`arr: 1`，`arr: 2`，`arr: 3`）
   - `false`（默认）- 添加空方括号（`arr[]: 1`，`arr[]: 2`，`arr[]: 3`）
   - `true` - 添加带索引的方括号（`arr[0]: 1`，`arr[1]: 2`，`arr[2]: 3`）
+  - `maxDepth: number = 100` - 序列化器递归的最大对象嵌套深度。如果输入超过此深度，将抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`。这可以保护服务端应用免受深层嵌套载荷的 DoS 攻击。设置为 `Infinity` 可禁用此限制。
+
+  ```js
+  // 当 schema 确实需要超过 100 层嵌套时，可提高限制：
+  axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+  ```
+
+  ::: warning 安全提示
+  默认限制 100 是有意为之。将客户端控制的 JSON 作为 `data` 转发给 axios 的服务端代码，如果没有此保护，容易发生调用栈溢出。除非你的 schema 确实需要，否则不要提高 `maxDepth`。
+  :::
 
 例如，对于以下对象：
 
@@ -92,10 +102,10 @@ const obj = {
   arr: [1, 2, 3],
   arr2: [1, [2], 3],
   users: [
-    { name: "Peter", surname: "Griffin" },
-    { name: "Thomas", surname: "Anderson" },
+    { name: 'Peter', surname: 'Griffin' },
+    { name: 'Thomas', surname: 'Anderson' },
   ],
-  "obj2{}": [{ x: 1 }],
+  'obj2{}': [{ x: 1 }],
 };
 ```
 
@@ -103,18 +113,18 @@ axios 序列化器内部将执行以下步骤：
 
 ```js
 const formData = new FormData();
-formData.append("x", "1");
-formData.append("arr[]", "1");
-formData.append("arr[]", "2");
-formData.append("arr[]", "3");
-formData.append("arr2[0]", "1");
-formData.append("arr2[1][0]", "2");
-formData.append("arr2[2]", "3");
-formData.append("users[0][name]", "Peter");
-formData.append("users[0][surname]", "Griffin");
-formData.append("users[1][name]", "Thomas");
-formData.append("users[1][surname]", "Anderson");
-formData.append("obj2{}", '[{"x":1}]');
+formData.append('x', '1');
+formData.append('arr[]', '1');
+formData.append('arr[]', '2');
+formData.append('arr[]', '3');
+formData.append('arr2[0]', '1');
+formData.append('arr2[1][0]', '2');
+formData.append('arr2[2]', '3');
+formData.append('users[0][name]', 'Peter');
+formData.append('users[0][surname]', 'Griffin');
+formData.append('users[1][name]', 'Thomas');
+formData.append('users[1][surname]', 'Anderson');
+formData.append('obj2{}', '[{"x":1}]');
 ```
 
 axios 支持以下快捷方法：`postForm`、`putForm`、`patchForm`，它们分别对应相应的 HTTP 方法，并预设 `Content-Type` 请求头为 `multipart/form-data`。

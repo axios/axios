@@ -64,6 +64,19 @@ L'objet `data` sera automatiquement sérialisé en `URLSearchParams` et envoyé 
 
 Si le body-parser de votre backend (comme `body-parser` d'`express.js`) prend en charge le décodage des objets imbriqués, vous obtiendrez automatiquement le même objet côté serveur.
 
+## Limite de profondeur pour la sérialisation des paramètres
+
+Lorsqu'axios sérialise un objet `params` via `AxiosURLSearchParams`, le même parcours récursif utilisé par le sérialiseur FormData est appelé. Une option `maxDepth` (par défaut `100`) limite la profondeur de récursion. Les charges utiles dépassant la limite lèvent une `AxiosError` avec `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` au lieu de provoquer un débordement de pile d'appels.
+
+```js
+// Augmenter la limite si votre objet params nécessite légitimement plus de 100 niveaux d'imbrication :
+axios.get('/api', { params: deepObject, paramsSerializer: { maxDepth: 200 } });
+```
+
+::: warning Note de sécurité
+N'augmentez `maxDepth` que si votre schéma le nécessite réellement. La valeur par défaut de 100 protège le code côté serveur qui transfère des données contrôlées par le client vers axios en tant que `params` contre les attaques DoS via des objets profondément imbriqués.
+:::
+
 ```js
 var app = express();
 

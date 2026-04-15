@@ -221,7 +221,15 @@ La propiedad `env` te permite establecer algunas opciones de configuración. Por
 
 ### `formSerializer`
 
-La función `formSerializer` te permite serializar el objeto `data` antes de enviarlo al servidor. Hay varias opciones disponibles para esta función; consulta el ejemplo completo de configuración de solicitud al final de esta página.
+La opción `formSerializer` te permite configurar cómo se serializan los objetos planos a `multipart/form-data` cuando se usan como `data` de solicitud. Opciones disponibles:
+
+- `visitor` — función visitante personalizada llamada recursivamente para cada valor
+- `dots` — usar notación de punto en lugar de notación de corchetes
+- `metaTokens` — preservar terminaciones especiales de clave como `{}`
+- `indexes` — controlar el formato de corchetes para claves de arreglo (`null` / `false` / `true`)
+- `maxDepth` _(predeterminado: `100`)_ — profundidad máxima de anidación antes de lanzar un `AxiosError` con código `ERR_FORM_DATA_DEPTH_EXCEEDED`. Establece en `Infinity` para desactivar.
+
+Consulta la página [multipart/form-data](/pages/advanced/multipart-form-data-format) para todos los detalles, y el ejemplo completo de configuración de solicitud al final de esta página.
 
 ### `maxRate` <Badge type="warning" text="Solo en Node.js" />
 
@@ -257,7 +265,11 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
       // (1) indexes: null (leads to no brackets)
       // (2) (default) indexes: false (leads to empty brackets)
       // (3) indexes: true (leads to brackets with indexes).
-    indexes: false
+    indexes: false,
+
+    // Profundidad máxima de anidación de objetos al serializar params. Lanza AxiosError
+    // (ERR_FORM_DATA_DEPTH_EXCEEDED) si se excede. Predeterminado: 100. Establecer en Infinity para desactivar.
+    maxDepth: 100
 
   },
   data: {
@@ -336,11 +348,15 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
       // Keep special endings like {} in parameter key
       metaTokens: boolean;
 
-      // Use array indexes format:
-        // null - no brackets
-        // false - empty brackets
-        // true - brackets with indexes
+      // Usar formato de índices de arreglo:
+        // null - sin corchetes
+        // false - corchetes vacíos
+        // true - corchetes con índices
       indexes: boolean;
+
+      // Profundidad máxima de anidación de objetos. Lanza AxiosError (ERR_FORM_DATA_DEPTH_EXCEEDED)
+      // si se excede. Predeterminado: 100. Establecer en Infinity para desactivar.
+      maxDepth: 100;
   },
   maxRate: [
     100 * 1024, // 100KB/s upload limit,

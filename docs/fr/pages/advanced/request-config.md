@@ -221,7 +221,15 @@ La propriété `env` vous permet de définir certaines options de configuration.
 
 ### `formSerializer`
 
-La fonction `formSerializer` vous permet de sérialiser l'objet `data` avant son envoi au serveur. Plusieurs options sont disponibles pour cette fonction ; veuillez vous référer à l'exemple de configuration complète en bas de cette page.
+L'option `formSerializer` vous permet de configurer comment les objets simples sont sérialisés en `multipart/form-data` lorsqu'ils sont utilisés comme `data` de requête. Options disponibles :
+
+- `visitor` — fonction visiteur personnalisée appelée récursivement pour chaque valeur
+- `dots` — utiliser la notation pointée au lieu de la notation entre crochets
+- `metaTokens` — conserver les terminaisons spéciales de clé telles que `{}`
+- `indexes` — contrôler le format des crochets pour les clés de tableau (`null` / `false` / `true`)
+- `maxDepth` _(par défaut : `100`)_ — profondeur maximale d'imbrication avant de lever une `AxiosError` avec le code `ERR_FORM_DATA_DEPTH_EXCEEDED`. Définir à `Infinity` pour désactiver.
+
+Consultez la page [multipart/form-data](/pages/advanced/multipart-form-data-format) pour tous les détails, et l'exemple de configuration complète en bas de cette page.
 
 ### `maxRate` <Badge type="warning" text="Node.js uniquement" />
 
@@ -257,7 +265,11 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
       // (1) indexes: null (pas de crochets)
       // (2) (défaut) indexes: false (crochets vides)
       // (3) indexes: true (crochets avec index).
-    indexes: false
+    indexes: false,
+
+    // Profondeur maximale d'imbrication des objets lors de la sérialisation des params. Lève une AxiosError
+    // (ERR_FORM_DATA_DEPTH_EXCEEDED) si dépassée. Par défaut : 100. Définir à Infinity pour désactiver.
+    maxDepth: 100
 
   },
   data: {
@@ -341,6 +353,10 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
         // false - crochets vides
         // true - crochets avec index
       indexes: boolean;
+
+      // Profondeur maximale d'imbrication des objets. Lève une AxiosError (ERR_FORM_DATA_DEPTH_EXCEEDED)
+      // si dépassée. Par défaut : 100. Définir à Infinity pour désactiver.
+      maxDepth: 100;
   },
   maxRate: [
     100 * 1024, // Limite d'envoi de 100Ko/s,

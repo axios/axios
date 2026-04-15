@@ -64,6 +64,19 @@ await axios.postForm('https://postman-echo.com/post', data, {
 
 如果你的后端 body 解析器（如 `express.js` 的 `body-parser`）支持嵌套对象解码，服务器端将自动还原为相同的对象结构：
 
+## 参数序列化的深度限制
+
+当 axios 通过 `AxiosURLSearchParams` 序列化 `params` 对象时，会调用与 FormData 序列化器相同的递归遍历器。`maxDepth` 选项（默认 `100`）限制递归的最大深度。超过限制的载荷会抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`，而不是导致调用栈溢出。
+
+```js
+// 如果你的 params 对象确实需要超过 100 层嵌套，可提高限制：
+axios.get('/api', { params: deepObject, paramsSerializer: { maxDepth: 200 } });
+```
+
+::: warning 安全提示
+除非你的 schema 确实需要，否则不要提高 `maxDepth`。默认值 100 可保护将客户端控制的数据作为 `params` 转发给 axios 的服务端代码免受深层嵌套对象的 DoS 攻击。
+:::
+
 ```js
 var app = express();
 

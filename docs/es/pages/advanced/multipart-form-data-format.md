@@ -87,7 +87,7 @@ El serializador de FormData admite opciones adicionales a través de la propieda
 
 ```js
 // Aumentar el límite para esquemas que legítimamente exceden 100 niveles:
-axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+axios.postForm('/api', data, { formSerializer: { maxDepth: 200 } });
 ```
 
 ::: warning Nota de seguridad

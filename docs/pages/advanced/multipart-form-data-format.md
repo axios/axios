@@ -87,7 +87,7 @@ FormData serializer supports additional options via config.formSerializer: objec
 
 ```js
 // Allow deeper nesting for schemas that legitimately exceed 100 levels:
-axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+axios.postForm('/api', data, { formSerializer: { maxDepth: 200 } });
 ```
 
 ::: warning Security note

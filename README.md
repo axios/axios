@@ -342,7 +342,8 @@ These are the available config options for making requests. Only the `url` is re
 
   // `paramsSerializer` is an optional config in charge of serializing `params`
   paramsSerializer: {
-    indexes: null // array indexes format (null - no brackets, false - empty brackets, true - brackets with indexes)
+    indexes: null, // array indexes format (null - no brackets, false - empty brackets, true - brackets with indexes)
+    maxDepth: 100 // maximum recursion depth for nested params (default: 100, Infinity disables the limit)
   },
 
   // `data` is the data to be sent as the request body
@@ -522,6 +523,7 @@ These are the available config options for making requests. Only the `url` is re
       dots: boolean; // use dots instead of brackets format
       metaTokens: boolean; // keep special endings like {} in parameter key
       indexes: boolean; // array indexes format null - no brackets, false - empty brackets, true - brackets with indexes
+      maxDepth: number; // maximum recursion depth for nested objects (default: 100, Infinity disables the limit)
   }
 }
 ```
@@ -1010,6 +1012,13 @@ The back-end body-parser could potentially use this meta-information to automati
     - `null` - don't add brackets (`arr: 1`, `arr: 2`, `arr: 3`)
     - `false`(default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
     - `true` - add brackets with indexes  (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
+
+- `maxDepth: number = 100` - maximum recursion depth when serializing nested objects. Throws an `AxiosError` with
+code `ERR_FORM_DATA_DEPTH_EXCEEDED` if the limit is exceeded. Set to `Infinity` to disable the limit.
+
+> **Security note:** If your server-side code forwards client-supplied objects to axios as request `data` or `params`,
+> keep `maxDepth` at a reasonable value (the default of 100 is sufficient for most use cases) to prevent
+> denial-of-service via deeply nested payloads.
 
 Let's say we have an object like this one:
 

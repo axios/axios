@@ -1336,16 +1336,15 @@ FormData serializer supports additional options via `config.formSerializer: obje
 - `maxDepth: number = 100` - maximum object nesting depth the serializer will recurse into. If the
   input object exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is
   thrown instead of overflowing the call stack. This protects server-side applications from DoS
-  attacks via deeply nested payloads ([GHSA-62hf-57xw-28j9](https://github.com/axios/axios/security/advisories/GHSA-62hf-57xw-28j9)).
-  Set to `Infinity` to disable the limit and restore pre-fix behaviour.
+  attacks via deeply nested payloads. Set to `Infinity` to disable the limit and restore pre-fix behaviour.
 
-  ```js
-  // Raise the limit for a schema that genuinely nests deeper than 100 levels:
-  axios.post('/api', data, { formSerializer: { maxDepth: 200 } });
+```js
+// Raise the limit for a schema that genuinely nests deeper than 100 levels:
+axios.postForm('/api', data, { formSerializer: { maxDepth: 200 } });
 
-  // Same protection applies to params serialization:
-  axios.get('/api', { params: data, paramsSerializer: { maxDepth: 200 } });
-  ```
+// Same protection applies to params serialization:
+axios.get('/api', { params: data, paramsSerializer: { maxDepth: 200 } });
+```
 
 Let's say we have an object like this one:
 

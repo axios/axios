@@ -64,6 +64,19 @@ The `data` object will be automatically serialized to `URLSearchParams` and sent
 
 If your backend body-parser (like `body-parser` of `express.js`) supports nested objects decoding, you will get the same object on the server-side automatically
 
+## Depth limit for params serialization
+
+When axios serializes a `params` object via `AxiosURLSearchParams`, the same recursive walker used by the FormData serializer is called. A `maxDepth` option (default `100`) limits how deeply it will recurse. Payloads exceeding the limit throw an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` instead of overflowing the call stack.
+
+```js
+// Raise the limit if your params object legitimately nests deeper than 100 levels:
+axios.get('/api', { params: deepObject, paramsSerializer: { maxDepth: 200 } });
+```
+
+::: warning Security note
+Only raise `maxDepth` if your schema genuinely requires it. The default of 100 protects server-side code that forwards client-controlled data to axios as `params` from DoS attacks via deeply nested objects.
+:::
+
 ```js
 var app = express();
 

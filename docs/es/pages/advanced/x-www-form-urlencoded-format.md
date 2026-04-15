@@ -64,6 +64,19 @@ El objeto `data` será serializado automáticamente a `URLSearchParams` y enviad
 
 Si el analizador de cuerpo de tu backend (como `body-parser` de `express.js`) admite la decodificación de objetos anidados, recibirás el mismo objeto en el lado del servidor automáticamente.
 
+## Límite de profundidad para la serialización de parámetros
+
+Cuando axios serializa un objeto `params` mediante `AxiosURLSearchParams`, se llama al mismo recorrido recursivo utilizado por el serializador de FormData. Una opción `maxDepth` (predeterminado `100`) limita la profundidad de recursión. Las cargas útiles que exceden el límite lanzan un `AxiosError` con `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` en lugar de desbordar la pila de llamadas.
+
+```js
+// Aumentar el límite si tu objeto params legítimamente anida más de 100 niveles:
+axios.get('/api', { params: deepObject, paramsSerializer: { maxDepth: 200 } });
+```
+
+::: warning Nota de seguridad
+Solo aumenta `maxDepth` si tu esquema realmente lo requiere. El valor predeterminado de 100 protege el código del lado del servidor que reenvía datos controlados por el cliente a axios como `params` contra ataques DoS mediante objetos profundamente anidados.
+:::
+
 ```js
 var app = express();
 

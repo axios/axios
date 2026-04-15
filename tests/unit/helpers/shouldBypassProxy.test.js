@@ -73,4 +73,31 @@ describe('helpers::shouldBypassProxy', () => {
     expect(shouldBypassProxy('http://localhost:8080/')).toBe(true);
     expect(shouldBypassProxy('http://localhost:8081/')).toBe(false);
   });
+
+  it('should bypass proxy for any host when no_proxy is *', () => {
+    setNoProxy('*');
+
+    expect(shouldBypassProxy('http://example.com/')).toBe(true);
+    expect(shouldBypassProxy('http://localhost:1234/')).toBe(true);
+    expect(shouldBypassProxy('http://[::1]:8080/')).toBe(true);
+  });
+
+  it('should support bracketed ipv6 with explicit port in no_proxy', () => {
+    setNoProxy('[::1]:8080');
+
+    expect(shouldBypassProxy('http://[::1]:8080/')).toBe(true);
+    expect(shouldBypassProxy('http://[::1]:8081/')).toBe(false);
+  });
+
+  it('should not bypass when no_proxy is empty', () => {
+    setNoProxy('');
+
+    expect(shouldBypassProxy('http://localhost:8080/')).toBe(false);
+  });
+
+  it('should not bypass for malformed URLs', () => {
+    setNoProxy('localhost,127.0.0.1,::1');
+
+    expect(shouldBypassProxy('not a url')).toBe(false);
+  });
 });

@@ -221,7 +221,15 @@ proxy: {
 
 ### `formSerializer`
 
-`formSerializer` 函数允许你在数据发送到服务器之前自定义 `data` 对象的序列化方式，有多个可用选项，详见本页末尾的完整请求配置示例。
+`formSerializer` 选项允许你配置普通对象作为请求 `data` 时如何序列化为 `multipart/form-data`。可用选项：
+
+- `visitor` — 对每个值递归调用的自定义访问者函数
+- `dots` — 使用点号表示法代替方括号表示法
+- `metaTokens` — 保留特殊的键后缀（如 `{}`）
+- `indexes` — 控制数组键的方括号格式（`null` / `false` / `true`）
+- `maxDepth` _（默认：`100`）_ — 抛出 `AxiosError`（错误码 `ERR_FORM_DATA_DEPTH_EXCEEDED`）前的最大嵌套深度。设置为 `Infinity` 可禁用。
+
+详见 [multipart/form-data](/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
 
 ### `maxRate` <Badge type="warning" text="仅 Node.js" />
 
@@ -257,7 +265,11 @@ proxy: {
       // (1) indexes: null（不添加方括号）
       // (2)（默认）indexes: false（添加空方括号）
       // (3) indexes: true（添加带索引的方括号）
-    indexes: false
+    indexes: false,
+
+    // 序列化参数时的最大对象嵌套深度。超过时抛出 AxiosError
+    // (ERR_FORM_DATA_DEPTH_EXCEEDED)。默认：100。设置为 Infinity 可禁用。
+    maxDepth: 100
 
   },
   data: {
@@ -341,6 +353,10 @@ proxy: {
         // false - 添加空方括号
         // true - 添加带索引的方括号
       indexes: boolean;
+
+      // 最大对象嵌套深度。超过时抛出 AxiosError (ERR_FORM_DATA_DEPTH_EXCEEDED)。
+      // 默认：100。设置为 Infinity 可禁用。
+      maxDepth: 100;
   },
   maxRate: [
     100 * 1024, // 上传限制 100KB/s

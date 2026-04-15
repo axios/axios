@@ -516,6 +516,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_NOT_SUPPORT = 'ERR_NOT_SUPPORT';
   static readonly ERR_INVALID_URL = 'ERR_INVALID_URL';
   static readonly ERR_CANCELED = 'ERR_CANCELED';
+  static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
 }

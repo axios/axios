@@ -91,6 +91,50 @@ describe('core::AxiosError', () => {
     expect(error.status).toBe(400);
   });
 
+  describe('status field behaviour (issue #5330)', () => {
+    it('error.status equals response.status for 4xx errors', () => {
+      // Regression test: error.status must be directly accessible without
+      // going through error.response.status.
+      const error = new AxiosError(
+        'Request failed with status code 404',
+        AxiosError.ERR_BAD_REQUEST,
+        {},
+        {},
+        { status: 404, statusText: 'Not Found' }
+      );
+
+      expect(error.status).toBe(404);
+      expect(error.status).toBe(error.response.status);
+    });
+
+    it('error.status equals response.status for 5xx errors', () => {
+      const error = new AxiosError(
+        'Request failed with status code 503',
+        AxiosError.ERR_BAD_RESPONSE,
+        {},
+        {},
+        { status: 503, statusText: 'Service Unavailable' }
+      );
+
+      expect(error.status).toBe(503);
+    });
+
+    it('error.status is undefined when no response is provided (network errors)', () => {
+      // Network errors (ECONNREFUSED, ETIMEDOUT, etc.) have no HTTP response,
+      // so error.status must be undefined — not 0 or null.
+      const error = new AxiosError('Network Error', AxiosError.ERR_NETWORK, {}, {});
+
+      expect(error.status).toBeUndefined();
+      expect(error.response).toBeUndefined();
+    });
+
+    it('error.status is included in toJSON output', () => {
+      const error = new AxiosError('test', 'ERR_BAD_REQUEST', {}, {}, { status: 401 });
+
+      expect(error.toJSON().status).toBe(401);
+    });
+  });
+
   it('keeps message enumerable for backward compatibility', () => {
     const error = new AxiosError('Test error message', 'ERR_TEST', { foo: 'bar' });
 

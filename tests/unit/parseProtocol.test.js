@@ -25,4 +25,8 @@ describe('helpers::parseProtocol', () => {
       }
     );
   });
+
+  it('should not match URLs without a colon separator', () => {
+    assert.strictEqual(parseProtocol('http//example.com'), '');
+  });
 });

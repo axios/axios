@@ -149,7 +149,7 @@ The runtime model is general by design - axios is a transport library and cannot
 
 |                   |                                                                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Description**   | Caller passes `httpsAgent: new https.Agent({ rejectUnauthorized: false })` to "fix" a cert error in dev, ships it to prod.     |
+| **Description**   | Caller passes `httpsAgent: new https.Agent({ rejectUnauthorized: false })` to "fix" a certificate error in dev, ships it to prod. |
 | **Likelihood**    | Medium (very common copy-paste anti-pattern)                                                                                   |
 | **Impact**        | High (silent MITM)                                                                                                             |
 | **In scope?**     | **No.** axios delegates TLS entirely to Node's `https` module / the browser. We do not inspect or warn on agent configuration. |
@@ -402,7 +402,7 @@ This is the model that protects **what gets published as `axios` on npm**. A suc
 
 |                 |                                                                                                                                                                                                                                                                                                            |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Description** | Attacker with write access force-pushes an existing tag to point at a malicious commit, or pushes `v1.99.99` to publish out of band.                                                                                                                                                           |
+| **Description** | Attacker with write access force-pushes an existing tag to point at a malicious commit, or pushes `v1.99.99` so that a release is published out of band.                                                                                                                                      |
 | **Likelihood**  | Low (requires write access - assumed compromised at that point)                                                                                                                                                                                                                                            |
 | **Impact**      | High                                                                                                                                                                                                                                                                                                       |
 | **Mitigations** | • npm rejects re-publishing an existing version - re-tagging you cannot overwrite the published `1.15.0`. <br>• Provenance attestation records the commit SHA the tag pointed to _at publish time_ - forensically verifiable. <br>• GitHub tag protection rules can prevent tag deletion/force-push. |

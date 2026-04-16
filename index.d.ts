@@ -9,6 +9,31 @@ export type AxiosHeaderValue =
   | boolean
   | null;
 
+/**
+* Configuration for automatic request retry with Retry-After support.
+* Set retries: 0 (default) to disable entirely.
+*/
+export interface AxiosRetryConfig {
+  /** Maximum number of retry attempts. Default: 0 (disabled). */
+  retries?: number;
+
+  /** HTTP status codes that should trigger a retry. Default: [429, 503]. */
+  retryStatusCodes?: number[];
+
+  /**
+  * When true, the Retry-After response header value is used as the
+  * delay before retrying. Supports both delta-seconds and HTTP-date
+  * formats (RFC 7231). Default: true.
+  */
+  respectRetryAfter?: boolean;
+
+  /**
+  * Fallback delay in milliseconds when no Retry-After header is present.
+  * Default: 1000.
+  */
+  retryDelay?: number;
+}
+
 interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;
 }
@@ -513,6 +538,9 @@ export interface AxiosRequestConfig<D = any> {
   http2Options?: Record<string, any> & {
     sessionTimeout?: number;
   };
+
+  /** Optional retry configuration. Set retries > 0 to enable. */
+  retry?: AxiosRetryConfig;
 }
 
 // Alias

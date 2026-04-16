@@ -25,29 +25,25 @@ function enhanceNetworkError(error) {
   // when Request timeout happens
   else if (error.code === 'ETIMEDOUT' || /timeout/i.test(error.message)) {
     error.code = 'ERR_TIMEOUT';
-    error.detailedMessage =
-      'The request took too long to respond. Please try again later.';
+    error.detailedMessage = 'The request took too long to respond. Please try again later.';
   }
 
   // when CORS restriction happens (for browser only)
   else if (/CORS/i.test(error.message)) {
     error.code = 'ERR_CORS_BLOCKED';
-    error.detailedMessage =
-      'The request was blocked due to cross-origin restrictions.';
+    error.detailedMessage = 'The request was blocked due to cross-origin restrictions.';
   }
 
-  // when Server-side error occurs 
+  // when Server-side error occurs
   else if (error.response && error.response.status >= 500) {
     error.code = 'ERR_SERVER';
-    error.detailedMessage =
-      'A server-side issue occurred. Please try again later.';
+    error.detailedMessage = 'A server-side issue occurred. Please try again later.';
   }
 
   // when Client-side error occurs
   else if (error.response && error.response.status >= 400) {
     error.code = 'ERR_CLIENT';
-    error.detailedMessage =
-      'A client-side error occurred. Please check your request.';
+    error.detailedMessage = 'A client-side error occurred. Please check your request.';
   }
 
   //  when unknown network issue occurs
@@ -60,13 +56,12 @@ function enhanceNetworkError(error) {
   return error;
 }
 
-
 export function createEnhancedClient(config = {}) {
   const client = axios.create(config);
 
   client.interceptors.response.use(
-    response => response,
-    error => {
+    (response) => response,
+    (error) => {
       throw enhanceNetworkError(error);
     }
   );

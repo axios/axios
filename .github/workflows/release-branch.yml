@@ -285,7 +285,9 @@ jobs:
               npm version $TYPE
             fi
           fi
-          echo "::set-output name=newTag::$(node -p "require('./package.json').version")"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "newTag=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "newBranch=release-v1x/version-$VERSION" >> "$GITHUB_OUTPUT"
       - name: Bump bower etc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -295,7 +297,8 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
-          branch: 'release'
+          branch: ${{ steps.bump-version.outputs.newBranch }}
+          base: v1.x
           commit-message: 'chore(release): prepare release ${{ steps.bump-version.outputs.newTag }}'
           body: 'This PR prepares the release ${{ steps.bump-version.outputs.newTag }}.'
           title: 'chore(release): prepare release ${{ steps.bump-version.outputs.newTag }}'

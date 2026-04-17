@@ -12,19 +12,6 @@ module.exports = function(grunt) {
       dist: 'dist/**'
     },
 
-    package2bower: {
-      all: {
-        fields: [
-          'name',
-          'description',
-          'version',
-          'homepage',
-          'license',
-          'keywords'
-        ]
-      }
-    },
-
     package2env: {
       all: {}
     },
@@ -72,19 +59,6 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerMultiTask('package2bower', 'Sync package.json to bower.json', function() {
-    var npm = grunt.file.readJSON('package.json');
-    var bower = grunt.file.readJSON('bower.json');
-    var fields = this.data.fields || [];
-
-    for (var i = 0, l = fields.length; i < l; i++) {
-      var field = fields[i];
-      bower[field] = npm[field];
-    }
-
-    grunt.file.write('bower.json', JSON.stringify(bower, null, 2));
-  });
-
   grunt.registerMultiTask('package2env', 'Sync package.json to env.json', function() {
     var npm = grunt.file.readJSON('package.json');
     grunt.file.write('./lib/env/data.js', [
@@ -97,5 +71,5 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', 'Run the jasmine and mocha tests', ['eslint', 'mochaTest', 'karma:single']);
   grunt.registerTask('build', 'Run rollup and bundle the source', ['clean', 'shell:rollup']);
-  grunt.registerTask('version', 'Sync version info for a release', ['package2bower', 'package2env']);
+  grunt.registerTask('version', 'Sync version info for a release', ['package2env']);
 };

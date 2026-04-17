@@ -127,12 +127,6 @@ Using npm:
 $ npm install axios
 ```
 
-Using bower:
-
-```bash
-$ bower install axios
-```
-
 Using yarn:
 
 ```bash

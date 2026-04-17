@@ -288,7 +288,7 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "newTag=$VERSION" >> "$GITHUB_OUTPUT"
           echo "newBranch=release-v1x/version-$VERSION" >> "$GITHUB_OUTPUT"
-      - name: Bump bower etc
+      - name: Run preversion
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run preversion

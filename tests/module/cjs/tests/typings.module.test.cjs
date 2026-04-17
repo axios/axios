@@ -17,7 +17,27 @@ const tsconfig = {
 describe('module cjs typings compatibility', () => {
   it('type-checks commonjs axios typings', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-typing.ts');
-    const fixturePath = createTempFixture(suiteRoot, 'typings-cjs', sourcePath, tsconfig);
+    const fixturePath = createTempFixture(suiteRoot, repoRoot, 'typings-cjs', sourcePath, tsconfig);
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
+  it('type-checks generic commonjs request transformer typings', () => {
+    const sourcePath = path.join(
+      repoRoot,
+      'tests/module/cjs/tests/helpers/transform-request-typing.ts'
+    );
+    const fixturePath = createTempFixture(
+      suiteRoot,
+      repoRoot,
+      'typings-cjs-transform-request',
+      sourcePath,
+      tsconfig
+    );
 
     try {
       runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });

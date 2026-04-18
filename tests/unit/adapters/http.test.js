@@ -988,6 +988,70 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should enforce maxContentLength for streamed responses (GHSA-vf2m-468p-8v99)', async () => {
+    const size = 2 * 1024 * 1024;
+    const body = Buffer.alloc(size, 0x63);
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.end(body);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'stream',
+        maxContentLength: 1024,
+      });
+
+      let bytesRead = 0;
+      const err = await new Promise((resolve) => {
+        response.data.on('data', (chunk) => { bytesRead += chunk.length; });
+        response.data.on('error', resolve);
+        response.data.on('end', () => resolve(null));
+      });
+
+      assert.ok(err, 'stream should emit an error');
+      assert.strictEqual(err.message, 'maxContentLength size of 1024 exceeded');
+      assert.ok(
+        bytesRead <= 1024 * 64,
+        `stream should not deliver full payload; got ${bytesRead}`
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should allow streamed responses under maxContentLength', async () => {
+    const body = Buffer.alloc(512, 0x64);
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.end(body);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'stream',
+        maxContentLength: 1024,
+      });
+
+      const chunks = [];
+      await new Promise((resolve, reject) => {
+        response.data.on('data', (chunk) => chunks.push(chunk));
+        response.data.on('error', reject);
+        response.data.on('end', resolve);
+      });
+
+      assert.strictEqual(Buffer.concat(chunks).length, body.length);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should enforce maxBodyLength for streamed uploads with maxRedirects: 0 (GHSA-5c9x-8gcm-mpgx)', async () => {
     let bytesReceived = 0;
     const server = await startHTTPServer(

@@ -1675,4 +1675,59 @@ describe('supports http with nodejs', function () {
       }).catch(done);
     });
   });
+
+  describe('prototype pollution (GHSA-6chq-wfr3-2hj9)', function () {
+    var pollutedKeys = ['getHeaders', 'append', 'pipe', 'on', 'once'];
+    var toStringTagSym = Symbol.toStringTag;
+
+    function pollute() {
+      Object.prototype[toStringTagSym] = 'FormData';
+      Object.prototype.append = function () {};
+      Object.prototype.getHeaders = function () {
+        return {
+          'x-injected': 'attacker',
+          'authorization': 'Bearer ATTACKER_TOKEN'
+        };
+      };
+      Object.prototype.pipe = function (d) { if (d && d.end) d.end(); return d; };
+      Object.prototype.on = function () { return this; };
+      Object.prototype.once = function () { return this; };
+    }
+
+    function cleanup() {
+      for (var i = 0; i < pollutedKeys.length; i++) delete Object.prototype[pollutedKeys[i]];
+      delete Object.prototype[toStringTagSym];
+    }
+
+    it('should not merge prototype-polluted getHeaders into outgoing request', function (done) {
+      var receivedHeaders;
+      server = http.createServer(function (req, res) {
+        receivedHeaders = req.headers;
+        res.end('{}');
+      }).listen(4444, function () {
+        pollute();
+        var finish = function (requestError) {
+          cleanup();
+          try {
+            if (receivedHeaders) {
+              assert.strictEqual(receivedHeaders['x-injected'], undefined);
+              assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
+            } else {
+              assert.ok(requestError, 'expected request to either reach server or error');
+            }
+            done();
+          } catch (e) {
+            done(e);
+          }
+        };
+        axios.post('http://localhost:4444/', { userId: 42 }, {
+          headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' }
+        }).then(function () {
+          finish();
+        }).catch(function (err) {
+          finish(err);
+        });
+      });
+    });
+  });
 });

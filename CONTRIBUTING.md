@@ -26,8 +26,6 @@ Please update the [docs](README.md) accordingly so that there are no discrepanci
 - `grunt watch:test` watch for changes and run `test`
 - `grunt watch:build` watch for changes and run `build`
 
-Please don't include changes to `dist/` in your pull request. This should only be updated when releasing a new version.
-
 ## Releasing
 
 Releasing a new version is mostly automated. For now the [CHANGELOG](https://github.com/axios/axios/blob/master/CHANGELOG.md) requires being updated manually. Once this has been done run the commands below. Versions should follow [semantic versioning](http://semver.org/).

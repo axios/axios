@@ -1709,12 +1709,13 @@ describe('supports http with nodejs', function () {
         var finish = function (requestError) {
           cleanup();
           try {
-            if (receivedHeaders) {
-              assert.strictEqual(receivedHeaders['x-injected'], undefined);
-              assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
-            } else {
-              assert.ok(requestError, 'expected request to either reach server or error');
-            }
+            assert.ok(
+              receivedHeaders,
+              'request must reach server to prove polluted headers were not merged' +
+                (requestError ? ' (request errored: ' + requestError.message + ')' : '')
+            );
+            assert.strictEqual(receivedHeaders['x-injected'], undefined);
+            assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
             done();
           } catch (e) {
             done(e);

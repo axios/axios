@@ -2512,6 +2512,65 @@ describe('supports http with nodejs', () => {
         }
       });
     });
+
+    describe('prototype pollution (GHSA-6chq-wfr3-2hj9)', () => {
+      const pollutedKeys = ['getHeaders', 'append', 'pipe', 'on', 'once'];
+      const toStringTagSym = Symbol.toStringTag;
+
+      function pollute() {
+        Object.prototype[toStringTagSym] = 'FormData';
+        Object.prototype.append = () => {};
+        Object.prototype.getHeaders = () => ({
+          'x-injected': 'attacker',
+          'authorization': 'Bearer ATTACKER_TOKEN',
+        });
+        Object.prototype.pipe = function (d) { if (d && d.end) d.end(); return d; };
+        Object.prototype.on = function () { return this; };
+        Object.prototype.once = function () { return this; };
+      }
+
+      function cleanup() {
+        for (const k of pollutedKeys) delete Object.prototype[k];
+        delete Object.prototype[toStringTagSym];
+      }
+
+      it('should not merge prototype-polluted getHeaders into outgoing request', async () => {
+        let receivedHeaders;
+        const server = await startHTTPServer(
+          (req, res) => {
+            receivedHeaders = req.headers;
+            res.end('{}');
+          },
+          { port: SERVER_PORT }
+        );
+
+        let requestError;
+        try {
+          pollute();
+          try {
+            await axios.post(
+              `http://localhost:${server.address().port}/`,
+              { userId: 42 },
+              { headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' } }
+            );
+          } catch (e) {
+            requestError = e;
+          }
+        } finally {
+          cleanup();
+          await stopHTTPServer(server);
+        }
+
+        // Request either errors out or reaches server. Either way, the
+        // attacker-controlled getHeaders() must not have been merged.
+        if (receivedHeaders) {
+          assert.strictEqual(receivedHeaders['x-injected'], undefined);
+          assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
+        } else {
+          assert.ok(requestError, 'expected request to either reach server or error');
+        }
+      });
+    });
   });
 
   describe('toFormData helper', () => {

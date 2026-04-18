@@ -2137,48 +2137,34 @@ describe("supports http with nodejs", function () {
 
     it("should not merge prototype-polluted getHeaders into outgoing request", function (done) {
       var receivedHeaders;
-      server = http
-        .createServer(function (req, res) {
-          receivedHeaders = req.headers;
-          res.end("{}");
-        })
-        .listen(4444, function () {
-          pollute();
-          var finish = function (requestError) {
-            cleanup();
-            try {
-              if (receivedHeaders) {
-                assert.strictEqual(receivedHeaders["x-injected"], undefined);
-                assert.notStrictEqual(
-                  receivedHeaders["authorization"],
-                  "Bearer ATTACKER_TOKEN",
-                );
-              } else {
-                assert.ok(
-                  requestError,
-                  "expected request to either reach server or error",
-                );
-              }
-              done();
-            } catch (e) {
-              done(e);
-            }
-          };
-          axios
-            .post(
-              "http://localhost:4444/",
-              { userId: 42 },
-              {
-                headers: { Authorization: "Bearer VALID_USER_TOKEN" },
-              },
-            )
-            .then(function () {
-              finish();
-            })
-            .catch(function (err) {
-              finish(err);
-            });
+      server = http.createServer(function (req, res) {
+        receivedHeaders = req.headers;
+        res.end('{}');
+      }).listen(4444, function () {
+        pollute();
+        var finish = function (requestError) {
+          cleanup();
+          try {
+            assert.ok(
+              receivedHeaders,
+              'request must reach server to prove polluted headers were not merged' +
+                (requestError ? ' (request errored: ' + requestError.message + ')' : '')
+            );
+            assert.strictEqual(receivedHeaders['x-injected'], undefined);
+            assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
+            done();
+          } catch (e) {
+            done(e);
+          }
+        };
+        axios.post('http://localhost:4444/', { userId: 42 }, {
+          headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' }
+        }).then(function () {
+          finish();
+        }).catch(function (err) {
+          finish(err);
         });
+      });
     });
   });
 });

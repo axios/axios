@@ -10,3 +10,4 @@ sauce_connect.log
 .vscode/
 .claude/
 openspec/
+dist/

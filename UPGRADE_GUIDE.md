@@ -159,8 +159,8 @@ axios.get('some/url')
 Previous versions of axios shipped with an AMD, CommonJS, and Global build. This has all been rolled into a single UMD build.
 
 ```js
-// AMD
-require(['bower_components/axios/dist/axios'], function (axios) {
+// AMD (for example with a RequireJS path mapped to `axios/dist/axios`)
+require(['axios/dist/axios'], function (axios) {
   /* ... */
 });
 

@@ -8,6 +8,12 @@ describe("Prototype Pollution Protection", function () {
   afterEach(function () {
     // Clean up any pollution that might have occurred
     delete Object.prototype.polluted;
+    delete Object.prototype.transport;
+    delete Object.prototype.transformRequest;
+    delete Object.prototype.transformResponse;
+    delete Object.prototype.formSerializer;
+    delete Object.prototype.env;
+    delete Object.prototype.parseReviver;
   });
 
   describe("utils.merge", function () {
@@ -188,6 +194,43 @@ describe("Prototype Pollution Protection", function () {
       assert.strictEqual(Object.prototype.polluted, undefined);
       assert.strictEqual(result.customProp.safe, "value");
       assert.strictEqual(result.customProp.hasOwnProperty("__proto__"), false);
+    });
+
+    it("should not inherit transport from Object.prototype", function () {
+      Object.prototype.transport = { request: function () {} };
+      const result = mergeConfig({}, { url: "/a" });
+      assert.strictEqual(result.hasOwnProperty("transport"), false);
+      assert.strictEqual(
+        Object.prototype.hasOwnProperty.call(result, "transport"),
+        false
+      );
+    });
+
+    it("should not inherit transformRequest from Object.prototype", function () {
+      Object.prototype.transformRequest = function () { return "hijacked"; };
+      const result = mergeConfig({}, { url: "/a" });
+      assert.strictEqual(
+        Object.prototype.hasOwnProperty.call(result, "transformRequest"),
+        false
+      );
+    });
+
+    it("should not inherit transformResponse from Object.prototype", function () {
+      Object.prototype.transformResponse = function () { return "hijacked"; };
+      const result = mergeConfig({}, { url: "/a" });
+      assert.strictEqual(
+        Object.prototype.hasOwnProperty.call(result, "transformResponse"),
+        false
+      );
+    });
+
+    it("should not inherit arbitrary keys from Object.prototype", function () {
+      Object.prototype.polluted = "yes";
+      const result = mergeConfig({}, { url: "/a" });
+      assert.strictEqual(
+        Object.prototype.hasOwnProperty.call(result, "polluted"),
+        false
+      );
     });
 
     it("should still merge configs correctly", function () {

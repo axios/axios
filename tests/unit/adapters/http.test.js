@@ -2544,31 +2544,21 @@ describe('supports http with nodejs', () => {
           { port: SERVER_PORT }
         );
 
-        let requestError;
         try {
           pollute();
-          try {
-            await axios.post(
-              `http://localhost:${server.address().port}/`,
-              { userId: 42 },
-              { headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' } }
-            );
-          } catch (e) {
-            requestError = e;
-          }
+          await axios.post(
+            `http://localhost:${server.address().port}/`,
+            { userId: 42 },
+            { headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' } }
+          );
         } finally {
           cleanup();
           await stopHTTPServer(server);
         }
 
-        // Request either errors out or reaches server. Either way, the
-        // attacker-controlled getHeaders() must not have been merged.
-        if (receivedHeaders) {
-          assert.strictEqual(receivedHeaders['x-injected'], undefined);
-          assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
-        } else {
-          assert.ok(requestError, 'expected request to either reach server or error');
-        }
+        assert.ok(receivedHeaders, 'request did not reach server');
+        assert.strictEqual(receivedHeaders['x-injected'], undefined);
+        assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
       });
     });
   });

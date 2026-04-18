@@ -988,6 +988,82 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should enforce maxBodyLength for streamed uploads with maxRedirects: 0 (GHSA-5c9x-8gcm-mpgx)', async () => {
+    let bytesReceived = 0;
+    const server = await startHTTPServer(
+      (req, res) => {
+        req.on('data', (chunk) => {
+          bytesReceived += chunk.length;
+        });
+        req.on('end', () => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ received: bytesReceived }));
+        });
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const size = 2 * 1024 * 1024;
+      const buf = Buffer.alloc(size, 0x61);
+      const source = stream.Readable.from([buf]);
+
+      await assert.rejects(
+        axios.post(`http://localhost:${server.address().port}/`, source, {
+          maxBodyLength: 1024,
+          maxRedirects: 0,
+          headers: { 'Content-Type': 'application/octet-stream' },
+        }),
+        (error) => {
+          assert.strictEqual(error.message, 'Request body larger than maxBodyLength limit');
+          return true;
+        }
+      );
+
+      assert.ok(
+        bytesReceived <= 1024 * 4,
+        `server should not receive full payload; got ${bytesReceived}`
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should allow streamed uploads under maxBodyLength with maxRedirects: 0', async () => {
+    let bytesReceived = 0;
+    const server = await startHTTPServer(
+      (req, res) => {
+        req.on('data', (chunk) => {
+          bytesReceived += chunk.length;
+        });
+        req.on('end', () => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ received: bytesReceived }));
+        });
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const payload = Buffer.alloc(512, 0x62);
+      const source = stream.Readable.from([payload]);
+
+      const response = await axios.post(
+        `http://localhost:${server.address().port}/`,
+        source,
+        {
+          maxBodyLength: 1024,
+          maxRedirects: 0,
+          headers: { 'Content-Type': 'application/octet-stream' },
+        }
+      );
+
+      assert.strictEqual(response.data.received, payload.length);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should properly support default max body length (follow-redirects as well)', async () => {
     // Taken from follow-redirects defaults.
     const followRedirectsMaxBodyDefaults = 10 * 1024 * 1024;

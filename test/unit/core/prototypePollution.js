@@ -159,9 +159,10 @@ describe("Prototype Pollution Protection", function () {
 
       assert.strictEqual(Object.prototype.polluted, undefined);
       assert.strictEqual(result.url, "/api/test");
-      assert.strictEqual(result.hasOwnProperty("__proto__"), false);
-      assert.strictEqual(result.hasOwnProperty("constructor"), false);
-      assert.strictEqual(result.hasOwnProperty("prototype"), false);
+      var hasOwn = Object.prototype.hasOwnProperty;
+      assert.strictEqual(hasOwn.call(result, "__proto__"), false);
+      assert.strictEqual(hasOwn.call(result, "constructor"), false);
+      assert.strictEqual(hasOwn.call(result, "prototype"), false);
     });
 
     it("should filter dangerous keys in headers", function () {
@@ -197,31 +198,56 @@ describe("Prototype Pollution Protection", function () {
     });
 
     it("should not inherit transport from Object.prototype", function () {
-      Object.prototype.transport = { request: function () {} };
+      var polluted = { request: function () {} };
+      Object.prototype.transport = polluted;
       const result = mergeConfig({}, { url: "/a" });
-      assert.strictEqual(result.hasOwnProperty("transport"), false);
       assert.strictEqual(
         Object.prototype.hasOwnProperty.call(result, "transport"),
         false
       );
+      // Reading via the prototype chain must not surface the polluted value.
+      assert.strictEqual(result.transport, undefined);
+      assert.notStrictEqual(result.transport, polluted);
     });
 
     it("should not inherit transformRequest from Object.prototype", function () {
-      Object.prototype.transformRequest = function () { return "hijacked"; };
+      var polluted = function () { return "hijacked"; };
+      Object.prototype.transformRequest = polluted;
       const result = mergeConfig({}, { url: "/a" });
       assert.strictEqual(
         Object.prototype.hasOwnProperty.call(result, "transformRequest"),
         false
       );
+      assert.strictEqual(result.transformRequest, undefined);
+      assert.notStrictEqual(result.transformRequest, polluted);
     });
 
     it("should not inherit transformResponse from Object.prototype", function () {
-      Object.prototype.transformResponse = function () { return "hijacked"; };
+      var polluted = function () { return "hijacked"; };
+      Object.prototype.transformResponse = polluted;
       const result = mergeConfig({}, { url: "/a" });
       assert.strictEqual(
         Object.prototype.hasOwnProperty.call(result, "transformResponse"),
         false
       );
+      assert.strictEqual(result.transformResponse, undefined);
+      assert.notStrictEqual(result.transformResponse, polluted);
+    });
+
+    it("should not inherit adapter from Object.prototype", function () {
+      var polluted = function () { return "hijacked"; };
+      Object.prototype.adapter = polluted;
+      try {
+        const result = mergeConfig({}, { url: "/a" });
+        assert.strictEqual(
+          Object.prototype.hasOwnProperty.call(result, "adapter"),
+          false
+        );
+        assert.strictEqual(result.adapter, undefined);
+        assert.notStrictEqual(result.adapter, polluted);
+      } finally {
+        delete Object.prototype.adapter;
+      }
     });
 
     it("should not inherit arbitrary keys from Object.prototype", function () {
@@ -231,6 +257,7 @@ describe("Prototype Pollution Protection", function () {
         Object.prototype.hasOwnProperty.call(result, "polluted"),
         false
       );
+      assert.strictEqual(result.polluted, undefined);
     });
 
     it("should still merge configs correctly", function () {

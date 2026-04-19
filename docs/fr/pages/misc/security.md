@@ -4,7 +4,7 @@
 
 Par défaut, `maxContentLength` et `maxBodyLength` valent `-1` (illimité). Un serveur malveillant ou compromis peut renvoyer un petit corps compressé en gzip/deflate/brotli qui s'étend à plusieurs gigaoctets, épuisant la mémoire du processus Node.js.
 
-**Si vous effectuez des requêtes vers des serveurs que vous ne contrôlez pas totalement, vous DEVEZ définir `maxContentLength` (et `maxBodyLength`) en fonction de votre charge.** La limite est appliquée chunk par chunk pendant la décompression en flux, il suffit donc de la définir pour neutraliser les attaques de bombe de décompression.
+**Si vous effectuez des requêtes vers des serveurs que vous ne contrôlez pas totalement, vous DEVEZ définir `maxContentLength` en fonction de votre charge.** La limite est appliquée chunk par chunk pendant la décompression en flux, il suffit donc de la définir pour neutraliser les attaques de bombe de décompression.
 
 ```js
 axios.get('https://example.com/data', {

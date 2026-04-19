@@ -372,6 +372,19 @@ The available instance methods are listed below. The specified config will be me
 
 ## Request Config
 
+### ⚠️ Security notice: decompression-bomb protection is opt-in
+
+By default `maxContentLength` and `maxBodyLength` are `-1` (unlimited). A malicious or compromised server can return a tiny gzip/deflate/brotli body that expands to gigabytes and exhaust the Node.js process.
+
+If you call servers you do not fully trust, **set a cap**:
+
+```js
+axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
+axios.defaults.maxBodyLength = 10 * 1024 * 1024;
+```
+
+See the [security guide](https://axios.rest/pages/misc/security.html) for details.
+
 These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 
 ```js

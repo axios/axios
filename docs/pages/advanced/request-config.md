@@ -137,6 +137,9 @@ The `onDownloadProgress` function allows you to listen to the progress of a down
 
 The `maxContentLength` property defines the maximum number of bytes that the server will accept in the response.
 
+> ⚠️ **Security:** defaults to `-1` (unlimited). Unbounded responses combined with gzip/deflate/brotli decompression allow decompression-bomb DoS.
+> Set an explicit limit when requesting servers you do not fully trust.
+
 ### `maxBodyLength` <Badge type="warning" text="Node.js only" />
 
 The `maxBodyLength` property defines the maximum number of bytes that the server will accept in the request.

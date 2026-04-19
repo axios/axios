@@ -2104,6 +2104,129 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  describe("maxContentLength with responseType stream (GHSA-vf2m-468p-8v99)", function () {
+    it("should reject when streamed response exceeds maxContentLength", function (done) {
+      var payload = Buffer.alloc(2048, "a");
+      server = http
+        .createServer(function (req, res) {
+          res.end(payload);
+        })
+        .listen(4444, function () {
+          axios
+            .get("http://localhost:4444/", {
+              responseType: "stream",
+              maxContentLength: 1024,
+            })
+            .then(function (response) {
+              var received = 0;
+              var errored = false;
+              response.data.on("data", function (chunk) {
+                received += chunk.length;
+              });
+              response.data.on("error", function (err) {
+                errored = true;
+                assert.ok(
+                  /maxContentLength/.test(err.message),
+                  "expected maxContentLength error, got " + err.message,
+                );
+                done();
+              });
+              response.data.on("end", function () {
+                if (!errored) {
+                  done(
+                    new Error(
+                      "stream ended without error; received " +
+                        received +
+                        " bytes",
+                    ),
+                  );
+                }
+              });
+            })
+            .catch(done);
+        });
+    });
+
+    it("should allow streamed responses under maxContentLength", function (done) {
+      var payload = Buffer.alloc(512, "b");
+      server = http
+        .createServer(function (req, res) {
+          res.end(payload);
+        })
+        .listen(4444, function () {
+          axios
+            .get("http://localhost:4444/", {
+              responseType: "stream",
+              maxContentLength: 1024,
+            })
+            .then(function (response) {
+              var chunks = [];
+              response.data.on("data", function (chunk) {
+                chunks.push(chunk);
+              });
+              response.data.on("end", function () {
+                var body = Buffer.concat(chunks);
+                assert.strictEqual(body.length, 512);
+                done();
+              });
+              response.data.on("error", done);
+            })
+            .catch(done);
+        });
+    });
+  });
+
+  describe("maxBodyLength with streamed upload and maxRedirects=0 (GHSA-5c9x-8gcm-mpgx)", function () {
+    it("should reject streamed upload exceeding maxBodyLength with native transport", function (done) {
+      var received = 0;
+      server = http
+        .createServer(function (req, res) {
+          req.on("data", function (chunk) {
+            received += chunk.length;
+          });
+          req.on("end", function () {
+            res.end(JSON.stringify({ received: received }));
+          });
+        })
+        .listen(4444, function () {
+          var stream = require("stream");
+          var Readable = stream.Readable;
+          var chunks = [];
+          for (var i = 0; i < 20; i++) chunks.push(Buffer.alloc(1024, "c"));
+          var body = Readable.from(chunks);
+          axios
+            .post("http://localhost:4444/", body, {
+              maxBodyLength: 1024,
+              maxRedirects: 0,
+            })
+            .then(function () {
+              done(
+                new Error(
+                  "expected maxBodyLength rejection, got success (received " +
+                    received +
+                    ")",
+                ),
+              );
+            })
+            .catch(function (err) {
+              try {
+                assert.ok(
+                  err instanceof AxiosError,
+                  "expected AxiosError, got " + err,
+                );
+                assert.ok(
+                  /maxBodyLength/.test(err.message),
+                  "expected maxBodyLength error, got " + err.message,
+                );
+                done();
+              } catch (e) {
+                done(e);
+              }
+            });
+        });
+    });
+  });
+
   describe("prototype pollution (GHSA-6chq-wfr3-2hj9)", function () {
     var pollutedKeys = ["getHeaders", "append", "pipe", "on", "once"];
     var toStringTagSym = Symbol.toStringTag;
@@ -2137,34 +2260,48 @@ describe("supports http with nodejs", function () {
 
     it("should not merge prototype-polluted getHeaders into outgoing request", function (done) {
       var receivedHeaders;
-      server = http.createServer(function (req, res) {
-        receivedHeaders = req.headers;
-        res.end('{}');
-      }).listen(4444, function () {
-        pollute();
-        var finish = function (requestError) {
-          cleanup();
-          try {
-            assert.ok(
-              receivedHeaders,
-              'request must reach server to prove polluted headers were not merged' +
-                (requestError ? ' (request errored: ' + requestError.message + ')' : '')
-            );
-            assert.strictEqual(receivedHeaders['x-injected'], undefined);
-            assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
-            done();
-          } catch (e) {
-            done(e);
-          }
-        };
-        axios.post('http://localhost:4444/', { userId: 42 }, {
-          headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' }
-        }).then(function () {
-          finish();
-        }).catch(function (err) {
-          finish(err);
+      server = http
+        .createServer(function (req, res) {
+          receivedHeaders = req.headers;
+          res.end("{}");
+        })
+        .listen(4444, function () {
+          pollute();
+          var finish = function (requestError) {
+            cleanup();
+            try {
+              assert.ok(
+                receivedHeaders,
+                "request must reach server to prove polluted headers were not merged" +
+                  (requestError
+                    ? " (request errored: " + requestError.message + ")"
+                    : ""),
+              );
+              assert.strictEqual(receivedHeaders["x-injected"], undefined);
+              assert.notStrictEqual(
+                receivedHeaders["authorization"],
+                "Bearer ATTACKER_TOKEN",
+              );
+              done();
+            } catch (e) {
+              done(e);
+            }
+          };
+          axios
+            .post(
+              "http://localhost:4444/",
+              { userId: 42 },
+              {
+                headers: { Authorization: "Bearer VALID_USER_TOKEN" },
+              },
+            )
+            .then(function () {
+              finish();
+            })
+            .catch(function (err) {
+              finish(err);
+            });
         });
-      });
     });
   });
 });

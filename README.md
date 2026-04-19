@@ -330,11 +330,18 @@ These are the available config options for making requests. Only the `url` is re
 
   // `params` are the URL parameters to be sent with the request
   // Must be a plain object or a URLSearchParams object
+  // Null bytes in param values stay percent-encoded as `%00` in the resulting query string
+  // (GHSA-xhjh-pmcv-23jw) — Axios does not reverse `encodeURIComponent` output for `%00`,
+  // so null-byte injection cannot be smuggled through the serializer.
   params: {
     ID: 12345
   },
 
   // `paramsSerializer` is an optional config in charge of serializing `params`
+  // Nested objects are walked with a bounded recursion depth (GHSA-62hf-57xw-28j9):
+  // once `maxDepth` is exceeded the serializer throws `ERR_FORM_DATA_DEPTH_EXCEEDED`
+  // instead of overflowing the call stack. The same cap applies to `toFormData` when
+  // `Content-Type: multipart/form-data` triggers automatic FormData serialization.
   paramsSerializer: {
     indexes: null, // array indexes format (null - no brackets, false - empty brackets, true - brackets with indexes)
     maxDepth: 100 // maximum recursion depth for nested params (default: 100, Infinity disables the limit)
@@ -395,6 +402,9 @@ These are the available config options for making requests. Only the `url` is re
   xsrfHeaderName: 'X-XSRF-TOKEN', // default
 
   // `undefined` (default) - set XSRF header only for the same origin requests
+  // Only an explicit `true` (own property on the config) will add the XSRF header for
+  // cross-origin requests. Values inherited from `Object.prototype` are ignored
+  // (GHSA-xx6v-rp6x-q39c), so a polluted prototype cannot silently enable the token.
   withXSRFToken: boolean | undefined | ((config: AxiosRequestConfig) => boolean | undefined),
 
   // `onUploadProgress` allows handling of progress events for uploads
@@ -410,9 +420,13 @@ These are the available config options for making requests. Only the `url` is re
   },
 
   // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
+  // Also enforced on streamed responses (`responseType: 'stream'`): bytes are counted as they
+  // arrive and the stream is aborted with an error once the cap is exceeded (GHSA-vf2m-468p-8v99).
   maxContentLength: 2000,
 
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
+  // Also enforced on stream uploads: uploaded bytes are tracked and the request is aborted
+  // once the cap is exceeded, even when the native http transport is used directly.
   maxBodyLength: 2000,
 
   // `validateStatus` defines whether to resolve or reject the promise for a given
@@ -598,6 +612,8 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ### Config order of precedence
 
 Config will be merged with an order of precedence. The order is library defaults found in [lib/defaults.js](https://github.com/axios/axios/blob/master/lib/defaults/index.js#L28), then `defaults` property of the instance, and finally `config` argument for the request. The latter will take precedence over the former. Here's an example.
+
+> Note: the merged config object is created with a null prototype (`Object.create(null)`) and only own properties of the inputs are copied across. A polluted `Object.prototype` cannot leak values (for example `transport`, `adapter`, or `transformRequest`) into the outgoing config through inheritance, and keys such as `__proto__`, `constructor`, and `prototype` are dropped during the merge.
 
 ```js
 // Create an instance using the config defaults provided by the library

@@ -452,7 +452,7 @@ This is the model that protects **what gets published as `axios` on npm**. A suc
 | ---------------------------- | ---------- | ------------ | --------------- | --------------------------------------------------------------------- |
 | T-S1 Malicious PR            | High       | Critical     | 🟡 Adequate     | Path-scoped CODEOWNERS for `lib/`, `.github/workflows/`, build config |
 | **T-S2 Dev-dep steals keys** | **Medium** | **Critical** | **🔴 Weak**     | **Local `--ignore-scripts`; no publish tokens on workstations**       |
-| **T-S3 Phishing**            | **High**   | **Critical** | 🟢 Good         |                                                                       |
+| **T-S3 Phishing**            | **High**   | **Critical** | 🟡 Partial      | Mandate WebAuthn (not TOTP) for maintainer GitHub accounts            |
 | T-S4 Runtime dep compromise  | Low        | Critical     | 🟢 Good         | -                                                                     |
 | T-S5 Build tampering         | Low        | Critical     | 🟡 Adequate     | Reproducible-build verification step                                  |
 | T-S6 Workflow tampering      | Low        | Critical     | 🟢 Good         | Path-scoped CODEOWNERS entry for `.github/workflows/**`               |

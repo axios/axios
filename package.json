@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.15.0",
+  "version": "1.15.1",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "./dist/node/axios.cjs",
   "module": "./index.js",
@@ -82,14 +82,14 @@
     "Dmitriy Mozgovoy (https://github.com/DigitalBrainJS)",
     "Nick Uraltsev (https://github.com/nickuraltsev)",
     "Emily Morehouse (https://github.com/emilyemorehouse)",
-    "Rubén Norte (https://github.com/rubennorte)",
     "Justin Beckwith (https://github.com/JustinBeckwith)",
+    "Rubén Norte (https://github.com/rubennorte)",
     "Martti Laine (https://github.com/codeclown)",
     "Xianming Zhong (https://github.com/chinesedfan)",
     "Remco Haszing (https://github.com/remcohaszing)",
+    "Shaan Majid (https://github.com/shaanmajid)",
     "Willian Agostini (https://github.com/WillianAgostini)",
-    "Rikki Gibson (https://github.com/RikkiGibson)",
-    "Ben Carp (https://github.com/carpben)"
+    "Rikki Gibson (https://github.com/RikkiGibson)"
   ],
   "sideEffects": false,
   "license": "MIT",

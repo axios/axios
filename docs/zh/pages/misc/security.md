@@ -1,5 +1,24 @@
 # 安全政策
 
+## ⚠️ 解压炸弹 / 响应无限缓冲
+
+默认情况下，`maxContentLength` 与 `maxBodyLength` 均为 `-1`（不限制）。恶意或被攻陷的服务器可以返回一个很小的 gzip/deflate/brotli 压缩响应，解压后体积可达数 GB，耗尽 Node.js 进程的内存。
+
+**如果你向不完全可信的服务器发起请求，必须根据你的业务场景设置合适的 `maxContentLength`（以及 `maxBodyLength`）。** 在流式解压过程中会按分块强制执行该限制，因此只需设置该值即可抵御解压炸弹攻击。
+
+```js
+axios.get('https://example.com/data', {
+  maxContentLength: 10 * 1024 * 1024, // 10 MB
+  maxBodyLength: 10 * 1024 * 1024,
+});
+
+// 或全局设置：
+axios.defaults.maxContentLength = 10 * 1024 * 1024;
+axios.defaults.maxBodyLength = 10 * 1024 * 1024;
+```
+
+默认值未被调低是因为调低会静默地影响所有合法的大文件下载。为不可信来源选择合理的上限，应由应用自行负责。
+
 ## 报告漏洞
 
 如果你认为在本项目中发现了安全漏洞，请按照以下说明向我们报告。我们对所有安全漏洞报告都认真对待。如果你发现的是第三方库中的漏洞，请向该库的维护者报告。

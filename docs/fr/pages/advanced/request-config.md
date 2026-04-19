@@ -137,6 +137,9 @@ La fonction `onDownloadProgress` vous permet d'écouter la progression d'un tél
 
 La propriété `maxContentLength` définit le nombre maximum d'octets que le serveur acceptera dans la réponse.
 
+> ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli rendent possible un déni de service par bombe de décompression.
+> Définissez une limite explicite lorsque vous consommez des serveurs auxquels vous ne faites pas pleinement confiance.
+
 ### `maxBodyLength` <Badge type="warning" text="Node.js uniquement" />
 
 La propriété `maxBodyLength` définit le nombre maximum d'octets que le serveur acceptera dans la requête.

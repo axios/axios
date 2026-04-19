@@ -20,6 +20,7 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.lookup;
     delete Object.prototype.family;
     delete Object.prototype.http2Options;
+    delete Object.prototype.validateStatus;
   });
 
   describe('utils.merge', () => {
@@ -273,6 +274,86 @@ describe('Prototype Pollution Protection', () => {
       assert.strictEqual(result, 'plain text');
       delete Object.prototype.responseType;
     });
+  });
+
+  // GHSA-w9j2-pvgh-6h63: mergeDirectKeys must not inherit validateStatus from
+  // Object.prototype (was using the `in` operator which traverses the chain).
+  describe('GHSA-w9j2-pvgh-6h63 validateStatus merge', () => {
+    it('should not inherit a polluted validateStatus during mergeConfig', () => {
+      Object.prototype.validateStatus = () => true;
+
+      const merged = mergeConfig(defaults, { url: '/x' });
+
+      assert.strictEqual(merged.validateStatus, defaults.validateStatus);
+    });
+
+    it('should keep 4xx/5xx responses rejected when Object.prototype.validateStatus is polluted', async () => {
+      Object.prototype.validateStatus = () => true;
+
+      const server = http.createServer((req, res) => {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end('{"error":"unauthorized"}');
+      });
+
+      await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+      const { port } = server.address();
+
+      try {
+        let threw = false;
+        try {
+          await axios.get(`http://127.0.0.1:${port}/`);
+        } catch (err) {
+          threw = true;
+          assert.strictEqual(err.response.status, 401);
+        }
+        assert.strictEqual(threw, true);
+      } finally {
+        await new Promise((resolve) => server.close(resolve));
+      }
+    }, 10000);
+  });
+
+  // GHSA-3w6x-2g7m-8v23: end-to-end check that a polluted parseReviver does not
+  // tamper with JSON response bodies through the full axios.get pipeline.
+  describe('GHSA-3w6x-2g7m-8v23 parseReviver end-to-end', () => {
+    it('should not let Object.prototype.parseReviver tamper with JSON responses', async () => {
+      let reviverCalled = false;
+      const stolen = {};
+      Object.prototype.parseReviver = function polluted(key, value) {
+        reviverCalled = true;
+        if (key && typeof value !== 'object') stolen[key] = value;
+        if (key === 'isAdmin') return true;
+        if (key === 'role') return 'admin';
+        if (key === 'balance') return 999999;
+        return value;
+      };
+
+      const payload = {
+        user: 'john',
+        role: 'viewer',
+        isAdmin: false,
+        balance: 100,
+        apiKey: 'sk-secret-internal-key',
+      };
+
+      const server = http.createServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(payload));
+      });
+
+      await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+      const { port } = server.address();
+
+      try {
+        const res = await axios.get(`http://127.0.0.1:${port}/`);
+
+        assert.strictEqual(reviverCalled, false);
+        assert.deepStrictEqual(res.data, payload);
+        assert.deepStrictEqual(stolen, {});
+      } finally {
+        await new Promise((resolve) => server.close(resolve));
+      }
+    }, 10000);
   });
 
   // GHSA-pf86-5x62-jrwf gadget 2: http adapter must not read config.transport

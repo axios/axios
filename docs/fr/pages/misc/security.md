@@ -1,5 +1,24 @@
 # Politique de sécurité
 
+## ⚠️ Bombe de décompression / mise en tampon de réponse sans limite
+
+Par défaut, `maxContentLength` et `maxBodyLength` valent `-1` (illimité). Un serveur malveillant ou compromis peut renvoyer un petit corps compressé en gzip/deflate/brotli qui s'étend à plusieurs gigaoctets, épuisant la mémoire du processus Node.js.
+
+**Si vous effectuez des requêtes vers des serveurs que vous ne contrôlez pas totalement, vous DEVEZ définir `maxContentLength` en fonction de votre charge.** La limite est appliquée chunk par chunk pendant la décompression en flux, il suffit donc de la définir pour neutraliser les attaques de bombe de décompression.
+
+```js
+axios.get('https://example.com/data', {
+  maxContentLength: 10 * 1024 * 1024, // 10 Mo
+  maxBodyLength: 10 * 1024 * 1024,
+});
+
+// Ou globalement :
+axios.defaults.maxContentLength = 10 * 1024 * 1024;
+axios.defaults.maxBodyLength = 10 * 1024 * 1024;
+```
+
+La valeur par défaut n'a pas été durcie car cela casserait silencieusement tout téléchargement légitime dépassant le plafond choisi. Le choix d'un plafond sûr pour des sources non fiables incombe à l'application.
+
 ## Signaler une vulnérabilité
 
 Si vous pensez avoir trouvé une vulnérabilité de sécurité dans le projet, veuillez nous la signaler comme décrit ci-dessous. Nous prenons toutes les vulnérabilités de sécurité au sérieux. Si vous avez trouvé une vulnérabilité dans une bibliothèque tierce, veuillez la signaler aux mainteneurs de cette bibliothèque.

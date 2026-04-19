@@ -137,6 +137,9 @@
 
 `maxContentLength` 属性定义服务器在响应中允许接收的最大字节数。
 
+> ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli 解压，会带来解压炸弹导致的拒绝服务风险。
+> 在访问不完全可信的服务器时，请显式设置该限制。
+
 ### `maxBodyLength` <Badge type="warning" text="仅 Node.js" />
 
 `maxBodyLength` 属性定义服务器在请求中允许接收的最大字节数。

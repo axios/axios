@@ -137,6 +137,9 @@ La función `onDownloadProgress` te permite escuchar el progreso de una descarga
 
 La propiedad `maxContentLength` define el número máximo de bytes que el servidor aceptará en la respuesta.
 
+> ⚠️ **Seguridad:** el valor por defecto es `-1` (sin límite). Las respuestas sin límite combinadas con la descompresión gzip/deflate/brotli permiten ataques de denegación de servicio por bomba de descompresión.
+> Establece un límite explícito al consumir servidores en los que no confíes plenamente.
+
 ### `maxBodyLength` <Badge type="warning" text="Solo en Node.js" />
 
 La propiedad `maxBodyLength` define el número máximo de bytes que el servidor aceptará en la solicitud.

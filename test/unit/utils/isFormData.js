@@ -11,9 +11,15 @@ describe('utils::isFormData', function () {
   });
 
   describe('prototype-pollution spoofing (GHSA-6chq-wfr3-2hj9)', function () {
+    var originalToString = Object.getOwnPropertyDescriptor(Object.prototype, 'toString');
+
     afterEach(function () {
       delete Object.prototype.append;
-      delete Object.prototype.toString;
+      if (originalToString) {
+        Object.defineProperty(Object.prototype, 'toString', originalToString);
+      } else {
+        delete Object.prototype.toString;
+      }
     });
 
     it('should reject a plain object spoofing toString === "[object FormData]"', function () {

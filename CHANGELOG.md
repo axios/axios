@@ -54,10 +54,6 @@ This release ships a coordinated set of security hardening fixes across headers,
 
 - **Repo & CI:** Adds `CODEOWNERS`, switches v1.x releases to an ephemeral release branch, and removes orphaned Bower support. (**#10739**, **#10738**, **#10746**)
 
-- **Changelog Backfill:** Added missing version entries to the changelog. (**#10704**)
-
-- **Dependencies:** Bumped `follow-redirects` (`1.15.11` → `1.16.0`) in root and docs, `axios` (`1.14.0` → `1.15.0`) in docs, and a group of 5 development dependencies. (**#10717**, **#10716**, **#10684**, **#10709**)
-
 ## 🌟 New Contributors
 
 We are thrilled to welcome our new contributors. Thank you for helping improve axios:

@@ -486,24 +486,97 @@ describe('Prototype Pollution Protection', () => {
     }, 10000);
 
     it('should not enable insecureHTTPParser via Object.prototype', async () => {
+      // A raw TCP server emits a response that uses LF-only line terminators
+      // instead of CRLF. Node's strict HTTP parser rejects this payload with
+      // HPE_CR_EXPECTED; the insecure parser accepts it. Verified: with an
+      // explicit `insecureHTTPParser: true` on the request config, this
+      // payload is parsed successfully — so if Object.prototype.insecureHTTPParser
+      // were picked up, the request would succeed. The request must fail when
+      // the gadget is properly blocked.
       Object.prototype.insecureHTTPParser = true;
 
-      const server = await startServer();
-      const { port } = server.address();
+      const net = await import('net');
+      const malformedPayload =
+        'HTTP/1.1 200 OK\n' +
+        'Content-Type: application/json\n' +
+        'Content-Length: 2\n' +
+        '\n' +
+        '{}';
+      const malformed = await new Promise((resolve) => {
+        const srv = net.createServer((socket) => {
+          socket.once('data', () => socket.end(malformedPayload));
+        });
+        srv.listen(0, '127.0.0.1', () => resolve(srv));
+      });
+      const { port } = malformed.address();
 
       try {
-        const res = await axios.get(`http://127.0.0.1:${port}/api`, {
-          transitional: { clarifyTimeoutError: false },
-        });
-        assert.strictEqual(res.status, 200);
+        let threw = false;
+        let caughtCode = '';
+        try {
+          await axios.get(`http://127.0.0.1:${port}/`, {
+            transitional: { clarifyTimeoutError: false },
+          });
+        } catch (err) {
+          threw = true;
+          caughtCode = String(err && (err.code || err.message));
+        }
+        assert.strictEqual(
+          threw,
+          true,
+          `request should be rejected by the strict HTTP parser (got: ${caughtCode || 'success'})`
+        );
+        assert.match(
+          caughtCode,
+          /HPE_CR_EXPECTED/,
+          `expected HPE_CR_EXPECTED error from strict parser, got: ${caughtCode}`
+        );
       } finally {
-        await stopServer(server);
+        await new Promise((resolve) => malformed.close(resolve));
       }
     }, 10000);
   });
 
   describe('GHSA-q8qp-cvcw-x6jj resolveConfig baseURL gadget', () => {
-    it('should not hijack requests via Object.prototype.baseURL', async () => {
+    // The baseURL branch in buildFullPath only runs when the requested URL is
+    // relative (or allowAbsoluteUrls === false). An absolute URL would skip
+    // baseURL regardless of pollution and would not exercise the gadget. We
+    // therefore issue a relative GET and assert that either:
+    //   - the request fails (no host to resolve) because baseURL is correctly
+    //     absent from the merged config, OR
+    //   - the request is fulfilled without hitting the hijacker.
+    // Critically, hijackHit must always be false.
+    it('should not hijack relative-URL requests via Object.prototype.baseURL', async () => {
+      let hijackHit = false;
+      const hijacker = http.createServer((req, res) => {
+        hijackHit = true;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"hijacked":true}');
+      });
+      await new Promise((resolve) => hijacker.listen(0, '127.0.0.1', resolve));
+      const { port: hijackerPort } = hijacker.address();
+
+      Object.prototype.baseURL = `http://127.0.0.1:${hijackerPort}`;
+
+      try {
+        let threw = false;
+        try {
+          await axios.get('/api');
+        } catch (_err) {
+          threw = true;
+        }
+        // Either the request fails (desired — no baseURL means no host) or it
+        // resolves, but it must NOT hit the polluted hijacker.
+        assert.strictEqual(hijackHit, false);
+        assert.strictEqual(threw, true);
+      } finally {
+        await new Promise((resolve) => hijacker.close(resolve));
+      }
+    }, 10000);
+
+    // Second variant using allowAbsoluteUrls: false to force the baseURL path
+    // even for a fully-qualified requested URL.
+    it('should not hijack requests via Object.prototype.baseURL with allowAbsoluteUrls:false', async () => {
       let hijackHit = false;
       const hijacker = http.createServer((req, res) => {
         hijackHit = true;
@@ -523,9 +596,22 @@ describe('Prototype Pollution Protection', () => {
       Object.prototype.baseURL = `http://127.0.0.1:${hijackerPort}`;
 
       try {
-        const res = await axios.get(`http://127.0.0.1:${targetPort}/api`);
-        assert.strictEqual(res.data.ok, true);
+        // If the gadget were picked up, combineURLs(hijacker, `http://target`)
+        // would route to the hijacker. It must not.
+        let threw = false;
+        try {
+          await axios.get(`http://127.0.0.1:${targetPort}/api`, {
+            allowAbsoluteUrls: false,
+          });
+        } catch (_err) {
+          threw = true;
+        }
         assert.strictEqual(hijackHit, false);
+        // allowAbsoluteUrls:false + no baseURL → combineURLs not invoked
+        // (baseURL falsy) → returns requested URL as-is → target receives it.
+        // If baseURL were inherited from prototype, it would be truthy and
+        // combineURLs would be invoked, routing to the hijacker.
+        assert.strictEqual(threw, false);
       } finally {
         await new Promise((resolve) => hijacker.close(resolve));
         await new Promise((resolve) => target.close(resolve));

@@ -1,5 +1,77 @@
 # Changelog
 
+## v1.15.1 — April 19, 2026
+
+This release ships a coordinated set of security hardening fixes across headers, body/redirect limits, multipart handling, and XSRF/prototype-pollution vectors, alongside a broad sweep of bug fixes, test migrations, and threat-model documentation updates.
+
+## 🔒 Security Fixes
+
+- **Header Injection Hardening:** Tightened validation and sanitisation across request header construction to close the header-injection attack surface. (**#10749**)
+
+- **CRLF Stripping in Multipart Headers:** Correctly strips CR/LF from multipart header values to prevent injection via field names and filenames. (**#10758**)
+
+- **Prototype Pollution / Auth Bypass:** Replaced unsafe `in` checks with `hasOwnProperty` to prevent authentication bypass via prototype pollution on config objects, with additional regression tests. (**#10761**, **#10760**)
+
+- **`withXSRFToken` Truthy Bypass:** Short-circuits on any truthy non-boolean value, so an ambiguous config no longer silently leaks the XSRF token cross-origin. (**#10762**)
+
+- **`maxBodyLength` With Zero Redirects:** Enforces `maxBodyLength` even when `maxRedirects` is set to `0`, closing a bypass path for oversized request bodies. (**#10753**)
+
+- **Streamed Response `maxContentLength` Bypass:** Applies `maxContentLength` to streamed responses that previously bypassed the cap. (**#10754**)
+
+- **Follow-up CVE Completion:** Completes an earlier incomplete CVE fix to fully close the regression window. (**#10755**)
+
+## 🚀 New Features
+
+- **AI-Based Docs Translations:** Initial scaffold for AI-assisted translations of the documentation site. (**#10705**)
+
+- **`Location` Request Header Type:** Adds `Location` to `CommonRequestHeadersList` for accurate typing of redirect-aware requests. (**#7528**)
+
+## 🐛 Bug Fixes
+
+- **FormData Handling:** Removes `Content-Type` when no boundary is present on `FormData` fetch requests, supports multi-select fields, cancels `request.body` instead of the source stream on fetch abort, and fixes a recursion bug in form-data serialisation. (**#7314**, **#10676**, **#10702**, **#10726**)
+
+- **HTTP Adapter:** Handles socket-only request errors without leaking keep-alive listeners. (**#10576**)
+
+- **Progress Events:** Clamps `loaded` to `total` for computable upload/download progress events. (**#7458**)
+
+- **Types:** Aligns `runWhen` type with the runtime behaviour in `InterceptorManager` and makes response header keys case-insensitive. (**#7529**, **#10677**)
+
+- **`buildFullPath`:** Uses strict equality in the base/relative URL check. (**#7252**)
+
+- **`AxiosURLSearchParams` Regex:** Improves the regex used for param serialisation to avoid edge-case mismatches. (**#10736**)
+
+- **Resilient Value Parsing:** Parses out header/config values instead of throwing on malformed input. (**#10687**)
+
+- **Docs Artefact Cleanup:** Removes the docs content that was incorrectly committed. (**#10727**)
+
+## 🔧 Maintenance & Chores
+
+- **Threat Model & Security Docs:** Ongoing refinement of `THREATMODEL.md`, including Hopper security update, TLS and tag-replay wording, mitigation descriptions, decompression-bomb guidance, and further cleanup. (**#10672**, **#10715**, **#10718**, **#10722**, **#10763**, **#10765**)
+
+- **Test Coverage & Migration:** Expanded `shouldBypassProxy` coverage for wildcard/IPv6/edge cases, documented and tested `AxiosError.status`, and migrated `progressEventReducer` tests to Vitest. (**#10723**, **#10725**, **#10741**)
+
+- **Type Refactor:** Uses TypeScript utility types to deduplicate literal unions. (**#7520**)
+
+- **Repo & CI:** Adds `CODEOWNERS`, switches v1.x releases to an ephemeral release branch, and removes orphaned Bower support. (**#10739**, **#10738**, **#10746**)
+
+- **Changelog Backfill:** Added missing version entries to the changelog. (**#10704**)
+
+- **Dependencies:** Bumped `follow-redirects` (`1.15.11` → `1.16.0`) in root and docs, `axios` (`1.14.0` → `1.15.0`) in docs, and a group of 5 development dependencies. (**#10717**, **#10716**, **#10684**, **#10709**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@curiouscoder-cmd** (**#7252**)
+- **@tryonelove** (**#7520**)
+- **@darwin808** (**#7314**)
+- **@zoontek** (**#10702**)
+- **@AKIB473** (**#10725**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.15.0...v1.15.1)
+
+---
+
 ## v1.15.0 — April 7, 2026
 
 This release delivers two critical security patches targeting header injection and SSRF via proxy bypass, adds official runtime support for Deno and Bun, and includes significant CI security hardening.

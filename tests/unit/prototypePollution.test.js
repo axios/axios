@@ -526,10 +526,15 @@ describe('Prototype Pollution Protection', () => {
           true,
           `request should be rejected by the strict HTTP parser (got: ${caughtCode || 'success'})`
         );
+        // The exact llhttp code for LF-only line terminators varies across
+        // Node versions (historically HPE_LF_EXPECTED, more recently
+        // HPE_CR_EXPECTED). Match any parser error to remain stable across
+        // Node releases while still confirming the strict parser rejected
+        // the payload.
         assert.match(
           caughtCode,
-          /HPE_CR_EXPECTED/,
-          `expected HPE_CR_EXPECTED error from strict parser, got: ${caughtCode}`
+          /^HPE_/,
+          `expected an HPE_* parser error, got: ${caughtCode}`
         );
       } finally {
         await new Promise((resolve) => malformed.close(resolve));

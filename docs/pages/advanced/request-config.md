@@ -26,6 +26,34 @@ The `transformRequest` function allows you to modify the request data before it 
 
 The `transformResponse` function allows you to modify the response data before it is passed to the `then` or `catch` functions. This function is called with the response data as its only argument.
 
+### `parseReviver`
+
+The `parseReviver` function allows you to provide a custom "reviver" function directly to the native `JSON.parse()` call used by the default `transformResponse`.
+
+This is particularly useful for performing high-performance type hydration (e.g., converting ISO strings to `Temporal` or `Date` objects) or preventing precision loss during parsing.
+
+In modern environments (ES2023+), the reviver function receives a third `context` argument. This provides access to the raw JSON `source`, allowing for precise conversion of large integers (BigInt) that would otherwise lose precision if parsed as standard JavaScript numbers.
+
+```js
+const client = axios.create({
+  parseReviver: (key, value, context) => {
+    // Example: Precision-safe BigInt parsing
+    if (typeof value === 'number' && context?.source) {
+      if (context.source.length > 15 || !Number.isSafeInteger(value)) {
+        return BigInt(context.source);
+      }
+    }
+
+    // Example: Hydrating dates into Temporal objects
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return Temporal.PlainDate.from(value);
+    }
+
+    return value;
+  },
+});
+```
+
 ### `headers`
 
 The `headers` are the HTTP headers to be sent with the request. The `Content-Type` header is set to `application/json` by default.
@@ -170,7 +198,7 @@ Restricts which socket paths may be used via `socketPath`. Accepts a string or a
 
 ```js
 const client = axios.create({
-  allowedSocketPaths: ['/var/run/docker.sock']
+  allowedSocketPaths: ['/var/run/docker.sock'],
 });
 
 // allowed

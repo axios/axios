@@ -92,6 +92,8 @@
 - [Semver](#semver)
 - [Promises](#promises)
 - [TypeScript](#typescript)
+- [Contributing](#contributing)
+  - [Local setup](#local-setup)
 - [Resources](#resources)
 - [Credits](#credits)
 - [License](#license)
@@ -2008,6 +2010,23 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/main/examples/server.js)
+
+## Contributing
+
+### Local setup
+
+As a supply-chain hardening measure, this repository ships a project-level `.npmrc` that sets `ignore-scripts=true`. This blocks npm lifecycle scripts (`preinstall`, `install`, `postinstall`, `prepare`) from any direct or transitive dependency when you run `npm install` or `npm ci` inside the repo. See [THREATMODEL.md](./THREATMODEL.md) (threat T-S2) for the rationale.
+
+One consequence: the repository's own `prepare` hook (which installs Husky's git hooks) will **not** run automatically. After your first install, enable the git hooks manually:
+
+```bash
+npm ci
+npm rebuild husky && npx husky
+```
+
+Run those two commands once per fresh checkout. You do **not** need to re-run them after every subsequent `npm install`.
+
+Do not remove `ignore-scripts=true` from `.npmrc` to "fix" this — that re-opens the lifecycle-script attack surface for every other package in the tree. All CI workflows already invoke npm with `--ignore-scripts`, so local behaviour matches CI.
 
 ## Resources
 

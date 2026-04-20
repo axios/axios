@@ -1,0 +1,81 @@
+name: Verify build reproducibility
+
+on:
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'rollup.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/verify-build-reproducibility.yml'
+  push:
+    branches: [v1.x]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-reproducible-build:
+    name: Two-pass build and diff
+    runs-on: ubuntu-latest
+    # Non-blocking until divergence is eliminated. Surfaces regressions in
+    # the build's determinism without gating merges. Remove this line to
+    # promote to a hard gate once the build is byte-identical across runs.
+    continue-on-error: true
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install (pass 1)
+        run: npm ci --ignore-scripts
+
+      - name: Build (pass 1)
+        run: npm run build
+
+      - name: Snapshot pass 1
+        run: |
+          mv dist dist-pass1
+          find dist-pass1 -type f -exec sha256sum {} + | sort -k2 > pass1.sha256
+          echo "--- pass 1 hashes ---"
+          cat pass1.sha256
+
+      - name: Clean and reinstall (pass 2)
+        run: |
+          rm -rf node_modules
+          npm ci --ignore-scripts
+
+      - name: Build (pass 2)
+        run: npm run build
+
+      - name: Snapshot pass 2 and diff
+        run: |
+          find dist -type f -exec sha256sum {} + | sort -k2 | sed 's| dist/| dist-pass1/|' > pass2.sha256
+          echo "--- pass 2 hashes (path-normalised) ---"
+          cat pass2.sha256
+          if ! diff -u pass1.sha256 pass2.sha256; then
+            echo "::warning::Build is not reproducible — dist/ differs between passes."
+            echo "This does not fail the job (continue-on-error: true) but is visible in the run summary."
+            echo "See THREATMODEL.md §T-S5 for context."
+            exit 1
+          fi
+          echo "Build is byte-identical across passes."
+
+      - name: Upload diff artifact on divergence
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: reproducibility-diff
+          path: |
+            pass1.sha256
+            pass2.sha256
+            dist-pass1
+            dist
+          retention-days: 7

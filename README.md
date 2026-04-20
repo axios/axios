@@ -600,7 +600,18 @@ These are the available config options for making requests. Only the `url` is re
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
   // Only either `socketPath` or `proxy` can be specified.
   // If both are specified, `socketPath` is used.
+  //
+  // Security: when `socketPath` is set, hostname/port of the URL are ignored,
+  // which bypasses hostname-based SSRF protections. Never derive `socketPath`
+  // from untrusted input. Use `allowedSocketPaths` (below) to restrict accepted
+  // socket paths for defense-in-depth.
   socketPath: null, // default
+
+  // `allowedSocketPaths` restricts which `socketPath` values are accepted.
+  // Accepts a string or array of strings. Entries and the incoming socketPath
+  // are compared after path.resolve(). A mismatch throws AxiosError with code
+  // `ERR_BAD_OPTION_VALUE`. When null/undefined, no restriction is applied.
+  allowedSocketPaths: null, // default
 
   // `transport` determines the transport method that will be used to make the request.
   // If defined, it will be used. Otherwise, if `maxRedirects` is 0,

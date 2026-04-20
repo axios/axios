@@ -160,6 +160,28 @@ La función `beforeRedirect` te permite modificar la solicitud antes de que sea 
 
 La propiedad `socketPath` define un socket UNIX que se usará en lugar de una conexión TCP. Por ejemplo, `/var/run/docker.sock` para enviar solicitudes al daemon de Docker. Solo se puede especificar `socketPath` o `proxy`. Si ambos se especifican, se usa `socketPath`.
 
+:::warning Seguridad
+Cuando se establece `socketPath`, el hostname y el puerto de la URL se ignoran y axios se comunica directamente con el socket Unix indicado. Si cualquier parte de la configuración de la solicitud proviene de entrada del usuario (por ejemplo, en un proxy o manejador de webhooks que reenvía opciones), un atacante puede inyectar `socketPath` para redirigir el tráfico a sockets locales privilegiados como `/var/run/docker.sock`, `/run/containerd/containerd.sock` o `/run/systemd/private`, eludiendo por completo las protecciones SSRF basadas en hostname (CWE-918). Filtra la configuración recibida desde entradas no confiables y/o restringe las rutas de socket aceptadas con `allowedSocketPaths` (ver más abajo).
+:::
+
+### `allowedSocketPaths` <Badge type="warning" text="Solo en Node.js" />
+
+Restringe qué rutas de socket pueden usarse a través de `socketPath`. Acepta un string o un array de strings. Cuando está definido, axios resuelve el `socketPath` y lo compara con cada entrada (también resuelta); la solicitud se rechaza con un `AxiosError` de código `ERR_BAD_OPTION_VALUE` si no hay coincidencia. Si no se define (valor por defecto), `socketPath` se comporta igual que antes.
+
+```js
+const client = axios.create({
+  allowedSocketPaths: ['/var/run/docker.sock']
+});
+
+// permitido
+await client.get('http://localhost/v1.45/info', { socketPath: '/var/run/docker.sock' });
+
+// rechazado — no está en la lista
+await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' });
+```
+
+Un array vacío (`allowedSocketPaths: []`) bloquea todas las rutas de socket.
+
 ### `transport`
 
 La propiedad `transport` define el transporte a usar para la solicitud. Es útil para hacer solicitudes sobre un protocolo diferente, como `http2`.
@@ -313,6 +335,7 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
     }
   },
   socketPath: null,
+  allowedSocketPaths: null,
   transport: undefined,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),

@@ -397,6 +397,7 @@ export interface AxiosRequestConfig<D = any> {
     }
   ) => void;
   socketPath?: string | null;
+  allowedSocketPaths?: string | string[] | null;
   transport?: any;
   httpAgent?: any;
   httpsAgent?: any;

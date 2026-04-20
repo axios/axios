@@ -160,6 +160,28 @@
 
 `socketPath` 属性定义用于替代 TCP 连接的 UNIX 套接字路径，例如 `/var/run/docker.sock`，用于向 Docker 守护进程发送请求。`socketPath` 和 `proxy` 只能指定其中一个，如果两者都指定，则使用 `socketPath`。
 
+:::warning 安全提示
+设置 `socketPath` 后，请求 URL 中的主机名和端口将被忽略，axios 会直接与指定的 Unix 域套接字通信。如果请求配置中有任何部分来自用户输入（例如在转发或合并请求选项的代理/Webhook 处理程序中），攻击者可以注入 `socketPath` 将流量重定向到特权本地套接字，如 `/var/run/docker.sock`、`/run/containerd/containerd.sock` 或 `/run/systemd/private`，从而完全绕过基于主机名的 SSRF 防护（CWE-918）。应对来自不可信输入的配置进行过滤或仅允许特定键，并/或使用 `allowedSocketPaths`（见下文）限制接受的套接字路径。
+:::
+
+### `allowedSocketPaths` <Badge type="warning" text="仅 Node.js" />
+
+限制可通过 `socketPath` 使用的套接字路径。接受一个字符串或字符串数组。设置后，axios 会解析 `socketPath` 并与每个条目（同样解析后）比较；若无匹配，请求将以 `ERR_BAD_OPTION_VALUE` 错误码的 `AxiosError` 被拒绝。未设置（默认）时，`socketPath` 行为与以往一致。
+
+```js
+const client = axios.create({
+  allowedSocketPaths: ['/var/run/docker.sock']
+});
+
+// 允许
+await client.get('http://localhost/v1.45/info', { socketPath: '/var/run/docker.sock' });
+
+// 拒绝 — 不在白名单中
+await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' });
+```
+
+空数组 (`allowedSocketPaths: []`) 会阻止所有套接字路径。
+
 ### `transport`
 
 `transport` 属性定义请求使用的传输方式，适用于通过不同协议（如 `http2`）发起请求的场景。
@@ -313,6 +335,7 @@ proxy: {
     }
   },
   socketPath: null,
+  allowedSocketPaths: null,
   transport: undefined,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),

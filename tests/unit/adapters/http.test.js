@@ -4161,4 +4161,141 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(socket.listenerCount('error'), baseErrorListenerCount);
     });
   });
+
+  describe('socketPath security (GHSA-j96w-fp6f-pq6v)', () => {
+    function makeSocketPath() {
+      return path.join(os.tmpdir(), `axios-socketpath-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}.sock`);
+    }
+
+    function startUnixServer(socketPath) {
+      return new Promise((resolveStart, rejectStart) => {
+        const server = http.createServer((req, res) => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, url: req.url }));
+        });
+        try { fs.unlinkSync(socketPath); } catch (_) { /* noop */ }
+        server.once('error', rejectStart);
+        server.listen(socketPath, () => resolveStart(server));
+      });
+    }
+
+    function stopUnixServer(server, socketPath) {
+      return new Promise((done) => {
+        server.close(() => {
+          try { fs.unlinkSync(socketPath); } catch (_) { /* noop */ }
+          done();
+        });
+      });
+    }
+
+    it('allows socketPath when no allowedSocketPaths is set (backwards compatible)', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('http://localhost/echo', { socketPath });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.ok, true);
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('allows socketPath when it matches an allowedSocketPaths string', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('http://localhost/echo', {
+          socketPath,
+          allowedSocketPaths: socketPath,
+        });
+        assert.strictEqual(res.status, 200);
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('allows socketPath when it matches an entry in allowedSocketPaths array', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('http://localhost/echo', {
+          socketPath,
+          allowedSocketPaths: ['/var/run/does-not-exist.sock', socketPath],
+        });
+        assert.strictEqual(res.status, 200);
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('rejects socketPath not in allowedSocketPaths', async () => {
+      await assert.rejects(
+        axios.get('http://localhost/echo', {
+          socketPath: '/var/run/docker.sock',
+          allowedSocketPaths: ['/tmp/allowed.sock'],
+        }),
+        (err) => {
+          assert.ok(err instanceof AxiosError);
+          assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+          assert.match(err.message, /allowedSocketPaths/);
+          return true;
+        }
+      );
+    });
+
+    it('rejects socketPath attempting path traversal that escapes allowlist', async () => {
+      const allowedDir = path.join(os.tmpdir(), 'axios-allowed');
+      const allowed = path.join(allowedDir, 'app.sock');
+      await assert.rejects(
+        axios.get('http://localhost/echo', {
+          socketPath: path.join(allowedDir, '..', 'other.sock'),
+          allowedSocketPaths: [allowed],
+        }),
+        (err) => {
+          assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+          return true;
+        }
+      );
+    });
+
+    it('treats relative and absolute allowedSocketPaths entries equivalently', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const relative = path.relative(process.cwd(), socketPath);
+        const res = await axios.get('http://localhost/echo', {
+          socketPath,
+          allowedSocketPaths: [relative],
+        });
+        assert.strictEqual(res.status, 200);
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('rejects non-string socketPath', async () => {
+      await assert.rejects(
+        axios.get('http://localhost/echo', { socketPath: 12345 }),
+        (err) => {
+          assert.ok(err instanceof AxiosError);
+          assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+          assert.match(err.message, /socketPath must be a string/);
+          return true;
+        }
+      );
+    });
+
+    it('empty allowedSocketPaths array blocks all socketPath values', async () => {
+      await assert.rejects(
+        axios.get('http://localhost/echo', {
+          socketPath: '/tmp/anything.sock',
+          allowedSocketPaths: [],
+        }),
+        (err) => {
+          assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+          return true;
+        }
+      );
+    });
+  });
 });

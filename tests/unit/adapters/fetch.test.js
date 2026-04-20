@@ -14,6 +14,7 @@ import stream from 'stream';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import util from 'util';
 import NodeFormData from 'form-data';
+import { VERSION } from '../../../lib/env/data.js';
 
 const SERVER_PORT = 8010;
 const LOCAL_SERVER_URL = `http://localhost:${SERVER_PORT}`;
@@ -613,6 +614,52 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             'Content-Type': `multipart/form-data; boundary=${customBoundary}`,
           },
         });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+  });
+
+  describe('fetch adapter - User-Agent header', () => {
+    it('should set User-Agent header to axios/<version> by default', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ userAgent: req.headers['user-agent'] }));
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const { data } = await fetchAxios.post(`http://localhost:${server.address().port}/`, {
+          payload: 'test',
+        });
+
+        assert.strictEqual(data.userAgent, `axios/${VERSION}`);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should not override a user-provided User-Agent header', async () => {
+      const customUA = 'my-custom-agent/1.0';
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ userAgent: req.headers['user-agent'] }));
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const { data } = await fetchAxios.post(
+          `http://localhost:${server.address().port}/`,
+          { payload: 'test' },
+          { headers: { 'User-Agent': customUA } }
+        );
+
+        assert.strictEqual(data.userAgent, customUA);
       } finally {
         await stopHTTPServer(server);
       }

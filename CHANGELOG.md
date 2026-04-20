@@ -6,35 +6,35 @@ This release delivers two critical security patches targeting header injection a
 
 ## 🔒 Security Fixes
 
-* **Header Injection (CRLF):** Rejects any header value containing `\r` or `\n` characters to block CRLF injection chains that could be used to exfiltrate cloud metadata (IMDS). Behavior change: headers with CR/LF now throw `"Invalid character in header content"`. (__#10660__)
+- **Header Injection (CRLF):** Rejects any header value containing `\r` or `\n` characters to block CRLF injection chains that could be used to exfiltrate cloud metadata (IMDS). Behavior change: headers with CR/LF now throw `"Invalid character in header content"`. (**#10660**)
 
-* **SSRF via `no_proxy` Bypass:** Introduces a `shouldBypassProxy` helper that normalises hostnames (strips trailing dots, handles bracketed IPv6) before evaluating `no_proxy`/`NO_PROXY` rules, closing a gap that could cause loopback or internal hosts to be inadvertently proxied. (__#10661__)
+- **SSRF via `no_proxy` Bypass:** Introduces a `shouldBypassProxy` helper that normalises hostnames (strips trailing dots, handles bracketed IPv6) before evaluating `no_proxy`/`NO_PROXY` rules, closing a gap that could cause loopback or internal hosts to be inadvertently proxied. (**#10661**)
 
 ## 🚀 New Features
 
-* **Deno & Bun Runtime Support:** Added full smoke test suites for Deno and Bun, with CI workflows that run both runtimes before any release is cut. (__#10652__)
+- **Deno & Bun Runtime Support:** Added full smoke test suites for Deno and Bun, with CI workflows that run both runtimes before any release is cut. (**#10652**)
 
 ## 🐛 Bug Fixes
 
-* **Node.js v22 Compatibility:** Replaced deprecated `url.parse()` calls with the WHATWG `URL`/`URLSearchParams` API across examples, sandbox, and tests, eliminating `DEP0169` deprecation warnings on Node.js v22+. (__#10625__)
+- **Node.js v22 Compatibility:** Replaced deprecated `url.parse()` calls with the WHATWG `URL`/`URLSearchParams` API across examples, sandbox, and tests, eliminating `DEP0169` deprecation warnings on Node.js v22+. (**#10625**)
 
 ## 🔧 Maintenance & Chores
 
-* **CI Security Hardening:** Added [zizmor](https://github.com/zizmorcore/zizmor) GitHub Actions security scanner; switched npm publish to OIDC Trusted Publishing (removing the long-lived `NODE_AUTH_TOKEN`); pinned all action references to full commit SHAs; narrowed workflow permissions to least privilege; gated the publish step behind a dedicated `npm-publish` environment; and blocked the sponsor-block workflow from running on forks. (__#10618__, __#10619__, __#10627__, __#10637__, __#10641__, __#10666__)
+- **CI Security Hardening:** Added [zizmor](https://github.com/zizmorcore/zizmor) GitHub Actions security scanner; switched npm publish to OIDC Trusted Publishing (removing the long-lived `NODE_AUTH_TOKEN`); pinned all action references to full commit SHAs; narrowed workflow permissions to least privilege; gated the publish step behind a dedicated `npm-publish` environment; and blocked the sponsor-block workflow from running on forks. (**#10618**, **#10619**, **#10627**, **#10637**, **#10641**, **#10666**)
 
-* **Docs:** Clarified HTTP/2 support and the unsupported `httpVersion` option; added documentation for header case preservation; improved the `beforeRedirect` example to prevent accidental credential leakage. (__#10644__, __#10654__, __#10624__)
+- **Docs:** Clarified HTTP/2 support and the unsupported `httpVersion` option; added documentation for header case preservation; improved the `beforeRedirect` example to prevent accidental credential leakage. (**#10644**, **#10654**, **#10624**)
 
-* **Dependencies:** Bumped `picomatch`, `handlebars`, `serialize-javascript`, `vite` (×3), `denoland/setup-deno`, and 4 additional dev dependencies to latest versions. (__#10564__, __#10565__, __#10567__, __#10568__, __#10572__, __#10574__, __#10663__, __#10664__, __#10665__, __#10669__, __#10670__)
+- **Dependencies:** Bumped `picomatch`, `handlebars`, `serialize-javascript`, `vite` (×3), `denoland/setup-deno`, and 4 additional dev dependencies to latest versions. (**#10564**, **#10565**, **#10567**, **#10568**, **#10572**, **#10574**, **#10663**, **#10664**, **#10665**, **#10669**, **#10670**)
 
 ## 🌟 New Contributors
 
 We are thrilled to welcome our new contributors. Thank you for helping improve axios:
 
-* **@Kilros0817** (__#10625__)
-* **@shaanmajid** (__#10616__, __#10617__, __#10618__, __#10619__, __#10637__, __#10641__, __#10666__)
-* **@ashstrc** (__#10624__, __#10644__)
-* **@Abhi3975** (__#10589__)
-* **@raashish1601** (__#10573__)
+- **@Kilros0817** (**#10625**)
+- **@shaanmajid** (**#10616**, **#10617**, **#10618**, **#10619**, **#10637**, **#10641**, **#10666**)
+- **@ashstrc** (**#10624**, **#10644**)
+- **@Abhi3975** (**#10589**)
+- **@raashish1601** (**#10573**)
 
 [Full Changelog](https://github.com/axios/axios/compare/v1.14.0...v1.15.0)
 
@@ -46,33 +46,33 @@ This release fixes a security vulnerability in the `formidable` dependency, reso
 
 ## 🔒 Security Fixes
 
-* **Formidable Vulnerability:** Upgraded `formidable` from v2 to v3 to address a reported arbitrary-file vulnerability. Updated test server and assertions to align with the v3 API. (__#7533__)
+- **Formidable Vulnerability:** Upgraded `formidable` from v2 to v3 to address a reported arbitrary-file vulnerability. Updated test server and assertions to align with the v3 API. (**#7533**)
 
 ## 🐛 Bug Fixes
 
-* **CommonJS Compatibility:** Restored `require('axios')` in Node.js by correcting the `main` field in `package.json` to point to the built CJS bundle. (__#7532__)
+- **CommonJS Compatibility:** Restored `require('axios')` in Node.js by correcting the `main` field in `package.json` to point to the built CJS bundle. (**#7532**)
 
-* **Fetch Adapter:** Cancel the `ReadableStream` body after the request stream capability probe to prevent resource leaks. (__#7515__)
+- **Fetch Adapter:** Cancel the `ReadableStream` body after the request stream capability probe to prevent resource leaks. (**#7515**)
 
-* **Proxy:** Upgraded `proxy-from-env` to v2 and switched to the named `getProxyForUrl` export, fixing proxy detection from environment variables and resolving CJS bundling errors. (__#7499__)
+- **Proxy:** Upgraded `proxy-from-env` to v2 and switched to the named `getProxyForUrl` export, fixing proxy detection from environment variables and resolving CJS bundling errors. (**#7499**)
 
-* **HTTP/2:** Close detached HTTP/2 sessions on timeout to free resources when no new requests arrive. (__#7457__)
+- **HTTP/2:** Close detached HTTP/2 sessions on timeout to free resources when no new requests arrive. (**#7457**)
 
-* **Headers:** Trim trailing CRLF characters from normalised header values. (__#7456__)
+- **Headers:** Trim trailing CRLF characters from normalised header values. (**#7456**)
 
 ## 🔧 Maintenance & Chores
 
-* **Toolchain Modernisation:** Migrated test suite to Vitest, updated ESLint to v10, upgraded Rollup and `@rollup/plugin-babel`, migrated to Husky 9, upgraded TypeScript to latest, and modernised the Express test harness. (__#7484__, __#7489__, __#7498__, __#7505__, __#7506__, __#7507__, __#7508__, __#7509__, __#7510__, __#7516__, __#7522__)
+- **Toolchain Modernisation:** Migrated test suite to Vitest, updated ESLint to v10, upgraded Rollup and `@rollup/plugin-babel`, migrated to Husky 9, upgraded TypeScript to latest, and modernised the Express test harness. (**#7484**, **#7489**, **#7498**, **#7505**, **#7506**, **#7507**, **#7508**, **#7509**, **#7510**, **#7516**, **#7522**)
 
-* **Dependencies:** Bumped `multer` to v2, `minimatch`, `tar`, `pacote`, `@babel/preset-env`, and additional dev dependencies. (__#7453__, __#7480__, __#7491__, __#7504__, __#7517__, __#7531__)
+- **Dependencies:** Bumped `multer` to v2, `minimatch`, `tar`, `pacote`, `@babel/preset-env`, and additional dev dependencies. (**#7453**, **#7480**, **#7491**, **#7504**, **#7517**, **#7531**)
 
 ## 🌟 New Contributors
 
 We are thrilled to welcome our new contributors. Thank you for helping improve axios:
 
-* **@penkzhou** (__#7515__)
-* **@aviu16** (__#7456__)
-* **@fedotov** (__#7457__)
+- **@penkzhou** (**#7515**)
+- **@aviu16** (**#7456**)
+- **@fedotov** (**#7457**)
 
 [Full Changelog](https://github.com/axios/axios/compare/v1.13.6...v1.14.0)
 
@@ -84,31 +84,31 @@ This release adds React Native Blob support, fixes several enumeration and expor
 
 ## 🚀 New Features
 
-* **React Native Blob Support:** Axios now correctly handles native Blob objects in React Native environments. (__#5764__)
+- **React Native Blob Support:** Axios now correctly handles native Blob objects in React Native environments. (**#5764**)
 
 ## 🐛 Bug Fixes
 
-* **AxiosError:** Fixed `AxiosError.from` not copying the `status` field from the source error. (__#7403__)
+- **AxiosError:** Fixed `AxiosError.from` not copying the `status` field from the source error. (**#7403**)
 
-* **AxiosError:** Made the `message` property enumerable so it appears in `JSON.stringify` output and `Object.keys`. (__#7392__)
+- **AxiosError:** Made the `message` property enumerable so it appears in `JSON.stringify` output and `Object.keys`. (**#7392**)
 
-* **FormData Detection:** Corrected safe FormData detection for WeChat Mini Program environments. (__#7324__)
+- **FormData Detection:** Corrected safe FormData detection for WeChat Mini Program environments. (**#7324**)
 
-* **React Native / Browserify Export:** Fixed broken module export that caused import failures in React Native and Browserify. (__#7386__)
+- **React Native / Browserify Export:** Fixed broken module export that caused import failures in React Native and Browserify. (**#7386**)
 
 ## 🔧 Maintenance & Chores
 
-* **Dependencies:** Migrated `@rollup/plugin-babel` from v5 to v6 and bumped the development dependencies group. (__#7424__, __#7432__)
+- **Dependencies:** Migrated `@rollup/plugin-babel` from v5 to v6 and bumped the development dependencies group. (**#7424**, **#7432**)
 
 ## 🌟 New Contributors
 
 We are thrilled to welcome our new contributors. Thank you for helping improve axios:
 
-* **@moh3n9595** (__#5764__)
-* **@skrtheboss** (__#7403__)
-* **@ybbus** (__#7392__)
-* **@Shiwaangee** (__#7324__)
-* **@Gudahtt** (__#7386__)
+- **@moh3n9595** (**#5764**)
+- **@skrtheboss** (**#7403**)
+- **@ybbus** (**#7392**)
+- **@Shiwaangee** (**#7324**)
+- **@Gudahtt** (**#7386**)
 
 [Full Changelog](https://github.com/axios/axios/compare/v1.13.5...v1.13.6)
 
@@ -120,29 +120,29 @@ This release patches a prototype pollution denial-of-service vulnerability, fixe
 
 ## 🔒 Security Fixes
 
-* **Prototype Pollution (DoS):** Hardened `mergeConfig` to ignore `__proto__`, `constructor`, and `prototype` keys, preventing denial-of-service via prototype pollution when merging user-supplied config. (__#7369__)
+- **Prototype Pollution (DoS):** Hardened `mergeConfig` to ignore `__proto__`, `constructor`, and `prototype` keys, preventing denial-of-service via prototype pollution when merging user-supplied config. (**#7369**)
 
 ## 🚀 New Features
 
-* **`isAbsoluteURL` Validation:** Added input validation to `isAbsoluteURL` to handle malformed or unexpected input gracefully. (__#7326__)
+- **`isAbsoluteURL` Validation:** Added input validation to `isAbsoluteURL` to handle malformed or unexpected input gracefully. (**#7326**)
 
 ## 🐛 Bug Fixes
 
-* **AxiosError `status`:** Restored the `status` field on `AxiosError` instances, which was missing in v1.13.3 and later. (__#7368__)
+- **AxiosError `status`:** Restored the `status` field on `AxiosError` instances, which was missing in v1.13.3 and later. (**#7368**)
 
-* **Interceptor Ordering:** Added a `useLegacyInterceptorOrder` option to restore pre-v1.13 interceptor execution order for applications relying on the previous behaviour. ([569f028](https://github.com/axios/axios/commit/569f028a5878faaec8d7d138ba686aac407bda4c))
+- **Interceptor Ordering:** Added a `useLegacyInterceptorOrder` option to restore pre-v1.13 interceptor execution order for applications relying on the previous behaviour. ([569f028](https://github.com/axios/axios/commit/569f028a5878faaec8d7d138ba686aac407bda4c))
 
 ## 🔧 Maintenance & Chores
 
-* **CI:** Fixed run conditions and updated workflow YAMLs. (__#7372__, __#7373__)
+- **CI:** Fixed run conditions and updated workflow YAMLs. (**#7372**, **#7373**)
 
-* **Dependencies:** Bumped `karma-sourcemap-loader` and minor package versions. (__#7356__, __#7360__)
+- **Dependencies:** Bumped `karma-sourcemap-loader` and minor package versions. (**#7356**, **#7360**)
 
 ## 🌟 New Contributors
 
 We are thrilled to welcome our new contributors. Thank you for helping improve axios:
 
-* **@asmitha-16** (__#7326__)
+- **@asmitha-16** (**#7326**)
 
 [Full Changelog](https://github.com/axios/axios/compare/v1.13.4...v1.13.5)
 
@@ -154,13 +154,13 @@ Patch release fixing regressions introduced in v1.13.3, including TypeScript exp
 
 ## 🐛 Bug Fixes
 
-* **v1.13.3 Regressions:** Fixed multiple issues introduced by the v1.13.3 release, including broken merge configs. (__#7352__)
+- **v1.13.3 Regressions:** Fixed multiple issues introduced by the v1.13.3 release, including broken merge configs. (**#7352**)
 
-* **TypeScript Exports:** Corrected TypeScript export declarations to restore proper type resolution. (__#4884__)
+- **TypeScript Exports:** Corrected TypeScript export declarations to restore proper type resolution. (**#4884**)
 
 ## 🔧 Maintenance & Chores
 
-* **CI & Build:** Refactored CI pipeline and build configuration for stability. (__#7340__)
+- **CI & Build:** Refactored CI pipeline and build configuration for stability. (**#7340**)
 
 [Full Changelog](https://github.com/axios/axios/compare/v1.13.3...v1.13.4)
 

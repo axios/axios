@@ -21,7 +21,7 @@ El valor por defecto no se ha endurecido porque hacerlo romperá silenciosamente
 
 ## Verificar una publicación
 
-Cada tarball de `axios` publicado en npm proviene de GitHub Actions y lleva una [atestación de provenance de npm](https://docs.npmjs.com generating-provenance-statements) que vincula criptográficamente el paquete al workflow y al SHA del commit que lo generó.
+Cada tarball de `axios` publicado en npm proviene de GitHub Actions y lleva una [atestación de provenance de npm](https://docs.npmjs.com/generating-provenance-statements) que vincula criptográficamente el paquete al workflow y al SHA del commit que lo generó.
 
 Los consumidores pueden verificar la provenance localmente:
 

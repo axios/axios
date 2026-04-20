@@ -34,18 +34,33 @@ This is particularly useful for performing high-performance type hydration (e.g.
 
 In modern environments (ES2023+), the reviver function receives a third `context` argument. This provides access to the raw JSON `source`, allowing for precise conversion of large integers (BigInt) that would otherwise lose precision if parsed as standard JavaScript numbers.
 
+> Note: `Temporal` is not yet available in all environments. Consider using a polyfill if needed.
+
 ```js
 const client = axios.create({
   parseReviver: (key, value, context) => {
     // Example: Precision-safe BigInt parsing
     if (typeof value === 'number' && context?.source) {
-      if (context.source.length > 15 || !Number.isSafeInteger(value)) {
-        return BigInt(context.source);
+      const isInteger = Number.isInteger(value);
+      const isUnsafe = !Number.isSafeInteger(value);
+      const isValidIntegerString = /^-?\d+$/.test(context.source);
+
+      if (isInteger && isUnsafe && isValidIntegerString) {
+        try {
+          return BigInt(context.source);
+        } catch {
+          // Fallback: return original value if parsing fails
+        }
       }
     }
 
     // Example: Hydrating dates into Temporal objects
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    if (
+      typeof value === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      typeof Temporal !== 'undefined' &&
+      Temporal?.PlainDate
+    ) {
       return Temporal.PlainDate.from(value);
     }
 

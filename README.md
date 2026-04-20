@@ -700,8 +700,16 @@ These are the available config options for making requests. Only the `url` is re
     // In modern environments, context.source provides the raw JSON string
     // allowing for precision-safe parsing of BigInt
     if (typeof value === 'number' && context?.source) {
-      if (!Number.isSafeInteger(value)) {
-        return BigInt(context.source);
+      const isInteger = Number.isInteger(value);
+      const isUnsafe = !Number.isSafeInteger(value);
+      const isValidIntegerString = /^-?\d+$/.test(context.source);
+
+      if (isInteger && isUnsafe && isValidIntegerString) {
+        try {
+          return BigInt(context.source);
+        } catch {
+          // Fallback: return original value if parsing fails
+        }
       }
     }
     return value;

@@ -331,7 +331,6 @@ describe('redirects', () => {
       it('should sanitize headers if redirected to different origin', async () => {
         const server1 = await startHTTPServer((req, res) => {
           if (req.path === '/redirect') {
-            console.log('Redirecting to server2...');
             res.writeHead(302, {Location: server2.origin + '/final'});
             res.end();
           }
@@ -353,9 +352,6 @@ describe('redirects', () => {
         const response = await axiosInstance.get(`${server1.origin}/redirect`, {
           headers: {
             Authorization: 'Bearer secret-token'
-          },
-          beforeRedirect({url, redirectTo}) {
-            console.log(`${url} => ${redirectTo}`);
           }
         });
 
@@ -515,14 +511,9 @@ describe('redirects', () => {
         const dummyDataBuffer = Buffer.from('Dummy request payload');
 
         const stream = (async function* () {
-          try {
-            for (let i = 0; i < 5; i++) {
-              await setTimeoutAsync(100);
-              console.log(`Yielding chunk ${i + 1}`);
-              yield dummyDataBuffer;
-            }
-          } finally {
-            console.log(`Stream generator finally block executed`);
+          for (let i = 0; i < 5; i++) {
+            await setTimeoutAsync(100);
+            yield dummyDataBuffer;
           }
         })();
 
@@ -532,7 +523,6 @@ describe('redirects', () => {
           for await (const chunk of stream) {
             bytesRead += chunk.byteLength;
             yield chunk;
-            console.log('Proxy chunk', bytesRead);
           }
         })();
 

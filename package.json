@@ -1,6 +1,6 @@
 {
   "name": "axios",
-  "version": "1.15.1",
+  "version": "1.15.2",
   "description": "Promise based HTTP client for the browser and node.js",
   "main": "./dist/node/axios.cjs",
   "module": "./index.js",

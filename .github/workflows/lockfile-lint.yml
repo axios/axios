@@ -1,0 +1,47 @@
+name: Lockfile lint
+
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/lockfile-lint.yml'
+  push:
+    branches: [v1.x]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile-lint:
+    name: Validate package-lock.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24.x
+
+      - name: Run lockfile-lint
+        # Validates that every resolved URL uses HTTPS on registry.npmjs.org
+        # and that every entry carries an integrity hash. Catches swap to a
+        # mirror, a git/file: URL, or integrity stripping on a dep-update PR.
+        # Pinned by name only (no lockfile-lint in devDependencies) so that a
+        # compromised dev tree cannot suppress this check.
+        run: >
+          npx --yes lockfile-lint@4.14.0
+          --type npm
+          --path package-lock.json
+          --validate-https
+          --allowed-hosts npm
+          --validate-integrity
+          --validate-package-names
+          --empty-hostname false

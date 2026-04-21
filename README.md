@@ -92,6 +92,8 @@
 - [Semver](#semver)
 - [Promises](#promises)
 - [TypeScript](#typescript)
+- [Contributing](#contributing)
+  - [Local setup](#local-setup)
 - [Resources](#resources)
 - [Credits](#credits)
 - [License](#license)
@@ -125,12 +127,6 @@ Using npm:
 
 ```bash
 $ npm install axios
-```
-
-Using bower:
-
-```bash
-$ bower install axios
 ```
 
 Using yarn:
@@ -378,6 +374,19 @@ The available instance methods are listed below. The specified config will be me
 
 ## Request Config
 
+### ⚠️ Security notice: decompression-bomb protection is opt-in
+
+By default `maxContentLength` and `maxBodyLength` are `-1` (unlimited). A malicious or compromised server can return a tiny gzip/deflate/brotli body that expands to gigabytes and exhaust the Node.js process.
+
+If you call servers you do not fully trust, **set a cap**:
+
+```js
+axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
+axios.defaults.maxBodyLength = 10 * 1024 * 1024;
+```
+
+See the [security guide](https://axios.rest/pages/misc/security.html) for details.
+
 These are the available config options for making requests. Only the `url` is required. Requests will default to `GET` if `method` is not specified.
 
 ```js
@@ -591,7 +600,18 @@ These are the available config options for making requests. Only the `url` is re
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
   // Only either `socketPath` or `proxy` can be specified.
   // If both are specified, `socketPath` is used.
+  //
+  // Security: when `socketPath` is set, hostname/port of the URL are ignored,
+  // which bypasses hostname-based SSRF protections. Never derive `socketPath`
+  // from untrusted input. Use `allowedSocketPaths` (below) to restrict accepted
+  // socket paths for defense-in-depth.
   socketPath: null, // default
+
+  // `allowedSocketPaths` restricts which `socketPath` values are accepted.
+  // Accepts a string or array of strings. Entries and the incoming socketPath
+  // are compared after path.resolve(). A mismatch throws AxiosError with code
+  // `ERR_BAD_OPTION_VALUE`. When null/undefined, no restriction is applied.
+  allowedSocketPaths: null, // default
 
   // `transport` determines the transport method that will be used to make the request.
   // If defined, it will be used. Otherwise, if `maxRedirects` is 0,
@@ -2001,6 +2021,23 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 You can use Gitpod, an online IDE(which is free for Open Source) for contributing or running the examples online.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/main/examples/server.js)
+
+## Contributing
+
+### Local setup
+
+As a supply-chain hardening measure, this repository ships a project-level `.npmrc` that sets `ignore-scripts=true`. This blocks npm lifecycle scripts (`preinstall`, `install`, `postinstall`, `prepare`) from any direct or transitive dependency when you run `npm install` or `npm ci` inside the repo. See [THREATMODEL.md](./THREATMODEL.md) (threat T-S2) for the rationale.
+
+One consequence: the repository's own `prepare` hook (which installs Husky's git hooks) will **not** run automatically. After your first install, enable the git hooks manually:
+
+```bash
+npm ci
+npm rebuild husky && npx husky
+```
+
+Run those two commands once per fresh checkout. You do **not** need to re-run them after every subsequent `npm install`.
+
+Do not remove `ignore-scripts=true` from `.npmrc` to "fix" this — that re-opens the lifecycle-script attack surface for every other package in the tree. All CI workflows already invoke npm with `--ignore-scripts`, so local behaviour matches CI.
 
 ## Resources
 

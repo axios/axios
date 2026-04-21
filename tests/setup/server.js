@@ -1,25 +1,36 @@
 import http from 'http';
 import http2 from 'http2';
 import stream from 'stream';
-import getStream from 'get-stream';
+import getStream, { getStreamAsBuffer } from 'get-stream';
 import { Throttle } from 'stream-throttle';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import selfsigned from 'selfsigned';
-
-export const LOCAL_SERVER_URL = 'http://localhost:4444';
+import {setTimeoutAsync} from "./helpers.js";
 
 export const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
 
-export const setTimeoutAsync = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const certificate = selfsigned.generate(null, { keySize: 2048 });
+const certificatePromise = selfsigned.generate(null, { keySize: 2048 });
 const trackedServers = new Set();
 
 const untrackServer = (server) => {
   trackedServers.delete(server);
 };
 
-export const startHTTPServer = (handlerOrOptions, options) => {
+const decorateRequest = (handler) => {
+  return (req, res) => {
+    const {headers} = req;
+    const url = new URL(req.url, `https://${headers[':authority'] || headers['host'] || 'localhost'}`);
+    Object.assign(req, {
+      path: url.pathname,
+      searchParams: url.searchParams
+    });
+    return handler(req, res);
+  }
+}
+
+export const startHTTPServer = async (handlerOrOptions, options) => {
+  const certificate = await certificatePromise;
+
   const {
     handler,
     useBuffering = false,
@@ -28,7 +39,7 @@ export const startHTTPServer = (handlerOrOptions, options) => {
     keepAlive = 1000,
     useHTTP2,
     key = certificate.private,
-    cert = certificate.cert,
+    cert = certificate.cert
   } = Object.assign(
     typeof handlerOrOptions === 'function'
       ? {
@@ -69,8 +80,8 @@ export const startHTTPServer = (handlerOrOptions, options) => {
       };
 
     const server = useHTTP2
-      ? http2.createSecureServer({ key, cert }, serverHandler)
-      : http.createServer(serverHandler);
+      ? http2.createSecureServer({ key, cert }, decorateRequest(serverHandler))
+      : http.createServer(decorateRequest(serverHandler));
 
     const sessions = new Set();
 
@@ -97,6 +108,10 @@ export const startHTTPServer = (handlerOrOptions, options) => {
         reject(err);
         return;
       }
+
+      const actualPort = server.address().port;
+
+      server.origin = useHTTP2 ? `https://localhost:${actualPort}` : `http://localhost:${actualPort}`;
 
       trackedServers.add(this);
       resolve(this);
@@ -126,7 +141,7 @@ export const stopAllTrackedHTTPServers = async (timeout = 10000) => {
 
 export const handleFormData = (req) => {
   return new Promise((resolve, reject) => {
-    const form = new formidable.IncomingForm();
+    const form = new IncomingForm();
 
     form.parse(req, (err, fields, files) => {
       if (err) {
@@ -213,7 +228,7 @@ export const startTestServer = async (port) => {
           response.form = fields;
           response.files = files;
         } else {
-          response.body = (await getStream(req, { encoding: 'buffer' })).toString('hex');
+          response.body = (await getStreamAsBuffer(req)).toString('hex');
         }
 
         return {

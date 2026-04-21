@@ -15,14 +15,13 @@ import http from 'http';
 import https from 'https';
 import net from 'net';
 import stream from 'stream';
-import url from 'url';
 import zlib from 'zlib';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import devNull from 'dev-null';
 import FormDataLegacy from 'form-data';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import { FormData as FormDataPolyfill, Blob as BlobPolyfill } from 'formdata-node';
 import express from 'express';
 import multer from 'multer';
@@ -30,6 +29,12 @@ import getStream from 'get-stream';
 import bodyParser from 'body-parser';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import { lookup } from 'dns';
+import { EventEmitter } from 'events';
+
+const OPEN_WEB_PORT = 80;
+const SERVER_PORT = 8020;
+const PROXY_PORT = 8030;
+const ALTERNATE_SERVER_PORT = 8040;
 
 describe('supports http with nodejs', () => {
   const adaptersTestsDir = path.join(process.cwd(), 'tests/unit/adapters');
@@ -59,7 +64,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(data));
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -82,7 +87,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(data));
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -102,7 +107,7 @@ describe('supports http with nodejs', () => {
           res.end();
         }, 1000);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -121,6 +126,34 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should sanitize request headers containing CRLF characters', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            xTest: req.headers['x-test'],
+            injected: req.headers.injected ?? null,
+          })
+        );
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const { data } = await axios.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          'x-test': '\tok\r\nInjected: yes ',
+        },
+      });
+
+      assert.strictEqual(data.xTest, 'okInjected: yes');
+      assert.strictEqual(data.injected, null);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should parse the timeout property', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -128,7 +161,7 @@ describe('supports http with nodejs', () => {
           res.end();
         }, 1000);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -154,7 +187,7 @@ describe('supports http with nodejs', () => {
           res.end();
         }, 1000);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -180,7 +213,7 @@ describe('supports http with nodejs', () => {
           res.end();
         }, 1000);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -212,7 +245,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(data));
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -237,7 +270,7 @@ describe('supports http with nodejs', () => {
         const jsonBuffer = Buffer.from(JSON.stringify(data));
         res.end(Buffer.concat([bomBuffer, jsonBuffer]));
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -261,7 +294,7 @@ describe('supports http with nodejs', () => {
 
         res.end(expectedResponse);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -283,7 +316,7 @@ describe('supports http with nodejs', () => {
         res.statusCode = 302;
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -311,7 +344,7 @@ describe('supports http with nodejs', () => {
         res.end();
         i++;
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -333,7 +366,7 @@ describe('supports http with nodejs', () => {
         res.statusCode = 302;
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -362,12 +395,12 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         requestCount += 1;
         if (requestCount <= totalRedirectCount) {
-          res.setHeader('Location', 'http://localhost:8080');
+          res.setHeader('Location', `http://localhost:${SERVER_PORT}`);
           res.writeHead(302);
         }
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -392,13 +425,13 @@ describe('supports http with nodejs', () => {
           res.end();
         });
       },
-      { port: 4000 }
+      { port: PROXY_PORT }
     );
 
     await axios.get(`http://localhost:${server.address().port}/`, {
       proxy: {
         host: 'localhost',
-        port: 4000,
+        port: PROXY_PORT,
       },
       maxRedirects: totalRedirectCount,
       beforeRedirect: (options) => {
@@ -419,7 +452,7 @@ describe('supports http with nodejs', () => {
         res.statusCode = 400;
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -455,7 +488,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -487,7 +520,7 @@ describe('supports http with nodejs', () => {
           return;
         }
 
-        var parsed = url.parse(req.url);
+        var parsed = new URL(req.url, 'http://localhost');
         if (parsed.pathname === '/one') {
           res.setHeader('Location', '/two');
           res.statusCode = 302;
@@ -496,7 +529,7 @@ describe('supports http with nodejs', () => {
           res.end();
         }
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -532,7 +565,7 @@ describe('supports http with nodejs', () => {
           res.setHeader('Content-Encoding', 'gzip');
           res.end(zipped);
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -552,7 +585,7 @@ describe('supports http with nodejs', () => {
           res.setHeader('Content-Encoding', 'gzip');
           res.end('invalid response');
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -584,7 +617,7 @@ describe('supports http with nodejs', () => {
           res.setHeader('Content-Encoding', 'gzip');
           res.end(zipped);
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -661,10 +694,13 @@ describe('supports http with nodejs', () => {
 
         describe(`${typeName} decompression`, () => {
           it('should support decompression', async () => {
-            const server = await startHTTPServer(async (req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.end(await zipped);
-            });
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.end(await zipped);
+              },
+              { port: SERVER_PORT }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);
@@ -675,11 +711,14 @@ describe('supports http with nodejs', () => {
           });
 
           it(`should not fail if response content-length header is missing (${type})`, async () => {
-            const server = await startHTTPServer(async (req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.removeHeader('Content-Length');
-              res.end(await zipped);
-            });
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.removeHeader('Content-Length');
+                res.end(await zipped);
+              },
+              { port: SERVER_PORT }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);
@@ -690,13 +729,16 @@ describe('supports http with nodejs', () => {
           });
 
           it('should not fail with chunked responses (without Content-Length header)', async () => {
-            const server = await startHTTPServer(async (req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.setHeader('Transfer-Encoding', 'chunked');
-              res.removeHeader('Content-Length');
-              res.write(await zipped);
-              res.end();
-            });
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.setHeader('Transfer-Encoding', 'chunked');
+                res.removeHeader('Content-Length');
+                res.write(await zipped);
+                res.end();
+              },
+              { port: SERVER_PORT }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);
@@ -707,11 +749,14 @@ describe('supports http with nodejs', () => {
           });
 
           it('should not fail with an empty response without content-length header (Z_BUF_ERROR)', async () => {
-            const server = await startHTTPServer((req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.removeHeader('Content-Length');
-              res.end();
-            });
+            const server = await startHTTPServer(
+              (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.removeHeader('Content-Length');
+                res.end();
+              },
+              { port: SERVER_PORT }
+            );
 
             try {
               const { data } = await axios.get(`http://localhost:${server.address().port}`);
@@ -722,10 +767,13 @@ describe('supports http with nodejs', () => {
           });
 
           it('should not fail with an empty response with content-length header (Z_BUF_ERROR)', async () => {
-            const server = await startHTTPServer((req, res) => {
-              res.setHeader('Content-Encoding', type);
-              res.end();
-            });
+            const server = await startHTTPServer(
+              (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.end();
+              },
+              { port: SERVER_PORT }
+            );
 
             try {
               await axios.get(`http://localhost:${server.address().port}`);
@@ -746,7 +794,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end(str);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -762,7 +810,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end(req.headers.authorization);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -783,7 +831,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end(req.headers.authorization);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -805,7 +853,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end(req.headers['user-agent']);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -824,7 +872,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end(req.headers['user-agent']);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -842,7 +890,7 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(req.headers['content-length'], '42');
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -859,7 +907,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end(Array(5000).join('#'));
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -879,7 +927,7 @@ describe('supports http with nodejs', () => {
     const str = Array(100000).join('ж');
     const server = await startHTTPServer(
       (req, res) => {
-        const parsed = url.parse(req.url);
+        const parsed = new URL(req.url, 'http://localhost');
 
         if (parsed.pathname === '/two') {
           res.setHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -891,7 +939,7 @@ describe('supports http with nodejs', () => {
         res.statusCode = 302;
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -916,7 +964,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -953,7 +1001,7 @@ describe('supports http with nodejs', () => {
           res.end('OK');
         });
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -967,7 +1015,7 @@ describe('supports http with nodejs', () => {
   });
 
   it('should display error while parsing params', async () => {
-    const server = await startHTTPServer(() => {}, { port: 8080 });
+    const server = await startHTTPServer(() => {}, { port: SERVER_PORT });
 
     try {
       await assert.rejects(
@@ -1044,7 +1092,7 @@ describe('supports http with nodejs', () => {
         (req, res) => {
           req.pipe(res);
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -1077,7 +1125,7 @@ describe('supports http with nodejs', () => {
     });
 
     it('should pass errors for a failed stream', async () => {
-      const server = await startHTTPServer(() => {}, { port: 8080 });
+      const server = await startHTTPServer(() => {}, { port: SERVER_PORT });
       const notExistPath = path.join(adaptersTestsDir, 'does_not_exist');
 
       try {
@@ -1148,7 +1196,7 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(req.headers['content-length'], buf.length.toString());
         req.pipe(res);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -1182,7 +1230,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('12345');
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -1207,7 +1255,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 0 }
+      { port: PROXY_PORT }
     );
 
     try {
@@ -1251,9 +1299,9 @@ describe('supports http with nodejs', () => {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
             res.end('12345');
           },
-          { port: 8080 }
+          { port: SERVER_PORT }
         )
-        .listen(8080, () => resolve(httpsServer));
+        .listen(SERVER_PORT, () => resolve(httpsServer));
 
       httpsServer.on('error', reject);
     });
@@ -1290,9 +1338,9 @@ describe('supports http with nodejs', () => {
               response.end();
             });
           },
-          { port: 8081 }
+          { port: PROXY_PORT }
         )
-        .listen(8081, () => resolve(httpsProxy));
+        .listen(PROXY_PORT, () => resolve(httpsProxy));
 
       httpsProxy.on('error', reject);
     });
@@ -1324,7 +1372,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('123456789');
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -1355,7 +1403,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('4567');
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -1380,7 +1428,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 8081 }
+      { port: PROXY_PORT }
     );
 
     const proxyUrl = `http://localhost:${proxy.address().port}/`;
@@ -1458,9 +1506,9 @@ describe('supports http with nodejs', () => {
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
             res.end('12345');
           },
-          { port: 8080 }
+          { port: SERVER_PORT }
         )
-        .listen(8080, () => resolve(httpsServer));
+        .listen(SERVER_PORT, () => resolve(httpsServer));
 
       httpsServer.on('error', reject);
     });
@@ -1497,9 +1545,9 @@ describe('supports http with nodejs', () => {
               response.end();
             });
           },
-          { port: 8081 }
+          { port: PROXY_PORT }
         )
-        .listen(8081, () => resolve(httpsProxy));
+        .listen(PROXY_PORT, () => resolve(httpsProxy));
 
       httpsProxy.on('error', reject);
     });
@@ -1561,7 +1609,7 @@ describe('supports http with nodejs', () => {
         res.statusCode = 302;
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -1597,7 +1645,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 8081 }
+      { port: PROXY_PORT }
     );
 
     const proxyUrl = `http://localhost:${proxy.address().port}`;
@@ -1651,7 +1699,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('4567');
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -1676,7 +1724,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 8081 }
+      { port: PROXY_PORT }
     );
 
     const noProxyValue = 'foo.com, localhost,bar.net , , quix.co';
@@ -1719,6 +1767,114 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should not use proxy for localhost with trailing dot when listed in no_proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    let proxyRequests = 0;
+    const proxy = await startHTTPServer(
+      (_, response) => {
+        proxyRequests += 1;
+        response.end('proxied');
+      },
+      { port: PROXY_PORT }
+    );
+
+    const noProxyValue = 'localhost,127.0.0.1,::1';
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = noProxyValue;
+    process.env.NO_PROXY = noProxyValue;
+
+    try {
+      await assert.rejects(axios.get('http://localhost.:1/', { timeout: 100 }));
+      assert.equal(proxyRequests, 0, 'should not use proxy for localhost with trailing dot');
+    } finally {
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
+  it('should not use proxy for bracketed IPv6 loopback when listed in no_proxy', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    let proxyRequests = 0;
+    const proxy = await startHTTPServer(
+      (_, response) => {
+        proxyRequests += 1;
+        response.end('proxied');
+      },
+      { port: PROXY_PORT }
+    );
+
+    const noProxyValue = 'localhost,127.0.0.1,::1';
+    const proxyUrl = `http://localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = noProxyValue;
+    process.env.NO_PROXY = noProxyValue;
+
+    try {
+      await assert.rejects(axios.get('http://[::1]:1/', { timeout: 100 }));
+      assert.equal(proxyRequests, 0, 'should not use proxy for IPv6 loopback');
+    } finally {
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
   it('should use proxy for domains not in no_proxy', async () => {
     const originalHttpProxy = process.env.http_proxy;
     const originalHTTPProxy = process.env.HTTP_PROXY;
@@ -1730,7 +1886,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('4567');
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -1755,7 +1911,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 8081 }
+      { port: PROXY_PORT }
     );
 
     const noProxyValue = 'foo.com, ,bar.net , quix.co';
@@ -1803,7 +1959,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -1825,7 +1981,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 8081 }
+      { port: PROXY_PORT }
     );
 
     try {
@@ -1858,7 +2014,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     const proxy = await startHTTPServer(
@@ -1880,7 +2036,7 @@ describe('supports http with nodejs', () => {
           });
         });
       },
-      { port: 8081 }
+      { port: PROXY_PORT }
     );
 
     const proxyUrl = `http://user:pass@localhost:${proxy.address().port}/`;
@@ -1932,7 +2088,7 @@ describe('supports http with nodejs', () => {
       const proxy = {
         protocol: 'http:',
         host: 'hostname.abc.xyz',
-        port: 3300,
+        port: PROXY_PORT,
         auth: {
           username: '',
           password: '',
@@ -1954,23 +2110,48 @@ describe('supports http with nodejs', () => {
     const testCases = [
       {
         description: 'hostname and trailing colon in protocol',
-        proxyConfig: { hostname: '127.0.0.1', protocol: 'http:', port: 80 },
-        expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination },
+        proxyConfig: { hostname: '127.0.0.1', protocol: 'http:', port: OPEN_WEB_PORT },
+        expectedOptions: {
+          host: '127.0.0.1',
+          protocol: 'http:',
+          port: OPEN_WEB_PORT,
+          path: destination,
+        },
       },
       {
         description: 'hostname and no trailing colon in protocol',
-        proxyConfig: { hostname: '127.0.0.1', protocol: 'http', port: 80 },
-        expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination },
+        proxyConfig: { hostname: '127.0.0.1', protocol: 'http', port: OPEN_WEB_PORT },
+        expectedOptions: {
+          host: '127.0.0.1',
+          protocol: 'http:',
+          port: OPEN_WEB_PORT,
+          path: destination,
+        },
       },
       {
         description: 'both hostname and host -> hostname takes precedence',
-        proxyConfig: { hostname: '127.0.0.1', host: '0.0.0.0', protocol: 'http', port: 80 },
-        expectedOptions: { host: '127.0.0.1', protocol: 'http:', port: 80, path: destination },
+        proxyConfig: {
+          hostname: '127.0.0.1',
+          host: '0.0.0.0',
+          protocol: 'http',
+          port: OPEN_WEB_PORT,
+        },
+        expectedOptions: {
+          host: '127.0.0.1',
+          protocol: 'http:',
+          port: OPEN_WEB_PORT,
+          path: destination,
+        },
       },
       {
         description: 'only host and https protocol',
-        proxyConfig: { host: '0.0.0.0', protocol: 'https', port: 80 },
-        expectedOptions: { host: '0.0.0.0', protocol: 'https:', port: 80, path: destination },
+        proxyConfig: { host: '0.0.0.0', protocol: 'https', port: OPEN_WEB_PORT },
+        expectedOptions: {
+          host: '0.0.0.0',
+          protocol: 'https:',
+          port: OPEN_WEB_PORT,
+          path: destination,
+        },
       },
     ];
 
@@ -1994,7 +2175,7 @@ describe('supports http with nodejs', () => {
         // Call cancel() when the request has been sent but no response received.
         source.cancel('Operation has been canceled.');
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -2024,7 +2205,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -2046,7 +2227,7 @@ describe('supports http with nodejs', () => {
           res.end();
         }, 1000);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -2072,9 +2253,9 @@ describe('supports http with nodejs', () => {
               res.end();
             }, 1000);
           },
-          { port: 8080 }
+          { port: SERVER_PORT }
         )
-        .listen(8080, () => resolve(httpsServer));
+        .listen(SERVER_PORT, () => resolve(httpsServer));
 
       httpsServer.on('error', reject);
     });
@@ -2120,7 +2301,7 @@ describe('supports http with nodejs', () => {
         assert.equal(req.headers['user-agent'], `axios/${axios.VERSION}`);
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -2137,7 +2318,7 @@ describe('supports http with nodejs', () => {
         assert.equal('User-Agent' in req.headers, false);
         res.end();
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -2165,7 +2346,7 @@ describe('supports http with nodejs', () => {
           res.destroy();
         }, 200);
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -2190,7 +2371,7 @@ describe('supports http with nodejs', () => {
       (req, res) => {
         res.end('ok');
       },
-      { port: 8080 }
+      { port: SERVER_PORT }
     );
 
     try {
@@ -2240,7 +2421,7 @@ describe('supports http with nodejs', () => {
 
         const server = await startHTTPServer(
           (req, res) => {
-            const receivedForm = new formidable.IncomingForm();
+            const receivedForm = new IncomingForm();
 
             assert.ok(req.rawHeaders.some((header) => header.toLowerCase() === 'content-length'));
 
@@ -2259,7 +2440,7 @@ describe('supports http with nodejs', () => {
               );
             });
           },
-          { port: 8080 }
+          { port: SERVER_PORT }
         );
 
         try {
@@ -2269,15 +2450,15 @@ describe('supports http with nodejs', () => {
             },
           });
 
-          assert.deepStrictEqual(response.data.fields, { foo: 'bar' });
+          assert.deepStrictEqual(response.data.fields, { foo: ['bar'] });
 
-          assert.strictEqual(response.data.files.file1.mimetype, 'image/jpeg');
-          assert.strictEqual(response.data.files.file1.originalFilename, 'temp/bar.jpg');
-          assert.strictEqual(response.data.files.file1.size, 3);
+          assert.strictEqual(response.data.files.file1[0].mimetype, 'image/jpeg');
+          assert.strictEqual(response.data.files.file1[0].originalFilename, 'temp/bar.jpg');
+          assert.strictEqual(response.data.files.file1[0].size, 3);
 
-          assert.strictEqual(response.data.files.fileStream.mimetype, 'image/png');
-          assert.strictEqual(response.data.files.fileStream.originalFilename, 'axios.png');
-          assert.strictEqual(response.data.files.fileStream.size, stat.size);
+          assert.strictEqual(response.data.files.fileStream[0].mimetype, 'image/png');
+          assert.strictEqual(response.data.files.fileStream[0].originalFilename, 'axios.png');
+          assert.strictEqual(response.data.files.fileStream[0].size, stat.size);
         } finally {
           await stopHTTPServer(server);
         }
@@ -2297,7 +2478,7 @@ describe('supports http with nodejs', () => {
               })
             );
           },
-          { port: 8080 }
+          { port: SERVER_PORT }
         );
 
         try {
@@ -2313,10 +2494,10 @@ describe('supports http with nodejs', () => {
             maxRedirects: 0,
           });
 
-          assert.deepStrictEqual(data.fields, { foo1: 'bar1', foo2: 'bar2' });
-          assert.deepStrictEqual(typeof data.files.file1, 'object');
+          assert.deepStrictEqual(data.fields, { foo1: ['bar1'], foo2: ['bar2'] });
+          assert.deepStrictEqual(typeof data.files.file1[0], 'object');
 
-          const { size, mimetype, originalFilename } = data.files.file1;
+          const { size, mimetype, originalFilename } = data.files.file1[0];
 
           assert.deepStrictEqual(
             { size, mimetype, originalFilename },
@@ -2355,7 +2536,7 @@ describe('supports http with nodejs', () => {
           const expressServer = app.listen(0, () => resolve(expressServer));
           expressServer.on('error', reject);
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -2383,6 +2564,54 @@ describe('supports http with nodejs', () => {
         });
       }
     });
+
+    it('should only match explicit routes for express 5 form handlers', async () => {
+      const app = express();
+
+      app.post('/', multer().none(), (req, res) => {
+        res.status(200).send(JSON.stringify({ route: 'root', body: req.body }));
+      });
+
+      app.post('/unexpected', multer().none(), (req, res) => {
+        res.status(418).send('wrong-route');
+      });
+
+      const server = await new Promise(
+        (resolve, reject) => {
+          const expressServer = app.listen(0, () => resolve(expressServer));
+          expressServer.on('error', reject);
+        },
+        { port: SERVER_PORT }
+      );
+
+      const rootUrl = `http://localhost:${server.address().port}`;
+
+      try {
+        const rootResponse = await axios.postForm(rootUrl, { foo: 'bar' });
+        assert.strictEqual(rootResponse.status, 200);
+        assert.deepStrictEqual(rootResponse.data, { route: 'root', body: { foo: 'bar' } });
+
+        await assert.rejects(
+          () => axios.postForm(`${rootUrl}/unexpected`, { foo: 'bar' }),
+          (error) => {
+            assert.strictEqual(error.response.status, 418);
+            assert.strictEqual(error.response.data, 'wrong-route');
+            return true;
+          }
+        );
+      } finally {
+        await new Promise((resolve, reject) => {
+          server.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
+        });
+      }
+    });
   });
 
   describe('Blob', () => {
@@ -2391,7 +2620,7 @@ describe('supports http with nodejs', () => {
         async (req, res) => {
           res.end(await getStream(req));
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -2410,7 +2639,7 @@ describe('supports http with nodejs', () => {
   });
 
   describe('URLEncoded Form', () => {
-    it('should post object data as url-encoded form if content-type is application/x-www-form-urlencoded', async () => {
+    it('should post object data as url-encoded form regardless of content-type header casing', async () => {
       const app = express();
       const obj = {
         arr1: ['1', '2', '3'],
@@ -2433,16 +2662,19 @@ describe('supports http with nodejs', () => {
           const expressServer = app.listen(0, () => resolve(expressServer));
           expressServer.on('error', reject);
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
-        const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        });
-        assert.deepStrictEqual(response.data, obj);
+        for (const headerName of ['content-type', 'Content-Type']) {
+          const response = await axios.post(`http://localhost:${server.address().port}/`, obj, {
+            headers: {
+              [headerName]: 'application/x-www-form-urlencoded',
+            },
+          });
+
+          assert.deepStrictEqual(response.data, obj);
+        }
       } finally {
         await new Promise((resolve, reject) => {
           server.close((error) => {
@@ -2475,7 +2707,7 @@ describe('supports http with nodejs', () => {
         (req, res) => {
           req.pipe(res);
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -2491,6 +2723,73 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(response.data, form.toString());
       } finally {
         await stopHTTPServer(server);
+      }
+    });
+
+    it('should parse nested urlencoded payloads and ignore mismatched content-type', async () => {
+      const app = express();
+
+      app.use(bodyParser.urlencoded({ extended: true }));
+
+      app.post('/', (req, res) => {
+        const parserRanBeforeHandler = Boolean(req.body && Object.keys(req.body).length);
+
+        res.send(
+          JSON.stringify({
+            parserRanBeforeHandler,
+            body: req.body,
+          })
+        );
+      });
+
+      const server = await new Promise(
+        (resolve, reject) => {
+          const expressServer = app.listen(0, () => resolve(expressServer));
+          expressServer.on('error', reject);
+        },
+        { port: SERVER_PORT }
+      );
+
+      const rootUrl = `http://localhost:${server.address().port}/`;
+      const payload = 'user[name]=Peter&tags[]=a&tags[]=b';
+
+      try {
+        const parsedResponse = await axios.post(rootUrl, payload, {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        });
+
+        assert.deepStrictEqual(parsedResponse.data, {
+          parserRanBeforeHandler: true,
+          body: {
+            user: { name: 'Peter' },
+            tags: ['a', 'b'],
+          },
+        });
+
+        const ignoredResponse = await axios.post(rootUrl, payload, {
+          headers: {
+            'content-type': 'text/plain',
+          },
+        });
+
+        assert.strictEqual(ignoredResponse.data.parserRanBeforeHandler, false);
+        assert.notDeepStrictEqual(ignoredResponse.data.body, {
+          user: { name: 'Peter' },
+          tags: ['a', 'b'],
+        });
+      } finally {
+        await new Promise((resolve, reject) => {
+          server.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          });
+        });
       }
     });
   });
@@ -2541,7 +2840,7 @@ describe('supports http with nodejs', () => {
           {
             rate: 100 * 1024,
           },
-          { port: 8080 }
+          { port: SERVER_PORT }
         );
 
         try {
@@ -2610,7 +2909,7 @@ describe('supports http with nodejs', () => {
           {
             rate: 100 * 1024,
           },
-          { port: 8080 }
+          { port: SERVER_PORT }
         );
 
         try {
@@ -2783,10 +3082,13 @@ describe('supports http with nodejs', () => {
 
   describe('request aborting', () => {
     it('should be able to abort the response stream', async () => {
-      const server = await startHTTPServer({
-        rate: 100000,
-        useBuffering: true,
-      });
+      const server = await startHTTPServer(
+        {
+          rate: 100000,
+          useBuffering: true,
+        },
+        { port: SERVER_PORT }
+      );
 
       try {
         const buf = Buffer.alloc(1024 * 1024);
@@ -2832,7 +3134,7 @@ describe('supports http with nodejs', () => {
   });
 
   it('should support function as paramsSerializer value', async () => {
-    const server = await startHTTPServer((req, res) => res.end(req.url));
+    const server = await startHTTPServer((req, res) => res.end(req.url), { port: SERVER_PORT });
 
     try {
       const { data } = await axios.post(`http://localhost:${server.address().port}`, 'test', {
@@ -2989,7 +3291,7 @@ describe('supports http with nodejs', () => {
             })
           );
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -3017,7 +3319,7 @@ describe('supports http with nodejs', () => {
       });
 
     it('should merge request http2Options with its instance config', async () => {
-      const http2Axios = createHttp2Axios('https://127.0.0.1:8080');
+      const http2Axios = createHttp2Axios('https://localhost:8080');
 
       const { data } = await http2Axios.get('/', {
         http2Options: {
@@ -3043,12 +3345,12 @@ describe('supports http with nodejs', () => {
         },
         {
           useHTTP2: true,
-          port: 8080,
+          port: SERVER_PORT,
         }
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
         const { data } = await http2Axios.get(localServerURL);
         assert.deepStrictEqual(data, 'OK');
@@ -3060,11 +3362,11 @@ describe('supports http with nodejs', () => {
     it('should support request payload', async () => {
       const server = await startHTTPServer(null, {
         useHTTP2: true,
-        port: 8080,
+        port: SERVER_PORT,
       });
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
         const payload = 'DATA';
         const { data } = await http2Axios.post(localServerURL, payload);
@@ -3092,12 +3394,12 @@ describe('supports http with nodejs', () => {
         },
         {
           useHTTP2: true,
-          port: 8080,
+          port: SERVER_PORT,
         }
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
         const form = new FormData();
         form.append('x', 'foo');
@@ -3107,8 +3409,8 @@ describe('supports http with nodejs', () => {
 
         assert.deepStrictEqual(data, {
           fields: {
-            x: 'foo',
-            y: 'bar',
+            x: ['foo'],
+            y: ['bar'],
           },
           files: {},
         });
@@ -3134,12 +3436,12 @@ describe('supports http with nodejs', () => {
             },
             {
               useHTTP2: true,
-              port: 8080,
+              port: SERVER_PORT,
             }
           );
 
           try {
-            const localServerURL = `https://127.0.0.1:${server.address().port}`;
+            const localServerURL = `https://localhost:${server.address().port}`;
             const http2Axios = createHttp2Axios(localServerURL);
             const { data } = await http2Axios.get(localServerURL, {
               responseType,
@@ -3165,12 +3467,12 @@ describe('supports http with nodejs', () => {
         },
         {
           useHTTP2: true,
-          port: 8080,
+          port: SERVER_PORT,
         }
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
 
         server.on('stream', (http2Stream) => {
@@ -3210,12 +3512,12 @@ describe('supports http with nodejs', () => {
         },
         {
           useHTTP2: true,
-          port: 8080,
+          port: SERVER_PORT,
         }
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
 
         server.on('stream', (http2Stream) => {
@@ -3251,12 +3553,12 @@ describe('supports http with nodejs', () => {
         },
         {
           useHTTP2: true,
-          port: 8080,
+          port: SERVER_PORT,
         }
       );
 
       try {
-        const localServerURL = `https://127.0.0.1:${server.address().port}`;
+        const localServerURL = `https://localhost:${server.address().port}`;
         const http2Axios = createHttp2Axios(localServerURL);
 
         server.on('stream', (http2Stream) => {
@@ -3302,12 +3604,12 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: 8080,
+            port: SERVER_PORT,
           }
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const [response1, response2] = await Promise.all([
@@ -3339,7 +3641,7 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: 8080,
+            port: SERVER_PORT,
           }
         );
 
@@ -3351,13 +3653,13 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: 8081,
+            port: ALTERNATE_SERVER_PORT,
           }
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
-          const localServerURL2 = `https://127.0.0.1:${server2.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
+          const localServerURL2 = `https://localhost:${server2.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const [response1, response2] = await Promise.all([
@@ -3389,33 +3691,29 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: 8080,
+            port: SERVER_PORT,
           }
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const [response1, response2] = await Promise.all([
             http2Axios.get(localServerURL, {
-              responseType: 'stream',
-              http2Options: {},
+              http2Options: {
+                sessionTimeout: 2000,
+              },
             }),
             http2Axios.get(localServerURL, {
-              responseType: 'stream',
               http2Options: {
-                foo: 'test',
+                sessionTimeout: 4000,
               },
             }),
           ]);
 
-          assert.notStrictEqual(response1.data.session, response2.data.session);
-
-          assert.deepStrictEqual(
-            await Promise.all([getStream(response1.data), getStream(response2.data)]),
-            ['OK', 'OK']
-          );
+          assert.notStrictEqual(response1.request.session, response2.request.session);
+          assert.deepStrictEqual([response1.data, response2.data], ['OK', 'OK']);
         } finally {
           await stopHTTPServer(server);
         }
@@ -3428,12 +3726,12 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: 8080,
+            port: SERVER_PORT,
           }
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const responses = await Promise.all([
@@ -3470,12 +3768,12 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: 8080,
+            port: SERVER_PORT,
           }
         );
 
         try {
-          const localServerURL = `https://127.0.0.1:${server.address().port}`;
+          const localServerURL = `https://localhost:${server.address().port}`;
           const http2Axios = createHttp2Axios(localServerURL);
 
           const response1 = await http2Axios.get(localServerURL, {
@@ -3485,6 +3783,7 @@ describe('supports http with nodejs', () => {
             },
           });
 
+          const session1 = response1.data.session;
           const data1 = await getStream(response1.data);
 
           await setTimeoutAsync(5000);
@@ -3496,9 +3795,10 @@ describe('supports http with nodejs', () => {
             },
           });
 
+          const session2 = response2.data.session;
           const data2 = await getStream(response2.data);
 
-          assert.notStrictEqual(response1.data.session, response2.data.session);
+          assert.notStrictEqual(session1, session2);
           assert.strictEqual(data1, 'OK');
           assert.strictEqual(data2, 'OK');
         } finally {
@@ -3509,10 +3809,13 @@ describe('supports http with nodejs', () => {
   });
 
   it('should not abort stream on settle rejection', async () => {
-    const server = await startHTTPServer((req, res) => {
-      res.statusCode = 404;
-      res.end('OK');
-    });
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.statusCode = 404;
+        res.end('OK');
+      },
+      { port: SERVER_PORT }
+    );
 
     try {
       let error;
@@ -3532,6 +3835,60 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should reject when only the request socket emits an error', async () => {
+    const noop = () => {};
+    const socket = new EventEmitter();
+    socket.setKeepAlive = noop;
+    socket.on('error', noop);
+
+    const transport = {
+      request() {
+        return new (class MockRequest extends EventEmitter {
+          constructor() {
+            super();
+            this.destroyed = false;
+          }
+
+          setTimeout() {}
+
+          write() {}
+
+          end() {
+            this.emit('socket', socket);
+
+            setImmediate(() => {
+              socket.emit('error', Object.assign(new Error('write EPIPE'), { code: 'EPIPE' }));
+            });
+          }
+
+          destroy(err) {
+            if (this.destroyed) {
+              return;
+            }
+
+            this.destroyed = true;
+            err && this.emit('error', err);
+            this.emit('close');
+          }
+        })();
+      },
+    };
+
+    const error = await Promise.race([
+      axios.post('http://example.com/', 'test', {
+        transport,
+        maxRedirects: 0,
+      }),
+      setTimeoutAsync(200).then(() => {
+        throw new Error('socket error did not reject the request');
+      }),
+    ]).catch((err) => err);
+
+    assert.ok(error instanceof AxiosError);
+    assert.strictEqual(error.code, 'EPIPE');
+    assert.strictEqual(error.message, 'write EPIPE');
+  });
+
   describe('keep-alive', () => {
     it('should not fail with "socket hang up" when using timeouts', async () => {
       const server = await startHTTPServer(
@@ -3542,7 +3899,7 @@ describe('supports http with nodejs', () => {
 
           res.end('ok');
         },
-        { port: 8080 }
+        { port: SERVER_PORT }
       );
 
       try {
@@ -3553,5 +3910,66 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     }, 15000);
+
+    it('should remove request socket error listeners after keep-alive requests close', async () => {
+      const noop = () => {};
+      const socket = new EventEmitter();
+      socket.setKeepAlive = noop;
+      socket.on('error', noop);
+
+      const baseErrorListenerCount = socket.listenerCount('error');
+
+      const transport = {
+        request(_, cb) {
+          return new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+            }
+
+            setTimeout() {}
+
+            write() {}
+
+            end() {
+              this.emit('socket', socket);
+
+              setImmediate(() => {
+                const response = stream.Readable.from(['ok']);
+                response.statusCode = 200;
+                response.headers = {};
+
+                cb(response);
+                this.emit('close');
+              });
+            }
+
+            destroy(err) {
+              if (this.destroyed) {
+                return;
+              }
+
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+        },
+      };
+
+      await axios.get('http://example.com/first', {
+        transport,
+        maxRedirects: 0,
+      });
+      await setTimeoutAsync(0);
+      assert.strictEqual(socket.listenerCount('error'), baseErrorListenerCount);
+
+      await axios.get('http://example.com/second', {
+        transport,
+        maxRedirects: 0,
+      });
+      await setTimeoutAsync(0);
+      assert.strictEqual(socket.listenerCount('error'), baseErrorListenerCount);
+    });
   });
 });

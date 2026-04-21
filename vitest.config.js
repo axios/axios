@@ -15,12 +15,36 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'e2e',
+          environment: 'node',
+          include: ['tests/e2e/node/**/*.test.js'],
+          setupFiles: [],
+        },
+      },
+      {
+        test: {
           name: 'browser',
           include: ['tests/browser/**/*.browser.test.js'],
           browser: {
             enabled: true,
             provider: playwright(),
             instances: [{ browser: 'chromium' }],
+          },
+          setupFiles: ['tests/setup/browser.setup.js'],
+        },
+      },
+      {
+        test: {
+          name: 'browser-headless',
+          include: ['tests/browser/**/*.browser.test.js'],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            instances: [
+              { browser: 'chromium', headless: true },
+              { browser: 'firefox', headless: true },
+              { browser: 'webkit', headless: true },
+            ],
           },
           setupFiles: ['tests/setup/browser.setup.js'],
         },

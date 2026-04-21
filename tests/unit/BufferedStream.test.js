@@ -1,16 +1,18 @@
-import { describe, it, expect } from 'vitest'
+import {describe, it, expect} from 'vitest'
 import BufferedStream from "../../lib/helpers/BufferedStream.js";
+import {setTimeoutAsync} from "../setup/helpers.js";
 
 const textEncoder = new TextEncoder();
 
 describe('BufferedStream', () => {
+
   it('converts all chunks into binary buffers', async () => {
     const source = async function* () {
       yield 'chunk1';
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), { timeWindow: 100 });
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -32,7 +34,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), { timeWindow: 100 });
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -53,7 +55,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100});
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     const chunks1 = [];
     for await (const chunk of stream) {
@@ -82,7 +84,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), { timeWindow: 100 });
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     for await (const chunk of stream) {
       // just read to trigger buffering
@@ -109,7 +111,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), { timeWindow: 100 });
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -134,7 +136,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100});
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -157,9 +159,10 @@ describe('BufferedStream', () => {
 
     const ts = Date.now();
 
-    const stream = new BufferedStream(source(), { timeWindow: 100, maxBytes: 5 });
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 5});
 
     const chunks = [];
+
     for await (const chunk of stream) {
       chunks.push(chunk);
     }
@@ -183,7 +186,11 @@ describe('BufferedStream', () => {
 
     const controller = new AbortController();
 
-    const stream = new BufferedStream(source(), { timeWindow: 100, signal: controller.signal });
+    const stream = new BufferedStream(source(), {
+      timeWindow: 100,
+      maxBytes: 100,
+      signal: controller.signal
+    });
 
     const chunks = [];
     let error;
@@ -214,7 +221,7 @@ describe('BufferedStream', () => {
       throw new Error('Source error');
     };
 
-    const stream = new BufferedStream(source(), { timeWindow: 100 });
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     const chunks = [];
     let error;
@@ -242,7 +249,7 @@ describe('BufferedStream', () => {
       throw new Error('Source error');
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100});
+    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
 
     let error1, error2;
     try {
@@ -268,5 +275,55 @@ describe('BufferedStream', () => {
     expect(error2.message).toBe('Source error');
 
     expect(error2).toBe(error1); // should be the same error instance
+  });
+
+
+  it('should abort the first read attempt on re-reading', async () => {
+    const source = async function* () {
+      await setTimeoutAsync(200);
+      yield 'chunk1';
+      await setTimeoutAsync(200);
+      yield 'chunk2';
+    };
+
+    const stream = new BufferedStream(source(), {timeWindow: 1000, maxBytes: 100});
+
+    const readChunks = async (onDone) => {
+      const chunks = [];
+      let error;
+      try {
+        for await (const chunk of stream) {
+          chunks.push(chunk);
+        }
+      } catch (err) {
+        error = err;
+      }
+
+      return onDone([error, chunks]);
+    }
+
+    let result1, result2;
+
+    readChunks((res) => result1 = res);
+
+    await setTimeoutAsync(100); // wait a bit to ensure the first read is in progress
+
+    readChunks((res) => result2 = res);
+
+    await setTimeoutAsync(500); // wait for all reads to complete
+
+    expect(result1[0]).toBeInstanceOf(Error);
+    expect(result1[0].message).toMatch(/canceled/i);
+
+    expect(result1[1]).toEqual([
+      textEncoder.encode('chunk1')
+    ]);
+
+    expect(result2[0]).toBeUndefined();
+
+    expect(result2[1]).toEqual([
+      textEncoder.encode('chunk1'),
+      textEncoder.encode('chunk2')
+    ]);
   });
 });

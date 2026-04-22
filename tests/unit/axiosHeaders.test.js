@@ -119,12 +119,20 @@ describe('AxiosHeaders', () => {
       assert.deepStrictEqual(headers.get('set-cookie'), ['safe=1', 'unsafe=1Injected: true']);
     });
 
-    it('should preserve unicode characters in header value', () => {
+    it('should preserve Unicode characters in header value', () => {
       const headers = new AxiosHeaders();
 
       headers.set('x-test', '请求用户');
 
       assert.strictEqual(headers.get('x-test'), '请求用户');
+    });
+
+    it('should preserve astral unicode and strip C1 controls in header value', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-test', 'ok\u0085🚀');
+
+      assert.strictEqual(headers.get('x-test'), 'ok🚀');
     });
   });
 

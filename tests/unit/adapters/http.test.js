@@ -2333,7 +2333,7 @@ describe('supports http with nodejs', () => {
         host: 'attacker.example.com',
         port: 443,
       };
-      __setProxy(redirectOptions, false, 'https://attacker.example.com/final');
+      __setProxy(redirectOptions, false, 'https://attacker.example.com/final', true);
 
       assert.strictEqual(
         redirectOptions.headers['Proxy-Authorization'],
@@ -2375,7 +2375,7 @@ describe('supports http with nodejs', () => {
           port: 443,
           protocol: 'https:',
         };
-        __setProxy(redirectOptions, undefined, 'https://attacker.example.com/final');
+        __setProxy(redirectOptions, undefined, 'https://attacker.example.com/final', true);
 
         assert.strictEqual(
           redirectOptions.headers['Proxy-Authorization'],
@@ -2408,12 +2408,61 @@ describe('supports http with nodejs', () => {
         host: 'second.example.com',
         port: 80,
       };
-      __setProxy(redirectOptions, { host: '127.0.0.2', port: 8031 }, 'http://second.example.com/final');
+      __setProxy(redirectOptions, { host: '127.0.0.2', port: 8031 }, 'http://second.example.com/final', true);
 
       assert.strictEqual(
         redirectOptions.headers['Proxy-Authorization'],
         undefined,
         'stale credentials from previous proxy must not leak to a new proxy without credentials'
+      );
+    });
+
+    it('strips stale Proxy-Authorization when the beforeRedirects.proxy hook is invoked with configProxy=false', () => {
+      const options = {
+        headers: { 'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64') },
+        beforeRedirects: {},
+        hostname: 'initial.example.com',
+        host: 'initial.example.com',
+        port: 80,
+      };
+
+      __setProxy(options, false, 'http://initial.example.com/start');
+      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function', 'initial setProxy must install redirect hook');
+
+      const redirectOptions = {
+        headers: { 'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64') },
+        beforeRedirects: {},
+        hostname: 'attacker.example.com',
+        host: 'attacker.example.com',
+        port: 443,
+        href: 'https://attacker.example.com/final',
+      };
+
+      options.beforeRedirects.proxy(redirectOptions);
+
+      assert.strictEqual(
+        redirectOptions.headers['Proxy-Authorization'],
+        undefined,
+        'beforeRedirects.proxy hook must strip stale Proxy-Authorization when redirect target has no proxy'
+      );
+    });
+
+    it('preserves a user-supplied Proxy-Authorization header on the initial request when no proxy is configured', () => {
+      const userValue = 'Basic ' + Buffer.from('alice:secret', 'utf8').toString('base64');
+      const options = {
+        headers: { 'Proxy-Authorization': userValue },
+        beforeRedirects: {},
+        hostname: 'example.com',
+        host: 'example.com',
+        port: 80,
+      };
+
+      __setProxy(options, false, 'http://example.com/start');
+
+      assert.strictEqual(
+        options.headers['Proxy-Authorization'],
+        userValue,
+        'user-supplied Proxy-Authorization must not be stripped on the initial request'
       );
     });
 
@@ -2430,7 +2479,7 @@ describe('supports http with nodejs', () => {
           port: 443,
         };
 
-        __setProxy(redirectOptions, false, 'https://attacker.example.com/final');
+        __setProxy(redirectOptions, false, 'https://attacker.example.com/final', true);
 
         const leaked = Object.keys(redirectOptions.headers).filter(
           (name) => name.toLowerCase() === 'proxy-authorization'

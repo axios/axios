@@ -2786,30 +2786,53 @@ describe('supports http with nodejs', () => {
       }
 
       it('should not merge prototype-polluted getHeaders into outgoing request', async () => {
-        let receivedHeaders;
-        const server = await startHTTPServer(
-          (req, res) => {
-            receivedHeaders = req.headers;
-            res.end('{}');
+        // Use a stub transport rather than a real HTTP server: polluting
+        // Object.prototype in-process can destabilise Node's HTTP server
+        // internals and cause spurious ECONNRESET. The stub captures the final
+        // outgoing headers axios constructs, which is what this test asserts on.
+        let capturedHeaders;
+        const stubTransport = {
+          request(options, handleResponse) {
+            capturedHeaders = { ...options.headers };
+            const req = new EventEmitter();
+            req.write = () => true;
+            req.setTimeout = () => {};
+            req.destroy = () => {};
+            req.end = () => {
+              const res = new stream.Readable({ read() {} });
+              res.statusCode = 200;
+              res.statusMessage = 'OK';
+              res.headers = {};
+              res.rawHeaders = [];
+              res.req = req;
+              process.nextTick(() => {
+                handleResponse(res);
+                res.push(null);
+              });
+            };
+            return req;
           },
-          { port: SERVER_PORT }
-        );
+        };
 
         try {
           pollute();
           await axios.post(
-            `http://localhost:${server.address().port}/`,
+            'http://stub.invalid/',
             { userId: 42 },
-            { headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' } }
+            {
+              headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' },
+              transport: stubTransport,
+              maxRedirects: 0,
+            }
           );
         } finally {
           cleanup();
-          await stopHTTPServer(server);
         }
 
-        assert.ok(receivedHeaders, 'request did not reach server');
-        assert.strictEqual(receivedHeaders['x-injected'], undefined);
-        assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
+        assert.ok(capturedHeaders, 'transport was not invoked');
+        assert.strictEqual(capturedHeaders['x-injected'], undefined);
+        assert.notStrictEqual(capturedHeaders['Authorization'], 'Bearer ATTACKER_TOKEN');
+        assert.notStrictEqual(capturedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
       });
     });
   });

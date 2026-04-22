@@ -2348,7 +2348,7 @@ describe('supports http with nodejs', () => {
       const originalNoProxy = process.env.no_proxy;
 
       process.env.http_proxy = 'http://user:pass@127.0.0.1:8030';
-      delete process.env.https_proxy;
+      process.env.https_proxy = 'http://user:pass@127.0.0.1:8030';
       process.env.no_proxy = 'attacker.example.com';
 
       try {

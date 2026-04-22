@@ -2307,6 +2307,117 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  describe('Proxy-Authorization header leak on redirect (GHSA-j5f8-grm9-p9fc)', () => {
+    it('clears a stale Proxy-Authorization header when redirected request resolves to no proxy (configProxy=false)', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'initial.example.com',
+        host: 'initial.example.com',
+        port: 80,
+      };
+
+      __setProxy(options, { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } }, 'http://initial.example.com/start');
+      assert.strictEqual(
+        options.headers['Proxy-Authorization'],
+        'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64'),
+        'initial request should carry Proxy-Authorization'
+      );
+
+      // Simulate redirect re-invocation where the redirected request is resolved to no proxy.
+      // This mirrors the beforeRedirects.proxy hook being called with configProxy=false.
+      const redirectOptions = {
+        headers: { ...options.headers },
+        beforeRedirects: {},
+        hostname: 'attacker.example.com',
+        host: 'attacker.example.com',
+        port: 443,
+      };
+      __setProxy(redirectOptions, false, 'https://attacker.example.com/final');
+
+      assert.strictEqual(
+        redirectOptions.headers['Proxy-Authorization'],
+        undefined,
+        'stale Proxy-Authorization must be stripped when redirected request no longer uses a proxy'
+      );
+    });
+
+    it('clears a stale Proxy-Authorization header when environment-derived proxy is bypassed on redirect (NO_PROXY)', () => {
+      const originalHttpProxy = process.env.http_proxy;
+      const originalHttpsProxy = process.env.https_proxy;
+      const originalNoProxy = process.env.no_proxy;
+
+      process.env.http_proxy = 'http://user:pass@127.0.0.1:8030';
+      delete process.env.https_proxy;
+      process.env.no_proxy = 'attacker.example.com';
+
+      try {
+        const options = {
+          headers: {},
+          beforeRedirects: {},
+          hostname: 'initial.example.com',
+          host: 'initial.example.com',
+          port: 80,
+        };
+
+        __setProxy(options, undefined, 'http://initial.example.com/start');
+        assert.strictEqual(
+          options.headers['Proxy-Authorization'],
+          'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64'),
+          'initial request should pick up proxy credentials from env'
+        );
+
+        const redirectOptions = {
+          headers: { ...options.headers },
+          beforeRedirects: {},
+          hostname: 'attacker.example.com',
+          host: 'attacker.example.com',
+          port: 443,
+          protocol: 'https:',
+        };
+        __setProxy(redirectOptions, undefined, 'https://attacker.example.com/final');
+
+        assert.strictEqual(
+          redirectOptions.headers['Proxy-Authorization'],
+          undefined,
+          'stale Proxy-Authorization must be stripped when redirect target is covered by NO_PROXY'
+        );
+      } finally {
+        if (originalHttpProxy === undefined) delete process.env.http_proxy; else process.env.http_proxy = originalHttpProxy;
+        if (originalHttpsProxy === undefined) delete process.env.https_proxy; else process.env.https_proxy = originalHttpsProxy;
+        if (originalNoProxy === undefined) delete process.env.no_proxy; else process.env.no_proxy = originalNoProxy;
+      }
+    });
+
+    it('replaces Proxy-Authorization when redirect target resolves to a different proxy without credentials', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'initial.example.com',
+        host: 'initial.example.com',
+        port: 80,
+      };
+
+      __setProxy(options, { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } }, 'http://initial.example.com/start');
+      assert.ok(options.headers['Proxy-Authorization'], 'precondition: initial proxy auth header set');
+
+      const redirectOptions = {
+        headers: { ...options.headers },
+        beforeRedirects: {},
+        hostname: 'second.example.com',
+        host: 'second.example.com',
+        port: 80,
+      };
+      __setProxy(redirectOptions, { host: '127.0.0.2', port: 8031 }, 'http://second.example.com/final');
+
+      assert.strictEqual(
+        redirectOptions.headers['Proxy-Authorization'],
+        undefined,
+        'stale credentials from previous proxy must not leak to a new proxy without credentials'
+      );
+    });
+  });
+
   it('should support cancel', async () => {
     const source = axios.CancelToken.source();
 

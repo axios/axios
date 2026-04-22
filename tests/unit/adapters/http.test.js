@@ -2416,6 +2416,32 @@ describe('supports http with nodejs', () => {
         'stale credentials from previous proxy must not leak to a new proxy without credentials'
       );
     });
+
+    it('strips stale Proxy-Authorization regardless of header key casing', () => {
+      const staleValue = 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64');
+      const casings = ['proxy-authorization', 'PROXY-AUTHORIZATION', 'Proxy-authorization', 'pRoXy-AuThOrIzAtIoN'];
+
+      for (const casing of casings) {
+        const redirectOptions = {
+          headers: { [casing]: staleValue },
+          beforeRedirects: {},
+          hostname: 'attacker.example.com',
+          host: 'attacker.example.com',
+          port: 443,
+        };
+
+        __setProxy(redirectOptions, false, 'https://attacker.example.com/final');
+
+        const leaked = Object.keys(redirectOptions.headers).filter(
+          (name) => name.toLowerCase() === 'proxy-authorization'
+        );
+        assert.deepStrictEqual(
+          leaked,
+          [],
+          `stale Proxy-Authorization with key "${casing}" must be stripped regardless of casing`
+        );
+      }
+    });
   });
 
   it('should support cancel', async () => {

@@ -160,6 +160,28 @@ The `beforeRedirect` function allows you to modify the request before it is redi
 
 The `socketPath` property defines a UNIX socket to use instead of a TCP connection. e.g. `/var/run/docker.sock` to send requests to the docker daemon. Only `socketPath` or `proxy` can be specified. If both are specified, `socketPath` is used.
 
+:::warning Security
+When `socketPath` is set, the hostname and port of the request URL are ignored and axios communicates directly with the specified Unix domain socket. If any part of the request config is derived from user input (for example, when forwarding or merging request options in a proxy/webhook handler), an attacker can inject `socketPath` to redirect traffic to privileged local sockets such as `/var/run/docker.sock`, `/run/containerd/containerd.sock`, or `/run/systemd/private` — bypassing hostname-based SSRF protections entirely (CWE-918). Strip or allowlist config keys from untrusted input, and/or restrict accepted socket paths with `allowedSocketPaths` (see below).
+:::
+
+### `allowedSocketPaths` <Badge type="warning" text="Node.js only" />
+
+Restricts which socket paths may be used via `socketPath`. Accepts a string or an array of strings. When set, axios resolves the `socketPath` and compares it against each entry (also resolved); the request is rejected with `AxiosError` code `ERR_BAD_OPTION_VALUE` when there is no match. When unset (default), `socketPath` behaves as before.
+
+```js
+const client = axios.create({
+  allowedSocketPaths: ['/var/run/docker.sock']
+});
+
+// allowed
+await client.get('http://localhost/v1.45/info', { socketPath: '/var/run/docker.sock' });
+
+// rejected — not in allowlist
+await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' });
+```
+
+An empty array (`allowedSocketPaths: []`) blocks all socket paths.
+
 ### `transport`
 
 The `transport` property defines the transport to use for the request. This is useful for making requests over a different protocol, such as `http2`.
@@ -313,6 +335,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
     }
   },
   socketPath: null,
+  allowedSocketPaths: null,
   transport: undefined,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),

@@ -497,6 +497,7 @@ declare namespace axios {
       responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode }
     ) => void;
     socketPath?: string | null;
+    allowedSocketPaths?: string | string[] | null;
     transport?: any;
     httpAgent?: any;
     httpsAgent?: any;

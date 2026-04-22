@@ -4469,7 +4469,11 @@ describe('supports http with nodejs', () => {
 
   describe('socketPath security (GHSA-j96w-fp6f-pq6v)', () => {
     function makeSocketPath() {
-      return path.join(os.tmpdir(), `axios-socketpath-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}.sock`);
+      const pipe = `axios-socketpath-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+      return os.platform() === 'win32' ?
+        `\\\\.\\pipe\\${pipe}` :
+        path.join(os.tmpdir(), `${pipe}.sock`);
     }
 
     function startUnixServer(socketPath) {

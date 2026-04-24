@@ -1,50 +1,36 @@
 import gulp from 'gulp';
 import fs from 'fs-extra';
-import axios from './bin/githubAxios.js';
-import minimist from 'minimist'
+import axios from './scripts/axios-build-instance.js';
+import minimist from 'minimist';
 
 const argv = minimist(process.argv.slice(2));
 
-  gulp.task('default', async function(){
+gulp.task('default', async function () {
   console.log('hello!');
 });
 
-const clear = gulp.task('clear', async function() {
-  await fs.emptyDir('./dist/')
-});
-
-const bower = gulp.task('bower', async function () {
-  const npm = JSON.parse(await fs.readFile('package.json'));
-  const bower = JSON.parse(await fs.readFile('bower.json'));
-
-  const fields = [
-    'name',
-    'description',
-    'version',
-    'homepage',
-    'license',
-    'keywords'
-  ];
-
-  for (let i = 0, l = fields.length; i < l; i++) {
-    const field = fields[i];
-    bower[field] = npm[field];
-  }
-
-  await fs.writeFile('bower.json', JSON.stringify(bower, null, 2));
+const clear = gulp.task('clear', async function () {
+  await fs.emptyDir('./dist/');
 });
 
 async function getContributors(user, repo, maxCount = 1) {
-  const contributors = (await axios.get(
-    `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/contributors`,
-    { params: { per_page: maxCount } }
-  )).data;
+  const contributors = (
+    await axios.get(
+      `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/contributors`,
+      { params: { per_page: maxCount } }
+    )
+  ).data;
 
-  return Promise.all(contributors.map(async (contributor)=> {
-    return {...contributor, ...(await axios.get(
-      `https://api.github.com/users/${encodeURIComponent(contributor.login)}`
-    )).data};
-  }))
+  return Promise.all(
+    contributors.map(async (contributor) => {
+      return {
+        ...contributor,
+        ...(
+          await axios.get(`https://api.github.com/users/${encodeURIComponent(contributor.login)}`)
+        ).data,
+      };
+    })
+  );
 }
 
 const packageJSON = gulp.task('package', async function () {
@@ -57,9 +43,10 @@ const packageJSON = gulp.task('package', async function () {
 
     npm.contributors = contributors
       .filter(
-        ({type, contributions}) => type.toLowerCase() === 'user' && contributions >= CONTRIBUTION_THRESHOLD
+        ({ type, contributions }) =>
+          type.toLowerCase() === 'user' && contributions >= CONTRIBUTION_THRESHOLD
       )
-      .map(({login, name, url}) => `${name || login} (https://github.com/${login})`);
+      .map(({ login, name, _ }) => `${name || login} (https://github.com/${login})`);
 
     await fs.writeFile('package.json', JSON.stringify(npm, null, 2));
   } catch (err) {
@@ -75,19 +62,18 @@ const env = gulp.task('env', async function () {
 
   const envFilePath = './lib/env/data.js';
 
-  await fs.writeFile(envFilePath, Object.entries({
-    VERSION: (argv.bump || npm.version).replace(/^v/, '')
-  }).map(([key, value]) => {
-    return `export const ${key} = ${JSON.stringify(value)};`
-  }).join('\n'));
+  await fs.writeFile(
+    envFilePath,
+    Object.entries({
+      VERSION: (argv.bump || npm.version).replace(/^v/, ''),
+    })
+      .map(([key, value]) => {
+        return `export const ${key} = ${JSON.stringify(value)};`;
+      })
+      .join('\n')
+  );
 });
 
-const version = gulp.series('bower', 'env', 'package');
+const version = gulp.series('env', 'package');
 
-export {
-  bower,
-  env,
-  clear,
-  version,
-  packageJSON
-}
+export { env, clear, version, packageJSON };

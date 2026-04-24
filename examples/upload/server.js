@@ -1,8 +1,8 @@
 export default function (req, res) {
-  let data = '';
+  let _data = '';
 
   req.on('data', function (chunk) {
-    data += chunk;
+    _data += chunk;
   });
 
   req.on('end', function () {
@@ -10,4 +10,4 @@ export default function (req, res) {
     res.writeHead(200);
     res.end();
   });
-};
+}

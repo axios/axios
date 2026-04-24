@@ -224,6 +224,16 @@ declare class Axios {
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
+  query<T = any, R = axios.AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: axios.AxiosRequestConfig<D>
+  ): Promise<R>;
+  queryForm<T = any, R = axios.AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: axios.AxiosRequestConfig<D>
+  ): Promise<R>;
 }
 
 declare enum HttpStatusCode {
@@ -358,7 +368,8 @@ declare namespace axios {
     | 'PATCH'
     | 'PURGE'
     | 'LINK'
-    | 'UNLINK';
+    | 'UNLINK'
+    | 'QUERY';
 
   type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
@@ -564,6 +575,7 @@ declare namespace axios {
     purge?: RawAxiosRequestHeaders;
     link?: RawAxiosRequestHeaders;
     unlink?: RawAxiosRequestHeaders;
+    query?: RawAxiosRequestHeaders;
   }
 
   interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {

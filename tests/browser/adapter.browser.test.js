@@ -14,6 +14,7 @@ class MockXMLHttpRequest {
     this.upload = {
       addEventListener() {},
     };
+    this.requestHeaders = {};
   }
 
   open(method, url, async = true) {
@@ -22,7 +23,9 @@ class MockXMLHttpRequest {
     this.async = async;
   }
 
-  setRequestHeader() {}
+  setRequestHeader(key, value) {
+    this.requestHeaders[key] = value;
+  }
 
   addEventListener() {}
 
@@ -172,6 +175,22 @@ describe('adapter (vitest browser)', () => {
     asyncFlag = true;
 
     const request = await waitForRequest();
+    request.respondWith();
+    await responsePromise;
+  });
+
+  it('should sanitize request headers containing CRLF characters', async () => {
+    const responsePromise = axios('/foo', {
+      headers: {
+        'x-test': '\tok\r\nInjected: yes ',
+      },
+    });
+
+    const request = await waitForRequest();
+
+    expect(request.requestHeaders['x-test']).toBe('okInjected: yes');
+    expect(request.requestHeaders.Injected).toBeUndefined();
+
     request.respondWith();
     await responsePromise;
   });

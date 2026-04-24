@@ -20,7 +20,8 @@ type CommonRequestHeadersList =
   | 'Content-Length'
   | 'User-Agent'
   | 'Content-Encoding'
-  | 'Authorization';
+  | 'Authorization'
+  | 'Location';
 
 type ContentType =
   | axios.AxiosHeaderValue
@@ -37,6 +38,8 @@ type CommonResponseHeadersList =
   | 'Content-Length'
   | 'Cache-Control'
   | 'Content-Encoding';
+
+type CommonResponseHeaderKey = CommonResponseHeadersList | Lowercase<CommonResponseHeadersList>;
 
 type BrowserProgressEvent = any;
 
@@ -157,6 +160,7 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_NOT_SUPPORT = 'ERR_NOT_SUPPORT';
   static readonly ERR_INVALID_URL = 'ERR_INVALID_URL';
   static readonly ERR_CANCELED = 'ERR_CANCELED';
+  static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
 }
@@ -306,7 +310,7 @@ declare namespace axios {
   type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
   type RawCommonResponseHeaders = {
-    [Key in CommonResponseHeadersList]: AxiosHeaderValue;
+    [Key in CommonResponseHeaderKey]: AxiosHeaderValue;
   } & {
     'set-cookie': string[];
   };
@@ -344,55 +348,37 @@ declare namespace axios {
     protocol?: string;
   }
 
-  type Method =
-    | 'get'
+  type UppercaseMethod =
     | 'GET'
-    | 'delete'
     | 'DELETE'
-    | 'head'
     | 'HEAD'
-    | 'options'
     | 'OPTIONS'
-    | 'post'
     | 'POST'
-    | 'put'
     | 'PUT'
-    | 'patch'
     | 'PATCH'
-    | 'purge'
     | 'PURGE'
-    | 'link'
     | 'LINK'
-    | 'unlink'
     | 'UNLINK';
+
+  type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
   type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata';
 
-  type responseEncoding =
-    | 'ascii'
+  type UppercaseResponseEncoding =
     | 'ASCII'
-    | 'ansi'
     | 'ANSI'
-    | 'binary'
     | 'BINARY'
-    | 'base64'
     | 'BASE64'
-    | 'base64url'
     | 'BASE64URL'
-    | 'hex'
     | 'HEX'
-    | 'latin1'
     | 'LATIN1'
-    | 'ucs-2'
     | 'UCS-2'
-    | 'ucs2'
     | 'UCS2'
-    | 'utf-8'
     | 'UTF-8'
-    | 'utf8'
     | 'UTF8'
-    | 'utf16le'
     | 'UTF16LE';
+
+  type responseEncoding = (UppercaseResponseEncoding | Lowercase<UppercaseResponseEncoding>) & {};
 
   interface TransitionalOptions {
     silentJSONParsing?: boolean;
@@ -511,6 +497,7 @@ declare namespace axios {
       responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode }
     ) => void;
     socketPath?: string | null;
+    allowedSocketPaths?: string | string[] | null;
     transport?: any;
     httpAgent?: any;
     httpsAgent?: any;
@@ -628,7 +615,7 @@ declare namespace axios {
 
   interface AxiosInterceptorOptions {
     synchronous?: boolean;
-    runWhen?: (config: InternalAxiosRequestConfig) => boolean;
+    runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
   }
 
   type AxiosInterceptorFulfilled<T> = (value: T) => T | Promise<T>;
@@ -649,7 +636,7 @@ declare namespace axios {
     fulfilled: AxiosInterceptorFulfilled<T>;
     rejected?: AxiosInterceptorRejected;
     synchronous: boolean;
-    runWhen?: (config: AxiosRequestConfig) => boolean;
+    runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
   }
 
   interface AxiosInterceptorManager<V> {

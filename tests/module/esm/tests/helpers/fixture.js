@@ -1,20 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const createTempFixture = (
-  suiteRoot,
-  repoRootOrName,
-  nameOrSourcePath,
-  sourcePathOrTsconfig,
-  tsconfigOrPackageJson,
-  packageJson
-) => {
-  const hasRepoRoot = typeof sourcePathOrTsconfig === 'string';
-  const repoRoot = hasRepoRoot ? repoRootOrName : null;
-  const name = hasRepoRoot ? nameOrSourcePath : repoRootOrName;
-  const sourcePath = hasRepoRoot ? sourcePathOrTsconfig : nameOrSourcePath;
-  const tsconfig = hasRepoRoot ? tsconfigOrPackageJson : sourcePathOrTsconfig;
-  const fixturePackageJson = hasRepoRoot ? packageJson : tsconfigOrPackageJson;
+export const createTempFixture = (suiteRoot, repoRoot, name, sourcePath, tsconfig, packageJson) => {
   const tempRoot = fs.mkdtempSync(path.join(suiteRoot, `.tmp-module-${name}-`));
   const source = fs.readFileSync(sourcePath, 'utf8');
 
@@ -27,11 +14,8 @@ export const createTempFixture = (
     fs.symlinkSync(repoRoot, axiosFixturePath, 'junction');
   }
 
-  if (fixturePackageJson) {
-    fs.writeFileSync(
-      path.join(tempRoot, 'package.json'),
-      JSON.stringify(fixturePackageJson, null, 2)
-    );
+  if (packageJson) {
+    fs.writeFileSync(path.join(tempRoot, 'package.json'), JSON.stringify(packageJson, null, 2));
   }
 
   return tempRoot;

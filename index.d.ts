@@ -142,10 +142,10 @@ export interface AxiosRequestTransformer<D = any> {
   (this: InternalAxiosRequestConfig<D>, data: D, headers: AxiosRequestHeaders): any;
 }
 
-export interface AxiosResponseTransformer {
+export interface AxiosResponseTransformer<T = any> {
   (
     this: InternalAxiosRequestConfig,
-    data: any,
+    data: T,
     headers: AxiosResponseHeaders,
     status?: number
   ): any;

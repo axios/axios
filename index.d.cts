@@ -324,10 +324,10 @@ declare namespace axios {
     (this: InternalAxiosRequestConfig<D>, data: D, headers: AxiosRequestHeaders): any;
   }
 
-  interface AxiosResponseTransformer {
+  interface AxiosResponseTransformer<T = any> {
     (
       this: InternalAxiosRequestConfig,
-      data: any,
+      data: T,
       headers: AxiosResponseHeaders,
       status?: number
     ): any;

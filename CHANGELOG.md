@@ -1,6 +1,32 @@
 # Changelog
 
-## v1.15.1 — April 19, 2026
+## v1.15.2 - April 21, 2026
+
+This release delivers prototype-pollution hardening for the Node HTTP adapter, adds an opt-in `allowedSocketPaths` allowlist to mitigate SSRF via Unix domain sockets, fixes a keep-alive socket memory leak, and ships supply-chain hardening across CI and security docs.
+
+## 🔒 Security Fixes
+
+- **Prototype Pollution Hardening (HTTP Adapter):** Hardened the Node HTTP adapter and `resolveConfig`/`mergeConfig`/validator paths to read only own properties and use null-prototype config objects, preventing polluted `auth`, `baseURL`, `socketPath`, `beforeRedirect`, and `insecureHTTPParser` from influencing requests. (**#10779**)
+- **SSRF via `socketPath`:** Rejects non-string `socketPath` values and adds an opt-in `allowedSocketPaths` config option to restrict permitted Unix domain socket paths, returning `AxiosError` `ERR_BAD_OPTION_VALUE` on mismatch. (**#10777**)
+- **Supply-chain Hardening:** Added `.npmrc` with `ignore-scripts=true`, lockfile lint CI, non-blocking reproducible build diff, scoped CODEOWNERS, expanded `SECURITY.md`/`THREATMODEL.md` with provenance verification (`npm audit signatures`), 60-day resolution policy, and maintainer incident-response runbook. (**#10776**)
+
+## 🚀 New Features
+
+- **`allowedSocketPaths` Config Option:** New request config option (and TypeScript types) to allowlist Unix domain socket paths used by the Node http adapter; backwards compatible when unset. (**#10777**)
+
+## 🐛 Bug Fixes
+
+- **Keep-alive Socket Memory Leak:** Installs a single per-socket `error` listener tracking the active request via `kAxiosSocketListener`/`kAxiosCurrentReq`, eliminating per-request listener accumulation, `MaxListenersExceededWarning`, and linear heap growth under concurrent or long-running keep-alive workloads (fixes #10780). (**#10788**)
+
+## 🔧 Maintenance & Chores
+
+- **Changelog:** Updated `CHANGELOG.md` with v1.15.1 release notes. (**#10781**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.15.1...v1.15.2)
+
+---
+
+## v1.15.1 - April 19, 2026
 
 This release ships a coordinated set of security hardening fixes across headers, body/redirect limits, multipart handling, and XSRF/prototype-pollution vectors, alongside a broad sweep of bug fixes, test migrations, and threat-model documentation updates.
 
@@ -68,7 +94,7 @@ We are thrilled to welcome our new contributors. Thank you for helping improve a
 
 ---
 
-## v1.15.0 — April 7, 2026
+## v1.15.0 - April 7, 2026
 
 This release delivers two critical security patches targeting header injection and SSRF via proxy bypass, adds official runtime support for Deno and Bun, and includes significant CI security hardening.
 
@@ -108,7 +134,7 @@ We are thrilled to welcome our new contributors. Thank you for helping improve a
 
 ---
 
-## v1.14.0 — March 27, 2026
+## v1.14.0 - March 27, 2026
 
 This release fixes a security vulnerability in the `formidable` dependency, resolves a CommonJS compatibility regression, hardens proxy and HTTP/2 handling, and modernises the build and test toolchain.
 
@@ -146,7 +172,7 @@ We are thrilled to welcome our new contributors. Thank you for helping improve a
 
 ---
 
-## v1.13.6 — February 27, 2026
+## v1.13.6 - February 27, 2026
 
 This release adds React Native Blob support, fixes several enumeration and export regressions, and patches FormData detection for WeChat Mini Program environments.
 
@@ -182,7 +208,7 @@ We are thrilled to welcome our new contributors. Thank you for helping improve a
 
 ---
 
-## v1.13.5 — February 8, 2026
+## v1.13.5 - February 8, 2026
 
 This release patches a prototype pollution denial-of-service vulnerability, fixes a missing `status` field regression in `AxiosError`, adds interceptor ordering control, and introduces URL validation for `isAbsoluteURL`.
 
@@ -216,7 +242,7 @@ We are thrilled to welcome our new contributors. Thank you for helping improve a
 
 ---
 
-## v1.13.4 — January 27, 2026
+## v1.13.4 - January 27, 2026
 
 Patch release fixing regressions introduced in v1.13.3, including TypeScript export compatibility and CI/build stability.
 

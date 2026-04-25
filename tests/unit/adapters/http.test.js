@@ -2307,6 +2307,192 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  describe('Proxy-Authorization header leak on redirect (GHSA-j5f8-grm9-p9fc)', () => {
+    it('clears a stale Proxy-Authorization header when redirected request resolves to no proxy (configProxy=false)', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'initial.example.com',
+        host: 'initial.example.com',
+        port: 80,
+      };
+
+      __setProxy(options, { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } }, 'http://initial.example.com/start');
+      assert.strictEqual(
+        options.headers['Proxy-Authorization'],
+        'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64'),
+        'initial request should carry Proxy-Authorization'
+      );
+
+      // Simulate redirect re-invocation where the redirected request is resolved to no proxy.
+      // This mirrors the beforeRedirects.proxy hook being called with configProxy=false.
+      const redirectOptions = {
+        headers: { ...options.headers },
+        beforeRedirects: {},
+        hostname: 'attacker.example.com',
+        host: 'attacker.example.com',
+        port: 443,
+      };
+      __setProxy(redirectOptions, false, 'https://attacker.example.com/final', true);
+
+      assert.strictEqual(
+        redirectOptions.headers['Proxy-Authorization'],
+        undefined,
+        'stale Proxy-Authorization must be stripped when redirected request no longer uses a proxy'
+      );
+    });
+
+    it('clears a stale Proxy-Authorization header when environment-derived proxy is bypassed on redirect (NO_PROXY)', () => {
+      const originalHttpProxy = process.env.http_proxy;
+      const originalHttpsProxy = process.env.https_proxy;
+      const originalNoProxy = process.env.no_proxy;
+
+      process.env.http_proxy = 'http://user:pass@127.0.0.1:8030';
+      process.env.https_proxy = 'http://user:pass@127.0.0.1:8030';
+      process.env.no_proxy = 'attacker.example.com';
+
+      try {
+        const options = {
+          headers: {},
+          beforeRedirects: {},
+          hostname: 'initial.example.com',
+          host: 'initial.example.com',
+          port: 80,
+        };
+
+        __setProxy(options, undefined, 'http://initial.example.com/start');
+        assert.strictEqual(
+          options.headers['Proxy-Authorization'],
+          'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64'),
+          'initial request should pick up proxy credentials from env'
+        );
+
+        const redirectOptions = {
+          headers: { ...options.headers },
+          beforeRedirects: {},
+          hostname: 'attacker.example.com',
+          host: 'attacker.example.com',
+          port: 443,
+          protocol: 'https:',
+        };
+        __setProxy(redirectOptions, undefined, 'https://attacker.example.com/final', true);
+
+        assert.strictEqual(
+          redirectOptions.headers['Proxy-Authorization'],
+          undefined,
+          'stale Proxy-Authorization must be stripped when redirect target is covered by NO_PROXY'
+        );
+      } finally {
+        if (originalHttpProxy === undefined) delete process.env.http_proxy; else process.env.http_proxy = originalHttpProxy;
+        if (originalHttpsProxy === undefined) delete process.env.https_proxy; else process.env.https_proxy = originalHttpsProxy;
+        if (originalNoProxy === undefined) delete process.env.no_proxy; else process.env.no_proxy = originalNoProxy;
+      }
+    });
+
+    it('replaces Proxy-Authorization when redirect target resolves to a different proxy without credentials', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'initial.example.com',
+        host: 'initial.example.com',
+        port: 80,
+      };
+
+      __setProxy(options, { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } }, 'http://initial.example.com/start');
+      assert.ok(options.headers['Proxy-Authorization'], 'precondition: initial proxy auth header set');
+
+      const redirectOptions = {
+        headers: { ...options.headers },
+        beforeRedirects: {},
+        hostname: 'second.example.com',
+        host: 'second.example.com',
+        port: 80,
+      };
+      __setProxy(redirectOptions, { host: '127.0.0.2', port: 8031 }, 'http://second.example.com/final', true);
+
+      assert.strictEqual(
+        redirectOptions.headers['Proxy-Authorization'],
+        undefined,
+        'stale credentials from previous proxy must not leak to a new proxy without credentials'
+      );
+    });
+
+    it('strips stale Proxy-Authorization when the beforeRedirects.proxy hook is invoked with configProxy=false', () => {
+      const options = {
+        headers: { 'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64') },
+        beforeRedirects: {},
+        hostname: 'initial.example.com',
+        host: 'initial.example.com',
+        port: 80,
+      };
+
+      __setProxy(options, false, 'http://initial.example.com/start');
+      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function', 'initial setProxy must install redirect hook');
+
+      const redirectOptions = {
+        headers: { 'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64') },
+        beforeRedirects: {},
+        hostname: 'attacker.example.com',
+        host: 'attacker.example.com',
+        port: 443,
+        href: 'https://attacker.example.com/final',
+      };
+
+      options.beforeRedirects.proxy(redirectOptions);
+
+      assert.strictEqual(
+        redirectOptions.headers['Proxy-Authorization'],
+        undefined,
+        'beforeRedirects.proxy hook must strip stale Proxy-Authorization when redirect target has no proxy'
+      );
+    });
+
+    it('preserves a user-supplied Proxy-Authorization header on the initial request when no proxy is configured', () => {
+      const userValue = 'Basic ' + Buffer.from('alice:secret', 'utf8').toString('base64');
+      const options = {
+        headers: { 'Proxy-Authorization': userValue },
+        beforeRedirects: {},
+        hostname: 'example.com',
+        host: 'example.com',
+        port: 80,
+      };
+
+      __setProxy(options, false, 'http://example.com/start');
+
+      assert.strictEqual(
+        options.headers['Proxy-Authorization'],
+        userValue,
+        'user-supplied Proxy-Authorization must not be stripped on the initial request'
+      );
+    });
+
+    it('strips stale Proxy-Authorization regardless of header key casing', () => {
+      const staleValue = 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64');
+      const casings = ['proxy-authorization', 'PROXY-AUTHORIZATION', 'Proxy-authorization', 'pRoXy-AuThOrIzAtIoN'];
+
+      for (const casing of casings) {
+        const redirectOptions = {
+          headers: { [casing]: staleValue },
+          beforeRedirects: {},
+          hostname: 'attacker.example.com',
+          host: 'attacker.example.com',
+          port: 443,
+        };
+
+        __setProxy(redirectOptions, false, 'https://attacker.example.com/final', true);
+
+        const leaked = Object.keys(redirectOptions.headers).filter(
+          (name) => name.toLowerCase() === 'proxy-authorization'
+        );
+        assert.deepStrictEqual(
+          leaked,
+          [],
+          `stale Proxy-Authorization with key "${casing}" must be stripped regardless of casing`
+        );
+      }
+    });
+  });
+
   it('should support cancel', async () => {
     const source = axios.CancelToken.source();
 
@@ -2675,30 +2861,53 @@ describe('supports http with nodejs', () => {
       }
 
       it('should not merge prototype-polluted getHeaders into outgoing request', async () => {
-        let receivedHeaders;
-        const server = await startHTTPServer(
-          (req, res) => {
-            receivedHeaders = req.headers;
-            res.end('{}');
+        // Use a stub transport rather than a real HTTP server: polluting
+        // Object.prototype in-process can destabilise Node's HTTP server
+        // internals and cause spurious ECONNRESET. The stub captures the final
+        // outgoing headers axios constructs, which is what this test asserts on.
+        let capturedHeaders;
+        const stubTransport = {
+          request(options, handleResponse) {
+            capturedHeaders = { ...options.headers };
+            const req = new EventEmitter();
+            req.write = () => true;
+            req.setTimeout = () => {};
+            req.destroy = () => {};
+            req.end = () => {
+              const res = new stream.Readable({ read() {} });
+              res.statusCode = 200;
+              res.statusMessage = 'OK';
+              res.headers = {};
+              res.rawHeaders = [];
+              res.req = req;
+              process.nextTick(() => {
+                handleResponse(res);
+                res.push(null);
+              });
+            };
+            return req;
           },
-          { port: SERVER_PORT }
-        );
+        };
 
         try {
           pollute();
           await axios.post(
-            `http://localhost:${server.address().port}/`,
+            'http://stub.invalid/',
             { userId: 42 },
-            { headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' } }
+            {
+              headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' },
+              transport: stubTransport,
+              maxRedirects: 0,
+            }
           );
         } finally {
           cleanup();
-          await stopHTTPServer(server);
         }
 
-        assert.ok(receivedHeaders, 'request did not reach server');
-        assert.strictEqual(receivedHeaders['x-injected'], undefined);
-        assert.notStrictEqual(receivedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
+        assert.ok(capturedHeaders, 'transport was not invoked');
+        assert.strictEqual(capturedHeaders['x-injected'], undefined);
+        assert.notStrictEqual(capturedHeaders['Authorization'], 'Bearer ATTACKER_TOKEN');
+        assert.notStrictEqual(capturedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
       });
     });
   });
@@ -4079,6 +4288,120 @@ describe('supports http with nodejs', () => {
   });
 
   describe('keep-alive', () => {
+    it('should not emit MaxListenersExceededWarning under concurrent requests through a pooled keep-alive agent (regression #10780)', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          // Small delay forces concurrent requests to queue on the single pooled socket.
+          setTimeout(() => {
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('ok');
+          }, 5);
+        },
+        { port: SERVER_PORT }
+      );
+
+      const warnings = [];
+      const warningHandler = (warning) => {
+        if (warning && warning.name === 'MaxListenersExceededWarning') {
+          warnings.push(warning);
+        }
+      };
+      process.on('warning', warningHandler);
+
+      const agent = new http.Agent({ keepAlive: true, maxSockets: 1 });
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+        const CONCURRENCY = 30;
+
+        const results = await Promise.all(
+          Array.from({ length: CONCURRENCY }, (_, i) =>
+            axios.get(`/req-${i}`, { baseURL, httpAgent: agent })
+          )
+        );
+
+        assert.strictEqual(results.length, CONCURRENCY);
+        for (const r of results) {
+          assert.strictEqual(r.status, 200);
+          assert.strictEqual(r.data, 'ok');
+        }
+
+        // Allow any deferred process 'warning' emissions to flush.
+        await setTimeoutAsync(50);
+
+        assert.strictEqual(
+          warnings.length,
+          0,
+          `expected no MaxListenersExceededWarning, got ${warnings.length}: ${warnings.map((w) => w.message).join('; ')}`
+        );
+
+        // Inspect live sockets on the agent: none should have more than one
+        // axios-installed error listener, regardless of how many requests ran.
+        const allSockets = []
+          .concat(...Object.values(agent.sockets || {}))
+          .concat(...Object.values(agent.freeSockets || {}));
+        for (const sock of allSockets) {
+          assert.ok(
+            sock.listenerCount('error') <= 2,
+            `socket should have at most a couple of error listeners (agent + axios), got ${sock.listenerCount('error')}`
+          );
+        }
+      } finally {
+        process.removeListener('warning', warningHandler);
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    }, 30000);
+
+    it('should not leak memory via retained request closures under a long burst of keep-alive requests (regression #10780)', async () => {
+      // This guards against stage88's report of OOM at ~480k sequential requests:
+      // if the per-request closure leaked, heap would grow linearly. We simulate
+      // a shorter burst and verify retained closures are released (via WeakRef
+      // reachability check after GC, if exposed).
+      if (typeof global.gc !== 'function') {
+        // Skip when GC is not exposed (run with `node --expose-gc`).
+        return;
+      }
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.writeHead(200);
+          res.end('ok');
+        },
+        { port: SERVER_PORT }
+      );
+
+      const agent = new http.Agent({ keepAlive: true, maxSockets: 4 });
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+
+        const refs = [];
+        for (let i = 0; i < 200; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          const response = await axios.get('/', { baseURL, httpAgent: agent });
+          refs.push(new WeakRef(response.request));
+        }
+
+        // Drop strong refs and force GC.
+        global.gc();
+        await setTimeoutAsync(10);
+        global.gc();
+
+        const retained = refs.filter((r) => r.deref() !== undefined).length;
+        // Some trailing requests may still be referenced in internal buffers.
+        // The fix's correctness: retained count scales with agent socket count,
+        // NOT with request count. A pre-fix leak would keep >>socket count.
+        assert.ok(
+          retained <= 20,
+          `expected most request objects to be collectible after GC; ${retained}/200 retained suggests a closure leak`
+        );
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    }, 30000);
+
     it('should not fail with "socket hang up" when using timeouts', async () => {
       const server = await startHTTPServer(
         async (req, res) => {
@@ -4100,7 +4423,7 @@ describe('supports http with nodejs', () => {
       }
     }, 15000);
 
-    it('should remove request socket error listeners after keep-alive requests close', async () => {
+    it('should install at most one socket error listener across reused keep-alive sockets', async () => {
       const noop = () => {};
       const socket = new EventEmitter();
       socket.setKeepAlive = noop;
@@ -4146,25 +4469,356 @@ describe('supports http with nodejs', () => {
         },
       };
 
+      // First request: axios installs its single per-socket listener.
       await axios.get('http://example.com/first', {
         transport,
         maxRedirects: 0,
       });
       await setTimeoutAsync(0);
-      assert.strictEqual(socket.listenerCount('error'), baseErrorListenerCount);
+      assert.strictEqual(
+        socket.listenerCount('error'),
+        baseErrorListenerCount + 1,
+        'axios should install exactly one socket error listener'
+      );
 
-      await axios.get('http://example.com/second', {
-        transport,
-        maxRedirects: 0,
-      });
-      await setTimeoutAsync(0);
-      assert.strictEqual(socket.listenerCount('error'), baseErrorListenerCount);
+      // Many subsequent requests reusing the same socket must not add more listeners.
+      for (let i = 0; i < 20; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await axios.get(`http://example.com/next-${i}`, {
+          transport,
+          maxRedirects: 0,
+        });
+        // eslint-disable-next-line no-await-in-loop
+        await setTimeoutAsync(0);
+        assert.strictEqual(
+          socket.listenerCount('error'),
+          baseErrorListenerCount + 1,
+          'listener count must stay constant across keep-alive reuse'
+        );
+      }
     });
+
+    it('should not accumulate socket error listeners when a pooled socket is reassigned before the previous request closes (regression #10780)', async () => {
+      const noop = () => {};
+      const socket = new EventEmitter();
+      socket.setKeepAlive = noop;
+      socket.on('error', noop);
+
+      const baseErrorListenerCount = socket.listenerCount('error');
+
+      // Each request defers its 'close' emission so that the socket is
+      // reassigned to the next request before the previous one closes.
+      // This reproduces the race condition described in #10780.
+      const pendingRequests = [];
+
+      const transport = {
+        request(_, cb) {
+          const req = new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+            }
+
+            setTimeout() {}
+            write() {}
+
+            end() {
+              // Share the single pooled socket across every request.
+              this.emit('socket', socket);
+
+              setImmediate(() => {
+                const response = stream.Readable.from(['ok']);
+                response.statusCode = 200;
+                response.headers = {};
+                cb(response);
+                // Intentionally do NOT emit 'close' yet. Collect the req
+                // so close can be emitted later, after other reqs have
+                // already claimed the socket.
+                pendingRequests.push(this);
+              });
+            }
+
+            destroy(err) {
+              if (this.destroyed) return;
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+
+          return req;
+        },
+      };
+
+      const results = await Promise.all(
+        Array.from({ length: 20 }, (_, i) =>
+          axios.get(`http://example.com/concurrent-${i}`, {
+            transport,
+            maxRedirects: 0,
+          })
+        )
+      );
+
+      assert.strictEqual(results.length, 20);
+
+      // Critical assertion: despite 20 concurrent requests all claiming the
+      // same pooled socket before any emitted 'close', only ONE axios listener
+      // must be attached. This is the difference between the pre-fix
+      // behaviour (20 listeners, MaxListenersExceededWarning) and the fix.
+      assert.strictEqual(
+        socket.listenerCount('error'),
+        baseErrorListenerCount + 1,
+        `expected a single axios socket error listener under concurrent reuse, got ${socket.listenerCount('error') - baseErrorListenerCount}`
+      );
+
+      // Now drain the queued close events. Listener count must still be 1.
+      for (const req of pendingRequests) {
+        req.emit('close');
+      }
+      await setTimeoutAsync(0);
+
+      assert.strictEqual(
+        socket.listenerCount('error'),
+        baseErrorListenerCount + 1,
+        'listener must persist on the socket after requests close (cleanup is per-request ownership, not per-listener removal)'
+      );
+    });
+
+    it('should route a socket error to the currently-active request after the socket has been reassigned', async () => {
+      const noop = () => {};
+      const socket = new EventEmitter();
+      socket.setKeepAlive = noop;
+      socket.on('error', noop);
+
+      const createdReqs = [];
+
+      // First transport: completes cleanly (emits response then close).
+      const cleanTransport = {
+        request(_, cb) {
+          const emitter = new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+              createdReqs.push(this);
+            }
+            setTimeout() {}
+            write() {}
+            end() {
+              this.emit('socket', socket);
+              setImmediate(() => {
+                const response = stream.Readable.from(['ok']);
+                response.statusCode = 200;
+                response.headers = {};
+                cb(response);
+                this.emit('close');
+              });
+            }
+            destroy(err) {
+              if (this.destroyed) return;
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+          return emitter;
+        },
+      };
+
+      // Second transport: emits socket error instead of a response.
+      const errorTransport = {
+        request() {
+          const emitter = new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+              createdReqs.push(this);
+            }
+            setTimeout() {}
+            write() {}
+            end() {
+              this.emit('socket', socket);
+              setImmediate(() => {
+                socket.emit('error', Object.assign(new Error('boom'), { code: 'EPIPE' }));
+              });
+            }
+            destroy(err) {
+              if (this.destroyed) return;
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+          return emitter;
+        },
+      };
+
+      // First request completes successfully; socket is released.
+      await axios.get('http://example.com/first', { transport: cleanTransport, maxRedirects: 0 });
+      await setTimeoutAsync(0);
+
+      const firstReq = createdReqs[0];
+      assert.ok(firstReq && firstReq.destroyed === false, 'first request must not have been destroyed by a socket error');
+
+      // Stray socket error after first req has closed: must not destroy firstReq.
+      socket.emit('error', new Error('stray error after close'));
+      assert.strictEqual(firstReq.destroyed, false, 'socket error after close must not destroy the old request');
+
+      // Second request claims the socket, then its socket errors. It should reject.
+      const err = await axios
+        .get('http://example.com/second', { transport: errorTransport, maxRedirects: 0 })
+        .catch((e) => e);
+
+      assert.ok(err instanceof AxiosError, 'second request should reject with an AxiosError');
+      assert.strictEqual(err.code, 'EPIPE');
+
+      const secondReq = createdReqs[1];
+      assert.strictEqual(secondReq.destroyed, true, 'second request should be destroyed by its own active socket error');
+    });
+  });
+
+  describe('redirect listener accumulation', () => {
+    it('should not emit MaxListenersExceededWarning when a single request follows >= 11 redirects', async () => {
+      const REDIRECT_COUNT = 11;
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          const match = req.url.match(/^\/redirect\/(\d+)$/);
+          if (match) {
+            const n = Number(match[1]);
+            if (n < REDIRECT_COUNT) {
+              res.writeHead(302, { Location: `/redirect/${n + 1}` });
+            } else {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ redirects: n }));
+              return;
+            }
+            res.end();
+            return;
+          }
+          res.writeHead(302, { Location: '/redirect/1' });
+          res.end();
+        },
+        { port: SERVER_PORT }
+      );
+
+      const warnings = [];
+      const warningHandler = (warning) => {
+        if (warning && warning.name === 'MaxListenersExceededWarning') {
+          warnings.push(warning);
+        }
+      };
+      process.on('warning', warningHandler);
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+        const response = await axios.get('/start', {
+          baseURL,
+          maxRedirects: REDIRECT_COUNT + 5,
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(response.data, { redirects: REDIRECT_COUNT });
+
+        // Allow any deferred process 'warning' emissions to flush.
+        await setTimeoutAsync(50);
+
+        assert.strictEqual(
+          warnings.length,
+          0,
+          `expected no MaxListenersExceededWarning across ${REDIRECT_COUNT} redirects, got ${warnings.length}: ${warnings.map((w) => w.message).join('; ')}`
+        );
+      } finally {
+        process.removeListener('warning', warningHandler);
+        await stopHTTPServer(server);
+      }
+    }, 30000);
+
+    it('should attach at most one close listener to the outer request across a long redirect chain', async () => {
+      const REDIRECT_COUNT = 20;
+      const maxObservedCloseListeners = { value: 0 };
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          const match = req.url.match(/^\/r\/(\d+)$/);
+          if (match) {
+            const n = Number(match[1]);
+            if (n < REDIRECT_COUNT) {
+              res.writeHead(302, { Location: `/r/${n + 1}` });
+            } else {
+              res.writeHead(200);
+              res.end('done');
+              return;
+            }
+            res.end();
+            return;
+          }
+          res.writeHead(302, { Location: '/r/1' });
+          res.end();
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+
+        // Patch EventEmitter.prototype.on briefly to observe the peak close-listener
+        // count on any emitter. The outer RedirectableRequest is the only target
+        // that would accumulate listeners under the bug. Other emitters in the
+        // process (server sockets, etc.) will also be observed but are irrelevant
+        // as long as the peak stays within a small bound.
+        const originalOn = EventEmitter.prototype.on;
+        const originalOnce = EventEmitter.prototype.once;
+        function record(eventName) {
+          if (eventName === 'close') {
+            const count = this.listenerCount('close');
+            if (count > maxObservedCloseListeners.value) {
+              maxObservedCloseListeners.value = count;
+            }
+          }
+        }
+        EventEmitter.prototype.on = function patchedOn(eventName, listener) {
+          const res = originalOn.call(this, eventName, listener);
+          record.call(this, eventName);
+          return res;
+        };
+        EventEmitter.prototype.once = function patchedOnce(eventName, listener) {
+          const res = originalOnce.call(this, eventName, listener);
+          record.call(this, eventName);
+          return res;
+        };
+
+        try {
+          const response = await axios.get('/start', {
+            baseURL,
+            maxRedirects: REDIRECT_COUNT + 5,
+          });
+          assert.strictEqual(response.status, 200);
+        } finally {
+          EventEmitter.prototype.on = originalOn;
+          EventEmitter.prototype.once = originalOnce;
+        }
+
+        // Pre-fix: peak would be >= REDIRECT_COUNT (one axios close listener per hop
+        // on the outer RedirectableRequest). Post-fix: axios attaches exactly one
+        // close listener to the outer request; framework internals typically add
+        // a couple more. A generous bound of 10 distinguishes the behaviours.
+        assert.ok(
+          maxObservedCloseListeners.value < 10,
+          `close listener count should stay below 10 across ${REDIRECT_COUNT} redirects, peak was ${maxObservedCloseListeners.value}`
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    }, 30000);
   });
 
   describe('socketPath security (GHSA-j96w-fp6f-pq6v)', () => {
     function makeSocketPath() {
-      return path.join(os.tmpdir(), `axios-socketpath-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}.sock`);
+      const pipe = `axios-socketpath-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+      return os.platform() === 'win32' ?
+        `\\\\.\\pipe\\${pipe}` :
+        path.join(os.tmpdir(), `${pipe}.sock`);
     }
 
     function startUnixServer(socketPath) {

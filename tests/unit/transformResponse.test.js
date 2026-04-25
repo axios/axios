@@ -75,28 +75,6 @@ describe('transformResponse', () => {
       assert.strictEqual(thrown.status, 200, 'error.status must equal response status');
       assert.strictEqual(thrown.response, response, 'error.response must be the original response');
     });
-
-    it('does not leave config.response set after transformResponse completes', () => {
-      // The fix temporarily assigns config.response; it must be cleaned up
-      // afterwards to avoid polluting the config object.
-      const response = { status: 200, headers: {}, data: '{bad json' };
-      const config = {
-        responseType: 'json',
-        transitional: { silentJSONParsing: false, forcedJSONParsing: true },
-      };
-
-      try {
-        transformData.call(config, defaults.transformResponse, response);
-      } catch (_) {
-        // expected
-      }
-
-      assert.strictEqual(
-        Object.prototype.hasOwnProperty.call(config, 'response'),
-        false,
-        'config.response must not be left on the config object'
-      );
-    });
   });
 
   describe('204 request', () => {

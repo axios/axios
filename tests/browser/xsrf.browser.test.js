@@ -179,4 +179,60 @@ describe('xsrf (vitest browser)', () => {
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(token);
     });
   });
+
+  // GHSA-xx6v-rp6x-q39c: non-boolean truthy withXSRFToken must not short-circuit
+  // the same-origin check and leak the XSRF token cross-origin.
+  describe('GHSA-xx6v-rp6x-q39c non-boolean withXSRFToken', () => {
+    afterEach(() => {
+      delete Object.prototype.withXSRFToken;
+    });
+
+    const leakCases = [
+      ['number 1', 1],
+      ['string "false"', 'false'],
+      ['empty object', {}],
+      ['empty array', []],
+    ];
+
+    leakCases.forEach(([label, value]) => {
+      it(`should not send xsrf header cross-origin when withXSRFToken = ${label}`, async () => {
+        setXsrfCookie('12345');
+
+        const request = await sendRequest('http://example.com/', {
+          withXSRFToken: value,
+        });
+
+        expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
+      });
+    });
+
+    it('should not send xsrf header cross-origin when Object.prototype.withXSRFToken is polluted', async () => {
+      Object.prototype.withXSRFToken = 1;
+      setXsrfCookie('12345');
+
+      const request = await sendRequest('http://example.com/');
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
+    });
+
+    it('should still send xsrf header cross-origin when withXSRFToken === true (strict)', async () => {
+      const token = '12345';
+      setXsrfCookie(token);
+
+      const request = await sendRequest('http://example.com/', {
+        withXSRFToken: true,
+      });
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(token);
+    });
+
+    it('should still send xsrf header same-origin when withXSRFToken is undefined', async () => {
+      const token = '12345';
+      setXsrfCookie(token);
+
+      const request = await sendRequest('/foo');
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(token);
+    });
+  });
 });

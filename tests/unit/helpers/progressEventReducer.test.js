@@ -1,4 +1,4 @@
-import assert from 'assert';
+import { describe, it, expect } from 'vitest';
 import { progressEventReducer } from '../../../lib/helpers/progressEventReducer.js';
 
 describe('helpers::progressEventReducer', () => {
@@ -13,15 +13,15 @@ describe('helpers::progressEventReducer', () => {
     onProgress({ lengthComputable: true, loaded: 180, total: 100 });
     flush();
 
-    assert.strictEqual(events.length, 3);
-    assert.strictEqual(events[0].bytes, 80);
-    assert.strictEqual(events[1].bytes, 0);
+    expect(events.length).toBe(3);
+    expect(events[0].bytes).toBe(80);
+    expect(events[1].bytes).toBe(0);
 
     const last = events[events.length - 1];
-    assert.strictEqual(last.loaded, 100);
-    assert.strictEqual(last.total, 100);
-    assert.strictEqual(last.progress, 1);
-    assert.strictEqual(last.upload, true);
-    assert.strictEqual(last.bytes, 20);
+    expect(last.loaded).toBe(100);
+    expect(last.total).toBe(100);
+    expect(last.progress).toBe(1);
+    expect(last.upload).toBe(true);
+    expect(last.bytes).toBe(20);
   });
 });

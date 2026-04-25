@@ -137,6 +137,9 @@ La función `onDownloadProgress` te permite escuchar el progreso de una descarga
 
 La propiedad `maxContentLength` define el número máximo de bytes que el servidor aceptará en la respuesta.
 
+> ⚠️ **Seguridad:** el valor por defecto es `-1` (sin límite). Las respuestas sin límite combinadas con la descompresión gzip/deflate/brotli permiten ataques de denegación de servicio por bomba de descompresión.
+> Establece un límite explícito al consumir servidores en los que no confíes plenamente.
+
 ### `maxBodyLength` <Badge type="warning" text="Solo en Node.js" />
 
 La propiedad `maxBodyLength` define el número máximo de bytes que el servidor aceptará en la solicitud.
@@ -156,6 +159,28 @@ La función `beforeRedirect` te permite modificar la solicitud antes de que sea 
 ### `socketPath` <Badge type="warning" text="Solo en Node.js" />
 
 La propiedad `socketPath` define un socket UNIX que se usará en lugar de una conexión TCP. Por ejemplo, `/var/run/docker.sock` para enviar solicitudes al daemon de Docker. Solo se puede especificar `socketPath` o `proxy`. Si ambos se especifican, se usa `socketPath`.
+
+:::warning Seguridad
+Cuando se establece `socketPath`, el hostname y el puerto de la URL se ignoran y axios se comunica directamente con el socket Unix indicado. Si cualquier parte de la configuración de la solicitud proviene de entrada del usuario (por ejemplo, en un proxy o manejador de webhooks que reenvía opciones), un atacante puede inyectar `socketPath` para redirigir el tráfico a sockets locales privilegiados como `/var/run/docker.sock`, `/run/containerd/containerd.sock` o `/run/systemd/private`, eludiendo por completo las protecciones SSRF basadas en hostname (CWE-918). Filtra la configuración recibida desde entradas no confiables y/o restringe las rutas de socket aceptadas con `allowedSocketPaths` (ver más abajo).
+:::
+
+### `allowedSocketPaths` <Badge type="warning" text="Solo en Node.js" />
+
+Restringe qué rutas de socket pueden usarse a través de `socketPath`. Acepta un string o un array de strings. Cuando está definido, axios resuelve el `socketPath` y lo compara con cada entrada (también resuelta); la solicitud se rechaza con un `AxiosError` de código `ERR_BAD_OPTION_VALUE` si no hay coincidencia. Si no se define (valor por defecto), `socketPath` se comporta igual que antes.
+
+```js
+const client = axios.create({
+  allowedSocketPaths: ['/var/run/docker.sock']
+});
+
+// permitido
+await client.get('http://localhost/v1.45/info', { socketPath: '/var/run/docker.sock' });
+
+// rechazado — no está en la lista
+await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' });
+```
+
+Un array vacío (`allowedSocketPaths: []`) bloquea todas las rutas de socket.
 
 ### `transport`
 
@@ -221,7 +246,15 @@ La propiedad `env` te permite establecer algunas opciones de configuración. Por
 
 ### `formSerializer`
 
-La función `formSerializer` te permite serializar el objeto `data` antes de enviarlo al servidor. Hay varias opciones disponibles para esta función; consulta el ejemplo completo de configuración de solicitud al final de esta página.
+La opción `formSerializer` te permite configurar cómo se serializan los objetos planos a `multipart/form-data` cuando se usan como `data` de solicitud. Opciones disponibles:
+
+- `visitor` — función visitante personalizada llamada recursivamente para cada valor
+- `dots` — usar notación de punto en lugar de notación de corchetes
+- `metaTokens` — preservar terminaciones especiales de clave como `{}`
+- `indexes` — controlar el formato de corchetes para claves de arreglo (`null` / `false` / `true`)
+- `maxDepth` _(predeterminado: `100`)_ — profundidad máxima de anidación antes de lanzar un `AxiosError` con código `ERR_FORM_DATA_DEPTH_EXCEEDED`. Establece en `Infinity` para desactivar.
+
+Consulta la página [multipart/form-data](/pages/advanced/multipart-form-data-format) para todos los detalles, y el ejemplo completo de configuración de solicitud al final de esta página.
 
 ### `maxRate` <Badge type="warning" text="Solo en Node.js" />
 
@@ -257,7 +290,11 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
       // (1) indexes: null (leads to no brackets)
       // (2) (default) indexes: false (leads to empty brackets)
       // (3) indexes: true (leads to brackets with indexes).
-    indexes: false
+    indexes: false,
+
+    // Profundidad máxima de anidación de objetos al serializar params. Lanza AxiosError
+    // (ERR_FORM_DATA_DEPTH_EXCEEDED) si se excede. Predeterminado: 100. Establecer en Infinity para desactivar.
+    maxDepth: 100
 
   },
   data: {
@@ -298,6 +335,7 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
     }
   },
   socketPath: null,
+  allowedSocketPaths: null,
   transport: undefined,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
@@ -336,11 +374,15 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
       // Keep special endings like {} in parameter key
       metaTokens: boolean;
 
-      // Use array indexes format:
-        // null - no brackets
-        // false - empty brackets
-        // true - brackets with indexes
+      // Usar formato de índices de arreglo:
+        // null - sin corchetes
+        // false - corchetes vacíos
+        // true - corchetes con índices
       indexes: boolean;
+
+      // Profundidad máxima de anidación de objetos. Lanza AxiosError (ERR_FORM_DATA_DEPTH_EXCEEDED)
+      // si se excede. Predeterminado: 100. Establecer en Infinity para desactivar.
+      maxDepth: 100;
   },
   maxRate: [
     100 * 1024, // 100KB/s upload limit,

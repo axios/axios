@@ -170,4 +170,50 @@ describe('cancel (vitest browser)', () => {
     const error = await promise.catch((thrown) => thrown);
     expect(axios.isCancel(error)).toBe(true);
   });
+
+  describe('listener cleanup on error paths', () => {
+    for (const { label, trigger } of [
+      { label: 'network error', trigger: (r) => r.onerror(new Error('Network Error')) },
+      { label: 'timeout', trigger: (r) => r.ontimeout() },
+      { label: 'browser abort', trigger: (r) => r.onabort() },
+    ]) {
+      it(`unsubscribes cancelToken listener after ${label}`, async () => {
+        const source = axios.CancelToken.source();
+        const promise = axios
+          .get('/foo/bar', { cancelToken: source.token })
+          .catch((thrown) => thrown);
+
+        const request = await waitForRequest();
+        trigger(request);
+        await promise;
+
+        expect(source.token._listeners || []).toEqual([]);
+      });
+    }
+
+    it('removes AbortSignal listener after network error', async () => {
+      const controller = new AbortController();
+      let listenerCount = 0;
+      const nativeAdd = controller.signal.addEventListener.bind(controller.signal);
+      const nativeRemove = controller.signal.removeEventListener.bind(controller.signal);
+      controller.signal.addEventListener = (type, fn, options) => {
+        if (type === 'abort') listenerCount++;
+        return nativeAdd(type, fn, options);
+      };
+      controller.signal.removeEventListener = (type, fn, options) => {
+        if (type === 'abort') listenerCount--;
+        return nativeRemove(type, fn, options);
+      };
+
+      const promise = axios
+        .get('/foo/bar', { signal: controller.signal })
+        .catch((thrown) => thrown);
+
+      const request = await waitForRequest();
+      request.onerror(new Error('Network Error'));
+      await promise;
+
+      expect(listenerCount).toBe(0);
+    });
+  });
 });

@@ -11,8 +11,8 @@
   "author": "axios team",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.19.39",
     "typescript": "^5.9.3",
-    "vitest": "4.1.1"
+    "vitest": "4.1.5"
   }
 }

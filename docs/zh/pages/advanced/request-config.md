@@ -137,6 +137,9 @@
 
 `maxContentLength` 属性定义服务器在响应中允许接收的最大字节数。
 
+> ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli 解压，会带来解压炸弹导致的拒绝服务风险。
+> 在访问不完全可信的服务器时，请显式设置该限制。
+
 ### `maxBodyLength` <Badge type="warning" text="仅 Node.js" />
 
 `maxBodyLength` 属性定义服务器在请求中允许接收的最大字节数。
@@ -156,6 +159,28 @@
 ### `socketPath` <Badge type="warning" text="仅 Node.js" />
 
 `socketPath` 属性定义用于替代 TCP 连接的 UNIX 套接字路径，例如 `/var/run/docker.sock`，用于向 Docker 守护进程发送请求。`socketPath` 和 `proxy` 只能指定其中一个，如果两者都指定，则使用 `socketPath`。
+
+:::warning 安全提示
+设置 `socketPath` 后，请求 URL 中的主机名和端口将被忽略，axios 会直接与指定的 Unix 域套接字通信。如果请求配置中有任何部分来自用户输入（例如在转发或合并请求选项的代理/Webhook 处理程序中），攻击者可以注入 `socketPath` 将流量重定向到特权本地套接字，如 `/var/run/docker.sock`、`/run/containerd/containerd.sock` 或 `/run/systemd/private`，从而完全绕过基于主机名的 SSRF 防护（CWE-918）。应对来自不可信输入的配置进行过滤或仅允许特定键，并/或使用 `allowedSocketPaths`（见下文）限制接受的套接字路径。
+:::
+
+### `allowedSocketPaths` <Badge type="warning" text="仅 Node.js" />
+
+限制可通过 `socketPath` 使用的套接字路径。接受一个字符串或字符串数组。设置后，axios 会解析 `socketPath` 并与每个条目（同样解析后）比较；若无匹配，请求将以 `ERR_BAD_OPTION_VALUE` 错误码的 `AxiosError` 被拒绝。未设置（默认）时，`socketPath` 行为与以往一致。
+
+```js
+const client = axios.create({
+  allowedSocketPaths: ['/var/run/docker.sock']
+});
+
+// 允许
+await client.get('http://localhost/v1.45/info', { socketPath: '/var/run/docker.sock' });
+
+// 拒绝 — 不在白名单中
+await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' });
+```
+
+空数组 (`allowedSocketPaths: []`) 会阻止所有套接字路径。
 
 ### `transport`
 
@@ -221,7 +246,15 @@ proxy: {
 
 ### `formSerializer`
 
-`formSerializer` 函数允许你在数据发送到服务器之前自定义 `data` 对象的序列化方式，有多个可用选项，详见本页末尾的完整请求配置示例。
+`formSerializer` 选项允许你配置普通对象作为请求 `data` 时如何序列化为 `multipart/form-data`。可用选项：
+
+- `visitor` — 对每个值递归调用的自定义访问者函数
+- `dots` — 使用点号表示法代替方括号表示法
+- `metaTokens` — 保留特殊的键后缀（如 `{}`）
+- `indexes` — 控制数组键的方括号格式（`null` / `false` / `true`）
+- `maxDepth` _（默认：`100`）_ — 抛出 `AxiosError`（错误码 `ERR_FORM_DATA_DEPTH_EXCEEDED`）前的最大嵌套深度。设置为 `Infinity` 可禁用。
+
+详见 [multipart/form-data](/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
 
 ### `maxRate` <Badge type="warning" text="仅 Node.js" />
 
@@ -257,7 +290,11 @@ proxy: {
       // (1) indexes: null（不添加方括号）
       // (2)（默认）indexes: false（添加空方括号）
       // (3) indexes: true（添加带索引的方括号）
-    indexes: false
+    indexes: false,
+
+    // 序列化参数时的最大对象嵌套深度。超过时抛出 AxiosError
+    // (ERR_FORM_DATA_DEPTH_EXCEEDED)。默认：100。设置为 Infinity 可禁用。
+    maxDepth: 100
 
   },
   data: {
@@ -298,6 +335,7 @@ proxy: {
     }
   },
   socketPath: null,
+  allowedSocketPaths: null,
   transport: undefined,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
@@ -341,6 +379,10 @@ proxy: {
         // false - 添加空方括号
         // true - 添加带索引的方括号
       indexes: boolean;
+
+      // 最大对象嵌套深度。超过时抛出 AxiosError (ERR_FORM_DATA_DEPTH_EXCEEDED)。
+      // 默认：100。设置为 Infinity 可禁用。
+      maxDepth: 100;
   },
   maxRate: [
     100 * 1024, // 上传限制 100KB/s

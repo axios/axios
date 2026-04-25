@@ -23,7 +23,7 @@ describe('module ts-require-default compatibility', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/ts-require-default.ts');
     const fixturePath = createTempFixture(
       suiteRoot,
-      repoRoot,
+      null,
       'ts-require-default',
       sourcePath,
       tsconfig

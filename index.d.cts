@@ -160,6 +160,7 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_NOT_SUPPORT = 'ERR_NOT_SUPPORT';
   static readonly ERR_INVALID_URL = 'ERR_INVALID_URL';
   static readonly ERR_CANCELED = 'ERR_CANCELED';
+  static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
   static readonly ECONNREFUSED = 'ECONNREFUSED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
@@ -497,6 +498,7 @@ declare namespace axios {
       responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode }
     ) => void;
     socketPath?: string | null;
+    allowedSocketPaths?: string | string[] | null;
     transport?: any;
     httpAgent?: any;
     httpsAgent?: any;

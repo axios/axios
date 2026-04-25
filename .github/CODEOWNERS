@@ -1,1 +1,33 @@
-* @jasonsaayman
+# CODEOWNERS
+#
+# Reviewers required for matching paths. Last-match-wins.
+# Keep path-scoped rules below the catch-all so sensitive paths override it.
+#
+# Single-maintainer caveat: with only one owner, path-scoped rules cannot
+# enforce a distinct second reviewer. They still (a) surface sensitive-path
+# changes explicitly in the review UI, and (b) pre-stage scoped ownership
+# for when additional maintainers are added.
+
+# Default owner
+*                          @jasonsaayman
+
+# Runtime source — shipped to every consumer
+/lib/                      @jasonsaayman
+/index.js                  @jasonsaayman
+/index.d.ts                @jasonsaayman
+/index.d.cts               @jasonsaayman
+
+# Build / release infrastructure
+/rollup.config.js          @jasonsaayman
+/package.json              @jasonsaayman
+/package-lock.json         @jasonsaayman
+/.npmrc                    @jasonsaayman
+
+# CI and repo automation
+/.github/workflows/        @jasonsaayman
+/.github/CODEOWNERS        @jasonsaayman
+/.github/dependabot.yml    @jasonsaayman
+
+# Security-critical docs
+/THREATMODEL.md            @jasonsaayman
+/SECURITY.md               @jasonsaayman

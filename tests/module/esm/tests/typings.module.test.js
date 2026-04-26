@@ -16,11 +16,41 @@ const tsconfig = {
 };
 
 describe('module esm typings compatibility', () => {
-  it('type-checks esm axios typings', () => {
+  it('type-checks esm axios typings', { timeout: 20000 }, () => {
     const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-index.ts');
-    const fixturePath = createTempFixture(suiteRoot, 'typings-esm', sourcePath, tsconfig, {
-      type: 'module',
-    });
+    const fixturePath = createTempFixture(
+      suiteRoot,
+      repoRoot,
+      'typings-esm',
+      sourcePath,
+      tsconfig,
+      {
+        type: 'module',
+      }
+    );
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
+  it('type-checks generic request transformer typings', { timeout: 20000 }, () => {
+    const sourcePath = path.join(
+      repoRoot,
+      'tests/module/esm/tests/helpers/transform-request-typing.ts'
+    );
+    const fixturePath = createTempFixture(
+      suiteRoot,
+      repoRoot,
+      'typings-esm-transform-request',
+      sourcePath,
+      tsconfig,
+      {
+        type: 'module',
+      }
+    );
 
     try {
       runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });

@@ -4676,6 +4676,142 @@ describe('supports http with nodejs', () => {
     });
   });
 
+  describe('redirect listener accumulation', () => {
+    it('should not emit MaxListenersExceededWarning when a single request follows >= 11 redirects', async () => {
+      const REDIRECT_COUNT = 11;
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          const match = req.url.match(/^\/redirect\/(\d+)$/);
+          if (match) {
+            const n = Number(match[1]);
+            if (n < REDIRECT_COUNT) {
+              res.writeHead(302, { Location: `/redirect/${n + 1}` });
+            } else {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ redirects: n }));
+              return;
+            }
+            res.end();
+            return;
+          }
+          res.writeHead(302, { Location: '/redirect/1' });
+          res.end();
+        },
+        { port: SERVER_PORT }
+      );
+
+      const warnings = [];
+      const warningHandler = (warning) => {
+        if (warning && warning.name === 'MaxListenersExceededWarning') {
+          warnings.push(warning);
+        }
+      };
+      process.on('warning', warningHandler);
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+        const response = await axios.get('/start', {
+          baseURL,
+          maxRedirects: REDIRECT_COUNT + 5,
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(response.data, { redirects: REDIRECT_COUNT });
+
+        // Allow any deferred process 'warning' emissions to flush.
+        await setTimeoutAsync(50);
+
+        assert.strictEqual(
+          warnings.length,
+          0,
+          `expected no MaxListenersExceededWarning across ${REDIRECT_COUNT} redirects, got ${warnings.length}: ${warnings.map((w) => w.message).join('; ')}`
+        );
+      } finally {
+        process.removeListener('warning', warningHandler);
+        await stopHTTPServer(server);
+      }
+    }, 30000);
+
+    it('should attach at most one close listener to the outer request across a long redirect chain', async () => {
+      const REDIRECT_COUNT = 20;
+      const maxObservedCloseListeners = { value: 0 };
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          const match = req.url.match(/^\/r\/(\d+)$/);
+          if (match) {
+            const n = Number(match[1]);
+            if (n < REDIRECT_COUNT) {
+              res.writeHead(302, { Location: `/r/${n + 1}` });
+            } else {
+              res.writeHead(200);
+              res.end('done');
+              return;
+            }
+            res.end();
+            return;
+          }
+          res.writeHead(302, { Location: '/r/1' });
+          res.end();
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+
+        // Patch EventEmitter.prototype.on briefly to observe the peak close-listener
+        // count on any emitter. The outer RedirectableRequest is the only target
+        // that would accumulate listeners under the bug. Other emitters in the
+        // process (server sockets, etc.) will also be observed but are irrelevant
+        // as long as the peak stays within a small bound.
+        const originalOn = EventEmitter.prototype.on;
+        const originalOnce = EventEmitter.prototype.once;
+        function record(eventName) {
+          if (eventName === 'close') {
+            const count = this.listenerCount('close');
+            if (count > maxObservedCloseListeners.value) {
+              maxObservedCloseListeners.value = count;
+            }
+          }
+        }
+        EventEmitter.prototype.on = function patchedOn(eventName, listener) {
+          const res = originalOn.call(this, eventName, listener);
+          record.call(this, eventName);
+          return res;
+        };
+        EventEmitter.prototype.once = function patchedOnce(eventName, listener) {
+          const res = originalOnce.call(this, eventName, listener);
+          record.call(this, eventName);
+          return res;
+        };
+
+        try {
+          const response = await axios.get('/start', {
+            baseURL,
+            maxRedirects: REDIRECT_COUNT + 5,
+          });
+          assert.strictEqual(response.status, 200);
+        } finally {
+          EventEmitter.prototype.on = originalOn;
+          EventEmitter.prototype.once = originalOnce;
+        }
+
+        // Pre-fix: peak would be >= REDIRECT_COUNT (one axios close listener per hop
+        // on the outer RedirectableRequest). Post-fix: axios attaches exactly one
+        // close listener to the outer request; framework internals typically add
+        // a couple more. A generous bound of 10 distinguishes the behaviours.
+        assert.ok(
+          maxObservedCloseListeners.value < 10,
+          `close listener count should stay below 10 across ${REDIRECT_COUNT} redirects, peak was ${maxObservedCloseListeners.value}`
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    }, 30000);
+  });
+
   describe('socketPath security (GHSA-j96w-fp6f-pq6v)', () => {
     function makeSocketPath() {
       const pipe = `axios-socketpath-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;

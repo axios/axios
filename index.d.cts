@@ -162,6 +162,7 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_CANCELED = 'ERR_CANCELED';
   static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
+  static readonly ECONNREFUSED = 'ECONNREFUSED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
 }
 
@@ -319,14 +320,14 @@ declare namespace axios {
 
   type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;
 
-  interface AxiosRequestTransformer {
-    (this: InternalAxiosRequestConfig, data: any, headers: AxiosRequestHeaders): any;
+  interface AxiosRequestTransformer<D = any> {
+    (this: InternalAxiosRequestConfig<D>, data: D, headers: AxiosRequestHeaders): any;
   }
 
-  interface AxiosResponseTransformer {
+  interface AxiosResponseTransformer<T = any> {
     (
       this: InternalAxiosRequestConfig,
-      data: any,
+      data: T,
       headers: AxiosResponseHeaders,
       status?: number
     ): any;
@@ -470,7 +471,7 @@ declare namespace axios {
     method?: Method | string;
     baseURL?: string;
     allowAbsoluteUrls?: boolean;
-    transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+    transformRequest?: AxiosRequestTransformer<D> | AxiosRequestTransformer<D>[];
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
     headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
     params?: any;

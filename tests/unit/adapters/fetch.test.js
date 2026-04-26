@@ -553,15 +553,19 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       // Simulates Safari: instead of honoring controller.abort(reason), fetch
       // synthesizes a generic DOMException, dropping the timeout AxiosError
       // we passed via composeSignals. The adapter should still report ETIMEDOUT.
-      const safariFetch = (url, init) =>
-        new Promise((resolve, reject) => {
+      const safariFetch = (url, init) => {
+        // When isRequestSupported, the adapter calls _fetch(request, fetchOptions);
+        // the signal lives on the Request, not on init.
+        const signal = (init && init.signal) || (url && url.signal);
+        return new Promise((resolve, reject) => {
           const onAbort = () => {
-            init.signal.removeEventListener('abort', onAbort);
+            signal.removeEventListener('abort', onAbort);
             reject(new DOMException('The operation was aborted.', 'AbortError'));
           };
-          if (init.signal.aborted) return onAbort();
-          init.signal.addEventListener('abort', onAbort);
+          if (signal.aborted) return onAbort();
+          signal.addEventListener('abort', onAbort);
         });
+      };
 
       await assert.rejects(
         () =>

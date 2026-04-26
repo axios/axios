@@ -21,7 +21,7 @@ const tsconfig = {
 describe('module ts-require compatibility', () => {
   it('compiles and executes require("axios") imports', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/ts-require.ts');
-    const fixturePath = createTempFixture(suiteRoot, 'ts-require', sourcePath, tsconfig);
+    const fixturePath = createTempFixture(suiteRoot, null, 'ts-require', sourcePath, tsconfig);
 
     try {
       runCommand('node', [tscBin, '-p', 'tsconfig.json'], { cwd: fixturePath });

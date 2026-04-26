@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@splidejs/splide": "^4.1.4",
-    "axios": "^1.14.0",
+    "axios": "^1.15.2",
     "vitepress": "^1.6.4"
   },
   "devDependencies": {
@@ -25,6 +25,6 @@
     "vue": "^3.5.32"
   },
   "overrides": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.12"
   }
 }

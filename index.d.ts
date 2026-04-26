@@ -3,7 +3,7 @@ type StringLiteralsOrString<Literals extends string> = Literals | (string & {});
 
 export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
-interface RawAxiosHeaders {
+export interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;
 }
 

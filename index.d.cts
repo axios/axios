@@ -1,7 +1,3 @@
-interface RawAxiosHeaders {
-  [key: string]: axios.AxiosHeaderValue;
-}
-
 type MethodsHeaders = Partial<
   {
     [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
@@ -44,7 +40,7 @@ type CommonResponseHeaderKey = CommonResponseHeadersList | Lowercase<CommonRespo
 type BrowserProgressEvent = any;
 
 declare class AxiosHeaders {
-  constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
+  constructor(headers?: axios.RawAxiosHeaders | AxiosHeaders | string);
 
   [key: string]: any;
 
@@ -53,7 +49,7 @@ declare class AxiosHeaders {
     value?: axios.AxiosHeaderValue,
     rewrite?: boolean | AxiosHeaderMatcher
   ): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+  set(headers?: axios.RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
   get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
@@ -67,17 +63,17 @@ declare class AxiosHeaders {
   normalize(format: boolean): AxiosHeaders;
 
   concat(
-    ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>
+    ...targets: Array<AxiosHeaders | axios.RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
-  toJSON(asStrings?: boolean): RawAxiosHeaders;
+  toJSON(asStrings?: boolean): axios.RawAxiosHeaders;
 
-  static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
+  static from(thing?: AxiosHeaders | axios.RawAxiosHeaders | string): AxiosHeaders;
 
   static accessor(header: string | string[]): AxiosHeaders;
 
   static concat(
-    ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>
+    ...targets: Array<AxiosHeaders | axios.RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
   setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -297,6 +293,10 @@ type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 
 declare namespace axios {
   type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
+
+  interface RawAxiosHeaders {
+    [key: string]: AxiosHeaderValue;
+  }
 
   type RawAxiosRequestHeaders = Partial<
     RawAxiosHeaders & {

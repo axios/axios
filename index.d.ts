@@ -138,14 +138,14 @@ export type RawAxiosResponseHeaders = Partial<RawAxiosHeaders & RawCommonRespons
 
 export type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;
 
-export interface AxiosRequestTransformer {
-  (this: InternalAxiosRequestConfig, data: any, headers: AxiosRequestHeaders): any;
+export interface AxiosRequestTransformer<D = any> {
+  (this: InternalAxiosRequestConfig<D>, data: D, headers: AxiosRequestHeaders): any;
 }
 
-export interface AxiosResponseTransformer {
+export interface AxiosResponseTransformer<T = any> {
   (
     this: InternalAxiosRequestConfig,
-    data: any,
+    data: T,
     headers: AxiosResponseHeaders,
     status?: number
   ): any;
@@ -367,7 +367,7 @@ export interface AxiosRequestConfig<D = any> {
   method?: StringLiteralsOrString<Method>;
   baseURL?: string;
   allowAbsoluteUrls?: boolean;
-  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+  transformRequest?: AxiosRequestTransformer<D> | AxiosRequestTransformer<D>[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
   params?: any;
@@ -519,6 +519,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_CANCELED = 'ERR_CANCELED';
   static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
+  static readonly ECONNREFUSED = 'ECONNREFUSED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
 }
 

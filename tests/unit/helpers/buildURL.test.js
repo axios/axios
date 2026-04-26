@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import buildURL from '../../../lib/helpers/buildURL.js';
+import buildURL, { encode } from '../../../lib/helpers/buildURL.js';
 
 describe('helpers::buildURL', () => {
   it('should support null params', () => {
@@ -122,5 +122,41 @@ describe('helpers::buildURL', () => {
     };
 
     expect(buildURL('/foo', params, customSerializer)).toEqual('/foo?rendered');
+  });
+});
+
+describe('helpers::encode', () => {
+  it('should be exported as a named export', () => {
+    expect(typeof encode).toBe('function');
+  });
+
+  it('should leave plain ASCII unchanged', () => {
+    expect(encode('foo')).toEqual('foo');
+  });
+
+  it('should preserve `:` rather than percent-encoding it', () => {
+    expect(encode(':')).toEqual(':');
+  });
+
+  it('should preserve `$` rather than percent-encoding it', () => {
+    expect(encode('$')).toEqual('$');
+  });
+
+  it('should preserve `,` rather than percent-encoding it', () => {
+    expect(encode(',')).toEqual(',');
+  });
+
+  it('should encode space as `+` (form-style) rather than `%20`', () => {
+    expect(encode(' ')).toEqual('+');
+  });
+
+  it('should still percent-encode characters outside the preserved set', () => {
+    expect(encode('a/b')).toEqual('a%2Fb');
+    expect(encode('a&b')).toEqual('a%26b');
+    expect(encode('a=b')).toEqual('a%3Db');
+  });
+
+  it('should apply all substitutions together', () => {
+    expect(encode('a:b$c,d e')).toEqual('a:b$c,d+e');
   });
 });

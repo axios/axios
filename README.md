@@ -202,9 +202,7 @@ import axios from 'axios';
 //const axios = require('axios'); // legacy way
 
 try {
-  const response = await axios.get('/user?ID=12345', {
-    timeout: 5000,
-  });
+  const response = await axios.get('/user?ID=12345');
   console.log(response);
 } catch (error) {
   console.error(error);
@@ -216,7 +214,7 @@ axios
     params: {
       ID: 12345,
     },
-    timeout: 5000,
+    timeout: 5000, // 5 seconds — see "Handling Timeouts" below for matching error handling
   })
   .then(function (response) {
     console.log(response);
@@ -231,9 +229,7 @@ axios
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
   try {
-    const response = await axios.get('/user?ID=12345', {
-      timeout: 5000,
-    });
+    const response = await axios.get('/user?ID=12345');
     console.log(response);
   } catch (error) {
     console.error(error);
@@ -241,7 +237,8 @@ async function getUser() {
 }
 ```
 
-> **Note**: In production code, setting a timeout helps avoid requests hanging indefinitely.
+> **Note**: Set a `timeout` in production — without one, a stalled request can hang
+> indefinitely. See [Handling Timeouts](#handling-timeouts) for the matching error handling.
 
 > **Note**: `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.

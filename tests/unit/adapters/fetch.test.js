@@ -492,6 +492,93 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  describe('fetch adapter - timeout normalization', () => {
+    it('should reject with an AxiosError(ETIMEDOUT) on timeout', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          await setTimeoutAsync(1000);
+          res.end('OK');
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await assert.rejects(
+          () =>
+            fetchAxios(`http://localhost:${server.address().port}/`, {
+              timeout: 200,
+            }),
+          (err) => {
+            assert.strictEqual(err.name, 'AxiosError');
+            assert.strictEqual(err.code, 'ETIMEDOUT');
+            assert.match(err.message, /timeout of 200ms exceeded/);
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should not classify a user-initiated abort as a timeout', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          await setTimeoutAsync(1000);
+          res.end('OK');
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 100);
+
+        await assert.rejects(
+          () =>
+            fetchAxios(`http://localhost:${server.address().port}/`, {
+              signal: controller.signal,
+            }),
+          (err) => {
+            assert.notStrictEqual(err.code, 'ETIMEDOUT');
+            assert.match(String(err), /CanceledError|AbortError/);
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should surface ETIMEDOUT when fetch rejects with a DOMException on abort (Safari)', async () => {
+      // Simulates Safari: instead of honoring controller.abort(reason), fetch
+      // synthesizes a generic DOMException, dropping the timeout AxiosError
+      // we passed via composeSignals. The adapter should still report ETIMEDOUT.
+      const safariFetch = (url, init) =>
+        new Promise((resolve, reject) => {
+          const onAbort = () => {
+            init.signal.removeEventListener('abort', onAbort);
+            reject(new DOMException('The operation was aborted.', 'AbortError'));
+          };
+          if (init.signal.aborted) return onAbort();
+          init.signal.addEventListener('abort', onAbort);
+        });
+
+      await assert.rejects(
+        () =>
+          fetchAxios.get('/', {
+            timeout: 50,
+            env: { fetch: safariFetch },
+          }),
+        (err) => {
+          assert.strictEqual(err.name, 'AxiosError');
+          assert.strictEqual(err.code, 'ETIMEDOUT');
+          assert.match(err.message, /timeout of 50ms exceeded/);
+          return true;
+        }
+      );
+    });
+  });
+
   it('should combine baseURL and url', async () => {
     const server = await startHTTPServer(async (req, res) => res.end('OK'), { port: SERVER_PORT });
     try {

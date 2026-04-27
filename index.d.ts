@@ -509,6 +509,7 @@ export interface AxiosResponse<T = any, D = any, H = {}> {
   headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
   config: InternalAxiosRequestConfig<D>;
   request?: any;
+  duration?: number;
 }
 
 export class AxiosError<T = unknown, D = any> extends Error {

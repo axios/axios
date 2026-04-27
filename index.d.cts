@@ -608,6 +608,7 @@ declare namespace axios {
     headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
     config: InternalAxiosRequestConfig<D>;
     request?: any;
+    duration?: number;
   }
 
   type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;

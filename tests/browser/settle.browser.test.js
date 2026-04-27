@@ -96,4 +96,91 @@ describe('core::settle (vitest browser)', () => {
     expect(validateStatus).toHaveBeenCalledOnce();
     expect(validateStatus).toHaveBeenCalledWith(500);
   });
+
+  it('sets duration to a positive number when requestedAt is present', () => {
+    const resolve = vi.fn();
+    const reject = vi.fn();
+    const now = Date.now();
+    const response = {
+      status: 200,
+      config: {
+        validateStatus: () => true,
+        requestedAt: now - 100,
+      },
+    };
+
+    settle(resolve, reject, response);
+
+    expect(resolve).toHaveBeenCalledOnce();
+    const resolvedResponse = resolve.mock.calls[0][0];
+    expect(resolvedResponse.duration).toBeDefined();
+    expect(typeof resolvedResponse.duration).toBe('number');
+    expect(resolvedResponse.duration).toBeGreaterThan(0);
+  });
+
+  it('sets duration on rejected response when validateStatus returns false', () => {
+    const resolve = vi.fn();
+    const reject = vi.fn();
+    const now = Date.now();
+    const request = {
+      path: '/foo',
+    };
+    const response = {
+      status: 500,
+      config: {
+        validateStatus: () => false,
+        requestedAt: now - 100,
+      },
+      request,
+    };
+
+    settle(resolve, reject, response);
+
+    expect(resolve).not.toHaveBeenCalled();
+    expect(reject).toHaveBeenCalledOnce();
+
+    const reason = reject.mock.calls[0][0];
+    expect(reason).toBeInstanceOf(AxiosError);
+    expect(reason.response).toBeDefined();
+    expect(reason.response.duration).toBeDefined();
+    expect(typeof reason.response.duration).toBe('number');
+    expect(reason.response.duration).toBeGreaterThan(0);
+  });
+
+  it('calculates duration within reasonable error range', () => {
+    const resolve = vi.fn();
+    const reject = vi.fn();
+    const now = Date.now();
+    const elapsedMs = 100;
+    const response = {
+      status: 200,
+      config: {
+        validateStatus: () => true,
+        requestedAt: now - elapsedMs,
+      },
+    };
+
+    settle(resolve, reject, response);
+
+    const resolvedResponse = resolve.mock.calls[0][0];
+    expect(resolvedResponse.duration).toBeGreaterThanOrEqual(elapsedMs);
+    expect(resolvedResponse.duration).toBeLessThan(elapsedMs + 50);
+  });
+
+  it('does not set duration when requestedAt is not present', () => {
+    const resolve = vi.fn();
+    const reject = vi.fn();
+    const response = {
+      status: 200,
+      config: {
+        validateStatus: () => true,
+      },
+    };
+
+    settle(resolve, reject, response);
+
+    expect(resolve).toHaveBeenCalledOnce();
+    const resolvedResponse = resolve.mock.calls[0][0];
+    expect(resolvedResponse.duration).toBeUndefined();
+  });
 });

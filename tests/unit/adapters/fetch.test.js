@@ -26,6 +26,29 @@ const fetchAxios = axios.create({
   adapter: 'fetch',
 });
 
+const getFetchSignal = (input, init) => (init && init.signal) || (input && input.signal);
+
+const createBrokenDOMExceptionLikeError = () =>
+  Object.defineProperties(
+    {},
+    {
+      name: {
+        get() {
+          throw new TypeError(
+            'The DOMException.name getter can only be used on instances of DOMException'
+          );
+        },
+      },
+      message: {
+        get() {
+          throw new TypeError(
+            'The DOMException.message getter can only be used on instances of DOMException'
+          );
+        },
+      },
+    }
+  );
+
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
@@ -470,7 +493,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await setTimeoutAsync(1000);
         res.end('OK');
       },
-      { port: SERVER_PORT }
+      { port: 0 }
     );
 
     try {
@@ -490,6 +513,100 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     } finally {
       await stopHTTPServer(server);
     }
+  });
+
+  describe('fetch adapter - timeout normalization', () => {
+    it('should reject with an AxiosError(ETIMEDOUT) on timeout', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          await setTimeoutAsync(1000);
+          res.end('OK');
+        },
+        { port: 0 }
+      );
+
+      try {
+        await assert.rejects(
+          () =>
+            fetchAxios(`http://localhost:${server.address().port}/`, {
+              timeout: 200,
+            }),
+          (err) => {
+            assert.strictEqual(err.name, 'AxiosError');
+            assert.strictEqual(err.code, 'ETIMEDOUT');
+            assert.match(err.message, /timeout of 200ms exceeded/);
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should not classify a user-initiated abort as a timeout', async () => {
+      const safariFetch = (url, init) => {
+        const signal = getFetchSignal(url, init);
+
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => {
+            signal.removeEventListener('abort', onAbort);
+            reject(createBrokenDOMExceptionLikeError());
+          };
+
+          if (signal.aborted) return onAbort();
+          signal.addEventListener('abort', onAbort);
+        });
+      };
+
+      const controller = new AbortController();
+
+      const request = fetchAxios.get('/', {
+        signal: controller.signal,
+        env: { fetch: safariFetch },
+      });
+
+      controller.abort();
+
+      await assert.rejects(
+        () => request,
+        (err) => {
+          assert.strictEqual(err.name, 'CanceledError');
+          assert.strictEqual(err.code, 'ERR_CANCELED');
+          assert.strictEqual(axios.isCancel(err), true);
+          return true;
+        }
+      );
+    });
+
+    it('should surface ETIMEDOUT when fetch rejects with a broken DOMException on abort (Safari)', async () => {
+      const safariFetch = (url, init) => {
+        const signal = getFetchSignal(url, init);
+
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => {
+            signal.removeEventListener('abort', onAbort);
+            reject(createBrokenDOMExceptionLikeError());
+          };
+
+          if (signal.aborted) return onAbort();
+          signal.addEventListener('abort', onAbort);
+        });
+      };
+
+      await assert.rejects(
+        () =>
+          fetchAxios.get('/', {
+            timeout: 50,
+            env: { fetch: safariFetch },
+          }),
+        (err) => {
+          assert.strictEqual(err.name, 'AxiosError');
+          assert.strictEqual(err.code, 'ETIMEDOUT');
+          assert.match(err.message, /timeout of 50ms exceeded/);
+          return true;
+        }
+      );
+    });
   });
 
   it('should combine baseURL and url', async () => {

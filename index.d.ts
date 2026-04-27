@@ -138,10 +138,35 @@ export type RawAxiosResponseHeaders = Partial<RawAxiosHeaders & RawCommonRespons
 
 export type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;
 
+/**
+ * `transformRequest` is invoked as a left-fold pipeline: each function's return
+ * value becomes the next function's `data` argument (see `lib/core/transformData.js`).
+ *
+ * The `D` generic describes the type of `data` entering the *first* transformer
+ * in the chain. Subsequent transformers in an array — and any user transformer
+ * that runs after axios's default `transformRequest` (which serializes objects
+ * to JSON, FormData, URLSearchParams, etc.) — may receive a serialized form
+ * (`string`, `Buffer`, `ArrayBuffer`, `FormData`, `URLSearchParams`,
+ * `Stream`, ...) rather than `D`. The final transformer in the chain is
+ * expected to return one of those serialized forms.
+ *
+ * For best results, type `D` only when supplying a single transformer that
+ * runs first, or accept that intermediate stages may need a runtime check.
+ */
 export interface AxiosRequestTransformer<D = any> {
   (this: InternalAxiosRequestConfig<D>, data: D, headers: AxiosRequestHeaders): any;
 }
 
+/**
+ * `transformResponse` is invoked as a left-fold pipeline: each function's
+ * return value becomes the next function's `data` argument.
+ *
+ * The `T` generic describes the type of `data` entering the *first* transformer
+ * in the chain — typically the raw response body (`string`, `ArrayBuffer`,
+ * `Buffer`, or `Stream` depending on `responseType`). Later transformers
+ * receive whatever the previous stage returned, so `T` is only accurate for
+ * the first call.
+ */
 export interface AxiosResponseTransformer<T = any> {
   (
     this: InternalAxiosRequestConfig,

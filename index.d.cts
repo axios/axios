@@ -320,14 +320,14 @@ declare namespace axios {
 
   type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;
 
-  interface AxiosRequestTransformer<D = any> {
-    (this: InternalAxiosRequestConfig<D>, data: D, headers: AxiosRequestHeaders): any;
+  interface AxiosRequestTransformer {
+    (this: InternalAxiosRequestConfig, data: any, headers: AxiosRequestHeaders): any;
   }
 
-  interface AxiosResponseTransformer<T = any> {
+  interface AxiosResponseTransformer {
     (
       this: InternalAxiosRequestConfig,
-      data: T,
+      data: any,
       headers: AxiosResponseHeaders,
       status?: number
     ): any;
@@ -471,7 +471,7 @@ declare namespace axios {
     method?: Method | string;
     baseURL?: string;
     allowAbsoluteUrls?: boolean;
-    transformRequest?: AxiosRequestTransformer<D> | AxiosRequestTransformer<D>[];
+    transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
     transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
     headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
     params?: any;

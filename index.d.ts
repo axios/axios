@@ -138,14 +138,14 @@ export type RawAxiosResponseHeaders = Partial<RawAxiosHeaders & RawCommonRespons
 
 export type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;
 
-export interface AxiosRequestTransformer<D = any> {
-  (this: InternalAxiosRequestConfig<D>, data: D, headers: AxiosRequestHeaders): any;
+export interface AxiosRequestTransformer {
+  (this: InternalAxiosRequestConfig, data: any, headers: AxiosRequestHeaders): any;
 }
 
-export interface AxiosResponseTransformer<T = any> {
+export interface AxiosResponseTransformer {
   (
     this: InternalAxiosRequestConfig,
-    data: T,
+    data: any,
     headers: AxiosResponseHeaders,
     status?: number
   ): any;
@@ -367,7 +367,7 @@ export interface AxiosRequestConfig<D = any> {
   method?: StringLiteralsOrString<Method>;
   baseURL?: string;
   allowAbsoluteUrls?: boolean;
-  transformRequest?: AxiosRequestTransformer<D> | AxiosRequestTransformer<D>[];
+  transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
   params?: any;

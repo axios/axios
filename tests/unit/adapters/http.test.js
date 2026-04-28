@@ -52,6 +52,37 @@ describe('supports http with nodejs', () => {
     };
   }
 
+  class HangingConnectSocket extends stream.Duplex {
+    constructor() {
+      super();
+      this.connecting = true;
+    }
+
+    _read() {}
+
+    _write(_chunk, _encoding, callback) {
+      callback();
+    }
+
+    setKeepAlive() {
+      return this;
+    }
+
+    setNoDelay() {
+      return this;
+    }
+
+    setTimeout() {
+      return this;
+    }
+  }
+
+  class HangingConnectAgent extends http.Agent {
+    createConnection() {
+      return new HangingConnectSocket();
+    }
+  }
+
   it('should support IPv4 literal strings', async () => {
     const data = {
       firstName: 'Fred',
@@ -203,6 +234,69 @@ describe('supports http with nodejs', () => {
       );
     } finally {
       await stopHTTPServer(server);
+    }
+  });
+
+  it('should respect the timeout property during TCP connect with maxRedirects set to 0', async () => {
+    const timeout = 100;
+    const guardTimeout = 1000;
+    const started = Date.now();
+    const controller = new AbortController();
+    const agent = new HangingConnectAgent();
+    let guardTimer;
+    const request = axios.get('http://connect-timeout.test/', {
+      httpAgent: agent,
+      maxRedirects: 0,
+      proxy: false,
+      signal: controller.signal,
+      timeout,
+    });
+    const guard = new Promise((_resolve, reject) => {
+      guardTimer = setTimeout(() => {
+        controller.abort();
+        reject(new Error('request did not honor timeout during connect'));
+      }, guardTimeout);
+    });
+
+    try {
+      await assert.rejects(Promise.race([request, guard]), (error) => {
+        const elapsed = Date.now() - started;
+        assert.strictEqual(error.code, 'ECONNABORTED');
+        assert.strictEqual(error.message, `timeout of ${timeout}ms exceeded`);
+        assert.ok(elapsed < guardTimeout, `request timed out after ${elapsed}ms`);
+        return true;
+      });
+    } finally {
+      clearTimeout(guardTimer);
+      controller.abort();
+      agent.destroy();
+    }
+  });
+
+  it('should not time out immediately for timeout set to zero during TCP connect', async () => {
+    const controller = new AbortController();
+    const agent = new HangingConnectAgent();
+    const request = axios
+      .get('http://connect-timeout.test/', {
+        httpAgent: agent,
+        maxRedirects: 0,
+        proxy: false,
+        signal: controller.signal,
+        timeout: '0',
+      })
+      .then(
+        () => null,
+        (error) => error
+      );
+
+    try {
+      await setTimeoutAsync(50);
+      controller.abort();
+      const error = await request;
+      assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+    } finally {
+      controller.abort();
+      agent.destroy();
     }
   });
 

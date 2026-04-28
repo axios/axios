@@ -80,6 +80,26 @@ axios.put(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<
 axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
+### `query`
+
+`query` 方法用于发起 QUERY 请求，这是一种安全且幂等的、可以携带请求体的方法。它接受 URL、可选数据对象和可选配置对象，返回解析为响应对象的 Promise。当读取类操作的参数过于复杂或敏感、不适合放在 URL 中时，可以使用该方法。
+
+```ts
+axios.query(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+```
+
+```js
+// 将复杂的搜索条件作为请求体发送
+const { data } = await axios.query("/api/search", {
+  selector: ["name", "email"],
+  filter: { active: true, role: "admin" },
+});
+```
+
+::: warning 草案规范
+QUERY 方法目前由 IETF 的 [Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/) 定义，尚未成为正式标准。其语义乃至方法名称都可能在最终发布前发生变化，并且服务器、代理和 CDN 的支持情况参差不齐。在用于生产环境之前，请确认你的整个链路都能够正确处理 `QUERY` 请求。
+:::
+
 ## 表单数据快捷方法
 
 这些方法与上述对应方法等价，但会预设 `Content-Type` 为 `multipart/form-data`，是上传文件或提交 HTML 表单的推荐方式。

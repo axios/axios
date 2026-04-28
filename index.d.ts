@@ -657,11 +657,6 @@ export class Axios {
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
-  queryForm<T = any, R = AxiosResponse<T>, D = any>(
-    url: string,
-    data?: D,
-    config?: AxiosRequestConfig<D>
-  ): Promise<R>;
 }
 
 export interface AxiosInstance extends Axios {

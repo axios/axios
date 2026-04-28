@@ -226,11 +226,6 @@ declare class Axios {
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
-  queryForm<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
-    data?: D,
-    config?: axios.AxiosRequestConfig<D>
-  ): Promise<R>;
 }
 
 declare enum HttpStatusCode {

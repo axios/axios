@@ -3,8 +3,6 @@ import assert from 'assert';
 import axios from '../../index.js';
 import { startHTTPServer, stopHTTPServer } from '../setup/server.js';
 
-const SERVER_PORT = 8050;
-
 describe('QUERY method', () => {
   describe('static axios.query()', () => {
     it('should make a request with the QUERY HTTP method', async () => {
@@ -172,28 +170,6 @@ describe('QUERY method', () => {
     });
   });
 
-  describe('queryForm()', () => {
-    it('should set Content-Type to multipart/form-data', async () => {
-      await axios.queryForm('/test', { key: 'value' }, {
-        adapter: (config) => {
-          assert.strictEqual(config.method, 'query');
-          assert.ok(
-            config.headers.get('Content-Type').includes('multipart/form-data'),
-            'Expected Content-Type to include multipart/form-data'
-          );
-          return Promise.resolve({
-            data: null,
-            status: 200,
-            statusText: 'OK',
-            headers: {},
-            config,
-            request: {},
-          });
-        },
-      });
-    });
-  });
-
   describe('with HTTP server', () => {
     it('should send QUERY requests with a body to a real server', async () => {
       const server = await startHTTPServer(
@@ -210,7 +186,7 @@ describe('QUERY method', () => {
             }));
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
@@ -242,7 +218,7 @@ describe('QUERY method', () => {
             headers: req.headers,
           }));
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
@@ -272,7 +248,7 @@ describe('QUERY method', () => {
             url: req.url,
           }));
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {

@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
-import axios from '../../index.js';
+import axios, { create } from '../../index.js';
 
 describe('static api', () => {
   it('should have request method helpers', () => {
@@ -51,6 +51,11 @@ describe('static api', () => {
 
   it('should have factory method', () => {
     assert.strictEqual(typeof axios.create, 'function');
+  });
+
+  it('should expose create as a named export', () => {
+    assert.strictEqual(typeof create, 'function');
+    assert.strictEqual(create, axios.create);
   });
 
   it('should have CanceledError, CancelToken, and isCancel properties', () => {

@@ -68,6 +68,18 @@ console.log(response.data);
 
 axios provides a simple API for making requests. You can use the `axios.get` method to make a GET request, the `axios.post` method to make a POST request, and so on. You can also use the `axios.request` method to make a request with any method.
 
+::: tip Set a timeout in production
+Without a `timeout`, a stalled request can hang indefinitely. Pass one via the request config:
+
+```js
+const response = await axios.get("https://example.com/data", {
+  timeout: 5000, // 5 seconds
+});
+```
+
+See [`timeout` in the request config](/pages/advanced/request-config#timeout) and [Error handling](/pages/advanced/error-handling) for the matching `ECONNABORTED` / `ETIMEDOUT` codes.
+:::
+
 ## Next steps
 
 Now that you've made your first request with axios, you're ready to start exploring the rest of the axios documentation. You can learn more about making requests, handling responses, and using axios in your projects. Check out the rest of the documentation to learn more.

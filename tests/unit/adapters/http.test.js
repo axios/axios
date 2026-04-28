@@ -385,6 +385,37 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should pass requestDetails to beforeRedirect with the original URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Location', '/foo');
+        res.statusCode = 302;
+        res.end();
+      },
+      { port: SERVER_PORT }
+    );
+
+    const originalUrl = `http://localhost:${server.address().port}/bar`;
+    let capturedUrl;
+
+    try {
+      await axios.get(originalUrl, {
+        maxRedirects: 3,
+        beforeRedirect: (options, responseDetails, requestDetails) => {
+          if (options.path === '/foo' && responseDetails.headers.location === '/foo') {
+            capturedUrl = requestDetails.url;
+            throw new Error('Provided path is not allowed');
+          }
+        },
+      });
+    } catch (error) {
+      assert.strictEqual(error.message, 'Redirected request failed: Provided path is not allowed');
+      assert.strictEqual(capturedUrl, originalUrl);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support beforeRedirect and proxy with redirect', async () => {
     let requestCount = 0;
     let proxyUseCount = 0;

@@ -480,6 +480,7 @@ axios
     params: {
       ID: 12345,
     },
+    timeout: 5000, // 5 seconds — see "Handling Timeouts" below for matching error handling
   })
   .then(function (response) {
     console.log(response);
@@ -501,6 +502,9 @@ async function getUser() {
   }
 }
 ```
+
+> **Note**: Set a `timeout` in production — without one, a stalled request can hang
+> indefinitely. See [Handling Timeouts](#handling-timeouts) for the matching error handling.
 
 > **Note**: `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.

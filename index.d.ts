@@ -3,7 +3,7 @@ type StringLiteralsOrString<Literals extends string> = Literals | (string & {});
 
 export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
-interface RawAxiosHeaders {
+export interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;
 }
 
@@ -394,7 +394,12 @@ export interface AxiosRequestConfig<D = any> {
     responseDetails: {
       headers: Record<string, string>;
       statusCode: HttpStatusCode;
-    }
+    },
+    requestDetails: {
+      headers: Record<string, string>;
+      url: string;
+      method: string;
+    },
   ) => void;
   socketPath?: string | null;
   allowedSocketPaths?: string | string[] | null;
@@ -519,6 +524,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_CANCELED = 'ERR_CANCELED';
   static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
+  static readonly ECONNREFUSED = 'ECONNREFUSED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
 }
 
@@ -692,6 +698,8 @@ export function mergeConfig<D = any>(
   config1: AxiosRequestConfig<D>,
   config2: AxiosRequestConfig<D>
 ): AxiosRequestConfig<D>;
+
+export function create(config?: CreateAxiosDefaults): AxiosInstance;
 
 export interface AxiosStatic extends AxiosInstance {
   Cancel: CancelStatic;

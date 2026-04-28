@@ -612,17 +612,28 @@ describe('supports http with nodejs', () => {
     it('should support gunzip error handling', async () => {
       const server = await startHTTPServer(
         (req, res) => {
+          res.statusCode = 206;
           res.setHeader('Content-Type', 'application/json');
           res.setHeader('Content-Encoding', 'gzip');
+          res.setHeader('X-Stream-Error', 'yes');
           res.end('invalid response');
         },
         { port: SERVER_PORT }
       );
 
       try {
-        await assert.rejects(async () => {
-          await axios.get(`http://localhost:${server.address().port}/`);
-        });
+        await assert.rejects(
+          async () => {
+            await axios.get(`http://localhost:${server.address().port}/`);
+          },
+          (error) => {
+            assert.strictEqual(error.response.status, 206);
+            assert.strictEqual(error.response.headers.get('x-stream-error'), 'yes');
+            assert.strictEqual(error.status, 206);
+
+            return true;
+          }
+        );
       } finally {
         await stopHTTPServer(server);
       }
@@ -2692,7 +2703,7 @@ describe('supports http with nodejs', () => {
   it('should throw an error if http server that aborts a chunked request', async () => {
     const server = await startHTTPServer(
       (req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.writeHead(200, { 'Content-Type': 'text/plain', 'X-Stream-Aborted': 'yes' });
         res.write('chunk 1');
 
         setTimeout(() => {
@@ -2714,6 +2725,9 @@ describe('supports http with nodejs', () => {
         (error) => {
           assert.strictEqual(error.code, 'ERR_BAD_RESPONSE');
           assert.strictEqual(error.message, 'stream has been aborted');
+          assert.strictEqual(error.response.status, 200);
+          assert.strictEqual(error.response.headers.get('x-stream-aborted'), 'yes');
+          assert.strictEqual(error.status, 200);
 
           return true;
         }

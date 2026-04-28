@@ -80,6 +80,26 @@ The `patch` method is used to make a PATCH request. It takes a URL, an optional 
 axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
+### `query`
+
+The `query` method is used to make a QUERY request, a safe and idempotent method that carries a body. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object. Use it for read-style operations whose parameters are too complex or sensitive to fit in the URL.
+
+```ts
+axios.query(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+```
+
+```js
+// Send a complex search filter as a request body
+const { data } = await axios.query("/api/search", {
+  selector: ["name", "email"],
+  filter: { active: true, role: "admin" },
+});
+```
+
+::: warning Draft specification
+The QUERY method is defined by an IETF [Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/) and has not yet been standardized. Semantics and the method name itself may change before final publication, and server, proxy, and CDN support is uneven. Verify your stack accepts `QUERY` end to end before relying on it in production.
+:::
+
 ## Form data shorthand methods
 
 These methods are equivalent to their counterparts above, but preset `Content-Type` to `multipart/form-data`. They are the recommended way to upload files or submit HTML forms.

@@ -80,6 +80,26 @@ La méthode `patch` est utilisée pour effectuer une requête PATCH. Elle accept
 axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
+### `query`
+
+La méthode `query` est utilisée pour effectuer une requête QUERY, une méthode sûre et idempotente qui transporte un corps. Elle accepte une URL, un objet de données optionnel et un objet de configuration optionnel en arguments et retourne une promise qui se résout vers l'objet de réponse. Utilisez-la pour des opérations de type lecture dont les paramètres sont trop complexes ou trop sensibles pour figurer dans l'URL.
+
+```ts
+axios.query(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+```
+
+```js
+// Envoyer un filtre de recherche complexe dans le corps de la requête
+const { data } = await axios.query("/api/search", {
+  selector: ["name", "email"],
+  filter: { active: true, role: "admin" },
+});
+```
+
+::: warning Spécification en cours d'élaboration
+La méthode QUERY est définie par un [Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/) de l'IETF et n'a pas encore été standardisée. La sémantique et le nom même de la méthode peuvent évoluer avant la publication finale, et la prise en charge par les serveurs, proxys et CDN est inégale. Vérifiez que votre pile accepte `QUERY` de bout en bout avant de vous en servir en production.
+:::
+
 ## Méthodes raccourcies pour les données de formulaire
 
 Ces méthodes sont équivalentes à leurs homologues ci-dessus, mais prédéfinissent le `Content-Type` à `multipart/form-data`. Elles constituent la façon recommandée d'envoyer des fichiers ou de soumettre des formulaires HTML.

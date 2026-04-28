@@ -243,7 +243,8 @@ type UppercaseMethod =
   | 'PATCH'
   | 'PURGE'
   | 'LINK'
-  | 'UNLINK';
+  | 'UNLINK'
+  | 'QUERY';
 
 export type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
@@ -467,6 +468,7 @@ export interface HeadersDefaults {
   purge?: RawAxiosRequestHeaders;
   link?: RawAxiosRequestHeaders;
   unlink?: RawAxiosRequestHeaders;
+  query?: RawAxiosRequestHeaders;
 }
 
 export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
@@ -646,6 +648,11 @@ export class Axios {
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   patchForm<T = any, R = AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>;
+  query<T = any, R = AxiosResponse<T>, D = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D>

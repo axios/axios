@@ -1,4 +1,5 @@
 import http from 'http';
+import https from 'https';
 import http2 from 'http2';
 import stream from 'stream';
 import getStream, { getStreamAsBuffer } from 'get-stream';
@@ -8,6 +9,14 @@ import selfsigned from 'selfsigned';
 import {setTimeoutAsync} from "./helpers.js";
 
 export const SERVER_HANDLER_STREAM_ECHO = (req, res) => req.pipe(res);
+
+export const disableTLS = () => {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
+export const enableTLS = () => {
+  delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+}
 
 const certificatePromise = selfsigned.generate(null, { keySize: 2048 });
 const trackedServers = new Set();
@@ -20,8 +29,10 @@ const decorateRequest = (handler) => {
   return (req, res) => {
     const {headers} = req;
     const url = new URL(req.url, `https://${headers[':authority'] || headers['host'] || 'localhost'}`);
+
     Object.assign(req, {
       path: url.pathname,
+      search: url.search,
       searchParams: url.searchParams
     });
     return handler(req, res);
@@ -39,7 +50,8 @@ export const startHTTPServer = async (handlerOrOptions, options) => {
     keepAlive = 1000,
     useHTTP2,
     key = certificate.private,
-    cert = certificate.cert
+    cert = certificate.cert,
+    useHTTPS
   } = Object.assign(
     typeof handlerOrOptions === 'function'
       ? {
@@ -48,6 +60,10 @@ export const startHTTPServer = async (handlerOrOptions, options) => {
       : handlerOrOptions || {},
     options
   );
+
+  if (!useHTTP2 && useHTTPS) {
+    disableTLS();
+  }
 
   return new Promise((resolve, reject) => {
     const serverHandler =
@@ -80,8 +96,15 @@ export const startHTTPServer = async (handlerOrOptions, options) => {
       };
 
     const server = useHTTP2
-      ? http2.createSecureServer({ key, cert }, decorateRequest(serverHandler))
-      : http.createServer(decorateRequest(serverHandler));
+      ?
+        useHTTPS ?
+          http2.createSecureServer({key, cert}, decorateRequest(serverHandler)) :
+          http2.createServer(decorateRequest(serverHandler))
+      : (
+        useHTTPS ?
+          https.createServer({ key, cert }, decorateRequest(serverHandler)) :
+          http.createServer(decorateRequest(serverHandler))
+      );
 
     const sessions = new Set();
 
@@ -111,7 +134,8 @@ export const startHTTPServer = async (handlerOrOptions, options) => {
 
       const actualPort = server.address().port;
 
-      server.origin = useHTTP2 ? `https://localhost:${actualPort}` : `http://localhost:${actualPort}`;
+      const protocol = useHTTPS ? 'https' : 'http';
+      server.origin = `${protocol}://localhost:${actualPort}`;
 
       trackedServers.add(this);
       resolve(this);

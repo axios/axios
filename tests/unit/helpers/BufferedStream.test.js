@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
-import BufferedStream from "../../lib/helpers/BufferedStream.js";
-import {setTimeoutAsync} from "../setup/helpers.js";
+import BufferedStream from "../../../lib/helpers/BufferedStream.js";
+import {setTimeoutAsync} from "../../setup/helpers.js";
 
 const textEncoder = new TextEncoder();
 
@@ -12,7 +12,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -34,7 +34,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -55,7 +55,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     const chunks1 = [];
     for await (const chunk of stream) {
@@ -84,7 +84,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     for await (const chunk of stream) {
       // just read to trigger buffering
@@ -111,7 +111,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -136,7 +136,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     const chunks = [];
     for await (const chunk of stream) {
@@ -159,7 +159,7 @@ describe('BufferedStream', () => {
 
     const ts = Date.now();
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 5});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 5});
 
     const chunks = [];
 
@@ -187,7 +187,7 @@ describe('BufferedStream', () => {
     const controller = new AbortController();
 
     const stream = new BufferedStream(source(), {
-      timeWindow: 100,
+      timeout: 100,
       maxBytes: 100,
       signal: controller.signal
     });
@@ -221,7 +221,7 @@ describe('BufferedStream', () => {
       throw new Error('Source error');
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     const chunks = [];
     let error;
@@ -249,7 +249,7 @@ describe('BufferedStream', () => {
       throw new Error('Source error');
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 100, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 100, maxBytes: 100});
 
     let error1, error2;
     try {
@@ -286,7 +286,7 @@ describe('BufferedStream', () => {
       yield 'chunk2';
     };
 
-    const stream = new BufferedStream(source(), {timeWindow: 1000, maxBytes: 100});
+    const stream = new BufferedStream(source(), {timeout: 1000, maxBytes: 100});
 
     const readChunks = async (onDone) => {
       const chunks = [];

@@ -163,6 +163,8 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
+  static readonly ERR_STREAM_FLUSHED = 'ERR_STREAM_FLUSHED';
+  static readonly ERR_REDIRECT = 'ERR_REDIRECT';
 }
 
 declare class CanceledError<T> extends AxiosError<T> {}
@@ -565,6 +567,8 @@ declare namespace axios {
       sessionTimeout?: number;
     };
     buffering?: AxiosBufferingConfig;
+    allowDowngrade?: boolean;
+    followStatusCodes?: string | number | string[] | number[] | Record<string, boolean>;
   }
 
   // Alias

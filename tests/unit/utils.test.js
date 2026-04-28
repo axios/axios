@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import {describe, expect, it} from 'vitest';
 import assert from 'assert';
 import utils from '../../lib/utils.js';
 import FormData from 'form-data';
@@ -172,4 +172,61 @@ describe('utils', () => {
       assert.strictEqual(utils.isReactNative({}), false);
     });
   });
+
+  describe('utils.list', () => {
+
+    it('should convert comma-separated string into a plain object', () => {
+      expect(utils.list('a,b,c')).toEqual({
+        a: true,
+        b: true,
+        c: true
+      });
+    });
+
+    it('should return the same shaped object if an object is passed', () => {
+      const obj = { a: true, b: true };
+      expect(utils.list(obj)).toMatchObject(obj);
+    });
+
+    it('should return an empty object if null or undefined is passed', () => {
+      expect(utils.list(null)).toEqual({});
+      expect(utils.list(undefined)).toEqual({});
+    });
+
+    it('should transform keys to lowercase', () => {
+      expect(utils.list('A,B,C')).toEqual({
+        a: true,
+        b: true,
+        c: true
+      });
+    });
+
+    it('should ignore extra commas and whitespace', () => {
+      expect(utils.list(' a , b , c ')).toEqual({
+        a: true,
+        b: true,
+        c: true
+      });
+    });
+
+    it('should handle empty string', () => {
+      expect(utils.list('')).toEqual({});
+    });
+
+    it('should handle non-string items in array input by converting them to strings', () => {
+      expect(utils.list(['a', 1, null, 'c'])).toEqual({
+        a: true,
+        '1': true,
+        'null': true,
+        c: true
+      });
+    });
+
+    it('should stringify any single value that is not already a string or an array', () => {
+      expect(utils.list(123)).toEqual({
+        '123': true
+      });
+    });
+  });
+
 });

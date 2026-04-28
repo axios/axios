@@ -2837,7 +2837,11 @@ describe('supports http with nodejs', () => {
     });
 
     describe('SpecCompliant FormData', () => {
-      it('should allow passing FormData', async () => {
+      it('should allow passing FormData', { retry: 2 }, async () => {
+        // Use an ephemeral port and a non-keep-alive agent. Sharing the fixed
+        // SERVER_PORT across tests can leave keep-alive sockets in the global
+        // pool that a follow-up test picks up just as the server FINs them,
+        // which surfaces here as EPIPE on the multipart write.
         const server = await startHTTPServer(
           async (req, res) => {
             const { fields, files } = await handleFormData(req);
@@ -2849,8 +2853,10 @@ describe('supports http with nodejs', () => {
               })
             );
           },
-          { port: SERVER_PORT }
+          { port: 0 }
         );
+
+        const oneShotAgent = new http.Agent({ keepAlive: false });
 
         try {
           const form = new FormDataSpecCompliant();
@@ -2863,6 +2869,8 @@ describe('supports http with nodejs', () => {
 
           const { data } = await axios.post(`http://localhost:${server.address().port}`, form, {
             maxRedirects: 0,
+            httpAgent: oneShotAgent,
+            headers: { Connection: 'close' },
           });
 
           assert.deepStrictEqual(data.fields, { foo1: ['bar1'], foo2: ['bar2'] });
@@ -2879,6 +2887,7 @@ describe('supports http with nodejs', () => {
             }
           );
         } finally {
+          oneShotAgent.destroy();
           await stopHTTPServer(server);
         }
       });

@@ -80,6 +80,26 @@ El método `patch` se usa para hacer una solicitud PATCH. Acepta una URL, un obj
 axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
+### `query`
+
+El método `query` se usa para hacer una solicitud QUERY, un método seguro e idempotente que transporta un cuerpo. Acepta una URL, un objeto de datos opcional y un objeto de configuración opcional como argumentos, y devuelve una Promise que se resuelve en el objeto de respuesta. Úsalo para operaciones de tipo lectura cuyos parámetros sean demasiado complejos o sensibles para ir en la URL.
+
+```ts
+axios.query(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+```
+
+```js
+// Enviar un filtro de búsqueda complejo como cuerpo de la solicitud
+const { data } = await axios.query("/api/search", {
+  selector: ["name", "email"],
+  filter: { active: true, role: "admin" },
+});
+```
+
+::: warning Especificación en borrador
+El método QUERY está definido por un [Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/) del IETF y todavía no ha sido estandarizado. La semántica e incluso el propio nombre del método pueden cambiar antes de la publicación final, y el soporte en servidores, proxies y CDN es desigual. Verifica que tu infraestructura acepte `QUERY` de extremo a extremo antes de usarlo en producción.
+:::
+
 ## Métodos abreviados para datos de formulario
 
 Estos métodos son equivalentes a sus contrapartes anteriores, pero predefinen `Content-Type` como `multipart/form-data`. Son la forma recomendada de subir archivos o enviar formularios HTML.

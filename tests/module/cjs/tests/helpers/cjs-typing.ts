@@ -91,6 +91,8 @@ axios.put('/user', { foo: 'bar' }).then(handleResponse).catch(handleError);
 
 axios.patch('/user', { foo: 'bar' }).then(handleResponse).catch(handleError);
 
+axios.query('/user', { foo: 'bar' }).then(handleResponse).catch(handleError);
+
 // Typed methods
 interface UserCreationDef {
   name: string;

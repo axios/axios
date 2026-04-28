@@ -621,6 +621,33 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should send QUERY requests with a body through the fetch adapter', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        let body = '';
+        req.on('data', (chunk) => { body += chunk; });
+        req.on('end', () => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ method: req.method, url: req.url, body }));
+        });
+      },
+      { port: 0 }
+    );
+
+    try {
+      const { data } = await fetchAxios.query(
+        `http://localhost:${server.address().port}/search`,
+        { selector: 'field1' }
+      );
+
+      assert.strictEqual(data.method, 'QUERY');
+      assert.strictEqual(data.url, '/search');
+      assert.deepStrictEqual(JSON.parse(data.body), { selector: 'field1' });
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support params', async () => {
     const server = await startHTTPServer((req, res) => res.end(req.url), { port: SERVER_PORT });
     try {

@@ -15,7 +15,7 @@ const createAbortedError = () => {
 };
 
 describe('timeout', () => {
-  test('timeout: 50 with never-resolving fetch mock rejects with ECONNABORTED', async () => {
+  test('timeout: 50 with never-resolving fetch mock rejects with ETIMEDOUT', async () => {
     const fetch = (input: unknown, init?: RequestInit) =>
       new Promise<Response>((_resolve, reject) => {
         const signal = init?.signal || (input instanceof Request ? input.signal : undefined);
@@ -45,6 +45,6 @@ describe('timeout', () => {
       .catch((e: any) => e);
 
     expect(axios.isAxiosError(err)).toBe(true);
-    expect(err.code).toBe('ECONNABORTED');
+    expect(err.code).toBe('ETIMEDOUT');
   });
 });

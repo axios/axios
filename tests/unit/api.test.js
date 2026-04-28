@@ -79,6 +79,36 @@ describe('static api', () => {
   it('should have getAdapter properties', () => {
     assert.strictEqual(typeof axios.getAdapter, 'function');
   });
+
+  it('should pass symbol keys to transformRequest', async () => {
+    const symbolKey = Symbol('example');
+    let transformedData;
+
+    await axios.post(
+      '/test',
+      {
+        [symbolKey]: 'value',
+        stringKey: 'value',
+      },
+      {
+        transformRequest(data) {
+          transformedData = data;
+          return '';
+        },
+        adapter: (config) =>
+          Promise.resolve({
+            data: null,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+            request: {},
+          }),
+      }
+    );
+
+    assert.strictEqual(transformedData[symbolKey], 'value');
+  });
 });
 
 describe('instance api', () => {

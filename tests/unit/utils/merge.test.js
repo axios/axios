@@ -94,4 +94,22 @@ describe('utils::merge', () => {
       x: 2,
     });
   });
+
+  it('should merge enumerable symbol keys', () => {
+    const key = Symbol('key');
+    const nestedKey = Symbol('nested');
+    const first = { [key]: { first: true } };
+    const second = {
+      [key]: { second: true },
+      nested: {
+        [nestedKey]: 'value',
+      },
+    };
+    const merged = merge(first, second);
+
+    expect(merged[key]).toEqual({ first: true, second: true });
+    expect(merged[key]).not.toBe(first[key]);
+    expect(merged.nested[nestedKey]).toBe('value');
+    expect(merged.nested).not.toBe(second.nested);
+  });
 });

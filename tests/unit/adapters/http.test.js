@@ -2349,6 +2349,50 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  describe('Host header preservation when forwarding through a proxy (#10805)', () => {
+    const proxyConfig = { hostname: '127.0.0.1', protocol: 'http:', port: 8888 };
+
+    it('defaults the Host header to the request target when the user does not set one', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.host, '127.0.0.1:4000');
+    });
+
+    it('preserves a user-supplied lowercase host header', () => {
+      const options = {
+        headers: { host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.host, 'example.com');
+    });
+
+    it('preserves a user-supplied Host header regardless of casing', () => {
+      const options = {
+        headers: { Host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.Host, 'example.com');
+      assert.strictEqual(options.headers.host, undefined);
+    });
+  });
+
   describe('Proxy-Authorization header leak on redirect (GHSA-j5f8-grm9-p9fc)', () => {
     it('clears a stale Proxy-Authorization header when redirected request resolves to no proxy (configProxy=false)', () => {
       const options = {

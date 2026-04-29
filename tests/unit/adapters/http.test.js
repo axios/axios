@@ -887,6 +887,25 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('keeps malformed URL credentials percent-encoding and does not throw', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(
+        `http://user%:foo%zz@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('user%:foo%zz', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support basic auth with a header', async () => {
     const server = await startHTTPServer(
       (req, res) => {

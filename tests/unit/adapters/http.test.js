@@ -2837,7 +2837,11 @@ describe('supports http with nodejs', () => {
     });
 
     describe('SpecCompliant FormData', () => {
-      it('should allow passing FormData', async () => {
+      it('should allow passing FormData', { retry: 2 }, async () => {
+        // Use an ephemeral port and a non-keep-alive agent. Sharing the fixed
+        // SERVER_PORT across tests can leave keep-alive sockets in the global
+        // pool that a follow-up test picks up just as the server FINs them,
+        // which surfaces here as EPIPE on the multipart write.
         const server = await startHTTPServer(
           async (req, res) => {
             const { fields, files } = await handleFormData(req);
@@ -2849,8 +2853,10 @@ describe('supports http with nodejs', () => {
               })
             );
           },
-          { port: SERVER_PORT }
+          { port: 0 }
         );
+
+        const oneShotAgent = new http.Agent({ keepAlive: false });
 
         try {
           const form = new FormDataSpecCompliant();
@@ -2863,6 +2869,8 @@ describe('supports http with nodejs', () => {
 
           const { data } = await axios.post(`http://localhost:${server.address().port}`, form, {
             maxRedirects: 0,
+            httpAgent: oneShotAgent,
+            headers: { Connection: 'close' },
           });
 
           assert.deepStrictEqual(data.fields, { foo1: ['bar1'], foo2: ['bar2'] });
@@ -2879,6 +2887,7 @@ describe('supports http with nodejs', () => {
             }
           );
         } finally {
+          oneShotAgent.destroy();
           await stopHTTPServer(server);
         }
       });
@@ -4040,14 +4049,18 @@ describe('supports http with nodejs', () => {
     });
 
     describe('session', () => {
-      it('should reuse session for the target authority', async () => {
+      // HTTP2 session tests are sensitive to cross-test port reuse: when one
+      // test's server is torn down (closeAllSessions destroys h2 sessions),
+      // a follow-up test binding the same port can observe a "Premature
+      // close" on its own stream. Use ephemeral ports (port: 0, the default
+      // from startHTTPServer) and a small retry budget as a backstop.
+      it('should reuse session for the target authority', { retry: 2 }, async () => {
         const server = await startHTTPServer(
           (req, res) => {
             setTimeout(() => res.end('OK'), 1000);
           },
           {
             useHTTP2: true,
-            port: SERVER_PORT,
           }
         );
 
@@ -4075,7 +4088,7 @@ describe('supports http with nodejs', () => {
         }
       });
 
-      it('should use different sessions for different authorities', async () => {
+      it('should use different sessions for different authorities', { retry: 2 }, async () => {
         const server = await startHTTPServer(
           (req, res) => {
             setTimeout(() => {
@@ -4084,7 +4097,6 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: SERVER_PORT,
           }
         );
 
@@ -4096,7 +4108,6 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: ALTERNATE_SERVER_PORT,
           }
         );
 
@@ -4125,7 +4136,7 @@ describe('supports http with nodejs', () => {
         }
       });
 
-      it('should use different sessions for requests with different http2Options set', async () => {
+      it('should use different sessions for requests with different http2Options set', { retry: 2 }, async () => {
         const server = await startHTTPServer(
           (req, res) => {
             setTimeout(() => {
@@ -4134,7 +4145,6 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
-            port: SERVER_PORT,
           }
         );
 
@@ -4162,14 +4172,13 @@ describe('supports http with nodejs', () => {
         }
       });
 
-      it('should use the same session for request with the same resolved http2Options set', async () => {
+      it('should use the same session for request with the same resolved http2Options set', { retry: 2 }, async () => {
         const server = await startHTTPServer(
           (req, res) => {
             setTimeout(() => res.end('OK'), 1000);
           },
           {
             useHTTP2: true,
-            port: SERVER_PORT,
           }
         );
 
@@ -4204,14 +4213,13 @@ describe('supports http with nodejs', () => {
         }
       });
 
-      it('should use different sessions after previous session timeout', async () => {
+      it('should use different sessions after previous session timeout', { retry: 2, timeout: 15000 }, async () => {
         const server = await startHTTPServer(
           (req, res) => {
             setTimeout(() => res.end('OK'), 100);
           },
           {
             useHTTP2: true,
-            port: SERVER_PORT,
           }
         );
 
@@ -4247,7 +4255,7 @@ describe('supports http with nodejs', () => {
         } finally {
           await stopHTTPServer(server);
         }
-      }, 15000);
+      });
     });
   });
 

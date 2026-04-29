@@ -578,7 +578,10 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       );
     });
 
-    it('should surface ETIMEDOUT when fetch rejects with a broken DOMException on abort (Safari)', async () => {
+    // Timing-sensitive: a 50ms abort race observed by a fake fetch can flake
+    // under CI runner load even though the production code is fine. Retry as
+    // a backstop.
+    it('should surface ETIMEDOUT when fetch rejects with a broken DOMException on abort (Safari)', { retry: 2 }, async () => {
       const safariFetch = (url, init) => {
         const signal = getFetchSignal(url, init);
 

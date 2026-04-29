@@ -1,5 +1,4 @@
 import fs from 'fs';
-import url from 'url';
 import path from 'path';
 import http from 'http';
 
@@ -15,7 +14,7 @@ let server;
 function pipeFileToResponse(res, file, type) {
   if (type) {
     res.writeHead(200, {
-      'Content-Type': type
+      'Content-Type': type,
     });
   }
 
@@ -47,18 +46,18 @@ function handleApiRequest(req, res) {
         url: req.url,
         data: data ? JSON.parse(data) : undefined,
         method: req.method,
-        headers: req.headers
+        headers: req.headers,
       };
     } catch (e) {
       console.error('Error:', e.message);
       status = 400;
       result = {
-        error: e.message
+        error: e.message,
       };
     }
 
     res.writeHead(status, {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     });
     res.end(JSON.stringify(result));
   });
@@ -76,8 +75,8 @@ function handleApiRequest(req, res) {
 function requestHandler(req, res) {
   req.setEncoding('utf8');
 
-  const parsed = url.parse(req.url, true);
-  let pathname = parsed.pathname;
+  const parsed = new URL(req.url, 'http://localhost');
+  const pathname = parsed.pathname;
 
   console.log('[' + new Date() + ']', req.method, pathname);
 

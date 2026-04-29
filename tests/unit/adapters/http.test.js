@@ -868,6 +868,25 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should decode basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(
+        `http://my%40email.com:pa%3Ass@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('my@email.com:pa:ss', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support basic auth with a header', async () => {
     const server = await startHTTPServer(
       (req, res) => {

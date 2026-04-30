@@ -823,6 +823,28 @@ describe('supports http with nodejs', () => {
               await stopHTTPServer(server);
             }
           });
+
+          it('should reject when the server aborts mid-stream and maxRedirects is 0', async () => {
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.setHeader('Transfer-Encoding', 'chunked');
+                res.removeHeader('Content-Length');
+                res.write(await zipped);
+                setTimeout(() => res.socket.destroy(), 10);
+              },
+              { port: SERVER_PORT }
+            );
+
+            try {
+              await assert.rejects(
+                axios.get(`http://localhost:${server.address().port}`, { maxRedirects: 0 }),
+                (err) => err && err.code === 'ECONNRESET'
+              );
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
         });
       }
     });

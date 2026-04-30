@@ -694,6 +694,27 @@ These are the available config options for making requests. Only the `url` is re
     return data;
   }],
 
+  // `parseReviver` is an optional function that will be passed as the
+  // second argument (reviver) to JSON.parse()
+  parseReviver: function (key, value, context) {
+    // In modern environments, context.source provides the raw JSON string
+    // allowing for precision-safe parsing of BigInt
+    if (typeof value === 'number' && context?.source) {
+      const isInteger = Number.isInteger(value);
+      const isUnsafe = !Number.isSafeInteger(value);
+      const isValidIntegerString = /^-?\d+$/.test(context.source);
+
+      if (isInteger && isUnsafe && isValidIntegerString) {
+        try {
+          return BigInt(context.source);
+        } catch {
+          // Fallback: return original value if parsing fails
+        }
+      }
+    }
+    return value;
+  },
+
   // `headers` are custom headers to be sent
   headers: {'X-Requested-With': 'XMLHttpRequest'},
 

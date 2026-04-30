@@ -983,6 +983,25 @@ These are the available config options for making requests. Only the `url` is re
 }
 ```
 
+### Strict RFC 3986 percent-encoding for query params
+
+By default, axios decodes `%3A`, `%24`, `%2C` and `%20` back to `:`, `$`, `,` and `+` for readability (the `+` follows the `application/x-www-form-urlencoded` convention for spaces in query strings). These characters are valid in a query component under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), so the default output is correct, but some backends require strict percent-encoding and reject the readable form.
+
+Override the default encoder via `paramsSerializer.encode`:
+
+```js
+// Per-request: emit strict RFC 3986 percent-encoding for query values
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// Or set it on the instance defaults
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
+
 ## 🔥 HTTP/2 Support
 
 Axios has experimental HTTP/2 support available via the Node.js HTTP adapter.

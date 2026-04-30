@@ -40,14 +40,14 @@ The `paramsSerializer` function allows you to serialize the `params` object befo
 
 #### Strict RFC 3986 percent-encoding
 
-By default, axios decodes `%3A`, `%24`, `%2C` and `%20` back to `:`, `$`, `,` and space for readability. These characters are valid in a query component under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), so the default output is correct. However, some backends require strict percent-encoding and reject the readable form.
+By default, axios decodes `%3A`, `%24`, `%2C` and `%20` back to `:`, `$`, `,` and `+` for readability (the `+` follows the `application/x-www-form-urlencoded` convention for spaces in query strings). These characters are valid in a query component under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), so the default output is correct. However, some backends require strict percent-encoding and reject the readable form.
 
 Use the `encode` option to override the default encoder:
 
 ```js
 // Per-request: emit strict RFC 3986 percent-encoding for query values
 axios.get('/foo', {
-  params: { filter: JSON.stringify({ startedAt: '2025-01-23' }) },
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
   paramsSerializer: { encode: encodeURIComponent }
 });
 
@@ -56,7 +56,6 @@ const client = axios.create({
   paramsSerializer: { encode: encodeURIComponent }
 });
 ```
-
 
 ### `data`
 

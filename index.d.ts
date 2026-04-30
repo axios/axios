@@ -447,6 +447,7 @@ export interface AxiosRequestConfig<D = any> {
   http2Options?: Record<string, any> & {
     sessionTimeout?: number;
   };
+  redact?: string[];
 }
 
 // Alias

@@ -24,7 +24,11 @@ export const startHTTPServer = async (handlerOrOptions, options) => {
     handler,
     useBuffering = false,
     rate = undefined,
-    port = 4444,
+    // Default to 0 so the OS assigns a free ephemeral port. Tests that need
+    // a deterministic port can still pass one explicitly. Sharing a fixed
+    // port across many tests creates TIME_WAIT / pool-reuse races that
+    // surface as EPIPE on the client under CI runner load.
+    port = 0,
     keepAlive = 1000,
     useHTTP2,
     key = certificate.private,
@@ -105,18 +109,32 @@ export const startHTTPServer = async (handlerOrOptions, options) => {
 };
 
 export const stopHTTPServer = async (server, timeout = 10000) => {
-  if (server) {
+  if (!server) return;
+
+  // Try a graceful close first so in-flight requests can finish writing and
+  // clients see clean FINs instead of RSTs. Forcefully tearing down sockets
+  // up-front (closeAllConnections) is what produces dangling RSTs that the
+  // next test on the same port can observe as EPIPE on its client write.
+  // Force-close only after a short grace period.
+  const closed = new Promise((resolve) => server.close(resolve));
+  const grace = Math.min(2000, Math.max(0, timeout / 2));
+
+  const winner = await Promise.race([
+    closed.then(() => 'graceful'),
+    setTimeoutAsync(grace).then(() => 'grace_elapsed'),
+  ]);
+
+  if (winner === 'grace_elapsed') {
     if (typeof server.closeAllConnections === 'function') {
       server.closeAllConnections();
     }
-
     if (typeof server.closeAllSessions === 'function') {
       server.closeAllSessions();
     }
-
-    await Promise.race([new Promise((resolve) => server.close(resolve)), setTimeoutAsync(timeout)]);
-    untrackServer(server);
+    await Promise.race([closed, setTimeoutAsync(timeout - grace)]);
   }
+
+  untrackServer(server);
 };
 
 export const stopAllTrackedHTTPServers = async (timeout = 10000) => {
@@ -130,6 +148,10 @@ export const handleFormData = (req) => {
 
     form.parse(req, (err, fields, files) => {
       if (err) {
+        // Drain any unread bytes so the kernel doesn't send an RST when the
+        // server closes the response. An unread request buffer is what causes
+        // the client write side to surface EPIPE on a subsequent test.
+        if (typeof req.resume === 'function') req.resume();
         return reject(err);
       }
 

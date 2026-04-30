@@ -26,6 +26,49 @@ The `transformRequest` function allows you to modify the request data before it 
 
 The `transformResponse` function allows you to modify the response data before it is passed to the `then` or `catch` functions. This function is called with the response data as its only argument.
 
+### `parseReviver`
+
+The `parseReviver` function allows you to provide a custom "reviver" function directly to the native `JSON.parse()` call used by the default `transformResponse`.
+
+This is particularly useful for performing high-performance type hydration (e.g., converting ISO strings to `Temporal` or `Date` objects) or preventing precision loss during parsing.
+
+In modern environments (ES2023+), the reviver function receives a third `context` argument. This provides access to the raw JSON `source`, allowing for precise conversion of large integers (BigInt) that would otherwise lose precision if parsed as standard JavaScript numbers.
+
+> Note: `Temporal` is not yet available in all environments. Consider using a polyfill if needed.
+
+```js
+const client = axios.create({
+  parseReviver: (key, value, context) => {
+    // Example: Precision-safe BigInt parsing
+    if (typeof value === 'number' && context?.source) {
+      const isInteger = Number.isInteger(value);
+      const isUnsafe = !Number.isSafeInteger(value);
+      const isValidIntegerString = /^-?\d+$/.test(context.source);
+
+      if (isInteger && isUnsafe && isValidIntegerString) {
+        try {
+          return BigInt(context.source);
+        } catch {
+          // Fallback: return original value if parsing fails
+        }
+      }
+    }
+
+    // Example: Hydrating dates into Temporal objects
+    if (
+      typeof value === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      typeof Temporal !== 'undefined' &&
+      Temporal?.PlainDate
+    ) {
+      return Temporal.PlainDate.from(value);
+    }
+
+    return value;
+  },
+});
+```
+
 ### `headers`
 
 The `headers` are the HTTP headers to be sent with the request. The `Content-Type` header is set to `application/json` by default.
@@ -37,6 +80,25 @@ The `params` are the URL parameters to be sent with the request. This must be a 
 ### `paramsSerializer`
 
 The `paramsSerializer` function allows you to serialize the `params` object before it is sent to the server. There are a few options available for this function, so please refer to the full request config example at the end of this page.
+
+#### Strict RFC 3986 percent-encoding
+
+By default, axios decodes `%3A`, `%24`, `%2C` and `%20` back to `:`, `$`, `,` and `+` for readability (the `+` follows the `application/x-www-form-urlencoded` convention for spaces in query strings). These characters are valid in a query component under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), so the default output is correct. However, some backends require strict percent-encoding and reject the readable form.
+
+Use the `encode` option to override the default encoder:
+
+```js
+// Per-request: emit strict RFC 3986 percent-encoding for query values
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// Or set it on the instance defaults
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
 
 ### `data`
 
@@ -170,7 +232,7 @@ Restricts which socket paths may be used via `socketPath`. Accepts a string or a
 
 ```js
 const client = axios.create({
-  allowedSocketPaths: ['/var/run/docker.sock']
+  allowedSocketPaths: ['/var/run/docker.sock'],
 });
 
 // allowed

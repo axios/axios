@@ -46,6 +46,13 @@ describe('helpers::fromDataURI', () => {
     assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
   });
 
+  it('should normalize omitted mediatype to text/plain per RFC 2397', () => {
+    const dataURI = 'data:;charset=UTF-8,hello';
+    const blob = fromDataURI(dataURI, true, { Blob });
+
+    assert.strictEqual(blob.type, 'text/plain;charset=utf-8');
+  });
+
   it('should reject invalid URI without data protocol', () => {
     assert.throws(() => {
       fromDataURI('notadata:uri', false);

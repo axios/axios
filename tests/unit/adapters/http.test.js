@@ -900,9 +900,9 @@ describe('supports http with nodejs', () => {
 
     try {
       const response = await axios.get(
-        `http://my%40email.com:pa%3Ass@localhost:${server.address().port}/`
+        `http://my%40email.com:pa%24ss@localhost:${server.address().port}/`
       );
-      const base64 = Buffer.from('my@email.com:pa:ss', 'utf8').toString('base64');
+      const base64 = Buffer.from('my@email.com:pa$ss', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
     } finally {
       await stopHTTPServer(server);

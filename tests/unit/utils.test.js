@@ -86,6 +86,38 @@ describe('utils', () => {
         JSON.stringify({ x: 1, y: 2, obj: { ok: 1 } })
       );
     });
+
+    describe('cycle / DAG handling', () => {
+      it('should serialize a shared sibling object at every occurrence (DAG, not cycle)', () => {
+        const shared = { val: 42 };
+        const source = { x: shared, y: shared };
+
+        const result = utils.toJSONObject(source);
+
+        // Both branches must serialize — shared reference is not a cycle
+        assert.deepStrictEqual(result, { x: { val: 42 }, y: { val: 42 } });
+      });
+
+      it('should serialize a shared sibling array at every occurrence (DAG, not cycle)', () => {
+        const shared = [1, 2, 3];
+        const source = { a: shared, b: shared };
+
+        const result = utils.toJSONObject(source);
+
+        assert.deepStrictEqual(result, { a: [1, 2, 3], b: [1, 2, 3] });
+      });
+
+      it('should serialize shared sibling that itself contains a self-cycle', () => {
+        const shared = { v: 1 };
+        shared.self = shared; // self-cycle inside the shared node
+        const source = { x: shared, y: shared };
+
+        const result = utils.toJSONObject(source);
+
+        // The self-cycle is stripped, but both x and y must be serialized
+        assert.deepStrictEqual(result, { x: { v: 1 }, y: { v: 1 } });
+      });
+    });
   });
 
   describe('Buffer RangeError Fix', () => {

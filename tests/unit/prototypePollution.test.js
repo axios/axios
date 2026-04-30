@@ -5,6 +5,8 @@ import http from 'http';
 import utils from '../../lib/utils.js';
 import mergeConfig from '../../lib/core/mergeConfig.js';
 import defaults from '../../lib/defaults/index.js';
+import AxiosError from '../../lib/core/AxiosError.js';
+import AxiosHeaders from '../../lib/core/AxiosHeaders.js';
 import axios from '../../index.js';
 
 describe('Prototype Pollution Protection', () => {
@@ -53,6 +55,10 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.host;
     delete Object.prototype.port;
     delete Object.prototype.protocol;
+    delete Object.prototype.get;
+    delete Object.prototype.set;
+    delete Object.prototype.headers;
+    delete Object.prototype.customNested;
   });
 
   describe('utils.merge', () => {
@@ -967,5 +973,113 @@ describe('Prototype Pollution Protection', () => {
         await stop(server);
       }
     }, 10000);
+  });
+
+  // utils.merge previously read `result[targetKey]` directly, which walks the
+  // prototype chain. A polluted Object.prototype.<key> object would surface as
+  // the existing value and be merged into the result.
+  describe('utils.merge prototype-chain read', () => {
+    it('should not pick up polluted Object.prototype.<key> as the existing value', () => {
+      Object.prototype.headers = { evil: 'yes' };
+
+      const result = utils.merge({}, { headers: { 'Content-Type': 'application/json' } });
+
+      assert.strictEqual(result.headers.evil, undefined);
+      assert.strictEqual(result.headers['Content-Type'], 'application/json');
+    });
+
+    it('should not absorb polluted nested objects when the key is absent from inputs', () => {
+      // When the source does not carry `customNested`, the merged result should
+      // not surface it either, even if Object.prototype carries it.
+      Object.prototype.customNested = { evil: 'yes' };
+
+      const result = utils.merge({}, { safe: 'value' });
+
+      assert.strictEqual(result.hasOwnProperty('customNested'), false);
+      assert.strictEqual(result.safe, 'value');
+    });
+  });
+
+  // Object.defineProperty calls a HasProperty check on `get`/`set` of the
+  // descriptor. A polluted Object.prototype.get with a non-function value would
+  // throw TypeError at every defineProperty site that uses a plain literal
+  // descriptor. Each fixed site should be shielded with `__proto__: null`.
+  describe('Object.defineProperty descriptor literals', () => {
+    it('should construct AxiosError when Object.prototype.get is polluted', () => {
+      Object.prototype.get = 'attacker';
+
+      const err = new AxiosError('hello', 'ECODE');
+
+      assert.strictEqual(err.message, 'hello');
+      assert.strictEqual(err.code, 'ECODE');
+    });
+
+    it('should construct AxiosHeaders accessor methods when Object.prototype.get is polluted', () => {
+      Object.prototype.get = 'attacker';
+
+      // AxiosHeaders.accessor uses Object.defineProperty on the prototype.
+      // Triggering a fresh accessor definition exercises the descriptor literal.
+      AxiosHeaders.accessor('X-Pp-Test');
+
+      const h = new AxiosHeaders();
+      h.setXPpTest('value');
+      assert.strictEqual(h.getXPpTest(), 'value');
+    });
+
+    it('should not throw in mergeConfig when Object.prototype.get is polluted', () => {
+      Object.prototype.get = 'attacker';
+
+      const result = mergeConfig({}, { url: '/x', method: 'get' });
+
+      assert.strictEqual(result.url, '/x');
+      assert.strictEqual(result.method, 'get');
+      assert.strictEqual(typeof result.hasOwnProperty, 'function');
+    });
+
+    it('should not throw in utils.extend when Object.prototype.get is polluted', () => {
+      Object.prototype.get = 'attacker';
+
+      const a = {};
+      const b = { x: 1, fn() {} };
+      utils.extend(a, b);
+
+      assert.strictEqual(a.x, 1);
+      assert.strictEqual(typeof a.fn, 'function');
+    });
+
+    it('should not throw in utils.extend with thisArg when Object.prototype.get is polluted', () => {
+      Object.prototype.get = 'attacker';
+
+      const a = {};
+      const ctx = { tag: 'ctx' };
+      const b = {
+        method() {
+          return this.tag;
+        },
+      };
+      utils.extend(a, b, ctx);
+
+      assert.strictEqual(a.method(), 'ctx');
+    });
+
+    it('should not throw in utils.inherits when Object.prototype.get is polluted', () => {
+      Object.prototype.get = 'attacker';
+
+      function Parent() {}
+      function Child() {}
+      utils.inherits(Child, Parent);
+
+      assert.strictEqual(Child.prototype.constructor, Child);
+      assert.strictEqual(Child.super, Parent.prototype);
+    });
+
+    it('should also be shielded against a polluted Object.prototype.set', () => {
+      Object.prototype.set = 'attacker';
+
+      // Same surface as `get` — ToPropertyDescriptor checks both. One spot-check
+      // covers them all since they share the same fix.
+      const err = new AxiosError('hello');
+      assert.strictEqual(err.message, 'hello');
+    });
   });
 });

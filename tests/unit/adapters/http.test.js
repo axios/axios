@@ -2771,11 +2771,11 @@ describe('supports http with nodejs', () => {
       }
     });
 
-    // GHSA-j5f8-grm9-p9fc — End-to-end exercise of the redirect leak. An
+    // End-to-end exercise of the redirect leak. An
     // authenticated env-supplied proxy sees the initial request, 302s the
     // client to a target that NO_PROXY excludes, and the redirected request
     // must not carry the stale Proxy-Authorization to the direct target.
-    it('GHSA-j5f8-grm9-p9fc: does not forward Proxy-Authorization to a redirect target that resolves to no-proxy', async () => {
+    it('does not forward Proxy-Authorization to a redirect target that resolves to no-proxy', async () => {
       const startServer = (handler) =>
         new Promise((resolve) => {
           const s = http.createServer(handler);

@@ -1095,11 +1095,11 @@ describe('Prototype Pollution Protection', () => {
     }
     const stop = (s) => new Promise((r) => s.close(r));
 
-    // GHSA-35jp-ww65-95wh — Full MITM via prototype pollution gadget in
+    // Full MITM via prototype pollution gadget in
     // `config.proxy`. mergeConfig must not surface a polluted Object.prototype.proxy
     // as the merged config's proxy, otherwise every request would route through
     // an attacker-controlled host.
-    it('GHSA-35jp-ww65-95wh: polluted Object.prototype.proxy must not redirect requests through an attacker proxy', async () => {
+    it('polluted Object.prototype.proxy must not redirect requests through an attacker proxy', async () => {
       const proxyHits = [];
       const attackerProxy = await startServer((req, res) => {
         proxyHits.push({
@@ -1139,11 +1139,11 @@ describe('Prototype Pollution Protection', () => {
       }
     }, 10000);
 
-    // GHSA-3g43-6gmg-66jw — Credential theft and response hijacking via
+    // Credential theft and response hijacking via
     // prototype pollution gadget in config merge. A polluted
     // Object.prototype.transformResponse function would otherwise execute with
     // `this = config`, exposing `auth.username`/`auth.password` to the attacker.
-    it('GHSA-3g43-6gmg-66jw: polluted Object.prototype.transformResponse must not be invoked or leak request credentials', async () => {
+    it('polluted Object.prototype.transformResponse must not be invoked or leak request credentials', async () => {
       let invoked = false;
       let stolen = null;
       Object.prototype.transformResponse = function pollutedTransform(data) {

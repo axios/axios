@@ -38,6 +38,25 @@ Les `params` sont les paramètres d'URL à envoyer avec la requête. Il doit s'a
 
 La fonction `paramsSerializer` vous permet de sérialiser l'objet `params` avant son envoi au serveur. Plusieurs options sont disponibles pour cette fonction ; veuillez vous référer à l'exemple de configuration complète en bas de cette page.
 
+#### Encodage pour-cent strict RFC 3986
+
+Par défaut, axios redécode `%3A`, `%24`, `%2C` et `%20` vers `:`, `$`, `,` et `+` pour la lisibilité (le `+` suit la convention `application/x-www-form-urlencoded` pour représenter une espace dans une chaîne de requête). Ces caractères sont valides dans un composant de requête selon la [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), donc la sortie par défaut est correcte. Cependant, certains backends exigent un encodage pour-cent strict et rejettent la forme lisible.
+
+Utilisez l'option `encode` pour remplacer l'encodeur par défaut :
+
+```js
+// Par requête : émettre un encodage pour-cent strict RFC 3986 pour les valeurs de requête
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// Ou définir cela sur les valeurs par défaut de l'instance
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
+
 ### `data`
 
 Les `data` sont les données à envoyer comme corps de la requête. Il peut s'agir d'une chaîne, d'un objet simple, d'un Buffer, d'un ArrayBuffer, d'un FormData, d'un Stream ou d'un URLSearchParams. Ne s'applique que pour les méthodes de requête `PUT`, `POST`, `DELETE` et `PATCH`. Sans `transformRequest`, doit être de l'un des types suivants :

@@ -101,7 +101,7 @@ describe('helpers::shouldBypassProxy', () => {
     expect(shouldBypassProxy('not a url')).toBe(false);
   });
 
-  it('should bypass proxy for 127.0.0.0/8 subnet when no_proxy contains 127.0.0.1 (GHSA-pmwg-cvhr-8vh7)', () => {
+  it('should bypass proxy for 127.0.0.0/8 subnet when no_proxy contains 127.0.0.1', () => {
     setNoProxy('localhost,127.0.0.1,::1');
 
     expect(shouldBypassProxy('http://127.0.0.2:9191/secret')).toBe(true);

@@ -247,7 +247,7 @@ describe('Prototype Pollution Protection', () => {
       assert.strictEqual(result.headers.common['Content-Type'], 'application/json');
     });
 
-    // GHSA-pf86-5x62-jrwf gadget 3: polluted transformRequest/Response must not
+    // Polluted transformRequest/Response must not
     // replace the safe defaults through inherited reads during merge.
     it('should not inherit polluted transformRequest from Object.prototype', () => {
       const polluted = () => 'attacker';
@@ -270,7 +270,7 @@ describe('Prototype Pollution Protection', () => {
     });
   });
 
-  // GHSA-pf86-5x62-jrwf gadget 1: parseReviver read via prototype chain.
+  // parseReviver read via prototype chain.
   describe('defaults.transformResponse parseReviver', () => {
     it('should ignore Object.prototype.parseReviver when parsing JSON', () => {
       let reviverCalled = false;
@@ -281,10 +281,7 @@ describe('Prototype Pollution Protection', () => {
       };
 
       const ctx = { transitional: defaults.transitional };
-      const result = defaults.transformResponse[0].call(
-        ctx,
-        '{"role":"user","balance":100}'
-      );
+      const result = defaults.transformResponse[0].call(ctx, '{"role":"user","balance":100}');
 
       assert.strictEqual(reviverCalled, false);
       assert.strictEqual(result.role, 'user');
@@ -302,9 +299,9 @@ describe('Prototype Pollution Protection', () => {
     });
   });
 
-  // GHSA-w9j2-pvgh-6h63: mergeDirectKeys must not inherit validateStatus from
+  // mergeDirectKeys must not inherit validateStatus from
   // Object.prototype (was using the `in` operator which traverses the chain).
-  describe('GHSA-w9j2-pvgh-6h63 validateStatus merge', () => {
+  describe('validateStatus merge', () => {
     it('should not inherit a polluted validateStatus during mergeConfig', () => {
       Object.prototype.validateStatus = () => true;
 
@@ -339,9 +336,9 @@ describe('Prototype Pollution Protection', () => {
     }, 10000);
   });
 
-  // GHSA-3w6x-2g7m-8v23: end-to-end check that a polluted parseReviver does not
+  // end-to-end check that a polluted parseReviver does not
   // tamper with JSON response bodies through the full axios.get pipeline.
-  describe('GHSA-3w6x-2g7m-8v23 parseReviver end-to-end', () => {
+  describe('parseReviver end-to-end', () => {
     it('should not let Object.prototype.parseReviver tamper with JSON responses', async () => {
       let reviverCalled = false;
       const stolen = {};
@@ -382,7 +379,7 @@ describe('Prototype Pollution Protection', () => {
     }, 10000);
   });
 
-  // GHSA-pf86-5x62-jrwf gadget 2: http adapter must not read config.transport
+  // http adapter must not read config.transport
   // (or related keys) from Object.prototype.
   describe('http adapter prototype reads', () => {
     it('should not invoke Object.prototype.transport on a request', async () => {
@@ -412,17 +409,20 @@ describe('Prototype Pollution Protection', () => {
     }, 10000);
   });
 
-  // GHSA-q8qp-cvcw-x6jj: five config properties were read via direct property
+  // Five config properties were read via direct property
   // access in the http adapter and resolveConfig, bypassing hasOwnProperty and
   // allowing prototype pollution gadgets (auth, baseURL, socketPath,
   // beforeRedirect, insecureHTTPParser).
-  describe('GHSA-q8qp-cvcw-x6jj http adapter gadgets', () => {
+  describe('http adapter gadgets', () => {
     function startServer(handler) {
       return new Promise((resolve) => {
-        const server = http.createServer(handler || ((req, res) => {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ headers: req.headers, url: req.url }));
-        }));
+        const server = http.createServer(
+          handler ||
+            ((req, res) => {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ headers: req.headers, url: req.url }));
+            })
+        );
         server.listen(0, '127.0.0.1', () => resolve(server));
       });
     }
@@ -531,18 +531,14 @@ describe('Prototype Pollution Protection', () => {
         // HPE_CR_EXPECTED). Match any parser error to remain stable across
         // Node releases while still confirming the strict parser rejected
         // the payload.
-        assert.match(
-          caughtCode,
-          /^HPE_/,
-          `expected an HPE_* parser error, got: ${caughtCode}`
-        );
+        assert.match(caughtCode, /^HPE_/, `expected an HPE_* parser error, got: ${caughtCode}`);
       } finally {
         await new Promise((resolve) => malformed.close(resolve));
       }
     }, 10000);
   });
 
-  describe('GHSA-q8qp-cvcw-x6jj resolveConfig baseURL gadget', () => {
+  describe('resolveConfig baseURL gadget', () => {
     // The baseURL branch in buildFullPath only runs when the requested URL is
     // relative (or allowAbsoluteUrls === false). An absolute URL would skip
     // baseURL regardless of pollution and would not exercise the gadget. We
@@ -658,24 +654,29 @@ describe('Prototype Pollution Protection', () => {
     });
   });
 
-  // Verify every gadget enumerated in the audit (extension of GHSA-q8qp-cvcw-x6jj)
+  // Verify every gadget enumerated in the audit
   // is neutralized end-to-end by the null-prototype config.
   describe('Full gadget coverage via null-prototype config', () => {
     function startEcho(handler) {
       return new Promise((resolve) => {
-        const server = http.createServer(handler || ((req, res) => {
-          let body = '';
-          req.on('data', (c) => (body += c));
-          req.on('end', () => {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-              url: req.url,
-              method: req.method,
-              headers: req.headers,
-              body,
-            }));
-          });
-        }));
+        const server = http.createServer(
+          handler ||
+            ((req, res) => {
+              let body = '';
+              req.on('data', (c) => (body += c));
+              req.on('end', () => {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(
+                  JSON.stringify({
+                    url: req.url,
+                    method: req.method,
+                    headers: req.headers,
+                    body,
+                  })
+                );
+              });
+            })
+        );
         server.listen(0, '127.0.0.1', () => resolve(server));
       });
     }
@@ -721,7 +722,14 @@ describe('Prototype Pollution Protection', () => {
       let hijacked = false;
       Object.prototype.adapter = function pollutedAdapter() {
         hijacked = true;
-        return Promise.resolve({ data: 'pwned', status: 200, statusText: 'OK', headers: {}, config: {}, request: {} });
+        return Promise.resolve({
+          data: 'pwned',
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {},
+          request: {},
+        });
       };
 
       const server = await startEcho();

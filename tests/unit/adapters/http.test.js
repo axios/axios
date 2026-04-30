@@ -2770,6 +2770,77 @@ describe('supports http with nodejs', () => {
         );
       }
     });
+
+    // GHSA-j5f8-grm9-p9fc — End-to-end exercise of the redirect leak. An
+    // authenticated env-supplied proxy sees the initial request, 302s the
+    // client to a target that NO_PROXY excludes, and the redirected request
+    // must not carry the stale Proxy-Authorization to the direct target.
+    it('GHSA-j5f8-grm9-p9fc: does not forward Proxy-Authorization to a redirect target that resolves to no-proxy', async () => {
+      const startServer = (handler) =>
+        new Promise((resolve) => {
+          const s = http.createServer(handler);
+          s.listen(0, '127.0.0.1', () => resolve(s));
+        });
+      const stop = (s) => new Promise((r) => s.close(r));
+
+      let attackerPort;
+      const proxySaw = [];
+      const attackerSaw = [];
+
+      // The proxy receives the absolute-form URL (`GET http://target/path`) on
+      // the initial request, then forwards to the destination. We short-circuit
+      // by responding directly with the redirect.
+      const corpProxy = await startServer((req, res) => {
+        proxySaw.push({ url: req.url, proxyAuth: req.headers['proxy-authorization'] });
+        res.writeHead(302, { Location: `http://127.0.0.1:${attackerPort}/final` });
+        res.end();
+      });
+
+      const attacker = await startServer((req, res) => {
+        attackerSaw.push({
+          url: req.url,
+          proxyAuth: req.headers['proxy-authorization'],
+          authorization: req.headers.authorization,
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"final":true}');
+      });
+      attackerPort = attacker.address().port;
+
+      const corpProxyPort = corpProxy.address().port;
+      const originalHttpProxy = process.env.http_proxy;
+      const originalNoProxy = process.env.no_proxy;
+      process.env.http_proxy = `http://user:pass@127.0.0.1:${corpProxyPort}`;
+      // NO_PROXY entry covers only the attacker target (port-specific), so the
+      // initial request still uses the proxy but the redirect resolves direct.
+      process.env.no_proxy = `127.0.0.1:${attackerPort}`;
+
+      try {
+        await axios.get('http://example.com/start');
+
+        assert.ok(
+          proxySaw.some((h) => h.proxyAuth),
+          'precondition: corp proxy must see Proxy-Authorization on the initial request'
+        );
+        assert.strictEqual(
+          attackerSaw.length,
+          1,
+          'attacker target must receive exactly the redirected request'
+        );
+        assert.strictEqual(
+          attackerSaw[0].proxyAuth,
+          undefined,
+          'stale Proxy-Authorization must not leak to the redirect target'
+        );
+      } finally {
+        if (originalHttpProxy === undefined) delete process.env.http_proxy;
+        else process.env.http_proxy = originalHttpProxy;
+        if (originalNoProxy === undefined) delete process.env.no_proxy;
+        else process.env.no_proxy = originalNoProxy;
+        await stop(corpProxy);
+        await stop(attacker);
+      }
+    }, 10000);
   });
 
   it('should support cancel', async () => {

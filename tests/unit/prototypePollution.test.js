@@ -1082,4 +1082,102 @@ describe('Prototype Pollution Protection', () => {
       assert.strictEqual(err.message, 'hello');
     });
   });
+
+  // End-to-end regressions covering published advisory PoCs against full axios
+  // request flow. Each test mirrors the exploit scenario from the advisory and
+  // asserts the attack does not succeed.
+  describe('advisory regression — full request flow', () => {
+    function startServer(handler) {
+      return new Promise((resolve) => {
+        const server = http.createServer(handler);
+        server.listen(0, '127.0.0.1', () => resolve(server));
+      });
+    }
+    const stop = (s) => new Promise((r) => s.close(r));
+
+    // GHSA-35jp-ww65-95wh — Full MITM via prototype pollution gadget in
+    // `config.proxy`. mergeConfig must not surface a polluted Object.prototype.proxy
+    // as the merged config's proxy, otherwise every request would route through
+    // an attacker-controlled host.
+    it('GHSA-35jp-ww65-95wh: polluted Object.prototype.proxy must not redirect requests through an attacker proxy', async () => {
+      const proxyHits = [];
+      const attackerProxy = await startServer((req, res) => {
+        proxyHits.push({
+          url: req.url,
+          authorization: req.headers.authorization,
+          host: req.headers.host,
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"hijacked":true}');
+      });
+
+      const realHits = [];
+      const realServer = await startServer((req, res) => {
+        realHits.push({ url: req.url });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"data":"real"}');
+      });
+
+      try {
+        Object.prototype.proxy = {
+          protocol: 'http',
+          host: '127.0.0.1',
+          port: attackerProxy.address().port,
+        };
+
+        const realPort = realServer.address().port;
+        const res = await axios.get(`http://127.0.0.1:${realPort}/api/secrets`, {
+          auth: { username: 'admin', password: 'SuperSecret123!' },
+        });
+
+        assert.strictEqual(proxyHits.length, 0, 'attacker proxy must not receive any request');
+        assert.strictEqual(realHits.length, 1, 'request must reach the real target');
+        assert.deepStrictEqual(res.data, { data: 'real' });
+      } finally {
+        await stop(attackerProxy);
+        await stop(realServer);
+      }
+    }, 10000);
+
+    // GHSA-3g43-6gmg-66jw — Credential theft and response hijacking via
+    // prototype pollution gadget in config merge. A polluted
+    // Object.prototype.transformResponse function would otherwise execute with
+    // `this = config`, exposing `auth.username`/`auth.password` to the attacker.
+    it('GHSA-3g43-6gmg-66jw: polluted Object.prototype.transformResponse must not be invoked or leak request credentials', async () => {
+      let invoked = false;
+      let stolen = null;
+      Object.prototype.transformResponse = function pollutedTransform(data) {
+        invoked = true;
+        stolen = {
+          url: this && this.url,
+          username: this && this.auth && this.auth.username,
+          password: this && this.auth && this.auth.password,
+          data,
+        };
+        return true;
+      };
+
+      const server = await startServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"secret":"keep-me"}');
+      });
+
+      try {
+        const { port } = server.address();
+        const res = await axios.get(`http://127.0.0.1:${port}/users`, {
+          auth: { username: 'svc-account', password: 'prod-secret-key-123!' },
+        });
+
+        assert.strictEqual(invoked, false, 'polluted transformResponse must not run');
+        assert.strictEqual(stolen, null, 'no request context must be captured');
+        assert.deepStrictEqual(
+          res.data,
+          { secret: 'keep-me' },
+          'response data must reach the caller untampered'
+        );
+      } finally {
+        await stop(server);
+      }
+    }, 10000);
+  });
 });

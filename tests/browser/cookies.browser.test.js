@@ -53,4 +53,20 @@ describe('helpers::cookies (vitest browser)', () => {
 
     expect(document.cookie).toBe('foo=bar%20baz%25');
   });
+
+  it('matches cookie names exactly even when the name contains regex metacharacters', () => {
+    // previously cookies.read built a RegExp by interpolating
+    // the requested name. Metacharacters could match a different cookie or trigger
+    // catastrophic backtracking. A name such as "X.Y" must not match a cookie called
+    // "XAY" set by the same site.
+    cookies.write('XAY', 'wrong');
+
+    expect(cookies.read('X.Y')).toBeNull();
+  });
+
+  it('does not return a partial match for a name that is a prefix of another cookie', () => {
+    cookies.write('xsrf-token-extra', 'wrong');
+
+    expect(cookies.read('xsrf-token')).toBeNull();
+  });
 });

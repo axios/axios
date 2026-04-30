@@ -147,8 +147,8 @@ describe('core::AxiosError', () => {
 
   // Opt-in redaction: when `config.redact` is an array of key names, every
   // matching key (case-insensitive, at any depth) has its value replaced with
-  // `******` in the toJSON snapshot. Undefined leaves the legacy serialization
-  // untouched so existing consumers see no behavior change.
+  // the redaction marker in the toJSON snapshot. Undefined leaves the legacy
+  // serialization untouched so existing consumers see no behavior change.
   describe('toJSON redaction via config.redact', () => {
     it('leaves config untouched when redact is undefined', () => {
       const config = {
@@ -173,7 +173,7 @@ describe('core::AxiosError', () => {
       expect(error.toJSON().config.auth.password).toBe('secret');
     });
 
-    it('replaces top-level matching keys with ******', () => {
+    it('replaces top-level matching keys with the redaction marker', () => {
       const config = {
         url: '/api',
         auth: { username: 'alice', password: 'secret' },
@@ -184,7 +184,7 @@ describe('core::AxiosError', () => {
       const json = error.toJSON();
 
       expect(json.config.url).toBe('/api');
-      expect(json.config.auth).toBe('******');
+      expect(json.config.auth).toBe('[REDACTED ****]');
     });
 
     it('replaces matching keys at any nesting depth', () => {
@@ -198,8 +198,8 @@ describe('core::AxiosError', () => {
       const json = error.toJSON();
 
       expect(json.config.auth.username).toBe('alice');
-      expect(json.config.auth.password).toBe('******');
-      expect(json.config.proxy.auth.password).toBe('******');
+      expect(json.config.auth.password).toBe('[REDACTED ****]');
+      expect(json.config.proxy.auth.password).toBe('[REDACTED ****]');
       expect(json.config.proxy.auth.username).toBe('pu');
     });
 
@@ -210,7 +210,7 @@ describe('core::AxiosError', () => {
       };
       const error = new AxiosError('Boom', 'ECODE', config);
 
-      expect(error.toJSON().config.headers.Authorization).toBe('******');
+      expect(error.toJSON().config.headers.Authorization).toBe('[REDACTED ****]');
     });
 
     it('redacts headers stored in an AxiosHeaders instance', () => {
@@ -222,7 +222,7 @@ describe('core::AxiosError', () => {
       const error = new AxiosError('Boom', 'ECODE', config);
 
       const serialized = error.toJSON().config.headers;
-      expect(serialized.Authorization).toBe('******');
+      expect(serialized.Authorization).toBe('[REDACTED ****]');
       expect(serialized['X-Trace']).toBe('trace-id');
     });
 
@@ -234,8 +234,8 @@ describe('core::AxiosError', () => {
       const error = new AxiosError('Boom', 'ECODE', config);
 
       const json = error.toJSON();
-      expect(json.config.items[0].token).toBe('******');
-      expect(json.config.items[1].token).toBe('******');
+      expect(json.config.items[0].token).toBe('[REDACTED ****]');
+      expect(json.config.items[1].token).toBe('[REDACTED ****]');
       expect(json.config.items[1].name).toBe('keep');
     });
 
@@ -246,7 +246,7 @@ describe('core::AxiosError', () => {
       const error = new AxiosError('Boom', 'ECODE', config);
 
       const json = error.toJSON();
-      expect(json.config.auth.password).toBe('******');
+      expect(json.config.auth.password).toBe('[REDACTED ****]');
       // The recursive reference is resolved without throwing; the cycle is
       // dropped (replaced with undefined) which is the same shape as
       // toJSONObject's existing behavior.

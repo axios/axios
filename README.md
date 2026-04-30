@@ -928,6 +928,12 @@ These are the available config options for making requests. Only the `url` is re
   // This will set a `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
   // If the proxy server uses HTTPS, then you must set the protocol to `https`.
+  // A user-supplied `Host` header in `headers` is preserved when forwarding
+  // through a proxy (case-insensitive match on `host`/`Host`/`HOST`); this
+  // lets you target a virtual host that differs from the request URL — for
+  // example, hitting `127.0.0.1:4000` while having the proxy treat the
+  // request as `example.com`. If no `Host` header is supplied, axios
+  // defaults it to the request URL's `hostname:port` as before.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',

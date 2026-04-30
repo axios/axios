@@ -2413,6 +2413,20 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(options.headers.Host, 'example.com');
       assert.strictEqual(options.headers.host, undefined);
     });
+
+    it('preserves a user-supplied Host header across a redirect re-invocation', () => {
+      const options = {
+        headers: { Host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/', true);
+
+      assert.strictEqual(options.headers.Host, 'example.com');
+      assert.strictEqual(options.headers.host, undefined);
+    });
   });
 
   describe('Proxy-Authorization header leak on redirect (GHSA-j5f8-grm9-p9fc)', () => {

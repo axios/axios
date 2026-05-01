@@ -41,6 +41,27 @@ describe('helpers::cookies (vitest browser)', () => {
     expect(cookies.read('bar')).toBe('def');
   });
 
+  it('reads cookies when the cookie separator has no following space', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, 'cookie');
+
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get() {
+        return 'foo=abc;bar=def';
+      },
+    });
+
+    try {
+      expect(cookies.read('bar')).toBe('def');
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(document, 'cookie', descriptor);
+      } else {
+        delete document.cookie;
+      }
+    }
+  });
+
   it('removes cookies', () => {
     cookies.write('foo', 'bar');
     cookies.remove('foo');

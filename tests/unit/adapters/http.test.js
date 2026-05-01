@@ -52,6 +52,37 @@ describe('supports http with nodejs', () => {
     };
   }
 
+  class HangingConnectSocket extends stream.Duplex {
+    constructor() {
+      super();
+      this.connecting = true;
+    }
+
+    _read() {}
+
+    _write(_chunk, _encoding, callback) {
+      callback();
+    }
+
+    setKeepAlive() {
+      return this;
+    }
+
+    setNoDelay() {
+      return this;
+    }
+
+    setTimeout() {
+      return this;
+    }
+  }
+
+  class HangingConnectAgent extends http.Agent {
+    createConnection() {
+      return new HangingConnectSocket();
+    }
+  }
+
   it('should support IPv4 literal strings', async () => {
     const data = {
       firstName: 'Fred',
@@ -203,6 +234,69 @@ describe('supports http with nodejs', () => {
       );
     } finally {
       await stopHTTPServer(server);
+    }
+  });
+
+  it('should respect the timeout property during TCP connect with maxRedirects set to 0', async () => {
+    const timeout = 100;
+    const guardTimeout = 1000;
+    const started = Date.now();
+    const controller = new AbortController();
+    const agent = new HangingConnectAgent();
+    let guardTimer;
+    const request = axios.get('http://connect-timeout.test/', {
+      httpAgent: agent,
+      maxRedirects: 0,
+      proxy: false,
+      signal: controller.signal,
+      timeout,
+    });
+    const guard = new Promise((_resolve, reject) => {
+      guardTimer = setTimeout(() => {
+        controller.abort();
+        reject(new Error('request did not honor timeout during connect'));
+      }, guardTimeout);
+    });
+
+    try {
+      await assert.rejects(Promise.race([request, guard]), (error) => {
+        const elapsed = Date.now() - started;
+        assert.strictEqual(error.code, 'ECONNABORTED');
+        assert.strictEqual(error.message, `timeout of ${timeout}ms exceeded`);
+        assert.ok(elapsed < guardTimeout, `request timed out after ${elapsed}ms`);
+        return true;
+      });
+    } finally {
+      clearTimeout(guardTimer);
+      controller.abort();
+      agent.destroy();
+    }
+  });
+
+  it('should not time out immediately for timeout set to zero during TCP connect', async () => {
+    const controller = new AbortController();
+    const agent = new HangingConnectAgent();
+    const request = axios
+      .get('http://connect-timeout.test/', {
+        httpAgent: agent,
+        maxRedirects: 0,
+        proxy: false,
+        signal: controller.signal,
+        timeout: '0',
+      })
+      .then(
+        () => null,
+        (error) => error
+      );
+
+    try {
+      await setTimeoutAsync(50);
+      controller.abort();
+      const error = await request;
+      assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+    } finally {
+      controller.abort();
+      agent.destroy();
     }
   });
 
@@ -884,6 +978,44 @@ describe('supports http with nodejs', () => {
         headers,
       });
       const base64 = Buffer.from(`${user}:`, 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should decode basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(
+        `http://my%40email.com:pa%24ss@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('my@email.com:pa$ss', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('keeps malformed URL credentials percent-encoding and does not throw', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(
+        `http://user%:foo%zz@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('user%:foo%zz', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
     } finally {
       await stopHTTPServer(server);
@@ -2369,6 +2501,64 @@ describe('supports http with nodejs', () => {
         }
       });
     }
+  });
+
+  describe('Host header preservation when forwarding through a proxy (#10805)', () => {
+    const proxyConfig = { hostname: '127.0.0.1', protocol: 'http:', port: 8888 };
+
+    it('defaults the Host header to the request target when the user does not set one', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.host, '127.0.0.1:4000');
+    });
+
+    it('preserves a user-supplied lowercase host header', () => {
+      const options = {
+        headers: { host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.host, 'example.com');
+    });
+
+    it('preserves a user-supplied Host header regardless of casing', () => {
+      const options = {
+        headers: { Host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.Host, 'example.com');
+      assert.strictEqual(options.headers.host, undefined);
+    });
+
+    it('preserves a user-supplied Host header across a redirect re-invocation', () => {
+      const options = {
+        headers: { Host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/', true);
+
+      assert.strictEqual(options.headers.Host, 'example.com');
+      assert.strictEqual(options.headers.host, undefined);
+    });
   });
 
   describe('Proxy-Authorization header leak on redirect (GHSA-j5f8-grm9-p9fc)', () => {

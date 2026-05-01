@@ -38,6 +38,25 @@
 
 `paramsSerializer` 函数允许你在参数发送到服务器之前自定义 `params` 对象的序列化方式，有多个可用选项，详见本页末尾的完整请求配置示例。
 
+#### 严格的 RFC 3986 百分号编码
+
+axios 默认会将 `%3A`、`%24`、`%2C` 和 `%20` 解码回 `:`、`$`、`,` 和 `+`，以提升可读性（其中 `+` 遵循查询字符串中表示空格的 `application/x-www-form-urlencoded` 约定）。这些字符在 [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4) 中对查询组件而言都是合法的，因此默认输出是正确的。但部分后端要求严格的百分号编码，会拒绝这种可读形式。
+
+可通过 `encode` 选项覆盖默认编码器：
+
+```js
+// 单次请求：对查询值使用严格的 RFC 3986 百分号编码
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// 也可在实例默认值中设置
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
+
 ### `data`
 
 `data` 是作为请求体发送的数据，可以是字符串、普通对象、Buffer、ArrayBuffer、FormData、Stream 或 URLSearchParams，仅适用于 `PUT`、`POST`、`DELETE` 和 `PATCH` 请求方法。在未设置 `transformRequest` 的情况下，必须是以下类型之一：

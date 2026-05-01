@@ -108,7 +108,11 @@ The `data` is the data to be sent as the request body. This can be a string, a p
 - Browser only: FormData, File, Blob
 - Node only: Stream, Buffer, FormData (form-data package)
 
-For Node.js `FormData` objects that provide a `getHeaders()` method, axios copies only `Content-Type` and `Content-Length` from that method. Set any other request headers explicitly via the request `headers` config.
+For Node.js `FormData` objects that provide a `getHeaders()` method, axios copies all returned headers by default for v1 compatibility. If the `FormData` object is custom or not fully trusted, set `formDataHeaderPolicy: 'content-only'` to copy only `Content-Type` and `Content-Length`, and set any other request headers explicitly via the request `headers` config.
+
+### `formDataHeaderPolicy` <Badge type="warning" text="Node.js only" />
+
+Controls how axios copies headers returned by Node.js `FormData#getHeaders()`. The default is `'legacy'`, which copies all returned headers to preserve existing v1 behavior. Set `'content-only'` to copy only `Content-Type` and `Content-Length` from `getHeaders()`.
 
 ### `timeout`
 
@@ -380,6 +384,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
   data: {
     firstName: "Fred"
   },
+  formDataHeaderPolicy: "legacy",
   // Syntax alternative to send data into the body method post only the value is sent, not the key
   data: "Country=Brasil&City=Belo Horizonte",
   timeout: 1000,

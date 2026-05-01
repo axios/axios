@@ -3299,12 +3299,11 @@ describe('supports http with nodejs', () => {
       });
     });
 
-    describe('header whitelist', () => {
-      it('should only copy content-type/content-length from a custom getHeaders()', async () => {
-        let capturedHeaders;
-        const stubTransport = {
+    describe('formDataHeaderPolicy', () => {
+      function createStubTransport(captureHeaders) {
+        return {
           request(options, handleResponse) {
-            capturedHeaders = { ...options.headers };
+            captureHeaders({ ...options.headers });
             const req = new EventEmitter();
             req.write = () => true;
             req.setTimeout = () => {};
@@ -3324,31 +3323,58 @@ describe('supports http with nodejs', () => {
             return req;
           },
         };
+      }
 
-        // FormData-like object whose own getHeaders() returns attacker-controlled
-        // headers. Without the whitelist, every key is copied onto the request.
-        class MaliciousFormData extends stream.Readable {
-          _read() {
-            this.push(null);
-          }
-          append() {}
-          getHeaders() {
-            return {
-              'content-type': 'multipart/form-data; boundary=----fake',
-              'x-injected': 'evil',
-              'x-forwarded-for': '10.0.0.1',
-              authorization: 'Bearer ATTACKER_TOKEN',
-              host: 'admin.internal.corp',
-            };
-          }
-          get [Symbol.toStringTag]() {
-            return 'FormData';
-          }
+      class CustomFormData extends stream.Readable {
+        _read() {
+          this.push(null);
         }
+        append() {}
+        getHeaders() {
+          return {
+            'content-type': 'multipart/form-data; boundary=----fake',
+            'x-injected': 'custom',
+            'x-forwarded-for': '10.0.0.1',
+            authorization: 'Bearer CUSTOM_TOKEN',
+            host: 'custom.example.com',
+          };
+        }
+        get [Symbol.toStringTag]() {
+          return 'FormData';
+        }
+      }
 
-        await axios.post('http://stub.invalid/', new MaliciousFormData(), {
-          transport: stubTransport,
+      it('preserves legacy getHeaders() propagation by default', async () => {
+        let capturedHeaders;
+
+        await axios.post('http://stub.invalid/', new CustomFormData(), {
+          transport: createStubTransport((headers) => {
+            capturedHeaders = headers;
+          }),
           maxRedirects: 0,
+        });
+
+        assert.ok(capturedHeaders, 'transport was not invoked');
+        const ct = capturedHeaders['Content-Type'] || capturedHeaders['content-type'];
+        assert.match(ct, /multipart\/form-data/);
+        assert.strictEqual(capturedHeaders['x-injected'], 'custom');
+        assert.strictEqual(capturedHeaders['x-forwarded-for'], '10.0.0.1');
+        assert.strictEqual(
+          capturedHeaders.Authorization || capturedHeaders.authorization,
+          'Bearer CUSTOM_TOKEN'
+        );
+        assert.strictEqual(capturedHeaders.Host || capturedHeaders.host, 'custom.example.com');
+      });
+
+      it('only copies content headers when formDataHeaderPolicy is content-only', async () => {
+        let capturedHeaders;
+
+        await axios.post('http://stub.invalid/', new CustomFormData(), {
+          transport: createStubTransport((headers) => {
+            capturedHeaders = headers;
+          }),
+          maxRedirects: 0,
+          formDataHeaderPolicy: 'content-only',
         });
 
         assert.ok(capturedHeaders, 'transport was not invoked');
@@ -3356,14 +3382,11 @@ describe('supports http with nodejs', () => {
         assert.match(ct, /multipart\/form-data/);
         assert.strictEqual(capturedHeaders['x-injected'], undefined);
         assert.strictEqual(capturedHeaders['x-forwarded-for'], undefined);
-        assert.notStrictEqual(
-          capturedHeaders['Authorization'] || capturedHeaders['authorization'],
-          'Bearer ATTACKER_TOKEN'
+        assert.strictEqual(
+          capturedHeaders.Authorization || capturedHeaders.authorization,
+          undefined
         );
-        assert.notStrictEqual(
-          capturedHeaders['Host'] || capturedHeaders['host'],
-          'admin.internal.corp'
-        );
+        assert.strictEqual(capturedHeaders.Host || capturedHeaders.host, undefined);
       });
     });
   });

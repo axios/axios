@@ -752,6 +752,11 @@ These are the available config options for making requests. Only the `url` is re
     firstName: 'Fred'
   },
 
+  // `formDataHeaderPolicy` controls how node.js FormData#getHeaders() is copied.
+  // 'legacy' (default) copies all returned headers for v1 compatibility.
+  // 'content-only' copies only Content-Type and Content-Length.
+  formDataHeaderPolicy: 'legacy',
+
   // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
@@ -1616,7 +1621,7 @@ form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 axios.post('https://example.com', form);
 ```
 
-In node.js, when a `FormData` object provides `getHeaders()`, axios copies only `Content-Type` and `Content-Length` from that method. Set any other request headers explicitly with the request `headers` config.
+In node.js, when a `FormData` object provides `getHeaders()`, axios copies all returned headers by default for v1 compatibility. If the `FormData` object is custom or not fully trusted, set `formDataHeaderPolicy: 'content-only'` to copy only `Content-Type` and `Content-Length`, and set any other request headers explicitly with the request `headers` config.
 
 ### 🆕 Automatic serialization to FormData
 

@@ -38,6 +38,25 @@ Los `params` son los parámetros de URL que se enviarán con la solicitud. Debe 
 
 La función `paramsSerializer` te permite serializar el objeto `params` antes de enviarlo al servidor. Hay varias opciones disponibles para esta función; consulta el ejemplo completo de configuración de solicitud al final de esta página.
 
+#### Codificación porcentual estricta RFC 3986
+
+De forma predeterminada, axios decodifica `%3A`, `%24`, `%2C` y `%20` de vuelta a `:`, `$`, `,` y `+` por legibilidad (el `+` sigue la convención `application/x-www-form-urlencoded` para representar un espacio en una cadena de consulta). Estos caracteres son válidos dentro de un componente de consulta según la [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), por lo que la salida predeterminada es correcta. Sin embargo, algunos backends requieren codificación porcentual estricta y rechazan la forma legible.
+
+Usa la opción `encode` para sobrescribir el codificador predeterminado:
+
+```js
+// Por solicitud: emitir codificación porcentual estricta RFC 3986 para los valores de consulta
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// O establecerlo en los valores predeterminados de la instancia
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
+
 ### `data`
 
 El `data` son los datos que se enviarán como cuerpo de la solicitud. Puede ser una cadena de texto, un objeto plano, un Buffer, ArrayBuffer, FormData, Stream o URLSearchParams. Solo aplica para los métodos de solicitud `PUT`, `POST`, `DELETE` y `PATCH`. Cuando no se establece `transformRequest`, debe ser de uno de los siguientes tipos:

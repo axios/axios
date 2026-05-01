@@ -9,6 +9,7 @@ import {
   makeEchoStream,
 } from '../../setup/server.js';
 import axios from '../../../index.js';
+import utils from '../../../lib/utils.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
@@ -814,6 +815,24 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('env config', () => {
+    it('should fallback to globalThis when utils.global is temporarily undefined', () => {
+      const originalGlobal = utils.global;
+
+      try {
+        utils.global = undefined;
+
+        assert.doesNotThrow(() =>
+          getFetch({
+            env: {
+              fetch() {},
+            },
+          })
+        );
+      } finally {
+        utils.global = originalGlobal;
+      }
+    });
+
     it('should respect env fetch API configuration', async () => {
       const { data, headers } = await fetchAxios.get('/', {
         env: {

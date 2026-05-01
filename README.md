@@ -846,6 +846,10 @@ These are the available config options for making requests. Only the `url` is re
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
   maxBodyLength: 2000,
 
+  // `redact` masks matching config keys when AxiosError#toJSON() is called.
+  // Matching is case-insensitive and recursive. It does not change the request.
+  redact: ['authorization', 'password'],
+
   // `validateStatus` defines whether to resolve or reject the promise for a given
   // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
   // or `undefined`), the promise will be resolved; otherwise, the promise will be
@@ -1360,6 +1364,17 @@ axios.get('/user/12345').catch(function (error) {
 });
 ```
 
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+
+```js
+axios.get('/user/12345', {
+  headers: { Authorization: 'Bearer token' },
+  redact: ['authorization']
+}).catch(function (error) {
+  console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
+});
+```
+
 ## Handling Timeouts
 
 ```js
@@ -1600,6 +1615,8 @@ form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 
 axios.post('https://example.com', form);
 ```
+
+In node.js, when a `FormData` object provides `getHeaders()`, axios copies only `Content-Type` and `Content-Length` from that method. Set any other request headers explicitly with the request `headers` config.
 
 ### 🆕 Automatic serialization to FormData
 

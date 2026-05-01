@@ -2552,6 +2552,25 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(options.headers.Host, 'example.com');
       assert.strictEqual(options.headers.host, undefined);
     });
+
+    it('ignores polluted prototype Host fields when detecting user-supplied headers', () => {
+      Object.prototype.host = 'polluted.example.com';
+
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      try {
+        __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+        assert.strictEqual(options.headers.host, '127.0.0.1:4000');
+      } finally {
+        delete Object.prototype.host;
+      }
+    });
   });
 
   describe('Proxy-Authorization header leak on redirect', () => {

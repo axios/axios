@@ -247,9 +247,47 @@ describe('core::AxiosError', () => {
 
       const json = error.toJSON();
       expect(json.config.auth.password).toBe('[REDACTED ****]');
-      // The recursive reference is resolved without throwing; the cycle is
-      // dropped (replaced with undefined) which is the same shape as
-      // toJSONObject's existing behavior.
+      expect(Object.prototype.hasOwnProperty.call(json.config, 'self')).toBe(false);
+    });
+
+    it('preserves legacy toJSONObject handling for values with toJSON', () => {
+      const issuedAt = new Date('2026-01-01T00:00:00.000Z');
+      const endpoint = new URL('https://example.com/users');
+      const config = {
+        issuedAt,
+        endpoint,
+        auth: { password: 'secret' },
+        redact: ['password'],
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      const json = error.toJSON();
+
+      expect(json.config.issuedAt).toBe(issuedAt);
+      expect(json.config.endpoint).toBe(endpoint);
+      expect(json.config.auth.password).toBe('[REDACTED ****]');
+    });
+
+    it('does not let a polluted Object.prototype.toJSON bypass redaction', () => {
+      Object.prototype.toJSON = function () {
+        return this;
+      };
+
+      const config = {
+        auth: { password: 'secret' },
+        items: [{ token: 't1' }],
+        redact: ['password', 'token'],
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      try {
+        const json = error.toJSON();
+
+        expect(json.config.auth.password).toBe('[REDACTED ****]');
+        expect(json.config.items[0].token).toBe('[REDACTED ****]');
+      } finally {
+        delete Object.prototype.toJSON;
+      }
     });
 
     it('does not mutate the original config or AxiosHeaders', () => {

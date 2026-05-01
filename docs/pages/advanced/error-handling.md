@@ -70,3 +70,14 @@ axios.get("/user/12345").catch(function (error) {
   console.log(error.toJSON());
 });
 ```
+
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+
+```js
+axios.get("/user/12345", {
+  headers: { Authorization: "Bearer token" },
+  redact: ["authorization"]
+}).catch(function (error) {
+  console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
+});
+```

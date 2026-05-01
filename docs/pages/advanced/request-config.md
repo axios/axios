@@ -108,6 +108,8 @@ The `data` is the data to be sent as the request body. This can be a string, a p
 - Browser only: FormData, File, Blob
 - Node only: Stream, Buffer, FormData (form-data package)
 
+For Node.js `FormData` objects that provide a `getHeaders()` method, axios copies only `Content-Type` and `Content-Length` from that method. Set any other request headers explicitly via the request `headers` config.
+
 ### `timeout`
 
 The `timeout` is the number of milliseconds before the request times out. If the request takes longer than `timeout`, the request will be aborted.
@@ -205,6 +207,22 @@ The `maxContentLength` property defines the maximum number of bytes that the ser
 ### `maxBodyLength` <Badge type="warning" text="Node.js only" />
 
 The `maxBodyLength` property defines the maximum number of bytes that the server will accept in the request.
+
+### `redact`
+
+The `redact` property is an optional array of config key names to mask when an `AxiosError` is serialized with `toJSON()`. Matching is case-insensitive and recursive across the serialized request config. Matching values are replaced with `[REDACTED ****]`.
+
+`redact` only affects error serialization. It does not change request data, headers, or the original config object.
+
+```js
+axios.get('/user/12345', {
+  headers: { Authorization: 'Bearer token' },
+  auth: { username: 'me', password: 'secret' },
+  redact: ['authorization', 'password']
+}).catch((error) => {
+  console.log(error.toJSON().config);
+});
+```
 
 ### `validateStatus`
 
@@ -387,6 +405,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
   },
   maxContentLength: 2000,
   maxBodyLength: 2000,
+  redact: ['authorization', 'password'],
   validateStatus: function (status) {
     return status >= 200 && status < 300;
   },

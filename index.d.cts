@@ -552,6 +552,7 @@ declare namespace axios {
     http2Options?: Record<string, any> & {
       sessionTimeout?: number;
     };
+    redact?: string[];
   }
 
   // Alias

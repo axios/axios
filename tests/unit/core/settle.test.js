@@ -45,7 +45,7 @@ describe('core::settle', () => {
     });
   });
 
-  describe('error code assignment — the core of this fix', () => {
+  describe('error code assignment', () => {
     it('assigns ERR_BAD_REQUEST for a 400 status', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
@@ -88,20 +88,18 @@ describe('core::settle', () => {
       expect(error.code).toBe(AxiosError.ERR_BAD_RESPONSE);
     });
 
-    // These are the cases that produced `undefined` before this fix.
-    // A user can set validateStatus to reject any status — including 1xx, 2xx,
-    // 3xx, or anything ≥ 600 — and the error must still have a defined code.
-    it('assigns a defined error code for 301 rejected via custom validateStatus (was undefined before fix)', () => {
+    // A custom validateStatus can reject any status — including 1xx, 2xx, 3xx,
+    // or ≥ 600 — and the resulting AxiosError must always have a defined code.
+    it('assigns ERR_BAD_RESPONSE for a 3xx status rejected via custom validateStatus', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
-      // Reject everything — simulates a strict custom validator
       settle(resolve, reject, makeResponse(301, () => false));
       const error = reject.mock.calls[0][0];
       expect(error.code).toBeDefined();
       expect(error.code).toBe(AxiosError.ERR_BAD_RESPONSE);
     });
 
-    it('assigns a defined error code for 200 rejected via custom validateStatus (was undefined before fix)', () => {
+    it('assigns ERR_BAD_RESPONSE for a 2xx status rejected via custom validateStatus', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
       settle(resolve, reject, makeResponse(200, () => false));
@@ -110,7 +108,7 @@ describe('core::settle', () => {
       expect(error.code).toBe(AxiosError.ERR_BAD_RESPONSE);
     });
 
-    it('assigns a defined error code for a 600 status (was undefined before fix)', () => {
+    it('assigns ERR_BAD_RESPONSE for a 6xx status rejected via custom validateStatus', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
       settle(resolve, reject, makeResponse(600, () => false));

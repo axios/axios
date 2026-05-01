@@ -97,7 +97,11 @@ describe('formDataToJSON', () => {
   });
 
   it('should not write through to inherited objects on Object.prototype', () => {
-    Object.prototype.injected = { hijack: true };
+    Object.defineProperty(Object.prototype, 'injected', {
+      value: { hijack: true },
+      configurable: true,
+      writable: true,
+    });
 
     try {
       const formData = new FormData();
@@ -107,7 +111,7 @@ describe('formDataToJSON', () => {
       const result = formDataToJSON(formData);
 
       expect(result.injected).toEqual({ hijack: 'STOLEN' });
-      expect(Object.prototype.injected.hijack).toEqual(true);
+      expect(Object.prototype.injected.hijack).toBe(true);
     } finally {
       delete Object.prototype.injected;
     }

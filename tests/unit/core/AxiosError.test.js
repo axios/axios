@@ -287,12 +287,19 @@ describe('core::AxiosError', () => {
     });
 
     it('does not let a polluted Object.prototype.toJSON bypass redaction', () => {
+      class Credentials {
+        constructor() {
+          this.password = 'secret';
+        }
+      }
+
       Object.prototype.toJSON = function () {
         return this;
       };
 
       const config = {
         auth: { password: 'secret' },
+        credentials: new Credentials(),
         items: [{ token: 't1' }],
         redact: ['password', 'token'],
       };
@@ -302,6 +309,7 @@ describe('core::AxiosError', () => {
         const json = error.toJSON();
 
         expect(json.config.auth.password).toBe('[REDACTED ****]');
+        expect(json.config.credentials.password).toBe('[REDACTED ****]');
         expect(json.config.items[0].token).toBe('[REDACTED ****]');
       } finally {
         delete Object.prototype.toJSON;

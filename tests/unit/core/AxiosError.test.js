@@ -163,6 +163,24 @@ describe('core::AxiosError', () => {
       expect(json.config.auth.password).toBe('secret');
     });
 
+    it('ignores inherited redact accessors', () => {
+      const prototype = {};
+      Object.defineProperty(prototype, 'redact', {
+        get() {
+          throw new Error('inherited redact getter should not run');
+        },
+      });
+
+      const config = Object.create(prototype);
+      config.auth = { username: 'alice', password: 'secret' };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      const json = error.toJSON();
+
+      expect(json.config.auth.username).toBe('alice');
+      expect(json.config.auth.password).toBe('secret');
+    });
+
     it('leaves config untouched when redact is an empty array', () => {
       const config = {
         auth: { username: 'alice', password: 'secret' },

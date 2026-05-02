@@ -502,9 +502,9 @@ const response = await axios.get('/user', {
   }
 });
 
-// Using the 'params' option improves readability and automatically formats query strings
+// Using the `params` option improves readability and automatically formats query strings
 
-    console.log(response);
+console.log(response);
   } catch (error) {
     console.error(error);
   }

@@ -211,6 +211,39 @@ describe('helpers::shouldBypassProxy', () => {
       expect(shouldBypassProxy('http://[::ffff:10.0.0.1]/')).toBe(true);
     });
 
+    it('should treat compressed zero-prefix IPv4-mapped IPv6 dotted forms as equivalent', () => {
+      for (const entry of [
+        '0::ffff:192.168.1.5',
+        '0:0::ffff:192.168.1.5',
+        '0:0:0::ffff:192.168.1.5',
+        '0:0:0:0::ffff:192.168.1.5',
+      ]) {
+        setNoProxy(entry);
+
+        expect(shouldBypassProxy('http://192.168.1.5/')).toBe(true);
+      }
+    });
+
+    it('should treat compressed zero-prefix IPv4-mapped IPv6 hex forms as equivalent', () => {
+      for (const entry of [
+        '0::ffff:c0a8:105',
+        '0:0::ffff:c0a8:105',
+        '0:0:0::ffff:c0a8:105',
+        '0:0:0:0::ffff:c0a8:105',
+      ]) {
+        setNoProxy(entry);
+
+        expect(shouldBypassProxy('http://192.168.1.5/')).toBe(true);
+      }
+    });
+
+    it('should support compressed bracketed IPv4-mapped IPv6 entries with explicit ports', () => {
+      setNoProxy('[0:0::ffff:192.168.1.5]:8080');
+
+      expect(shouldBypassProxy('http://192.168.1.5:8080/')).toBe(true);
+      expect(shouldBypassProxy('http://192.168.1.5:9090/')).toBe(false);
+    });
+
     it('should NOT cross-match unrelated addresses', () => {
       setNoProxy('192.168.1.5');
 

@@ -316,6 +316,22 @@ describe('core::AxiosError', () => {
       }
     });
 
+    it('copies __proto__ as data without changing the redaction output prototype', () => {
+      const config = { redact: ['password'] };
+      Object.defineProperty(config, '__proto__', {
+        value: { password: 'secret' },
+        enumerable: true,
+        configurable: true,
+      });
+
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(Object.getPrototypeOf(json.config)).toBe(null);
+      expect(Object.prototype.hasOwnProperty.call(json.config, '__proto__')).toBe(true);
+      expect(json.config.__proto__.password).toBe('[REDACTED ****]');
+    });
+
     it('does not mutate the original config or AxiosHeaders', () => {
       const headers = new AxiosHeaders();
       headers.set('Authorization', 'Bearer abc');

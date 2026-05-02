@@ -1,31 +1,23 @@
-<!-- Click "Preview" for a more readable version --
+<!--
+Thanks for opening an issue. Before submitting, please search existing issues and make sure you are using a supported Axios version.
 
-Please read and follow the instructions before submitting an issue:
-
-- Read all our documentation, especially the [README](https://github.com/axios/axios/blob/main/README.md). It may contain information that helps you solve your issue.
-- Ensure your issue isn't already [reported](https://github.com/axios/axios/issues?utf8=%E2%9C%93&q=is%3Aissue).
-- Please, ensure your issue is not related to CORS or Mixed Content Issue (only relevant for browsers)
-- If you aren't sure that the issue is caused by axios or you just need help, please use [Stack Overflow](https://stackoverflow.com/questions/tagged/axios) or [our chat](https://gitter.im/mzabriskie/axios).
-- If you're reporting a bug, ensure it isn't already fixed in the latest Axios version.
-- If you need a new feature there's a chance it's already implemented in a [library](https://github.com/axios/axios/blob/main/ECOSYSTEM.md) or you can implement it using [interceptors](https://github.com/axios/axios#interceptors).
-- Don't remove any title of the issue template, or it will be treated as invalid by the bot.
-
-**⚠️👆 Delete the instructions before submitting the issue 👆⚠️**
-
+If this is a usage question rather than a bug or feature request, Stack Overflow may be a better place to ask: https://stackoverflow.com/questions/tagged/axios
 -->
 
-#### Summary
+### What happened?
 
-Describe your issue here, including as much detail as necessary.
+<!-- Describe the bug, feature request, or documentation issue. What did you expect instead? -->
 
-If you're reporting a bug, include the relevant code and stack traces to debug it (removing any private information).
+### Reproduction
 
-If you're requesting a feature, include some context and examples of code using it.
+<!-- Share a minimal code example, repository, sandbox, or clear steps to reproduce. Remove any private information. -->
 
-#### Environment
+### Environment
 
-- **Axios Version [e.g. 1.7.0]**
-- **Target platform [e.g Node / Browser / React Native version where Axios is running]**
-- **Adapter [e.g. FETCH / XHR / HTTP]**
-- Additional Library/Framework Versions [e.g. React 16.7]
-- OS: [e.g. iOS 12.1.0, OSX 10.13.4]
+- Axios version:
+- Runtime/platform: <!-- Node, browser, React Native, etc. -->
+- Adapter: <!-- http, xhr, fetch, or unknown -->
+
+### Additional context
+
+<!-- Anything else that would help us understand or prioritize this issue. -->

@@ -157,6 +157,43 @@ describe('core::AxiosError', function() {
     expect(error.config.auth.password).toBe('original-password');
   });
 
+  it('should not infinite-loop when the config contains a cycle', function() {
+    var config = {
+      url: '/foo',
+      headers: {
+        Authorization: 'Bearer secret-token'
+      }
+    };
+    config.self = config;
+    config.headers.parent = config;
+
+    var error = new AxiosError('Boom!', 'ESOMETHING', config);
+    var json;
+
+    expect(function() {
+      json = error.toJSON();
+    }).not.toThrow();
+
+    expect(json.config.url).toBe('/foo');
+    expect(json.config.headers.Authorization).toBe('[REDACTED ****]');
+    expect(json.config.self).toBe('[Circular]');
+    expect(json.config.headers.parent).toBe('[Circular]');
+  });
+
+  it('should not flag shared-but-acyclic config branches as circular', function() {
+    var shared = { kind: 'shared' };
+    var error = new AxiosError('Boom!', 'ESOMETHING', {
+      first: shared,
+      second: shared
+    });
+    var json = error.toJSON();
+
+    expect(json.config.first).toEqual({ kind: 'shared' });
+    expect(json.config.second).toEqual({ kind: 'shared' });
+    expect(json.config.first).not.toBe(shared);
+    expect(json.config.second).not.toBe(shared);
+  });
+
   describe('core::createError.from', function() {
     it('should add config, config, request and response to error', function() {
       var error = new Error('Boom!');

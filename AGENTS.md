@@ -36,6 +36,3 @@
 ## Node 12+ Compatibility
 - All shipped code AND test code must run on Node 12 through Node 24. CI runs the full matrix, so a test that only works on Node 16+ will break the build. Avoid `??`, `?.`, top-level `await`, private class fields, `Array.prototype.at`, `structuredClone`, etc. in both `lib/` and `test/`.
 - Be wary of `Object.prototype` pollution tests on Node 12/14: setting `Object.prototype.get` (or `set`) before any code that calls `Object.defineProperty` with a value-only descriptor will throw `TypeError: Getter must be a function`, because the descriptor inherits the polluted property. Construct servers/clients first, pre-load any lazy-required Node internals (e.g. `require('dns')`), then apply the pollution.
-
-## Local Workflow Files
-- OpenSpec workflows are present under `openspec/` with OpenCode command docs in `.opencode/command/opsx-*.md`; when asked to work an OpenSpec change, follow those command docs and CLI-provided context files instead of guessing artifact names.

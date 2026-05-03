@@ -99,4 +99,11 @@ describe('helpers::shouldBypassProxy', function () {
     assert.strictEqual(shouldBypassProxy('http://[::ffff:7f00:1]:8080/'), true);
     assert.strictEqual(shouldBypassProxy('http://[::ffff:7f00:1]:8081/'), false);
   });
+
+  it('should normalise IPv4-mapped IPv6 no_proxy entries regardless of hex case', function () {
+    setNoProxy('[::FFFF:7F00:1]');
+
+    assert.strictEqual(shouldBypassProxy('http://127.0.0.1:8080/'), true);
+    assert.strictEqual(shouldBypassProxy('http://[::ffff:7f00:1]:8080/'), true);
+  });
 });

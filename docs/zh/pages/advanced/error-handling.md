@@ -27,6 +27,7 @@ axios 可能会抛出多种不同类型的错误，有些来自 axios 本身，�
 | ERR_CANCELED              | 功能或方法被用户通过 AbortSignal（或 CancelToken）显式取消。                            |
 | ERR_NOT_SUPPORT           | 当前 axios 环境不支持该功能或方法。                                                     |
 | ERR_INVALID_URL           | axios 请求提供了无效的 URL。                                                            |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | 在序列化 `params` 或表单数据时，对象超过了配置的 `maxDepth`，默认上限为 100 层。详见 [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) 和 [`formSerializer`](/pages/advanced/request-config#formserializer)。 |
 
 ## 处理错误
 
@@ -68,3 +69,50 @@ axios.get("/user/12345").catch(function (error) {
   console.log(error.toJSON());
 });
 ```
+
+为避免从 `error.config` 中泄露敏感信息，可在请求配置中传入 `redact` 数组。当调用 `AxiosError#toJSON()` 时，匹配的配置键会在任意深度上以不区分大小写的方式被脱敏。
+
+```js
+axios.get("/user/12345", {
+  headers: { Authorization: "Bearer token" },
+  redact: ["authorization"]
+}).catch(function (error) {
+  console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
+});
+```
+
+## 处理超时
+
+当请求超过其配置的 `timeout` 时，axios 默认会以 `ECONNABORTED` 拒绝。设置 `transitional.clarifyTimeoutError: true` 可改为收到 `ETIMEDOUT`，便于将超时错误与其他中止情况区分开。
+
+```js
+async function fetchWithTimeout() {
+  try {
+    const response = await axios.get("https://example.com/data", {
+      timeout: 5000, // 5 秒
+      transitional: {
+        // 如果你更倾向于使用 ETIMEDOUT 而非 ECONNABORTED，请设置为 true
+        clarifyTimeoutError: false,
+      },
+    });
+
+    console.log("Response:", response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+        console.error("请求超时，请重试。");
+        return;
+      }
+
+      console.error("Axios 错误：", error.message);
+      return;
+    }
+
+    console.error("意外错误：", error);
+  }
+}
+```
+
+::: tip 在生产环境中始终设置 `timeout`
+若不设置超时，停滞的请求可能会无限挂起。匹配的配置选项请参阅 [`timeout`](/pages/advanced/request-config#timeout) 与 [`transitional.clarifyTimeoutError`](/pages/advanced/request-config#transitional)。
+:::

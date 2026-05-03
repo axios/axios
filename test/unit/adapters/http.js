@@ -2,6 +2,11 @@ var axios = require("../../../index");
 var http = require("http");
 var https = require("https");
 var net = require("net");
+// Pre-load `dns` so it isn't lazy-required from inside an http request
+// after a test pollutes `Object.prototype.get` — on older Node versions
+// the lazy `Object.defineProperty` call in dns.js inherits the polluted
+// getter and throws "Getter must be a function".
+require("dns");
 var url = require("url");
 var zlib = require("zlib");
 var assert = require("assert");
@@ -1947,9 +1952,6 @@ describe("supports http with nodejs", function () {
   });
 
   it("should not send inherited header buckets on GET requests", function (done) {
-    Object.prototype.common = { "x-polluted-common": "yes" };
-    Object.prototype.get = { "x-polluted-get": "yes" };
-
     server = http
       .createServer(function (req, res) {
         assert.strictEqual(req.headers["x-polluted-common"], undefined);
@@ -1960,6 +1962,12 @@ describe("supports http with nodejs", function () {
         res.end("ok");
       })
       .listen(4444, function () {
+        // Pollute after server construction — on older Node versions, an
+        // `Object.prototype.get` set before `http.createServer()` is read
+        // by EventEmitter.init's defineProperty call and throws.
+        Object.prototype.common = { "x-polluted-common": "yes" };
+        Object.prototype.get = { "x-polluted-get": "yes" };
+
         var instance = axios.create({
           headers: {
             common: {
@@ -1985,9 +1993,6 @@ describe("supports http with nodejs", function () {
   });
 
   it("should not send inherited header buckets on requests with a body", function (done) {
-    Object.prototype.common = { "x-polluted-common": "yes" };
-    Object.prototype.post = { "x-polluted-post": "yes" };
-
     server = http
       .createServer(function (req, res) {
         assert.strictEqual(req.headers["x-polluted-common"], undefined);
@@ -2001,6 +2006,9 @@ describe("supports http with nodejs", function () {
         });
       })
       .listen(4444, function () {
+        Object.prototype.common = { "x-polluted-common": "yes" };
+        Object.prototype.post = { "x-polluted-post": "yes" };
+
         var instance = axios.create({
           headers: {
             common: {

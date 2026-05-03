@@ -52,6 +52,43 @@ When using unpkg we recommend using the minified version as well as pinning the 
 <script src="https://unpkg.com/axios@<x.x.x>/dist/axios.min.js"></script>
 ```
 
+## Importing axios
+
+Once installed, you can import the library using either `import` or `require`:
+
+```js
+import axios, { isCancel, AxiosError } from "axios";
+```
+
+You can also use the default export, since the named export is just a re-export from the axios factory:
+
+```js
+import axios from "axios";
+
+console.log(axios.isCancel("something"));
+```
+
+If you use `require` for importing, **only the default export is available**:
+
+```js
+const axios = require("axios");
+
+console.log(axios.isCancel("something"));
+```
+
+For some bundlers and ES6 linters you may need:
+
+```js
+import { default as axios } from "axios";
+```
+
+For custom or legacy environments where module resolution misbehaves, you can import the prebuilt bundle directly:
+
+```js
+const axios = require("axios/dist/browser/axios.cjs"); // browser CommonJS bundle (ES2017)
+// const axios = require("axios/dist/node/axios.cjs"); // node CommonJS bundle (ES2017)
+```
+
 ## Making your first request
 
 An axios request can be made in as few as two lines of code. Making your first request with axios is very simple. You can make a request to any API by providing the URL and method. For example, to make a GET request to the JSONPlaceholder API, you can use the following code:

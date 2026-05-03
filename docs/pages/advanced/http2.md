@@ -34,6 +34,10 @@ Additional native options for the internal `session.request()` call can be passe
 HTTP/2 support is currently experimental. The API may change in future minor or patch releases.
 :::
 
+::: warning Redirects are not supported over HTTP/2
+The HTTP/2 adapter does not currently follow redirects. If a request issued with `httpVersion: 2` receives a `3xx` response, the redirect is not followed automatically. Handle these responses manually or stay on HTTP/1.x for endpoints that rely on redirects.
+:::
+
 ## Full example
 
 The example below sends a `multipart/form-data` POST request over HTTP/2 and tracks both upload and download progress.

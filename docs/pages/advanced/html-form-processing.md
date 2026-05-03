@@ -42,8 +42,9 @@ The above form will be submitted as:
 {
   "foo": "1",
   "deep": {
-    "prop": "2",
-    "prop spaced": "3"
+    "prop": {
+      "spaced": "3"
+    }
   },
   "baz": ["4", "5"],
   "user": {
@@ -51,6 +52,10 @@ The above form will be submitted as:
   }
 }
 ```
+
+::: tip Path collisions overwrite earlier values
+Field names are parsed into property paths by splitting on `.`, brackets, or whitespace. Two inputs whose paths overlap will collide: in the example above, `deep.prop` parses to `["deep", "prop"]` and `deep prop spaced` parses to `["deep", "prop", "spaced"]`, so the deeper assignment replaces `deep.prop = "2"` with the nested object `{ spaced: "3" }`. Pick non-overlapping field names if you need both values.
+:::
 
 ::: warning
 Sending Blobs/Files as JSON (base64) is not currently supported.

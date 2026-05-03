@@ -154,11 +154,14 @@ export interface AxiosRequestConfig<D = any> {
   onUploadProgress?: (progressEvent: ProgressEvent) => void;
   onDownloadProgress?: (progressEvent: ProgressEvent) => void;
   maxContentLength?: number;
+  formDataHeaderPolicy?: 'legacy' | 'content-only';
+  redact?: string[];
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;
   maxRedirects?: number;
   beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>}) => void;
   socketPath?: string | null;
+  allowedSocketPaths?: string | string[] | null;
   httpAgent?: any;
   httpsAgent?: any;
   proxy?: AxiosProxyConfig | false;

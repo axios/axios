@@ -58,6 +58,19 @@ describe('xsrf', function() {
     });
   });
 
+  it('should not treat regex-like xsrfCookieName as a pattern', function(done) {
+    document.cookie = axios.defaults.xsrfCookieName + '=12345';
+
+    axios('/foo', {
+      xsrfCookieName: 'XSRF.*'
+    });
+
+    getAjaxRequest().then(function(request) {
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toEqual(undefined);
+      done();
+    });
+  });
+
   it('should not set xsrf header for cross origin', function(done) {
     document.cookie = axios.defaults.xsrfCookieName + '=12345';
 

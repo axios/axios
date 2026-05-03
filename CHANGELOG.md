@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Notable behavior changes
+
+- `utils.merge` (used internally by `mergeConfig` and to merge request headers) now returns objects with a `null` prototype to harden against prototype-pollution gadgets. As a result, `error.config`, `error.config.headers`, and any merged header bucket no longer inherit from `Object.prototype`. Two consequences:
+  - `obj.hasOwnProperty(key)` on a merged config or header object throws `TypeError: obj.hasOwnProperty is not a function`. Use `Object.prototype.hasOwnProperty.call(obj, key)` or `key in obj` instead.
+  - Implicit string coercion (e.g. `String(obj)`, `'' + obj`, or any path that calls `ToPrimitive`) throws `TypeError: Cannot convert object to primitive value` because there is no inherited `toString`. Coerce explicitly via `JSON.stringify(obj)` or by reading individual properties.
+
+  Property access (`obj[key]`), enumeration, and `JSON.stringify` are unaffected.
+
 ## [0.30.0](https://github.com/axios/axios/compare/v0.29.0...v0.30.0) (2025-03-26)
 
 ## Release notes:

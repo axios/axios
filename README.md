@@ -331,14 +331,14 @@ These are the available config options for making requests. Only the `url` is re
   // `params` are the URL parameters to be sent with the request
   // Must be a plain object or a URLSearchParams object
   // Null bytes in param values stay percent-encoded as `%00` in the resulting query string
-  // (GHSA-xhjh-pmcv-23jw) — Axios does not reverse `encodeURIComponent` output for `%00`,
+  // Axios does not reverse `encodeURIComponent` output for `%00`,
   // so null-byte injection cannot be smuggled through the serializer.
   params: {
     ID: 12345
   },
 
   // `paramsSerializer` is an optional config in charge of serializing `params`
-  // Nested objects are walked with a bounded recursion depth (GHSA-62hf-57xw-28j9):
+  // Nested objects are walked with a bounded recursion depth:
   // once `maxDepth` is exceeded the serializer throws `ERR_FORM_DATA_DEPTH_EXCEEDED`
   // instead of overflowing the call stack. The same cap applies to `toFormData` when
   // `Content-Type: multipart/form-data` triggers automatic FormData serialization.
@@ -404,7 +404,7 @@ These are the available config options for making requests. Only the `url` is re
   // `undefined` (default) - set XSRF header only for the same origin requests
   // Only an explicit `true` (own property on the config) will add the XSRF header for
   // cross-origin requests. Values inherited from `Object.prototype` are ignored
-  // (GHSA-xx6v-rp6x-q39c), so a polluted prototype cannot silently enable the token.
+  //, so a polluted prototype cannot silently enable the token.
   withXSRFToken: boolean | undefined | ((config: AxiosRequestConfig) => boolean | undefined),
 
   // `onUploadProgress` allows handling of progress events for uploads
@@ -421,13 +421,25 @@ These are the available config options for making requests. Only the `url` is re
 
   // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
   // Also enforced on streamed responses (`responseType: 'stream'`): bytes are counted as they
-  // arrive and the stream is aborted with an error once the cap is exceeded (GHSA-vf2m-468p-8v99).
+  // arrive and the stream is aborted with an error once the cap is exceeded.
   maxContentLength: 2000,
 
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
   // Also enforced on stream uploads: uploaded bytes are tracked and the request is aborted
   // once the cap is exceeded, even when the native http transport is used directly.
   maxBodyLength: 2000,
+
+  // `formDataHeaderPolicy` controls which headers the Node adapter copies from
+  // FormData `getHeaders()`.
+  // 'legacy' (default) copies all returned headers for v1 compatibility.
+  // 'content-only' copies only Content-Type and Content-Length.
+  formDataHeaderPolicy: 'legacy',
+
+  // `redact` masks matching config keys when AxiosError#toJSON() is called.
+  // Matching is case-insensitive and recursive. It does not change the request.
+  // An empty array is treated as "no override" and falls back to the defaults so
+  // an accidental `redact: []` cannot silently disable redaction.
+  redact: ['authorization', 'password'],
 
   // `validateStatus` defines whether to resolve or reject the promise for a given
   // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
@@ -454,9 +466,17 @@ These are the available config options for making requests. Only the `url` is re
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
+  // Avoid passing user-controlled values because socket paths bypass host,
+  // port, DNS, and proxy controls.
   // Only either `socketPath` or `proxy` can be specified.
   // If both are specified, `socketPath` is used.
   socketPath: null, // default
+
+  // `allowedSocketPaths` constrains `socketPath` to known-safe Unix sockets.
+  // Use this when config can include partially user-controlled input.
+  // Set to a string or array of strings. An empty array denies all socket paths.
+  // Set to `null` on a request to clear an instance-level allowlist.
+  allowedSocketPaths: null, // default
 
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http
   // and https requests, respectively, in node.js. This allows options to be added like

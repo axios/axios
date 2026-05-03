@@ -38,9 +38,13 @@ const config: AxiosRequestConfig = {
   onUploadProgress: (progressEvent: ProgressEvent) => {},
   onDownloadProgress: (progressEvent: ProgressEvent) => {},
   maxContentLength: 2000,
+  formDataHeaderPolicy: 'content-only',
+  redact: ['authorization', 'password', 'apiKey'],
   maxBodyLength: 2000,
   validateStatus: (status: number) => status >= 200 && status < 300,
   maxRedirects: 5,
+  socketPath: '/var/run/docker.sock',
+  allowedSocketPaths: '/var/run/docker.sock',
   proxy: {
     host: '127.0.0.1',
     port: 9000
@@ -54,6 +58,14 @@ const nullValidateStatusConfig: AxiosRequestConfig = {
 
 const undefinedValidateStatusConfig: AxiosRequestConfig = {
   validateStatus: undefined
+};
+
+const socketPathArrayConfig: AxiosRequestConfig = {
+  allowedSocketPaths: ['/var/run/docker.sock', '/var/run/app.sock']
+};
+
+const clearedSocketPathConfig: AxiosRequestConfig = {
+  allowedSocketPaths: null
 };
 
 const handleResponse = (response: AxiosResponse) => {

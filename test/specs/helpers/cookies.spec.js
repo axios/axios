@@ -23,6 +23,27 @@ describe('helpers::cookies', function () {
     expect(cookies.read('bar')).toEqual('def');
   });
 
+  it('should read cookie names containing regex metacharacters literally', function () {
+    cookies.write('foo.*', 'abc');
+    cookies.write('foo-value', 'def');
+
+    expect(cookies.read('foo.*')).toEqual('abc');
+  });
+
+  it('should not treat regex-like cookie names as patterns', function () {
+    cookies.write('foo-value', 'def');
+
+    expect(cookies.read('foo.*')).toEqual(null);
+  });
+
+  it('should not throw when reading an invalid regex string as a cookie name', function () {
+    cookies.write('foo', 'abc');
+
+    expect(function () {
+      expect(cookies.read('[')).toEqual(null);
+    }).not.toThrow();
+  });
+
   it('should remove cookies', function () {
     cookies.write('foo', 'bar');
     cookies.remove('foo');

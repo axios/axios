@@ -29,6 +29,134 @@ describe('core::AxiosError', function() {
     expect(json.response).toBe(undefined);
   });
 
+  it('should redact default sensitive config keys when serialized to JSON', function() {
+    var config = {
+      url: '/foo',
+      headers: {
+        Authorization: 'Bearer secret-token',
+        'Proxy-Authorization': 'Basic proxy-secret',
+        Cookie: 'sid=secret-cookie',
+        'Set-Cookie': 'sid=set-cookie-secret',
+        'X-API-Key': 'secret-api-key',
+        Accept: 'application/json'
+      },
+      auth: {
+        username: 'janedoe',
+        password: 's00pers3cret'
+      },
+      params: {
+        page: 1
+      }
+    };
+    var error = new AxiosError('Boom!', 'ESOMETHING', config);
+    var json = error.toJSON();
+
+    expect(json.config.headers.Authorization).toBe('[REDACTED ****]');
+    expect(json.config.headers['Proxy-Authorization']).toBe('[REDACTED ****]');
+    expect(json.config.headers.Cookie).toBe('[REDACTED ****]');
+    expect(json.config.headers['Set-Cookie']).toBe('[REDACTED ****]');
+    expect(json.config.headers['X-API-Key']).toBe('[REDACTED ****]');
+    expect(json.config.auth.password).toBe('[REDACTED ****]');
+    expect(json.config.url).toBe('/foo');
+    expect(json.config.headers.Accept).toBe('application/json');
+    expect(json.config.auth.username).toBe('janedoe');
+    expect(json.config.params.page).toBe(1);
+  });
+
+  it('should omit redacted plaintext values from JSON.stringify output', function() {
+    var error = new AxiosError('Boom!', 'ESOMETHING', {
+      headers: {
+        Authorization: 'Bearer stringify-token',
+        'Proxy-Authorization': 'Basic stringify-proxy',
+        Cookie: 'sid=stringify-cookie',
+        'Set-Cookie': 'sid=stringify-set-cookie',
+        'X-API-Key': 'stringify-api-key'
+      },
+      auth: {
+        password: 'stringify-password'
+      }
+    });
+    var serialized = JSON.stringify(error);
+
+    expect(serialized).not.toContain('Bearer stringify-token');
+    expect(serialized).not.toContain('Basic stringify-proxy');
+    expect(serialized).not.toContain('sid=stringify-cookie');
+    expect(serialized).not.toContain('sid=stringify-set-cookie');
+    expect(serialized).not.toContain('stringify-api-key');
+    expect(serialized).not.toContain('stringify-password');
+    expect(serialized).toContain('[REDACTED ****]');
+  });
+
+  it('should redact matching config keys recursively and case-insensitively', function() {
+    var error = new AxiosError('Boom!', 'ESOMETHING', {
+      headers: {
+        Authorization: 'Bearer token',
+        cOoKiE: 'mixed-case-cookie',
+        common: {
+          authorization: 'Common token',
+          'x-api-key': 'Common API key',
+          Accept: 'application/json'
+        },
+        get: {
+          'Proxy-Authorization': 'GET proxy token',
+          'Content-Type': 'application/json'
+        }
+      },
+      auth: {
+        Password: 'Secret password'
+      }
+    });
+    var json = error.toJSON();
+
+    expect(json.config.headers.Authorization).toBe('[REDACTED ****]');
+    expect(json.config.headers.cOoKiE).toBe('[REDACTED ****]');
+    expect(json.config.headers.common.authorization).toBe('[REDACTED ****]');
+    expect(json.config.headers.common['x-api-key']).toBe('[REDACTED ****]');
+    expect(json.config.headers.common.Accept).toBe('application/json');
+    expect(json.config.headers.get['Proxy-Authorization']).toBe('[REDACTED ****]');
+    expect(json.config.headers.get['Content-Type']).toBe('application/json');
+    expect(json.config.auth.Password).toBe('[REDACTED ****]');
+  });
+
+  it('should use custom config redact keys with exact key matching', function() {
+    var error = new AxiosError('Boom!', 'ESOMETHING', {
+      redact: ['apiKey'],
+      apiKey: 'secret-api-key',
+      password: 'not-redacted-by-custom-list',
+      passwordHint: 'first pet'
+    });
+    var json = error.toJSON();
+
+    expect(json.config.apiKey).toBe('[REDACTED ****]');
+    expect(json.config.password).toBe('not-redacted-by-custom-list');
+    expect(json.config.passwordHint).toBe('first pet');
+  });
+
+  it('should not mutate error config while redacting serialized output', function() {
+    var config = {
+      headers: {
+        Authorization: 'Bearer original-token',
+        Cookie: 'sid=original-cookie',
+        common: {
+          'X-API-Key': 'original-api-key'
+        }
+      },
+      auth: {
+        password: 'original-password'
+      }
+    };
+    var error = new AxiosError('Boom!', 'ESOMETHING', config);
+
+    error.toJSON();
+    JSON.stringify(error);
+
+    expect(error.config).toBe(config);
+    expect(error.config.headers.Authorization).toBe('Bearer original-token');
+    expect(error.config.headers.Cookie).toBe('sid=original-cookie');
+    expect(error.config.headers.common['X-API-Key']).toBe('original-api-key');
+    expect(error.config.auth.password).toBe('original-password');
+  });
+
   describe('core::createError.from', function() {
     it('should add config, config, request and response to error', function() {
       var error = new Error('Boom!');

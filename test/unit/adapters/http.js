@@ -20,6 +20,18 @@ var isBlobSupported = typeof Blob !== "undefined";
 var noop = () => {};
 
 describe("supports http with nodejs", function () {
+  function clearPrototypePollution() {
+    delete Object.prototype.auth;
+    delete Object.prototype.username;
+    delete Object.prototype.password;
+    delete Object.prototype.common;
+    delete Object.prototype.get;
+    delete Object.prototype.post;
+  }
+
+  // Defensive: clear before each test in case another suite left pollution.
+  beforeEach(clearPrototypePollution);
+
   afterEach(function () {
     if (server) {
       server.close();
@@ -34,6 +46,7 @@ describe("supports http with nodejs", function () {
     delete process.env.https_proxy;
     delete process.env.no_proxy;
     delete process.env.NO_PROXY;
+    clearPrototypePollution();
   });
 
   it("should sanitize request headers containing invalid characters", function (done) {
@@ -384,11 +397,11 @@ describe("supports http with nodejs", function () {
           .createServer(function (request, response) {
             proxyUseCount += 1;
             var parsed = url.parse(request.url);
-            var opts = {
-              host: parsed.hostname,
-              port: parsed.port,
-              path: parsed.path,
-            };
+            var opts = Object.create(null);
+            opts.host = parsed.hostname;
+            opts.port = parsed.port;
+            opts.path = parsed.path;
+            opts.auth = undefined;
 
             http.get(opts, function (res) {
               response.writeHead(res.statusCode, res.headers);
@@ -424,6 +437,163 @@ describe("supports http with nodejs", function () {
                   proxyUseCount,
                   "should go through proxy on every redirect",
                 );
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should remove proxy authorization when redirect switches from authenticated HTTP proxy to direct HTTPS", function (done) {
+    var proxyAuth =
+      "Basic " + Buffer.from("user:pass", "utf8").toString("base64");
+    var proxyRequestAuth;
+
+    proxy = http
+      .createServer(function (request, response) {
+        proxyRequestAuth = request.headers["proxy-authorization"];
+        response.setHeader("Location", "https://localhost:1/");
+        response.statusCode = 302;
+        response.end();
+      })
+      .listen(4000, function () {
+        process.env.HTTP_PROXY = "http://user:pass@localhost:4000/";
+
+        axios
+          .get("http://example.com/", {
+            headers: {
+              "proxy-authorization": "Basic stale",
+            },
+            maxRedirects: 1,
+            beforeRedirect: function (options) {
+              assert.equal(proxyRequestAuth, proxyAuth);
+              assert.equal(options.headers["Proxy-Authorization"], undefined);
+              assert.equal(options.headers["proxy-authorization"], undefined);
+              throw new Error("stop before direct redirect");
+            },
+          })
+          .then(function () {
+            done(new Error("request should not succeed"));
+          })
+          .catch(function (error) {
+            assert.equal(
+              error.message,
+              "Redirected request failed: stop before direct redirect",
+            );
+            done();
+          });
+      });
+  });
+
+  it("should remove proxy authorization when redirected target is excluded by no_proxy", function (done) {
+    proxy = http
+      .createServer(function (request, response) {
+        response.setHeader("Location", "http://localhost:1/");
+        response.statusCode = 302;
+        response.end();
+      })
+      .listen(4000, function () {
+        process.env.HTTP_PROXY = "http://user:pass@localhost:4000/";
+        process.env.NO_PROXY = "localhost";
+
+        axios
+          .get("http://example.com/", {
+            maxRedirects: 1,
+            beforeRedirect: function (options) {
+              assert.equal(options.headers["Proxy-Authorization"], undefined);
+              assert.equal(options.headers["proxy-authorization"], undefined);
+              throw new Error("stop before no_proxy redirect");
+            },
+          })
+          .then(function () {
+            done(new Error("request should not succeed"));
+          })
+          .catch(function (error) {
+            assert.equal(
+              error.message,
+              "Redirected request failed: stop before no_proxy redirect",
+            );
+            done();
+          });
+      });
+  });
+
+  it("should remove proxy authorization case-insensitively when no proxy applies", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        assert.equal(req.headers["proxy-authorization"], undefined);
+        res.end("ok");
+      })
+      .listen(4444, function () {
+        process.env.HTTP_PROXY = "http://localhost:4000/";
+        process.env.NO_PROXY = "localhost";
+
+        axios
+          .get("http://localhost:4444/", {
+            headers: {
+              "pRoXy-AuThOrIzAtIoN": "Basic stale",
+            },
+          })
+          .then(function (res) {
+            assert.equal(res.data, "ok");
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should keep proxy authorization when redirected request still uses authenticated proxy", function (done) {
+    var requestCount = 0;
+    var proxyAuth =
+      "Basic " + Buffer.from("user:pass", "utf8").toString("base64");
+
+    server = http
+      .createServer(function (req, res) {
+        requestCount += 1;
+        if (requestCount === 1) {
+          res.setHeader("Location", "http://localhost:4444/final");
+          res.statusCode = 302;
+        }
+        res.end("ok");
+      })
+      .listen(4444, function () {
+        var proxyUseCount = 0;
+
+        proxy = http
+          .createServer(function (request, response) {
+            proxyUseCount += 1;
+            assert.equal(request.headers["proxy-authorization"], proxyAuth);
+
+            var parsed = url.parse(request.url);
+            var opts = {
+              host: parsed.hostname,
+              port: parsed.port,
+              path: parsed.path,
+            };
+
+            http.get(opts, function (res) {
+              response.writeHead(res.statusCode, res.headers);
+              res.on("data", function (data) {
+                response.write(data);
+              });
+              res.on("end", function () {
+                response.end();
+              });
+            });
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                  auth: "user:pass",
+                },
+                maxRedirects: 1,
+              })
+              .then(function (res) {
+                assert.equal(res.data, "ok");
+                assert.equal(proxyUseCount, 2);
                 done();
               })
               .catch(done);
@@ -826,6 +996,7 @@ describe("supports http with nodejs", function () {
       .listen(socketName, function () {
         axios({
           socketPath: socketName,
+          allowedSocketPaths: socketName,
           url: "/",
         })
           .then(function (resp) {
@@ -834,6 +1005,174 @@ describe("supports http with nodejs", function () {
             done();
           })
           .catch(done);
+      });
+  });
+
+  it("should support sockets without an allowlist", function (done) {
+    // Different sockets for win32 vs darwin/linux
+    var socketName = "./test.sock";
+
+    if (process.platform === "win32") {
+      socketName = "\\\\.\\pipe\\libuv-test";
+    }
+
+    server = net
+      .createServer(function (socket) {
+        socket.on("data", function () {
+          socket.end("HTTP/1.1 200 OK\r\n\r\n");
+        });
+      })
+      .listen(socketName, function () {
+        axios({
+          socketPath: socketName,
+          url: "/",
+        })
+          .then(function (resp) {
+            assert.equal(resp.status, 200);
+            assert.equal(resp.statusText, "OK");
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should reject disallowed socket paths before opening the socket", function (done) {
+    var socketName = "./test.sock";
+    var openedSocket = false;
+
+    if (process.platform === "win32") {
+      socketName = "\\\\.\\pipe\\libuv-test";
+    }
+
+    server = net
+      .createServer(function (socket) {
+        openedSocket = true;
+        socket.end("HTTP/1.1 200 OK\r\n\r\n");
+      })
+      .listen(socketName, function () {
+        axios({
+          socketPath: socketName,
+          allowedSocketPaths: "./other.sock",
+          url: "/",
+        })
+          .then(function () {
+            done(new Error("request should not succeed"));
+          })
+          .catch(function (err) {
+            assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            assert.equal(openedSocket, false);
+            done();
+          });
+      });
+  });
+
+  it("should reject socket paths when allowlist is empty", function (done) {
+    var socketName = "./test.sock";
+    var openedSocket = false;
+
+    if (process.platform === "win32") {
+      socketName = "\\\\.\\pipe\\libuv-test";
+    }
+
+    server = net
+      .createServer(function (socket) {
+        openedSocket = true;
+        socket.end("HTTP/1.1 200 OK\r\n\r\n");
+      })
+      .listen(socketName, function () {
+        axios({
+          socketPath: socketName,
+          allowedSocketPaths: [],
+          url: "/",
+        })
+          .then(function () {
+            done(new Error("request should not succeed"));
+          })
+          .catch(function (err) {
+            assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            assert.equal(openedSocket, false);
+            done();
+          });
+      });
+  });
+
+  it("should inherit and clear socket path allowlists", function (done) {
+    var socketName = "./test.sock";
+    var instance;
+
+    if (process.platform === "win32") {
+      socketName = "\\\\.\\pipe\\libuv-test";
+    }
+
+    server = net
+      .createServer(function (socket) {
+        socket.on("data", function () {
+          socket.end("HTTP/1.1 200 OK\r\n\r\n");
+        });
+      })
+      .listen(socketName, function () {
+        instance = axios.create({
+          allowedSocketPaths: socketName,
+        });
+
+        instance({
+          socketPath: socketName,
+          url: "/",
+        })
+          .then(function (resp) {
+            assert.equal(resp.status, 200);
+
+            return axios.create({
+              allowedSocketPaths: [],
+            })({
+              socketPath: socketName,
+              allowedSocketPaths: null,
+              url: "/",
+            });
+          })
+          .then(function (resp) {
+            assert.equal(resp.status, 200);
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should reject invalid socket path options", function (done) {
+    axios({
+      socketPath: {},
+      url: "/",
+    })
+      .then(function () {
+        done(new Error("request should not succeed"));
+      })
+      .catch(function (err) {
+        assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+
+        return axios({
+          socketPath: "./test.sock",
+          allowedSocketPaths: {},
+          url: "/",
+        });
+      })
+      .then(function () {
+        done(new Error("request should not succeed"));
+      })
+      .catch(function (err) {
+        assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+
+        return axios({
+          socketPath: "./test.sock",
+          allowedSocketPaths: ["./test.sock", {}],
+          url: "/",
+        });
+      })
+      .then(function () {
+        done(new Error("request should not succeed"));
+      })
+      .catch(function (err) {
+        assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        done();
       });
   });
 
@@ -1380,6 +1719,38 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  it("should not use proxy for IPv4-mapped IPv6 when no_proxy lists IPv4", function (done) {
+    var proxyRequests = 0;
+
+    proxy = http
+      .createServer(function (request, response) {
+        proxyRequests += 1;
+        response.end("proxied");
+      })
+      .listen(4000, function () {
+        process.env.http_proxy = "http://localhost:4000/";
+        process.env.HTTP_PROXY = "http://localhost:4000/";
+        process.env.no_proxy = "127.0.0.1";
+        process.env.NO_PROXY = "127.0.0.1";
+
+        axios
+          .get("http://[::ffff:7f00:1]:1/", {
+            timeout: 100,
+          })
+          .then(function () {
+            done(new Error("request should not succeed"));
+          })
+          .catch(function () {
+            assert.equal(
+              proxyRequests,
+              0,
+              "should not use proxy for IPv4-mapped IPv6 alias",
+            );
+            done();
+          });
+      });
+  });
+
   it("should use proxy for domains not in no_proxy", function (done) {
     server = http
       .createServer(function (req, res) {
@@ -1436,11 +1807,11 @@ describe("supports http with nodejs", function () {
         proxy = http
           .createServer(function (request, response) {
             var parsed = url.parse(request.url);
-            var opts = {
-              host: parsed.hostname,
-              port: parsed.port,
-              path: parsed.path,
-            };
+            var opts = Object.create(null);
+            opts.host = parsed.hostname;
+            opts.port = parsed.port;
+            opts.path = parsed.path;
+            opts.auth = undefined;
             var proxyAuth = request.headers["proxy-authorization"];
 
             http.get(opts, function (res) {
@@ -1527,6 +1898,130 @@ describe("supports http with nodejs", function () {
               })
               .catch(done);
           });
+      });
+  });
+
+  it("should not use inherited proxy auth credentials", function (done) {
+    Object.prototype.auth = {};
+    Object.prototype.username = "polluted-user";
+    Object.prototype.password = "polluted-pass";
+
+    server = http
+      .createServer(function (req, res) {
+        res.end();
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (request, response) {
+            var parsed = url.parse(request.url);
+            var opts = Object.create(null);
+            opts.host = parsed.hostname;
+            opts.port = parsed.port;
+            opts.path = parsed.path;
+            opts.auth = undefined;
+            var proxyAuth = request.headers["proxy-authorization"];
+
+            http.get(opts, function (res) {
+              res.on("data", function () {});
+              res.on("end", function () {
+                response.setHeader("Content-Type", "text/html; charset=UTF-8");
+                response.end(proxyAuth || "");
+              });
+            });
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                },
+              })
+              .then(function (res) {
+                assert.equal(res.data, "");
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should not send inherited header buckets on GET requests", function (done) {
+    Object.prototype.common = { "x-polluted-common": "yes" };
+    Object.prototype.get = { "x-polluted-get": "yes" };
+
+    server = http
+      .createServer(function (req, res) {
+        assert.strictEqual(req.headers["x-polluted-common"], undefined);
+        assert.strictEqual(req.headers["x-polluted-get"], undefined);
+        assert.strictEqual(req.headers["x-own-common"], "default");
+        assert.strictEqual(req.headers["x-own-get"], "method");
+        assert.strictEqual(req.headers["x-request"], "request");
+        res.end("ok");
+      })
+      .listen(4444, function () {
+        var instance = axios.create({
+          headers: {
+            common: {
+              "x-own-common": "default",
+            },
+            get: {
+              "x-own-get": "method",
+            },
+          },
+        });
+
+        instance
+          .get("http://localhost:4444/", {
+            headers: {
+              "x-request": "request",
+            },
+          })
+          .then(function () {
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should not send inherited header buckets on requests with a body", function (done) {
+    Object.prototype.common = { "x-polluted-common": "yes" };
+    Object.prototype.post = { "x-polluted-post": "yes" };
+
+    server = http
+      .createServer(function (req, res) {
+        assert.strictEqual(req.headers["x-polluted-common"], undefined);
+        assert.strictEqual(req.headers["x-polluted-post"], undefined);
+        assert.strictEqual(req.headers["x-own-common"], "default");
+        assert.strictEqual(req.headers["x-own-post"], "method");
+        assert.strictEqual(req.headers["x-request"], "request");
+        req.on("data", function () {});
+        req.on("end", function () {
+          res.end("ok");
+        });
+      })
+      .listen(4444, function () {
+        var instance = axios.create({
+          headers: {
+            common: {
+              "x-own-common": "default",
+            },
+            post: {
+              "x-own-post": "method",
+            },
+          },
+        });
+
+        instance
+          .post("http://localhost:4444/", "body", {
+            headers: {
+              "x-request": "request",
+            },
+          })
+          .then(function () {
+            done();
+          })
+          .catch(done);
       });
   });
 
@@ -1831,6 +2326,160 @@ describe("supports http with nodejs", function () {
   });
 
   describe("FormData", function () {
+    function createFormDataLikeStream(headers) {
+      var Readable = require("stream").Readable;
+      var form = Readable.from(["abc"]);
+
+      form.append = function () {};
+      form.getHeaders = function () {
+        return headers;
+      };
+      form.toString = function () {
+        return "[object FormData]";
+      };
+
+      return form;
+    }
+
+    function postFormDataLike(headers, config) {
+      config = config || {};
+      config.maxRedirects = 0;
+
+      return axios.post(
+        "http://localhost:4444/",
+        createFormDataLikeStream(headers),
+        config,
+      );
+    }
+
+    it("should preserve FormData getHeaders headers by default", function (done) {
+      server = http
+        .createServer(function (req, res) {
+          res.end(JSON.stringify(req.headers));
+        })
+        .listen(4444, function () {
+          postFormDataLike({
+            "content-type": "multipart/form-data; boundary=test",
+            "content-length": "3",
+            host: "evil.example",
+            authorization: "Bearer ATTACKER_TOKEN",
+            "x-forwarded-for": "127.0.0.2",
+            "x-injected": "yes",
+          })
+            .then(function (res) {
+              assert.strictEqual(
+                res.data["content-type"],
+                "multipart/form-data; boundary=test",
+              );
+              assert.strictEqual(res.data["content-length"], "3");
+              assert.strictEqual(res.data.host, "evil.example");
+              assert.strictEqual(
+                res.data.authorization,
+                "Bearer ATTACKER_TOKEN",
+              );
+              assert.strictEqual(res.data["x-forwarded-for"], "127.0.0.2");
+              assert.strictEqual(res.data["x-injected"], "yes");
+              done();
+            })
+            .catch(done);
+        });
+    });
+
+    it("should preserve FormData getHeaders headers for legacy policy", function (done) {
+      server = http
+        .createServer(function (req, res) {
+          res.end(JSON.stringify(req.headers));
+        })
+        .listen(4444, function () {
+          postFormDataLike(
+            {
+              "content-type": "multipart/form-data; boundary=test",
+              "content-length": "3",
+              host: "evil.example",
+              authorization: "Bearer ATTACKER_TOKEN",
+              "x-forwarded-for": "127.0.0.2",
+              "x-injected": "yes",
+            },
+            { formDataHeaderPolicy: "legacy" },
+          )
+            .then(function (res) {
+              assert.strictEqual(res.data.host, "evil.example");
+              assert.strictEqual(
+                res.data.authorization,
+                "Bearer ATTACKER_TOKEN",
+              );
+              assert.strictEqual(res.data["x-forwarded-for"], "127.0.0.2");
+              assert.strictEqual(res.data["x-injected"], "yes");
+              done();
+            })
+            .catch(done);
+        });
+    });
+
+    it("should constrain FormData getHeaders headers for content-only policy", function (done) {
+      server = http
+        .createServer(function (req, res) {
+          res.end(JSON.stringify(req.headers));
+        })
+        .listen(4444, function () {
+          postFormDataLike(
+            {
+              "Content-Type": "multipart/form-data; boundary=test",
+              "Content-Length": "3",
+              host: "evil.example",
+              authorization: "Bearer ATTACKER_TOKEN",
+              "x-forwarded-for": "127.0.0.2",
+              "x-injected": "yes",
+            },
+            { formDataHeaderPolicy: "content-only" },
+          )
+            .then(function (res) {
+              assert.strictEqual(
+                res.data["content-type"],
+                "multipart/form-data; boundary=test",
+              );
+              assert.strictEqual(res.data["content-length"], "3");
+              assert.notStrictEqual(res.data.host, "evil.example");
+              assert.notStrictEqual(
+                res.data.authorization,
+                "Bearer ATTACKER_TOKEN",
+              );
+              assert.strictEqual(res.data["x-forwarded-for"], undefined);
+              assert.strictEqual(res.data["x-injected"], undefined);
+              done();
+            })
+            .catch(done);
+        });
+    });
+
+    it("should keep explicit request headers with content-only policy", function (done) {
+      server = http
+        .createServer(function (req, res) {
+          res.end(JSON.stringify(req.headers));
+        })
+        .listen(4444, function () {
+          postFormDataLike(
+            {
+              "content-type": "multipart/form-data; boundary=test",
+              "content-length": "3",
+              "x-injected": "yes",
+            },
+            {
+              formDataHeaderPolicy: "content-only",
+              headers: {
+                "x-caller-header": "allowed",
+              },
+            },
+          )
+            .then(function (res) {
+              assert.strictEqual(res.data["x-caller-header"], "allowed");
+              assert.strictEqual(res.data["x-injected"], undefined);
+              done();
+            })
+            .catch(done);
+        });
+    });
+
     it("should allow passing FormData", function (done) {
       var form = new FormData();
       var file1 = Buffer.from("foo", "utf8");
@@ -2104,7 +2753,7 @@ describe("supports http with nodejs", function () {
       });
   });
 
-  describe("maxContentLength with responseType stream (GHSA-vf2m-468p-8v99)", function () {
+  describe("maxContentLength with responseType stream", function () {
     it("should reject when streamed response exceeds maxContentLength", function (done) {
       var payload = Buffer.alloc(2048, "a");
       server = http
@@ -2176,7 +2825,7 @@ describe("supports http with nodejs", function () {
     });
   });
 
-  describe("maxBodyLength with streamed upload and maxRedirects=0 (GHSA-5c9x-8gcm-mpgx)", function () {
+  describe("maxBodyLength with streamed upload and maxRedirects=0", function () {
     it("should reject streamed upload exceeding maxBodyLength with native transport", function (done) {
       var received = 0;
       server = http
@@ -2227,7 +2876,7 @@ describe("supports http with nodejs", function () {
     });
   });
 
-  describe("prototype pollution (GHSA-6chq-wfr3-2hj9)", function () {
+  describe("prototype pollution", function () {
     var pollutedKeys = ["getHeaders", "append", "pipe", "on", "once"];
     var toStringTagSym = Symbol.toStringTag;
 

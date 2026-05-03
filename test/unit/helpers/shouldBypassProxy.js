@@ -71,4 +71,32 @@ describe('helpers::shouldBypassProxy', function () {
     assert.strictEqual(shouldBypassProxy('http://[::1]:8080/'), true);
     assert.strictEqual(shouldBypassProxy('http://127.0.0.1:8081/'), false);
   });
+
+  it('should bypass proxy for IPv4-mapped IPv6 loopback when IPv4 is listed', function () {
+    setNoProxy('127.0.0.1');
+
+    assert.strictEqual(shouldBypassProxy('http://[::ffff:127.0.0.1]/'), true);
+    assert.strictEqual(shouldBypassProxy('http://[::ffff:7f00:1]/'), true);
+  });
+
+  it('should bypass proxy for IPv4-mapped IPv6 metadata address when IPv4 is listed', function () {
+    setNoProxy('169.254.169.254');
+
+    assert.strictEqual(shouldBypassProxy('http://[::ffff:a9fe:a9fe]/latest/meta-data/'), true);
+  });
+
+  it('should support IPv4-mapped IPv6 entries in no_proxy', function () {
+    setNoProxy('[::ffff:7f00:1]');
+
+    assert.strictEqual(shouldBypassProxy('http://127.0.0.1:8080/'), true);
+    assert.strictEqual(shouldBypassProxy('http://[::ffff:127.0.0.1]:8080/'), true);
+  });
+
+  it('should keep IPv4-mapped IPv6 no_proxy entries port-aware', function () {
+    setNoProxy('[::ffff:7f00:1]:8080');
+
+    assert.strictEqual(shouldBypassProxy('http://127.0.0.1:8080/'), true);
+    assert.strictEqual(shouldBypassProxy('http://[::ffff:7f00:1]:8080/'), true);
+    assert.strictEqual(shouldBypassProxy('http://[::ffff:7f00:1]:8081/'), false);
+  });
 });

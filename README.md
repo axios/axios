@@ -404,7 +404,7 @@ These are the available config options for making requests. Only the `url` is re
   // `undefined` (default) - set XSRF header only for the same origin requests
   // Only an explicit `true` (own property on the config) will add the XSRF header for
   // cross-origin requests. Values inherited from `Object.prototype` are ignored
-  //, so a polluted prototype cannot silently enable the token.
+  // so a polluted prototype cannot silently enable the token.
   withXSRFToken: boolean | undefined | ((config: AxiosRequestConfig) => boolean | undefined),
 
   // `onUploadProgress` allows handling of progress events for uploads

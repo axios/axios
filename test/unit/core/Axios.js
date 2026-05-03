@@ -53,15 +53,19 @@ describe('Axios', function () {
 
   describe("caller stack trace in errors", function () {
     // Helper: call axios.request from a named function so we can assert
-    // that function appears in the final error stack.
+    // that the function name appears in the final error stack.
     async function namedCallerFunction(axiosInstance) {
       return axiosInstance.request("test-url", {});
     }
 
-    it('should append the caller stack to an error that already has a stack', async function () {
+    it('should append the caller frame to an error that already has a stack', async function () {
       const axios = new Axios({});
       axios._request = () => {
-        throw new Error("network error");
+        // Simulate an adapter error whose stack contains only library-internal
+        // frames — no reference to the user's call site.
+        const err = new Error("network error");
+        err.stack = `Error: network error\n    at AxiosError.from (axios.cjs:725:14)\n    at handleRequestError (follow-redirects:14:24)`;
+        throw err;
       };
 
       let caughtError;
@@ -73,10 +77,10 @@ describe('Axios', function () {
 
       assert.ok(caughtError, "expected an error to be thrown");
       assert.ok(typeof caughtError.stack === 'string', "error.stack should be a string");
-      // The stack must contain the caller frame (namedCallerFunction)
+      // The stack MUST contain the caller frame so the user can find their code.
       assert.ok(
         caughtError.stack.includes('namedCallerFunction'),
-        `expected caller frame in stack, got:\n${caughtError.stack}`
+        `expected 'namedCallerFunction' in stack — caller frame was not appended:\n${caughtError.stack}`
       );
     });
 
@@ -84,8 +88,7 @@ describe('Axios', function () {
       const axios = new Axios({});
       axios._request = () => {
         const err = new Error("no stack error");
-        // Forcibly remove the stack so we test the err.stack = requestStack path
-        try { err.stack = ''; } catch (e) { /* ignore */ }
+        try { err.stack = ''; } catch (e) { /* un-writable on some engines */ }
         throw err;
       };
 
@@ -97,31 +100,44 @@ describe('Axios', function () {
       }
 
       assert.ok(caughtError, "expected an error to be thrown");
-      // After the fix the stack must have been populated with caller frames
+      // stack must be truthy after the fix (was empty before)
       assert.ok(
-        typeof caughtError.stack === 'string',
-        "error.stack should be a string even when originally empty"
+        caughtError.stack,
+        "error.stack should be populated with caller frames when it was originally empty"
+      );
+      assert.ok(
+        caughtError.stack.includes('namedCallerFunction'),
+        `expected 'namedCallerFunction' in stack after empty-stack assignment:\n${caughtError.stack}`
       );
     });
 
-    it('should not duplicate the caller stack when error already ends with it', async function () {
+    it('should not duplicate caller frames when they are already present in the error stack', async function () {
       const axios = new Axios({});
 
-      // Capture a dummy stack that mimics what requestStack would look like
-      let captured = null;
-      const origCaptureStackTrace = Error.captureStackTrace;
-      Error.captureStackTrace = (obj) => {
-        origCaptureStackTrace(obj);
-        captured = obj.stack;
-      };
+      // Simulate an error whose stack already contains the caller's file path
+      // (as V8 async-stack promotion would produce).  The duplication guard
+      // must detect this and skip appending requestStack a second time.
+      //
+      // We call namedCallerFunction once just to discover the real file URL
+      // of this test file, then use that path in the pre-seeded stack.
+      let testFileUrl = '';
+      const dummy = {};
+      Error.captureStackTrace(dummy);
+      // dummy.stack line 0 = 'Error', line 1 = this frame
+      const thisLine = (dummy.stack.split('\n')[1] || '');
+      const urlMatch = thisLine.match(/\(([^)]+):\d+:\d+\)/);
+      if (urlMatch) {
+        testFileUrl = urlMatch[1].replace(/:\d+:\d+$/, '');
+      }
 
       axios._request = () => {
-        Error.captureStackTrace = origCaptureStackTrace;
         const err = new Error("dup check");
-        if (captured) {
-          // Pre-seed the error stack so it already ends with the caller frames
-          const callerPart = captured.replace(/^.+\n.+\n/, '');
-          try { err.stack = err.stack + '\n' + callerPart; } catch (e) { /* ignore */ }
+        // Pre-seed err.stack with a frame that references the same file as
+        // requestStack will — the guard must spot this and not append again.
+        if (testFileUrl) {
+          err.stack = 'Error: dup check\n'
+            + '    at axios_internal (axios.cjs:1:1)\n'
+            + '    at namedCallerFunction (' + testFileUrl + ':58:28)';
         }
         throw err;
       };
@@ -131,11 +147,17 @@ describe('Axios', function () {
         await namedCallerFunction(axios);
       } catch (e) {
         caughtError = e;
-        Error.captureStackTrace = origCaptureStackTrace;
       }
 
       assert.ok(caughtError, "expected an error to be thrown");
       assert.ok(typeof caughtError.stack === 'string', "stack should be a string");
+
+      // namedCallerFunction must appear exactly once — not duplicated.
+      const matches = caughtError.stack.match(/namedCallerFunction/g) || [];
+      assert.strictEqual(
+        matches.length, 1,
+        `expected 'namedCallerFunction' exactly once — duplication guard may have failed:\n${caughtError.stack}`
+      );
     });
 
     it('should not throw when error is not an Error instance', async function () {
@@ -152,12 +174,15 @@ describe('Axios', function () {
         caughtError = e;
       }
 
-      assert.strictEqual(caughtError, "string error");
+      assert.strictEqual(caughtError, "string error",
+        "non-Error throws must be re-thrown unchanged");
     });
 
-    it('should still throw the original error after stack augmentation', async function () {
+    it('should rethrow the exact same error object after stack augmentation', async function () {
       const axios = new Axios({});
       const originalError = new Error("original message");
+      // Give it a stack that has no user frames so augmentation is triggered.
+      originalError.stack = 'Error: original message\n    at axios_internal (axios.cjs:1:1)';
       axios._request = () => { throw originalError; };
 
       let caughtError;
@@ -167,8 +192,15 @@ describe('Axios', function () {
         caughtError = e;
       }
 
-      assert.strictEqual(caughtError, originalError, "must rethrow the exact same error object");
-      assert.strictEqual(caughtError.message, "original message");
+      assert.strictEqual(caughtError, originalError,
+        "must rethrow the exact same error object, not a wrapper");
+      assert.strictEqual(caughtError.message, "original message",
+        "error message must be unchanged");
+      // Caller frame must have been appended.
+      assert.ok(
+        caughtError.stack.includes('namedCallerFunction'),
+        `expected 'namedCallerFunction' in augmented stack:\n${caughtError.stack}`
+      );
     });
   });
 });

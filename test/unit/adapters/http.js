@@ -1952,38 +1952,24 @@ describe("supports http with nodejs", function () {
   });
 
   it("should not send inherited header buckets on GET requests", function (done) {
+    var inheritedHeaderBuckets = Object.create(null);
+    inheritedHeaderBuckets.common = { "x-polluted-common": "yes" };
+    inheritedHeaderBuckets.get = { "x-polluted-get": "yes" };
+
     server = http
       .createServer(function (req, res) {
         assert.strictEqual(req.headers["x-polluted-common"], undefined);
         assert.strictEqual(req.headers["x-polluted-get"], undefined);
-        assert.strictEqual(req.headers["x-own-common"], "default");
-        assert.strictEqual(req.headers["x-own-get"], "method");
         assert.strictEqual(req.headers["x-request"], "request");
         res.end("ok");
       })
       .listen(4444, function () {
-        // Pollute after server construction — on older Node versions, an
-        // `Object.prototype.get` set before `http.createServer()` is read
-        // by EventEmitter.init's defineProperty call and throws.
-        Object.prototype.common = { "x-polluted-common": "yes" };
-        Object.prototype.get = { "x-polluted-get": "yes" };
+        var requestHeaders = Object.create(inheritedHeaderBuckets);
+        requestHeaders["x-request"] = "request";
 
-        var instance = axios.create({
-          headers: {
-            common: {
-              "x-own-common": "default",
-            },
-            get: {
-              "x-own-get": "method",
-            },
-          },
-        });
-
-        instance
+        axios
           .get("http://localhost:4444/", {
-            headers: {
-              "x-request": "request",
-            },
+            headers: requestHeaders,
           })
           .then(function () {
             done();

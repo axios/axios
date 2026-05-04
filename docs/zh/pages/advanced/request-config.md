@@ -364,7 +364,7 @@ proxy: {
 
 `transitional` 属性允许你启用或禁用某些过渡性功能，可用选项如下：
 
-- `silentJSONParsing`：若设置为 `true` _（默认）_，axios 会在 JSON 解析失败时静默忽略错误，并将 `response.data` 设为 `null`。设置为 `false` 则会抛出 `SyntaxError`。
+- `silentJSONParsing`：若设置为 `true` _（默认）_，axios 会在 JSON 解析失败时静默忽略错误，并保留原始响应字符串。设置为 `false` 则会抛出 `SyntaxError`。
 
   ::: tip 重要说明
   此选项仅在 `responseType` **显式**设置为 `'json'` 时生效。当未指定 `responseType` 时，axios 会通过 `forcedJSONParsing` 尝试解析为 JSON，若失败则不论此设置如何，都会静默返回原始字符串。如果希望无效 JSON 抛出错误，请同时设置：

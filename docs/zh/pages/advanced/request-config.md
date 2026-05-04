@@ -3,7 +3,7 @@
 请求配置用于配置 HTTP 请求的各项参数。虽然有大量可用选项，但唯一必填的选项是 `url`。如果配置对象中没有 `method` 字段，默认使用 `GET` 方法。
 
 ::: warning 安全提示：解压炸弹防护是可选的
-默认情况下 `maxContentLength` 与 `maxBodyLength` 均为 `-1`（不限制）。恶意或被攻陷的服务器可能返回一个很小的 gzip/deflate/brotli 响应，解压后可达数 GB，从而耗尽 Node.js 进程的内存。
+默认情况下 `maxContentLength` 为 `-1`（不限制）。恶意或被攻陷的服务器可能返回一个很小的 gzip/deflate/brotli 响应，解压后可达数 GB，从而耗尽 Node.js 进程的内存。
 
 如果你向不完全可信的服务器发起请求，**请设置上限**：
 

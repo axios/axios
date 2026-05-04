@@ -2,6 +2,19 @@
 
 La configuración de solicitud se usa para configurar la solicitud. Existe una amplia gama de opciones disponibles, pero la única opción requerida es `url`. Si el objeto de configuración no contiene un campo `method`, el método predeterminado es `GET`.
 
+::: warning Seguridad: la protección contra bombas de descompresión es opcional
+Por defecto, `maxContentLength` y `maxBodyLength` están en `-1` (sin límite). Un servidor malicioso o comprometido puede devolver un cuerpo pequeño comprimido con gzip/deflate/brotli que se expande a gigabytes y agota el proceso de Node.js.
+
+Si haces solicitudes a servidores en los que no confías plenamente, **establece un tope**:
+
+```js
+axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
+axios.defaults.maxBodyLength = 10 * 1024 * 1024;
+```
+
+Consulta la [guía de seguridad](/pages/misc/security) para más detalles.
+:::
+
 ### `url`
 
 La `url` es la URL a la que se realiza la solicitud. Puede ser una cadena de texto o una instancia de `URL`.
@@ -26,6 +39,49 @@ La función `transformRequest` te permite modificar los datos de la solicitud an
 
 La función `transformResponse` te permite modificar los datos de la respuesta antes de que sean pasados a las funciones `then` o `catch`. Esta función se llama con los datos de la respuesta como único argumento.
 
+### `parseReviver`
+
+La función `parseReviver` te permite proporcionar una función "reviver" personalizada directamente a la llamada nativa `JSON.parse()` que utiliza el `transformResponse` predeterminado.
+
+Esto resulta especialmente útil para realizar hidratación de tipos de alto rendimiento (por ejemplo, convertir cadenas ISO a objetos `Temporal` o `Date`) o para evitar la pérdida de precisión durante el parseo.
+
+En entornos modernos (ES2023+), la función reviver recibe un tercer argumento `context`. Esto proporciona acceso a la fuente JSON cruda (`source`), permitiendo la conversión precisa de enteros grandes (BigInt) que de otro modo perderían precisión al ser parseados como números estándar de JavaScript.
+
+> Nota: `Temporal` aún no está disponible en todos los entornos. Considera usar un polyfill si es necesario.
+
+```js
+const client = axios.create({
+  parseReviver: (key, value, context) => {
+    // Ejemplo: parseo de BigInt seguro en precisión
+    if (typeof value === 'number' && context?.source) {
+      const isInteger = Number.isInteger(value);
+      const isUnsafe = !Number.isSafeInteger(value);
+      const isValidIntegerString = /^-?\d+$/.test(context.source);
+
+      if (isInteger && isUnsafe && isValidIntegerString) {
+        try {
+          return BigInt(context.source);
+        } catch {
+          // Alternativa: devolver el valor original si el parseo falla
+        }
+      }
+    }
+
+    // Ejemplo: hidratar fechas en objetos Temporal
+    if (
+      typeof value === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      typeof Temporal !== 'undefined' &&
+      Temporal?.PlainDate
+    ) {
+      return Temporal.PlainDate.from(value);
+    }
+
+    return value;
+  },
+});
+```
+
 ### `headers`
 
 Los `headers` son los encabezados HTTP que se enviarán con la solicitud. El encabezado `Content-Type` se establece en `application/json` de forma predeterminada.
@@ -38,6 +94,25 @@ Los `params` son los parámetros de URL que se enviarán con la solicitud. Debe 
 
 La función `paramsSerializer` te permite serializar el objeto `params` antes de enviarlo al servidor. Hay varias opciones disponibles para esta función; consulta el ejemplo completo de configuración de solicitud al final de esta página.
 
+#### Codificación porcentual estricta RFC 3986
+
+De forma predeterminada, axios decodifica `%3A`, `%24`, `%2C` y `%20` de vuelta a `:`, `$`, `,` y `+` por legibilidad (el `+` sigue la convención `application/x-www-form-urlencoded` para representar un espacio en una cadena de consulta). Estos caracteres son válidos dentro de un componente de consulta según la [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), por lo que la salida predeterminada es correcta. Sin embargo, algunos backends requieren codificación porcentual estricta y rechazan la forma legible.
+
+Usa la opción `encode` para sobrescribir el codificador predeterminado:
+
+```js
+// Por solicitud: emitir codificación porcentual estricta RFC 3986 para los valores de consulta
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// O establecerlo en los valores predeterminados de la instancia
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
+
 ### `data`
 
 El `data` son los datos que se enviarán como cuerpo de la solicitud. Puede ser una cadena de texto, un objeto plano, un Buffer, ArrayBuffer, FormData, Stream o URLSearchParams. Solo aplica para los métodos de solicitud `PUT`, `POST`, `DELETE` y `PATCH`. Cuando no se establece `transformRequest`, debe ser de uno de los siguientes tipos:
@@ -45,6 +120,12 @@ El `data` son los datos que se enviarán como cuerpo de la solicitud. Puede ser 
 - cadena de texto, objeto plano, ArrayBuffer, ArrayBufferView, URLSearchParams
 - Solo en el navegador: FormData, File, Blob
 - Solo en Node.js: Stream, Buffer, FormData (paquete form-data)
+
+Para los objetos `FormData` de Node.js que proporcionan un método `getHeaders()`, axios copia por defecto todos los encabezados devueltos para mantener la compatibilidad con v1. Si el objeto `FormData` es personalizado o no es de plena confianza, establece `formDataHeaderPolicy: 'content-only'` para copiar únicamente `Content-Type` y `Content-Length`, y define cualquier otro encabezado de la solicitud explícitamente mediante la configuración `headers`.
+
+### `formDataHeaderPolicy` <Badge type="warning" text="Solo en Node.js" />
+
+Controla cómo axios copia los encabezados devueltos por `FormData#getHeaders()` de Node.js. El valor por defecto es `'legacy'`, que copia todos los encabezados devueltos para preservar el comportamiento existente de v1. Establece `'content-only'` para copiar únicamente `Content-Type` y `Content-Length` desde `getHeaders()`.
 
 ### `timeout`
 
@@ -123,7 +204,24 @@ Nota: Se ignora para `responseType` de tipo `stream` o solicitudes del lado del 
 
 ### `withXSRFToken`
 
-La propiedad `withXSRFToken` indica si se debe enviar el token `XSRF` con la solicitud. Solo aplica para solicitudes del lado del cliente. El valor predeterminado es `undefined`.
+`withXSRFToken` controla si axios lee la cookie XSRF y establece el encabezado XSRF en las solicitudes del navegador. Acepta:
+
+- `undefined` _(predeterminado)_ — establece el encabezado XSRF solo para solicitudes del mismo origen.
+- `true` — siempre establece el encabezado XSRF, incluso para solicitudes de origen cruzado.
+- `false` — nunca establece el encabezado XSRF.
+- `(config: InternalAxiosRequestConfig) => boolean | undefined` — un callback que decide por solicitud, recibiendo el objeto de configuración interna.
+
+```ts
+withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+```
+
+::: warning XSRF de origen cruzado y `withCredentials`
+`withCredentials` controla si las solicitudes de origen cruzado incluyen credenciales (cookies, autenticación HTTP). En versiones anteriores de axios, establecer `withCredentials: true` provocaba implícitamente que axios estableciera el encabezado XSRF para solicitudes de origen cruzado. Las versiones más recientes de axios separan estas responsabilidades: para permitir que el encabezado XSRF se envíe en solicitudes de origen cruzado debes establecer **ambos** `withCredentials: true` y `withXSRFToken: true`.
+
+```js
+axios.get('/user', { withCredentials: true, withXSRFToken: true });
+```
+:::
 
 ### `onUploadProgress`
 
@@ -144,6 +242,22 @@ La propiedad `maxContentLength` define el número máximo de bytes que el servid
 
 La propiedad `maxBodyLength` define el número máximo de bytes que el servidor aceptará en la solicitud.
 
+### `redact`
+
+La propiedad `redact` es un arreglo opcional de nombres de claves de configuración que se enmascararán cuando un `AxiosError` se serialice con `toJSON()`. La coincidencia es insensible a mayúsculas/minúsculas y recursiva a lo largo de la configuración de la solicitud serializada. Los valores coincidentes se reemplazan por `[REDACTED ****]`.
+
+`redact` solo afecta a la serialización del error. No modifica los datos de la solicitud, los encabezados ni el objeto de configuración original.
+
+```js
+axios.get('/user/12345', {
+  headers: { Authorization: 'Bearer token' },
+  auth: { username: 'me', password: 'secret' },
+  redact: ['authorization', 'password']
+}).catch((error) => {
+  console.log(error.toJSON().config);
+});
+```
+
 ### `validateStatus`
 
 La función `validateStatus` te permite sobreescribir la validación predeterminada del código de estado. Por defecto, axios rechazará la Promise si el código de estado no está en el rango 200-299. Puedes sobreescribir este comportamiento proporcionando una función `validateStatus` personalizada. La función debe devolver `true` si el código de estado está dentro del rango que deseas aceptar.
@@ -155,6 +269,21 @@ La propiedad `maxRedirects` define el número máximo de redirecciones a seguir.
 ### `beforeRedirect`
 
 La función `beforeRedirect` te permite modificar la solicitud antes de que sea redirigida. Úsala para ajustar las opciones de la solicitud al redirigir, para inspeccionar los últimos encabezados de respuesta, o para cancelar la solicitud lanzando un error. Si `maxRedirects` se establece en 0, `beforeRedirect` no se usa.
+
+```js
+beforeRedirect: (options, { headers }) => {
+  if (
+    options.hostname === "example.com" &&
+    options.protocol === "https:"
+  ) {
+    options.auth = "user:password";
+  }
+}
+```
+
+::: warning Seguridad: reinyección de credenciales en redirecciones
+El hook `beforeRedirect` se ejecuta **después** de que se eliminan los encabezados sensibles durante las redirecciones. La librería `follow-redirects` elimina las credenciales en una bajada de protocolo (HTTPS → HTTP) por seguridad. Como `beforeRedirect` se ejecuta después, reinyectar credenciales sin verificar el protocolo de destino puede exponer datos sensibles. Reinyecta credenciales únicamente para destinos HTTPS de confianza, y evita reinyectarlas en redirecciones con bajada de protocolo.
+:::
 
 ### `socketPath` <Badge type="warning" text="Solo en Node.js" />
 
@@ -198,6 +327,8 @@ Si usas variables de entorno para tu configuración de proxy, también puedes de
 
 Usa `false` para deshabilitar los proxies, ignorando las variables de entorno. `auth` indica que se debe usar autenticación HTTP Basic para conectarse al proxy, y proporciona las credenciales. Esto establecerá un encabezado `Proxy-Authorization`, sobrescribiendo cualquier encabezado `Proxy-Authorization` personalizado que hayas definido usando `headers`. Si el servidor proxy usa HTTPS, debes establecer el protocolo en `https`.
 
+Un encabezado `Host` proporcionado por el usuario en `headers` se preserva al reenviar a través de un proxy (coincidencia insensible a mayúsculas en `host` / `Host` / `HOST`). Esto te permite apuntar a un host virtual distinto al de la URL de la solicitud — por ejemplo, llegar a `127.0.0.1:4000` mientras el proxy trata la solicitud como `example.com`. Si no se proporciona ningún encabezado `Host`, axios lo establece por defecto al `hostname:port` de la URL de la solicitud, como antes.
+
 ```js
 proxy: {
   protocol: "https",
@@ -233,8 +364,17 @@ Ten en cuenta que la opción `insecureHTTPParser` solo está disponible en Node.
 
 La propiedad `transitional` te permite habilitar o deshabilitar ciertas características de transición. Las siguientes opciones están disponibles:
 
-- `silentJSONParsing`: Si se establece en `true`, axios no registrará una advertencia cuando encuentre respuestas JSON inválidas, estableciendo el valor de retorno en null. Es útil cuando trabajas con APIs que devuelven JSON inválido.
-- `forcedJSONParsing`: Fuerza a axios a analizar las respuestas JSON como JSON, incluso si la respuesta no es JSON válido. Es útil cuando trabajas con APIs que devuelven JSON inválido.
+- `silentJSONParsing`: Si se establece en `true` _(predeterminado)_, axios ignora silenciosamente los errores de parseo de JSON y establece `response.data` en `null` cuando el parseo falla. Establécelo en `false` para que se lance `SyntaxError` en su lugar.
+
+  ::: tip Importante
+  Esta opción solo tiene efecto cuando `responseType` se establece **explícitamente** en `'json'`. Cuando `responseType` se omite, axios usa `forcedJSONParsing` para intentar el parseo de JSON y devuelve silenciosamente la cadena cruda en caso de fallo, sin importar este ajuste. Para hacer que el JSON inválido lance un error, establece ambos:
+
+  ```js
+  { responseType: 'json', transitional: { silentJSONParsing: false } }
+  ```
+  :::
+
+- `forcedJSONParsing`: Fuerza a axios a analizar la cadena de respuesta como JSON incluso si `responseType` no es `'json'`.
 - `clarifyTimeoutError`: Clarifica el mensaje de error cuando una solicitud expira. Es útil cuando depuras problemas de timeout.
 - `legacyInterceptorReqResOrdering`: Cuando se establece en `true`, se usará el orden de solicitud/respuesta de interceptores heredado.
 
@@ -300,6 +440,7 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
   data: {
     firstName: "Fred"
   },
+  formDataHeaderPolicy: "legacy",
   // Syntax alternative to send data into the body method post only the value is sent, not the key
   data: "Country=Brasil&City=Belo Horizonte",
   timeout: 1000,
@@ -325,6 +466,7 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
   },
   maxContentLength: 2000,
   maxBodyLength: 2000,
+  redact: ['authorization', 'password'],
   validateStatus: function (status) {
     return status >= 200 && status < 300;
   },

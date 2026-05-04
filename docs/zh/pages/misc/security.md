@@ -19,6 +19,37 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 默认值未被调低是因为调低会静默地影响所有合法的大文件下载。为不可信来源选择合理的上限，应由应用自行负责。
 
+## 其他安全敏感的选项
+
+以下请求配置选项具有直接的安全影响。它们在[请求配置](/pages/advanced/request-config)中均有完整说明，这里集中列出以便统一查阅。
+
+| 选项 | 风险 | 缓解措施 |
+| --- | --- | --- |
+| [`socketPath`](/pages/advanced/request-config#socketpath) | 如果取自不可信输入，攻击者可将流量重定向到 `/var/run/docker.sock` 等特权本地套接字，绕过基于主机名的 SSRF 防护（CWE-918）。 | 对来自不可信输入的配置进行过滤或仅允许特定键。使用 [`allowedSocketPaths`](/pages/advanced/request-config#allowedsocketpaths) 限制可接受的套接字路径。 |
+| [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | 在 `follow-redirects` 因协议降级剥离凭据**之后**运行。如果不检查目标协议就重新注入凭据，可能在明文 HTTP 上泄露凭据。 | 仅对可信的 HTTPS 目标重新添加凭据。在为 `auth` 赋值前检查 `options.protocol === "https:"`。 |
+| [`withXSRFToken`](/pages/advanced/request-config#withxsrftoken) | 设置为 `true` 会在跨域请求中强制设置 XSRF 请求头。较旧的 axios 版本会在 `withCredentials: true` 时隐式启用此行为；新版本要求两个标志同时设置。 | 保持为 `undefined`（仅同源），除非你的后端确实在跨域请求中校验 XSRF。 |
+| [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` 默认会包含请求配置，可能将 `Authorization` 请求头或 `auth` 凭据泄露到错误日志和遥测中。 | 通过 `redact` 数组传入需要遮蔽的配置键名。匹配不区分大小写，且会递归处理。 |
+| [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) | 自定义 `FormData` 的 `getHeaders()` 若返回攻击者可控的值，可能在 Node.js 中覆盖 `Authorization` 等请求头或注入任意请求头。 | 设置为 `'content-only'` 仅复制 `Content-Type` 与 `Content-Length`，再通过请求 `headers` 配置显式设置其他请求头。 |
+
+## 供应链加固：`ignore-scripts` 与生命周期脚本
+
+仓库附带项目级的 `.npmrc`，其中设置了 `ignore-scripts=true`。这会在仓库内运行 `npm install` 或 `npm ci` 时阻止任何直接或传递依赖的 npm 生命周期脚本（`preinstall`、`install`、`postinstall`、`prepare`）执行。详见 [THREATMODEL.md](https://github.com/axios/axios/blob/v1.x/THREATMODEL.md)（威胁 T-S2）了解原因。
+
+由此带来的一个影响：仓库自身的 `prepare` 钩子（用于安装 Husky 的 git 钩子）**不会**自动运行。在你首次安装后，请手动启用 git 钩子：
+
+```bash
+npm ci
+npm rebuild husky && npx husky
+```
+
+每次全新检出仓库后只需运行一次这两条命令。后续每次 `npm install` 后**不**需要重新执行。
+
+::: danger 不要移除 `ignore-scripts=true`
+为了"修复"husky 设置而从 `.npmrc` 中移除 `ignore-scripts=true`，会重新打开依赖树中所有其他包的生命周期脚本攻击面。所有 CI 工作流都已使用 `--ignore-scripts` 调用 npm，因此本地行为与 CI 保持一致。
+:::
+
+我们建议在任何将 axios（或其他依赖）引入到处理机密的构建环境的下游项目中，也使用相同的 `ignore-scripts=true` 设置。
+
 ## 验证发布版本
 
 自 `axios` 在 npm 上发布的每一个 tarball 均通过 GitHub Actions 发布，并附带 [npm provenance 证明](https://docs.npmjs.com/generating-provenance-statements)，以密码学方式将软件包与生成它的工作流及提交 SHA 绑定。

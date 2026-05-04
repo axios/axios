@@ -2,6 +2,19 @@
 
 The request config is used to configure the request. There is a wide range of options available, but the only required option is `url`. If the configuration object does not contain a `method` field, the default method is `GET`.
 
+::: warning Security: decompression-bomb protection is opt-in
+By default `maxContentLength` and `maxBodyLength` are `-1` (unlimited). A malicious or compromised server can return a tiny gzip/deflate/brotli body that expands to gigabytes and exhaust the Node.js process.
+
+If you call servers you do not fully trust, **set a cap**:
+
+```js
+axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
+axios.defaults.maxBodyLength = 10 * 1024 * 1024;
+```
+
+See the [security guide](/pages/misc/security) for details.
+:::
+
 ### `url`
 
 The `url` is the URL to which the request is made. It can be a string or an instance of `URL`.
@@ -81,6 +94,25 @@ The `params` are the URL parameters to be sent with the request. This must be a 
 
 The `paramsSerializer` function allows you to serialize the `params` object before it is sent to the server. There are a few options available for this function, so please refer to the full request config example at the end of this page.
 
+#### Strict RFC 3986 percent-encoding
+
+By default, axios decodes `%3A`, `%24`, `%2C` and `%20` back to `:`, `$`, `,` and `+` for readability (the `+` follows the `application/x-www-form-urlencoded` convention for spaces in query strings). These characters are valid in a query component under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), so the default output is correct. However, some backends require strict percent-encoding and reject the readable form.
+
+Use the `encode` option to override the default encoder:
+
+```js
+// Per-request: emit strict RFC 3986 percent-encoding for query values
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// Or set it on the instance defaults
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
+
 ### `data`
 
 The `data` is the data to be sent as the request body. This can be a string, a plain object, a Buffer, ArrayBuffer, FormData, Stream, or URLSearchParams. Only applicable for request methods `PUT`, `POST`, `DELETE` , and `PATCH`. When no `transformRequest` is set, must be of one of the following types:
@@ -88,6 +120,12 @@ The `data` is the data to be sent as the request body. This can be a string, a p
 - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
 - Browser only: FormData, File, Blob
 - Node only: Stream, Buffer, FormData (form-data package)
+
+For Node.js `FormData` objects that provide a `getHeaders()` method, axios copies all returned headers by default for v1 compatibility. If the `FormData` object is custom or not fully trusted, set `formDataHeaderPolicy: 'content-only'` to copy only `Content-Type` and `Content-Length`, and set any other request headers explicitly via the request `headers` config.
+
+### `formDataHeaderPolicy` <Badge type="warning" text="Node.js only" />
+
+Controls how axios copies headers returned by Node.js `FormData#getHeaders()`. The default is `'legacy'`, which copies all returned headers to preserve existing v1 behavior. Set `'content-only'` to copy only `Content-Type` and `Content-Length` from `getHeaders()`.
 
 ### `timeout`
 
@@ -166,7 +204,24 @@ The `xsrfHeaderName` is the name of the header to use as a value for `XSRF` toke
 
 ### `withXSRFToken`
 
-The `withXSRFToken` property indicates whether or not to send the `XSRF` token with the request. This is only applicable for client-side requests. The default value is undefined.
+`withXSRFToken` controls whether axios reads the XSRF cookie and sets the XSRF header on browser requests. It accepts:
+
+- `undefined` _(default)_ — set the XSRF header only for same-origin requests.
+- `true` — always set the XSRF header, including for cross-origin requests.
+- `false` — never set the XSRF header.
+- `(config: InternalAxiosRequestConfig) => boolean | undefined` — a callback that decides per-request, receiving the internal config object.
+
+```ts
+withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+```
+
+::: warning Cross-origin XSRF and `withCredentials`
+`withCredentials` controls whether cross-site requests include credentials (cookies, HTTP auth). `withXSRFToken` controls whether axios sets the XSRF header. For cross-origin requests, set `withXSRFToken: true` to force the header; additionally set `withCredentials: true` only when the request also needs credentials/cookies.
+
+```js
+axios.get('/user', { withCredentials: true, withXSRFToken: true });
+```
+:::
 
 ### `onUploadProgress`
 
@@ -187,6 +242,22 @@ The `maxContentLength` property defines the maximum number of bytes that the ser
 
 The `maxBodyLength` property defines the maximum number of bytes that the server will accept in the request.
 
+### `redact`
+
+The `redact` property is an optional array of config key names to mask when an `AxiosError` is serialized with `toJSON()`. Matching is case-insensitive and recursive across the serialized request config. Matching values are replaced with `[REDACTED ****]`.
+
+`redact` only affects error serialization. It does not change request data, headers, or the original config object.
+
+```js
+axios.get('/user/12345', {
+  headers: { Authorization: 'Bearer token' },
+  auth: { username: 'me', password: 'secret' },
+  redact: ['authorization', 'password']
+}).catch((error) => {
+  console.log(error.toJSON().config);
+});
+```
+
 ### `validateStatus`
 
 The `validateStatus` function allows you to override the default status code validation. By default, axios will reject the promise if the status code is not in the range of 200-299. You can override this behavior by providing a custom `validateStatus` function. The function should return `true` if the status code is within the range you want to accept.
@@ -198,6 +269,21 @@ The `maxRedirects` property defines the maximum number of redirects to follow. I
 ### `beforeRedirect`
 
 The `beforeRedirect` function allows you to modify the request before it is redirected. Use this to adjust the request options upon redirecting, to inspect the latest response headers, or to cancel the request by throwing an error. If maxRedirects is set to 0, `beforeRedirect` is not used.
+
+```js
+beforeRedirect: (options, { headers }) => {
+  if (
+    options.hostname === "example.com" &&
+    options.protocol === "https:"
+  ) {
+    options.auth = "user:password";
+  }
+}
+```
+
+::: warning Security: re-injecting credentials on redirect
+The `beforeRedirect` hook runs **after** sensitive headers are stripped during redirects. The `follow-redirects` library removes credentials on protocol downgrade (HTTPS → HTTP) for security. Since `beforeRedirect` runs after this, re-injecting credentials without checking the destination protocol can expose sensitive data. Only re-add credentials for trusted HTTPS destinations, and avoid re-adding them on downgraded redirects.
+:::
 
 ### `socketPath` <Badge type="warning" text="Node.js only" />
 
@@ -241,6 +327,8 @@ If you are using environment variables for your proxy configuration, you can als
 
 Use `false` to disable proxies, ignoring environment variables. `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and supplies credentials. This will set an `Proxy-Authorization` header, overwriting any existing `Proxy-Authorization` custom headers you have set using `headers`. If the proxy server uses HTTPS, then you must set the protocol to `https`.
 
+A user-supplied `Host` header in `headers` is preserved when forwarding through a proxy (case-insensitive match on `host` / `Host` / `HOST`). This lets you target a virtual host that differs from the request URL — for example, hitting `127.0.0.1:4000` while having the proxy treat the request as `example.com`. If no `Host` header is supplied, axios defaults it to the request URL's `hostname:port` as before.
+
 ```js
 proxy: {
   protocol: "https",
@@ -276,8 +364,17 @@ Please note that the `insecureHTTPParser` option is only available in Node.js 12
 
 The `transitional` property allows you to enable or disable certain transitional features. The following options are available:
 
-- `silentJSONParsing`: If set to `true`, axios will not log a warning when it encounters invalid JSON responses, setting the return value to null. This is useful when you are working with APIs that return invalid JSON.
-- `forcedJSONParsing`: Forces axios to parse JSON responses as JSON, even if the response is not valid JSON. This is useful when you are working with APIs that return invalid JSON.
+- `silentJSONParsing`: If set to `true` _(default)_, axios silently ignores JSON parsing errors and sets `response.data` to `null` when parsing fails. Set to `false` to throw `SyntaxError` instead.
+
+  ::: tip Important
+  This option only takes effect when `responseType` is **explicitly** set to `'json'`. When `responseType` is omitted, axios uses `forcedJSONParsing` to attempt JSON parsing and silently returns the raw string on failure regardless of this setting. To make invalid JSON throw, set both:
+
+  ```js
+  { responseType: 'json', transitional: { silentJSONParsing: false } }
+  ```
+  :::
+
+- `forcedJSONParsing`: Forces axios to parse the response string as JSON even if `responseType` is not `'json'`.
 - `clarifyTimeoutError`: Clarifies the error message when a request times out. This is useful when you are debugging timeout issues.
 - `legacyInterceptorReqResOrdering`: When set to true we will use the legacy interceptor request/response ordering.
 
@@ -343,6 +440,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
   data: {
     firstName: "Fred"
   },
+  formDataHeaderPolicy: "legacy",
   // Syntax alternative to send data into the body method post only the value is sent, not the key
   data: "Country=Brasil&City=Belo Horizonte",
   timeout: 1000,
@@ -368,6 +466,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
   },
   maxContentLength: 2000,
   maxBodyLength: 2000,
+  redact: ['authorization', 'password'],
   validateStatus: function (status) {
     return status >= 200 && status < 300;
   },

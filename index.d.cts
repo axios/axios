@@ -552,6 +552,8 @@ declare namespace axios {
     http2Options?: Record<string, any> & {
       sessionTimeout?: number;
     };
+    formDataHeaderPolicy?: 'legacy' | 'content-only';
+    redact?: string[];
   }
 
   // Alias

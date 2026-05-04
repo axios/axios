@@ -19,6 +19,37 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 The default was not tightened because doing so would silently break every legitimate download larger than the chosen cap. The responsibility to pick a safe ceiling for untrusted sources rests with the application.
 
+## Other security-sensitive options
+
+The following request-config options have direct security implications. They are documented in full alongside the rest of the [request config](/pages/advanced/request-config), and summarised here so they show up in one place.
+
+| Option | Risk | Mitigation |
+| --- | --- | --- |
+| [`socketPath`](/pages/advanced/request-config#socketpath) | If derived from untrusted input, an attacker can redirect traffic to privileged local sockets like `/var/run/docker.sock`, bypassing hostname-based SSRF protections (CWE-918). | Strip or allowlist config keys from untrusted input. Use [`allowedSocketPaths`](/pages/advanced/request-config#allowedsocketpaths) to restrict accepted socket paths. |
+| [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | Runs after `follow-redirects` strips credentials on protocol downgrade. Re-injecting credentials without checking the destination protocol can leak them over plain HTTP. | Only re-add credentials for trusted HTTPS destinations. Check `options.protocol === "https:"` before assigning `auth`. |
+| [`withXSRFToken`](/pages/advanced/request-config#withxsrftoken) | Setting `true` forces the XSRF header on cross-origin requests. Older axios versions implicitly enabled this with `withCredentials: true`; newer versions require both flags. | Leave at `undefined` (same-origin only) unless your backend explicitly validates XSRF on cross-origin requests. |
+| [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` includes the request config by default, which can leak `Authorization` headers or `auth` credentials into error logs and telemetry. | Pass a `redact` array with sensitive config key names. Matching is case-insensitive and recursive. |
+| [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) | A custom `FormData` whose `getHeaders()` returns attacker-controlled values can overwrite headers like `Authorization` or inject arbitrary ones in Node.js. | Set `'content-only'` to copy only `Content-Type` and `Content-Length`, then set other headers explicitly via the request `headers` config. |
+
+## Supply-chain hardening: `ignore-scripts` and lifecycle scripts
+
+The repository ships a project-level `.npmrc` that sets `ignore-scripts=true`. This blocks npm lifecycle scripts (`preinstall`, `install`, `postinstall`, `prepare`) from any direct or transitive dependency when running `npm install` or `npm ci` inside the repo. See [THREATMODEL.md](https://github.com/axios/axios/blob/v1.x/THREATMODEL.md) (threat T-S2) for the rationale.
+
+One consequence: the repository's own `prepare` hook (which installs Husky's git hooks) does **not** run automatically. After your first install, enable the git hooks manually:
+
+```bash
+npm ci
+npm rebuild husky && npx husky
+```
+
+Run those two commands once per fresh checkout. You do **not** need to re-run them after every subsequent `npm install`.
+
+::: danger Do not remove `ignore-scripts=true`
+Removing `ignore-scripts=true` from `.npmrc` to "fix" the husky setup re-opens the lifecycle-script attack surface for every other package in the tree. All CI workflows already invoke npm with `--ignore-scripts`, so local behaviour matches CI.
+:::
+
+We recommend the same `ignore-scripts=true` setting in any consumer project that pulls axios (or any other dependency) into a build environment that handles secrets.
+
 ## Verifying a Release
 
 Every `axios` tarball on npm is published from GitHub Actions with an [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements) that cryptographically binds the package to the workflow and commit SHA that produced it.

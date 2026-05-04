@@ -100,6 +100,27 @@ const { data } = await axios.query("/api/search", {
 El método QUERY está definido por un [Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/) del IETF y todavía no ha sido estandarizado. La semántica e incluso el propio nombre del método pueden cambiar antes de la publicación final, y el soporte en servidores, proxies y CDN es desigual. Verifica que tu infraestructura acepte `QUERY` de extremo a extremo antes de usarlo en producción.
 :::
 
+### `getUri`
+
+El método `getUri` devuelve la URL que se enviaría para una configuración dada sin realizar realmente la solicitud. Aplica `baseURL`, `paramsSerializer` y `params`, así que recibes la misma cadena que axios pondría en el cable. Útil para construir enlaces, depurar la serialización o reutilizar la URL resuelta en otra solicitud.
+
+```ts
+axios.getUri(config?: AxiosRequestConfig): string;
+```
+
+```js
+const url = axios.getUri({
+  url: "/users",
+  baseURL: "https://api.example.com",
+  params: { active: true, role: "admin" },
+});
+// "https://api.example.com/users?active=true&role=admin"
+```
+
+::: tip
+Usa `getUri` en una instancia (`instance.getUri(config)`) para heredar los valores predeterminados de `baseURL`, `params` y `paramsSerializer` de la instancia.
+:::
+
 ## Métodos abreviados para datos de formulario
 
 Estos métodos son equivalentes a sus contrapartes anteriores, pero predefinen `Content-Type` como `multipart/form-data`. Son la forma recomendada de subir archivos o enviar formularios HTML.

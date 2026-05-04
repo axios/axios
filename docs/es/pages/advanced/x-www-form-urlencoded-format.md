@@ -19,12 +19,31 @@ const qs = require('qs');
 axios.post('/foo', qs.stringify({ bar: 123 }));
 ```
 
+Para tener control total sobre los encabezados y el método, pasa la salida de `qs.stringify` como `data` de la solicitud y establece `Content-Type` explícitamente:
+
+```js
+import qs from 'qs';
+
+const data = { bar: 123 };
+const options = {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  data: qs.stringify(data),
++  url: 'https://example.com/',
+};
+axios(options);
+```
+
 En versiones muy antiguas de Node.js, puedes usar el módulo integrado `querystring` que viene con Node.js. Ten en cuenta que este módulo fue marcado como obsoleto en Node.js v16 — prefiere `URLSearchParams` o `qs` para código nuevo.
 
 ```js
 const querystring = require('querystring');
 axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
+
+::: tip Prefiere `qs` para objetos anidados
+La librería `qs` es preferible si necesitas serializar objetos anidados, ya que el método `querystring` tiene [problemas conocidos](https://github.com/nodejs/node-v0.x-archive/issues/1665) con ese caso de uso.
+:::
 
 ## Serialización automática a URLSearchParams <Badge type="tip" text="Nuevo" />
 

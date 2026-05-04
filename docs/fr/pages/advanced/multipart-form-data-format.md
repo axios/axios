@@ -61,6 +61,23 @@ axios
   .then(({ data }) => console.log(data));
 ```
 
+## Politique d'en-têtes pour `FormData` Node.js <Badge type="warning" text="Node.js uniquement" />
+
+Lorsque vous passez un objet `FormData` Node.js qui expose `getHeaders()` (comme le package [`form-data`](https://github.com/form-data/form-data)), axios copie par défaut tous les en-têtes qu'il retourne sur la requête. Cela préserve la compatibilité v1 mais peut être problématique lorsque l'objet `FormData` provient d'une source non fiable — `getHeaders()` pourrait écraser des en-têtes comme `Authorization` ou en injecter des arbitraires.
+
+Définissez `formDataHeaderPolicy: 'content-only'` pour copier **uniquement** `Content-Type` et `Content-Length` depuis `getHeaders()`, puis définissez tout autre en-tête explicitement via la configuration `headers` de la requête :
+
+```js
+await axios.post("https://example.com/upload", form, {
+  formDataHeaderPolicy: "content-only",
+  headers: {
+    Authorization: "Bearer my-token",
+  },
+});
+```
+
+La valeur par défaut est `'legacy'`. Voir [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) dans la référence de configuration de requête pour plus de détails.
+
 ## Terminaisons supportées
 
 Le sérialiseur FormData d'Axios supporte quelques terminaisons spéciales pour effectuer les opérations suivantes :

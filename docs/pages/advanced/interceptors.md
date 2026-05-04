@@ -97,6 +97,41 @@ axios.interceptors.request.use(
 );
 ```
 
+## Interceptor execution order
+
+::: warning Request and response interceptors run in **opposite** orders
+Request interceptors are executed in **reverse order** (LIFO — last in, first out). The _last_ request interceptor added is executed _first_.
+
+Response interceptors are executed in the **order they were added** (FIFO — first in, first out). The _first_ response interceptor added is executed _first_.
+:::
+
+The following example shows the full execution order for three request interceptors and three response interceptors:
+
+```js
+const instance = axios.create();
+
+const interceptor = (id) => (base) => {
+  console.log(id);
+  return base;
+};
+
+instance.interceptors.request.use(interceptor("Request Interceptor 1"));
+instance.interceptors.request.use(interceptor("Request Interceptor 2"));
+instance.interceptors.request.use(interceptor("Request Interceptor 3"));
+instance.interceptors.response.use(interceptor("Response Interceptor 1"));
+instance.interceptors.response.use(interceptor("Response Interceptor 2"));
+instance.interceptors.response.use(interceptor("Response Interceptor 3"));
+
+// Console output:
+// Request Interceptor 3
+// Request Interceptor 2
+// Request Interceptor 1
+// [HTTP request is made]
+// Response Interceptor 1
+// Response Interceptor 2
+// Response Interceptor 3
+```
+
 ## Multiple interceptors
 
 You may add multiple interceptors to the same request or response. The following will hold true for multiple interceptors in the same chain in the order below:

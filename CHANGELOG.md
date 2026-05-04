@@ -1,5 +1,76 @@
 # Changelog
 
+## v1.16.0 — May 2, 2026
+
+This release adds support for the QUERY HTTP method and a new `ECONNREFUSED` error constant, lands a substantial wave of HTTP, fetch, and XHR adapter bug fixes around redirects, aborts, headers, and timeouts, and welcomes 23 new contributors.
+
+## ⚠️ Notable Changes
+
+A handful of fixes in this release are either security-adjacent or change observable behaviour. Please review before upgrading:
+
+- **Fetch adapter now enforces `maxBodyLength` and `maxContentLength`.** These limits were silently ignored on the fetch adapter prior to 1.16.0 — anyone relying on them as a safety net (DoS protection, accidental large uploads) had no protection. (**#10795**)
+- **Proxy requests now preserve user-supplied `Host` headers.** Previously, the proxy path could overwrite a custom `Host`. Virtual-host-style routing through a proxy will now behave correctly. (**#10822**)
+- **Basic auth credentials embedded in URLs are now URL-decoded.** If you have percent-encoded credentials in a URL (e.g. `https://user:p%40ss@host`), the decoded value is what now goes on the wire. (**#10825**)
+- **`parseProtocol` now strictly requires a colon in the protocol separator.** Strings that loosely parsed as protocols before may no longer match. (**#10729**)
+- **Deprecated `unescape()` replaced with modern UTF-8 encoding.** Non-ASCII URL handling is now spec-correct; consumers depending on legacy `unescape()` quirks may see different output bytes. (**#7378**)
+- **`transformRequest` input typing change was reverted.** The typing change introduced in #10745 was reverted in #10810 after follow-up review — net behavior is unchanged from 1.15.2. (**#10745**, **#10810**)
+
+## 🚀 New Features
+
+- **QUERY HTTP Method:** Added support for the QUERY HTTP method across adapters and type definitions. (**#10802**)
+- **ECONNREFUSED Error Constant:** Exposed `ECONNREFUSED` as a constant on `AxiosError` so callers can match connection-refused failures without comparing string literals (closes #6485). (**#10680**)
+- **Encode Helper Export:** Exported the internal `encode` helper from `buildURL` so userland param serializers can reuse the same encoding logic that axios uses internally. (**#6897**)
+
+## 🐛 Bug Fixes
+
+- **HTTP Adapter — Redirects & Headers:** Cleared stale headers when a redirect targets a no-proxy host, fixed the redirect listener chain so listeners no longer stack across hops, restored the missing `requestDetails` argument on `beforeRedirect`, preserved user-supplied `Host` headers when forwarding through a proxy, and properly URL-decoded basic auth credentials. (**#10794**, **#10800**, **#6241**, **#10822**, **#10825**)
+- **HTTP Adapter — Streams & Timeouts:** Preserved the partial response object on `AxiosError` when a stream is aborted after headers arrive, honoured the `timeout` option during the connect phase when redirects are disabled, and resolved an unsettled-promise hang when an aborted request was combined with compression and `maxRedirects: 0`. (**#10708**, **#10819**, **#7149**)
+- **Fetch Adapter:** Enforced `maxBodyLength` / `maxContentLength` in the fetch adapter, set the `User-Agent` header to match the HTTP adapter, preserved the original abort reason instead of replacing it with a generic error, and deferred global access so importing the module no longer throws a `TypeError` in restricted environments. (**#10795**, **#10772**, **#10806**, **#7260**)
+- **XHR Adapter:** Unsubscribed the `cancelToken` and `AbortSignal` listeners on the error, timeout, and abort code paths to prevent leaked subscriptions. (**#10787**)
+- **Error Handling:** Attached the parsed response to `AxiosError` when `JSON.parse` fails inside `dispatchRequest`, prevented `settle` from emitting `undefined` error codes, and tightened the `parseProtocol` regex to require a colon in the protocol separator. (**#10724**, **#7276**, **#10729**)
+- **Types & Exports:** Aligned the CommonJS `CancelToken` typings with the ESM build, fixed a compiler error caused by `RawAxiosHeaders`, and re-exported `create` from the package index. (**#7414**, **#6389**, **#6460**)
+- **UTF-8 Encoding:** Replaced the deprecated `unescape()` call with a modern UTF-8 encoding implementation. (**#7378**)
+- **Misc Cleanup:** Resolved a batch of small inconsistencies and gadget-level issues across the codebase. (**#10833**)
+
+## 🔧 Maintenance & Chores
+
+- **Refactor — ES6 Modernisation:** Modernised the `utils` module and XHR adapter to use ES6 features, and tidied the multipart boundary error message. (**#10588**, **#7419**)
+- **Tests:** Hardened the HTTP test server lifecycle to fix flaky `FormData` EPIPE failures, fixed Win32 platform support for the pipe tests, and corrected an incorrect test assumption. (**#10820**, **#10791**, **#10796**)
+- **Docs:** Documented `paramsSerializer.encode` for strict RFC 3986 query encoding, updated the `parseReviver` TypeScript definitions and configuration docs for ES2023, added timeout guidance to the README's first async example, and expanded notes around the recent type changes. (**#10821**, **#10782**, **#10759**, **#10804**)
+- **Reverted:** Reverted the `transformRequest` input typing change from #10745 after follow-up review. (**#10745**, **#10810**)
+- **Dependencies:** Bumped `actions/setup-node`, the `github-actions` group, and `postcss` (in `/docs`) to their latest versions. (**#10785**, **#10813**, **#10814**)
+- **Release:** Updated changelog and packages, and prepared the 1.16.0 release. (**#10790**, **#10834**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@singhankit001** (**#10588**)
+- **@cuiweixie** (**#7419**)
+- **@iruizsalinas** (**#10787**)
+- **@MarcosNocetti** (**#10680**)
+- **@deepview-autofix** (**#10729**)
+- **@atharvasingh7007** (**#10745**)
+- **@OfekDanny** (**#10772**)
+- **@mnahkies** (**#7414**)
+- **@tboyila** (**#10759**)
+- **@Kingo64** (**#6897**)
+- **@ramram1048** (**#6389**)
+- **@FLNacif** (**#6460**)
+- **@zozo123** (**#10806**)
+- **@pierluigilenoci** (**#10802**)
+- **@afurm** (**#10708**)
+- **@karan-lrn** (**#7378**)
+- **@ebeigarts** (**#7149**)
+- **@Raymondo97** (**#10782**)
+- **@mixelburg** (**#10821**)
+- **@ashishkr96** (**#10822**)
+- **@cyphercodes** (**#10819**)
+- **@Jye10032** (**#7260**)
+- **@VeerShah41** (**#7276**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.15.2...v1.16.0)
+
 ## v1.15.2 - April 21, 2026
 
 This release delivers prototype-pollution hardening for the Node HTTP adapter, adds an opt-in `allowedSocketPaths` allowlist to mitigate SSRF via Unix domain sockets, fixes a keep-alive socket memory leak, and ships supply-chain hardening across CI and security docs.

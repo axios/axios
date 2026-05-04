@@ -46,6 +46,27 @@ describe('helpers::fromDataURI', () => {
     assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
   });
 
+  it('should parse canonical RFC example with charset parameter', () => {
+    const buffer = Buffer.from('123');
+    const dataURI = 'data:text/plain;charset=US-ASCII,123';
+
+    assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
+  });
+
+  it('should decode URL-encoded body', () => {
+    const buffer = Buffer.from('hello world');
+    const dataURI = 'data:text/plain,hello%20world';
+
+    assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
+  });
+
+  it('should preserve full content type with parameters in Blob', () => {
+    const dataURI = 'data:text/plain;charset=utf-8;base64,' + Buffer.from('hello').toString('base64');
+    const blob = fromDataURI(dataURI, true, { Blob });
+
+    assert.strictEqual(blob.type, 'text/plain;charset=utf-8');
+  });
+
   it('should normalize omitted mediatype to text/plain per RFC 2397', () => {
     const dataURI = 'data:;charset=UTF-8,hello';
     const blob = fromDataURI(dataURI, true, { Blob });
@@ -57,5 +78,17 @@ describe('helpers::fromDataURI', () => {
     assert.throws(() => {
       fromDataURI('notadata:uri', false);
     });
+  });
+
+  it('should reject data URI with unsupported protocol prefix', () => {
+    assert.throws(() => {
+      fromDataURI('datax:,hi', false);
+    }, (err) => err.message.includes('Unsupported protocol'));
+  });
+
+  it('should reject data URI without comma separator', () => {
+    assert.throws(() => {
+      fromDataURI('data:hi', false);
+    }, (err) => err.code === 'ERR_INVALID_URL');
   });
 });

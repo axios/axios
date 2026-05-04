@@ -216,7 +216,7 @@ withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => bo
 ```
 
 ::: warning Cross-origin XSRF and `withCredentials`
-`withCredentials` controls whether cross-site requests include credentials (cookies, HTTP auth). In older axios versions, setting `withCredentials: true` implicitly caused axios to set the XSRF header for cross-origin requests. Newer axios separates these concerns: to allow the XSRF header to be sent for cross-origin requests you must set **both** `withCredentials: true` and `withXSRFToken: true`.
+`withCredentials` controls whether cross-site requests include credentials (cookies, HTTP auth). `withXSRFToken` controls whether axios sets the XSRF header. For cross-origin requests, set `withXSRFToken: true` to force the header; additionally set `withCredentials: true` only when the request also needs credentials/cookies.
 
 ```js
 axios.get('/user', { withCredentials: true, withXSRFToken: true });

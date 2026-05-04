@@ -45,7 +45,7 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 这对于执行高性能的类型水合（例如将 ISO 字符串转换为 `Temporal` 或 `Date` 对象）或防止解析过程中的精度丢失尤为有用。
 
-在现代环境中（ES2023+），reviver 函数会接收第三个 `context` 参数，用于访问原始 JSON `source`，从而能够精确转换那些以标准 JavaScript 数字解析时会丢失精度的大整数（BigInt）。
+在支持 `JSON.parse` reviver `context` 参数的环境中，reviver 函数会接收第三个 `context` 参数，用于访问原始 JSON `source`，从而能够精确转换那些以标准 JavaScript 数字解析时会丢失精度的大整数（BigInt）。
 
 > 注意：`Temporal` 尚未在所有环境中可用，必要时请考虑使用 polyfill。
 

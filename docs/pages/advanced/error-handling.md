@@ -94,7 +94,7 @@ async function fetchWithTimeout() {
       timeout: 5000, // 5 seconds
       transitional: {
         // set to true if you prefer ETIMEDOUT over ECONNABORTED
-        clarifyTimeoutError: false,
+        clarifyTimeoutError: true,
       },
     });
 

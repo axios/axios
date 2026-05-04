@@ -495,8 +495,16 @@ axios
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
   try {
-    const response = await axios.get('/user?ID=12345');
-    console.log(response);
+// Example: GET request with query parameters
+const response = await axios.get('/user', {
+  params: {
+    ID: 12345
+  }
+});
+
+// Using the `params` option improves readability and automatically formats query strings
+
+console.log(response);
   } catch (error) {
     console.error(error);
   }
@@ -752,6 +760,11 @@ These are the available config options for making requests. Only the `url` is re
     firstName: 'Fred'
   },
 
+  // `formDataHeaderPolicy` controls how node.js FormData#getHeaders() is copied.
+  // 'legacy' (default) copies all returned headers for v1 compatibility.
+  // 'content-only' copies only Content-Type and Content-Length.
+  formDataHeaderPolicy: 'legacy',
+
   // syntax alternative to send data into the body
   // method post
   // only the value is sent, not the key
@@ -845,6 +858,10 @@ These are the available config options for making requests. Only the `url` is re
 
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
   maxBodyLength: 2000,
+
+  // `redact` masks matching config keys when AxiosError#toJSON() is called.
+  // Matching is case-insensitive and recursive. It does not change the request.
+  redact: ['authorization', 'password'],
 
   // `validateStatus` defines whether to resolve or reject the promise for a given
   // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
@@ -1360,6 +1377,17 @@ axios.get('/user/12345').catch(function (error) {
 });
 ```
 
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+
+```js
+axios.get('/user/12345', {
+  headers: { Authorization: 'Bearer token' },
+  redact: ['authorization']
+}).catch(function (error) {
+  console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
+});
+```
+
 ## Handling Timeouts
 
 ```js
@@ -1600,6 +1628,8 @@ form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 
 axios.post('https://example.com', form);
 ```
+
+In node.js, when a `FormData` object provides `getHeaders()`, axios copies all returned headers by default for v1 compatibility. If the `FormData` object is custom or not fully trusted, set `formDataHeaderPolicy: 'content-only'` to copy only `Content-Type` and `Content-Length`, and set any other request headers explicitly with the request `headers` config.
 
 ### 🆕 Automatic serialization to FormData
 

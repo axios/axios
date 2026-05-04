@@ -97,6 +97,41 @@ axios.interceptors.request.use(
 );
 ```
 
+## 拦截器执行顺序
+
+::: warning 请求拦截器与响应拦截器的执行顺序**相反**
+请求拦截器按**逆序**执行（LIFO——后进先出）。**最后**添加的请求拦截器**最先**执行。
+
+响应拦截器按**添加顺序**执行（FIFO——先进先出）。**最先**添加的响应拦截器**最先**执行。
+:::
+
+下面的示例展示了三个请求拦截器和三个响应拦截器的完整执行顺序：
+
+```js
+const instance = axios.create();
+
+const interceptor = (id) => (base) => {
+  console.log(id);
+  return base;
+};
+
+instance.interceptors.request.use(interceptor("Request Interceptor 1"));
+instance.interceptors.request.use(interceptor("Request Interceptor 2"));
+instance.interceptors.request.use(interceptor("Request Interceptor 3"));
+instance.interceptors.response.use(interceptor("Response Interceptor 1"));
+instance.interceptors.response.use(interceptor("Response Interceptor 2"));
+instance.interceptors.response.use(interceptor("Response Interceptor 3"));
+
+// 控制台输出：
+// Request Interceptor 3
+// Request Interceptor 2
+// Request Interceptor 1
+// [发起 HTTP 请求]
+// Response Interceptor 1
+// Response Interceptor 2
+// Response Interceptor 3
+```
+
 ## 多个拦截器
 
 你可以在同一个请求或响应上添加多个拦截器，同一拦截器链中的多个拦截器遵循以下规则：

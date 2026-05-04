@@ -9,6 +9,10 @@ axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
 ```
 
+::: warning 全局请求头会被发送到所有主机
+如果你的应用会与多个域名通信，设置 `axios.defaults.headers.common["Authorization"]` 会将令牌发送到**所有**域名，包括你可能无法控制的第三方 API。对任何携带凭据的客户端，请使用带有限定 `baseURL` 的[自定义实例](#自定义实例默认值)。
+:::
+
 ## 自定义实例默认值
 
 axios 实例在创建时会有自己的默认配置，这些默认配置可以通过修改实例的 `defaults` 属性来覆盖。下面是使用自定义实例默认值的示例：

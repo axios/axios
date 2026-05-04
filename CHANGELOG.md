@@ -1,16 +1,148 @@
 # Changelog
 
-## Unreleased
+## v0.32.0 — May 4, 2026
 
-### Notable behavior changes
+This release backports a comprehensive set of security and hardening fixes from the v1.x branch into v0.x, covering prototype-pollution protections, default error redaction, stricter proxy/cookie/socket handling, and one breaking change to merged config and header object prototypes.
 
-- `utils.merge` (used internally by `mergeConfig` and to merge request headers) now returns objects with a `null` prototype to harden against prototype-pollution gadgets. As a result, `error.config`, `error.config.headers`, and any merged header bucket no longer inherit from `Object.prototype`. Two consequences:
-  - `obj.hasOwnProperty(key)` on a merged config or header object throws `TypeError: obj.hasOwnProperty is not a function`. Use `Object.prototype.hasOwnProperty.call(obj, key)` or `key in obj` instead.
-  - Implicit string coercion (e.g. `String(obj)`, `'' + obj`, or any path that calls `ToPrimitive`) throws `TypeError: Cannot convert object to primitive value` because there is no inherited `toString`. Coerce explicitly via `JSON.stringify(obj)` or by reading individual properties.
+## ⚠️ Breaking Changes & Deprecations
 
-  Property access (`obj[key]`), enumeration, and `JSON.stringify` are unaffected.
+- Null-prototype merged objects: mergeConfig and header merging now return objects with a null prototype to block prototype-pollution gadgets. Consumers must use Object.prototype.hasOwnProperty.call(obj, key) and avoid implicit string coercion against merged config or header objects. (#10838)
 
-## [0.30.0](https://github.com/axios/axios/compare/v0.29.0...v0.30.0) (2025-03-26)
+## 🔒 Security Fixes
+
+- Default error redaction: AxiosError.toJSON() now redacts sensitive keys by default to prevent credential leaks in logs. The behavior is configurable via config.redact, with defaults exposed on defaults.redact. (#10838)
+- Cookie & XSRF handling: Cookie names are read literally rather than via regex, and only own properties are respected when evaluating withXSRFToken. (#10838)
+- Proxy bypass IPv6 parity: NO_PROXY matching now handles canonical IPv4-mapped IPv6 forms such as ::ffff:127.0.0.1 and ::ffff:7f00:1. (#10838)
+- Node http adapter hardening: Strips Proxy-Authorization when no proxy is in use and gates socketPath behind a new allowedSocketPaths allowlist (string or array, normalized) to reduce accidental Unix socket exposure. (#10838)
+- Browser xhr adapter: Stricter own-property checks when reading config and headers. (#10838)
+- URL parameters: AxiosURLSearchParams keeps %00 encoded and applies consistent encoding throughout. (#10838)
+- Public type surface: Adds formDataHeaderPolicy, redact, and allowedSocketPaths to the TypeScript declarations alongside their runtime defaults. (#10838)
+
+## 🔧 Maintenance & Chores
+
+- Repo hygiene: Updates README.md and CHANGELOG.md, adds AGENTS.md, and refreshes the issue and PR templates. (#10838)
+
+[**Full Changelog**](https://github.com/axios/axios/compare/v0.31.1...v0.32.0)
+
+## 0.31.1 (2024-12-19)
+
+This release backports a broad set of security hardenings from the v1 line — covering prototype-pollution defences, stream size enforcement, XSRF handling, URL null-byte encoding, and bounded FormData recursion — and drops committed `dist/` artefacts along with Bower support.
+
+## ⚠️ Breaking Changes & Deprecations
+
+* **Bower & Committed `dist/` Removed:** `dist/` bundles are no longer committed to the repo, and `bower.json` plus the Grunt `package2bower` task have been removed. CI still builds bundles before publish, so npm/yarn/pnpm consumers are unaffected; installs via Bower or directly from the git tree must migrate to npm or a CDN. (__#10747__)
+
+## 🔒 Security Fixes
+
+* **Prototype Pollution in Header Merge (GHSA-6chq-wfr3-2hj9):** Tightened `isFormData` to reject plain/null-prototype objects and require `append`, and guarded the Node HTTP adapter so `data.getHeaders()` is only merged when it is not inherited from `Object.prototype`. Blocks injected headers via polluted `getHeaders`. (__#10750__)
+* **Prototype Pollution in Config Merging (GHSA-pf86-5x62-jrwf):** `mergeConfig`, defaults resolution, and the HTTP adapter now uses own-property checks for `transport`, `env`, `Blob`, `formSerializer`, and transforms arrays, and merged configs are returned as null-prototype objects. Prevents hijacking of the request flow through polluted prototypes. (__#10752__)
+* **FormData / Params Recursion DoS:** Added a configurable `maxDepth` (default `100`, `Infinity` disables) to `toFormData` and params serialisation, throwing `AxiosError` with code `ERR_FORM_DATA_DEPTH_EXCEEDED` when exceeded. Circular-reference detection is preserved. (__#10728__)
+* **Null-Byte Injection in Query Strings:** Removed the unsafe `%00` → null-byte substitution from `AxiosURLSearchParams.encode` so `%00` is preserved as-is. Other encoding behaviour (including `%20` → `+`) unchanged. (__#10737__)
+* **Consolidated v1 Security Backport:** Rolls up remaining v1 hardenings into `v0.x`: `maxContentLength` enforcement for `responseType: 'stream'` via a guarded transform with deferred piping, `maxBodyLength` enforcement for streamed uploads on native `http`/`https` with `maxRedirects: 0`, and stricter `withXSRFToken` handling so only own boolean `true` enables cross-origin XSRF headers. (__#10764__)
+
+## 🔧 Maintenance & Chores
+
+* **CODEOWNERS:** Added `.github/CODEOWNERS` with `* @jasonsaayman` to set a default reviewer for all paths. (__#10740__)
+
+[Full Changelog](https://github.com/axios/axios/compare/v0.31.0...v0.31.1)
+
+## 0.31.0 (2024-12-17)
+
+This release backports security fixes from v1.x, hardens the CI/CD supply chain with OIDC publishing and `zizmor` scanning, resolves TypeScript typing issues in `AxiosInstance`, and fixes a performance regression in `isEmptyObject()`.
+
+## 🔒 Security Fixes
+
+* **Header Injection & Proxy Bypass:** Backports v1 security hardening — sanitizes outgoing header values to strip invalid bytes, CRLF sequences, and boundary whitespace (including array values); adds proper `NO_PROXY`/`no_proxy` enforcement covering wildcards, explicit ports, loopback aliases (`localhost`, `127.0.0.1`, `::1`), bracketed IPv6, and trailing-dot hostnames. Proxy bypass is now checked before the proxy URL is parsed, and `parsed.host` is used for correct port and IPv6 handling. (__#10688__)
+
+* **CI Security:** SHA-pins all actions and disables credential persistence in v0.x CI, introduces `zizmor` security scanning with SARIF upload to code scanning, adds an OIDC Trusted Publishing workflow with npm provenance attestations, and gates all publishes behind a required `npm-publish` GitHub Environment with configurable reviewer protections. (__#10638__, __#10639__, __#10667__)
+
+## 🐛 Bug Fixes
+
+* **TypeScript — `AxiosInstance` Return Types:** Fixes return types in `AxiosInstance` methods to correctly resolve to `Promise<R>` (matching `AxiosPromise<T>` semantics), and corrects the generic call signature so TypeScript properly enforces the response data type. TypeScript-only changes; no runtime impact. (__#6253__, __#7328__)
+
+* **Performance:** Fixes a performance regression in `isEmptyObject()` that caused excessive computation when the argument was a large string. (__#6484__)
+
+## 🔧 Maintenance & Chores
+
+* **Versioning & CI Workflow:** Adds an automated versioning flow for v0.x, renames the CI workflow for consistency with the v1.x naming convention, and corrects the branch name reference in CI config. (__#10690__, __#10691__, __#10692__)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+* __@nakataki17__ (__#6253__)
+* __@gmasclet__ (__#6484__)
+* __@shaanmajid__ (__#10638__, __#10639__, __#10667__)
+* __@ivan-churakov__ (__#7328__)
+
+[Full Changelog](https://github.com/axios/axios/compare/v0.30.3...v0.31.0)
+
+## 0.30.3 (2024-12-10)
+
+This is a critical security maintenance release for the v0.x branch. It addresses a high-priority vulnerability involving prototype pollution that could lead to a Denial of Service (DoS).
+
+Recommendation: All users currently on the 0.x release line should upgrade to this version immediately to ensure environment stability.
+
+## 🛡️ Security Fixes
+
+- **Backport: Fix DoS via __proto__ key in merge config**
+  - Patched a vulnerability where specifically crafted configuration objects using the __proto__ key could cause a Denial of Service during the merge process. - _by @FeBe95 in [PR #7388](https://github.com/axios/axios/pull/7388)_
+
+## ⚙️ Maintenance & CI
+
+- **CI Infrastructure Update**
+  - Updated Continuous Integration workflows for the v0.x branch to maintain long-term support and build reliability. - _by @jasonsaayman in [PR #7407](https://github.com/axios/axios/pull/7407)_
+
+## ⚠️ Breaking Changes
+
+Configuration Merging Behavior:
+
+As part of the security fix, Axios now restricts the merging of the __proto__ key within configuration objects. If your codebase relies on unconventional deep-merging patterns that target the object prototype via Axios config, those operations will now be blocked. This is a necessary change to prevent prototype pollution.
+
+Full Changelog: [v0.30.2...v0.30.3](https://github.com/axios/axios/compare/v0.30.2...v0.30.3)
+
+## 0.30.2 (2024-11-28)
+
+## What's Changed
+* Backport `maxContentLength` vulnerability fix to v0.x by @FeBe95 in https://github.com/axios/axios/pull/7034
+
+## New Contributors
+* @FeBe95 made their first contribution in https://github.com/axios/axios/pull/7034
+
+**Full Changelog**: https://github.com/axios/axios/compare/v0.30.1...v0.30.2
+
+## 0.30.1 (2024-11-27)
+
+## Release notes:
+
+### Bug Fixes
+* chore(deps): bump form-data from 4.0.0 to 4.0.4 for v0.x by @wolandec in https://github.com/axios/axios/pull/6978
+
+### Contributors to this release
+* @wolandec made their first contribution in https://github.com/axios/axios/pull/6978
+
+**Full Changelog**: https://github.com/axios/axios/compare/v0.30.0...v0.30.1
+
+## 0.30.0 (2024-11-21)
+
+## Release notes:
+
+### Bug Fixes
+* fix: modify log while request is aborted by @mori5321 in https://github.com/axios/axios/pull/4917
+* fix: update CHANGELOG.md for v0.x by @TehZarathustra in https://github.com/axios/axios/pull/6271
+* fix: modify upgrade guide for 0.28.1's breaking change by @nafeger in https://github.com/axios/axios/pull/6787
+* fix: backport allowAbsoluteUrls vulnerability fix to v0.x by @thatguyinabeanie in https://github.com/axios/axios/pull/6829
+* fix: add allowAbsoluteUrls type by @thatguyinabeanie in https://github.com/axios/axios/pull/6849
+
+### Contributors to this release
+* @mori5321 made their first contribution in https://github.com/axios/axios/pull/4917
+* @TehZarathustra made their first contribution in https://github.com/axios/axios/pull/6271
+* @nafeger made their first contribution in https://github.com/axios/axios/pull/6787
+* @thatguyinabeanie made their first contribution in https://github.com/axios/axios/pull/6829
+
+**Full Changelog**: https://github.com/axios/axios/compare/v0.29.0...v0.30.0
+
+## 0.29.0 (2024-11-21)
 
 ## Release notes:
 
@@ -24,6 +156,8 @@
 
 ## [0.29.0](https://github.com/axios/axios/compare/v0.28.1...v0.29.0) (2024-11-21)
 
+## 0.28.1 (2024-03-24)
+
 ## Release notes:
 
 ### Bug Fixes
@@ -34,6 +168,8 @@
 - fix: regular expression denial of service (ReDoS) (#6708)
 
 ## [0.28.1](https://github.com/axios/axios/compare/v0.28.0...v0.28.1) (2024-03-24)
+
+## 0.28.0 (2024-02-12)
 
 ## Release notes:
 

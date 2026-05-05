@@ -19,12 +19,31 @@ const qs = require('qs');
 axios.post('/foo', qs.stringify({ bar: 123 }));
 ```
 
+For full control over headers and method, pass `qs.stringify` output as the request `data` and set `Content-Type` explicitly:
+
+```js
+import qs from 'qs';
+
+const data = { bar: 123 };
+const options = {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  data: qs.stringify(data),
+  url: '/foo',
+};
+axios(options);
+```
+
 In very old versions of Node.js, you can use the built-in `querystring` module that ships with Node.js. Note that this module has been deprecated in Node.js v16 — prefer `URLSearchParams` or `qs` for new code.
 
 ```js
 const querystring = require('querystring');
 axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
+
+::: tip Prefer `qs` for nested objects
+The `qs` library is preferable if you need to stringify nested objects, as the `querystring` method has [known issues](https://github.com/nodejs/node-v0.x-archive/issues/1665) with that use case.
+:::
 
 ## Automatic serialization to URLSearchParams <Badge type="tip" text="New" />
 

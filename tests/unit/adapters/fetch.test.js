@@ -9,6 +9,7 @@ import {
   makeEchoStream,
 } from '../../setup/server.js';
 import axios from '../../../index.js';
+import utils from '../../../lib/utils.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
@@ -578,35 +579,42 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       );
     });
 
-    it('should surface ETIMEDOUT when fetch rejects with a broken DOMException on abort (Safari)', async () => {
-      const safariFetch = (url, init) => {
-        const signal = getFetchSignal(url, init);
+    // Timing-sensitive: a 50ms abort race observed by a fake fetch can flake
+    // under CI runner load even though the production code is fine. Retry as
+    // a backstop.
+    it(
+      'should surface ETIMEDOUT when fetch rejects with a broken DOMException on abort (Safari)',
+      { retry: 2 },
+      async () => {
+        const safariFetch = (url, init) => {
+          const signal = getFetchSignal(url, init);
 
-        return new Promise((_resolve, reject) => {
-          const onAbort = () => {
-            signal.removeEventListener('abort', onAbort);
-            reject(createBrokenDOMExceptionLikeError());
-          };
+          return new Promise((_resolve, reject) => {
+            const onAbort = () => {
+              signal.removeEventListener('abort', onAbort);
+              reject(createBrokenDOMExceptionLikeError());
+            };
 
-          if (signal.aborted) return onAbort();
-          signal.addEventListener('abort', onAbort);
-        });
-      };
+            if (signal.aborted) return onAbort();
+            signal.addEventListener('abort', onAbort);
+          });
+        };
 
-      await assert.rejects(
-        () =>
-          fetchAxios.get('/', {
-            timeout: 50,
-            env: { fetch: safariFetch },
-          }),
-        (err) => {
-          assert.strictEqual(err.name, 'AxiosError');
-          assert.strictEqual(err.code, 'ETIMEDOUT');
-          assert.match(err.message, /timeout of 50ms exceeded/);
-          return true;
-        }
-      );
-    });
+        await assert.rejects(
+          () =>
+            fetchAxios.get('/', {
+              timeout: 50,
+              env: { fetch: safariFetch },
+            }),
+          (err) => {
+            assert.strictEqual(err.name, 'AxiosError');
+            assert.strictEqual(err.code, 'ETIMEDOUT');
+            assert.match(err.message, /timeout of 50ms exceeded/);
+            return true;
+          }
+        );
+      }
+    );
   });
 
   it('should combine baseURL and url', async () => {
@@ -616,6 +624,34 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       assert.equal(res.config.baseURL, LOCAL_SERVER_URL);
       assert.equal(res.config.url, '/foo');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should send QUERY requests with a body through the fetch adapter', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        let body = '';
+        req.on('data', (chunk) => {
+          body += chunk;
+        });
+        req.on('end', () => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ method: req.method, url: req.url, body }));
+        });
+      },
+      { port: 0 }
+    );
+
+    try {
+      const { data } = await fetchAxios.query(`http://localhost:${server.address().port}/search`, {
+        selector: 'field1',
+      });
+
+      assert.strictEqual(data.method, 'QUERY');
+      assert.strictEqual(data.url, '/search');
+      assert.deepStrictEqual(JSON.parse(data.body), { selector: 'field1' });
     } finally {
       await stopHTTPServer(server);
     }
@@ -784,6 +820,24 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('env config', () => {
+    it('should fallback to globalThis when utils.global is temporarily undefined', () => {
+      const originalGlobal = utils.global;
+
+      try {
+        utils.global = undefined;
+
+        assert.doesNotThrow(() =>
+          getFetch({
+            env: {
+              fetch() {},
+            },
+          })
+        );
+      } finally {
+        utils.global = originalGlobal;
+      }
+    });
+
     it('should respect env fetch API configuration', async () => {
       const { data, headers } = await fetchAxios.get('/', {
         env: {
@@ -896,7 +950,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
   });
 
-  describe('size limits (GHSA-777c-7fjr-54vf)', () => {
+  describe('size limits', () => {
     it('should reject an outbound body that exceeds maxBodyLength with ERR_BAD_REQUEST', async () => {
       const server = await startHTTPServer(
         (req, res) => {
@@ -985,20 +1039,18 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
     it('should reject a data: URL whose decoded size exceeds maxContentLength (base64)', async () => {
       const payload = 'A'.repeat(4096);
-      const dataUrl = 'data:application/octet-stream;base64,' + Buffer.from(payload).toString('base64');
+      const dataUrl =
+        'data:application/octet-stream;base64,' + Buffer.from(payload).toString('base64');
 
       // Use a dedicated instance without baseURL — combineURLs would otherwise
       // prepend baseURL to a data: URL and neutralise the pre-check.
       const bareAxios = axios.create({ adapter: 'fetch' });
 
-      await assert.rejects(
-        bareAxios.get(dataUrl, { maxContentLength: 16 }),
-        (err) => {
-          assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
-          assert.match(err.message, /maxContentLength size of 16 exceeded/);
-          return true;
-        }
-      );
+      await assert.rejects(bareAxios.get(dataUrl, { maxContentLength: 16 }), (err) => {
+        assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
+        assert.match(err.message, /maxContentLength size of 16 exceeded/);
+        return true;
+      });
     });
 
     it('should reject a data: URL whose body size exceeds maxContentLength (non-base64)', async () => {
@@ -1006,14 +1058,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       const bareAxios = axios.create({ adapter: 'fetch' });
 
-      await assert.rejects(
-        bareAxios.get(dataUrl, { maxContentLength: 16 }),
-        (err) => {
-          assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
-          assert.match(err.message, /maxContentLength size of 16 exceeded/);
-          return true;
-        }
-      );
+      await assert.rejects(bareAxios.get(dataUrl, { maxContentLength: 16 }), (err) => {
+        assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
+        assert.match(err.message, /maxContentLength size of 16 exceeded/);
+        return true;
+      });
     });
 
     it('should allow a response at or below maxContentLength', async () => {

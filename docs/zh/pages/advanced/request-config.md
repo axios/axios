@@ -2,6 +2,19 @@
 
 请求配置用于配置 HTTP 请求的各项参数。虽然有大量可用选项，但唯一必填的选项是 `url`。如果配置对象中没有 `method` 字段，默认使用 `GET` 方法。
 
+::: warning 安全提示：解压炸弹防护是可选的
+默认情况下 `maxContentLength` 为 `-1`（不限制）。恶意或被攻陷的服务器可能返回一个很小的 gzip/deflate/brotli 响应，解压后可达数 GB，从而耗尽 Node.js 进程的内存。
+
+如果你向不完全可信的服务器发起请求，**请设置上限**：
+
+```js
+axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
+axios.defaults.maxBodyLength = 10 * 1024 * 1024;
+```
+
+详见[安全指南](/pages/misc/security)。
+:::
+
 ### `url`
 
 `url` 是请求的目标 URL，可以是字符串或 `URL` 实例。
@@ -26,6 +39,49 @@
 
 `transformResponse` 函数允许你在数据传递给 `then` 或 `catch` 函数之前对响应数据进行修改，函数以响应数据为唯一参数。
 
+### `parseReviver`
+
+`parseReviver` 函数允许你向默认 `transformResponse` 所使用的原生 `JSON.parse()` 调用直接提供一个自定义的 "reviver" 函数。
+
+这对于执行高性能的类型水合（例如将 ISO 字符串转换为 `Temporal` 或 `Date` 对象）或防止解析过程中的精度丢失尤为有用。
+
+在支持 `JSON.parse` reviver `context` 参数的环境中，reviver 函数会接收第三个 `context` 参数，用于访问原始 JSON `source`，从而能够精确转换那些以标准 JavaScript 数字解析时会丢失精度的大整数（BigInt）。
+
+> 注意：`Temporal` 尚未在所有环境中可用，必要时请考虑使用 polyfill。
+
+```js
+const client = axios.create({
+  parseReviver: (key, value, context) => {
+    // 示例：精度安全的 BigInt 解析
+    if (typeof value === 'number' && context?.source) {
+      const isInteger = Number.isInteger(value);
+      const isUnsafe = !Number.isSafeInteger(value);
+      const isValidIntegerString = /^-?\d+$/.test(context.source);
+
+      if (isInteger && isUnsafe && isValidIntegerString) {
+        try {
+          return BigInt(context.source);
+        } catch {
+          // 兜底：如果解析失败则返回原始值
+        }
+      }
+    }
+
+    // 示例：将日期水合为 Temporal 对象
+    if (
+      typeof value === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      typeof Temporal !== 'undefined' &&
+      Temporal?.PlainDate
+    ) {
+      return Temporal.PlainDate.from(value);
+    }
+
+    return value;
+  },
+});
+```
+
 ### `headers`
 
 `headers` 是随请求发送的 HTTP 请求头，默认将 `Content-Type` 设置为 `application/json`。
@@ -38,6 +94,25 @@
 
 `paramsSerializer` 函数允许你在参数发送到服务器之前自定义 `params` 对象的序列化方式，有多个可用选项，详见本页末尾的完整请求配置示例。
 
+#### 严格的 RFC 3986 百分号编码
+
+axios 默认会将 `%3A`、`%24`、`%2C` 和 `%20` 解码回 `:`、`$`、`,` 和 `+`，以提升可读性（其中 `+` 遵循查询字符串中表示空格的 `application/x-www-form-urlencoded` 约定）。这些字符在 [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4) 中对查询组件而言都是合法的，因此默认输出是正确的。但部分后端要求严格的百分号编码，会拒绝这种可读形式。
+
+可通过 `encode` 选项覆盖默认编码器：
+
+```js
+// 单次请求：对查询值使用严格的 RFC 3986 百分号编码
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// 也可在实例默认值中设置
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
+```
+
 ### `data`
 
 `data` 是作为请求体发送的数据，可以是字符串、普通对象、Buffer、ArrayBuffer、FormData、Stream 或 URLSearchParams，仅适用于 `PUT`、`POST`、`DELETE` 和 `PATCH` 请求方法。在未设置 `transformRequest` 的情况下，必须是以下类型之一：
@@ -45,6 +120,12 @@
 - string、普通对象、ArrayBuffer、ArrayBufferView、URLSearchParams
 - 仅浏览器：FormData、File、Blob
 - 仅 Node.js：Stream、Buffer、FormData（form-data 包）
+
+对于提供了 `getHeaders()` 方法的 Node.js `FormData` 对象，axios 默认会复制其返回的所有请求头，以保持 v1 兼容性。如果 `FormData` 对象是自定义的或不完全可信，可设置 `formDataHeaderPolicy: 'content-only'`，仅复制 `Content-Type` 和 `Content-Length`，其他请求头则通过请求 `headers` 配置显式设置。
+
+### `formDataHeaderPolicy` <Badge type="warning" text="仅 Node.js" />
+
+控制 axios 如何复制 Node.js `FormData#getHeaders()` 返回的请求头。默认值为 `'legacy'`，即复制所有返回的请求头以保留现有的 v1 行为。设置为 `'content-only'` 时，仅从 `getHeaders()` 复制 `Content-Type` 和 `Content-Length`。
 
 ### `timeout`
 
@@ -123,7 +204,24 @@
 
 ### `withXSRFToken`
 
-`withXSRFToken` 属性指示是否随请求发送 `XSRF` 令牌，仅适用于客户端请求，默认值为 undefined。
+`withXSRFToken` 控制 axios 在浏览器请求中是否读取 XSRF cookie 并设置 XSRF 请求头。可选值如下：
+
+- `undefined` _（默认）_ — 仅在同源请求时设置 XSRF 请求头。
+- `true` — 始终设置 XSRF 请求头，包括跨域请求。
+- `false` — 永不设置 XSRF 请求头。
+- `(config: InternalAxiosRequestConfig) => boolean | undefined` — 回调函数，按请求决定是否设置，会接收内部 config 对象。
+
+```ts
+withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+```
+
+::: warning 跨域 XSRF 与 `withCredentials`
+`withCredentials` 控制跨站请求是否携带凭据（cookie、HTTP 认证）。在较旧版本的 axios 中，设置 `withCredentials: true` 会隐式地让 axios 在跨域请求中设置 XSRF 请求头。新版本 axios 将这两个关注点分开：要在跨域请求中发送 XSRF 请求头，必须**同时**设置 `withCredentials: true` 和 `withXSRFToken: true`。
+
+```js
+axios.get('/user', { withCredentials: true, withXSRFToken: true });
+```
+:::
 
 ### `onUploadProgress`
 
@@ -144,6 +242,22 @@
 
 `maxBodyLength` 属性定义服务器在请求中允许接收的最大字节数。
 
+### `redact`
+
+`redact` 属性是一个可选的配置键名数组，用于在 `AxiosError` 通过 `toJSON()` 序列化时对匹配的键进行脱敏。匹配不区分大小写，并会在序列化后的请求配置中递归进行，命中的值会被替换为 `[REDACTED ****]`。
+
+`redact` 仅影响错误序列化，不会修改请求数据、请求头或原始配置对象。
+
+```js
+axios.get('/user/12345', {
+  headers: { Authorization: 'Bearer token' },
+  auth: { username: 'me', password: 'secret' },
+  redact: ['authorization', 'password']
+}).catch((error) => {
+  console.log(error.toJSON().config);
+});
+```
+
 ### `validateStatus`
 
 `validateStatus` 函数允许你覆盖默认的状态码验证逻辑。默认情况下，axios 会在状态码不在 200-299 范围内时拒绝 Promise。你可以提供自定义的 `validateStatus` 函数来覆盖此行为，该函数应在状态码在你希望接受的范围内时返回 `true`。
@@ -155,6 +269,21 @@
 ### `beforeRedirect`
 
 `beforeRedirect` 函数允许你在请求重定向前对其进行修改，可用于调整重定向时的请求选项、检查最新的响应头或通过抛出错误来取消请求。当 `maxRedirects` 设置为 0 时，不会使用 `beforeRedirect`。
+
+```js
+beforeRedirect: (options, { headers }) => {
+  if (
+    options.hostname === "example.com" &&
+    options.protocol === "https:"
+  ) {
+    options.auth = "user:password";
+  }
+}
+```
+
+::: warning 安全提示：在重定向时重新注入凭据
+`beforeRedirect` 钩子在重定向过程中**敏感请求头被剥离之后**运行。出于安全考虑，`follow-redirects` 库会在协议降级（HTTPS → HTTP）时移除凭据。由于 `beforeRedirect` 在此之后运行，如果不检查目标协议就重新注入凭据，可能会泄露敏感数据。仅对可信的 HTTPS 目标重新添加凭据，避免在被降级的重定向上重新添加凭据。
+:::
 
 ### `socketPath` <Badge type="warning" text="仅 Node.js" />
 
@@ -198,6 +327,8 @@ await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' 
 
 设置为 `false` 可禁用代理，忽略环境变量。`auth` 表示使用 HTTP Basic 认证连接代理并提供凭据，这将设置 `Proxy-Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Proxy-Authorization` 请求头。如果代理服务器使用 HTTPS，则必须将协议设置为 `https`。
 
+通过代理转发时，如果用户在 `headers` 中提供了 `Host` 请求头，axios 会保留它（不区分大小写匹配 `host` / `Host` / `HOST`）。这样你就可以指向一个与请求 URL 不同的虚拟主机——例如，访问 `127.0.0.1:4000`，但让代理将请求当作 `example.com` 处理。如果未提供 `Host` 请求头，axios 仍会像以前一样将其默认设为请求 URL 的 `hostname:port`。
+
 ```js
 proxy: {
   protocol: "https",
@@ -233,7 +364,16 @@ proxy: {
 
 `transitional` 属性允许你启用或禁用某些过渡性功能，可用选项如下：
 
-- `silentJSONParsing`：设置为 `true` 时，遇到无效 JSON 响应时 axios 不会输出警告，返回值设为 null。适用于返回无效 JSON 的 API。
+- `silentJSONParsing`：若设置为 `true` _（默认）_，axios 会在 JSON 解析失败时静默忽略错误，并保留原始响应字符串。设置为 `false` 则会抛出 `SyntaxError`。
+
+  ::: tip 重要说明
+  此选项仅在 `responseType` **显式**设置为 `'json'` 时生效。当未指定 `responseType` 时，axios 会通过 `forcedJSONParsing` 尝试解析为 JSON，若失败则不论此设置如何，都会静默返回原始字符串。如果希望无效 JSON 抛出错误，请同时设置：
+
+  ```js
+  { responseType: 'json', transitional: { silentJSONParsing: false } }
+  ```
+  :::
+
 - `forcedJSONParsing`：强制 axios 将响应解析为 JSON，即使响应不是有效的 JSON。适用于返回无效 JSON 的 API。
 - `clarifyTimeoutError`：在请求超时时提供更清晰的错误信息，适用于调试超时问题。
 - `legacyInterceptorReqResOrdering`：设置为 true 时使用旧版拦截器请求/响应排序。
@@ -300,6 +440,7 @@ proxy: {
   data: {
     firstName: "Fred"
   },
+  formDataHeaderPolicy: "legacy",
   // 另一种将数据发送到请求体的语法，仅适用于 POST 方法，只发送值，不发送键
   data: "Country=Brasil&City=Belo Horizonte",
   timeout: 1000,
@@ -325,6 +466,7 @@ proxy: {
   },
   maxContentLength: 2000,
   maxBodyLength: 2000,
+  redact: ['authorization', 'password'],
   validateStatus: function (status) {
     return status >= 200 && status < 300;
   },

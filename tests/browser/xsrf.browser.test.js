@@ -180,9 +180,9 @@ describe('xsrf (vitest browser)', () => {
     });
   });
 
-  // GHSA-xx6v-rp6x-q39c: non-boolean truthy withXSRFToken must not short-circuit
+  // Non-boolean truthy withXSRFToken must not short-circuit
   // the same-origin check and leak the XSRF token cross-origin.
-  describe('GHSA-xx6v-rp6x-q39c non-boolean withXSRFToken', () => {
+  describe('non-boolean withXSRFToken', () => {
     afterEach(() => {
       delete Object.prototype.withXSRFToken;
     });

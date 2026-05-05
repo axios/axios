@@ -243,7 +243,8 @@ type UppercaseMethod =
   | 'PATCH'
   | 'PURGE'
   | 'LINK'
-  | 'UNLINK';
+  | 'UNLINK'
+  | 'QUERY';
 
 export type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
@@ -440,12 +441,14 @@ export interface AxiosRequestConfig<D = any> {
         [address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress
       >);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
-  parseReviver?: (this: any, key: string, value: any) => any;
+  parseReviver?: (this: any, key: string, value: any, context?: { source: string }) => any;
   fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> | Record<string, any>;
   httpVersion?: 1 | 2;
   http2Options?: Record<string, any> & {
     sessionTimeout?: number;
   };
+  formDataHeaderPolicy?: 'legacy' | 'content-only';
+  redact?: string[];
 }
 
 // Alias
@@ -467,6 +470,7 @@ export interface HeadersDefaults {
   purge?: RawAxiosRequestHeaders;
   link?: RawAxiosRequestHeaders;
   unlink?: RawAxiosRequestHeaders;
+  query?: RawAxiosRequestHeaders;
 }
 
 export interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
@@ -646,6 +650,11 @@ export class Axios {
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   patchForm<T = any, R = AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D>
+  ): Promise<R>;
+  query<T = any, R = AxiosResponse<T>, D = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D>

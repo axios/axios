@@ -112,4 +112,42 @@ describe('utils::merge', () => {
     expect(merged.nested[nestedKey]).toBe('value');
     expect(merged.nested).not.toBe(second.nested);
   });
+
+  it('should skip non-enumerable symbol keys', () => {
+    const key = Symbol('key');
+    const source = {};
+
+    Object.defineProperty(source, key, {
+      value: 'hidden',
+      enumerable: false,
+    });
+
+    const merged = merge(source);
+
+    expect(merged[key]).toBeUndefined();
+    expect(Object.getOwnPropertySymbols(merged)).toEqual([]);
+  });
+
+  it('should support caseless string keys with symbol keys', () => {
+    const key = Symbol('key');
+    const merged = merge.call(
+      { caseless: true },
+      { x: 1, [key]: 'first' },
+      { X: 2, [key]: 'second' }
+    );
+
+    expect(merged.x).toBe(2);
+    expect(merged.X).toBeUndefined();
+    expect(merged[key]).toBe('second');
+  });
+
+  it('should ignore symbol keys on buffers', () => {
+    const key = Symbol('key');
+    const buffer = Buffer.from('value');
+    buffer[key] = 'symbol value';
+
+    const merged = merge({ x: 1 }, buffer);
+
+    expect(merged).toEqual({ x: 1 });
+  });
 });

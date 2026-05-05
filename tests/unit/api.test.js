@@ -131,4 +131,35 @@ describe('instance api', () => {
     assert.strictEqual(typeof instance.interceptors.request, 'object');
     assert.strictEqual(typeof instance.interceptors.response, 'object');
   });
+
+  it('should pass symbol keys to transformRequest through axios.create', async () => {
+    const symbolKey = Symbol('example');
+    let transformedData;
+
+    const client = axios.create({
+      transformRequest: [
+        (data) => {
+          transformedData = data;
+          return '';
+        },
+      ],
+      adapter: (config) =>
+        Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        }),
+    });
+
+    await client.post('/test', {
+      [symbolKey]: 'value',
+      stringKey: 'value',
+    });
+
+    assert.strictEqual(transformedData[symbolKey], 'value');
+    assert.strictEqual(transformedData.stringKey, 'value');
+  });
 });

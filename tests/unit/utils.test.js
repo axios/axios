@@ -117,6 +117,24 @@ describe('utils', () => {
         // The self-cycle is stripped, but both x and y must be serialized
         assert.deepStrictEqual(result, { x: { v: 1 }, y: { v: 1 } });
       });
+
+      it('should serialize non-cyclic structures deeper than the old Array(10) cap', () => {
+        // The previous implementation used a fixed-size Array(10) for path tracking.
+        // A non-cyclic chain deeper than 10 levels must serialise end-to-end.
+        let leaf = { v: 'leaf' };
+        let source = leaf;
+        for (let i = 0; i < 25; i++) {
+          source = { next: source };
+        }
+
+        const result = utils.toJSONObject(source);
+
+        let cursor = result;
+        for (let i = 0; i < 25; i++) {
+          cursor = cursor.next;
+        }
+        assert.deepStrictEqual(cursor, { v: 'leaf' });
+      });
     });
   });
 

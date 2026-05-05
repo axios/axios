@@ -150,4 +150,15 @@ describe('utils::merge', () => {
 
     expect(merged).toEqual({ x: 1 });
   });
+
+  it('should honor skipUndefined for symbol keys', () => {
+    const key = Symbol('key');
+    const merged = merge.call(
+      { skipUndefined: true },
+      { [key]: 'first' },
+      { [key]: undefined }
+    );
+
+    expect(merged[key]).toBe('first');
+  });
 });

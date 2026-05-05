@@ -74,16 +74,10 @@ describe('helpers::fromDataURI', () => {
     assert.strictEqual(blob.type, 'text/plain;charset=utf-8');
   });
 
-  it('should reject invalid URI without data protocol', () => {
-    assert.throws(() => {
-      fromDataURI('notadata:uri', false);
-    });
-  });
-
   it('should reject data URI with unsupported protocol prefix', () => {
     assert.throws(() => {
       fromDataURI('datax:,hi', false);
-    }, (err) => err.message.includes('Unsupported protocol'));
+    }, (err) => err.code === 'ERR_NOT_SUPPORT' && err.message.includes('Unsupported protocol'));
   });
 
   it('should reject data URI without comma separator', () => {

@@ -19,12 +19,31 @@ const qs = require('qs');
 axios.post('/foo', qs.stringify({ bar: 123 }));
 ```
 
+如需完全控制请求头和方法，可将 `qs.stringify` 的输出作为请求 `data` 传入，并显式设置 `Content-Type`：
+
+```js
+import qs from 'qs';
+
+const data = { bar: 123 };
+const options = {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  data: qs.stringify(data),
+  url: '/foo',
+};
+axios(options);
+```
+
 在非常旧的 Node.js 版本中，可以使用 Node.js 内置的 `querystring` 模块。注意该模块在 Node.js v16 中已废弃——新代码请优先使用 `URLSearchParams` 或 `qs`。
 
 ```js
 const querystring = require('querystring');
 axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
+
+::: tip 嵌套对象优先使用 `qs`
+如果你需要序列化嵌套对象，建议使用 `qs` 库，因为 `querystring` 方法在该场景下存在[已知问题](https://github.com/nodejs/node-v0.x-archive/issues/1665)。
+:::
 
 ## 自动序列化为 URLSearchParams <Badge type="tip" text="新特性" />
 

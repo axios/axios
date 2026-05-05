@@ -42,8 +42,9 @@ Le formulaire ci-dessus sera soumis sous la forme :
 {
   "foo": "1",
   "deep": {
-    "prop": "2",
-    "prop spaced": "3"
+    "prop": {
+      "spaced": "3"
+    }
   },
   "baz": ["4", "5"],
   "user": {
@@ -51,6 +52,10 @@ Le formulaire ci-dessus sera soumis sous la forme :
   }
 }
 ```
+
+::: tip Les collisions de chemins écrasent les valeurs précédentes
+Les noms de champs sont convertis en chemins de propriétés en les divisant sur `.`, les crochets ou les espaces. Deux entrées dont les chemins se chevauchent entreront en collision : dans l'exemple ci-dessus, `deep.prop` est analysé en `["deep", "prop"]` et `deep prop spaced` en `["deep", "prop", "spaced"]`, donc l'affectation plus profonde remplace `deep.prop = "2"` par l'objet imbriqué `{ spaced: "3" }`. Choisissez des noms de champs sans chevauchement si vous avez besoin des deux valeurs.
+:::
 
 ::: warning
 L'envoi de Blobs/Fichiers en JSON (base64) n'est actuellement pas supporté.

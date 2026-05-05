@@ -34,6 +34,10 @@ Des options natives supplémentaires pour l'appel interne `session.request()` pe
 Le support HTTP/2 est actuellement expérimental. L'API peut changer dans les prochaines versions mineures ou de correctifs.
 :::
 
+::: warning Les redirections ne sont pas supportées via HTTP/2
+L'adaptateur HTTP/2 ne suit actuellement pas les redirections. Si une requête émise avec `httpVersion: 2` reçoit une réponse `3xx`, la redirection n'est pas suivie automatiquement. Gérez ces réponses manuellement ou restez sur HTTP/1.x pour les endpoints qui s'appuient sur les redirections.
+:::
+
 ## Exemple complet
 
 L'exemple ci-dessous envoie une requête POST `multipart/form-data` via HTTP/2 et suit à la fois la progression de l'envoi et du téléchargement.

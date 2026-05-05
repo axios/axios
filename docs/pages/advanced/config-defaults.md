@@ -9,6 +9,10 @@ axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
 ```
 
+::: warning Global headers are sent to every host
+If your application talks to more than one domain, setting `axios.defaults.headers.common["Authorization"]` will send the token to **all** of them, including third-party APIs you may not control. Use a [custom instance](#custom-instance-defaults) with a scoped `baseURL` for any client that carries credentials.
+:::
+
 ## Custom instance defaults
 
 axios instances are declared with their own defaults when created. These defaults may be overridden setting the `defaults` property to the instance. An example of using custom instance defaults is shown below:

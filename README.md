@@ -244,14 +244,13 @@
                     width="71px"
                     height="70px"
                     src="https://images.opencollective.com/buzzoid-buy-instagram-followers/56a09fe/logo.png"
-                    alt="Buzzoid"
+                    alt="Buzzoid - Buy Instagram Followers"
                 />
             </a>
             <p
                 align="center"
             >
-                A lightweight open-source API Development, Testing &amp; Mocking
-                platform
+                At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#39;s #1 IG service since 2012.
             </p>
             <p align="center">
                 <a

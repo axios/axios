@@ -1188,7 +1188,7 @@ const instance = axios.create();
 const myInterceptor = instance.interceptors.request.use(function () {
   /*...*/
 });
-axios.interceptors.request.eject(myInterceptor);
+instance.interceptors.request.eject(myInterceptor);
 ```
 
 You can also clear all interceptors for requests or responses.

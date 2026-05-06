@@ -123,6 +123,7 @@
   "dependencies": {
     "follow-redirects": "^1.16.0",
     "form-data": "^4.0.5",
+    "https-proxy-agent": "^9.0.0",
     "proxy-from-env": "^2.1.0"
   },
   "devDependencies": {

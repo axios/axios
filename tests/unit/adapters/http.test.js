@@ -3117,6 +3117,123 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  describe('HTTPS CONNECT tunneling agent management', () => {
+    const buildOptions = () => ({
+      headers: {},
+      beforeRedirects: {},
+      hostname: 'example.com',
+      host: 'example.com',
+      port: 443,
+      path: '/',
+      protocol: 'https:',
+    });
+    const proxyConfig = { host: '127.0.0.1', port: 8030, protocol: 'http' };
+
+    it('reuses the same tunneling agent for repeated requests through the same proxy', () => {
+      const a = buildOptions();
+      const b = buildOptions();
+      __setProxy(a, proxyConfig, 'https://example.com/');
+      __setProxy(b, proxyConfig, 'https://example.com/');
+      assert.ok(a.agent, 'first request must install a tunneling agent');
+      assert.strictEqual(
+        a.agent,
+        b.agent,
+        'subsequent requests through the same proxy must share one tunneling agent so socket pooling works'
+      );
+    });
+
+    it('still tunnels through the proxy when a non-proxy httpsAgent is supplied', () => {
+      const userAgent = new https.Agent({ rejectUnauthorized: false });
+      const options = buildOptions();
+      __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
+      assert.ok(options.agent, 'proxy must not be silently bypassed when a custom httpsAgent is set');
+      assert.notStrictEqual(
+        options.agent,
+        userAgent,
+        'tunneling agent must be installed in place of the user agent (its TLS options are forwarded internally)'
+      );
+      assert.ok(options.agent instanceof HttpsProxyAgent);
+    });
+
+    it('forwards user httpsAgent options to the tunneling agent so origin TLS uses them', () => {
+      const userAgent = new https.Agent({ rejectUnauthorized: false, ca: 'sentinel-ca' });
+      const options = buildOptions();
+      __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
+      // HttpsProxyAgent v5 surfaces the merged constructor options on `.proxy`.
+      assert.strictEqual(options.agent.proxy.rejectUnauthorized, false);
+      assert.strictEqual(options.agent.proxy.ca, 'sentinel-ca');
+    });
+
+    it('respects a user-supplied HttpsProxyAgent without installing its own', () => {
+      const userTunnel = new HttpsProxyAgent({
+        protocol: 'http:',
+        hostname: '127.0.0.1',
+        port: 9999,
+      });
+      const options = buildOptions();
+      __setProxy(options, proxyConfig, 'https://example.com/', false, userTunnel);
+      // The user is handling tunneling end-to-end; setProxy must not overwrite agent.
+      assert.strictEqual(options.agent, undefined, 'must not install a competing tunneling agent');
+    });
+
+    it('does not strip a user-supplied HttpsProxyAgent on redirect', () => {
+      const userTunnel = new HttpsProxyAgent({
+        protocol: 'http:',
+        hostname: '127.0.0.1',
+        port: 9999,
+      });
+      const redirectOptions = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'redirect.example.com',
+        host: 'redirect.example.com',
+        port: 443,
+        path: '/',
+        protocol: 'https:',
+        agent: userTunnel,
+      };
+      __setProxy(redirectOptions, false, 'https://redirect.example.com/', true);
+      assert.strictEqual(
+        redirectOptions.agent,
+        userTunnel,
+        'user-supplied HttpsProxyAgent must survive redirects (no proxy on redirect target)'
+      );
+    });
+
+    it('strips its own tunneling agent on redirect when the redirect target has no proxy', () => {
+      const initial = buildOptions();
+      __setProxy(initial, proxyConfig, 'https://example.com/');
+      assert.ok(initial.agent instanceof HttpsProxyAgent, 'precondition: tunneling agent installed');
+
+      const redirectOptions = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'final.example.com',
+        host: 'final.example.com',
+        port: 443,
+        path: '/',
+        protocol: 'https:',
+        agent: initial.agent,
+      };
+      __setProxy(redirectOptions, false, 'https://final.example.com/', true);
+      assert.strictEqual(
+        redirectOptions.agent,
+        undefined,
+        'axios-installed tunneling agent must be cleared when redirect drops the proxy'
+      );
+    });
+
+    it('handles IPv6 literal proxy hosts', () => {
+      const options = buildOptions();
+      __setProxy(
+        options,
+        { host: '::1', port: 8030, protocol: 'http' },
+        'https://example.com/'
+      );
+      assert.ok(options.agent instanceof HttpsProxyAgent, 'must build a tunneling agent for an IPv6 proxy host');
+    });
+  });
+
   it('should return malformed URL', async () => {
     await assert.rejects(axios.get('tel:484-695-3408'), (error) => {
       assert.equal(error.message, 'Unsupported protocol tel:');

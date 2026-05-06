@@ -244,14 +244,13 @@
                     width="71px"
                     height="70px"
                     src="https://images.opencollective.com/buzzoid-buy-instagram-followers/56a09fe/logo.png"
-                    alt="Buzzoid"
+                    alt="Buzzoid - Buy Instagram Followers"
                 />
             </a>
             <p
                 align="center"
             >
-                A lightweight open-source API Development, Testing &amp; Mocking
-                platform
+                At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#39;s #1 IG service since 2012.
             </p>
             <p align="center">
                 <a
@@ -942,15 +941,24 @@ These are the available config options for making requests. Only the `url` is re
   // Use `false` to disable proxies, ignoring environment variables.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
-  // This will set a `Proxy-Authorization` header, overwriting any existing
-  // `Proxy-Authorization` custom headers you have set using `headers`.
+  // For `http://` targets, axios sends the request to the proxy in
+  // forward-proxy mode and stamps `Proxy-Authorization` onto the request
+  // headers (overwriting any user-supplied `Proxy-Authorization` header).
+  // For `https://` targets, axios establishes a CONNECT tunnel through the
+  // proxy and performs TLS end-to-end with the origin; `Proxy-Authorization`
+  // is sent on the CONNECT request only, never on the wrapped TLS request,
+  // so the proxy never sees the URL, headers, or body. Supply a custom
+  // `httpsAgent` to opt out of automatic CONNECT tunneling.
   // If the proxy server uses HTTPS, then you must set the protocol to `https`.
   // A user-supplied `Host` header in `headers` is preserved when forwarding
   // through a proxy (case-insensitive match on `host`/`Host`/`HOST`); this
   // lets you target a virtual host that differs from the request URL — for
   // example, hitting `127.0.0.1:4000` while having the proxy treat the
   // request as `example.com`. If no `Host` header is supplied, axios
-  // defaults it to the request URL's `hostname:port` as before.
+  // defaults it to the request URL's `hostname:port` as before. The Host
+  // header is only set in forward-proxy mode (HTTP targets); for HTTPS
+  // tunneling the Host header is sent inside the TLS connection, not seen
+  // by the proxy.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',
@@ -1188,7 +1196,7 @@ const instance = axios.create();
 const myInterceptor = instance.interceptors.request.use(function () {
   /*...*/
 });
-axios.interceptors.request.eject(myInterceptor);
+instance.interceptors.request.eject(myInterceptor);
 ```
 
 You can also clear all interceptors for requests or responses.

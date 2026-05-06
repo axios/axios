@@ -124,6 +124,30 @@ api.interceptors.request.use((config) => {
 });
 ```
 
+## Unicode header values
+
+`AxiosHeaders` preserves non-control Unicode characters in header values so request interceptors can transform them before the request is sent. CR/LF and other C0 control bytes are still stripped at set time to prevent header injection.
+
+Adapters sanitize header values to byte-safe (HT, printable ASCII, and Latin-1 supplement) right before handing them to the platform — Node's `http.request`, the browser's `XMLHttpRequest.setRequestHeader`, and `fetch`'s `Headers`. If a header value contains characters outside that range and you have not encoded it, those characters are stripped, which can produce an empty value on the wire.
+
+If you need to send non-ASCII data in a header, encode it in a request interceptor:
+
+```js
+api.interceptors.request.use((config) => {
+  if (config.headers.has('X-Name')) {
+    config.headers.set('X-Name', encodeURIComponent(config.headers.get('X-Name')));
+  }
+  return config;
+});
+
+await api.get('/api/data', {
+  headers: {
+    'X-Name': '请求用户',
+  },
+});
+// → request is sent with X-Name: %E8%AF%B7%E6%B1%82%E7%94%A8%E6%88%B7
+```
+
 ## Reading response headers
 
 Response headers are available on `response.headers` as an `AxiosHeaders` instance. All header names are lower-cased:

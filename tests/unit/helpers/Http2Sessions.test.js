@@ -11,11 +11,13 @@ function createFakeSession() {
     session.closed = true;
     session.emit('close');
   });
-  session.request = vi.fn(() => {
+  const originalRequest = vi.fn(() => {
     const stream = new EventEmitter();
     stream.endStream = vi.fn();
     return stream;
   });
+  session.request = originalRequest;
+  session._originalRequest = originalRequest;
   return session;
 }
 
@@ -159,12 +161,29 @@ describe('helpers::Http2Sessions', () => {
     expect(session.close).toHaveBeenCalledTimes(1);
   });
 
+  it('installs a request wrapper when sessionTimeout is set', () => {
+    const session = pool.getSession('https://example.test', { sessionTimeout: 1000 });
+
+    expect(session.request).not.toBe(session._originalRequest);
+  });
+
   it('does not install the request wrapper when sessionTimeout is null', () => {
     const session = pool.getSession('https://example.test', { sessionTimeout: null });
 
-    const original = session.request;
-    pool.getSession('https://example.test', { sessionTimeout: null });
+    expect(session.request).toBe(session._originalRequest);
+  });
 
-    expect(session.request).toBe(original);
+  it('clears the pending sessionTimeout when the session itself closes', () => {
+    vi.useFakeTimers();
+    const session = pool.getSession('https://example.test', { sessionTimeout: 1000 });
+
+    const stream = session.request();
+    stream.emit('close');
+
+    expect(vi.getTimerCount()).toBe(1);
+
+    session.emit('close');
+
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

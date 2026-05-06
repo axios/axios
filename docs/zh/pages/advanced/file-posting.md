@@ -24,6 +24,14 @@ await axios.postForm(
 );
 ```
 
+也可以通过在键名末尾追加 `[]` 来显式指定一个自定义字段名，传入 `FileList`（或 `File` 对象数组）：
+
+```js
+await axios.postForm("https://httpbin.org/post", {
+  "files[]": document.querySelector("#fileInput").files,
+});
+```
+
 如需为每个文件使用不同的字段名，请手动构建 `FormData` 对象：
 
 ```js

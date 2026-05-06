@@ -1,11 +1,16 @@
 # AGENTS.md
 
+axios is a promise-based HTTP client for the browser and Node.js. The default instance is exported from `lib/axios.js` via `index.js`. Browser builds use the XHR or Fetch adapter; Node uses the HTTP/HTTPS adapter. Platform selection lives in `lib/platform/`.
+
+This file is the canonical contributor guide for both human and AI agents working in this repo. `.github/copilot-instructions.md` is a thin stub that points back here — keep it in sync with the load-bearing safety rules below if you change them.
+
 ## Setup And Safety
 
 - Use `npm ci`; repo `.npmrc` sets `ignore-scripts=true`, and CI also uses `npm ci --ignore-scripts`.
 - Do not remove `ignore-scripts=true`; if git hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once.
 - Adding or updating dependencies is security-sensitive; `package-lock.json` is checked by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
 - Build/test/lint tools still execute dependency code despite `ignore-scripts`; avoid unnecessary full builds when a focused check proves the change.
+- Do not add new runtime dependencies without discussion; the dependency surface is intentionally tiny.
 
 ## Commands
 
@@ -26,11 +31,57 @@
 
 ## Architecture Boundaries
 
-- `lib/core/` is axios domain logic: request dispatch, config merge, interceptors, headers, errors.
-- `lib/adapters/` performs I/O; default adapter preference is `['xhr', 'http', 'fetch']`, with capability selection in `lib/adapters/adapters.js`.
+- `lib/core/` is axios domain logic: request dispatch, config merge, interceptors, headers, errors. Key classes: `Axios` (request dispatch + interceptor chains), `AxiosError` (standardized error codes), `AxiosHeaders` (case-insensitive header normalization), `InterceptorManager` (sync/async interceptor registration).
+- `lib/adapters/` performs I/O; default adapter preference is `['xhr', 'http', 'fetch']`, with capability selection in `lib/adapters/adapters.js`. Detect by capability, not environment name.
 - `lib/platform/` selects Node by default; browser builds rely on package/rollup aliasing to `lib/platform/browser`.
 - `lib/helpers/` should stay generic and reusable outside axios; do not put axios-specific request lifecycle logic there.
 - New `lib/**/*.js` files should match existing source style: ESM imports with explicit `.js` extensions, `'use strict';` where current library files use it, and `AxiosError` for axios-originated failures.
+
+## Naming Conventions
+
+- Classes: PascalCase (`Axios`, `AxiosError`, `InterceptorManager`).
+- Functions: camelCase (`buildURL`, `mergeConfig`, `dispatchRequest`).
+- Error codes: UPPER_SNAKE_CASE constants on `AxiosError` (`ERR_NETWORK`, `ETIMEDOUT`).
+- Internal class slots: `Symbol`-keyed (e.g. `const $internals = Symbol('internals')` in `lib/core/AxiosHeaders.js`) rather than underscore-prefixed properties.
+
+## Error Handling
+
+- Throw `AxiosError` for axios-originated failures; never raw `Error`. Pass `(message, code, config, request, response)` so consumers can introspect.
+- Wrap third-party errors with `AxiosError.from(error, code, config, request, response)`.
+- Canonical code list lives in `lib/core/AxiosError.js`; current codes include `ERR_BAD_OPTION_VALUE`, `ERR_BAD_OPTION`, `ECONNABORTED`, `ETIMEDOUT`, `ECONNREFUSED`, `ERR_NETWORK`, `ERR_FR_TOO_MANY_REDIRECTS`, `ERR_DEPRECATED`, `ERR_BAD_RESPONSE`, `ERR_BAD_REQUEST`, `ERR_CANCELED`, `ERR_NOT_SUPPORT`, `ERR_INVALID_URL`, `ERR_FORM_DATA_DEPTH_EXCEEDED`.
+- Validate config options through the `validator` helper; do not invent ad-hoc validation paths.
+
+## Interceptor Execution Order
+
+- Request interceptors run **last-registered-first** (LIFO).
+- Response interceptors run **first-registered-first** (FIFO).
+- Both support `synchronous: true` (avoids Promise wrapping when no async handler is in the chain) and `runWhen: (config) => boolean` for conditional execution.
+- Order matters for both behavior and tests; document it when adding new built-in interceptors.
+
+## Request Lifecycle
+
+1. User calls `axios()` or a method alias.
+2. Merge instance defaults with request config via `mergeConfig`.
+3. Run request interceptors (LIFO).
+4. Select adapter via `lib/adapters/adapters.js` capability check.
+5. Apply `transformRequest` functions.
+6. Adapter performs the HTTP request.
+7. Apply `transformResponse` functions.
+8. Run response interceptors (FIFO).
+9. Resolve promise with `AxiosResponse` or reject with `AxiosError`.
+
+## Cancellation
+
+- Both `CancelToken` (legacy) and `AbortSignal` (modern) are supported simultaneously; do not break either path.
+- Cancellation must work at any lifecycle stage, including mid-flight body reads.
+- Always remove signal listeners on settlement or cancellation to prevent memory leaks.
+
+## Common Pitfalls
+
+- Do not mutate config objects in-place; return new objects from merges/transforms.
+- Do not assume browser- or Node-specific globals exist; capability-check first.
+- Do not use `Function.prototype.bind` directly — use `lib/helpers/bind.js`, which forwards `arguments` via `apply` and is what the rest of the library relies on.
+- Do not throw raw `Error` from library code; use `AxiosError` with an appropriate code (see Error Handling).
 
 ## Tests
 

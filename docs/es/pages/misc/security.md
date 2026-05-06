@@ -19,6 +19,37 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 El valor por defecto no se ha endurecido porque hacerlo romperá silenciosamente cualquier descarga legítima mayor al límite elegido. La responsabilidad de escoger un tope seguro para fuentes no confiables recae en la aplicación.
 
+## Otras opciones sensibles a la seguridad
+
+Las siguientes opciones de configuración de solicitud tienen implicaciones directas de seguridad. Están documentadas en detalle junto al resto de la [configuración de solicitud](/pages/advanced/request-config), y se resumen aquí para que aparezcan en un solo lugar.
+
+| Opción | Riesgo | Mitigación |
+| --- | --- | --- |
+| [`socketPath`](/pages/advanced/request-config#socketpath) | Si proviene de entrada no confiable, un atacante puede redirigir el tráfico a sockets locales privilegiados como `/var/run/docker.sock`, eludiendo las protecciones SSRF basadas en hostname (CWE-918). | Filtra o restringe con allowlist las claves de configuración provenientes de entradas no confiables. Usa [`allowedSocketPaths`](/pages/advanced/request-config#allowedsocketpaths) para restringir las rutas de socket aceptadas. |
+| [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | Se ejecuta después de que `follow-redirects` elimina las credenciales en una bajada de protocolo. Reinyectar credenciales sin verificar el protocolo de destino puede filtrarlas sobre HTTP en texto plano. | Reinyecta credenciales únicamente para destinos HTTPS de confianza. Verifica `options.protocol === "https:"` antes de asignar `auth`. |
+| [`withXSRFToken`](/pages/advanced/request-config#withxsrftoken) | Establecerlo en `true` fuerza el encabezado XSRF en solicitudes de origen cruzado. Versiones anteriores de axios lo habilitaban implícitamente con `withCredentials: true`; las versiones más recientes requieren ambos indicadores. | Déjalo en `undefined` (solo mismo origen) salvo que tu backend valide explícitamente XSRF en solicitudes de origen cruzado. |
+| [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` incluye la configuración de la solicitud por defecto, lo que puede filtrar encabezados `Authorization` o credenciales `auth` en logs y telemetría de errores. | Pasa un arreglo `redact` con los nombres de claves de configuración sensibles. La coincidencia es insensible a mayúsculas y recursiva. |
+| [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) | Un `FormData` personalizado cuyo `getHeaders()` devuelve valores controlados por un atacante puede sobrescribir encabezados como `Authorization` o inyectar otros arbitrarios en Node.js. | Establece `'content-only'` para copiar únicamente `Content-Type` y `Content-Length`, y luego define los demás encabezados explícitamente a través de la configuración `headers` de la solicitud. |
+
+## Endurecimiento de la cadena de suministro: `ignore-scripts` y scripts de ciclo de vida
+
+El repositorio incluye un `.npmrc` a nivel de proyecto que establece `ignore-scripts=true`. Esto bloquea los scripts de ciclo de vida de npm (`preinstall`, `install`, `postinstall`, `prepare`) de cualquier dependencia directa o transitiva al ejecutar `npm install` o `npm ci` dentro del repositorio. Consulta [THREATMODEL.md](https://github.com/axios/axios/blob/v1.x/THREATMODEL.md) (amenaza T-S2) para conocer la justificación.
+
+Una consecuencia: el propio hook `prepare` del repositorio (que instala los git hooks de Husky) **no** se ejecuta automáticamente. Tras tu primera instalación, habilita los git hooks manualmente:
+
+```bash
+npm ci
+npm rebuild husky && npx husky
+```
+
+Ejecuta esos dos comandos una vez por checkout limpio. **No** necesitas volver a ejecutarlos tras cada `npm install` posterior.
+
+::: danger No elimines `ignore-scripts=true`
+Eliminar `ignore-scripts=true` de `.npmrc` para "arreglar" la configuración de husky reabre la superficie de ataque de los scripts de ciclo de vida para todos los demás paquetes del árbol. Todos los workflows de CI ya invocan npm con `--ignore-scripts`, así que el comportamiento local coincide con CI.
+:::
+
+Recomendamos el mismo ajuste `ignore-scripts=true` en cualquier proyecto consumidor que incorpore axios (o cualquier otra dependencia) en un entorno de compilación que maneje secretos.
+
 ## Verificar una publicación
 
 Cada tarball de `axios` publicado en npm proviene de GitHub Actions y lleva una [atestación de provenance de npm](https://docs.npmjs.com/generating-provenance-statements) que vincula criptográficamente el paquete al workflow y al SHA del commit que lo generó.

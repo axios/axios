@@ -34,6 +34,10 @@ const { data, headers, status } = await axios.post(
 HTTP/2 支持目前仍为实验性功能，API 可能在未来的次要版本或补丁版本中发生变化。
 :::
 
+::: warning HTTP/2 不支持重定向
+HTTP/2 适配器目前不会自动跟随重定向。如果使用 `httpVersion: 2` 发起的请求收到 `3xx` 响应，重定向不会被自动跟随。请手动处理这类响应，或对依赖重定向的端点继续使用 HTTP/1.x。
+:::
+
 ## 完整示例
 
 以下示例通过 HTTP/2 发送 `multipart/form-data` POST 请求，并同时跟踪上传和下载进度。

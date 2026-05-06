@@ -5,7 +5,7 @@ layout: page
 <script setup>
 import allSponsors from '../../data/sponsors.json';
 
-const sponsors = [...allSponsors.platinum, ...allSponsors.gold, ...allSponsors.silver, ...allSponsors.bronze, ...allSponsors.backer];
+const sponsors = [...allSponsors.platinum ?? [], ...allSponsors.gold ?? [], ...allSponsors.silver ?? [], ...allSponsors.bronze ?? [], ...allSponsors.backer ?? []];
 
 const capitalizeFirstLetter = (word) => {
   return String(word).charAt(0).toUpperCase() + String(word).slice(1);

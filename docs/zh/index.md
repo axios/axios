@@ -61,9 +61,9 @@ onMounted(() => {
   ).mount();
 });
 
-const activePlatinumSponsors = allSponsors.platinum.filter((sponsor) => sponsor.active);
-const activeGoldSponsors = allSponsors.gold.filter((sponsor) => sponsor.active);
-const activeSilverSponsors = allSponsors.silver.filter((sponsor) => sponsor.active);
+const activePlatinumSponsors = allSponsors.platinum?.filter((sponsor) => sponsor.active) ?? [];
+const activeGoldSponsors = allSponsors.gold?.filter((sponsor) => sponsor.active) ?? [];
+const activeSilverSponsors = allSponsors.silver?.filter((sponsor) => sponsor.active) ?? [];
 
 const sponsors = [...activePlatinumSponsors, ...activeGoldSponsors, ...activeSilverSponsors];
 

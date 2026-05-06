@@ -9,6 +9,10 @@ axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
 ```
 
+::: warning Los encabezados globales se envían a todos los hosts
+Si tu aplicación se comunica con más de un dominio, establecer `axios.defaults.headers.common["Authorization"]` enviará el token a **todos** ellos, incluidas APIs de terceros que tal vez no controles. Usa una [instancia personalizada](#valores-predeterminados-personalizados-por-instancia) con un `baseURL` acotado para cualquier cliente que transporte credenciales.
+:::
+
 ## Valores predeterminados personalizados por instancia
 
 Las instancias de axios se declaran con sus propios valores predeterminados al ser creadas. Estos valores pueden sobreescribirse estableciendo la propiedad `defaults` en la instancia. A continuación se muestra un ejemplo de cómo usar valores predeterminados personalizados por instancia:

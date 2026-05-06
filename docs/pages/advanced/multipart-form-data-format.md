@@ -61,6 +61,23 @@ axios
   .then(({ data }) => console.log(data));
 ```
 
+## Header policy for Node.js `FormData` <Badge type="warning" text="Node.js only" />
+
+When you pass a Node.js `FormData` object that exposes `getHeaders()` (such as the [`form-data`](https://github.com/form-data/form-data) package), axios copies all headers it returns onto the request by default. This preserves v1 compatibility but can be problematic when the `FormData` object comes from an untrusted source — `getHeaders()` could overwrite headers like `Authorization` or inject arbitrary ones.
+
+Set `formDataHeaderPolicy: 'content-only'` to copy **only** `Content-Type` and `Content-Length` from `getHeaders()`, then set any other headers explicitly via the request `headers` config:
+
+```js
+await axios.post("https://example.com/upload", form, {
+  formDataHeaderPolicy: "content-only",
+  headers: {
+    Authorization: "Bearer my-token",
+  },
+});
+```
+
+The default value is `'legacy'`. See [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) in the request config reference for details.
+
 ## Supported endings
 
 Axios FormData serializer supports some special endings to perform the following operations:

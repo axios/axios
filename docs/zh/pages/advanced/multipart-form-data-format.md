@@ -61,6 +61,23 @@ axios
   .then(({ data }) => console.log(data));
 ```
 
+## Node.js `FormData` 的请求头策略 <Badge type="warning" text="仅 Node.js" />
+
+当你传入一个暴露 `getHeaders()` 的 Node.js `FormData` 对象（例如 [`form-data`](https://github.com/form-data/form-data) 包）时，axios 默认会将它返回的所有请求头复制到请求上。这保留了 v1 的兼容性，但如果 `FormData` 对象来自不可信来源，可能会出问题——`getHeaders()` 可能覆盖 `Authorization` 等请求头或注入任意请求头。
+
+设置 `formDataHeaderPolicy: 'content-only'` 可**只**从 `getHeaders()` 复制 `Content-Type` 和 `Content-Length`，再通过请求的 `headers` 配置显式设置其他请求头：
+
+```js
+await axios.post("https://example.com/upload", form, {
+  formDataHeaderPolicy: "content-only",
+  headers: {
+    Authorization: "Bearer my-token",
+  },
+});
+```
+
+默认值为 `'legacy'`。详见请求配置参考中的 [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy)。
+
 ## 支持的特殊结尾
 
 axios FormData 序列化器支持以下特殊结尾，用于执行对应操作：

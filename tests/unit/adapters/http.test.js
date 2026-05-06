@@ -185,6 +185,66 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should allow request interceptors to encode Unicode header values before Node sends them', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            oprtName: req.headers.oprtname,
+          })
+        );
+      },
+      { port: SERVER_PORT }
+    );
+
+    const instance = axios.create({ proxy: false });
+
+    instance.interceptors.request.use((config) => {
+      config.headers.oprtName = encodeURIComponent(config.headers.oprtName);
+      return config;
+    });
+
+    try {
+      const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          oprtName: '请求用户',
+        },
+      });
+
+      assert.strictEqual(data.oprtName, encodeURIComponent('请求用户'));
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should sanitize unencoded Unicode request headers before passing them to Node', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            xTest: req.headers['x-test'],
+          })
+        );
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const { data } = await axios.get(`http://localhost:${server.address().port}/`, {
+        proxy: false,
+        headers: {
+          'x-test': '请求用户',
+        },
+      });
+
+      assert.strictEqual(data.xTest, '');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should parse the timeout property', async () => {
     const server = await startHTTPServer(
       (req, res) => {

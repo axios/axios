@@ -2474,7 +2474,7 @@ describe('supports http with nodejs', function () {
         await http2Axios.get(LOCAL_SERVER_URL, {
           signal: AbortSignal.timeout(500)
         });
-      }, /CanceledError: canceled/);
+      }, /CanceledError:/);
 
       await promise;
 

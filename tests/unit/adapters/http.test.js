@@ -11,7 +11,7 @@ import {
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import { __setProxy } from '../../../lib/adapters/http.js';
-import { HttpsProxyAgent } from 'https-proxy-agent';
+import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
 import net from 'net';
@@ -1664,7 +1664,11 @@ describe('supports http with nodejs', () => {
 
     const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    const tunnelingAgent = new HttpsProxyAgent(`https://127.0.0.1:${proxy.address().port}`, {
+    const tunnelingAgent = new HttpsProxyAgent({
+      protocol: 'https:',
+      host: '127.0.0.1',
+      port: proxy.address().port,
+      ALPNProtocols: ['http/1.1'],
       rejectUnauthorized: false,
     });
     try {

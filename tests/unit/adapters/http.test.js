@@ -11,6 +11,7 @@ import {
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import { __setProxy } from '../../../lib/adapters/http.js';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
 import net from 'net';
@@ -1562,6 +1563,7 @@ describe('supports http with nodejs', () => {
       { port: SERVER_PORT }
     );
 
+    let connectAttempts = 0;
     const proxy = await startHTTPServer(
       (request, response) => {
         const parsed = new URL(request.url);
@@ -1586,6 +1588,10 @@ describe('supports http with nodejs', () => {
       },
       { port: PROXY_PORT }
     );
+    proxy.on('connect', (req, sock) => {
+      connectAttempts += 1;
+      sock.end();
+    });
 
     try {
       const response = await axios.get(`http://localhost:${server.address().port}/`, {
@@ -1596,6 +1602,7 @@ describe('supports http with nodejs', () => {
       });
 
       assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
+      assert.strictEqual(connectAttempts, 0, 'HTTP targets must use forward-proxy mode, not CONNECT');
     } finally {
       await stopHTTPServer(server);
       await stopHTTPServer(proxy);
@@ -1621,74 +1628,212 @@ describe('supports http with nodejs', () => {
       });
 
     const server = await new Promise((resolve, reject) => {
-      const httpsServer = https
-        .createServer(
-          tlsOptions,
-          (req, res) => {
-            res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-            res.end('12345');
-          },
-          { port: SERVER_PORT }
-        )
-        .listen(SERVER_PORT, () => resolve(httpsServer));
-
+      const httpsServer = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('12345');
+      });
+      httpsServer.listen(0, '127.0.0.1', () => resolve(httpsServer));
       httpsServer.on('error', reject);
     });
 
+    let plaintextRequests = 0;
+    const connectTargets = [];
+    const upstreamSockets = [];
     const proxy = await new Promise((resolve, reject) => {
-      const httpsProxy = https
-        .createServer(
-          tlsOptions,
-          (request, response) => {
-            const targetUrl = new URL(request.url);
-            const opts = {
-              host: targetUrl.hostname,
-              port: targetUrl.port,
-              path: `${targetUrl.pathname}${targetUrl.search}`,
-              protocol: targetUrl.protocol,
-              rejectUnauthorized: false,
-            };
+      const httpsProxy = https.createServer(tlsOptions, () => {
+        plaintextRequests += 1;
+      });
 
-            const proxyRequest = https.get(opts, (res) => {
-              let body = '';
+      httpsProxy.on('connect', (req, clientSocket, head) => {
+        connectTargets.push(req.url);
+        const [targetHost, targetPort] = req.url.split(':');
+        const upstream = net.connect(Number(targetPort), targetHost, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
 
-              res.on('data', (data) => {
-                body += data;
-              });
-
-              res.on('end', () => {
-                response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-                response.end(body + '6789');
-              });
-            });
-
-            proxyRequest.on('error', () => {
-              response.statusCode = 502;
-              response.end();
-            });
-          },
-          { port: PROXY_PORT }
-        )
-        .listen(PROXY_PORT, () => resolve(httpsProxy));
-
+      httpsProxy.listen(0, '127.0.0.1', () => resolve(httpsProxy));
       httpsProxy.on('error', reject);
     });
 
+    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const tunnelingAgent = new HttpsProxyAgent(`https://127.0.0.1:${proxy.address().port}`, {
+      rejectUnauthorized: false,
+    });
     try {
-      const response = await axios.get(`https://localhost:${server.address().port}/`, {
-        proxy: {
-          host: 'localhost',
-          port: proxy.address().port,
-          protocol: 'https:',
-        },
-        httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
-        }),
+      const response = await axios.get(`https://127.0.0.1:${server.address().port}/`, {
+        httpsAgent: tunnelingAgent,
       });
 
-      assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
+      // axios may auto-parse the body as JSON; compare as number to tolerate either form.
+      assert.strictEqual(Number(response.data), 12345, 'origin body should be received unmodified');
+      assert.strictEqual(plaintextRequests, 0, 'proxy must not see plaintext requests');
+      assert.strictEqual(connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        connectTargets[0].startsWith(`127.0.0.1:${server.address().port}`),
+        `CONNECT should target the origin: ${connectTargets[0]}`
+      );
     } finally {
-      await Promise.all([closeServer(server), closeServer(proxy)]);
+      if (originalReject === undefined) {
+        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      } else {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
+      }
+      tunnelingAgent.destroy();
+      // Tear down everything synchronously. server.close() on tls.Server can hang
+      // when CONNECT-tunneled sockets have been pumped through, even after
+      // closeAllConnections — destroy the underlying handles directly so the
+      // test doesn't wait on a graceful shutdown.
+      for (const s of upstreamSockets) s.destroy();
+      server.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      server.close();
+      proxy.close();
+      server.unref?.();
+      proxy.unref?.();
+    }
+  });
+
+  it('should CONNECT-tunnel HTTPS targets through an HTTP proxy by default (issue #6320)', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const origin = await new Promise((resolve, reject) => {
+      const s = https.createServer(tlsOptions, (req, res) => {
+        if (req.headers['proxy-authorization']) {
+          // Proxy-Authorization MUST NOT reach the origin under tunneling.
+          res.writeHead(500);
+          res.end('LEAKED:' + req.headers['proxy-authorization']);
+          return;
+        }
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('secret-body-12345');
+      });
+      s.listen(0, '127.0.0.1', () => resolve(s));
+      s.on('error', reject);
+    });
+
+    const captured = { plaintext: 0, connectTargets: [], connectAuth: [] };
+    const upstreamSockets = [];
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer((req) => {
+        // Plaintext arrival = tunneling regression. Capture URL/headers so
+        // assertions below can show what leaked.
+        captured.plaintext += 1;
+        captured.plaintextUrl = req.url;
+      });
+      p.on('connect', (req, clientSocket, head) => {
+        captured.connectTargets.push(req.url);
+        captured.connectAuth.push(req.headers['proxy-authorization'] || null);
+        const [host, port] = req.url.split(':');
+        const upstream = net.connect(Number(port), host, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    try {
+      const response = await axios.post(
+        `https://127.0.0.1:${origin.address().port}/path?token=abc123`,
+        { sensitive: 'leak-canary' },
+        {
+          proxy: {
+            host: '127.0.0.1',
+            port: proxy.address().port,
+            protocol: 'http',
+            auth: { username: 'admin', password: 'secret' },
+          },
+          validateStatus: () => true,
+        }
+      );
+
+      assert.strictEqual(response.data, 'secret-body-12345', 'origin body should arrive unmodified through the tunnel');
+      assert.strictEqual(captured.plaintext, 0, 'proxy must not see any plaintext request line');
+      assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        captured.connectTargets[0].startsWith(`127.0.0.1:${origin.address().port}`),
+        `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
+      );
+      assert.ok(captured.connectAuth[0], 'Proxy-Authorization should be present on the CONNECT request');
+      assert.match(
+        captured.connectAuth[0],
+        /^Basic /,
+        'CONNECT auth should be Basic-encoded'
+      );
+      const decoded = Buffer.from(captured.connectAuth[0].slice(6), 'base64').toString('utf8');
+      assert.strictEqual(decoded, 'admin:secret', 'Proxy-Authorization credentials should match');
+    } finally {
+      if (originalReject === undefined) {
+        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      } else {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
+      }
+      for (const s of upstreamSockets) s.destroy();
+      origin.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      origin.close();
+      proxy.close();
+      origin.unref?.();
+      proxy.unref?.();
+    }
+  });
+
+  it('should surface a CONNECT 407 from the proxy as an AxiosError (issue #6320)', async () => {
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer();
+      p.on('connect', (req, clientSocket) => {
+        clientSocket.write(
+          'HTTP/1.1 407 Proxy Authentication Required\r\n' +
+            'Proxy-Authenticate: Basic realm="proxy"\r\n' +
+            'Content-Length: 0\r\n' +
+            '\r\n'
+        );
+        clientSocket.end();
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    try {
+      await assert.rejects(
+        async () => {
+          await axios.get('https://127.0.0.1:1/', {
+            proxy: {
+              host: '127.0.0.1',
+              port: proxy.address().port,
+              protocol: 'http',
+            },
+            timeout: 4000,
+          });
+        },
+        (err) => {
+          assert.ok(err instanceof AxiosError, 'rejection should be an AxiosError');
+          return true;
+        }
+      );
+    } finally {
+      proxy.closeAllConnections?.();
+      proxy.close();
+      proxy.unref?.();
     }
   });
 
@@ -1828,75 +1973,67 @@ describe('supports http with nodejs', () => {
       });
 
     const server = await new Promise((resolve, reject) => {
-      const httpsServer = https
-        .createServer(
-          tlsOptions,
-          (req, res) => {
-            res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-            res.end('12345');
-          },
-          { port: SERVER_PORT }
-        )
-        .listen(SERVER_PORT, () => resolve(httpsServer));
-
+      const httpsServer = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('12345');
+      });
+      httpsServer.listen(0, '127.0.0.1', () => resolve(httpsServer));
       httpsServer.on('error', reject);
     });
 
+    let plaintextRequests = 0;
+    const connectTargets = [];
+    const upstreamSockets = [];
     const proxy = await new Promise((resolve, reject) => {
-      const httpsProxy = https
-        .createServer(
-          tlsOptions,
-          (request, response) => {
-            const targetUrl = new URL(request.url);
-            const opts = {
-              host: targetUrl.hostname,
-              port: targetUrl.port,
-              path: `${targetUrl.pathname}${targetUrl.search}`,
-              protocol: targetUrl.protocol,
-              rejectUnauthorized: false,
-            };
+      const httpsProxy = https.createServer(tlsOptions, () => {
+        plaintextRequests += 1;
+      });
 
-            const proxyRequest = https.get(opts, (res) => {
-              let body = '';
+      httpsProxy.on('connect', (req, clientSocket, head) => {
+        connectTargets.push(req.url);
+        const [targetHost, targetPort] = req.url.split(':');
+        const upstream = net.connect(Number(targetPort), targetHost, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
 
-              res.on('data', (data) => {
-                body += data;
-              });
-
-              res.on('end', () => {
-                response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-                response.end(body + '6789');
-              });
-            });
-
-            proxyRequest.on('error', () => {
-              response.statusCode = 502;
-              response.end();
-            });
-          },
-          { port: PROXY_PORT }
-        )
-        .listen(PROXY_PORT, () => resolve(httpsProxy));
-
+      httpsProxy.listen(0, '127.0.0.1', () => resolve(httpsProxy));
       httpsProxy.on('error', reject);
     });
 
-    const proxyUrl = `https://localhost:${proxy.address().port}/`;
+    const proxyUrl = `https://127.0.0.1:${proxy.address().port}/`;
     process.env.https_proxy = proxyUrl;
     process.env.HTTPS_PROXY = proxyUrl;
     process.env.no_proxy = '';
     process.env.NO_PROXY = '';
 
+    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     try {
-      const response = await axios.get(`https://localhost:${server.address().port}/`, {
-        httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
-        }),
-      });
+      const response = await axios.get(`https://127.0.0.1:${server.address().port}/`);
 
-      assert.equal(response.data, '123456789', 'should pass through proxy');
+      assert.strictEqual(Number(response.data), 12345, 'origin body should be received unmodified');
+      assert.strictEqual(plaintextRequests, 0, 'proxy must not see plaintext requests');
+      assert.strictEqual(connectTargets.length, 1, 'proxy should see exactly one CONNECT');
     } finally {
-      await Promise.all([closeServer(server), closeServer(proxy)]);
+      if (originalReject === undefined) {
+        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      } else {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
+      }
+      for (const s of upstreamSockets) s.destroy();
+      server.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      server.close();
+      proxy.close();
+      server.unref?.();
+      proxy.unref?.();
 
       if (originalHttpsProxy === undefined) {
         delete process.env.https_proxy;

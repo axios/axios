@@ -101,6 +101,16 @@ describe('helpers::buildURL', () => {
     expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
   });
 
+  it('should support URL object', () => {
+    const url = new URL('http://example.com/foo?a=1');
+    expect(buildURL(url, { b: 2 })).toEqual('http://example.com/foo?a=1&b=2');
+  });
+
+  it('should support URL object without params', () => {
+    const url = new URL('http://example.com/foo');
+    expect(buildURL(url, null)).toEqual(url.toString());
+  });
+
   it('should support custom serialize function', () => {
     const params = {
       x: 1,

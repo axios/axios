@@ -118,6 +118,34 @@ describe('AxiosHeaders', () => {
 
       assert.deepStrictEqual(headers.get('set-cookie'), ['safe=1', 'unsafe=1Injected: true']);
     });
+
+    // Regression: https://github.com/axios/axios/issues/10849
+    // Non-control Unicode header values must round-trip through set/get so
+    // request interceptors can encode them (e.g. encodeURIComponent) before
+    // the adapter sanitizes to byte-safe values at send time.
+    it('should preserve non-control Unicode characters in header values', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-name', '请求用户');
+
+      assert.strictEqual(headers.get('x-name'), '请求用户');
+    });
+
+    it('should preserve non-control Unicode characters in array header values', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-names', ['请求用户', 'naïve', 'プロジェクト']);
+
+      assert.deepStrictEqual(headers.get('x-names'), ['请求用户', 'naïve', 'プロジェクト']);
+    });
+
+    it('should still strip CR/LF from Unicode header values to prevent header injection', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-name', '请求\r\nInjected: true用户');
+
+      assert.strictEqual(headers.get('x-name'), '请求Injected: true用户');
+    });
   });
 
   it('should support uppercase name mapping for names overlapped by class methods', () => {

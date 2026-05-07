@@ -173,17 +173,21 @@ describe('helpers::Http2Sessions', () => {
     expect(session.request).toBe(session._originalRequest);
   });
 
-  it('clears the pending sessionTimeout when the session itself closes', () => {
+  it('cancels the pending idle timer when the session itself closes', () => {
     vi.useFakeTimers();
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+
     const session = pool.getSession('https://example.test', { sessionTimeout: 1000 });
 
     const stream = session.request();
     stream.emit('close');
+    // An idle-removal timer is now pending.
 
-    expect(vi.getTimerCount()).toBe(1);
-
+    clearTimeoutSpy.mockClear();
     session.emit('close');
 
-    expect(vi.getTimerCount()).toBe(0);
+    // Closing the session must cancel the pending idle timer; otherwise it
+    // keeps Node's event loop refed for up to sessionTimeout ms past close.
+    expect(clearTimeoutSpy).toHaveBeenCalled();
   });
 });

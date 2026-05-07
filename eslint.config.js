@@ -33,20 +33,27 @@ export default [
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node
+        ...globals.node,
+        globalThis: 'readonly'
       }
     }
   },
   {
     files: ['lib/adapters/http.js', 'lib/platform/node/**/*.js'],
     languageOptions: {
-      globals: globals.node
+      globals: {
+        ...globals.node,
+        globalThis: 'readonly'
+      }
     }
   },
   {
     files: ['lib/adapters/xhr.js', 'lib/platform/browser/**/*.js'],
     languageOptions: {
-      globals: globals.browser
+      globals: {
+        ...globals.browser,
+        globalThis: 'readonly'
+      }
     }
   }
 ];

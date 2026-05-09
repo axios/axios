@@ -176,53 +176,53 @@ declare class Axios {
     config: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   get<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   delete<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   head<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   options<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   post<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   put<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   patch<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   postForm<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   putForm<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   query<T = any, R = axios.AxiosResponse<T>, D = any>(
-    url: string,
+    url: string | URL,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
@@ -473,7 +473,7 @@ declare namespace axios {
   type LookupAddress = string | LookupAddressEntry;
 
   interface AxiosRequestConfig<D = any> {
-    url?: string;
+    url?: string | URL;
     method?: Method | string;
     baseURL?: string;
     allowAbsoluteUrls?: boolean;
@@ -661,7 +661,7 @@ declare namespace axios {
   interface AxiosInstance extends Axios {
     <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
     <T = any, R = AxiosResponse<T>, D = any>(
-      url: string,
+      url: string | URL,
       config?: AxiosRequestConfig<D>
     ): Promise<R>;
 

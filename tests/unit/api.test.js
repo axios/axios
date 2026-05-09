@@ -35,6 +35,28 @@ describe('static api', () => {
     await promise;
   });
 
+  it('should support URL object shorthand with config', async () => {
+    const url = new URL('http://example.com/test?a=1');
+
+    const response = await axios(url, {
+      params: {
+        b: 2,
+      },
+      adapter: (config) =>
+        Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        }),
+    });
+
+    assert.strictEqual(response.config.url, url.toString());
+    assert.deepStrictEqual(response.config.params, { b: 2 });
+  });
+
   it('should have defaults', () => {
     assert.strictEqual(typeof axios.defaults, 'object');
     assert.strictEqual(typeof axios.defaults.headers, 'object');
@@ -67,6 +89,16 @@ describe('static api', () => {
 
   it('should have getUri method', () => {
     assert.strictEqual(typeof axios.getUri, 'function');
+  });
+
+  it('should support URL object config in getUri', () => {
+    const url = new URL('https://api.example.com/foo');
+
+    assert.strictEqual(axios.getUri({ url }), url.toString());
+    assert.strictEqual(
+      axios.getUri({ baseURL: 'https://example.com/base', url }),
+      url.toString()
+    );
   });
 
   it('should have isAxiosError properties', () => {

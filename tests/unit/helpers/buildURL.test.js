@@ -101,6 +101,11 @@ describe('helpers::buildURL', () => {
     expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
   });
 
+  it('should support URL object without params', () => {
+    const url = new URL('http://example.com/foo?a=1');
+    expect(buildURL(url)).toEqual('http://example.com/foo?a=1');
+  });
+
   it('should support URL object with params', () => {
     const url = new URL('http://example.com/foo?a=1');
     expect(buildURL(url, { b: 2 })).toEqual('http://example.com/foo?a=1&b=2');

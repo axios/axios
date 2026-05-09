@@ -81,6 +81,72 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            oprtName: req.headers.oprtname,
+          })
+        );
+      },
+      {
+        port: SERVER_PORT,
+      }
+    );
+
+    const instance = axios.create({
+      baseURL: LOCAL_SERVER_URL,
+      adapter: 'fetch',
+    });
+
+    instance.interceptors.request.use((config) => {
+      config.headers.oprtName = encodeURIComponent(config.headers.oprtName);
+      return config;
+    });
+
+    try {
+      const { data } = await instance.get('/', {
+        headers: {
+          oprtName: '请求用户',
+        },
+      });
+
+      assert.strictEqual(data.oprtName, encodeURIComponent('请求用户'));
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should sanitize unencoded Unicode headers before passing them to fetch', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            xTest: req.headers['x-test'],
+          })
+        );
+      },
+      {
+        port: SERVER_PORT,
+      }
+    );
+
+    try {
+      const { data } = await fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+        headers: {
+          'x-test': '请求用户',
+        },
+      });
+
+      assert.strictEqual(data.xTest, '');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   describe('responses', () => {
     it('should support text response type', async () => {
       const originalData = 'my data';

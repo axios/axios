@@ -262,10 +262,29 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opencollective.com/axios/contribute"
+                href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
                 target="_blank"
-                >💜 Become a sponsor</a
             >
+                <img
+                    width="71px"
+                    height="70px"
+                    src="https://images.opencollective.com/buy-instagram-followers-twicsy/b4c5d7f/logo/256.png?height=256"
+                    alt="Buy Instagram Followers Twicsy"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Buy real Instagram followers from Twicsy. Twicsy has been voted the best site to buy followers from the likes of US Magazine.
+            </p>
+            <p align="center">
+                <a
+                    href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>twicsy.com</b></a
+                >
+            </p>
         </td>
         <td align="center" width="33.333333333333336%">
             <a

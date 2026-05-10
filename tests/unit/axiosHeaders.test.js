@@ -146,6 +146,27 @@ describe('AxiosHeaders', () => {
 
       assert.strictEqual(headers.get('x-name'), '请求Injected: true用户');
     });
+
+    // Regression: https://github.com/axios/axios/issues/6959
+    it('should silently skip empty header names', () => {
+      const headers = new AxiosHeaders();
+
+      assert.doesNotThrow(() => headers.set('', 'a'));
+      assert.doesNotThrow(() => headers.set('   ', 'b'));
+      assert.doesNotThrow(() => headers.set({ '': 'c', foo: 'bar' }));
+      assert.doesNotThrow(() =>
+        headers.set(
+          new Map([
+            ['', 'd'],
+            ['x', 'y'],
+          ])
+        )
+      );
+
+      assert.strictEqual(headers.has(''), false);
+      assert.strictEqual(headers.get('foo'), 'bar');
+      assert.strictEqual(headers.get('x'), 'y');
+    });
   });
 
   it('should support uppercase name mapping for names overlapped by class methods', () => {

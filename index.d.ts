@@ -364,7 +364,7 @@ export interface LookupAddressEntry {
 export type LookupAddress = string | LookupAddressEntry;
 
 export interface AxiosRequestConfig<D = any> {
-  url?: string | URL;
+  url?: string;
   method?: StringLiteralsOrString<Method>;
   baseURL?: string;
   allowAbsoluteUrls?: boolean;
@@ -609,53 +609,53 @@ export class Axios {
   getUri(config?: AxiosRequestConfig): string;
   request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
   get<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   delete<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   head<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   options<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   post<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   put<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   patch<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   postForm<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   putForm<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   patchForm<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
   query<T = any, R = AxiosResponse<T>, D = any>(
-    url: string | URL,
+    url: string,
     data?: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R>;
@@ -663,7 +663,7 @@ export class Axios {
 
 export interface AxiosInstance extends Axios {
   <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
-  <T = any, R = AxiosResponse<T>, D = any>(url: string | URL, config?: AxiosRequestConfig<D>): Promise<R>;
+  <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
 
   create(config?: CreateAxiosDefaults): AxiosInstance;
   defaults: Omit<AxiosDefaults, 'headers'> & {

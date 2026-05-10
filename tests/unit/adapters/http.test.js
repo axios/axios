@@ -3116,46 +3116,6 @@ describe('supports http with nodejs', () => {
     }
   });
 
-  it('should support URL object with params', async () => {
-    const server = await startHTTPServer(
-      (req, res) => {
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ url: req.url }));
-      },
-      { port: SERVER_PORT }
-    );
-
-    try {
-      const url = new URL(`http://localhost:${server.address().port}/foo?a=1`);
-      const response = await axios.get(url, { params: { b: '2' } });
-
-      assert.strictEqual(response.status, 200);
-      assert.strictEqual(response.data.url, '/foo?a=1&b=2');
-    } finally {
-      await stopHTTPServer(server);
-    }
-  });
-
-  it('should support URL object without params (no crash)', async () => {
-    const server = await startHTTPServer(
-      (req, res) => {
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ url: req.url }));
-      },
-      { port: SERVER_PORT }
-    );
-
-    try {
-      const url = new URL(`http://localhost:${server.address().port}/foo`);
-      const response = await axios.get(url);
-
-      assert.strictEqual(response.status, 200);
-      assert.strictEqual(response.data.url, '/foo');
-    } finally {
-      await stopHTTPServer(server);
-    }
-  });
-
   it('should support HTTP protocol', async () => {
     const server = await startHTTPServer(
       (req, res) => {

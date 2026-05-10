@@ -101,51 +101,6 @@ describe('helpers::buildURL', () => {
     expect(buildURL('/foo', new URLSearchParams('bar=baz'))).toEqual('/foo?bar=baz');
   });
 
-  it('should support URL object without params', () => {
-    const url = new URL('http://example.com/foo?a=1');
-    expect(buildURL(url)).toEqual('http://example.com/foo?a=1');
-  });
-
-  it('should support URL object with params', () => {
-    const url = new URL('http://example.com/foo?a=1');
-    expect(buildURL(url, { b: 2 })).toEqual('http://example.com/foo?a=1&b=2');
-  });
-
-  it('should support URL-like object with params', () => {
-    const url = {
-      toString() {
-        return 'http://example.com/foo?a=1';
-      },
-    };
-
-    expect(buildURL(url, { b: 2 })).toEqual('http://example.com/foo?a=1&b=2');
-  });
-
-  it('should not require global URL to be a constructor', () => {
-    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'URL');
-    const url = {
-      toString() {
-        return 'http://example.com/foo?a=1';
-      },
-    };
-
-    Object.defineProperty(globalThis, 'URL', {
-      configurable: true,
-      writable: true,
-      value: {},
-    });
-
-    try {
-      expect(buildURL(url, { b: 2 })).toEqual('http://example.com/foo?a=1&b=2');
-    } finally {
-      if (descriptor) {
-        Object.defineProperty(globalThis, 'URL', descriptor);
-      } else {
-        delete globalThis.URL;
-      }
-    }
-  });
-
   it('should support custom serialize function', () => {
     const params = {
       x: 1,

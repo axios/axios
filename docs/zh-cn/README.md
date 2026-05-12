@@ -459,7 +459,7 @@ instance.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 
 配置将会按优先级合并。顺序是：
 
-1. 在 `lib/defaults.js` 中找到的库默认值
+1. 在 [lib/defaults/index.js](https://github.com/axios/axios/blob/main/lib/defaults/index.js#L49) 中找到的库默认值
 2. 实例的 `defaults` 属性
 3. 请求的 `config` 参数
 

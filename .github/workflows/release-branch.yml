@@ -28,23 +28,32 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24.x
-          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
+
       - name: Build project
         run: npm run build
+
       - name: Install Playwright with deps
         run: npx playwright install --with-deps
+
       - name: Run unit tests
         run: npm run test:vitest:unit
+
       - name: Run browser tests
         run: npm run test:vitest:browser:headless
+
       - name: Pack npm tarball
         run: npm pack
+
       - name: Upload npm pack artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -66,23 +75,28 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-          cache-dependency-path: tests/smoke/cjs/package-lock.json
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
       - name: Download npm pack artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
+
       - name: Install CJS smoke test dependencies
         working-directory: tests/smoke/cjs
         run: npm install --ignore-scripts
+
       - name: Install packed axios
         working-directory: tests/smoke/cjs
         run: npm install --no-save ../../../artifacts/axios-*.tgz
+
       - name: Run CJS smoke tests
         working-directory: tests/smoke/cjs
         run: npm run test:smoke:cjs:mocha
@@ -100,23 +114,28 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-          cache-dependency-path: tests/smoke/esm/package-lock.json
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
       - name: Download npm pack artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
+
       - name: Install ESM smoke test dependencies
         working-directory: tests/smoke/esm
         run: npm install --ignore-scripts
+
       - name: Install packed axios
         working-directory: tests/smoke/esm
         run: npm install --no-save ../../../artifacts/axios-*.tgz
+
       - name: Run ESM smoke tests
         working-directory: tests/smoke/esm
         run: npm run test:smoke:esm:vitest
@@ -134,23 +153,28 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-          cache-dependency-path: tests/module/cjs/package-lock.json
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
       - name: Download npm pack artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
+
       - name: Install CJS module test dependencies
         working-directory: tests/module/cjs
         run: npm install --ignore-scripts
+
       - name: Install packed axios
         working-directory: tests/module/cjs
         run: npm install --no-save ../../../artifacts/axios-*.tgz
+
       - name: Run CJS module tests
         working-directory: tests/module/cjs
         run: npm run test:module:cjs
@@ -168,23 +192,28 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-          cache-dependency-path: tests/module/esm/package-lock.json
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
       - name: Download npm pack artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
+
       - name: Install ESM module test dependencies
         working-directory: tests/module/esm
         run: npm install --ignore-scripts
+
       - name: Install packed axios
         working-directory: tests/module/esm
         run: npm install --no-save ../../../artifacts/axios-*.tgz
+
       - name: Run ESM module tests
         working-directory: tests/module/esm
         run: npm run test:module:esm
@@ -198,13 +227,18 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          no-cache: true
+
       - name: Download npm pack artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
+
       - name: Install packed axios
         env:
           TMPDIR: ${{ runner.temp }}
@@ -214,6 +248,7 @@ jobs:
           mv artifacts/axios-*.tgz artifacts/axios.tgz
           cd tests/smoke/bun
           bun add file:../../../artifacts/axios.tgz
+
       - name: Run Bun smoke tests
         working-directory: tests/smoke/bun
         run: bun test
@@ -227,18 +262,25 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup deno
         uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+        with:
+          cache: false
+
       - name: Download npm pack artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: axios-tarball
           path: artifacts
+
       - name: Prepare packed axios dist
         run: mkdir -p dist && tar -xzf artifacts/axios-*.tgz -C artifacts && cp -R artifacts/package/dist/. ./dist
+
       - name: Install Deno smoke test dependencies
         working-directory: tests/smoke/deno
         run: deno install
+
       - name: Run Deno smoke tests
         working-directory: tests/smoke/deno
         run: deno task test
@@ -256,17 +298,22 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24.x
-          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
+
       - name: Configure git identity
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Bump version with NPM version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -288,12 +335,15 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "newTag=$VERSION" >> "$GITHUB_OUTPUT"
           echo "newBranch=release-v1x/version-$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Run preversion
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run preversion
+
       - name: Build project
         run: npm run build
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:

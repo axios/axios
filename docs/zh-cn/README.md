@@ -102,10 +102,7 @@ bun add axios
 安装完成后，你可以使用 `import` 或 `require` 导入库：
 
 ```js
-import axios from "axios";
-
-// 或者导入具名导出
-import { isCancel, AxiosError } from "axios";
+import axios, { isCancel, AxiosError } from "axios";
 ```
 
 如果你使用 `require` 导入，**只有默认导出可用**：

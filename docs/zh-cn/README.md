@@ -105,7 +105,7 @@ bun add axios
 import axios from "axios";
 
 // 或者导入具名导出
-import axios, { isCancel, AxiosError } from "axios";
+import { isCancel, AxiosError } from "axios";
 ```
 
 如果你使用 `require` 导入，**只有默认导出可用**：

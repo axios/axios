@@ -53,4 +53,4 @@ If someone reports a suspected vulnerability in a public issue, do not discuss s
 
 ---
 
-Thank you for helping keep axios healthy. If you are unsure about a call, ask another collaborator before acting — we would rather move a little slower than ship a regression to 100M+ weekly downloads.
+Thank you for helping keep axios healthy. If you are unsure about a call, ask another collaborator before acting, we would rather move a little slower than ship a regression. If you have any questions about your role or responsibilities, please reach out to the maintainers.

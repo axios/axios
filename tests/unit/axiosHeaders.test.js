@@ -166,6 +166,7 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.has(''), false);
       assert.strictEqual(headers.get('foo'), 'bar');
       assert.strictEqual(headers.get('x'), 'y');
+      assert.strictEqual(Object.keys(headers).length, 2);
     });
   });
 

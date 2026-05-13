@@ -105,10 +105,20 @@ bun add axios
 import axios, { isCancel, AxiosError } from "axios";
 ```
 
+你也可以使用默认导出，因为命名导出只是 Axios 工厂的重新导出：
+
+```js
+import axios from "axios";
+
+console.log(axios.isCancel("something"));
+```
+
 如果你使用 `require` 导入，**只有默认导出可用**：
 
 ```js
 const axios = require("axios");
+
+console.log(axios.isCancel("something"));
 ```
 
 ### CDN

@@ -995,9 +995,9 @@ describe('supports undici with nodejs', () => {
   });
 
   it('should support max redirects', async () => {
+    let i = 1;
     const server = await startHTTPServer(
       (() => {
-        let i = 1;
         return (req, res) => {
           res.setHeader('Location', '/' + i);
           res.statusCode = 302;
@@ -1015,10 +1015,13 @@ describe('supports undici with nodejs', () => {
         });
         assert.fail('should fail with too many redirects');
       } catch (error) {
+        assert.equal(i, 5);
         assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
         assert.equal(error.message, 'Maximum number of redirects exceeded');
+        i = 1;
       }
 
+      // option is ignored in undici.fetch
       try {
         await undiciAxios.get(`http://localhost:${server.address().port}/`, {
           responseType: 'stream',
@@ -1026,6 +1029,7 @@ describe('supports undici with nodejs', () => {
         });
         assert.fail('should fail with too many redirects');
       } catch (error) {
+        assert.equal(i, 22);
         assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
         assert.equal(error.message, 'Maximum number of redirects exceeded');
       }

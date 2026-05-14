@@ -683,6 +683,7 @@ describe('supports undici with nodejs', () => {
       });
       assert.fail('should fail');
     } catch (err) {
+      assert.strictEqual(String(err), 'AxiosError: Network Error');
       assert.strictEqual(err.cause && err.cause.code, 'ENOTFOUND');
     }
   });
@@ -692,6 +693,7 @@ describe('supports undici with nodejs', () => {
       await undiciAxios('http://notExistsUrl.in.nowhere');
       assert.fail('should fail');
     } catch (err) {
+      assert.strictEqual(String(err), 'AxiosError: Network Error');
       assert.strictEqual(err.cause && err.cause.code, 'ENOTFOUND');
     }
   });

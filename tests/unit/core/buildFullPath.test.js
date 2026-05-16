@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import buildFullPath from '../../../lib/core/buildFullPath.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('core::buildFullPath', () => {
   it('combines URLs when the requested URL is relative', () => {
@@ -30,5 +31,23 @@ describe('core::buildFullPath', () => {
 
   it('combines URLs when baseURL and requested URL are both relative', () => {
     expect(buildFullPath('/api', '/users')).toBe('/api/users');
+  });
+
+  it('rejects HTTP URLs missing slashes after the protocol', () => {
+    for (const call of [
+      () => buildFullPath(undefined, 'https:example.com/users'),
+      () => buildFullPath('http:example.com/api', '/users'),
+    ]) {
+      let error;
+      try {
+        call();
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).toBeInstanceOf(AxiosError);
+      expect(error.code).toBe(AxiosError.ERR_BAD_REQUEST);
+      expect(error.message).toBe('Invalid URL: missing "//" after protocol');
+    }
   });
 });

@@ -353,5 +353,10 @@ describe('core::mergeConfig', () => {
       expect(mergeConfig({ validateStatus: obj }, {}).validateStatus).toBe(obj);
       expect(mergeConfig({ validateStatus: null }, {}).validateStatus).toBe(null);
     });
+
+    it('keeps config1 value when config2 sets the key to undefined (issue #6688)', () => {
+      expect(mergeConfig(defaults, { validateStatus: undefined }).validateStatus).toBe(defaults.validateStatus);
+      expect(mergeConfig(defaults, { validateStatus: null }).validateStatus).toBe(null);
+    });
   });
 });

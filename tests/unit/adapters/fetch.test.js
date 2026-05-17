@@ -512,6 +512,23 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should support password-only basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await fetchAxios.get(`http://:secret@localhost:${server.address().port}/`);
+      const base64 = Buffer.from(':secret', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support basic auth with a header', async () => {
     const server = await startHTTPServer(
       (req, res) => {

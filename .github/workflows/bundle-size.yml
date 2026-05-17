@@ -33,7 +33,7 @@ jobs:
         run: npm run build
 
       - name: Compare bundle size
-        uses: axios/bundle-size@c7ccc7972ff98ae98eaac1f2075be8c31248253a # 0.1.0
+        uses: axios/bundle-size@main # 0.1.0
         with:
           path: '.'
           package-name: axios

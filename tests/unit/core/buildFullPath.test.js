@@ -36,6 +36,8 @@ describe('core::buildFullPath', () => {
   it('rejects HTTP URLs missing slashes after the protocol', () => {
     for (const call of [
       () => buildFullPath(undefined, 'https:example.com/users'),
+      () => buildFullPath(undefined, '\thttps:example.com/users'),
+      () => buildFullPath(undefined, 'http:/example.com/users'),
       () => buildFullPath('http:example.com/api', '/users'),
     ]) {
       let error;
@@ -46,7 +48,7 @@ describe('core::buildFullPath', () => {
       }
 
       expect(error).toBeInstanceOf(AxiosError);
-      expect(error.code).toBe(AxiosError.ERR_BAD_REQUEST);
+      expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
       expect(error.message).toBe('Invalid URL: missing "//" after protocol');
     }
   });

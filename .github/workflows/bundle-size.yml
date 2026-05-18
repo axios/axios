@@ -33,7 +33,7 @@ jobs:
         run: npm run build
 
       - name: Compare bundle size
-        uses: axios/bundle-size@c7ccc7972ff98ae98eaac1f2075be8c31248253a # 0.1.0
+        uses: axios/bundle-size@f15fb81ae6e3de06418f59498989e5aeeca9785d # 0.1.1
         with:
           path: '.'
           package-name: axios
@@ -45,3 +45,4 @@ jobs:
           output-file: bundle-size-comparison.json
           comment-pr: true
           github-token: ${{ github.token }}
+          release-stream: '1'

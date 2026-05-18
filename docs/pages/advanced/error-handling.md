@@ -64,7 +64,7 @@ axios.get("/user/12345", {
 });
 ```
 
-Using the `toJSON` method, you can get a object with more information about the error.
+Using the `toJSON` method, you can get an object with more information about the error.
 
 ```js
 axios.get("/user/12345").catch(function (error) {

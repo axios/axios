@@ -26,6 +26,7 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.auth;
     delete Object.prototype.baseURL;
     delete Object.prototype.socketPath;
+    delete Object.prototype.allowedSocketPaths;
     delete Object.prototype.beforeRedirect;
     delete Object.prototype.insecureHTTPParser;
     delete Object.prototype.adapter;
@@ -459,6 +460,36 @@ describe('Prototype Pollution Protection', () => {
 
     it('should not pick up Object.prototype.socketPath and redirect the request', async () => {
       Object.prototype.socketPath = '/tmp/axios-should-never-be-used.sock';
+
+      const server = await startServer();
+      const { port } = server.address();
+
+      try {
+        const res = await axios.get(`http://127.0.0.1:${port}/api`);
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.url, '/api');
+      } finally {
+        await stopServer(server);
+      }
+    }, 10000);
+
+    it('should not pick up Object.prototype.allowedSocketPaths and reject an explicit socketPath', async () => {
+      Object.prototype.allowedSocketPaths = ['/tmp/only-this.sock'];
+
+      const server = await startServer();
+      const { port } = server.address();
+
+      try {
+        const res = await axios.get(`http://127.0.0.1:${port}/api`);
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.url, '/api');
+      } finally {
+        await stopServer(server);
+      }
+    }, 10000);
+
+    it('should not pick up Object.prototype.socketPath as a non-string and trigger type validation', async () => {
+      Object.prototype.socketPath = { malicious: true };
 
       const server = await startServer();
       const { port } = server.address();

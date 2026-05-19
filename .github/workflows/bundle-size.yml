@@ -8,7 +8,6 @@ on:
       - reopened
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   bundle-size:
@@ -33,7 +32,7 @@ jobs:
         run: npm run build
 
       - name: Compare bundle size
-        uses: axios/bundle-size@f15fb81ae6e3de06418f59498989e5aeeca9785d # 0.1.1
+        uses: axios/bundle-size@6940d767de28b002599d1ab36cc04748de2c49e7 # 0.2.0
         with:
           path: '.'
           package-name: axios
@@ -43,6 +42,8 @@ jobs:
             dist/browser/axios.cjs
             dist/node/axios.cjs
           output-file: bundle-size-comparison.json
-          comment-pr: true
-          github-token: ${{ github.token }}
           release-stream: '1'
+
+      - name: Add bundle size report to summary
+        if: always() && hashFiles('bundle-size-comparison.md') != ''
+        run: cat bundle-size-comparison.md >> "$GITHUB_STEP_SUMMARY"

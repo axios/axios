@@ -14,33 +14,53 @@ const createAbortedError = () => {
   return error;
 };
 
-describe('timeout', () => {
-  test('timeout: 50 with never-resolving fetch mock rejects with ETIMEDOUT', async () => {
-    const fetch = (input: unknown, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        const signal = init?.signal || (input instanceof Request ? input.signal : undefined);
+// A fetch mock that never resolves and only rejects when the request is
+// aborted, so the only thing that ends the request is axios' own timeout.
+const neverResolvingFetch =
+  () =>
+  (input: unknown, init?: RequestInit) =>
+    new Promise<Response>((_resolve, reject) => {
+      const signal = init?.signal || (input instanceof Request ? input.signal : undefined);
 
-        if (signal) {
-          if (signal.aborted) {
-            reject(createAbortedError());
-            return;
-          }
-
-          signal.addEventListener(
-            'abort',
-            () => {
-              reject(createAbortedError());
-            },
-            { once: true }
-          );
+      if (signal) {
+        if (signal.aborted) {
+          reject(createAbortedError());
+          return;
         }
-      });
 
+        signal.addEventListener(
+          'abort',
+          () => {
+            reject(createAbortedError());
+          },
+          { once: true }
+        );
+      }
+    });
+
+describe('timeout', () => {
+  test('timeout via fetch adapter rejects with ECONNABORTED by default', async () => {
     const err = await axios
       .get('https://example.com/timeout', {
         adapter: 'fetch',
         timeout: 50,
-        env: env(fetch),
+        env: env(neverResolvingFetch()),
+      })
+      .catch((e: any) => e);
+
+    expect(axios.isAxiosError(err)).toBe(true);
+    // Parity with the xhr/http adapters (issue #10888): the default timeout
+    // code is ECONNABORTED, not ETIMEDOUT.
+    expect(err.code).toBe('ECONNABORTED');
+  });
+
+  test('timeout via fetch adapter rejects with ETIMEDOUT when clarifyTimeoutError is set', async () => {
+    const err = await axios
+      .get('https://example.com/timeout', {
+        adapter: 'fetch',
+        timeout: 50,
+        transitional: { clarifyTimeoutError: true },
+        env: env(neverResolvingFetch()),
       })
       .catch((e: any) => e);
 

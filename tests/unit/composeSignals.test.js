@@ -32,6 +32,41 @@ describe('helpers::composeSignals', () => {
     assert.match(String(signal.reason), /timeout of 100ms exceeded/);
   });
 
+  runIfAbortController(
+    'should default the timeout error code to ECONNABORTED (parity with xhr/http)',
+    async () => {
+      const signal = composeSignals([], 20);
+
+      await new Promise((resolve) => signal.addEventListener('abort', resolve));
+
+      assert.strictEqual(signal.reason.name, 'AxiosError');
+      assert.strictEqual(signal.reason.code, 'ECONNABORTED');
+      assert.match(signal.reason.message, /timeout of 20ms exceeded/);
+    }
+  );
+
+  runIfAbortController('should honor a custom timeoutErrorMessage', async () => {
+    const signal = composeSignals([], 20, { timeoutErrorMessage: 'custom timeout' });
+
+    await new Promise((resolve) => signal.addEventListener('abort', resolve));
+
+    assert.strictEqual(signal.reason.code, 'ECONNABORTED');
+    assert.strictEqual(signal.reason.message, 'custom timeout');
+  });
+
+  runIfAbortController(
+    'should use ETIMEDOUT when transitional.clarifyTimeoutError is set',
+    async () => {
+      const signal = composeSignals([], 20, {
+        transitional: { clarifyTimeoutError: true },
+      });
+
+      await new Promise((resolve) => signal.addEventListener('abort', resolve));
+
+      assert.strictEqual(signal.reason.code, 'ETIMEDOUT');
+    }
+  );
+
   it('should return undefined if signals and timeout are not provided', () => {
     const signal = composeSignals([]);
 

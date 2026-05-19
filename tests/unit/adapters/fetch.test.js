@@ -583,7 +583,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('fetch adapter - timeout normalization', () => {
-    it('should reject with an AxiosError(ETIMEDOUT) on timeout', async () => {
+    it('should reject with an AxiosError(ECONNABORTED) on timeout by default', async () => {
       const server = await startHTTPServer(
         async (req, res) => {
           await setTimeoutAsync(1000);
@@ -597,6 +597,64 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           () =>
             fetchAxios(`http://localhost:${server.address().port}/`, {
               timeout: 200,
+            }),
+          (err) => {
+            assert.strictEqual(err.name, 'AxiosError');
+            // Parity with the xhr/http adapters: default timeout code is
+            // ECONNABORTED, not ETIMEDOUT (see issue #10888).
+            assert.strictEqual(err.code, 'ECONNABORTED');
+            assert.match(err.message, /timeout of 200ms exceeded/);
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should honor a custom timeoutErrorMessage on timeout', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          await setTimeoutAsync(1000);
+          res.end('OK');
+        },
+        { port: 0 }
+      );
+
+      try {
+        await assert.rejects(
+          () =>
+            fetchAxios(`http://localhost:${server.address().port}/`, {
+              timeout: 200,
+              timeoutErrorMessage: 'custom timeout',
+            }),
+          (err) => {
+            assert.strictEqual(err.name, 'AxiosError');
+            assert.strictEqual(err.code, 'ECONNABORTED');
+            assert.strictEqual(err.message, 'custom timeout');
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should reject with ETIMEDOUT when transitional.clarifyTimeoutError is set', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          await setTimeoutAsync(1000);
+          res.end('OK');
+        },
+        { port: 0 }
+      );
+
+      try {
+        await assert.rejects(
+          () =>
+            fetchAxios(`http://localhost:${server.address().port}/`, {
+              timeout: 200,
+              transitional: { clarifyTimeoutError: true },
             }),
           (err) => {
             assert.strictEqual(err.name, 'AxiosError');
@@ -670,6 +728,9 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           () =>
             fetchAxios.get('/', {
               timeout: 50,
+              // clarifyTimeoutError keeps this regression asserting ETIMEDOUT;
+              // the default code is now ECONNABORTED (parity, issue #10888).
+              transitional: { clarifyTimeoutError: true },
               env: { fetch: safariFetch },
             }),
           (err) => {

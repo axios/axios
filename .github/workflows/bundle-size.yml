@@ -43,6 +43,6 @@ jobs:
             dist/browser/axios.cjs
             dist/node/axios.cjs
           output-file: bundle-size-comparison.json
-          comment-pr: ${{ github.event.pull_request.head.repo.fork == false }}
+          comment-pr: true
           github-token: ${{ github.token }}
           release-stream: '1'

@@ -40,6 +40,8 @@ jobs:
             dist/axios.js
             dist/axios.min.js
             dist/browser/axios.cjs
+            dist/esm/axios.js
+            dist/esm/axios.min.js
             dist/node/axios.cjs
           output-file: bundle-size-comparison.json
           release-stream: '1'

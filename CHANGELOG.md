@@ -1,5 +1,47 @@
 # Changelog
 
+## v1.16.1 — May 13, 2026
+
+This release ships a defence-in-depth fix for prototype pollution in `formDataToJSON`, hardens proxy and CI workflows, restores Webpack 4 compatibility for the fetch adapter, and includes several small bug fixes and maintenance improvements.
+
+## 🔒 Security Fixes
+
+* **Prototype Pollution Defence-in-Depth:** Hardened `formDataToJSON` against already-polluted `Object.prototype` by walking own properties only, so attacker-controlled keys inherited from a poisoned prototype cannot propagate through deserialization. (__#7413__)
+* **Proxy Cleartext Leak:** Fixed an issue where HTTPS request data could be transmitted in cleartext to an HTTP proxy under certain configurations. (__#10858__)
+* **CI Cache Removal:** Removed all GitHub Actions caches as a defence-in-depth measure against cache poisoning vectors in the build pipeline. (__#10882__)
+
+## 🐛 Bug Fixes
+
+* **Data URI Parsing:** Updated the `fromDataURI` regex to match RFC 2397 more strictly, fixing edge cases in `data:` URL handling. (__#10829__)
+* **Unicode Headers:** Preserved Unicode header values when running through request interceptors, so non-ASCII header content is no longer corrupted before dispatch. (__#10850__)
+* **XHR Upload Progress:** Guarded against malformed `ProgressEvent` payloads emitted by some environments during XHR upload, preventing crashes when `loaded` / `total` are missing or invalid. (__#10868__)
+* **Webpack 4 Fetch Adapter:** Fixed an "unexpected token" error caused by syntax in the fetch adapter that Webpack 4 could not parse, restoring compatibility for legacy bundler users. (__#10864__)
+* **Type Definitions:** Made `parseReviver` `context.source` optional in the type definitions to align with the ES2023 specification. (__#10837__)
+* **URL Object Support Reverted:** Reverted the change that allowed passing a `URL` object as `config.url` (originally __#10866__) due to regressions; this support will be reintroduced in a later release once the underlying issues are addressed. (__#10874__)
+
+## 🔧 Maintenance & Chores
+
+* **Cycle Detection Refactor:** Replaced the array-based cycle tracker in `toJSONObject` with a `WeakSet`, improving performance and memory behaviour on large nested structures. (__#10832__)
+* **composeSignals Cleanup:** Refactored `composeSignals` to use a clearer early-return structure, simplifying the cancellation/abort composition path. (__#10844__)
+* **AI Readiness & Repo Docs:** Added `AGENTS.md` and related contributor-guide updates for both human and AI agents, plus post-release documentation improvements. (__#10835__, __#10841__)
+* **Docs Improvements:** Clarified the GET request example, fixed the interceptor `eject` example to reference the correct instance, and corrected the Buzzoid sponsor description in the README. (__#10836__, __#10853__, __#10856__)
+* **Sponsorship Tooling:** Fixed empty sponsor arrays in the sponsor processing script, added the ability to inject additional sponsors, updated the sponsorship link, and added a Twicsy advertisement entry. (__#10843__, __#10859__, __#10869__)
+* **Dependencies:** Bumped `@commitlint/cli` from 20.5.0 to 20.5.2. (__#10846__)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+* __@hpinmetaverse__ (__#10836__)
+* __@tommyhgunz14__ (__#7413__)
+* __@abhu85__ (__#10829__)
+* __@divyanshuraj1095__ (__#10853__)
+* __@sagodi97__ (__#10856__)
+* __@rkdfx__ (__#10868__)
+* __@Liuwei1125__ (__#10866__)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.16.0...v1.16.1)
+
 ## v1.16.0 — May 2, 2026
 
 This release adds support for the QUERY HTTP method and a new `ECONNREFUSED` error constant, lands a substantial wave of HTTP, fetch, and XHR adapter bug fixes around redirects, aborts, headers, and timeouts, and welcomes 23 new contributors.

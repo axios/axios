@@ -1,0 +1,48 @@
+name: Bundle Size
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  bundle-size:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.x
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build project
+        run: npm run build
+
+      - name: Compare bundle size
+        uses: axios/bundle-size@f15fb81ae6e3de06418f59498989e5aeeca9785d # 0.1.1
+        with:
+          path: '.'
+          package-name: axios
+          files: |
+            dist/axios.js
+            dist/axios.min.js
+            dist/browser/axios.cjs
+            dist/node/axios.cjs
+          output-file: bundle-size-comparison.json
+          comment-pr: ${{ github.event.pull_request.head.repo.fork == false }}
+          github-token: ${{ github.token }}
+          release-stream: '1'

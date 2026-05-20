@@ -325,6 +325,7 @@
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Contributors](https://img.shields.io/github/contributors/axios/axios.svg?style=flat-square)](CONTRIBUTORS.md)
+[![Agent Friendly](https://agentfriendlycode.com/api/badge/github/axios/axios.svg)](https://agentfriendlycode.com/repo/32)
 
 </div>
 

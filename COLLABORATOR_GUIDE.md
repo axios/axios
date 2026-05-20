@@ -39,7 +39,7 @@ At least one maintainer must review and approve the PR before it can be merged. 
 If changes are requested, address them in a timely manner. If you are unable to make the changes, communicate that clearly so someone else can pick it up.
 
 > [!IMPORTANT]  
-> We will wait a maximum of 21 days for a response to requested changes before closing the PR. If the PR is closed due to inactivity, it can be reopened if the requested changes are made.
+> We will wait a maximum of 28 days for a response to requested changes before closing the PR as stale. Once closed as stale, we will either address the issue in a maintainer-led PR or open an issue for other contributors to pick up. If the author wants to continue the work, they should re-create the PR from the latest version of the correct target branch, address all feedback provided, and request review from a maintainer.
 
 ## Security Disclosures
 

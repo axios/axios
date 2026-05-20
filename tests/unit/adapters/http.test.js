@@ -850,7 +850,7 @@ describe('supports http with nodejs', () => {
       }
     });
 
-    it('should advertise zstd when enabled and supported', async () => {
+    it('should advertise zstd when enabled through transitional config and supported', async () => {
       if (!isZstdSupported) {
         return;
       }
@@ -867,7 +867,9 @@ describe('supports http with nodejs', () => {
 
       try {
         await axios.get(`http://localhost:${server.address().port}/`, {
-          advertiseZstd: true,
+          transitional: {
+            advertiseZstdAcceptEncoding: true,
+          },
         });
         assert.strictEqual(acceptEncoding.includes('zstd'), true);
       } finally {

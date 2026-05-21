@@ -392,6 +392,7 @@ declare namespace axios {
     forcedJSONParsing?: boolean;
     clarifyTimeoutError?: boolean;
     legacyInterceptorReqResOrdering?: boolean;
+    advertiseZstdAcceptEncoding?: boolean;
   }
 
   interface GenericAbortSignal {

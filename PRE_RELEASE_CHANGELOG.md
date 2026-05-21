@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Bug Fixes
+
+- **Fetch Adapter:** Honored `timeoutErrorMessage` and `transitional.clarifyTimeoutError` when fetch requests time out. (**#10888**)
+
 ## New Features
 
 - **HTTP Adapter - Zstandard:** Added automatic zstd decompression on Node.js versions that support it. `zstd` is only advertised in the default `Accept-Encoding` header when `transitional.advertiseZstdAcceptEncoding: true` is set. (**#6792**)

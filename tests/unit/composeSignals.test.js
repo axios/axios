@@ -4,6 +4,14 @@ import composeSignals from '../../lib/helpers/composeSignals.js';
 
 describe('helpers::composeSignals', () => {
   const runIfAbortController = typeof AbortController === 'function' ? it : it.skip;
+  const waitForAbort = (signal) =>
+    new Promise((resolve) => {
+      if (signal.aborted) {
+        resolve();
+        return;
+      }
+      signal.addEventListener('abort', resolve, { once: true });
+    });
 
   runIfAbortController('should abort when any of the signals abort', () => {
     let called;
@@ -25,11 +33,32 @@ describe('helpers::composeSignals', () => {
   runIfAbortController('should abort on timeout', async () => {
     const signal = composeSignals([], 100);
 
-    await new Promise((resolve) => {
-      signal.addEventListener('abort', resolve);
-    });
+    await waitForAbort(signal);
 
     assert.match(String(signal.reason), /timeout of 100ms exceeded/);
+    assert.strictEqual(signal.reason.code, 'ECONNABORTED');
+  });
+
+  runIfAbortController('should use a custom timeout message', async () => {
+    const signal = composeSignals([], 100, { timeoutErrorMessage: 'custom timeout' });
+
+    await waitForAbort(signal);
+
+    assert.strictEqual(signal.reason.message, 'custom timeout');
+    assert.strictEqual(signal.reason.code, 'ECONNABORTED');
+  });
+
+  runIfAbortController('should clarify timeout errors when requested', async () => {
+    const signal = composeSignals([], 100, {
+      transitional: {
+        clarifyTimeoutError: true,
+      },
+    });
+
+    await waitForAbort(signal);
+
+    assert.match(String(signal.reason), /timeout of 100ms exceeded/);
+    assert.strictEqual(signal.reason.code, 'ETIMEDOUT');
   });
 
   it('should return undefined if signals and timeout are not provided', () => {

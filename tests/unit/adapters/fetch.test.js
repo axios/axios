@@ -583,7 +583,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('fetch adapter - timeout normalization', () => {
-    it('should reject with an AxiosError(ETIMEDOUT) on timeout', async () => {
+    it('should reject with an AxiosError(ECONNABORTED) on timeout by default', async () => {
       const server = await startHTTPServer(
         async (req, res) => {
           await setTimeoutAsync(1000);
@@ -597,6 +597,64 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           () =>
             fetchAxios(`http://localhost:${server.address().port}/`, {
               timeout: 200,
+            }),
+          (err) => {
+            assert.strictEqual(err.name, 'AxiosError');
+            assert.strictEqual(err.code, 'ECONNABORTED');
+            assert.match(err.message, /timeout of 200ms exceeded/);
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should respect the timeoutErrorMessage property', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          await setTimeoutAsync(1000);
+          res.end('OK');
+        },
+        { port: 0 }
+      );
+
+      try {
+        await assert.rejects(
+          () =>
+            fetchAxios(`http://localhost:${server.address().port}/`, {
+              timeout: 200,
+              timeoutErrorMessage: 'oops, timeout',
+            }),
+          (err) => {
+            assert.strictEqual(err.name, 'AxiosError');
+            assert.strictEqual(err.code, 'ECONNABORTED');
+            assert.strictEqual(err.message, 'oops, timeout');
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should clarify timeout errors when requested', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          await setTimeoutAsync(1000);
+          res.end('OK');
+        },
+        { port: 0 }
+      );
+
+      try {
+        await assert.rejects(
+          () =>
+            fetchAxios(`http://localhost:${server.address().port}/`, {
+              timeout: 200,
+              transitional: {
+                clarifyTimeoutError: true,
+              },
             }),
           (err) => {
             assert.strictEqual(err.name, 'AxiosError');
@@ -649,7 +707,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     // under CI runner load even though the production code is fine. Retry as
     // a backstop.
     it(
-      'should surface ETIMEDOUT when fetch rejects with a broken DOMException on abort (Safari)',
+      'should surface ECONNABORTED when fetch rejects with a broken DOMException on timeout (Safari)',
       { retry: 2 },
       async () => {
         const safariFetch = (url, init) => {
@@ -674,7 +732,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             }),
           (err) => {
             assert.strictEqual(err.name, 'AxiosError');
-            assert.strictEqual(err.code, 'ETIMEDOUT');
+            assert.strictEqual(err.code, 'ECONNABORTED');
             assert.match(err.message, /timeout of 50ms exceeded/);
             return true;
           }

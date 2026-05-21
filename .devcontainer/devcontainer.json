@@ -1,0 +1,17 @@
+{
+  "name": "axios",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-24-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+  },
+  "postCreateCommand": "npm ci --ignore-scripts",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
+      "settings": {
+        "eslint.validate": ["javascript"],
+        "editor.formatOnSave": false,
+      },
+    },
+  },
+}

@@ -33,4 +33,4 @@ jobs:
         run: npm run build
 
       - name: Publish to NPM
-        run: npm publish --provenance --access public
+        run: npm stage publish --provenance --access public

@@ -5834,6 +5834,19 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    it('accepts a path-only url when socketPath is set (regression #6611)', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('/echo?q=1', { socketPath });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.ok, true);
+        assert.strictEqual(res.data.url, '/echo?q=1');
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
     it('allows socketPath when it matches an allowedSocketPaths string', async () => {
       const socketPath = makeSocketPath();
       const server = await startUnixServer(socketPath);

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Bug Fixes
+
+- **HTTP Adapter - Auth on Redirect:** HTTP Basic credentials supplied via `config.auth` are now restored on same-origin redirects, fixing a regression caused by `follow-redirects` >= 1.15.8 that broke `POST` requests answered with a 303 Location. Cross-origin redirects continue to drop credentials, preserving the existing T-R2 mitigation in `THREATMODEL.md`. (**#6929**)
+
 ## New Features
 
 - **HTTP Adapter - Zstandard:** Added automatic zstd decompression on Node.js versions that support it. `zstd` is only advertised in the default `Accept-Encoding` header when `transitional.advertiseZstdAcceptEncoding: true` is set. (**#6792**)

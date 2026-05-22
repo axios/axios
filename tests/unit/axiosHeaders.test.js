@@ -153,11 +153,12 @@ describe('AxiosHeaders', () => {
 
       assert.doesNotThrow(() => headers.set('', 'a'));
       assert.doesNotThrow(() => headers.set('   ', 'b'));
-      assert.doesNotThrow(() => headers.set({ '': 'c', foo: 'bar' }));
+      assert.doesNotThrow(() => headers.set({ '': 'c', '   ': 'd', foo: 'bar' }));
       assert.doesNotThrow(() =>
         headers.set(
           new Map([
-            ['', 'd'],
+            ['', 'e'],
+            ['   ', 'f'],
             ['x', 'y'],
           ])
         )

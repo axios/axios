@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 
 describe('core::AxiosHeaders', () => {
-  describe('whitespace-only input', () => {
+  describe('whitespace-only input (no-op)', () => {
     // Some XMLHttpRequest polyfills (notably React Native on HarmonyOS for
     // large multipart responses) can return '\n', '\r\n' or ' ' from
     // getAllResponseHeaders() instead of either a proper header block or ''.
@@ -32,6 +32,27 @@ describe('core::AxiosHeaders', () => {
       const h = AxiosHeaders.from('\r\n');
       expect(Object.keys(h)).toHaveLength(0);
     });
+
+    it('headers.set("\\n", "value") is a no-op (does not throw, does not write)', () => {
+      const h = new AxiosHeaders();
+      expect(() => h.set('\n', 'whatever')).not.toThrow();
+      expect(Object.keys(h)).toHaveLength(0);
+    });
+  });
+
+  describe('explicit empty / invalid header name still throws', () => {
+    // Distinct from whitespace-only input above: the user explicitly asked
+    // to set '' as a header name. This should remain an error, and stay
+    // consistent across overloads.
+    it('throws on set("", value)', () => {
+      const h = new AxiosHeaders();
+      expect(() => h.set('', 'bar')).toThrow(/header name must be a non-empty string/);
+    });
+
+    it('throws on set({ "": value }) (overload consistency)', () => {
+      const h = new AxiosHeaders();
+      expect(() => h.set({ '': 'bar' })).toThrow(/header name must be a non-empty string/);
+    });
   });
 
   describe('regression', () => {
@@ -46,12 +67,18 @@ describe('core::AxiosHeaders', () => {
       expect(h.get('x-foo')).toBe('bar');
     });
 
+    it('still trims surrounding whitespace from a single header name', () => {
+      const h = new AxiosHeaders();
+      h.set('  X-Foo  ', 'bar');
+      expect(h.get('x-foo')).toBe('bar');
+    });
+
     it('still treats null/undefined input as empty headers', () => {
       expect(Object.keys(new AxiosHeaders(null))).toHaveLength(0);
       expect(Object.keys(new AxiosHeaders(undefined))).toHaveLength(0);
     });
 
-    it('still treats "" as empty headers', () => {
+    it('still treats "" as empty headers (constructor short-circuit)', () => {
       expect(Object.keys(new AxiosHeaders(''))).toHaveLength(0);
     });
   });

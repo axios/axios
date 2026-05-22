@@ -33,7 +33,9 @@ const decorateRequest = (handler) => {
     Object.assign(req, {
       path: url.pathname,
       search: url.search,
-      searchParams: url.searchParams
+      searchParams: url.searchParams,
+      username: url.username,
+      password: url.password
     });
     return handler(req, res);
   }

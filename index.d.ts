@@ -280,7 +280,7 @@ export interface TransitionalOptions {
   forcedJSONParsing?: boolean;
   clarifyTimeoutError?: boolean;
   legacyInterceptorReqResOrdering?: boolean;
-  useAxiosRedirects: boolean;
+  useAxiosRedirects?: boolean;
 }
 
 export interface GenericAbortSignal {
@@ -380,8 +380,9 @@ export interface AxiosRequestMeta {
 }
 
 export interface AxiosBufferingConfig {
-  flushTimeout?: number;
-  maxBytes?: number;
+  timout?: number;
+  limit?: number;
+  threshold?: number;
 }
 
 
@@ -464,7 +465,7 @@ export interface AxiosRequestConfig<D = any> {
   http2Options?: Record<string, any> & {
     sessionTimeout?: number;
   };
-  buffering?: AxiosBufferingConfig;
+  buffering?: boolean | AxiosBufferingConfig;
   allowDowngrade?: boolean;
   followStatusCodes?: string | number | string[] | number[] | Record<string, boolean>;
 }

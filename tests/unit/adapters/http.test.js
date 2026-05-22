@@ -3534,6 +3534,7 @@ describe('supports http with nodejs', () => {
         },
         {
           useHTTP2: true,
+          useHTTPS: true,
           port: SERVER_PORT,
         }
       );
@@ -3552,6 +3553,7 @@ describe('supports http with nodejs', () => {
       const server = await startHTTPServer(null, {
         useHTTP2: true,
         port: SERVER_PORT,
+        useHTTPS: true
       });
 
       try {
@@ -3584,6 +3586,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -3626,6 +3629,7 @@ describe('supports http with nodejs', () => {
             {
               useHTTP2: true,
               port: SERVER_PORT,
+              useHTTPS: true
             }
           );
 
@@ -3657,6 +3661,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -3702,6 +3707,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -3743,6 +3749,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -3794,6 +3801,7 @@ describe('supports http with nodejs', () => {
           {
             useHTTP2: true,
             port: SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -3831,6 +3839,7 @@ describe('supports http with nodejs', () => {
           {
             useHTTP2: true,
             port: SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -3843,6 +3852,7 @@ describe('supports http with nodejs', () => {
           {
             useHTTP2: true,
             port: ALTERNATE_SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -3881,6 +3891,7 @@ describe('supports http with nodejs', () => {
           {
             useHTTP2: true,
             port: SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -3916,6 +3927,7 @@ describe('supports http with nodejs', () => {
           {
             useHTTP2: true,
             port: SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -3958,6 +3970,7 @@ describe('supports http with nodejs', () => {
           {
             useHTTP2: true,
             port: SERVER_PORT,
+            useHTTPS: true
           }
         );
 

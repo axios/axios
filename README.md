@@ -88,7 +88,8 @@
   - [🔥 Custom fetch](#-custom-fetch)
     - [🔥 Using with Tauri](#-using-with-tauri)
     - [🔥 Using with SvelteKit](#-using-with-sveltekit-)
-- [🔥 HTTP2](#-http2)
+- [🔥 HTTP/2 Support](#-http2-support)
+- [Axios redirects]
 - [Semver](#semver)
 - [Promises](#promises)
 - [TypeScript](#typescript)
@@ -1949,8 +1950,6 @@ This support depends on the runtime environment. Since Axios relies on Node.js A
 
 Options like `httpVersion` and `http2Options` are adapter-specific and may not behave consistently across all environments.
 
-Note: HTTP/2 redirects are currently not supported by the HTTP/2 adapter.
-
 ```js
 const form = new FormData();
 
@@ -1966,6 +1965,109 @@ const { data, headers, status } = await axios.post('https://httpbin.org/post', f
   responseType: 'arraybuffer',
 });
 ```
+
+> ⚠️ **Note**: by default, the `http` adapter doesn't support redirects when using `HTTP/2`, as the underlying `follow-redirects` package doesn't support it. 
+> To enable redirects, you can set `transitional.useAxiosRedirects` option to `true`, which will replace the `follow-redirects` package with Axios' own experimental implementation
+> that supports redirects for `HTTP/1.1` and `HTTP/2`.
+
+
+## Axios redirects
+
+Experimental Axios' following redirects implementation was added in `v1.17.0`. 
+This feature is `disabled` by default, and, when enabled, it replaces `follow-redirects` package
+with Axios' own implementation. To enable it, set `transitional.useAxiosRedirects` option to `true`.
+
+In the next major version this feature will be enabled by default, and the `follow-redirects` package will be removed from dependencies.
+
+```js
+const { data } = await axios.get(url, {
+  transitional: {
+    useAxiosRedirects: true
+  }
+});
+```
+
+> ⚠️ **Note**: this feature is not currently compatible with proxies.
+
+The main reasons of moving to our own implementation was:
+- adding redirects for `http` adapter when using `HTTP/2`, which was not possible with `follow-redirects` package 
+- adding redirects support for `fetch` adapter on server side and client workers (browser's fetch API doesn't support redirects)
+- solving the issue of buffering the entire request body in RAM when using `follow-redirects` package with streams in node.js
+- improving the overall reliability of redirects handling in Axios
+
+When using Axios redirects `beforeRedirect` hook has a different signature, and accepts the following arguments:
+`(redirectMeta: AxiosRedirectMeta) => false | void`.
+
+```
+export interface AxiosRedirectMeta {
+  status: number;
+  headers: AxiosHeaders;
+  config: InternalAxiosRequestConfig,
+  redirectsCount: number;
+  maxRedirects: number;
+  url: URL;
+  redirectTo: URL;
+  response: AxiosResponse,
+  sanitize: () => void;
+}
+```
+
+When the hook returns `false`, the redirect will be cancelled, and the response will be returned as is.
+Otherwise, the redirect will be followed as usual.
+
+`followStatusCodes` implements filtering of redirect status codes.
+By default, it includes `301`, `302`, `303`, `307`, and `308` status codes,
+but you can customize it by setting the `transitional.followStatusCodes` option to an array of status codes
+that should be followed. The option also supporting the following semantic:
+````js
+{
+  followStatusCodes: '301 302 303' // space separated string of status codes (also accepts comma and | separators)
+  followStatusCodes: '301' // single string value
+  followStatusCodes: 301 // single number value
+}
+````
+
+When following redirects, you might want to sanitize the request config to avoid sending sensitive data (like auth headers, HTTP auth credentials) to untrusted URLs.
+To do this, you can call the `sanitize` method of the `redirectMeta` object, which will remove all sensitive data from the request config.
+This method will be used by default for cross-origin redirects,
+but you can call it manually in the `beforeRedirect` hook if you want to sanitize the config for same-origin redirects and same domain as well.
+
+> **Note**: be aware that cross-domain requests with credentials (cookies, auth headers) can lead to security vulnerabilities.
+
+
+### Buffering
+
+When the request body is a stream, it is necessary to use stream buffering. 
+When using the `http` adapter in node.js, Axios will buffer the entire request body in RAM while sending it to the server
+if the body is a stream and redirects are enabled (default behavior). For queries with large stream bodies (such as large file uploads),
+this poses a pretty serious problem due to the depletion of available RAM.
+This is because the `follow-redirects` package, which is used by default for handling redirects,
+buffers the entire request body in memory to be able to resend it in case of a `307`/`308` redirect.
+
+When the `useAxiosRedirects` option is enabled, Axios will use its own buffering algorithm to buffer the request body stream,
+which involves the use of a temporary buffer for temporary body buffering within a short period of time after the request begins to be sent
+(actually read by an adapter and its following network stack). In addition, Axios has limit for buffer size, exceeding of which leads to pausing
+the stream reading until buffer flush will be performed.
+
+Body buffering will be used for `ReadableStream`, async iterables and `Request` request payload types.
+
+By default, the buffering time window is set to `5000ms` and the buffer size is set to `50MB`. This limit is not rigid, and in practice means a high watermark in terms of stream concepts.
+If server responds with a `307` or `308` redirect after the buffered was flushed, the request will be failed with `AxiosError.ERR_STREAM_FLUSHED`.
+This options can be controlled via `config.buffering` property, which accepts an object with the following properties:
+
+```ts
+  export interface AxiosBufferingConfig {
+    // buffering time window in ms after wich the internal buffer will be flushed
+    timout?: number;
+    // maximum buffer size in bytes, exceeding of which will lead to pausing the stream reading 
+    // until buffer flush will be performed
+    limit?: number; 
+    // the threshold of bytes being consumed to schedule the buffer flush, actual flushing
+    // will be performed after the buffering time window will be expired
+    threshold?: number; 
+  }
+```
+
 
 ## Semver
 

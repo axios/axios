@@ -387,6 +387,7 @@ declare namespace axios {
     forcedJSONParsing?: boolean;
     clarifyTimeoutError?: boolean;
     legacyInterceptorReqResOrdering?: boolean;
+    useAxiosRedirects?: boolean;
   }
 
   interface GenericAbortSignal {
@@ -484,8 +485,9 @@ declare namespace axios {
   }
 
   export interface AxiosBufferingConfig {
-    flushTimeout?: number;
-    maxBytes?: number;
+    timout?: number;
+    limit?: number;
+    threshold?: number;
   }
 
   interface AxiosRequestConfig<D = any> {
@@ -566,7 +568,7 @@ declare namespace axios {
     http2Options?: Record<string, any> & {
       sessionTimeout?: number;
     };
-    buffering?: AxiosBufferingConfig;
+    buffering?: boolean | AxiosBufferingConfig;
     allowDowngrade?: boolean;
     followStatusCodes?: string | number | string[] | number[] | Record<string, boolean>;
   }

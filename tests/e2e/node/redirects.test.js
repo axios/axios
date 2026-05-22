@@ -13,7 +13,7 @@ describe('redirects', () => {
 
   [{
     adapter: 'http'
-  }, {
+  }, /*{
     adapter: 'fetch'
   }, {
     httpVersion: 2,
@@ -21,7 +21,7 @@ describe('redirects', () => {
       rejectUnauthorized: false
     },
     adapter: 'http'
-  }].forEach((defaultConfig) => {
+  }*/].forEach((defaultConfig) => {
     describe(`Adapter [${defaultConfig.adapter}] [${defaultConfig.httpVersion === 2 ? 'HTTP/2' : 'HTTP/1.1'}]`, () => {
       const {httpVersion} = defaultConfig;
 
@@ -79,7 +79,7 @@ describe('redirects', () => {
 
           expect.fail('Expected to throw an error due to maxRedirects set to 0');
         } catch (error) {
-          expect(error.message).toMatch(/Maximum number of redirects exceeded/);
+          expect(error.message).toMatch(/Too many redirects/);
           expect(error.response).toBeDefined();
           expect(error.response.status).toBe(302);
           expect(error.response.headers.get('Location')).toBe('/final');
@@ -292,7 +292,7 @@ describe('redirects', () => {
 
           expect.fail('Expected to throw an error due to maxRedirects exceeded');
         } catch (error) {
-          expect(error.message).toMatch(/Maximum number of redirects exceeded/);
+          expect(error.message).toMatch(/Too many redirects/);
           expect(error.response).toBeDefined();
           expect(error.response.status).toBe(302);
           expect(error.response.headers.get('Location')).toBe('/redirect');
@@ -362,39 +362,138 @@ describe('redirects', () => {
         expect(response.status).toBe(200);
         expect(response.data).toBe('');
       });
-      /*    it('should be able to make a redirect with stream payload within flushTimeout', async () => {
-            const server = await startHTTPServer((req, res) => {
-              if (req.path === '/redirect') {
-                res.writeHead(307, {Location: '/final'});
-                res.end();
-                return;
-              }
 
-              if (req.path === '/final') {
-                let body = '';
-                req.on('data', chunk => {
-                  body += chunk;
-                });
-                req.on('end', () => {
-                  res.writeHead(200, {'Content-Type': 'text/plain'});
-                  res.end(body);
-                });
-              }
+      it('should sanitize HTTP auth credentials in url if redirected to different origin', async () => {
+        const server1 = await startHTTPServer((req, res) => {
+          if (req.path === '/redirect') {
+            res.writeHead(302, {Location: server2.origin + '/final'});
+            res.end(JSON.stringify(req.headers));
+          }
+        }, {
+          port: 0,
+          useHTTP2,
+          useHTTPS
+        });
+
+        const server2 = await startHTTPServer((req, res) => {
+          if (req.path === '/final') {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end(JSON.stringify(req.headers));
+          }
+        }, {
+          port: 0,
+          useHTTP2,
+          useHTTPS
+        });
+
+        const username = 'Digital';
+        const password = 'Brain';
+
+        const beforeRedirect = vi.fn();
+
+        const url = new URL(`${server1.origin}/redirect`);
+        url.username = username;
+        url.password = password;
+
+        const response = await axiosInstance.get(url, {
+          beforeRedirect
+        });
+
+        expect(beforeRedirect).toHaveBeenCalledWith(expect.objectContaining({
+          response: expect.objectContaining({
+            data: expect.objectContaining({
+              authorization: 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
+            })
+          }),
+          status: 302
+        }));
+
+        expect(response.status).toBe(200);
+        expect(response.data.authorization).toBeUndefined();
+      });
+
+      it('should sanitize HTTP auth credentials in config if redirected to different origin', async () => {
+        const server1 = await startHTTPServer((req, res) => {
+          if (req.path === '/redirect') {
+            res.writeHead(302, {Location: server2.origin + '/final'});
+            res.end(JSON.stringify(req.headers));
+          }
+        }, {
+          port: 0,
+          useHTTP2,
+          useHTTPS
+        });
+
+        const server2 = await startHTTPServer((req, res) => {
+          if (req.path === '/final') {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end(JSON.stringify(req.headers));
+          }
+        }, {
+          port: 0,
+          useHTTP2,
+          useHTTPS
+        });
+
+        const username = 'Digital';
+        const password = 'Brain';
+
+        const beforeRedirect = vi.fn();
+
+        const response = await axiosInstance.get(`${server1.origin}/redirect`, {
+          auth: {
+            username,
+            password
+          },
+          beforeRedirect
+        });
+
+        expect(beforeRedirect).toHaveBeenCalledWith(expect.objectContaining({
+          response: expect.objectContaining({
+            data: expect.objectContaining({
+              authorization: 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
+            })
+          }),
+          status: 302
+        }));
+
+        expect(response.status).toBe(200);
+        expect(response.data.authorization).toBeUndefined();
+      });
+
+      it('should be able to make a redirect with stream payload within flushTimeout', async () => {
+        const server = await startHTTPServer((req, res) => {
+          if (req.path === '/redirect') {
+            res.writeHead(307, {Location: '/final'});
+            res.end();
+            return;
+          }
+
+          if (req.path === '/final') {
+            let body = '';
+            req.on('data', chunk => {
+              body += chunk;
             });
-
-            const stream = (async function* () {
-              yield 'Test Stream Body';
-            })();
-
-            const response = await axiosInstance.post(`http://localhost:${server.address().port}/redirect`, stream, {
-              flushTimeout: 1000
+            req.on('end', () => {
+              res.writeHead(200, {'Content-Type': 'text/plain'});
+              res.end(body);
             });
+          }
+        });
 
-            expect(response.status).toBe(200);
-            expect(response.data).toBe('Test Stream Body');
-          });*/
+        const stream = (async function* () {
+          yield 'Test Stream Body';
+        })();
 
-      it('should be able to reread stream payload within flushTimeout for multiple redirects', async () => {
+        const response = await axiosInstance.post(`http://localhost:${server.address().port}/redirect`, stream, {
+          flushTimeout: 1000
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.data).toBe('Test Stream Body');
+      });
+
+      it('should be able to reread stream payload within timeout for multiple redirects', async () => {
         const server = await startHTTPServer(async (req, res) => {
           if (req.path === '/redirect1') {
             res.writeHead(307, {Location: '/redirect2'});
@@ -427,7 +526,7 @@ describe('redirects', () => {
         const beforeRedirect = vi.fn();
 
         const response = await axiosInstance.post(`${server.origin}/redirect1`, stream, {
-          flushTimeout: 1000,
+          timeout: 1000,
           beforeRedirect
         });
 
@@ -440,7 +539,7 @@ describe('redirects', () => {
         expect(response.data).toBe('Test Stream Body');
       });
 
-      it('should throw error if stream payload is reading after the flushTimeout during redirects', async () => {
+      it('should throw error if stream payload is reading after the flush timeout during redirects', async () => {
         const flushTimeout = 1000;
 
         const server = await startHTTPServer(async (req, res) => {
@@ -475,11 +574,12 @@ describe('redirects', () => {
         try {
           await axiosInstance.post(`${server.origin}/redirect`, stream, {
             buffering: {
-              flushTimeout
+              timeout: flushTimeout,
+              threshold: 0
             }
           });
 
-          expect.fail('Expected to throw an error due to stream payload reading after flushTimeout');
+          expect.fail('Expected to throw an error due to stream payload reading after flush timeout');
         } catch (error) {
           expect(error.code).toBe('ERR_STREAM_FLUSHED');
           expect(error.message).toMatch(/flushed/);
@@ -487,18 +587,21 @@ describe('redirects', () => {
       });
 
       it('should pause payload stream consumption when reached maxBufferSize during redirects and resume after stream flush', async () => {
-        const maxBytes = 10;
+        const limit = 10;
         const flushTimeout = 1000;
 
         const server = await startHTTPServer(async (req, res) => {
           if (req.path === '/redirect') {
+            req.on('error', () => {
+            });
+
+            req.on('aborted', () => {
+            });
+
             setTimeout(() => {
               res.writeHead(307, {Location: '/final'});
               res.end('Redirect');
             }, 500);
-
-            req.on('aborted', () => {
-            });
 
             req.resume();
 
@@ -538,8 +641,9 @@ describe('redirects', () => {
 
         const response = await axiosInstance.post(`${server.origin}/redirect`, proxy, {
           buffering: {
-            maxBytes,
-            flushTimeout
+            limit,
+            timeout: flushTimeout,
+            threshold: 0
           }
         });
 

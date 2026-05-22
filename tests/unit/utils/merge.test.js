@@ -151,13 +151,20 @@ describe('utils::merge', () => {
     expect(merged).toEqual({ x: 1 });
   });
 
+  it('should ignore symbol keys on arrays', () => {
+    const key = Symbol('key');
+    const array = ['value'];
+    array[key] = 'symbol value';
+
+    const merged = merge({ x: 1 }, array);
+
+    expect(merged).toEqual({ 0: 'value', x: 1 });
+    expect(merged[key]).toBeUndefined();
+  });
+
   it('should honor skipUndefined for symbol keys', () => {
     const key = Symbol('key');
-    const merged = merge.call(
-      { skipUndefined: true },
-      { [key]: 'first' },
-      { [key]: undefined }
-    );
+    const merged = merge.call({ skipUndefined: true }, { [key]: 'first' }, { [key]: undefined });
 
     expect(merged[key]).toBe('first');
   });

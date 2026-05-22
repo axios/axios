@@ -3,11 +3,11 @@ Before opening: please search existing issues to avoid duplicates, and confirm t
 For usage questions, please use Stack Overflow (https://stackoverflow.com/questions/tagged/axios) instead.
 -->
 
-#### Describe the issue
+## Describe the issue
 
 A clear description of the bug or feature request.
 
-#### Example code
+## Example code
 
 <!-- A minimal snippet that reproduces the issue. Remove any secrets/tokens. -->
 
@@ -15,15 +15,15 @@ A clear description of the bug or feature request.
 
 ```
 
-#### Expected behavior
+## Expected behavior
 
 What you expected to happen.
 
-#### Actual behavior
+## Actual behavior
 
 What actually happened (include error messages or stack traces if relevant).
 
-#### Environment
+## Environment
 
 - Axios version:
 - Adapter: <!-- xhr | http | fetch -->

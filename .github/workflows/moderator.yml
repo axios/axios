@@ -9,6 +9,7 @@ on:
 
 jobs:
   spam-detection:
+    name: AI Moderator
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -16,10 +17,13 @@ jobs:
       models: read
       contents: read
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: github/ai-moderator@81159c370785e295c97461ade67d7c33576e9319 # v1.1.4
+
+      - name: Run AI Moderator
+        uses: github/ai-moderator@81159c370785e295c97461ade67d7c33576e9319 # v1.1.4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           spam-label: 'spam'

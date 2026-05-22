@@ -46,17 +46,9 @@ When we receive a security vulnerability report, we assign it a primary handler.
 
 We commit to **resolving and publicly disclosing every valid security advisory within 60 calendar days of the initial report**, measured from the moment a report is received via the [GitHub security advisory channel](https://github.com/axios/axios/security/advisories/new).
 
-The 60-day clock is a commitment to reporters and downstream consumers — a backstop, not an aspiration. If we cannot ship a fix in time, we still publish the advisory at day 60 with the best available mitigation guidance so consumers can act.
+The 60-day clock is a commitment to reporters and downstream consumers — a backstop, not an aspiration. If we cannot ship a fix in time, we still publish the advisory at day 60 with the best available mitigation guidance so consumers can act. We then continue to work on the fix and update the advisory with the patch details as soon as possible.
 
-**Milestones inside the 60-day window:**
-
-| Day     | Milestone                                                                                                                                 |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 0       | Report received. Private advisory opened on GitHub.                                                                                       |
-| ≤ 3     | Acknowledgement sent to reporter. Triage decision: in scope / out of scope / duplicate / needs-info.                                      |
-| ≤ 10    | Severity assessed (CVSS v4 where applicable). Affected versions confirmed. CVE requested via GitHub if a public identifier is warranted.  |
-| ≤ 45    | Fix developed, reviewed, tested. Release candidate prepared on a private branch. Reporter offered a preview for validation.               |
-| ≤ 60    | Patched release published to npm. Public advisory + CVE published. Reporter credited unless they request otherwise. CHANGELOG updated. |
+We will release the fix separately from the advisory, but we will not delay the advisory beyond day 60. We want to release the fix before we publish the advisory to give users the opportunity to patch before the vulnerability details are public.
 
 **Exceptions and extensions.**
 

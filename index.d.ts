@@ -281,6 +281,7 @@ export interface TransitionalOptions {
   forcedJSONParsing?: boolean;
   clarifyTimeoutError?: boolean;
   legacyInterceptorReqResOrdering?: boolean;
+  advertiseZstdAcceptEncoding?: boolean;
 }
 
 export interface GenericAbortSignal {

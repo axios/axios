@@ -5,15 +5,15 @@ Thanks for contributing to axios! A few quick notes:
 - If you leave the description blank, our AI agent will draft one — feel free to edit afterwards.
 -->
 
-#### Summary
+## Summary
 
 <!-- What does this PR do, and why? -->
 
-#### Linked issue
+## Linked issue
 
 <!-- e.g. Closes #1234 -->
 
-#### Changes
+## Changes
 
 <!-- Bullet list of the notable changes. Keep it short. -->
 

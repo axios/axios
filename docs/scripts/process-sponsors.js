@@ -13,6 +13,19 @@ const config = {
     'Principal Financial Group': 'gold',
   },
   sponsorsToIgnore: ['axios'],
+  additionalSponsors: [
+    {
+      name: 'superluxuryreps',
+      imageUrl: 'https://images.opencollective.com/superluxuryreps/378b62f/avatar.png',
+      description: 'super luxury reps',
+      tier: 'silver',
+      slug: 'superluxuryreps',
+      website:
+        'https://superluxuryreps.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship',
+      twitter: null,
+      active: true,
+    },
+  ],
 };
 
 /**
@@ -280,6 +293,17 @@ const mainProcess = async () => {
           active: true,
         });
       }
+    }
+
+    for (const additionalSponsor of config.additionalSponsors) {
+      if (!sponsorsByTier[additionalSponsor.tier]) {
+        sponsorsByTier[additionalSponsor.tier] ||= [];
+      }
+
+      sponsorsByTier[additionalSponsor.tier].push({
+        ...additionalSponsor,
+        active: true,
+      });
     }
 
     fs.writeFileSync('./data/sponsors.json', JSON.stringify(sponsorsByTier, null, 2));

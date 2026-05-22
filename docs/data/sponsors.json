@@ -583,6 +583,16 @@
       "active": true
     },
     {
+      "name": "Fun88",
+      "imageUrl": "https://images.opencollective.com/fun88-official/bf2843c/logo.png",
+      "description": "Best online sports betting and casino company.",
+      "tier": "bronze",
+      "slug": "fun88-official",
+      "website": "https://global.fun88.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "Buy Instagram followers and likes",
       "imageUrl": "https://images.opencollective.com/buy-instagram-followers-and-likes-2/f9dfe89/avatar.png",
       "description": "Buy Instagram followers and likes",
@@ -728,7 +738,7 @@
       "description": "บริษัทรับแทงบอลออนไลน์ที่ดีที่สุดในประเทศไทย",
       "tier": "bronze",
       "slug": "fun88-thailand",
-      "website": "https://www.fun88thh.com/th/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "website": "https://www.fun88thc.com/th/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -1275,6 +1285,16 @@
       "active": false
     },
     {
+      "name": "FBPostLikes",
+      "imageUrl": "https://images.opencollective.com/pankaj-jangir/c5dee33/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "pankaj-jangir",
+      "website": "https://www.fbpostlikes.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "Likescafe",
       "imageUrl": "https://images.opencollective.com/likescafe/9468493/logo.png",
       "description": null,
@@ -1691,6 +1711,16 @@
       "tier": "silver",
       "slug": "eestionlinekasiinod-org",
       "website": "https://eestionlinekasiinod.org/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "superluxuryreps",
+      "imageUrl": "https://images.opencollective.com/superluxuryreps/378b62f/avatar.png",
+      "description": "super luxury reps",
+      "tier": "silver",
+      "slug": "superluxuryreps",
+      "website": "https://superluxuryreps.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     }

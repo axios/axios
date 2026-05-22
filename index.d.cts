@@ -392,6 +392,7 @@ declare namespace axios {
     forcedJSONParsing?: boolean;
     clarifyTimeoutError?: boolean;
     legacyInterceptorReqResOrdering?: boolean;
+    advertiseZstdAcceptEncoding?: boolean;
   }
 
   interface GenericAbortSignal {
@@ -544,7 +545,7 @@ declare namespace axios {
           | LookupAddress
         >);
     withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
-    parseReviver?: (this: any, key: string, value: any, context?: { source: string }) => any;
+    parseReviver?: (this: any, key: string, value: any, context?: { source?: string }) => any;
     fetchOptions?:
       | Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'>
       | Record<string, any>;

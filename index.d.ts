@@ -281,6 +281,7 @@ export interface TransitionalOptions {
   forcedJSONParsing?: boolean;
   clarifyTimeoutError?: boolean;
   legacyInterceptorReqResOrdering?: boolean;
+  advertiseZstdAcceptEncoding?: boolean;
 }
 
 export interface GenericAbortSignal {
@@ -441,7 +442,7 @@ export interface AxiosRequestConfig<D = any> {
         [address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress
       >);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
-  parseReviver?: (this: any, key: string, value: any, context?: { source: string }) => any;
+  parseReviver?: (this: any, key: string, value: any, context?: { source?: string }) => any;
   fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> | Record<string, any>;
   httpVersion?: 1 | 2;
   http2Options?: Record<string, any> & {

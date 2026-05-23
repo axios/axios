@@ -26,7 +26,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
-      # Node 26 bundles npm 11.13.0; `npm stage publish` requires npm >= 11.15.0.
+      # `npm stage publish` requires npm >= 11.15.0, newer than the npm bundled with
+      # this workflow's Node. Remove this step once Node bundles npm >= 11.15.0 by default.
       - name: Pin npm with staged-publishing support
         run: npm install -g npm@11.15.0
 

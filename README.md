@@ -1973,11 +1973,11 @@ const { data, headers, status } = await axios.post('https://httpbin.org/post', f
 
 ## Axios redirects
 
-Experimental Axios' following redirects implementation was added in `v1.17.0`. 
-This feature is `disabled` by default, and, when enabled, it replaces `follow-redirects` package
-with Axios' own implementation. To enable it, set `transitional.useAxiosRedirects` option to `true`.
+An experimental Axios redirects implementation was introduced in `v1.17.0`.
 
-In the next major version this feature will be enabled by default, and the `follow-redirects` package will be removed from dependencies.
+This feature is `disabled` by default. When enabled, it replaces the `follow-redirects` package with Axios's native redirects implementation.
+
+To enable it, set the `transitional.useAxiosRedirects` option to `true`:
 
 ```js
 const { data } = await axios.get(url, {
@@ -1987,16 +1987,28 @@ const { data } = await axios.get(url, {
 });
 ```
 
-> ⚠️ **Note**: this feature is not currently compatible with proxies.
+> ⚠️ **Note**: This feature is currently not compatible with proxies.
 
-The main reasons of moving to our own implementation was:
-- adding redirects for `http` adapter when using `HTTP/2`, which was not possible with `follow-redirects` package 
-- adding redirects support for `fetch` adapter on server side and client workers (browser's fetch API doesn't support redirects)
-- solving the issue of buffering the entire request body in RAM when using `follow-redirects` package with streams in node.js
-- improving the overall reliability of redirects handling in Axios
+In the next major release, Axios redirects will be `enabled` by default, and the `follow-redirects` package will be removed from the dependency list.
 
-When using Axios redirects `beforeRedirect` hook has a different signature, and accepts the following arguments:
-`(redirectMeta: AxiosRedirectMeta) => false | void`.
+### Why Axios implemented its own redirects handling
+
+The main reasons for moving away from follow-redirects were:
+
+- adding redirects support for the http adapter when using HTTP/2, which was not possible with the follow-redirects package
+- adding redirects support for the fetch adapter in server environments and browser workers (the browser Fetch API does not expose redirect handling hooks)
+- avoiding buffering the entire request body in memory when streaming requests in Node.js
+- improving the overall reliability and maintainability of redirects handling in Axios
+
+### beforeRedirect hook
+
+When Axios redirects are enabled, the beforeRedirect hook uses the following signature:
+
+```ts
+{
+    beforeRedirect?: (redirectMeta: AxiosRedirectMeta) => false | void
+}
+````        
 
 ```
 export interface AxiosRedirectMeta {
@@ -2012,60 +2024,130 @@ export interface AxiosRedirectMeta {
 }
 ```
 
-When the hook returns `false`, the redirect will be cancelled, and the response will be returned as is.
+Returning `false` from the hook cancels the redirect and returns the original response as-is.
 Otherwise, the redirect will be followed as usual.
 
-`followStatusCodes` implements filtering of redirect status codes.
-By default, it includes `301`, `302`, `303`, `307`, and `308` status codes,
-but you can customize it by setting the `transitional.followStatusCodes` option to an array of status codes
-that should be followed. The option also supporting the following semantic:
+### followStatusCodes
+
+The followStatusCodes option controls which HTTP status codes should trigger redirect handling.
+
+By default, Axios follows the following redirect status codes:
+
+- 301
+- 302
+- 303
+- 307
+- 308
+
+You can override this behavior by setting transitional.followStatusCodes:
+
 ````js
 {
-  followStatusCodes: '301 302 303' // space separated string of status codes (also accepts comma and | separators)
-  followStatusCodes: '301' // single string value
-  followStatusCodes: 301 // single number value
+  transitional: {
+    followStatusCodes: [301, 302, 303]
+  }
 }
 ````
 
-When following redirects, you might want to sanitize the request config to avoid sending sensitive data (like auth headers, HTTP auth credentials) to untrusted URLs.
-To do this, you can call the `sanitize` method of the `redirectMeta` object, which will remove all sensitive data from the request config.
-This method will be used by default for cross-origin redirects,
-but you can call it manually in the `beforeRedirect` hook if you want to sanitize the config for same-origin redirects and same domain as well.
+The option also supports shorthand formats:
 
-> **Note**: be aware that cross-domain requests with credentials (cookies, auth headers) can lead to security vulnerabilities.
+````js
+{
+  followStatusCodes: '301 302 303' // space-separated string
+  followStatusCodes: '301,302,303' // comma-separated string
+  followStatusCodes: '301|302|303' // pipe-separated string
+  followStatusCodes: '301' // single string value
+  followStatusCodes: 301 // single numeric value
+}
+````
 
+### Sanitizing sensitive data
+
+When following redirects, you may want to sanitize the request config to avoid sending sensitive data
+(such as authentication headers or HTTP credentials) to untrusted destinations.
+
+The redirectMeta.sanitize() method removes sensitive information from the request configuration.
+
+Axios automatically sanitizes credentials for cross-origin redirects by default. You can also call `sanitize()`
+manually inside the beforeRedirect hook if you want to enforce the same behavior for same-origin or same-domain redirects.
+
+> **Security note**: Sending credentials, cookies, or authorization headers to cross-domain destinations may
+> introduce security risks if the target is not trusted.
+
+You can also pass `false` to this method to completely `disable` sanitization for the current redirect,
+but this is not recommended, unless you performs sanitization by yourself in the `beforeRedirect` hook.
+
+This function **does not** perform any direct cleanup of sensitive information,
+but only schedules it to be cleaned after the hook is executed.
+
+````js
+await axios.get(url, {
+  transitional: {
+    useAxiosRedirects: true,
+    beforeRedirect(redirectMeta) {
+      // sanitize the request config for all redirects
+      redirectMeta.sanitize();
+
+      // or forcibly disable sanitization for this redirect
+      // redirectMeta.sanitize(false);
+    }
+  }
+});
+````
 
 ### Buffering
 
-When the request body is a stream, it is necessary to use stream buffering. 
-When using the `http` adapter in node.js, Axios will buffer the entire request body in RAM while sending it to the server
-if the body is a stream and redirects are enabled (default behavior). For queries with large stream bodies (such as large file uploads),
-this poses a pretty serious problem due to the depletion of available RAM.
-This is because the `follow-redirects` package, which is used by default for handling redirects,
-buffers the entire request body in memory to be able to resend it in case of a `307`/`308` redirect.
+When the request body is a stream, redirect handling may require request body buffering.
 
-When the `useAxiosRedirects` option is enabled, Axios will use its own buffering algorithm to buffer the request body stream,
-which involves the use of a temporary buffer for temporary body buffering within a short period of time after the request begins to be sent
-(actually read by an adapter and its following network stack). In addition, Axios has limit for buffer size, exceeding of which leads to pausing
-the stream reading until buffer flush will be performed.
+When using the `http` adapter in Node.js, Axios buffers the entire request body in memory if:
 
-Body buffering will be used for `ReadableStream`, async iterables and `Request` request payload types.
+- the request body is a stream
+- redirects are enabled (default behavior)
 
-By default, the buffering time window is set to `5000ms` and the buffer size is set to `50MB`. This limit is not rigid, and in practice means a high watermark in terms of stream concepts.
-If server responds with a `307` or `308` redirect after the buffered was flushed, the request will be failed with `AxiosError.ERR_STREAM_FLUSHED`.
-This options can be controlled via `config.buffering` property, which accepts an object with the following properties:
+For requests with large streaming payloads (such as large file uploads), this can become a serious problem due to excessive memory usage.
+
+This behavior comes from the `follow-redirects` package, which Axios uses by default for redirect handling. The package buffers the entire request body in memory so it can resend the request if a `307` or `308` redirect occurs.
+
+When the `useAxiosRedirects` option is enabled, Axios uses its own buffering algorithm instead.
+
+Axios temporarily buffers the request body only during a short time window after the request starts being sent
+(that is, after the body begins being consumed by the adapter, and the `threshold` of consumed bytes is reached).
+
+In addition, Axios applies a configurable buffer size limit. When the limit is exceeded, stream reading is paused until the internal buffer is flushed.
+
+Body buffering is supported for the following payload types:
+
+- `ReadableStream`
+- `Request`
+- async iterables
+
+By default:
+
+- the buffering time window is `5000ms`
+- the buffer size limit is `50MB`
+
+The buffer limit is not a strict hard limit. In stream terminology, it behaves more like a high watermark.
+
+If the server responds with a `307` or `308` redirect after the internal buffer has already been flushed, the request will fail with `AxiosError.ERR_STREAM_FLUSHED`.
+
+These options can be configured using the `config.buffering` property:
 
 ```ts
-  export interface AxiosBufferingConfig {
-    // buffering time window in ms after wich the internal buffer will be flushed
-    timout?: number;
-    // maximum buffer size in bytes, exceeding of which will lead to pausing the stream reading 
-    // until buffer flush will be performed
-    limit?: number; 
-    // the threshold of bytes being consumed to schedule the buffer flush, actual flushing
-    // will be performed after the buffering time window will be expired
-    threshold?: number; 
-  }
+export interface AxiosBufferingConfig {
+  // buffering time window in milliseconds
+  // after which the internal buffer will be flushed
+  timeout?: number;
+
+  // maximum buffer size in bytes
+  // exceeding this limit pauses stream reading
+  // until the buffer is flushed
+  limit?: number;
+
+  // amount of consumed bytes required
+  // before scheduling a buffer flush
+  // actual flushing occurs after the timeout expires
+  threshold?: number;
+}
 ```
 
 

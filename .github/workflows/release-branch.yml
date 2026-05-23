@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
+        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x, 26.x]
       fail-fast: false
 
     steps:
@@ -59,7 +59,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: 24.x
+          node-version: 26.x
           cache: npm
       - name: Install dependencies
         run: npm ci --ignore-scripts

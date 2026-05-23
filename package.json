@@ -97,6 +97,22 @@
     "url": "https://github.com/axios/axios/issues"
   },
   "homepage": "https://axios-http.com",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "index.d.cts",
+    "CHANGELOG.md",
+    "MIGRATION_GUIDE.md",
+    "lib/",
+    "dist/axios.js",
+    "dist/axios.min.js",
+    "dist/axios.min.js.map",
+    "dist/esm/axios.js",
+    "dist/esm/axios.min.js",
+    "dist/esm/axios.min.js.map",
+    "dist/browser/axios.cjs",
+    "dist/node/axios.cjs"
+  ],
   "scripts": {
     "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
     "version": "npm run build && git add package.json",

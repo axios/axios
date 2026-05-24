@@ -3,6 +3,19 @@ import assert from 'assert';
 import dispatchRequest from '../../../lib/core/dispatchRequest.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import defaults from '../../../lib/defaults/index.js';
+import resolveConfig from '../../../lib/helpers/resolveConfig.js';
+
+class ReactNativeFormData {
+  append() {}
+
+  getParts() {
+    return [];
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'FormData';
+  }
+}
 
 function baseConfig(overrides = {}) {
   return {
@@ -122,6 +135,45 @@ describe('core::dispatchRequest', () => {
   });
 
   describe('happy path', () => {
+    it('clears default Content-Type for React Native FormData before adapter headers are sent', async () => {
+      const data = new ReactNativeFormData();
+      const response = {
+        data: '{"ok":true}',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: null,
+        request: {},
+      };
+      const config = baseConfig({
+        method: 'post',
+        data,
+        adapter: (adapterConfig) => {
+          assert.strictEqual(
+            adapterConfig.headers.getContentType(),
+            'application/x-www-form-urlencoded',
+            'dispatchRequest should apply the default POST Content-Type first'
+          );
+
+          const resolvedConfig = resolveConfig(adapterConfig);
+
+          assert.strictEqual(resolvedConfig.data, data);
+          assert.strictEqual(resolvedConfig.headers.getContentType(), undefined);
+          assert.strictEqual(
+            Object.prototype.hasOwnProperty.call(resolvedConfig.headers.toJSON(), 'Content-Type'),
+            false,
+            'resolved adapter headers must omit Content-Type for React Native FormData'
+          );
+
+          return Promise.resolve(response);
+        },
+      });
+
+      const result = await dispatchRequest(config);
+
+      assert.deepStrictEqual(result.data, { ok: true });
+    });
+
     it('cleans up config.response after a successful resolution', async () => {
       const response = {
         data: '{"ok":true}',

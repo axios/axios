@@ -10,6 +10,7 @@ type AxiosHeaderMatcher =
   | ((this: AxiosHeaders, value: string, name: string) => boolean);
 
 type AxiosHeaderParser = (this: AxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
+type AxiosHeaderValueOrMethod = axios.AxiosHeaderValue | ((...args: any[]) => any);
 
 type CommonRequestHeadersList =
   | 'Accept'
@@ -42,7 +43,7 @@ type BrowserProgressEvent = any;
 declare class AxiosHeaders {
   constructor(headers?: axios.RawAxiosHeaders | AxiosHeaders | string);
 
-  [key: string]: any;
+  [key: string]: AxiosHeaderValueOrMethod;
 
   set(
     headerName?: string,
@@ -503,7 +504,7 @@ declare namespace axios {
     beforeRedirect?: (
       options: Record<string, any>,
       responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode },
-      requestDetails: { headers: Record<string, string>; url: string; method: string },
+      requestDetails: { headers: Record<string, string>; url: string; method: string }
     ) => void;
     socketPath?: string | null;
     allowedSocketPaths?: string | string[] | null;

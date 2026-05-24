@@ -19,11 +19,12 @@ type AxiosHeaderMatcher =
   | ((this: AxiosHeaders, value: string, name: string) => boolean);
 
 type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: string) => any;
+type AxiosHeaderValueOrMethod = AxiosHeaderValue | ((...args: any[]) => any);
 
 export class AxiosHeaders {
   constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 
-  [key: string]: any;
+  [key: string]: AxiosHeaderValueOrMethod;
 
   set(
     headerName?: string,
@@ -401,7 +402,7 @@ export interface AxiosRequestConfig<D = any> {
       headers: Record<string, string>;
       url: string;
       method: string;
-    },
+    }
   ) => void;
   socketPath?: string | null;
   allowedSocketPaths?: string | string[] | null;

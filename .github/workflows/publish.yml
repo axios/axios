@@ -24,13 +24,11 @@ jobs:
           node-version: 26.x
           registry-url: "https://registry.npmjs.org"
           package-manager-cache: false
-      - name: Install SFW
-        run: npm install -g sfw
       - name: Pin npm with staged-publishing support
-        run: sfw npm install -g npm@11.15.0
+        run: npm install -g npm@11.15.0
       - name: Install dependencies
-        run: sfw npm ci --ignore-scripts
+        run: npm ci --ignore-scripts
       - name: Build project
-        run: sfw npm run build
+        run: npm run build
       - name: Publish to NPM (staged)
-        run: sfw npm stage publish --provenance --access public --tag v0x
+        run: npm stage publish --provenance --access public --tag v0x

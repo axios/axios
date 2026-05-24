@@ -32,14 +32,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
           package-manager-cache: false
-      - name: Install SFW
-        run: npm install -g sfw
       - name: Install dependencies
-        run: swf npm ci --ignore-scripts
+        run: npm ci --ignore-scripts
       - name: Build project
-        run: sfw npm run build
+        run: npm run build
       - name: Run tests
-        run: sfw npm run test
+        run: npm run test
       - name: Dependency Review
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         if: matrix.node-version == '26.x'

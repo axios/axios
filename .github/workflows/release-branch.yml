@@ -34,13 +34,16 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+      - name: Install SFW
+        run: npm install -g sfw
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: sfw npm ci --ignore-scripts
       - name: Build project
-        run: npm run build
+        run: sfw npm run build
       - name: Run tests
-        run: npm run test
+        run: sfw npm run test
 
   bump-version-and-create-pr:
     name: Bump version and create PR v0.x
@@ -60,9 +63,12 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: 26.x
-          cache: npm
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+      - name: Install SFW
+        run: npm install -g sfw
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: sfw npm ci --ignore-scripts
       - name: NPM bump version
         id: bump
         run: |
@@ -71,9 +77,9 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "branch=release-v0x/version-$VERSION" >> "$GITHUB_OUTPUT"
       - name: Grunt version
-        run: npm run preversion
+        run: sfw npm run preversion
       - name: Build project
-        run: npm run build
+        run: sfw npm run build
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:

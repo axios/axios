@@ -1,14 +1,26 @@
-<!-- Instructions
+<!--
+Thanks for contributing to axios! A few quick notes:
+- For non-trivial changes, please open an issue first so we can discuss the approach.
+- Follow Conventional Commits in your commit messages (see CONTRIBUTING.md).
+- If you leave the description blank, our AI agent will draft one — feel free to edit afterwards.
+-->
 
-If you would like to add a PR description you may do so or let our AI agent create one, after the creation
-you may then edit the file if the AI agent got it wrong.
+## Summary
 
-Please read and follow the instructions before creating and submitting a pull request:
+<!-- What does this PR do, and why? -->
 
-- Create an issue explaining the feature. It could save you some effort in case we don't consider it should be included in axios.
-- If you're fixing a bug, try to commit the failing test/s and the code fixing it in different commits.
-- Ensure you're following our [contributing guide](https://github.com/axios/axios/blob/main/CONTRIBUTING.md).
+## Linked issue
 
-**⚠️👆 Delete the instructions before submitting the pull request 👆⚠️**
+<!-- e.g. Closes #1234 -->
 
-Describe your pull request here. -->
+## Changes
+
+<!-- Bullet list of the notable changes. Keep it short. -->
+
+-
+
+#### Checklist
+
+- [ ] Tests added or updated (or N/A with reason)
+- [ ] Docs / types updated if public API changed (`index.d.ts` and `index.d.cts`)
+- [ ] No breaking changes (or called out explicitly above)

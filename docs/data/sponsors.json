@@ -38,7 +38,7 @@
       "slug": "meshpayments",
       "website": "https://meshpayments.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/meshpayments?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": false
+      "active": true
     },
     {
       "name": "Orbit",
@@ -138,7 +138,7 @@
       "slug": "andylockran",
       "website": "https://andylockran.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/andylockran?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": false
+      "active": true
     },
     {
       "name": "kei sakamoto",
@@ -218,7 +218,7 @@
       "slug": "raiderio_wow",
       "website": "https://raider.io/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/RaiderIO_WoW?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": false
+      "active": true
     },
     {
       "name": "Midtown Rulers",
@@ -268,7 +268,7 @@
       "slug": "mfbtech",
       "website": "https://mfbtech.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/mfb_tech?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": false
+      "active": true
     },
     {
       "name": "Tomasz",
@@ -523,22 +523,52 @@
       "active": false
     },
     {
+      "name": "Buy Instagram Reels Views",
+      "imageUrl": "https://images.opencollective.com/buy-instagram-reels-views-instant/72a3dd8/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "buy-instagram-reels-views-instant",
+      "website": "https://container-news.com/buy-instagram-reel-views/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buy TikTok Likes",
+      "imageUrl": "https://images.opencollective.com/buy-tiktok-likes-instant/fd0e180/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "buy-tiktok-likes-instant",
+      "website": "https://billingsgazette.com/exclusive/article_64390499-5a5a-58f3-990e-7c8f7853b30e.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buy Instagram Followers",
+      "imageUrl": "https://images.opencollective.com/buy-instagram-followers-cc8dc394/fa7a6e9/avatar.png",
+      "description": "Buy Instagram Followers",
+      "tier": "bronze",
+      "slug": "buy-instagram-followers-cc8dc394",
+      "website": "https://www.reddit.com/r/MarketingHelp/comments/1pi8cvw/anyone_actually_bought_instagram_followers_what/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "Buy Instagram Followers",
+      "imageUrl": "https://images.opencollective.com/buy-instagram-followers-9/d7c422a/logo.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "buy-instagram-followers-9",
+      "website": "https://www.reddit.com/r/MarketingMentor/comments/1rfzxq0/whats_the_best_site_to_buy_instagram_followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "Buy Facebook Likes",
       "imageUrl": "https://images.opencollective.com/purchase-facebook-page-likes/logo.png",
       "description": "Forum and Q&A platform",
       "tier": "bronze",
       "slug": "purchase-facebook-page-likes",
       "website": "https://www.reddit.com/r/facebook/comments/1labf0e/legit_site_for_facebook_page_likes_heres_my/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy Spotify Monthly Listeners",
-      "imageUrl": "https://images.opencollective.com/buy-spotify-monthly-listeners/logo.png",
-      "description": "Forum and Q&A platform",
-      "tier": "bronze",
-      "slug": "buy-spotify-monthly-listeners",
-      "website": "https://www.reddit.com/r/musicmarketing/comments/1rirr6a/best_site_to_buy_spotify_monthly_listeners_for/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -563,12 +593,12 @@
       "active": true
     },
     {
-      "name": "Buy Trustpilot Reviews",
-      "imageUrl": "https://images.opencollective.com/buy-trustpilot-reviews-6bb02050/f9dfe89/avatar.png",
-      "description": "Buy Trustpilot Reviews",
+      "name": "Buy Instagram followers and likes",
+      "imageUrl": "https://images.opencollective.com/buy-instagram-followers-and-likes-2/f9dfe89/avatar.png",
+      "description": "Buy Instagram followers and likes",
       "tier": "bronze",
-      "slug": "buy-trustpilot-reviews-6bb02050",
-      "website": "https://www.reddit.com/r/WorkForSmartLife/comments/1rqq7zl/what_is_the_best_site_to_buy_trustpilot_reviews/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "slug": "buy-instagram-followers-and-likes-2",
+      "website": "https://www.reddit.com/r/BuildToAttract/comments/1sro5qq/where_can_i_buy_instagram_followers_and_likes_to/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -589,26 +619,6 @@
       "tier": "bronze",
       "slug": "buy-tiktok-followers-6",
       "website": "https://www.reddit.com/r/TikTokLounge/comments/1rv7lfz/whats_the_best_site_to_buy_tiktok_followers_that/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy Instagram Followers",
-      "imageUrl": "https://images.opencollective.com/buy-instagram-followers-9/d7c422a/logo.png",
-      "description": null,
-      "tier": "bronze",
-      "slug": "buy-instagram-followers-9",
-      "website": "https://www.reddit.com/r/MarketingMentor/comments/1rfzxq0/whats_the_best_site_to_buy_instagram_followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy TikTok Comments",
-      "imageUrl": "https://images.opencollective.com/buy-tiktok-comments/ab43299/logo.png",
-      "description": null,
-      "tier": "bronze",
-      "slug": "buy-tiktok-comments",
-      "website": "https://buylikesservices.com/buy-tiktok-custom-comments/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -643,42 +653,32 @@
       "active": true
     },
     {
+      "name": "Fun88 Vietnam EN",
+      "imageUrl": "https://images.opencollective.com/fun88-vietnam-en/2541290/avatar.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "fun88-vietnam-en",
+      "website": "https://www.fun88vnplay.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "FUN88 Thailand EN",
+      "imageUrl": "https://images.opencollective.com/fun88-thailand-en/cacc530/avatar.png",
+      "description": null,
+      "tier": "bronze",
+      "slug": "fun88-thailand-en",
+      "website": "https://www.fun88asiath.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "Buy Instagram Reels Views",
       "imageUrl": "https://images.opencollective.com/buy-instagram-reels-views-cheap/ed3335e/logo.png",
       "description": null,
       "tier": "bronze",
       "slug": "buy-instagram-reels-views-cheap",
       "website": "https://www.techloy.com/buy-instagram-reel-views/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy Real Instagram Reposts",
-      "imageUrl": "https://images.opencollective.com/buy-real-instagram-reposts/76bf045/logo.png",
-      "description": null,
-      "tier": "bronze",
-      "slug": "buy-real-instagram-reposts",
-      "website": "https://dailyillini.com/sponsored/2026/02/04/best-sites-to-buy-instagram-reposts/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buying Real YouTube Views",
-      "imageUrl": "https://images.opencollective.com/buying-real-youtube-views/4ab53bf/logo.png",
-      "description": "News Website",
-      "tier": "bronze",
-      "slug": "buying-real-youtube-views",
-      "website": "https://theeagle.com/exclusive/article_8ed01593-e584-5509-860e-2b6fccb60125.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy Active Telegram Members",
-      "imageUrl": "https://images.opencollective.com/buy-active-telegram-members/24f0a2f/logo.png",
-      "description": null,
-      "tier": "bronze",
-      "slug": "buy-active-telegram-members",
-      "website": "http://www.zeebiz.com/brand-desk/news-top-3-best-sites-to-buy-telegram-members-real-and-active-299133?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -703,6 +703,16 @@
       "active": true
     },
     {
+      "name": "Fun88",
+      "imageUrl": "https://images.opencollective.com/fun88-vietnam/192b9db/avatar.png",
+      "description": "Nhà cái cá cược thể thao trực tuyến tốt nhất tại Việt Nam",
+      "tier": "bronze",
+      "slug": "fun88-vietnam",
+      "website": "https://www.fun88vnb.com/vn/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "Buy Instagram Followers",
       "imageUrl": "https://images.opencollective.com/buy-instagram-followers5/acaea89/avatar.png",
       "description": "Buy Instagram Followers",
@@ -713,32 +723,22 @@
       "active": true
     },
     {
-      "name": "Buy TikTok Followers",
-      "imageUrl": "https://images.opencollective.com/buy-tiktok-followers9/44e6c85/avatar.png",
-      "description": "Buy TikTok Followers",
+      "name": "Buy Instagram Followers",
+      "imageUrl": "https://images.opencollective.com/buy-instagram-followers10/44e6c85/avatar.png",
+      "description": "Buy Instagram Followers",
       "tier": "bronze",
-      "slug": "buy-tiktok-followers9",
-      "website": "https://www.reddit.com/r/influencermarketing/comments/1qh0te1/whats_the_best_site_to_buy_tiktok_followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "slug": "buy-instagram-followers10",
+      "website": "https://www.reddit.com/r/influencermarketing/comments/1r8b8i6/where_do_people_buy_instagram_followers_that/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
     {
-      "name": "Buy Real Telegram Members",
-      "imageUrl": "https://images.opencollective.com/buy-real-telegram-members/411a0c2/logo.png",
-      "description": null,
+      "name": "Fun88",
+      "imageUrl": "https://images.opencollective.com/fun88-thailand/81e1909/avatar.png",
+      "description": "บริษัทรับแทงบอลออนไลน์ที่ดีที่สุดในประเทศไทย",
       "tier": "bronze",
-      "slug": "buy-real-telegram-members",
-      "website": "https://www.idsnews.com/article/2025/12/buy-telegram-members?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy Real X Followers",
-      "imageUrl": "https://images.opencollective.com/buy-real-x-followers/e4c1171/logo.png",
-      "description": "The Student News Website",
-      "tier": "bronze",
-      "slug": "buy-real-x-followers",
-      "website": "https://www.idsnews.com/article/2025/09/buy-x-followers?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "slug": "fun88-thailand",
+      "website": "https://www.fun88thc.com/th/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -753,26 +753,6 @@
       "active": true
     },
     {
-      "name": "Purchase Real TikTok Likes",
-      "imageUrl": "https://images.opencollective.com/purchase-real-tiktok-likes/df02a82/logo.png",
-      "description": null,
-      "tier": "bronze",
-      "slug": "purchase-real-tiktok-likes",
-      "website": "https://richmond.com/exclusive/article_b15db1e2-fa22-5577-850f-e9c26f3a5331.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy Instagram Followers - IDS News",
-      "imageUrl": "https://images.opencollective.com/buy-instagram-followers-ids-ne/1943b52/logo.png",
-      "description": "The Student News Website",
-      "tier": "bronze",
-      "slug": "buy-instagram-followers-ids-ne",
-      "website": "https://www.idsnews.com/article/2025/09/buy-instagram-followers?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
       "name": "Buy YouTube subscribers",
       "imageUrl": "https://images.opencollective.com/buy-youtube-subscribers3/16536ae/avatar.png",
       "description": "Buy YouTube subscribers",
@@ -783,22 +763,12 @@
       "active": true
     },
     {
-      "name": "Buy Google Reviews",
-      "imageUrl": "https://images.opencollective.com/buy-real-google-reviews/fc45f1f/avatar.png",
-      "description": "Buy Google Reviews ",
-      "tier": "bronze",
-      "slug": "buy-real-google-reviews",
-      "website": "https://www.reddit.com/r/ContentMarketing/comments/1q3w49j/whats_the_best_site_for_buying_google_reviews_in/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
       "name": "Buy Instagram Followers",
-      "imageUrl": "https://images.opencollective.com/buy-instagram-followers4/0dfb5fb/avatar.png",
+      "imageUrl": "https://images.opencollective.com/buy-instagram-followers12/fc45f1f/avatar.png",
       "description": "Buy Instagram Followers",
       "tier": "bronze",
-      "slug": "buy-instagram-followers4",
-      "website": "https://www.reddit.com/r/InstagramEmpire/comments/1o8v7zx/whats_the_best_site_to_buy_instagram_followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "slug": "buy-instagram-followers12",
+      "website": "https://www.reddit.com/r/growmybusiness/comments/1so2fld/what_is_the_best_site_to_buy_instagram_followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -819,26 +789,6 @@
       "tier": "bronze",
       "slug": "buy-facebook-likes-real",
       "website": "https://tucson.com/exclusive/article_d407a4ab-a8ef-5129-bca4-02f95328664c.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Buy Quality Instagram Followers",
-      "imageUrl": "https://images.opencollective.com/buy-quality-instagram-follower/53ea854/logo.png",
-      "description": null,
-      "tier": "bronze",
-      "slug": "buy-quality-instagram-follower",
-      "website": "https://dailyprogress.com/exclusive/article_e7d0d9ad-9f95-53bb-a386-7dc6856a9040.html?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "Instagram Story Viewer",
-      "imageUrl": "https://images.opencollective.com/ig-story-viewer/fb59b9f/avatar.png",
-      "description": null,
-      "tier": "bronze",
-      "slug": "ig-story-viewer",
-      "website": "https://anonstories.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -1272,7 +1222,7 @@
       "slug": "nejlepsiceskacasinacom",
       "website": "https://nejlepsiceskacasina.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
-      "active": true
+      "active": false
     },
     {
       "name": "slovenskeonlinecasino.com",
@@ -1345,6 +1295,26 @@
       "active": true
     },
     {
+      "name": "Likescafe",
+      "imageUrl": "https://images.opencollective.com/likescafe/9468493/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "likescafe",
+      "website": "https://likescafe.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "apuesdeportivas.es",
+      "imageUrl": "https://images.opencollective.com/apuesdeportivas-es/6ecf644/avatar.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "apuesdeportivas-es",
+      "website": "https://apuesdeportivas.es/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
       "name": "iedcdubai",
       "imageUrl": "https://images.opencollective.com/iedcdubai-ae/62ea64d/avatar.png",
       "description": null,
@@ -1371,6 +1341,16 @@
       "tier": "silver",
       "slug": "netpositivepl",
       "website": "https://najlepsibukmacherzy.pl/ranking-legalnych-bukmacherow/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "POLi Pay Casinos",
+      "imageUrl": "https://images.opencollective.com/poli-pay-online-casinos/39bdd37/logo.png",
+      "description": null,
+      "tier": "silver",
+      "slug": "poli-pay-online-casinos",
+      "website": "https://nz.trustpilot.com/review/surfpokies.com?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -1495,16 +1475,6 @@
       "active": true
     },
     {
-      "name": "SoftOrbits",
-      "imageUrl": "https://images.opencollective.com/softorbits/a56c38a/avatar.png",
-      "description": "SoftOrbits is an award winning software development company.",
-      "tier": "silver",
-      "slug": "softorbits",
-      "website": "https://www.softorbits.net/ai-undresser/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
       "name": "Transparencia en Casinos Online",
       "imageUrl": "https://images.opencollective.com/educatransparenciacl/88a027e/logo.png",
       "description": "Mi misión es la educación y transparencia en el mundo de los casinos online",
@@ -1561,16 +1531,6 @@
       "tier": "silver",
       "slug": "no-account-casino",
       "website": "https://nl.trustpilot.com/review/zonderregistratiecasinos.com?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "one x bet - Arabic betting site",
-      "imageUrl": "https://images.opencollective.com/one-x-bet-arabic-betting-site/ca63263/avatar.png",
-      "description": null,
-      "tier": "silver",
-      "slug": "one-x-bet-arabic-betting-site",
-      "website": "https://xn----ymcbek6cvgvaq.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     },
@@ -1705,26 +1665,6 @@
       "active": true
     },
     {
-      "name": "buzzvoice.com",
-      "imageUrl": "https://images.opencollective.com/buzzvoicecom/c7477dd/logo.png",
-      "description": "Buzzvoice is your one-stop shop for all your social media marketing needs. With Buzzvoice, you can buy followers, comments, likes, video views and more!",
-      "tier": "silver",
-      "slug": "buzzvoicecom",
-      "website": "https://buzzvoice.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
-      "name": "buzzvoice.com",
-      "imageUrl": "https://images.opencollective.com/buzzvoicecom/c7477dd/logo.png",
-      "description": "Buzzvoice is your one-stop shop for all your social media marketing needs. With Buzzvoice, you can buy followers, comments, likes, video views and more!",
-      "tier": "silver",
-      "slug": "buzzvoicecom",
-      "website": "https://buzzvoice.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
       "name": "Casino Online Chile",
       "imageUrl": "https://images.opencollective.com/interactive-media-group-ltd/320a3f6/avatar.png",
       "description": null,
@@ -1755,16 +1695,6 @@
       "active": true
     },
     {
-      "name": "Букмекер",
-      "imageUrl": "https://images.opencollective.com/bukmeker/309f296/logo.png",
-      "description": "Ставки на спорт, БК в Україні",
-      "tier": "silver",
-      "slug": "bukmeker",
-      "website": "https://betking.com.ua/sports-book/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    },
-    {
       "name": "Goread.io",
       "imageUrl": "https://images.opencollective.com/goread_io/eb6337d/logo.png",
       "description": null,
@@ -1781,6 +1711,16 @@
       "tier": "silver",
       "slug": "eestionlinekasiinod-org",
       "website": "https://eestionlinekasiinod.org/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+      "twitter": null,
+      "active": true
+    },
+    {
+      "name": "superluxuryreps",
+      "imageUrl": "https://images.opencollective.com/superluxuryreps/378b62f/avatar.png",
+      "description": "super luxury reps",
+      "tier": "silver",
+      "slug": "superluxuryreps",
+      "website": "https://superluxuryreps.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": null,
       "active": true
     }
@@ -1827,16 +1767,6 @@
       "active": true
     },
     {
-      "name": "Requestly",
-      "imageUrl": "https://images.opencollective.com/requestly/433bbf1/logo.png",
-      "description": "A lightweight open-source API Development, Testing & Mocking platform",
-      "tier": "gold",
-      "slug": "requestly",
-      "website": "https://requestly.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": "https://x.com/requestlyio?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "active": true
-    },
-    {
       "name": "Poprey - Buy Instagram Likes",
       "imageUrl": "https://images.opencollective.com/instagram-likes/2a72a03/avatar.png",
       "description": "Buy Instagram Likes",
@@ -1853,18 +1783,6 @@
       "tier": "gold",
       "slug": "buzzoid-buy-instagram-followers",
       "website": "https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
-      "twitter": null,
-      "active": true
-    }
-  ],
-  "platinum": [
-    {
-      "name": "Hopper Security",
-      "imageUrl": "https://images.opencollective.com/hopper-security/c4f7de2/avatar.png",
-      "description": null,
-      "tier": "platinum",
-      "slug": "hopper-security",
-      "website": null,
       "twitter": null,
       "active": true
     }

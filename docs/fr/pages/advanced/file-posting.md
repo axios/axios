@@ -24,6 +24,14 @@ await axios.postForm(
 );
 ```
 
+Vous pouvez également passer la `FileList` (ou un tableau d'objets `File`) explicitement sous un nom de champ personnalisé en ajoutant `[]` à la clé :
+
+```js
+await axios.postForm("https://httpbin.org/post", {
+  "files[]": document.querySelector("#fileInput").files,
+});
+```
+
 Pour utiliser des noms de champs distincts pour chaque fichier, construisez un objet `FormData` manuellement :
 
 ```js

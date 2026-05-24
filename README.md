@@ -1,48 +1,329 @@
-<h3 align="center"> 💎 Platinum sponsors <br> </h3> <table align="center"><tr><td align="center" width="50%"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="90px" height="90px" src="https://axios-http.com/assets/sponsors/opencollective/ed51c2ee8f1b70aa3484d6dd678652134079a036.png" alt="THANKS.DEV"/> </a> <p align="center" title="We&#x27;re passionate about making open source sustainable. Scan your dependancy tree to better understand which open source projects need funding the most. Maintainers can also register their projects to become eligible for funding.">We&#x27;re passionate about making open source sustainable. Scan your dependancy tree to better understand which open source projects need funding the...</p> <p align="center"> <a href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>thanks.dev</b></a> </p>
-</td><td align="center" width="50%"> <a href="https://opencollective.com/hopper-security?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="90px" height="90px" src="https://axios-http.com/assets/sponsors/opencollective/180d02a83ee99448f850e39eed6dbb95f56000ba.png" alt="Hopper Security"/> </a> <p align="center">Hopper provides a secure open-source registry where every component is verified against malware and continuously remediated for vulnerabilities across any version. In simple terms, Hopper removes the need to manage software supply chain risk altogether.</p><p align="center"> <a href="https://hopper.security/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Hopper.Security</b></a> </p>
-</td></tr></table><table align="center"><tr><td align="center" width="50%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
-</td><td align="center" width="50%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
-</td></tr></table>
-<h3 align="center"> 🥇 Gold sponsors <br> </h3> <table align="center" width="100%"><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="133px" height="43px" src="https://axios-http.com/assets/sponsors/principal.svg" alt="Principal Financial Group"/> </a> <p align="center" title="We’re bound by one common purpose: to give you the financial tools, resources and information you need to live your best life.">We’re bound by one common purpose: to give you the financial tools, resources and information you ne...</p> <p align="center"> <a href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>www.principal.com</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="85px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/dfa9670ad5e66eea17315332453c7f4e3a3b5905.png" alt="Buy Instagram Followers Twicsy"/> </a> <p align="center" title="Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site to buy followers from the likes of US Magazine.">Buy real Instagram followers from Twicsy starting at only $2.97. Twicsy has been voted the best site...</p> <p align="center"> <a href="https://twicsy.com/buy-instagram-followers?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>twicsy.com</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="52px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/descope_white.png"> <img width="200px" height="52px" src="https://axios-http.com/assets/sponsors/descope.png" alt="Descope"/> </picture> </a> <p align="center" title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands.">Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and...</p> <p align="center"> <a href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Website</b></a> | <a href="https://docs.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Docs</b></a> | <a href="https://www.descope.com/community?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship" target="_blank"><b>Community</b></a> </p>
-</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://route4me.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <picture> <source width="200px" height="51px" media="(prefers-color-scheme: dark)" srcset="https://axios-http.com/assets/sponsors/route4me_white.png"> <img width="200px" height="51px" src="https://axios-http.com/assets/sponsors/route4me.png" alt="Route4Me"/> </picture> </a> <p align="center" title="Best Route Planning And Route Optimization Software">Best Route Planning And Route Optimization Software</p> <p align="center"> <a href="https://route4me.com/platform/route-optimization-software?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Explore</b></a> | <a href="https://route4me.com/platform/marketplace/pricing?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Free Trial</b></a> | <a href="https://route4me.com/contact?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>Contact</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="62px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e1625cb54e10ee40180c99d1495a462e9d6664a4.png" alt="Buzzoid - Buy Instagram Followers"/> </a> <p align="center" title="At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#x27;s #1 IG service since 2012.">At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rate...</p> <p align="center"> <a href="https://buzzoid.com/buy-instagram-followers/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>buzzoid.com</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="70px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/e699ec99f7df3a203ddbc49d3c7712a907e628ea.png" alt="Poprey - Buy Instagram Likes"/> </a> <p align="center" title="Buy Instagram Likes">Buy Instagram Likes</p> <p align="center"> <a href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>poprey.com</b></a> </p>
-</td></tr><tr width="33.333333333333336%"><td align="center" width="33.333333333333336%"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship" style="padding: 10px; display: inline-block" target="_blank"> <img width="71px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/16450b4dc0deb9dab5a511bf2bc8b8b4ac33412f.png" alt="Requestly"/> </a> <p align="center" title="A lightweight open-source API Development, Testing &amp; Mocking platform">A lightweight open-source API Development, Testing &amp; Mocking platform</p> <p align="center"> <a href="https://requestly.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship" target="_blank"><b>requestly.com</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://rxdb.info/?utm_source&#x3D;opencollective&amp;utm_medium&#x3D;banner&amp;utm_campaign&#x3D;opencollective_sponsor&amp;utm_content&#x3D;logo" style="padding: 10px; display: inline-block" target="_blank"> <img width="158px" height="70px" src="https://axios-http.com/assets/sponsors/opencollective/b28cc6ed919b414cb5f3d4a6d666cb8e06c5ff07.png" alt="RxDB"/> </a> <p align="center" title="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, E...</p> <p align="center"> <a href="https://rxdb.info/?utm_source&#x3D;opencollective&amp;utm_medium&#x3D;banner&amp;utm_campaign&#x3D;opencollective_sponsor&amp;utm_content&#x3D;logo" target="_blank"><b>rxdb.info</b></a> </p>
-</td><td align="center" width="33.333333333333336%"> <a href="https://opencollective.com/axios/contribute" target="_blank" >💜 Become a sponsor</a>
-</td></tr></table>
+<h3 align="center">💎 Platinum sponsors <br /></h3>
+<table align="center">
+    <tr>
+        <td align="center" width="50%">
+            <a
+                href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/thanks-dev/360b917/logo/256.png?height=256"
+                    alt="Thanks.dev"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                We're passionate about making open source sustainable. Scan your dependency tree to better understand which open source projects need funding.
+            </p>
+            <p align="center">
+                <a
+                    href="https://thanks.dev/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                    target="_blank"
+                    ><b>thanks.dev</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="50%">
+            <a
+                href="https://hopper.security/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/hopper-security/c4f7de2/avatar.png"
+                    alt="Hopper Security"
+                />
+            </a>
+            <p align="center">
+                Hopper provides a secure, open-source registry where every component is verified against malware and continuously remediated for vulnerabilities across all versions. In simple terms, Hopper removes the need to manage software supply chain risk altogether.
+            </p>
+            <p align="center">
+                <a
+                    href="https://hopper.security/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                    target="_blank"
+                    ><b>hopper.security</b></a
+                >
+            </p>
+        </td>
+    </tr>
+</table>
+<table align="center">
+    <tr>
+        <td align="center" width="50%">
+            <a
+                href="https://opencollective.com/axios/contribute"
+                target="_blank"
+                >💜 Become a sponsor</a
+            >
+        </td>
+        <td align="center" width="50%">
+            <a
+                href="https://opencollective.com/axios/contribute"
+                target="_blank"
+                >💜 Become a sponsor</a
+            >
+        </td>
+    </tr>
+</table>
+<h3 align="center">🥇 Gold sponsors <br /></h3>
+<table align="center" width="100%">
+    <tr width="33.333333333333336%">
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/principal/431e690/logo.png"
+                    alt="Principal Financial Group"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Free tools to help with your financial planning needs!
+            </p>
+            <p align="center">
+                <a
+                    href="https://www.principal.com/about-us?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                    target="_blank"
+                    ><b>principal.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://opensource.sap.com?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://avatars.githubusercontent.com/u/2531208?s=200&v=4"
+                    alt="SAP"
+                />
+            </a>
+            <p
+                align="center"
+                title="SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications."
+            >
+                BSAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
+            </p>
+            <p align="center">
+                <a
+                    href="https://opensource.sap.com?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                    target="_blank"
+                    ><b>opensource.sap.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+               <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/descope/b53243e/logo.png"
+                    alt="Descope"
+                />
+            </a>
+            <p
+                align="center"
+                title="Hi, we&#x27;re Descope! We are building something in the authentication space for app developers and can’t wait to place it in your hands."
+            >
+                Reduce user friction, prevent account takeover, and get a 360° view of your customer and agentic identities with the Descope External IAM platform.
+            </p>
+              <p align="center">
+                   <a
+                       href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"
+                       target="_blank"
+                       ><b>descope.com</b></a
+                   >
+              </p>
+        </td>
+    </tr>
+    <tr width="33.333333333333336%">
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://stytch.com/"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+               <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/stytch/f84ce43/logo/256.png?height=256"
+                    alt="Stytch"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                The identity platform for humans & AI agents
+            </p>
+            <p align="center">
+                   <a
+                       href="https://stytch.com"
+                       target="_blank"
+                       ><b>stytch.com</b></a
+                   >
+              </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://rxdb.info/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship&utm_content=logo"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://rxdb.info/files/logo/logo_text_white.svg"
+                    alt="RxDB"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                RxDB is a NoSQL database for JavaScript that runs directly in your app.
+            </p>
+            <p align="center">
+                <a
+                    href="https://rxdb.info/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship&utm_content=logo"
+                    target="_blank"
+                    ><b>rxdb.info</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="70px"
+                    height="70px"
+                    src="https://images.opencollective.com/instagram-likes/2a72a03/avatar.png"
+                    alt="Poprey"
+                />
+            </a>
+            <p align="center">
+                Buy Instagram Likes
+            </p>
+            <p align="center">
+                <a
+                    href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                    target="_blank"
+                    ><b>poprey.com</b></a
+                >
+            </p>
+        </td>
+    </tr>
+    <tr width="33.333333333333336%">
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="71px"
+                    height="70px"
+                    src="https://images.opencollective.com/buzzoid-buy-instagram-followers/56a09fe/logo.png"
+                    alt="Buzzoid - Buy Instagram Followers"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                At Buzzoid, you can buy Instagram followers quickly, safely, and easily with just a few clicks. Rated world&#39;s #1 IG service since 2012.
+            </p>
+            <p align="center">
+                <a
+                    href="https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>buzzoid.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="71px"
+                    height="70px"
+                    src="https://images.opencollective.com/buy-instagram-followers-twicsy/b4c5d7f/logo/256.png?height=256"
+                    alt="Buy Instagram Followers Twicsy"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Buy real Instagram followers from Twicsy. Twicsy has been voted the best site to buy followers from the likes of US Magazine.
+            </p>
+            <p align="center">
+                <a
+                    href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>twicsy.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://opencollective.com/axios/contribute"
+                target="_blank"
+                >💜 Become a sponsor</a
+            >
+        </td>
+    </tr>
+</table>
+
 
 <!--<div>marker</div>-->
 
 <br><br>
 
 <div align="center">
-   <a href="https://axios-http.com"><img src="https://axios-http.com/assets/logo.svg" alt="Axios" /></a><br>
+   <a href="https://axios.rest"><img src="https://axios.rest/logo.svg" alt="Axios" /></a><br>
 </div>
 
 <p align="center">Promise based HTTP client for the browser and node.js</p>
 
 <p align="center">
-    <a href="https://axios-http.com/"><b>Website</b></a> •
-    <a href="https://axios-http.com/docs/intro"><b>Documentation</b></a>
+    <a href="https://axios.rest/"><b>Website</b></a> •
+    <a href="https://axios.rest/pages/getting-started/first-steps.html"><b>Documentation</b></a>
 </p>
 
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 [![Build status](https://img.shields.io/github/actions/workflow/status/axios/axios/ci.yml?branch=v1.x&label=CI&logo=github&style=flat-square)](https://github.com/axios/axios/actions/workflows/ci.yml)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod&style=flat-square)](https://gitpod.io/#https://github.com/axios/axios)
-[![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=axios&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=axios)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios?style=flat-square)](https://bundlephobia.com/package/axios@latest)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
-[![Known Vulnerabilities](https://snyk.io/test/npm/axios/badge.svg)](https://snyk.io/test/npm/axios)
 [![Contributors](https://img.shields.io/github/contributors/axios/axios.svg?style=flat-square)](CONTRIBUTORS.md)
+[![Agent Friendly](https://agentfriendlycode.com/api/badge/github/axios/axios.svg)](https://agentfriendlycode.com/repo/32)
 
 </div>
 
@@ -87,7 +368,7 @@
 - [🔥 Fetch adapter](#-fetch-adapter)
   - [🔥 Custom fetch](#-custom-fetch)
     - [🔥 Using with Tauri](#-using-with-tauri)
-    - [🔥 Using with SvelteKit](#-using-with-sveltekit-)
+    - [🔥 Using with SvelteKit](#-using-with-sveltekit)
 - [🔥 HTTP/2 Support](#-http2-support)
 - [Axios redirects]
 - [Semver](#semver)
@@ -217,6 +498,7 @@ axios
     params: {
       ID: 12345,
     },
+    timeout: 5000, // 5 seconds — see "Handling Timeouts" below for matching error handling
   })
   .then(function (response) {
     console.log(response);
@@ -231,13 +513,24 @@ axios
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
   try {
-    const response = await axios.get('/user?ID=12345');
-    console.log(response);
+// Example: GET request with query parameters
+const response = await axios.get('/user', {
+  params: {
+    ID: 12345
+  }
+});
+
+// Using the `params` option improves readability and automatically formats query strings
+
+console.log(response);
   } catch (error) {
     console.error(error);
   }
 }
 ```
+
+> **Note**: Set a `timeout` in production — without one, a stalled request can hang
+> indefinitely. See [Handling Timeouts](#handling-timeouts) for the matching error handling.
 
 > **Note**: `async/await` is part of ECMAScript 2017 and is not supported in Internet
 > Explorer and older browsers, so use with caution.
@@ -427,6 +720,27 @@ These are the available config options for making requests. Only the `url` is re
     return data;
   }],
 
+  // `parseReviver` is an optional function that will be passed as the
+  // second argument (reviver) to JSON.parse()
+  parseReviver: function (key, value, context) {
+    // In modern environments, context.source provides the raw JSON string
+    // allowing for precision-safe parsing of BigInt
+    if (typeof value === 'number' && context?.source) {
+      const isInteger = Number.isInteger(value);
+      const isUnsafe = !Number.isSafeInteger(value);
+      const isValidIntegerString = /^-?\d+$/.test(context.source);
+
+      if (isInteger && isUnsafe && isValidIntegerString) {
+        try {
+          return BigInt(context.source);
+        } catch {
+          // Fallback: return original value if parsing fails
+        }
+      }
+    }
+    return value;
+  },
+
   // `headers` are custom headers to be sent
   headers: {'X-Requested-With': 'XMLHttpRequest'},
 
@@ -463,6 +777,11 @@ These are the available config options for making requests. Only the `url` is re
   data: {
     firstName: 'Fred'
   },
+
+  // `formDataHeaderPolicy` controls how node.js FormData#getHeaders() is copied.
+  // 'legacy' (default) copies all returned headers for v1 compatibility.
+  // 'content-only' copies only Content-Type and Content-Length.
+  formDataHeaderPolicy: 'legacy',
 
   // syntax alternative to send data into the body
   // method post
@@ -558,6 +877,10 @@ These are the available config options for making requests. Only the `url` is re
   // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
   maxBodyLength: 2000,
 
+  // `redact` masks matching config keys when AxiosError#toJSON() is called.
+  // Matching is case-insensitive and recursive. It does not change the request.
+  redact: ['authorization', 'password'],
+
   // `validateStatus` defines whether to resolve or reject the promise for a given
   // HTTP response status code. If `validateStatus` returns `true` (or is set to `null`
   // or `undefined`), the promise will be resolved; otherwise, the promise will be
@@ -637,9 +960,24 @@ These are the available config options for making requests. Only the `url` is re
   // Use `false` to disable proxies, ignoring environment variables.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
-  // This will set a `Proxy-Authorization` header, overwriting any existing
-  // `Proxy-Authorization` custom headers you have set using `headers`.
+  // For `http://` targets, axios sends the request to the proxy in
+  // forward-proxy mode and stamps `Proxy-Authorization` onto the request
+  // headers (overwriting any user-supplied `Proxy-Authorization` header).
+  // For `https://` targets, axios establishes a CONNECT tunnel through the
+  // proxy and performs TLS end-to-end with the origin; `Proxy-Authorization`
+  // is sent on the CONNECT request only, never on the wrapped TLS request,
+  // so the proxy never sees the URL, headers, or body. Supply a custom
+  // `httpsAgent` to opt out of automatic CONNECT tunneling.
   // If the proxy server uses HTTPS, then you must set the protocol to `https`.
+  // A user-supplied `Host` header in `headers` is preserved when forwarding
+  // through a proxy (case-insensitive match on `host`/`Host`/`HOST`); this
+  // lets you target a virtual host that differs from the request URL — for
+  // example, hitting `127.0.0.1:4000` while having the proxy treat the
+  // request as `example.com`. If no `Host` header is supplied, axios
+  // defaults it to the request URL's `hostname:port` as before. The Host
+  // header is only set in forward-proxy mode (HTTP targets); for HTTPS
+  // tunneling the Host header is sent inside the TLS connection, not seen
+  // by the proxy.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',
@@ -714,6 +1052,25 @@ These are the available config options for making requests. Only the `url` is re
     100 * 1024  // 100KB/s download limit
   ]
 }
+```
+
+### Strict RFC 3986 percent-encoding for query params
+
+By default, axios decodes `%3A`, `%24`, `%2C` and `%20` back to `:`, `$`, `,` and `+` for readability (the `+` follows the `application/x-www-form-urlencoded` convention for spaces in query strings). These characters are valid in a query component under [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), so the default output is correct, but some backends require strict percent-encoding and reject the readable form.
+
+Override the default encoder via `paramsSerializer.encode`:
+
+```js
+// Per-request: emit strict RFC 3986 percent-encoding for query values
+axios.get('/foo', {
+  params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
+  paramsSerializer: { encode: encodeURIComponent }
+});
+
+// Or set it on the instance defaults
+const client = axios.create({
+  paramsSerializer: { encode: encodeURIComponent }
+});
 ```
 
 ## 🔥 HTTP/2 Support
@@ -858,7 +1215,7 @@ const instance = axios.create();
 const myInterceptor = instance.interceptors.request.use(function () {
   /*...*/
 });
-axios.interceptors.request.eject(myInterceptor);
+instance.interceptors.request.eject(myInterceptor);
 ```
 
 You can also clear all interceptors for requests or responses.
@@ -1044,6 +1401,17 @@ Using `toJSON` you get an object with more information about the HTTP error.
 ```js
 axios.get('/user/12345').catch(function (error) {
   console.log(error.toJSON());
+});
+```
+
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+
+```js
+axios.get('/user/12345', {
+  headers: { Authorization: 'Bearer token' },
+  redact: ['authorization']
+}).catch(function (error) {
+  console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
 });
 ```
 
@@ -1287,6 +1655,8 @@ form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
 
 axios.post('https://example.com', form);
 ```
+
+In node.js, when a `FormData` object provides `getHeaders()`, axios copies all returned headers by default for v1 compatibility. If the `FormData` object is custom or not fully trusted, set `formDataHeaderPolicy: 'content-only'` to copy only `Content-Type` and `Content-Length`, and set any other request headers explicitly with the request `headers` config.
 
 ### 🆕 Automatic serialization to FormData
 

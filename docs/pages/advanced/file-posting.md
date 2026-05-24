@@ -24,6 +24,14 @@ await axios.postForm(
 );
 ```
 
+You can also pass the `FileList` (or array of `File` objects) explicitly under a custom field name by appending `[]` to the key:
+
+```js
+await axios.postForm("https://httpbin.org/post", {
+  "files[]": document.querySelector("#fileInput").files,
+});
+```
+
 To use distinct field names for each file, build a `FormData` object manually:
 
 ```js

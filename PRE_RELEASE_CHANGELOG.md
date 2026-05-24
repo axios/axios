@@ -9,6 +9,7 @@
 ## Bug Fixes
 
 - **AxiosHeaders:** Silently skip empty response header names emitted by some React Native Android responses instead of throwing. (**#6959**, **#10875**)
+- **React Native FormData:** Clear the default `Content-Type` header for React Native `FormData` requests so Android can build multipart bodies with the correct boundary. (**#10898**)
 - **Request Data:** Preserve enumerable symbol keys when merging plain request data before `transformRequest`. (**#6392**)
 
 ## Release Documentation TODO

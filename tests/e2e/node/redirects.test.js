@@ -13,7 +13,7 @@ describe('redirects', () => {
 
   [{
     adapter: 'http'
-  }, /*{
+  }, {
     adapter: 'fetch'
   }, {
     httpVersion: 2,
@@ -21,7 +21,7 @@ describe('redirects', () => {
       rejectUnauthorized: false
     },
     adapter: 'http'
-  }*/].forEach((defaultConfig) => {
+  }].forEach((defaultConfig) => {
     describe(`Adapter [${defaultConfig.adapter}] [${defaultConfig.httpVersion === 2 ? 'HTTP/2' : 'HTTP/1.1'}]`, () => {
       const {httpVersion} = defaultConfig;
 
@@ -479,18 +479,23 @@ describe('redirects', () => {
               res.end(body);
             });
           }
+        }, {
+          useHTTP2,
+          useHTTPS
         });
 
         const stream = (async function* () {
           yield 'Test Stream Body';
+          yield 'Test Stream Body';
+          yield 'Test Stream Body';
         })();
 
-        const response = await axiosInstance.post(`http://localhost:${server.address().port}/redirect`, stream, {
+        const response = await axiosInstance.post(`${server.origin}/redirect`, stream, {
           flushTimeout: 1000
         });
 
         expect(response.status).toBe(200);
-        expect(response.data).toBe('Test Stream Body');
+        expect(response.data).toBe('Test Stream Body'.repeat(3));
       });
 
       it('should be able to reread stream payload within timeout for multiple redirects', async () => {
@@ -812,7 +817,7 @@ describe('redirects', () => {
           'String list': '310, 311',
           'Hash object': {309: true, 310: true, 311: false}
         }).forEach(([description, followStatusCodes]) => {
-          it(`should support ${description} as an option value`, async () => {
+          it(`should support ${description} as the option value`, async () => {
             const server = await startHTTPServer((req, res) => {
               if (req.path === '/redirect') {
                 res.writeHead(310, {Location: '/final'});

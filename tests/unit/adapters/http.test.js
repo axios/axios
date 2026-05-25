@@ -2077,12 +2077,16 @@ describe('supports http with nodejs', () => {
 
   it('should detect Node native env proxy support', () => {
     const enabledEnv = { NODE_USE_ENV_PROXY: '1' };
+    const disabledEnv = {};
+    const cliFlag = ['--use-env-proxy'];
 
     assert.strictEqual(__isNodeEnvProxyEnabled({}, '22.21.0'), false);
     assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '22.20.0'), false);
     assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '22.21.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(disabledEnv, '22.21.0', cliFlag), true);
     assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '24.4.0'), false);
     assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '24.5.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(disabledEnv, '24.5.0', cliFlag), true);
     assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '25.0.0'), true);
   });
 

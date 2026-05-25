@@ -283,13 +283,20 @@ describe('requests (vitest browser)', () => {
     await expect(promise).resolves.toBeDefined();
   });
 
-  it('should resolve when validateStatus is undefined', async () => {
+  // https://github.com/axios/axios/issues/6688
+  it('should reject when validateStatus is undefined', async () => {
     const { request, promise } = startRequest('/foo', {
       validateStatus: undefined,
     });
 
     request.respondWith({ status: 500 });
-    await expect(promise).resolves.toBeDefined();
+    const reason = await promise.catch((error) => error);
+
+    expect(reason).toBeInstanceOf(Error);
+    expect(reason.message).toBe('Request failed with status code 500');
+    expect(reason.config.method).toBe('get');
+    expect(reason.config.url).toBe('/foo');
+    expect(reason.response.status).toBe(500);
   });
 
   // https://github.com/axios/axios/issues/378

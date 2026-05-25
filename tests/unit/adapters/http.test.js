@@ -5892,6 +5892,53 @@ describe('supports http with nodejs', () => {
         'second request should be destroyed by its own active socket error'
       );
     });
+
+    it('should not throw TypeError when a proxy agent stream does not define setKeepAlive (regression #10917)', async () => {
+      // proxy agents (e.g. agent-base) may provide a generic Duplex stream as
+      // the socket; that stream does not define setKeepAlive.
+      const socket = new EventEmitter();
+      // intentionally omit socket.setKeepAlive
+
+      const transport = {
+        request(_, cb) {
+          return new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+            }
+
+            setTimeout() {}
+            write() {}
+
+            end() {
+              this.emit('socket', socket);
+
+              setImmediate(() => {
+                const response = stream.Readable.from(['ok']);
+                response.statusCode = 200;
+                response.headers = {};
+                cb(response);
+                this.emit('close');
+              });
+            }
+
+            destroy(err) {
+              if (this.destroyed) return;
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+        },
+      };
+
+      const result = await axios.get('http://example.com/', {
+        transport,
+        maxRedirects: 0,
+      });
+
+      assert.strictEqual(result.status, 200);
+    });
   });
 
   describe('redirect listener accumulation', () => {

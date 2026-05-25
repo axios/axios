@@ -370,7 +370,8 @@
     - [🔥 Using with Tauri](#-using-with-tauri)
     - [🔥 Using with SvelteKit](#-using-with-sveltekit)
 - [🔥 HTTP/2 Support](#-http2-support)
-- [Axios redirects]
+- [🔥 Axios redirects](#-axios-redirects)
+- [🔥 Body buffering](#-body-buffering) 
 - [Semver](#semver)
 - [Promises](#promises)
 - [TypeScript](#typescript)
@@ -2341,7 +2342,7 @@ const { data, headers, status } = await axios.post('https://httpbin.org/post', f
 > that supports redirects for `HTTP/1.1` and `HTTP/2`.
 
 
-## Axios redirects
+## 🔥 Axios redirects
 
 An experimental Axios redirects implementation was introduced in `v1.17.0`.
 
@@ -2428,6 +2429,11 @@ The option also supports shorthand formats:
   followStatusCodes: '301|302|303' // pipe-separated string
   followStatusCodes: '301' // single string value
   followStatusCodes: 301 // single numeric value
+  followStatusCodes: { // object with status codes as keys and truthy values to follow
+    301: true,
+    302: true,
+    303: true
+  }
 }
 ````
 
@@ -2465,7 +2471,7 @@ await axios.get(url, {
 });
 ````
 
-### Buffering
+### 🔥 Body buffering
 
 When the request body is a stream, redirect handling may require request body buffering.
 

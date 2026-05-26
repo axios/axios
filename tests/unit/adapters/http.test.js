@@ -4437,6 +4437,34 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
+
+    it('should preserve falsy primitive AbortSignal reasons', async () => {
+      for (const reason of ['', 0, false]) {
+        const server = await startHTTPServer(
+          (req, res) => {
+            setTimeout(() => res.end('ok'), 1000);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const controller = new AbortController();
+          const request = axios.get(`http://localhost:${server.address().port}`, {
+            signal: controller.signal,
+          });
+
+          setTimeout(() => controller.abort(reason), 50);
+
+          await assert.rejects(request, (error) => {
+            assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+            assert.strictEqual(error.message, reason);
+            return true;
+          });
+        } finally {
+          await stopHTTPServer(server);
+        }
+      }
+    });
   });
 
   it('should properly handle synchronous errors inside the adapter', async () => {

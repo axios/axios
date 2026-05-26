@@ -7,6 +7,7 @@ import mergeConfig from '../../lib/core/mergeConfig.js';
 import defaults from '../../lib/defaults/index.js';
 import AxiosError from '../../lib/core/AxiosError.js';
 import AxiosHeaders from '../../lib/core/AxiosHeaders.js';
+import resolveConfig from '../../lib/helpers/resolveConfig.js';
 import axios from '../../index.js';
 
 describe('Prototype Pollution Protection', () => {
@@ -688,6 +689,39 @@ describe('Prototype Pollution Protection', () => {
         await new Promise((resolve) => target.close(resolve));
       }
     }, 10000);
+  });
+
+  describe('resolveConfig params and paramsSerializer gadget', () => {
+    it('should not inherit polluted params via resolveConfig', () => {
+      Object.prototype.params = { injected: 'yes' };
+
+      try {
+        const resolved = resolveConfig({ url: '/api', method: 'get' });
+
+        assert.ok(resolved.url.indexOf('injected') === -1, 'polluted params must not appear in URL');
+        assert.strictEqual(resolved.url, '/api', 'URL must remain unchanged');
+      } finally {
+        delete Object.prototype.params;
+      }
+    });
+
+    it('should not invoke polluted paramsSerializer via resolveConfig', () => {
+      let serializerInvoked = false;
+      Object.prototype.paramsSerializer = function polluted() {
+        serializerInvoked = true;
+        return 'injected=yes';
+      };
+
+      try {
+        const resolved = resolveConfig({ url: '/api', method: 'get', params: { legit: 'true' } });
+
+        assert.strictEqual(serializerInvoked, false, 'polluted paramsSerializer must not be called');
+        // The URL should have legit param serialized normally
+        assert.ok(resolved.url.indexOf('legit=true') !== -1, 'legitimate params must still be serialized');
+      } finally {
+        delete Object.prototype.paramsSerializer;
+      }
+    });
   });
 
   // Structural defense: mergeConfig returns a null-prototype object, so any

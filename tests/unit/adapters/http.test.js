@@ -10,6 +10,7 @@ import {
 } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
+import CanceledError from '../../../lib/cancel/CanceledError.js';
 import { __setProxy } from '../../../lib/adapters/http.js';
 import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
@@ -4384,6 +4385,58 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
+
+    it('should preserve the AbortSignal reason on the rejected CanceledError', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          setTimeout(() => res.end('ok'), 1000);
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const controller = new AbortController();
+        const request = axios.get(`http://localhost:${server.address().port}`, {
+          signal: controller.signal,
+        });
+
+        setTimeout(() => controller.abort('TimeoutError'), 50);
+
+        await assert.rejects(request, (error) => {
+          assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+          assert.strictEqual(error.message, 'TimeoutError');
+          return true;
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should preserve a CanceledError abort reason instance', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          setTimeout(() => res.end('ok'), 1000);
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const controller = new AbortController();
+        const customReason = new CanceledError('custom cancel reason');
+        const request = axios.get(`http://localhost:${server.address().port}`, {
+          signal: controller.signal,
+        });
+
+        setTimeout(() => controller.abort(customReason), 50);
+
+        await assert.rejects(request, (error) => {
+          assert.strictEqual(error, customReason);
+          return true;
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
   });
 
   it('should properly handle synchronous errors inside the adapter', async () => {
@@ -4788,7 +4841,7 @@ describe('supports http with nodejs', () => {
           await http2Axios.get(localServerURL, {
             signal: AbortSignal.timeout(500),
           });
-        }, /CanceledError: canceled/);
+        }, /CanceledError: The operation was aborted due to timeout/);
 
         await promise;
         assert.ok(isAborted);

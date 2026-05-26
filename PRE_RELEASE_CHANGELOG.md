@@ -12,6 +12,7 @@
 - **HTTP Adapter - Socket Path:** Ignore inherited `socketPath` and `allowedSocketPaths` config values when building Node.js requests, preventing prototype-pollution SSRF via Unix sockets. (**#10901**)
 - **React Native FormData:** Clear the default `Content-Type` header for React Native `FormData` requests so Android can build multipart bodies with the correct boundary. (**#10898**)
 - **Request Data:** Preserve enumerable symbol keys when merging plain request data before `transformRequest`. (**#6392**)
+- **Cancellation:** Preserve the `AbortSignal.reason` on the rejected `CanceledError` so callers can distinguish cancellation causes (e.g. timeout vs. user navigation) instead of always seeing the generic `"canceled"` message. (**#7434**)
 
 ## Release Documentation TODO
 

@@ -8,3 +8,6 @@ headers.anotherCustomHeader = ['foo', 'bar'];
 
 // @ts-expect-error -- Header values must be assignable to AxiosHeaderValue.
 headers.invalidHeader = Promise.resolve('foo');
+
+// @ts-expect-error -- Custom header fields cannot be functions.
+headers.invalidFunction = () => 'foo';

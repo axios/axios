@@ -19,36 +19,89 @@ type AxiosHeaderMatcher =
   | ((this: AxiosHeaders, value: string, name: string) => boolean);
 
 type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: string) => any;
-type AxiosHeaderValueOrMethod = AxiosHeaderValue | ((...args: any[]) => any);
+declare const AxiosHeaderMethodSymbol: unique symbol;
+
+type AxiosHeaderMethodBrand = {
+  readonly [AxiosHeaderMethodSymbol]: true;
+};
+
+type AxiosHeaderSetter = AxiosHeaderMethodBrand & {
+  (
+    headerName?: string,
+    value?: AxiosHeaderValue,
+    rewrite?: boolean | AxiosHeaderMatcher
+  ): AxiosHeaders;
+  (headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+};
+
+type AxiosHeaderGetter = AxiosHeaderMethodBrand & {
+  (headerName: string, parser: RegExp): RegExpExecArray | null;
+  (headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+};
+
+type AxiosHeaderTester = AxiosHeaderMethodBrand &
+  ((header: string, matcher?: AxiosHeaderMatcher) => boolean);
+
+type AxiosHeaderDeleter = AxiosHeaderMethodBrand &
+  ((header: string | string[], matcher?: AxiosHeaderMatcher) => boolean);
+
+type AxiosHeaderClearer = AxiosHeaderMethodBrand & ((matcher?: AxiosHeaderMatcher) => boolean);
+
+type AxiosHeaderNormalizer = AxiosHeaderMethodBrand & ((format: boolean) => AxiosHeaders);
+
+type AxiosHeaderConcatenator = AxiosHeaderMethodBrand &
+  ((...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>) => AxiosHeaders);
+
+type AxiosHeaderToJSON = AxiosHeaderMethodBrand & ((asStrings?: boolean) => RawAxiosHeaders);
+
+type AxiosHeaderAccessorSetter<Value = AxiosHeaderValue> = AxiosHeaderMethodBrand &
+  ((value: Value, rewrite?: boolean | AxiosHeaderMatcher) => AxiosHeaders);
+
+type AxiosHeaderAccessorGetter = AxiosHeaderMethodBrand & {
+  (parser?: RegExp): RegExpExecArray | null;
+  (matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+};
+
+type AxiosHeaderAccessorTester = AxiosHeaderMethodBrand &
+  ((matcher?: AxiosHeaderMatcher) => boolean);
+
+type AxiosHeaderSetCookieGetter = AxiosHeaderMethodBrand & (() => string[]);
+
+type AxiosHeaderValueOrMethod =
+  | AxiosHeaderValue
+  | AxiosHeaderSetter
+  | AxiosHeaderGetter
+  | AxiosHeaderTester
+  | AxiosHeaderDeleter
+  | AxiosHeaderClearer
+  | AxiosHeaderNormalizer
+  | AxiosHeaderConcatenator
+  | AxiosHeaderToJSON
+  | AxiosHeaderAccessorSetter
+  | AxiosHeaderAccessorGetter
+  | AxiosHeaderAccessorTester
+  | AxiosHeaderSetCookieGetter;
 
 export class AxiosHeaders {
   constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 
   [key: string]: AxiosHeaderValueOrMethod;
 
-  set(
-    headerName?: string,
-    value?: AxiosHeaderValue,
-    rewrite?: boolean | AxiosHeaderMatcher
-  ): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+  set: AxiosHeaderSetter;
 
-  get(headerName: string, parser: RegExp): RegExpExecArray | null;
-  get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+  get: AxiosHeaderGetter;
 
-  has(header: string, matcher?: AxiosHeaderMatcher): boolean;
+  has: AxiosHeaderTester;
 
-  delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
+  delete: AxiosHeaderDeleter;
 
-  clear(matcher?: AxiosHeaderMatcher): boolean;
+  clear: AxiosHeaderClearer;
 
-  normalize(format: boolean): AxiosHeaders;
+  normalize: AxiosHeaderNormalizer;
 
-  concat(
-    ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>
-  ): AxiosHeaders;
+  concat: AxiosHeaderConcatenator;
 
-  toJSON(asStrings?: boolean): RawAxiosHeaders;
+  toJSON: AxiosHeaderToJSON;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
@@ -58,37 +111,31 @@ export class AxiosHeaders {
     ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
-  setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentType(parser?: RegExp): RegExpExecArray | null;
-  getContentType(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
-  hasContentType(matcher?: AxiosHeaderMatcher): boolean;
+  setContentType: AxiosHeaderAccessorSetter<ContentType>;
+  getContentType: AxiosHeaderAccessorGetter;
+  hasContentType: AxiosHeaderAccessorTester;
 
-  setContentLength(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentLength(parser?: RegExp): RegExpExecArray | null;
-  getContentLength(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
-  hasContentLength(matcher?: AxiosHeaderMatcher): boolean;
+  setContentLength: AxiosHeaderAccessorSetter;
+  getContentLength: AxiosHeaderAccessorGetter;
+  hasContentLength: AxiosHeaderAccessorTester;
 
-  setAccept(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getAccept(parser?: RegExp): RegExpExecArray | null;
-  getAccept(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
-  hasAccept(matcher?: AxiosHeaderMatcher): boolean;
+  setAccept: AxiosHeaderAccessorSetter;
+  getAccept: AxiosHeaderAccessorGetter;
+  hasAccept: AxiosHeaderAccessorTester;
 
-  setUserAgent(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getUserAgent(parser?: RegExp): RegExpExecArray | null;
-  getUserAgent(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
-  hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
+  setUserAgent: AxiosHeaderAccessorSetter;
+  getUserAgent: AxiosHeaderAccessorGetter;
+  hasUserAgent: AxiosHeaderAccessorTester;
 
-  setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentEncoding(parser?: RegExp): RegExpExecArray | null;
-  getContentEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
-  hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
+  setContentEncoding: AxiosHeaderAccessorSetter;
+  getContentEncoding: AxiosHeaderAccessorGetter;
+  hasContentEncoding: AxiosHeaderAccessorTester;
 
-  setAuthorization(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getAuthorization(parser?: RegExp): RegExpExecArray | null;
-  getAuthorization(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
-  hasAuthorization(matcher?: AxiosHeaderMatcher): boolean;
+  setAuthorization: AxiosHeaderAccessorSetter;
+  getAuthorization: AxiosHeaderAccessorGetter;
+  hasAuthorization: AxiosHeaderAccessorTester;
 
-  getSetCookie(): string[];
+  getSetCookie: AxiosHeaderSetCookieGetter;
 
   [Symbol.iterator](): IterableIterator<[string, AxiosHeaderValue]>;
 }

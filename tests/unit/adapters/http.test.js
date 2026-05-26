@@ -1754,7 +1754,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('12345');
       });
-      httpsServer.listen(0, '127.0.0.1', () => resolve(httpsServer));
+      httpsServer.listen(0, 'localhost', () => resolve(httpsServer));
       httpsServer.on('error', reject);
     });
 
@@ -1794,7 +1794,7 @@ describe('supports http with nodejs', () => {
       rejectUnauthorized: false,
     });
     try {
-      const response = await axios.get(`https://127.0.0.1:${server.address().port}/`, {
+      const response = await axios.get(`https://localhost:${server.address().port}/`, {
         httpsAgent: tunnelingAgent,
       });
 
@@ -1803,7 +1803,7 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(plaintextRequests, 0, 'proxy must not see plaintext requests');
       assert.strictEqual(connectTargets.length, 1, 'proxy should see exactly one CONNECT');
       assert.ok(
-        connectTargets[0].startsWith(`127.0.0.1:${server.address().port}`),
+        connectTargets[0].startsWith(`localhost:${server.address().port}`),
         `CONNECT should target the origin: ${connectTargets[0]}`
       );
     } finally {
@@ -1844,7 +1844,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('secret-body-12345');
       });
-      s.listen(0, '127.0.0.1', () => resolve(s));
+      s.listen(0, 'localhost', () => resolve(s));
       s.on('error', reject);
     });
 
@@ -1879,7 +1879,7 @@ describe('supports http with nodejs', () => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     try {
       const response = await axios.post(
-        `https://127.0.0.1:${origin.address().port}/path?token=abc123`,
+        `https://localhost:${origin.address().port}/path?token=abc123`,
         { sensitive: 'leak-canary' },
         {
           proxy: {
@@ -1896,7 +1896,7 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(captured.plaintext, 0, 'proxy must not see any plaintext request line');
       assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
       assert.ok(
-        captured.connectTargets[0].startsWith(`127.0.0.1:${origin.address().port}`),
+        captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
         `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
       );
       assert.ok(captured.connectAuth[0], 'Proxy-Authorization should be present on the CONNECT request');
@@ -2103,7 +2103,7 @@ describe('supports http with nodejs', () => {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
         res.end('12345');
       });
-      httpsServer.listen(0, '127.0.0.1', () => resolve(httpsServer));
+      httpsServer.listen(0, 'localhost', () => resolve(httpsServer));
       httpsServer.on('error', reject);
     });
 
@@ -2142,7 +2142,7 @@ describe('supports http with nodejs', () => {
     const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     try {
-      const response = await axios.get(`https://127.0.0.1:${server.address().port}/`);
+      const response = await axios.get(`https://localhost:${server.address().port}/`);
 
       assert.strictEqual(Number(response.data), 12345, 'origin body should be received unmodified');
       assert.strictEqual(plaintextRequests, 0, 'proxy must not see plaintext requests');

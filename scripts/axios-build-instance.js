@@ -3,7 +3,7 @@ import axios from '../index.js';
 const { GITHUB_TOKEN } = process.env;
 
 if (GITHUB_TOKEN) {
-  console.log(`[GITHUB_TOKEN OK]`)
+  console.log(`[GITHUB_TOKEN OK]`);
 } else { 
   console.warn(`[GITHUB_TOKEN is not defined]`);
 }
@@ -23,6 +23,6 @@ export default axios.create({
   ],
   baseURL: 'https://api.github.com/',
   headers: {
-    ...(GITHUB_TOKEN && { Authorization: `token ${GITHUB_TOKEN}` }),
+    ...(GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {}),
   },
 });

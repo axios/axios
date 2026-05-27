@@ -239,6 +239,7 @@ axios will **not**:
 - Warn when TLS validation is disabled via a custom agent.
 - Redact `config` from thrown errors - the caller may legitimately need it for retry logic.
 - Defend against a fully compromised caller process (e.g. attacker-controlled code running inside the caller). Note: for the narrower case of a **polluted `Object.prototype` arriving via a transitive dependency**, axios _does_ defend the reachable config-read gadgets (see T-R4b) — but any new config-read path must continue to use `hasOwnProp` guards to stay on this side of the line.
+- Defend against monkey-patched JavaScript or Node.js runtime APIs (`Object.keys`, `http.request`, `ClientRequest.prototype.setHeader`, `fetch`, etc.). If attacker-controlled code is already running in the same process, it can observe or alter requests below axios and this is outside axios' security boundary.
 
 ---
 

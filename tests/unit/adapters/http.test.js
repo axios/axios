@@ -1165,6 +1165,98 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should preserve basic auth across same-origin 303 POST -> GET redirect', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.url === '/login') {
+          res.setHeader('Location', '/profile');
+          res.statusCode = 303;
+          res.end();
+          return;
+        }
+        res.end(req.headers.authorization || '');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.post(
+        `http://localhost:${server.address().port}/login`,
+        { hello: 'world' },
+        { auth, maxRedirects: 1 }
+      );
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+      assert.strictEqual(response.request.path, '/profile');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should strip basic auth on cross-origin redirect', async () => {
+    const targetServer = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization || 'no-auth');
+      },
+      { port: ALTERNATE_SERVER_PORT }
+    );
+    const redirectServer = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Location', `http://127.0.0.1:${targetServer.address().port}/`);
+        res.statusCode = 302;
+        res.end();
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.get(`http://localhost:${redirectServer.address().port}/start`, {
+        auth,
+        maxRedirects: 1,
+      });
+      assert.strictEqual(response.data, 'no-auth');
+    } finally {
+      await stopHTTPServer(redirectServer);
+      await stopHTTPServer(targetServer);
+    }
+  });
+
+  it('should preserve basic auth across multi-hop same-origin redirects', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.url === '/a') {
+          res.setHeader('Location', '/b');
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        if (req.url === '/b') {
+          res.setHeader('Location', '/c');
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        res.end(req.headers.authorization || '');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.get(`http://localhost:${server.address().port}/a`, {
+        auth,
+        maxRedirects: 5,
+      });
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+      assert.strictEqual(response.request.path, '/c');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should provides a default User-Agent header', async () => {
     const server = await startHTTPServer(
       (req, res) => {

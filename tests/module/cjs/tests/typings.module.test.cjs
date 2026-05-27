@@ -25,4 +25,23 @@ describe('module cjs typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('type-checks AxiosHeaders custom fields', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/headers-types.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'headers-types-cjs', sourcePath, {
+      compilerOptions: {
+        ...tsconfig.compilerOptions,
+        baseUrl: '.',
+        paths: {
+          axios: ['../../../../index.d.cts'],
+        },
+      },
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
 });

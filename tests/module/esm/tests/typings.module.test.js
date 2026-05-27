@@ -28,4 +28,17 @@ describe('module esm typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('type-checks AxiosHeaders custom fields', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/headers-types.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'headers-types-esm', sourcePath, tsconfig, {
+      type: 'module',
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
 });

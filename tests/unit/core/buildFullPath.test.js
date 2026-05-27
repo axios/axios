@@ -37,6 +37,7 @@ describe('core::buildFullPath', () => {
     for (const call of [
       () => buildFullPath(undefined, 'https:example.com/users'),
       () => buildFullPath(undefined, '\thttps:example.com/users'),
+      () => buildFullPath(undefined, '\u0000https:example.com/users'),
       () => buildFullPath(undefined, 'http:/example.com/users'),
       () => buildFullPath('http:example.com/api', '/users'),
     ]) {
@@ -51,5 +52,25 @@ describe('core::buildFullPath', () => {
       expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
       expect(error.message).toBe('Invalid URL: missing "//" after protocol');
     }
+  });
+
+  it('does not reject an unused malformed baseURL for absolute requests', () => {
+    expect(buildFullPath('http:example.com/api', 'https://api.example.com/users')).toBe(
+      'https://api.example.com/users'
+    );
+  });
+
+  it('rejects a malformed baseURL when absolute requests are forced through baseURL', () => {
+    let error;
+
+    try {
+      buildFullPath('http:example.com/api', 'https://api.example.com/users', false);
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+    expect(error.message).toBe('Invalid URL: missing "//" after protocol');
   });
 });

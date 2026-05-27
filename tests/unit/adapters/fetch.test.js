@@ -9,6 +9,7 @@ import {
   makeEchoStream,
 } from '../../setup/server.js';
 import axios from '../../../index.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 import utils from '../../../lib/utils.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
@@ -51,6 +52,26 @@ const createBrokenDOMExceptionLikeError = () =>
   );
 
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
+  it('rejects malformed HTTP URLs before fetch normalization and preserves config', async () => {
+    await assert.rejects(
+      () =>
+        axios.get('\u0000https:example.com/users', {
+          adapter: 'fetch',
+          headers: {
+            'X-Test': 'yes',
+          },
+        }),
+      (error) => {
+        assert.ok(error instanceof AxiosError);
+        assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+        assert.strictEqual(error.message, 'Invalid URL: missing "//" after protocol');
+        assert.strictEqual(error.config.url, '\u0000https:example.com/users');
+        assert.strictEqual(error.config.headers.get('X-Test'), 'yes');
+        return true;
+      }
+    );
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

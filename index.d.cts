@@ -696,7 +696,7 @@ declare namespace axios {
     CanceledError: typeof CanceledError;
     HttpStatusCode: typeof HttpStatusCode;
     readonly VERSION: string;
-    isCancel(value: any): value is Cancel;
+    isCancel<T = any>(value: any): value is CanceledError<T>;
     all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
     spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;

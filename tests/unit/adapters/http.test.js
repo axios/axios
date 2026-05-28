@@ -1902,7 +1902,8 @@ describe('supports http with nodejs', () => {
           },
         }),
         (error) => {
-          assert.deepStrictEqual(error.exists, true);
+          assert.ok(error instanceof AxiosError, 'error should be an AxiosError');
+          assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
           return true;
         }
       );

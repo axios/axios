@@ -66,7 +66,9 @@ declare class AxiosHeaders {
     ...targets: Array<AxiosHeaders | axios.RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
-  toJSON(asStrings?: boolean): axios.RawAxiosHeaders;
+  toJSON(asStrings: true): Record<string, string>;
+  toJSON(asStrings?: false): Record<string, string | string[]>;
+  toJSON(asStrings?: boolean): Record<string, string | string[]>;
 
   static from(thing?: AxiosHeaders | axios.RawAxiosHeaders | string): AxiosHeaders;
 
@@ -162,7 +164,9 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ETIMEDOUT = 'ETIMEDOUT';
 }
 
-declare class CanceledError<T> extends AxiosError<T> {}
+declare class CanceledError<T> extends AxiosError<T> {
+  readonly name: 'CanceledError';
+}
 
 declare class Axios {
   constructor(config?: axios.AxiosRequestConfig);

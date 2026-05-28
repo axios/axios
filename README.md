@@ -29,27 +29,10 @@
         </td>
         <td align="center" width="50%">
             <a
-                href="https://hopper.security/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
-                style="padding: 10px; display: inline-block"
+                href="https://opencollective.com/axios/contribute"
                 target="_blank"
+                >💜 Become a sponsor</a
             >
-                <img
-                    width="90px"
-                    height="90px"
-                    src="https://images.opencollective.com/hopper-security/c4f7de2/avatar.png"
-                    alt="Hopper Security"
-                />
-            </a>
-            <p align="center">
-                Hopper provides a secure, open-source registry where every component is verified against malware and continuously remediated for vulnerabilities across all versions. In simple terms, Hopper removes the need to manage software supply chain risk altogether.
-            </p>
-            <p align="center">
-                <a
-                    href="https://hopper.security/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
-                    target="_blank"
-                    ><b>hopper.security</b></a
-                >
-            </p>
         </td>
     </tr>
 </table>

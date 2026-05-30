@@ -14,6 +14,11 @@ class ReactNativeFormData {
   }
 }
 
+const encodeUTF8 = (str) =>
+  encodeURIComponent(str).replace(/%([0-9A-F]{2})/gi, (_, hex) =>
+    String.fromCharCode(parseInt(hex, 16))
+  );
+
 describe('helpers::resolveConfig', () => {
   it('clears Content-Type for React Native FormData', () => {
     const data = new ReactNativeFormData();
@@ -31,5 +36,20 @@ describe('helpers::resolveConfig', () => {
       Object.prototype.hasOwnProperty.call(config.headers.toJSON(), 'Content-Type'),
       false
     );
+  });
+
+  it('should encode basic auth credentials with UTF-8', () => {
+    const config = resolveConfig({
+      url: '/resource',
+      auth: {
+        username: '用户',
+        password: 'pässwörd',
+      },
+      headers: {},
+    });
+
+    const expected = 'Basic ' + btoa(`${encodeUTF8('用户')}:${encodeUTF8('pässwörd')}`);
+
+    assert.strictEqual(config.headers.get('Authorization'), expected);
   });
 });

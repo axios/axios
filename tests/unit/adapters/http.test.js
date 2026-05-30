@@ -5367,6 +5367,55 @@ describe('supports http with nodejs', () => {
     assert.strictEqual(response.data, 'ok');
   });
 
+  it('should ignore socket error-listener setup when socket.on is unavailable', async () => {
+    const socket = {};
+
+    const transport = {
+      request(_, cb) {
+        return new (class MockRequest extends EventEmitter {
+          constructor() {
+            super();
+            this.destroyed = false;
+          }
+
+          setTimeout() {}
+
+          write() {}
+
+          end() {
+            this.emit('socket', socket);
+
+            setImmediate(() => {
+              const response = stream.Readable.from(['ok']);
+              response.statusCode = 200;
+              response.headers = {};
+              cb(response);
+              this.emit('close');
+            });
+          }
+
+          destroy(err) {
+            if (this.destroyed) {
+              return;
+            }
+
+            this.destroyed = true;
+            err && this.emit('error', err);
+            this.emit('close');
+          }
+        })();
+      },
+    };
+
+    const response = await axios.get('http://example.com/', {
+      transport,
+      maxRedirects: 0,
+    });
+
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.data, 'ok');
+  });
+
   describe('keep-alive', () => {
     it('should not emit MaxListenersExceededWarning under concurrent requests through a pooled keep-alive agent (regression #10780)', async () => {
       const server = await startHTTPServer(

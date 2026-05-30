@@ -1,6 +1,7 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
 import composeSignals from '../../lib/helpers/composeSignals.js';
+import CanceledError from '../../lib/cancel/CanceledError.js';
 
 describe('helpers::composeSignals', () => {
   const runIfAbortController = typeof AbortController === 'function' ? it : it.skip;
@@ -30,6 +31,18 @@ describe('helpers::composeSignals', () => {
     });
 
     assert.match(String(signal.reason), /timeout of 100ms exceeded/);
+  });
+
+  runIfAbortController('should abort immediately if a signal is already aborted', () => {
+    const controller = new AbortController();
+
+    controller.abort(new Error('pre-aborted'));
+
+    const signal = composeSignals([controller.signal], 1000);
+
+    assert.strictEqual(signal.aborted, true);
+    assert.ok(signal.reason instanceof CanceledError);
+    assert.match(String(signal.reason.message), /pre-aborted/);
   });
 
   it('should return undefined if signals and timeout are not provided', () => {

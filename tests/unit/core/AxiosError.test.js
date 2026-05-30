@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isNativeError } from 'node:util/types';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
+import CancelToken from '../../../lib/cancel/CancelToken.js';
 
 describe('core::AxiosError', () => {
   it('creates an error with message, config, code, request, response, stack and isAxiosError', () => {
@@ -33,6 +34,17 @@ describe('core::AxiosError', () => {
     expect(json.status).toBe(200);
     expect(json.request).toBeUndefined();
     expect(json.response).toBeUndefined();
+  });
+
+  it('does not overflow when serializing a config with a cancelToken cycle', () => {
+    const config = {};
+    config.cancelToken = new CancelToken((cancel) => cancel('timeout', config));
+    const error = config.cancelToken.reason;
+
+    const json = error.toJSON();
+
+    expect(() => JSON.stringify(json)).not.toThrow();
+    expect(json.config.cancelToken.reason).toBeUndefined();
   });
 
   describe('AxiosError.from', () => {

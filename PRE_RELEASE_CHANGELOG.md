@@ -13,6 +13,7 @@
 - **Types:** Add the missing readonly `name: 'CanceledError'` declaration to CommonJS `CanceledError` typings to match the ESM declarations. (**#10922**)
 - **Types:** Correct the CommonJS `isCancel` type guard to narrow cancellation errors to `CanceledError<T>`, matching the ESM declaration. (**#10952**)
 - **HTTP Adapter - Auth on Redirect:** HTTP Basic credentials supplied via `config.auth` are now restored on same-origin redirects, fixing a regression caused by `follow-redirects` >= 1.15.8 that broke `POST` requests answered with a 303 Location. Cross-origin redirects continue to drop credentials, preserving the existing T-R2 mitigation in `THREATMODEL.md`. (**#6929**)
+- **HTTP Adapter - Proxy TLS:** Preserve `httpsAgent` TLS options such as `ca` and `rejectUnauthorized` for HTTPS origins reached through a CONNECT proxy tunnel. (**#10953**)
 - **HTTP Adapter - Socket Path:** Ignore inherited `socketPath` and `allowedSocketPaths` config values when building Node.js requests, preventing prototype-pollution SSRF via Unix sockets. (**#10901**)
 - **React Native FormData:** Clear the default `Content-Type` header for React Native `FormData` requests so Android can build multipart bodies with the correct boundary. (**#10898**)
 - **Request Data:** Preserve enumerable symbol keys when merging plain request data before `transformRequest`. (**#6392**)

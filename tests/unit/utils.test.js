@@ -68,6 +68,16 @@ describe('utils', () => {
       });
     });
 
+    it('should serialize Set values as arrays', () => {
+      const source = {
+        list: new Set(['a', 'b']),
+      };
+
+      assert.deepStrictEqual(utils.toJSONObject(source), {
+        list: ['a', 'b'],
+      });
+    });
+
     it('should use objects with defined toJSON method without rebuilding', () => {
       const objProp = {};
       const obj = {

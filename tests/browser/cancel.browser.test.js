@@ -171,6 +171,55 @@ describe('cancel (vitest browser)', () => {
     expect(axios.isCancel(error)).toBe(true);
   });
 
+  it('preserves the AbortSignal reason on the rejected CanceledError', async () => {
+    const controller = new AbortController();
+    const promise = axios.get('/foo/bar', {
+      signal: controller.signal,
+    });
+
+    const request = await waitForRequest();
+
+    controller.abort('TimeoutError');
+    setTimeout(() => {
+      request.respondWith({ status: 200, responseText: 'OK' });
+    }, 0);
+
+    const error = await promise.catch((thrown) => thrown);
+    expect(axios.isCancel(error)).toBe(true);
+    expect(error.message).toBe('TimeoutError');
+  });
+
+  it('preserves a CanceledError abort reason instance', async () => {
+    const controller = new AbortController();
+    const customReason = new axios.CanceledError('custom cancel reason');
+    const promise = axios.get('/foo/bar', {
+      signal: controller.signal,
+    });
+
+    const request = await waitForRequest();
+
+    controller.abort(customReason);
+    setTimeout(() => {
+      request.respondWith({ status: 200, responseText: 'OK' });
+    }, 0);
+
+    const error = await promise.catch((thrown) => thrown);
+    expect(error).toBe(customReason);
+  });
+
+  it('rejects immediately when the signal is already aborted with a reason', async () => {
+    const controller = new AbortController();
+    controller.abort('TimeoutError');
+
+    const error = await axios
+      .get('/foo/bar', { signal: controller.signal })
+      .catch((thrown) => thrown);
+
+    expect(axios.isCancel(error)).toBe(true);
+    expect(error.message).toBe('TimeoutError');
+    expect(requests).toHaveLength(0);
+  });
+
   describe('listener cleanup on error paths', () => {
     for (const { label, trigger } of [
       { label: 'network error', trigger: (r) => r.onerror(new Error('Network Error')) },
@@ -214,6 +263,52 @@ describe('cancel (vitest browser)', () => {
       await promise;
 
       expect(listenerCount).toBe(0);
+    });
+
+    it('removes AbortSignal listener after the request settles successfully', async () => {
+      const controller = new AbortController();
+      let listenerCount = 0;
+      const nativeAdd = controller.signal.addEventListener.bind(controller.signal);
+      const nativeRemove = controller.signal.removeEventListener.bind(controller.signal);
+      controller.signal.addEventListener = (type, fn, options) => {
+        if (type === 'abort') listenerCount++;
+        return nativeAdd(type, fn, options);
+      };
+      controller.signal.removeEventListener = (type, fn, options) => {
+        if (type === 'abort') listenerCount--;
+        return nativeRemove(type, fn, options);
+      };
+
+      const promise = axios.get('/foo/bar', { signal: controller.signal });
+
+      const request = await waitForRequest();
+      request.respondWith({ status: 200, responseText: 'OK' });
+      await promise;
+
+      expect(listenerCount).toBe(0);
+    });
+
+    it('removes the exact AbortSignal listener that was registered', async () => {
+      const controller = new AbortController();
+      const registered = new Set();
+      const nativeAdd = controller.signal.addEventListener.bind(controller.signal);
+      const nativeRemove = controller.signal.removeEventListener.bind(controller.signal);
+      controller.signal.addEventListener = (type, fn, options) => {
+        if (type === 'abort') registered.add(fn);
+        return nativeAdd(type, fn, options);
+      };
+      controller.signal.removeEventListener = (type, fn, options) => {
+        if (type === 'abort' && registered.has(fn)) registered.delete(fn);
+        return nativeRemove(type, fn, options);
+      };
+
+      const promise = axios.get('/foo/bar', { signal: controller.signal });
+
+      const request = await waitForRequest();
+      request.respondWith({ status: 200, responseText: 'OK' });
+      await promise;
+
+      expect(registered.size).toBe(0);
     });
   });
 });

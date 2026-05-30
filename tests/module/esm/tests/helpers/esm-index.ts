@@ -73,6 +73,8 @@ const handleResponse = (response: AxiosResponse) => {
   console.log(response.data);
   console.log(response.status);
   console.log(response.statusText);
+  console.log(response.headers.get('content-type'));
+  console.log(response.headers.getContentType());
   console.log(response.headers);
   console.log(response.config);
 };
@@ -136,6 +138,7 @@ const handleUserResponse = (response: AxiosResponse<User>) => {
   console.log(response.data.name);
   console.log(response.status);
   console.log(response.statusText);
+  console.log(response.headers.get('x-header'));
   console.log(response.headers);
   console.log(response.config);
 };

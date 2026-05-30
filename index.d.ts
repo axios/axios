@@ -488,7 +488,7 @@ export interface AxiosResponse<T = any, D = any, H = {}> {
   data: T;
   status: number;
   statusText: string;
-  headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
+  headers: AxiosResponseHeaders & H;
   config: InternalAxiosRequestConfig<D>;
   request?: any;
 }

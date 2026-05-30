@@ -595,7 +595,7 @@ declare namespace axios {
     data: T;
     status: number;
     statusText: string;
-    headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
+    headers: AxiosResponseHeaders & H;
     config: InternalAxiosRequestConfig<D>;
     request?: any;
   }

@@ -1,5 +1,4 @@
-/* eslint-disable no-prototype-builtins */
-import { afterEach, describe, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import assert from 'assert';
 import http from 'http';
 import utils from '../../lib/utils.js';
@@ -1105,6 +1104,36 @@ describe('Prototype Pollution Protection', () => {
 
       assert.strictEqual(Child.prototype.constructor, Child);
       assert.strictEqual(Child.super, Parent.prototype);
+    });
+
+    it('should not throw in utils.inherits when super-constructor method is non-writable', () => {
+      const originalDescriptor = Object.getOwnPropertyDescriptor(Error.prototype, 'toJSON');
+      Object.defineProperty(Error.prototype, 'toJSON', {
+        value() {},
+        configurable: true,
+        writable: false,
+        enumerable: false,
+      });
+
+      try {
+        function Parent() {}
+        function Child() {}
+
+        expect(() => {
+          utils.inherits(Child, Error, {
+            toJSON() {
+              return {};
+            },
+          });
+        }).not.toThrow();
+
+        assert.strictEqual(typeof Child.prototype.toJSON, 'function');
+        assert.deepStrictEqual(Child.prototype.toJSON(), {});
+      } finally {
+        if (originalDescriptor) {
+          Object.defineProperty(Error.prototype, 'toJSON', originalDescriptor);
+        }
+      }
     });
 
     it('should also be shielded against a polluted Object.prototype.set', () => {

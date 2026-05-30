@@ -397,6 +397,7 @@ declare namespace axios {
     clarifyTimeoutError?: boolean;
     legacyInterceptorReqResOrdering?: boolean;
     advertiseZstdAcceptEncoding?: boolean;
+    formDataContentType?: boolean;
   }
 
   interface GenericAbortSignal {

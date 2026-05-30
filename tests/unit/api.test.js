@@ -110,6 +110,110 @@ describe('static api', () => {
 
     assert.strictEqual(transformedData[symbolKey], 'value');
   });
+
+  it('should use multipart/form-data header for form helpers by default', async () => {
+    let contentType;
+
+    await axios.postForm('/test', { foo: 'bar' }, {
+      adapter: (config) => {
+        contentType = config.headers.getContentType();
+
+        return Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        });
+      },
+    });
+
+    assert.strictEqual(contentType, 'multipart/form-data');
+  });
+
+  it('should allow disabling form helper Content-Type via request transitional flag', async () => {
+    let contentType;
+
+    await axios.postForm(
+      '/test',
+      'disabled',
+      {
+        transitional: {
+          formDataContentType: false,
+        },
+        adapter: (config) => {
+          contentType = config.headers.getContentType();
+
+          return Promise.resolve({
+            data: null,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+            request: {},
+          });
+        },
+      }
+    );
+
+    assert.notStrictEqual(contentType, 'multipart/form-data');
+  });
+
+  it('should support instance-level formDataContentType=false for form helpers', async () => {
+    const instance = axios.create({
+      transitional: {
+        formDataContentType: false,
+      },
+    });
+    let contentType;
+
+    await instance.postForm('/test', 'disabled', {
+      adapter: (config) => {
+        contentType = config.headers.getContentType();
+
+        return Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        });
+      },
+    });
+
+    assert.notStrictEqual(contentType, 'multipart/form-data');
+  });
+
+  it('should allow instance-level formDataContentType=false to be overridden by request config', async () => {
+    const instance = axios.create({
+      transitional: {
+        formDataContentType: false,
+      },
+    });
+    let contentType;
+
+    await instance.postForm('/test', 'enabled-by-request', {
+      transitional: {
+        formDataContentType: true,
+      },
+      adapter: (config) => {
+        contentType = config.headers.getContentType();
+
+        return Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        });
+      },
+    });
+
+    assert.strictEqual(contentType, 'multipart/form-data');
+  });
 });
 
 describe('instance api', () => {

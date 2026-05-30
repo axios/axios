@@ -110,6 +110,61 @@ describe('static api', () => {
 
     assert.strictEqual(transformedData[symbolKey], 'value');
   });
+
+  ['postForm', 'putForm', 'patchForm'].forEach((method) => {
+    it(`should not set bare multipart/form-data header by default for ${method}`, async () => {
+      let contentType;
+
+      await axios[method](
+        '/test',
+        { foo: 'bar' },
+        {
+          adapter: (config) => {
+            contentType = config.headers.getContentType();
+
+            return Promise.resolve({
+              data: null,
+              status: 200,
+              statusText: 'OK',
+              headers: {},
+              config,
+              request: {},
+            });
+          },
+        }
+      );
+
+      assert.notStrictEqual(contentType, 'multipart/form-data');
+    });
+  });
+
+  it('should preserve user-provided Content-Type for form helpers', async () => {
+    let contentType;
+
+    await axios.postForm(
+      '/test',
+      { foo: 'bar' },
+      {
+        headers: {
+          'Content-Type': 'application/custom',
+        },
+        adapter: (config) => {
+          contentType = config.headers.getContentType();
+
+          return Promise.resolve({
+            data: null,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+            request: {},
+          });
+        },
+      }
+    );
+
+    assert.strictEqual(contentType, 'application/custom');
+  });
 });
 
 describe('instance api', () => {

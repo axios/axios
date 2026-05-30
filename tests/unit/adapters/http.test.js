@@ -3642,6 +3642,28 @@ describe('supports http with nodejs', () => {
   });
 
   describe('FormData', () => {
+    it('should set a multipart boundary for form helper payloads', async () => {
+      let contentType;
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          req.resume();
+          req.once('end', () => {
+            contentType = req.headers['content-type'];
+            res.end('OK');
+          });
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await axios.postForm(`http://localhost:${server.address().port}/`, { foo: 'bar' });
+        assert.match(contentType, /^multipart\/form-data; boundary=/i);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
     describe('form-data instance (https://www.npmjs.com/package/form-data)', () => {
       it('should allow passing FormData', async () => {
         const form = new FormDataLegacy();
@@ -3705,6 +3727,32 @@ describe('supports http with nodejs', () => {
     });
 
     describe('SpecCompliant FormData', () => {
+      it('should set boundary for form helper FormData payloads', async () => {
+        let contentType;
+
+        const server = await startHTTPServer(
+          (req, res) => {
+            req.resume();
+            req.once('end', () => {
+              contentType = req.headers['content-type'];
+              res.end('OK');
+            });
+          },
+          { port: 0 }
+        );
+
+        try {
+          const form = new FormDataSpecCompliant();
+
+          form.append('foo', 'bar');
+
+          await axios.postForm(`http://localhost:${server.address().port}`, form);
+          assert.match(contentType, /^multipart\/form-data; boundary=/i);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
       it('should allow passing FormData', { retry: 2 }, async () => {
         // Use an ephemeral port and a non-keep-alive agent. Sharing the fixed
         // SERVER_PORT across tests can leave keep-alive sockets in the global

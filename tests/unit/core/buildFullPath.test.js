@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import buildFullPath from '../../../lib/core/buildFullPath.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('core::buildFullPath', () => {
   it('combines URLs when the requested URL is relative', () => {
@@ -30,5 +31,15 @@ describe('core::buildFullPath', () => {
 
   it('combines URLs when baseURL and requested URL are both relative', () => {
     expect(buildFullPath('/api', '/users')).toBe('/api/users');
+  });
+
+  it('should throw on malformed http protocol URLs missing //', () => {
+    try {
+      buildFullPath(undefined, 'https:google.com');
+      expect.unreachable('Expected malformed URL to throw ERR_INVALID_URL');
+    } catch (error) {
+      expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+      expect(error.message).toContain('did you mean "https://google.com"?');
+    }
   });
 });

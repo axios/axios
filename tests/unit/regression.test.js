@@ -6,6 +6,7 @@ import assert from 'assert';
 import http from 'http';
 import axios from '../../index.js';
 import platform from '../../lib/platform/index.js';
+import AxiosError from '../../lib/core/AxiosError.js';
 
 describe('regression', () => {
   describe('issues', () => {
@@ -50,7 +51,7 @@ describe('regression', () => {
     });
 
     describe('7364', () => {
-      it('fetch: should have status code in axios error', async () => {
+    it('fetch: should have status code in axios error', async () => {
         const isFetchSupported = typeof fetch === 'function';
         if (!isFetchSupported) {
           vi.skip();
@@ -102,6 +103,32 @@ describe('regression', () => {
           server.close();
         }
       });
+    });
+
+    it('should fail malformed http URL format before dispatching request', async () => {
+      let requestCount = 0;
+      const server = http
+        .createServer((req, res) => {
+          requestCount++;
+          res.end('ok');
+        })
+        .listen(0);
+
+      const instance = axios.create({
+        baseURL: `http://localhost:${server.address().port}`,
+        adapter: 'http',
+      });
+
+      try {
+        await assert.rejects(
+          instance.get('https:google.com'),
+          (error) => error.code === AxiosError.ERR_INVALID_URL
+        );
+      } finally {
+        server.close();
+      }
+
+      assert.strictEqual(requestCount, 0);
     });
   });
 

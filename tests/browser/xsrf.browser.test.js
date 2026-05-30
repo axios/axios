@@ -66,9 +66,24 @@ const clearXsrfCookie = () => {
   ).toUTCString()}; path=/`;
 };
 
+const waitForRequest = async () => {
+  const start = Date.now();
+
+  while (Date.now() - start < 1000) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
 const sendRequest = async (url, config) => {
   const responsePromise = axios(url, config);
-  const request = requests.at(-1);
+  const request = await waitForRequest();
 
   expect(request).toBeDefined();
   await responsePromise;
@@ -130,6 +145,22 @@ describe('xsrf (vitest browser)', () => {
 
     expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
   });
+
+  it.skipIf(() => !(window.cookieStore && window.cookieStore.get), 'cookieStore is not supported')(
+    'should use cookieStore.get for xsrf reads when available',
+    async () => {
+      const readSpy = vi.spyOn(cookies, 'read');
+      const getSpy = vi
+        .spyOn(window.cookieStore, 'get')
+        .mockResolvedValueOnce({ value: 'cookie-store-token' });
+
+      const request = await sendRequest('/foo');
+
+      expect(getSpy).toHaveBeenCalledWith(axios.defaults.xsrfCookieName);
+      expect(readSpy).not.toHaveBeenCalled();
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('cookie-store-token');
+    }
+  );
 
   it('should not set xsrf header for cross origin when using withCredentials', async () => {
     setXsrfCookie('12345');

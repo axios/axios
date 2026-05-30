@@ -1223,6 +1223,83 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should strip auth-like headers on cross-origin redirect', async () => {
+    const targetServer = await startHTTPServer(
+      (req, res) => {
+        res.end(
+          JSON.stringify({
+            authorization: req.headers.authorization || null,
+            apiKey: req.headers['x-api-key'] || null,
+            awsToken: req.headers['x-aws-token'] || null,
+            internalSecret: req.headers['x-internal-secret'] || null,
+            normal: req.headers['x-request-id'] || null,
+          })
+        );
+      },
+      { port: ALTERNATE_SERVER_PORT }
+    );
+    const redirectServer = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Location', `http://127.0.0.1:${targetServer.address().port}/`);
+        res.statusCode = 302;
+        res.end();
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${redirectServer.address().port}/start`, {
+        headers: {
+          Authorization: 'Bearer 1234',
+          'X-API-Key': 'top-secret-key',
+          'X-AWS-Token': 'aws-token',
+          'X-Internal-Secret': 'super-secret',
+          'X-Request-Id': 'trace-id',
+        },
+        maxRedirects: 1,
+      });
+
+      assert.deepStrictEqual(response.data, {
+        authorization: null,
+        apiKey: null,
+        awsToken: null,
+        internalSecret: null,
+        normal: 'trace-id',
+      });
+    } finally {
+      await stopHTTPServer(redirectServer);
+      await stopHTTPServer(targetServer);
+    }
+  });
+
+  it('should preserve auth-like headers across same-origin redirects', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.url === '/start') {
+          res.setHeader('Location', '/profile');
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        res.end(req.headers['x-api-key'] || 'missing');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/start`, {
+        headers: {
+          'X-API-Key': 'top-secret-key',
+        },
+        maxRedirects: 1,
+      });
+
+      assert.strictEqual(response.data, 'top-secret-key');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should preserve basic auth across multi-hop same-origin redirects', async () => {
     const server = await startHTTPServer(
       (req, res) => {

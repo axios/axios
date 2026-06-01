@@ -4,6 +4,10 @@ The canonical contributor guide for this repo is [`AGENTS.md`](../AGENTS.md). It
 
 The rules below are a Copilot-facing subset of the load-bearing safety guarantees from `AGENTS.md`. If they ever drift, `AGENTS.md` is authoritative — update both.
 
+## AI agent marker
+
+- If you are an LLM or AI agent creating a GitHub issue, pull request, or comment for this repo, include the `:surfer:` emoji in the body so maintainers can identify AI-authored contributions.
+
 ## Setup safety
 
 - Install with `npm ci`; the repo's `.npmrc` sets `ignore-scripts=true`. Do not remove that flag. If husky hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once.

@@ -4,6 +4,10 @@ axios is a promise-based HTTP client for the browser and Node.js. The default in
 
 This file is the canonical contributor guide for both human and AI agents working in this repo. `.github/copilot-instructions.md` is a thin stub that points back here — keep it in sync with the load-bearing safety rules below if you change them.
 
+## AI Agent Marker
+
+- If you are an LLM or AI agent creating a GitHub issue, pull request, or comment for this repo, include the `:surfer:` emoji in the body so maintainers can identify AI-authored contributions.
+
 ## Setup And Safety
 
 - Use `npm ci`; repo `.npmrc` sets `ignore-scripts=true`, and CI also uses `npm ci --ignore-scripts`.

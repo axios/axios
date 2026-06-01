@@ -1,56 +1,56 @@
-# Collaborator Guide
+# Collaborator guide
 
-As a collaborator you share in the administrative responsibility for axios. This guide covers what we expect from you and how we keep the project healthy. For the technical bar (architecture, lifecycle, security-sensitive code, conventions), see [AGENTS.md](./AGENTS.md) — it is the canonical contributor guide.
+As a collaborator, you help administer axios. This guide covers the responsibilities that come with that access. For architecture, lifecycle, security-sensitive code, and conventions, use [AGENTS.md](./AGENTS.md), the canonical contributor guide.
 
-## Code of Conduct
+## Code of conduct
 
-You are expected to have read the [Code of Conduct](./CODE_OF_CONDUCT.md) and to help enforce it. This community should be friendly and welcoming.
+Read the [Code of Conduct](./CODE_OF_CONDUCT.md) and help enforce it. Keep the community friendly and welcoming.
 
-## Triage Issues
+## Triage issues
 
 - Apply appropriate labels and respond as needed.
 - For bug reports, ask for a minimal reproduction (axios version, environment, request/response details) before deeper triage.
 - If an issue is not directly about axios, convert it to a discussion.
-- Issues will only be closed when they are resolved, a fix is merged, lack of clarity and/or reproduction or the reporter requests closure. Do not close issues for inactivity we want to keep the history and be responsive if more information comes in later.
+- Close issues only when they are resolved, a fix is merged, the report lacks enough detail or a reproduction, or the reporter requests closure. Do not close issues for inactivity. We want to keep the history and respond if more information comes in later.
 
-## Answer Questions
+## Answer questions
 
-Be helpful and patient. If a question stems from unclear docs, update the docs (and consider adding an example) rather than just answering in the thread. You are not obligated to teach JavaScript or unrelated tooling — redirect those politely.
+Be helpful and patient. If a question comes from unclear docs, update the docs and consider adding an example instead of only answering in the thread. You are not expected to teach JavaScript or unrelated tooling. Redirect those questions politely.
 
 ## Submit PRs
 
-When opening a PR make sure:
+When opening a PR, make sure:
 
-- **Scope:** the change fits within axios. Features that belong in user code or a plugin should be declined early and kindly.
-- **Platform parity:** behavior is covered across the XHR, Fetch, and Node HTTP adapters where relevant. Detect by capability, not environment name.
-- **Type definitions:** both `index.d.ts` (ESM) and `index.d.cts` (CJS) are updated when the public API changes.
-- **Errors:** axios-originated failures throw `AxiosError` with an appropriate code, never raw `Error`. Third-party errors are wrapped with `AxiosError.from`.
-- **Tests:** unit tests cover the change; browser/smoke/module suites are updated when packaging or runtime surface is affected.
-- **CI:** lint and tests pass before requesting review. Do not merge red PRs.
-- **Dependencies:** no new runtime dependencies without discussion. `package-lock.json` changes must keep `lockfile-lint` happy (npm HTTPS hosts, integrity hashes).
-- **Security-sensitive areas:** changes touching URL construction, redirects, proxy/env handling, XSRF, socket paths, decompression limits, prototype walking, or adapters get extra scrutiny and focused regression tests. Consult [THREATMODEL.md](./THREATMODEL.md).
-- **Deprecations:** removed functionality is properly deprecated with a warning first.
-- **API shape:** new public surface is predictable, consistent with existing options, and documented.
-- **Commit title:** PRs use [Conventional Commits](https://www.conventionalcommits.org/) (`fix:`, `feat:`, `chore:`, `docs:`, etc.) — release tooling depends on this.
-- **Semver impact:** call out whether this is a patch, minor, or breaking change, and target the right branch (`v1.x` for the current maintenance line; breaking work goes elsewhere).
+- The change fits within axios. Decline features early and kindly when they belong in user code or a plugin.
+- Cover behavior across the XHR, Fetch, and Node HTTP adapters where relevant. Detect by capability, not environment name.
+- Update both `index.d.ts` (ESM) and `index.d.cts` (CJS) when the public API changes.
+- Make axios-originated failures throw `AxiosError` with an appropriate code, never raw `Error`. Wrap third-party errors with `AxiosError.from`.
+- Cover the change with unit tests. Update browser, smoke, or module suites when packaging or runtime surface is affected.
+- Lint and tests pass before review. Do not merge red PRs.
+- Do not add runtime dependencies without discussion. `package-lock.json` changes must keep `lockfile-lint` happy (npm HTTPS hosts, integrity hashes).
+- Security-sensitive changes get extra scrutiny and focused regression tests. This includes URL construction, redirects, proxy/env handling, XSRF, socket paths, decompression limits, prototype walking, and adapters. Consult [THREATMODEL.md](./THREATMODEL.md).
+- Warn before removing functionality.
+- New public API surface is predictable, consistent with existing options, and documented.
+- PR titles use [Conventional Commits](https://www.conventionalcommits.org/) (`fix:`, `feat:`, `chore:`, `docs:`, etc.). Release tooling depends on this.
+- Call out whether the change is patch, minor, or breaking, and target the right branch (`v1.x` for the current maintenance line; breaking work goes elsewhere).
 
-At least one maintainer must review and approve the PR before it can be merged. If you are unsure about the impact of a change, ask for a second opinion. If you are making a breaking change, make sure to call it out in the PR description and target the appropriate branch. If you are fixing a bug, make sure to include a test that reproduces the issue and verifies the fix.
+At least one maintainer must review and approve a PR before merge. If you are unsure about the impact of a change, ask for a second opinion. Call out breaking changes in the PR description and send them to the appropriate branch. Bug fixes need a test that reproduces the issue and verifies the fix.
 
-If changes are requested, address them in a timely manner. If you are unable to make the changes, communicate that clearly so someone else can pick it up.
+If changes are requested, address them promptly. If you cannot make the changes, say so clearly so someone else can pick them up.
 
-> [!IMPORTANT]  
-> We will wait a maximum of 28 days for a response to requested changes before closing the PR as stale. Once closed as stale, we will either address the issue in a maintainer-led PR or open an issue for other contributors to pick up. If the author wants to continue the work, they should re-create the PR from the latest version of the correct target branch, address all feedback provided, and request review from a maintainer.
+> [!IMPORTANT]
+> We wait up to 28 days for a response to requested changes before closing the PR as stale. After that, we will either address the issue in a maintainer-led PR or open an issue for other contributors. If the author wants to continue the work, they should recreate the PR from the latest version of the correct target branch, address all feedback, and request review from a maintainer.
 
-## Security Disclosures
+## Security disclosures
 
 If someone reports a suspected vulnerability in a public issue, do not discuss specifics in the thread. Redirect them to the process described in [SECURITY.md](./SECURITY.md) (GitHub security advisories) and close or hide the issue as appropriate.
 
-## What Collaborators Should Not Do
+## What collaborators should not do
 
-- Add runtime dependencies unilaterally — the dependency surface is intentionally tiny.
+- Add runtime dependencies without discussion. The dependency surface is intentionally tiny.
 - Disable `ignore-scripts` in `.npmrc` or otherwise weaken install-time safety.
 - Weaken `beforeRedirect`, proxy, `socketPath`, XSRF, or prototype-pollution safeguards without tests covering the regression cases.
 
 ---
 
-Thank you for helping keep axios healthy. If you are unsure about a call, ask another collaborator before acting, we would rather move a little slower than ship a regression. If you have any questions about your role or responsibilities, please reach out to the maintainers.
+Thanks for helping keep axios healthy. If you are unsure about a call, ask another collaborator before acting. We would rather move a little slower than ship a regression. If you have questions about your role or responsibilities, contact the maintainers.

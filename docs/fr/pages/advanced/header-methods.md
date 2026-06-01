@@ -166,7 +166,8 @@ Retourne une nouvelle instance AxiosHeaders.
 Résout toutes les valeurs d'en-têtes internes dans un nouvel objet à prototype null. Définissez `asStrings` à true pour résoudre les tableaux en une chaîne contenant tous les éléments, séparés par des virgules.
 
 ```js
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ## From

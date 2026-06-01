@@ -3,7 +3,7 @@
 请求配置用于配置 HTTP 请求的各项参数。虽然有大量可用选项，但唯一必填的选项是 `url`。如果配置对象中没有 `method` 字段，默认使用 `GET` 方法。
 
 ::: warning 安全提示：解压炸弹防护是可选的
-默认情况下 `maxContentLength` 为 `-1`（不限制）。恶意或被攻陷的服务器可能返回一个很小的 gzip/deflate/brotli 响应，解压后可达数 GB，从而耗尽 Node.js 进程的内存。
+默认情况下 `maxContentLength` 和 `maxBodyLength` 均为 `-1`（不限制）。恶意或被攻陷的服务器可能返回一个很小的 gzip/deflate/brotli/zstd 响应，解压后可达数 GB，从而耗尽 Node.js 进程的内存。
 
 如果你向不完全可信的服务器发起请求，**请设置上限**：
 
@@ -147,7 +147,7 @@ const client = axios.create({
 
 ### `auth`
 
-`auth` 表示使用 HTTP Basic 认证，并提供凭据。这将设置 `Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Authorization` 请求头。请注意，仅 HTTP Basic 认证可通过此参数配置，Bearer 令牌等请改用自定义 `Authorization` 请求头。
+`auth` 表示使用 HTTP Basic 认证，并提供凭据。这将设置 `Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Authorization` 请求头。如果省略 `auth`，Node.js HTTP 和 fetch 适配器可以从请求 URL 中提取 Basic 认证凭据，例如 `https://user:pass@example.com`；URL 中经过百分号编码的凭据会先解码，且 `auth` 始终优先于 URL 中的凭据。在 Node.js HTTP 适配器中，Basic 认证会在同源重定向时保留，并在跨源重定向时剥离。请注意，仅 HTTP Basic 认证可通过此参数配置，Bearer 令牌等请改用自定义 `Authorization` 请求头。
 
 ### `responseType`
 
@@ -235,7 +235,7 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 `maxContentLength` 属性定义服务器在响应中允许接收的最大字节数。
 
-> ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli 解压，会带来解压炸弹导致的拒绝服务风险。
+> ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli/zstd 解压，会带来解压炸弹导致的拒绝服务风险。
 > 在访问不完全可信的服务器时，请显式设置该限制。
 
 ### `maxBodyLength` <Badge type="warning" text="仅 Node.js" />
@@ -329,6 +329,8 @@ await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' 
 
 通过代理转发时，如果用户在 `headers` 中提供了 `Host` 请求头，axios 会保留它（不区分大小写匹配 `host` / `Host` / `HOST`）。这样你就可以指向一个与请求 URL 不同的虚拟主机——例如，访问 `127.0.0.1:4000`，但让代理将请求当作 `example.com` 处理。如果未提供 `Host` 请求头，axios 仍会像以前一样将其默认设为请求 URL 的 `hostname:port`。
 
+对于 `https://` 目标，axios 会通过代理建立 CONNECT 隧道，并与源站执行端到端 TLS。`Proxy-Authorization` 只会发送在 CONNECT 请求上，不会发送到被 TLS 包裹的源站请求中。`httpsAgent` 的 TLS 选项（如 `ca`、`cert`、`key` 和 `rejectUnauthorized`）会转发给生成的隧道代理，因此仍会应用到源站 TLS 连接。如果你提供的是 `HttpsProxyAgent`，axios 会让该代理自行处理隧道。
+
 ```js
 proxy: {
   protocol: "https",
@@ -352,7 +354,7 @@ proxy: {
 
 ### `decompress` <Badge type="warning" text="仅 Node.js" />
 
-`decompress` 属性指示是否自动解压响应数据，默认值为 `true`。
+`decompress` 属性指示是否自动解压响应数据，默认值为 `true`。当当前 Node.js 运行时提供对应的 zlib 解压器时，Node.js HTTP 适配器支持 gzip、deflate、brotli 和 zstd。
 
 ### `insecureHTTPParser`
 
@@ -376,6 +378,7 @@ proxy: {
 
 - `forcedJSONParsing`：强制 axios 将响应解析为 JSON，即使响应不是有效的 JSON。适用于返回无效 JSON 的 API。
 - `clarifyTimeoutError`：在请求超时时提供更清晰的错误信息，适用于调试超时问题。
+- `advertiseZstdAcceptEncoding`：设为 `true` 时，如果当前 Node.js 运行时支持 zstd 解压，axios 会在默认 `Accept-Encoding` 请求头中加入 `zstd`。在受支持且 `decompress` 为 `true` 时，zstd 响应仍会自动解压。
 - `legacyInterceptorReqResOrdering`：设置为 true 时使用旧版拦截器请求/响应排序。
 
 ### `env`
@@ -501,6 +504,7 @@ proxy: {
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },
   env: {

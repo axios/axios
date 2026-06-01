@@ -3,7 +3,7 @@
 La configuración de solicitud se usa para configurar la solicitud. Existe una amplia gama de opciones disponibles, pero la única opción requerida es `url`. Si el objeto de configuración no contiene un campo `method`, el método predeterminado es `GET`.
 
 ::: warning Seguridad: la protección contra bombas de descompresión es opcional
-Por defecto, `maxContentLength` y `maxBodyLength` están en `-1` (sin límite). Un servidor malicioso o comprometido puede devolver un cuerpo pequeño comprimido con gzip/deflate/brotli que se expande a gigabytes y agota el proceso de Node.js.
+Por defecto, `maxContentLength` y `maxBodyLength` están en `-1` (sin límite). Un servidor malicioso o comprometido puede devolver un cuerpo pequeño comprimido con gzip/deflate/brotli/zstd que se expande a gigabytes y agota el proceso de Node.js.
 
 Si haces solicitudes a servidores en los que no confías plenamente, **establece un tope**:
 
@@ -147,7 +147,7 @@ También puedes pasar un arreglo de adaptadores. axios usará el primero que sea
 
 ### `auth`
 
-`auth` indica que se debe usar autenticación HTTP Basic y proporciona las credenciales. Esto establecerá un encabezado `Authorization`, sobrescribiendo cualquier encabezado `Authorization` personalizado que hayas definido usando `headers`. Ten en cuenta que solo la autenticación HTTP Basic es configurable a través de este parámetro. Para tokens Bearer y similares, usa encabezados `Authorization` personalizados.
+`auth` indica que se debe usar autenticación HTTP Basic y proporciona las credenciales. Esto establecerá un encabezado `Authorization`, sobrescribiendo cualquier encabezado `Authorization` personalizado que hayas definido usando `headers`. Si `auth` se omite, los adaptadores HTTP de Node.js y fetch pueden obtener credenciales Basic desde la URL de la solicitud, por ejemplo `https://user:pass@example.com`; las credenciales codificadas con porcentaje en la URL se decodifican, y `auth` siempre tiene prioridad sobre las credenciales incluidas en la URL. En el adaptador HTTP de Node.js, la autenticación Basic se conserva en redirecciones del mismo origen y se elimina en redirecciones de origen cruzado. Ten en cuenta que solo la autenticación HTTP Basic es configurable a través de este parámetro. Para tokens Bearer y similares, usa encabezados `Authorization` personalizados.
 
 ### `responseType`
 
@@ -235,7 +235,7 @@ La función `onDownloadProgress` te permite escuchar el progreso de una descarga
 
 La propiedad `maxContentLength` define el número máximo de bytes que el servidor aceptará en la respuesta.
 
-> ⚠️ **Seguridad:** el valor por defecto es `-1` (sin límite). Las respuestas sin límite combinadas con la descompresión gzip/deflate/brotli permiten ataques de denegación de servicio por bomba de descompresión.
+> ⚠️ **Seguridad:** el valor por defecto es `-1` (sin límite). Las respuestas sin límite combinadas con la descompresión gzip/deflate/brotli/zstd permiten ataques de denegación de servicio por bomba de descompresión.
 > Establece un límite explícito al consumir servidores en los que no confíes plenamente.
 
 ### `maxBodyLength` <Badge type="warning" text="Solo en Node.js" />
@@ -329,6 +329,8 @@ Usa `false` para deshabilitar los proxies, ignorando las variables de entorno. `
 
 Un encabezado `Host` proporcionado por el usuario en `headers` se preserva al reenviar a través de un proxy (coincidencia insensible a mayúsculas en `host` / `Host` / `HOST`). Esto te permite apuntar a un host virtual distinto al de la URL de la solicitud — por ejemplo, llegar a `127.0.0.1:4000` mientras el proxy trata la solicitud como `example.com`. Si no se proporciona ningún encabezado `Host`, axios lo establece por defecto al `hostname:port` de la URL de la solicitud, como antes.
 
+Para destinos `https://`, axios establece un túnel CONNECT a través del proxy y realiza TLS de extremo a extremo con el origen. `Proxy-Authorization` se envía solo en la solicitud CONNECT, nunca en la solicitud TLS encapsulada. Las opciones TLS de `httpsAgent`, como `ca`, `cert`, `key` y `rejectUnauthorized`, se reenvían al agente de túnel generado para que sigan aplicándose a la conexión TLS con el origen. Si proporcionas un `HttpsProxyAgent`, axios deja el túnel a cargo de ese agente.
+
 ```js
 proxy: {
   protocol: "https",
@@ -352,7 +354,7 @@ La propiedad `signal` te permite pasar una instancia de `AbortSignal` a la solic
 
 ### `decompress` <Badge type="warning" text="Solo en Node.js" />
 
-La propiedad `decompress` indica si los datos de la respuesta deben descomprimirse automáticamente. El valor predeterminado es `true`.
+La propiedad `decompress` indica si los datos de la respuesta deben descomprimirse automáticamente. El valor predeterminado es `true`. El adaptador HTTP de Node.js admite gzip, deflate, brotli y zstd cuando el runtime actual de Node.js proporciona el descompresor zlib correspondiente.
 
 ### `insecureHTTPParser`
 
@@ -376,6 +378,7 @@ La propiedad `transitional` te permite habilitar o deshabilitar ciertas caracter
 
 - `forcedJSONParsing`: Fuerza a axios a analizar la cadena de respuesta como JSON incluso si `responseType` no es `'json'`.
 - `clarifyTimeoutError`: Clarifica el mensaje de error cuando una solicitud expira. Es útil cuando depuras problemas de timeout.
+- `advertiseZstdAcceptEncoding`: Cuando se establece en `true`, axios añade `zstd` al encabezado `Accept-Encoding` predeterminado cuando el runtime actual de Node.js soporta descompresión zstd. Las respuestas zstd se descomprimen automáticamente cuando son compatibles y `decompress` es `true`.
 - `legacyInterceptorReqResOrdering`: Cuando se establece en `true`, se usará el orden de solicitud/respuesta de interceptores heredado.
 
 ### `env`
@@ -501,6 +504,7 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },
   env: {

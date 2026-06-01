@@ -157,7 +157,8 @@ concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | n
 Converts the headers object to a JSON object.
 
 ```ts
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ### `CanceledError` <Badge type="tip" text="Extended AxiosError" />
@@ -173,7 +174,7 @@ The `Cancel` class is an alias for the `CanceledError` class. It is exported for
 A function that checks if an error is a `CanceledError`. Useful for distinguishing intentional cancellations from unexpected errors.
 
 ```ts
-isCancel(value: any): boolean;
+isCancel<T = any>(value: any): value is CanceledError<T>;
 ```
 
 ```js

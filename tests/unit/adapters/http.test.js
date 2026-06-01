@@ -2015,6 +2015,75 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should apply httpsAgent TLS options to CONNECT-tunneled origins (issue #10953)', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const origin = await new Promise((resolve, reject) => {
+      const s = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('trusted-through-agent');
+      });
+      s.listen(0, 'localhost', () => resolve(s));
+      s.on('error', reject);
+    });
+
+    const captured = { plaintext: 0, connectTargets: [] };
+    const upstreamSockets = [];
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer(() => {
+        captured.plaintext += 1;
+      });
+      p.on('connect', (req, clientSocket, head) => {
+        captured.connectTargets.push(req.url);
+        const [host, port] = req.url.split(':');
+        const upstream = net.connect(Number(port), host, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    const httpsAgent = new https.Agent({ ca: tlsOptions.cert });
+
+    try {
+      const response = await axios.get(`https://localhost:${origin.address().port}/`, {
+        httpsAgent,
+        proxy: {
+          host: '127.0.0.1',
+          port: proxy.address().port,
+          protocol: 'http',
+        },
+      });
+
+      assert.strictEqual(response.data, 'trusted-through-agent');
+      assert.strictEqual(captured.plaintext, 0, 'proxy must not see plaintext HTTPS requests');
+      assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
+        `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
+      );
+    } finally {
+      httpsAgent.destroy();
+      for (const s of upstreamSockets) s.destroy();
+      origin.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      origin.close();
+      proxy.close();
+      origin.unref?.();
+      proxy.unref?.();
+    }
+  });
+
   it('should surface a CONNECT 407 from the proxy as an AxiosError (issue #6320)', async () => {
     const proxy = await new Promise((resolve, reject) => {
       const p = http.createServer();
@@ -3369,11 +3438,11 @@ describe('supports http with nodejs', () => {
       assert.ok(options.agent instanceof HttpsProxyAgent);
     });
 
-    it('forwards user httpsAgent options to the tunneling agent so origin TLS uses them', () => {
+    it('includes user httpsAgent options in the tunneling agent constructor options', () => {
       const userAgent = new https.Agent({ rejectUnauthorized: false, ca: 'sentinel-ca' });
       const options = buildOptions();
       __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
-      // HttpsProxyAgent v5 surfaces the merged constructor options on `.proxy`.
+      // Origin TLS behavior is covered by the issue #10953 integration test.
       assert.strictEqual(options.agent.proxy.rejectUnauthorized, false);
       assert.strictEqual(options.agent.proxy.ca, 'sentinel-ca');
     });

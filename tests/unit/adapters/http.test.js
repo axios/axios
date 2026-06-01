@@ -10,7 +10,7 @@ import {
 } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
-import { __setProxy } from '../../../lib/adapters/http.js';
+import { __isSameOriginRedirect, __setProxy } from '../../../lib/adapters/http.js';
 import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
@@ -722,6 +722,74 @@ describe('supports http with nodejs', () => {
       await stopHTTPServer(origin);
       await stopHTTPServer(destination);
     }
+  });
+
+  it('should strip sensitiveHeaders configured on an instance', async () => {
+    let capturedHeaders;
+
+    const destination = await startHTTPServer((req, res) => {
+      capturedHeaders = req.headers;
+      res.statusCode = 200;
+      res.end('ok');
+    });
+
+    const origin = await startHTTPServer((req, res) => {
+      res.setHeader('Location', `http://localhost:${destination.address().port}/dest`);
+      res.statusCode = 302;
+      res.end();
+    });
+
+    const client = axios.create({
+      headers: { 'X-API-Key': 'secret', 'X-Other': 'keep' },
+      sensitiveHeaders: ['X-API-Key'],
+    });
+
+    try {
+      await client.get(`http://localhost:${origin.address().port}/src`, {
+        maxRedirects: 5,
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-API-Key should be stripped');
+      assert.strictEqual(capturedHeaders['x-other'], 'keep', 'X-Other should be preserved');
+    } finally {
+      await stopHTTPServer(origin);
+      await stopHTTPServer(destination);
+    }
+  });
+
+  it('should reject invalid sensitiveHeaders config', async () => {
+    await assert.rejects(
+      axios.get('http://localhost:1/', { sensitiveHeaders: 'X-API-Key' }),
+      (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.strictEqual(error.message, 'sensitiveHeaders must be an array of strings');
+        return true;
+      }
+    );
+
+    await assert.rejects(
+      axios.get('http://localhost:1/', { sensitiveHeaders: [null] }),
+      (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.strictEqual(error.message, 'sensitiveHeaders must be an array of strings');
+        return true;
+      }
+    );
+  });
+
+  it('should fail closed when sensitiveHeaders redirect origin cannot be parsed', () => {
+    assert.strictEqual(
+      __isSameOriginRedirect(
+        { href: 'http://localhost/final' },
+        { url: 'http://localhost/start' }
+      ),
+      true
+    );
+    assert.strictEqual(
+      __isSameOriginRedirect({ href: 'http://[::1' }, { url: 'http://localhost/start' }),
+      false
+    );
+    assert.strictEqual(__isSameOriginRedirect({ href: 'http://localhost/final' }), false);
   });
 
   it('should wrap HTTP errors and keep stack', async () => {

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+## 🔒 Security Fixes
+
+- **HTTP Adapter Redirects:** Added a Node.js `sensitiveHeaders` request config option that strips caller-selected custom secret headers from cross-origin redirects. (**#10892**)
+
 ## v1.16.0 — May 2, 2026
 
 This release adds support for the QUERY HTTP method and a new `ECONNREFUSED` error constant, lands a substantial wave of HTTP, fetch, and XHR adapter bug fixes around redirects, aborts, headers, and timeouts, and welcomes 23 new contributors.

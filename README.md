@@ -893,6 +893,12 @@ These are the available config options for making requests. Only the `url` is re
   // If set to 0, no redirects will be followed.
   maxRedirects: 21, // default
 
+  // `sensitiveHeaders` (Node only option) lists custom secret-bearing headers
+  // to remove from cross-origin redirects. Matching is case-insensitive.
+  // Same-origin redirects keep these headers. If `maxRedirects` is 0, this
+  // option is not used.
+  sensitiveHeaders: ['X-API-Key'],
+
   // `beforeRedirect` defines a function that will be called before redirect.
   // Use this to adjust the request options upon redirecting,
   // to inspect the latest response headers,
@@ -908,17 +914,9 @@ These are the available config options for making requests. Only the `url` is re
     }
   },
   // Security note:
-  // The `beforeRedirect` hook runs after sensitive headers are stripped during redirects.
-  //The `follow-redirects` library removes credentials on protocol downgrade (HTTPS → HTTP) for security.
-  //Since `beforeRedirect` runs after this, re-injecting credentials without checking the   protocol can expose sensitive data.
-  //Always ensure credentials are only added for trusted HTTPS destinations.
-
-// Security note:
-// The beforeRedirect hook runs after sensitive headers are stripped during redirects.
-// Re-injecting credentials without checking the destination can expose sensitive data.
-// Only add credentials for trusted HTTPS destinations.
-// Avoid re-adding credentials on downgraded redirects.
-
+  // The `beforeRedirect` hook runs after sensitive headers are stripped during
+  // redirects. Re-injecting credentials without checking the destination can
+  // expose sensitive data. Only add credentials for trusted HTTPS destinations.
 
   // `socketPath` defines a UNIX Socket to be used in node.js.
   // e.g. '/var/run/docker.sock' to send requests to the docker daemon.

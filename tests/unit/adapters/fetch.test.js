@@ -495,6 +495,25 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should UTF-8 encode basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await fetchAxios.get(
+        `http://%E7%94%A8%E6%88%B7:pa%C3%9F@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('\u7528\u6237:pa\u00df', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('keeps malformed URL credentials percent-encoding and does not throw', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -523,6 +542,27 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     try {
       const response = await fetchAxios.get(`http://:secret@localhost:${server.address().port}/`);
       const base64 = Buffer.from(':secret', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should prefer config auth over basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'config-user', password: 'config-pass' };
+      const response = await fetchAxios.get(
+        `http://url-user:url-pass@localhost:${server.address().port}/`,
+        { auth }
+      );
+      const base64 = Buffer.from('config-user:config-pass', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
     } finally {
       await stopHTTPServer(server);

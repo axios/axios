@@ -29,27 +29,10 @@
         </td>
         <td align="center" width="50%">
             <a
-                href="https://hopper.security/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
-                style="padding: 10px; display: inline-block"
+                href="https://opencollective.com/axios/contribute"
                 target="_blank"
+                >💜 Become a sponsor</a
             >
-                <img
-                    width="90px"
-                    height="90px"
-                    src="https://images.opencollective.com/hopper-security/c4f7de2/avatar.png"
-                    alt="Hopper Security"
-                />
-            </a>
-            <p align="center">
-                Hopper provides a secure, open-source registry where every component is verified against malware and continuously remediated for vulnerabilities across all versions. In simple terms, Hopper removes the need to manage software supply chain risk altogether.
-            </p>
-            <p align="center">
-                <a
-                    href="https://hopper.security/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
-                    target="_blank"
-                    ><b>hopper.security</b></a
-                >
-            </p>
         </td>
     </tr>
 </table>
@@ -315,16 +298,15 @@
 <div align="center">
 
 [![npm version](https://img.shields.io/npm/v/axios.svg?style=flat-square)](https://www.npmjs.org/package/axios)
-[![CDNJS](https://img.shields.io/cdnjs/v/axios.svg?style=flat-square)](https://cdnjs.com/libraries/axios)
 [![Build status](https://img.shields.io/github/actions/workflow/status/axios/axios/ci.yml?branch=v1.x&label=CI&logo=github&style=flat-square)](https://github.com/axios/axios/actions/workflows/ci.yml)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod&style=flat-square)](https://gitpod.io/#https://github.com/axios/axios)
-[![code coverage](https://img.shields.io/coveralls/mzabriskie/axios.svg?style=flat-square)](https://coveralls.io/r/mzabriskie/axios)
 [![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=axios&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=axios)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/axios?style=flat-square)](https://bundlephobia.com/package/axios@latest)
 [![npm downloads](https://img.shields.io/npm/dm/axios.svg?style=flat-square)](https://npm-stat.com/charts.html?package=axios)
 [![gitter chat](https://img.shields.io/gitter/room/mzabriskie/axios.svg?style=flat-square)](https://gitter.im/mzabriskie/axios)
 [![code helpers](https://www.codetriage.com/axios/axios/badges/users.svg)](https://www.codetriage.com/axios/axios)
 [![Contributors](https://img.shields.io/github/contributors/axios/axios.svg?style=flat-square)](CONTRIBUTORS.md)
+[![Agent Friendly](https://agentfriendlycode.com/api/badge/github/axios/axios.svg)](https://agentfriendlycode.com/repo/32)
 
 </div>
 
@@ -2177,7 +2159,8 @@ Returns a new `AxiosHeaders` instance.
 ### AxiosHeaders#toJSON(asStrings?)
 
 ```
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 Resolve all internal header values into a new null prototype object.

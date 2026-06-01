@@ -1143,6 +1143,23 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should support password-only basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://:secret@localhost:${server.address().port}/`);
+      const base64 = Buffer.from(':secret', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support basic auth with a header', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -1160,6 +1177,98 @@ describe('supports http with nodejs', () => {
       });
       const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should preserve basic auth across same-origin 303 POST -> GET redirect', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.url === '/login') {
+          res.setHeader('Location', '/profile');
+          res.statusCode = 303;
+          res.end();
+          return;
+        }
+        res.end(req.headers.authorization || '');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.post(
+        `http://localhost:${server.address().port}/login`,
+        { hello: 'world' },
+        { auth, maxRedirects: 1 }
+      );
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+      assert.strictEqual(response.request.path, '/profile');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should strip basic auth on cross-origin redirect', async () => {
+    const targetServer = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization || 'no-auth');
+      },
+      { port: ALTERNATE_SERVER_PORT }
+    );
+    const redirectServer = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Location', `http://127.0.0.1:${targetServer.address().port}/`);
+        res.statusCode = 302;
+        res.end();
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.get(`http://localhost:${redirectServer.address().port}/start`, {
+        auth,
+        maxRedirects: 1,
+      });
+      assert.strictEqual(response.data, 'no-auth');
+    } finally {
+      await stopHTTPServer(redirectServer);
+      await stopHTTPServer(targetServer);
+    }
+  });
+
+  it('should preserve basic auth across multi-hop same-origin redirects', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.url === '/a') {
+          res.setHeader('Location', '/b');
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        if (req.url === '/b') {
+          res.setHeader('Location', '/c');
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        res.end(req.headers.authorization || '');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.get(`http://localhost:${server.address().port}/a`, {
+        auth,
+        maxRedirects: 5,
+      });
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+      assert.strictEqual(response.request.path, '/c');
     } finally {
       await stopHTTPServer(server);
     }
@@ -1913,6 +2022,75 @@ describe('supports http with nodejs', () => {
       } else {
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
       }
+      for (const s of upstreamSockets) s.destroy();
+      origin.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      origin.close();
+      proxy.close();
+      origin.unref?.();
+      proxy.unref?.();
+    }
+  });
+
+  it('should apply httpsAgent TLS options to CONNECT-tunneled origins (issue #10953)', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const origin = await new Promise((resolve, reject) => {
+      const s = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('trusted-through-agent');
+      });
+      s.listen(0, 'localhost', () => resolve(s));
+      s.on('error', reject);
+    });
+
+    const captured = { plaintext: 0, connectTargets: [] };
+    const upstreamSockets = [];
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer(() => {
+        captured.plaintext += 1;
+      });
+      p.on('connect', (req, clientSocket, head) => {
+        captured.connectTargets.push(req.url);
+        const [host, port] = req.url.split(':');
+        const upstream = net.connect(Number(port), host, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    const httpsAgent = new https.Agent({ ca: tlsOptions.cert });
+
+    try {
+      const response = await axios.get(`https://localhost:${origin.address().port}/`, {
+        httpsAgent,
+        proxy: {
+          host: '127.0.0.1',
+          port: proxy.address().port,
+          protocol: 'http',
+        },
+      });
+
+      assert.strictEqual(response.data, 'trusted-through-agent');
+      assert.strictEqual(captured.plaintext, 0, 'proxy must not see plaintext HTTPS requests');
+      assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
+        `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
+      );
+    } finally {
+      httpsAgent.destroy();
       for (const s of upstreamSockets) s.destroy();
       origin.closeAllConnections?.();
       proxy.closeAllConnections?.();
@@ -3277,11 +3455,11 @@ describe('supports http with nodejs', () => {
       assert.ok(options.agent instanceof HttpsProxyAgent);
     });
 
-    it('forwards user httpsAgent options to the tunneling agent so origin TLS uses them', () => {
+    it('includes user httpsAgent options in the tunneling agent constructor options', () => {
       const userAgent = new https.Agent({ rejectUnauthorized: false, ca: 'sentinel-ca' });
       const options = buildOptions();
       __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
-      // HttpsProxyAgent v5 surfaces the merged constructor options on `.proxy`.
+      // Origin TLS behavior is covered by the issue #10953 integration test.
       assert.strictEqual(options.agent.proxy.rejectUnauthorized, false);
       assert.strictEqual(options.agent.proxy.ca, 'sentinel-ca');
     });

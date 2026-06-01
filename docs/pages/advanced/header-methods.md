@@ -166,7 +166,8 @@ Returns a new AxiosHeaders instance.
 Resolve all internal headers values into a new null prototype object. Set `asStrings` to true to resolve arrays as a string containing all elements, separated by commas.
 
 ```js
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ## From

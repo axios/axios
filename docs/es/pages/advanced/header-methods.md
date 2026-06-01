@@ -166,7 +166,8 @@ Devuelve una nueva instancia de `AxiosHeaders`.
 Resuelve todos los valores de encabezados internos en un nuevo objeto de prototipo nulo. Establece `asStrings` en `true` para resolver los arreglos como una cadena que contiene todos los elementos, separados por comas.
 
 ```js
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ## From (Desde)

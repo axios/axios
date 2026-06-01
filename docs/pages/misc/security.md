@@ -2,7 +2,7 @@
 
 ## ⚠️ Decompression bomb / unbounded response buffering
 
-By default, `maxContentLength` and `maxBodyLength` are set to `-1` (unlimited). A malicious or compromised server can return a small gzip/deflate/brotli-compressed body that expands to gigabytes, exhausting memory in the Node.js process.
+By default, `maxContentLength` and `maxBodyLength` are set to `-1` (unlimited). A malicious or compromised server can return a small gzip/deflate/brotli/zstd-compressed body that expands to gigabytes, exhausting memory in the Node.js process.
 
 **If you make requests to servers you do not fully trust, you MUST set a `maxContentLength` (and `maxBodyLength`) suitable for your workload.** The limit is enforced chunk-by-chunk during streaming decompression, so setting it is sufficient to neutralize decompression-bomb attacks.
 

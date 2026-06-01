@@ -2,7 +2,7 @@
 
 ## ⚠️ 解压炸弹 / 响应无限缓冲
 
-默认情况下，`maxContentLength` 与 `maxBodyLength` 均为 `-1`（不限制）。恶意或被攻陷的服务器可以返回一个很小的 gzip/deflate/brotli 压缩响应，解压后体积可达数 GB，耗尽 Node.js 进程的内存。
+默认情况下，`maxContentLength` 与 `maxBodyLength` 均为 `-1`（不限制）。恶意或被攻陷的服务器可以返回一个很小的 gzip/deflate/brotli/zstd 压缩响应，解压后体积可达数 GB，耗尽 Node.js 进程的内存。
 
 **如果你向不完全可信的服务器发起请求，必须根据你的业务场景设置合适的 `maxContentLength`（以及 `maxBodyLength`）。** 在流式解压过程中会按分块强制执行该限制，因此只需设置该值即可抵御解压炸弹攻击。
 

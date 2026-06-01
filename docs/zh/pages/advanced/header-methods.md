@@ -166,7 +166,8 @@ concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | n
 将所有内部请求头值解析到一个新的 null 原型对象中。将 `asStrings` 设置为 true 可将数组解析为以逗号分隔的字符串。
 
 ```js
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ## From

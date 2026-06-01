@@ -1,21 +1,21 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
 
-The following versions will receive security updates promptly based on the maintainers' discretion.
+The maintainers provide security updates for these versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
 | 0.x.x   | :white_check_mark: |
 | 1.x.x   | :white_check_mark: |
 
-## Threat Model
+## Threat model
 
-For a detailed analysis of the runtime attack surface and the project's supply-chain / development-environment security posture, see [THREATMODEL.md](THREATMODEL.md). Researchers are encouraged to read it before reporting — it documents what is in scope, what is an explicit non-goal, and where we already know the gaps are.
+For details about the runtime attack surface, supply chain security, and development environment security, see [THREATMODEL.md](THREATMODEL.md). Researchers should read it before reporting. It documents what is in scope, what is an explicit non-goal, and where known gaps remain.
 
-An incident-response runbook (for the maintainer side — session revocation, key rotation, notification) is maintained in [THREATMODEL.md §3.7](THREATMODEL.md#37-incident-response-runbook).
+The maintainer incident-response runbook, including session revocation, key rotation, and notification steps, is in [THREATMODEL.md §3.7](THREATMODEL.md#37-incident-response-runbook).
 
-## Verifying a Release
+## Verifying a release
 
 Every `axios` tarball on npm is published from GitHub Actions with an [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements) that cryptographically binds the package to the workflow and commit SHA that produced it.
 
@@ -26,48 +26,48 @@ Consumers can verify provenance locally:
 npm audit signatures
 ```
 
-A successful verification proves the tarball was built in `axios/axios`' GitHub Actions environment on a known commit — it was not tampered with between build and registry. It does **not** prove the code in that commit is free of bugs.
+A successful verification proves the tarball was built in the `axios/axios` GitHub Actions environment on a known commit. It was not tampered with between build and registry. It does not prove the code in that commit is free of bugs.
 
 If `npm audit signatures` reports a missing or invalid attestation for a recent `axios` version, treat it as a potential supply-chain incident and report via the private channel below.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-If you believe you have found a security vulnerability in the project, please report it to us as described below. We take all security vulnerabilities seriously. If you have found a vulnerability in a third-party library, please report it to the maintainers of that library.
+If you believe you have found a security vulnerability in axios, report it through the private channel below. If the vulnerability is in a third-party library, report it to that library's maintainers.
 
-## Reporting Process
+## Reporting process
 
-Please do not report security vulnerabilities through public GitHub issues. Please use the official security channel on GitHub by logging a [security advisory](https://github.com/axios/axios/security).
+Do not report security vulnerabilities through public GitHub issues. Use GitHub's private security channel by opening a [security advisory](https://github.com/axios/axios/security).
 
-## Disclosure Policy
+## Disclosure policy
 
 When we receive a security vulnerability report, we assign it a primary handler. The handler confirms the problem, determines affected versions, evaluates severity, develops and ships a fix, and coordinates public disclosure with the reporter.
 
 ### 60-day resolution and disclosure commitment
 
-We commit to **resolving and publicly disclosing every valid security advisory within 60 calendar days of the initial report**, measured from the moment a report is received via the [GitHub security advisory channel](https://github.com/axios/axios/security/advisories/new).
+We commit to resolving and publicly disclosing every valid security advisory within 60 calendar days of the initial report, measured from the moment a report is received through the [GitHub security advisory channel](https://github.com/axios/axios/security/advisories/new).
 
-The 60-day clock is a commitment to reporters and downstream consumers — a backstop, not an aspiration. If we cannot ship a fix in time, we still publish the advisory at day 60 with the best available mitigation guidance so consumers can act. We then continue to work on the fix and update the advisory with the patch details as soon as possible.
+The 60-day clock is a commitment to reporters and downstream consumers. It is a backstop, not an aspiration. If we cannot ship a fix in time, we still publish the advisory at day 60 with mitigation guidance so consumers can act. We then keep working on the fix and update the advisory with patch details when they are ready.
 
-We will release the fix separately from the advisory, but we will not delay the advisory beyond day 60. We want to release the fix before we publish the advisory to give users the opportunity to patch before the vulnerability details are public.
+We release the fix separately from the advisory, but we do not delay the advisory beyond day 60. We try to release the fix before publishing the advisory so users can patch before vulnerability details are public.
 
-**Exceptions and extensions.**
+Exceptions and extensions:
 
 - If a reporter requests a shorter embargo (e.g. they plan to present findings at a conference), we accommodate where possible.
 - If a fix requires a breaking change, coordinating with major downstream consumers, or a `follow-redirects` / `form-data` / `proxy-from-env` upstream release, we may extend beyond 60 days. Any extension is disclosed publicly at day 60 via the advisory, with a revised ETA and the reason.
-- If a report turns out to be **out of scope** (e.g. falls under an explicit non-goal in [THREATMODEL.md §2.6](THREATMODEL.md)), we close it with an explanation to the reporter within the triage window (≤ 3 days). Out-of-scope reports do not enter the 60-day queue.
-- **Actively exploited vulnerabilities** are treated as incidents: fix and advisory ship as soon as a patch is validated, not on the 60-day schedule.
+- If a report turns out to be out of scope (e.g. falls under an explicit non-goal in [THREATMODEL.md §2.6](THREATMODEL.md)), we close it with an explanation to the reporter within the triage window (≤ 3 days). Out-of-scope reports do not enter the 60-day queue.
+- Actively exploited vulnerabilities are treated as incidents. The fix and advisory ship as soon as a patch is validated, not on the 60-day schedule.
 
-**Reporter expectations.**
+Reporter expectations:
 
-While a report is under embargo, we ask reporters to refrain from public disclosure until the earlier of: (a) the coordinated advisory publication, or (b) day 60. If the 60-day deadline passes without action from us, reporters are free to disclose independently — but we will treat that as a failure on our part, not on theirs.
+While a report is under embargo, we ask reporters not to disclose it publicly until the earlier of the coordinated advisory publication or day 60. If the 60-day deadline passes without action from us, reporters are free to disclose independently. We treat that as a failure on our part, not on theirs.
 
-## Security Updates
+## Security updates
 
-Security updates will be released as soon as possible after the patch has been developed and tested. We will notify users of the release via the project’s GitHub repository. We will also publish the release notes and security advisories on the project’s GitHub releases page. We will also deprecate all versions that contain the security vulnerability.
+We release security updates after the patch is developed and tested. We notify users through the project's GitHub repository, publish release notes and security advisories on GitHub releases, and deprecate all versions that contain the vulnerability.
 
-## Security Partners and Acknowledgements
+## Security partners and acknowledgements
 
-We would like to thank the following security researchers for working with us to help make the project safe for everyone:
+Thanks to these security researchers for working with us:
 
 - [Socket Dev](https://socket.dev/)
 - [GitHub Security Lab](https://securitylab.github.com/)

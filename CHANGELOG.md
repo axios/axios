@@ -1432,7 +1432,7 @@ This functionality is considered as a fix.
 
 - fix: improve AxiosHeaders class [#5224](https://github.com/axios/axios/pull/5224)
 - fix: TypeScript type definitions for commonjs [#5196](https://github.com/axios/axios/pull/5196)
-- fix: type definition of use method on AxiosInterceptorManager to match the the README [#5071](https://github.com/axios/axios/pull/5071)
+- fix: type definition of use method on AxiosInterceptorManager to match the README [#5071](https://github.com/axios/axios/pull/5071)
 - fix: \_\_dirname is not defined in the sandbox [#5269](https://github.com/axios/axios/pull/5269)
 - fix: AxiosError.toJSON method to avoid circular references [#5247](https://github.com/axios/axios/pull/5247)
 - fix: Z_BUF_ERROR when content-encoding is set but the response body is empty [#5250](https://github.com/axios/axios/pull/5250)

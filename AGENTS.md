@@ -36,7 +36,8 @@ This file is the canonical contributor guide for both human and AI agents workin
 ## Pre-Release Notes
 
 - Add user-visible unreleased changes to `PRE_RELEASE_CHANGELOG.md`, not `CHANGELOG.md`. `CHANGELOG.md` is release-owned and should only be updated as part of preparing an actual release.
-- Do not update `README.md` or the docs site for unreleased runtime/API changes unless the task is explicitly release preparation. Instead, record the exact README/docs updates needed under `PRE_RELEASE_CHANGELOG.md` so they can be applied during release work.
+- Track deferred README, docs site, examples, migration guide, and translated docs updates in `PRE_RELEASE_DOCS.md`. Use enough context for release preparation; do not store brittle diffs or line-number-only notes.
+- Do not update `README.md` or the docs site for unreleased runtime/API changes unless the task is explicitly release preparation. During feature/fix work, record what docs need to say in `PRE_RELEASE_DOCS.md` so it can be applied during release work.
 
 ## Architecture Boundaries
 

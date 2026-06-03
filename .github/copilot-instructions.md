@@ -51,3 +51,8 @@ The rules below are a Copilot-facing subset of the load-bearing safety guarantee
 - Do not mutate config objects in place; return new ones from merges/transforms.
 - Do not assume browser- or Node-only globals exist; capability-check first.
 - Validate options through the existing `validator` helper rather than inventing ad-hoc validation paths.
+
+## Pre-release tracking
+
+- Add user-visible unreleased changes to `PRE_RELEASE_CHANGELOG.md`, not `CHANGELOG.md`.
+- Track deferred README, docs site, examples, migration guide, and translated docs updates in `PRE_RELEASE_DOCS.md`; do not update release docs for unreleased runtime/API changes unless explicitly doing release preparation.

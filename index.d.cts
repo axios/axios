@@ -400,6 +400,7 @@ declare namespace axios {
     legacyInterceptorReqResOrdering?: boolean;
     useAxiosRedirects?: boolean;
     advertiseZstdAcceptEncoding?: boolean;
+    validateStatusUndefinedResolves?: boolean;
   }
 
   interface GenericAbortSignal {
@@ -587,6 +588,7 @@ declare namespace axios {
     buffering?: boolean | AxiosBufferingConfig;
     allowDowngrade?: boolean;
     followStatusCodes?: string | number | string[] | number[] | Record<string, boolean>;
+    sensitiveHeaders?: string[];
   }
 
   // Alias

@@ -285,6 +285,7 @@ export interface TransitionalOptions {
   legacyInterceptorReqResOrdering?: boolean;
   useAxiosRedirects?: boolean;
   advertiseZstdAcceptEncoding?: boolean;
+  validateStatusUndefinedResolves?: boolean;
 }
 
 export interface GenericAbortSignal {
@@ -479,6 +480,7 @@ export interface AxiosRequestConfig<D = any> {
   buffering?: boolean | AxiosBufferingConfig;
   allowDowngrade?: boolean;
   followStatusCodes?: string | number | string[] | number[] | Record<string, boolean>;
+  sensitiveHeaders?: string[];
 }
 
 // Alias

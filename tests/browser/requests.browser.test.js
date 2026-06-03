@@ -283,13 +283,30 @@ describe('requests (vitest browser)', () => {
     await expect(promise).resolves.toBeDefined();
   });
 
-  it('should resolve when validateStatus is undefined', async () => {
+  it('should resolve when validateStatus is undefined by default', async () => {
     const { request, promise } = startRequest('/foo', {
       validateStatus: undefined,
     });
 
     request.respondWith({ status: 500 });
     await expect(promise).resolves.toBeDefined();
+  });
+
+  // https://github.com/axios/axios/issues/6688
+  it('should reject when validateStatus is undefined and the transitional option is disabled', async () => {
+    const { request, promise } = startRequest('/foo', {
+      validateStatus: undefined,
+      transitional: { validateStatusUndefinedResolves: false },
+    });
+
+    request.respondWith({ status: 500 });
+    const reason = await promise.catch((error) => error);
+
+    expect(reason).toBeInstanceOf(Error);
+    expect(reason.message).toBe('Request failed with status code 500');
+    expect(reason.config.method).toBe('get');
+    expect(reason.config.url).toBe('/foo');
+    expect(reason.response.status).toBe(500);
   });
 
   // https://github.com/axios/axios/issues/378

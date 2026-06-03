@@ -9,6 +9,8 @@ formData.append('foo', 'bar');
 axios.post('https://httpbin.org/post', formData);
 ```
 
+Do not manually set the `Content-Type` header for browser, web worker, or React Native `FormData`; those runtimes add the multipart boundary themselves.
+
 In node.js, you can use the `form-data` library as follows:
 
 ```js

@@ -10,7 +10,7 @@ import {
 import { setTimeoutAsync } from '../../setup/helpers.js'
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
-import { __setProxy } from '../../../lib/adapters/http.js';
+import { __isSameOriginRedirect, __setProxy } from '../../../lib/adapters/http.js';
 import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
@@ -630,6 +630,166 @@ describe('supports http with nodejs', () => {
 
     await stopHTTPServer(server);
     await stopHTTPServer(proxy);
+  });
+
+  it('should strip sensitiveHeaders on cross-origin redirect', async () => {
+    let capturedHeaders;
+
+    // destination server — different port means different origin
+    const destination = await startHTTPServer((req, res) => {
+      capturedHeaders = req.headers;
+      res.statusCode = 200;
+      res.end('ok');
+    });
+
+    // origin server — redirects to destination (cross-origin)
+    const origin = await startHTTPServer((req, res) => {
+      res.setHeader('Location', `http://localhost:${destination.address().port}/dest`);
+      res.statusCode = 302;
+      res.end();
+    });
+
+    try {
+      await axios.get(`http://localhost:${origin.address().port}/src`, {
+        maxRedirects: 5,
+        headers: { 'X-API-Key': 'secret', 'X-Other': 'keep' },
+        sensitiveHeaders: ['X-API-Key'],
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-API-Key should be stripped');
+      assert.strictEqual(capturedHeaders['x-other'], 'keep', 'X-Other should be preserved');
+    } finally {
+      await stopHTTPServer(origin);
+      await stopHTTPServer(destination);
+    }
+  });
+
+  it('should preserve sensitiveHeaders on same-origin redirect', async () => {
+    let capturedHeaders;
+    let requestCount = 0;
+
+    const server = await startHTTPServer((req, res) => {
+      requestCount++;
+      if (requestCount === 1) {
+        res.setHeader('Location', '/dest');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        capturedHeaders = req.headers;
+        res.statusCode = 200;
+        res.end('ok');
+      }
+    });
+
+    try {
+      await axios.get(`http://localhost:${server.address().port}/src`, {
+        maxRedirects: 5,
+        headers: { 'X-API-Key': 'secret' },
+        sensitiveHeaders: ['X-API-Key'],
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], 'secret', 'X-API-Key should be preserved on same-origin redirect');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should strip sensitiveHeaders case-insensitively on cross-origin redirect', async () => {
+    let capturedHeaders;
+
+    const destination = await startHTTPServer((req, res) => {
+      capturedHeaders = req.headers;
+      res.statusCode = 200;
+      res.end('ok');
+    });
+
+    const origin = await startHTTPServer((req, res) => {
+      res.setHeader('Location', `http://localhost:${destination.address().port}/dest`);
+      res.statusCode = 302;
+      res.end();
+    });
+
+    try {
+      await axios.get(`http://localhost:${origin.address().port}/src`, {
+        maxRedirects: 5,
+        // Header sent with mixed casing; sensitiveHeaders list uses different casing
+        headers: { 'X-Api-Key': 'secret' },
+        sensitiveHeaders: ['x-api-key'],
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-Api-Key should be stripped case-insensitively');
+    } finally {
+      await stopHTTPServer(origin);
+      await stopHTTPServer(destination);
+    }
+  });
+
+  it('should strip sensitiveHeaders configured on an instance', async () => {
+    let capturedHeaders;
+
+    const destination = await startHTTPServer((req, res) => {
+      capturedHeaders = req.headers;
+      res.statusCode = 200;
+      res.end('ok');
+    });
+
+    const origin = await startHTTPServer((req, res) => {
+      res.setHeader('Location', `http://localhost:${destination.address().port}/dest`);
+      res.statusCode = 302;
+      res.end();
+    });
+
+    const client = axios.create({
+      headers: { 'X-API-Key': 'secret', 'X-Other': 'keep' },
+      sensitiveHeaders: ['X-API-Key'],
+    });
+
+    try {
+      await client.get(`http://localhost:${origin.address().port}/src`, {
+        maxRedirects: 5,
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-API-Key should be stripped');
+      assert.strictEqual(capturedHeaders['x-other'], 'keep', 'X-Other should be preserved');
+    } finally {
+      await stopHTTPServer(origin);
+      await stopHTTPServer(destination);
+    }
+  });
+
+  it('should reject invalid sensitiveHeaders config', async () => {
+    await assert.rejects(
+      axios.get('http://localhost:1/', { sensitiveHeaders: 'X-API-Key' }),
+      (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.strictEqual(error.message, 'sensitiveHeaders must be an array of strings');
+        return true;
+      }
+    );
+
+    await assert.rejects(
+      axios.get('http://localhost:1/', { sensitiveHeaders: [null] }),
+      (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.strictEqual(error.message, 'sensitiveHeaders must be an array of strings');
+        return true;
+      }
+    );
+  });
+
+  it('should fail closed when sensitiveHeaders redirect origin cannot be parsed', () => {
+    assert.strictEqual(
+      __isSameOriginRedirect(
+        { href: 'http://localhost/final' },
+        { url: 'http://localhost/start' }
+      ),
+      true
+    );
+    assert.strictEqual(
+      __isSameOriginRedirect({ href: 'http://[::1' }, { url: 'http://localhost/start' }),
+      false
+    );
+    assert.strictEqual(__isSameOriginRedirect({ href: 'http://localhost/final' }), false);
   });
 
   it('should wrap HTTP errors and keep stack', async () => {

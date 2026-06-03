@@ -97,6 +97,7 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 #### `set`
 
 向请求头对象添加一个请求头。
+空字符串或仅包含空白字符的请求头名称会被忽略。
 
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -157,7 +158,8 @@ concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | n
 将请求头对象转换为 JSON 对象。
 
 ```ts
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ### `CanceledError` <Badge type="tip" text="继承自 AxiosError" />
@@ -173,7 +175,7 @@ toJSON(asStrings?: boolean): RawAxiosHeaders;
 检查某个错误是否为 `CanceledError` 的函数，可用于区分主动取消和意外错误。
 
 ```ts
-isCancel(value: any): boolean;
+isCancel<T = any>(value: any): value is CanceledError<T>;
 ```
 
 ```js

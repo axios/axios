@@ -773,6 +773,7 @@ These config options are available for requests. Only `url` is required. Request
   // When no `transformRequest` is set, it must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
+  // - React Native: FormData
   // - Node only: Stream, Buffer, FormData (form-data package)
   data: {
     firstName: 'Fred'
@@ -877,10 +878,12 @@ These config options are available for requests. Only `url` is required. Request
     // Do whatever you want with the Axios progress event
   },
 
-  // `maxContentLength` defines the max size of the http response content in bytes allowed in node.js
+  // `maxContentLength` defines the max size of the response content in bytes.
+  // It is enforced by the Node.js HTTP adapter and the fetch adapter.
   maxContentLength: 2000,
 
-  // `maxBodyLength` (Node only option) defines the max size of the http request content in bytes allowed
+  // `maxBodyLength` defines the max size of the request content in bytes.
+  // It is enforced by the Node.js HTTP adapter and the fetch adapter when the body length can be determined.
   maxBodyLength: 2000,
 
   // `redact` masks matching config keys when AxiosError#toJSON() is called.
@@ -1646,6 +1649,7 @@ server = app.listen(3000);
 
 To send data as `multipart/form-data`, pass a FormData instance as the payload.
 You do not need to set the `Content-Type` header. Axios detects it from the payload type.
+For browser, web worker, and React Native `FormData`, leave `Content-Type` unset so the runtime can add the multipart boundary.
 
 ```js
 const formData = new FormData();
@@ -2074,6 +2078,8 @@ The `rewrite` argument controls the overwriting behavior:
 
 The option can also accept a user-defined function that determines whether to overwrite the value.
 
+Empty or whitespace-only header names are ignored.
+
 Returns `this`.
 
 ### AxiosHeaders#get(header)
@@ -2249,6 +2255,8 @@ const { data } = fetchAxios.get(url);
 The adapter supports the same features as the `xhr` adapter, including upload and download progress capturing.
 It also supports response types such as `stream` and `formdata` when the environment supports them.
 
+When `auth` is omitted, the fetch adapter can read HTTP Basic auth credentials from the request URL, for example `https://user:pass@example.com`. Percent-encoded URL credentials are decoded before the `Authorization` header is generated, and `auth` takes precedence over URL-embedded credentials.
+
 ### Custom fetch
 
 Since `v1.12.0`, you can configure the fetch adapter to use a custom fetch API instead of environment globals.
@@ -2367,6 +2375,20 @@ try {
     handleAxiosError(error);
   } else {
     handleUnexpectedError(error);
+  }
+}
+```
+
+Use `axios.isCancel<T>()` to narrow cancellation errors to `CanceledError<T>`:
+
+```typescript
+const controller = new AbortController();
+
+try {
+  await axios.get<User>('/user?ID=12345', { signal: controller.signal });
+} catch (error) {
+  if (axios.isCancel<User>(error)) {
+    handleCancellation(error);
   }
 }
 ```

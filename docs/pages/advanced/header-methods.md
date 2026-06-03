@@ -45,6 +45,8 @@ The rewrite argument controls the overwriting behaviour:
 
 The option can also accept a user-defined function that determines whether the value should be overwritten or not. The function receives the current value, header name, and the headers object as arguments.
 
+Empty or whitespace-only header names are ignored.
+
 `AxiosHeaders` keeps the case of the first matching key it sees. You can use this to preserve specific header casing by seeding a key with `undefined` and then setting values later. See [Preserving a specific header case](/pages/advanced/headers#preserving-a-specific-header-case).
 
 ## Get

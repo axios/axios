@@ -119,7 +119,10 @@ The `data` is the data to be sent as the request body. This can be a string, a p
 
 - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
 - Browser only: FormData, File, Blob
+- React Native: FormData
 - Node only: Stream, Buffer, FormData (form-data package)
+
+For browser, web worker, and React Native `FormData`, do not manually set `Content-Type`; the runtime adds the multipart boundary.
 
 For Node.js `FormData` objects that provide a `getHeaders()` method, axios copies all returned headers by default for v1 compatibility. If the `FormData` object is custom or not fully trusted, set `formDataHeaderPolicy: 'content-only'` to copy only `Content-Type` and `Content-Length`, and set any other request headers explicitly via the request `headers` config.
 
@@ -231,16 +234,16 @@ The `onUploadProgress` function allows you to listen to the progress of an uploa
 
 The `onDownloadProgress` function allows you to listen to the progress of a download.
 
-### `maxContentLength` <Badge type="warning" text="Node.js only" />
+### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxContentLength` property defines the maximum number of bytes that the server will accept in the response.
+The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined.
 
 > ⚠️ **Security:** defaults to `-1` (unlimited). Unbounded responses combined with gzip/deflate/brotli/zstd decompression allow decompression-bomb DoS.
 > Set an explicit limit when requesting servers you do not fully trust.
 
-### `maxBodyLength` <Badge type="warning" text="Node.js only" />
+### `maxBodyLength` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxBodyLength` property defines the maximum number of bytes that the server will accept in the request.
+The `maxBodyLength` property defines the maximum request body size in bytes. The Node.js HTTP adapter enforces it, and the fetch adapter enforces it when the request body length can be determined.
 
 ### `redact`
 

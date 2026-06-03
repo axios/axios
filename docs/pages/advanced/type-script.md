@@ -31,6 +31,20 @@ try {
 }
 ```
 
+Use `axios.isCancel<T>()` to narrow cancellation errors to `CanceledError<T>`:
+
+```ts
+const controller = new AbortController();
+
+try {
+  await axios.get<User>("/user?ID=12345", { signal: controller.signal });
+} catch (error) {
+  if (axios.isCancel<User>(error)) {
+    handleCancellation(error);
+  }
+}
+```
+
 ## Typed instances and interceptors
 
 Annotate the result of `axios.create` with `AxiosInstance`, and annotate request interceptors with `InternalAxiosRequestConfig` to get end-to-end type checking on a custom client:

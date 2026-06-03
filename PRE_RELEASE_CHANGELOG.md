@@ -6,35 +6,6 @@
 
 - **HTTP Adapter Redirects:** Added a Node.js `sensitiveHeaders` request config option that strips caller-selected custom secret headers from cross-origin redirects. (**#10892**)
 
-## Docs updates
-
-- docs/pages/misc/security.md LN29 : | [`sensitiveHeaders`](/pages/advanced/request-config#sensitiveheaders) | Custom authentication headers such as `X-API-Key` can be forwarded to a different origin when a trusted server redirects there. | List custom secret-bearing headers in `sensitiveHeaders` so the Node.js adapter strips them on cross-origin redirects. |
-- docs/pages/advanced/request-config.md LN269 : | ### `sensitiveHeaders` <Badge type="warning" text="Node.js only" />
-
-The `sensitiveHeaders` property is an optional array of custom secret-bearing header names to remove when axios follows a redirect to a different origin. Matching is case-insensitive. Same-origin redirects keep these headers.
-
-This only applies to redirects followed by the Node.js HTTP adapter. If `maxRedirects` is set to 0, `sensitiveHeaders` is not used.
-
-```js
-axios.get('https://api.example.com/users', {
-  headers: { 'X-API-Key': 'secret' },
-  sensitiveHeaders: ['X-API-Key']
-});
-```
-
-## New Features
-
-- **HTTP Adapter - Zstandard:** Added automatic zstd decompression on Node.js versions that support it. `zstd` is only advertised in the default `Accept-Encoding` header when `transitional.advertiseZstdAcceptEncoding: true` is set. (**#6792**)
-
 ## Bug Fixes
 
-- **AxiosHeaders:** Silently skip empty response header names emitted by some React Native Android responses instead of throwing. (**#6959**, **#10875**)
-- **Config Security:** Ignore inherited `params` and `paramsSerializer` values when resolving request config, preventing prototype-pollution gadgets from changing serialized URLs. (**#10922**)
-- **Fetch Adapter - Auth:** Support HTTP Basic credentials embedded in request URLs, including UTF-8 credentials, while stripping credentials before constructing the fetch `Request` and preserving `config.auth` precedence. (**#10896**)
 - **Types:** Add the missing readonly `name: 'CanceledError'` declaration to CommonJS `CanceledError` typings to match the ESM declarations. (**#10922**)
-- **Types:** Correct the CommonJS `isCancel` type guard to narrow cancellation errors to `CanceledError<T>`, matching the ESM declaration. (**#10952**)
-- **HTTP Adapter - Auth on Redirect:** HTTP Basic credentials supplied via `config.auth` are now restored on same-origin redirects, fixing a regression caused by `follow-redirects` >= 1.15.8 that broke `POST` requests answered with a 303 Location. Cross-origin redirects continue to drop credentials, preserving the existing T-R2 mitigation in `THREATMODEL.md`. (**#6929**)
-- **HTTP Adapter - Proxy TLS:** Preserve `httpsAgent` TLS options such as `ca` and `rejectUnauthorized` for HTTPS origins reached through a CONNECT proxy tunnel. (**#10953**)
-- **HTTP Adapter - Socket Path:** Ignore inherited `socketPath` and `allowedSocketPaths` config values when building Node.js requests, preventing prototype-pollution SSRF via Unix sockets. (**#10901**)
-- **React Native FormData:** Clear the default `Content-Type` header for React Native `FormData` requests so Android can build multipart bodies with the correct boundary. (**#10898**)
-- **Request Data:** Preserve enumerable symbol keys when merging plain request data before `transformRequest`. (**#6392**)

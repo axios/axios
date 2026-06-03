@@ -354,8 +354,23 @@ describe('core::mergeConfig', () => {
       expect(mergeConfig({ validateStatus: null }, {}).validateStatus).toBe(null);
     });
 
-    it('keeps config1 value when config2 sets the key to undefined (issue #6688)', () => {
-      expect(mergeConfig(defaults, { validateStatus: undefined }).validateStatus).toBe(defaults.validateStatus);
+    it('keeps legacy undefined behavior by default', () => {
+      expect(mergeConfig(defaults, { validateStatus: undefined }).validateStatus).toBeUndefined();
+    });
+
+    it('keeps config1 value when the transitional option is disabled (issue #6688)', () => {
+      const validateStatus = () => false;
+
+      expect(
+        mergeConfig(
+          { validateStatus },
+          {
+            validateStatus: undefined,
+            transitional: { validateStatusUndefinedResolves: false },
+          }
+        ).validateStatus
+      ).toBe(validateStatus);
+
       expect(mergeConfig(defaults, { validateStatus: null }).validateStatus).toBe(null);
     });
   });

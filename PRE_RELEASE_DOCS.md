@@ -37,3 +37,23 @@ axios.get('https://api.example.com/users', {
 ```
 
 - **Notes:** Add a security page row linking to the request-config section and add a `sensitiveHeaders` request-config entry marked Node.js only.
+
+### validateStatus undefined transitional option
+
+- **Change:** Document `transitional.validateStatusUndefinedResolves` for the `validateStatus: undefined` merge behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10899, closes #6688.
+- **Status:** Pending.
+- **Docs targets:** README request config section; `docs/pages/advanced/request-config.md` `validateStatus` section and request config example; translated request-config docs after English docs are finalized.
+- **Required content:** Explain that `validateStatus: undefined` keeps legacy behavior by default and resolves every response status because `transitional.validateStatusUndefinedResolves` defaults to `true`. Explain that setting `transitional.validateStatusUndefinedResolves` to `false` makes explicit `validateStatus: undefined` behave like the option was omitted, so axios uses the configured/default validator and rejects non-2xx responses by default. Mention that `validateStatus: null` still accepts every response status, and users who disable the transitional behavior should use `null` or `() => true` when they intentionally want all statuses to resolve.
+- **Examples:** Include a short opt-in example.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false
+  }
+});
+```
+
+- **Notes:** This is release-prep documentation only; do not update README or docs pages in the feature/fix PR.

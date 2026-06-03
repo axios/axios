@@ -284,6 +284,7 @@ export interface TransitionalOptions {
   clarifyTimeoutError?: boolean;
   legacyInterceptorReqResOrdering?: boolean;
   advertiseZstdAcceptEncoding?: boolean;
+  validateStatusUndefinedResolves?: boolean;
 }
 
 export interface GenericAbortSignal {

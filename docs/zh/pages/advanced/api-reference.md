@@ -97,6 +97,7 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 #### `set`
 
 向请求头对象添加一个请求头。
+空字符串或仅包含空白字符的请求头名称会被忽略。
 
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;

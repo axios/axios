@@ -31,6 +31,20 @@ try {
 }
 ```
 
+使用 `axios.isCancel<T>()` 可以将取消错误收窄为 `CanceledError<T>`：
+
+```ts
+const controller = new AbortController();
+
+try {
+  await axios.get<User>("/user?ID=12345", { signal: controller.signal });
+} catch (error) {
+  if (axios.isCancel<User>(error)) {
+    handleCancellation(error);
+  }
+}
+```
+
 ## 带类型的实例与拦截器
 
 将 `axios.create` 的结果标注为 `AxiosInstance`，并将请求拦截器标注为 `InternalAxiosRequestConfig`，即可对自定义客户端实现端到端的类型检查：

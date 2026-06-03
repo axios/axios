@@ -119,7 +119,10 @@ const client = axios.create({
 
 - string、普通对象、ArrayBuffer、ArrayBufferView、URLSearchParams
 - 仅浏览器：FormData、File、Blob
+- React Native：FormData
 - 仅 Node.js：Stream、Buffer、FormData（form-data 包）
+
+对于浏览器、Web Worker 和 React Native 的 `FormData`，不要手动设置 `Content-Type`；运行时会自行添加 multipart boundary。
 
 对于提供了 `getHeaders()` 方法的 Node.js `FormData` 对象，axios 默认会复制其返回的所有请求头，以保持 v1 兼容性。如果 `FormData` 对象是自定义的或不完全可信，可设置 `formDataHeaderPolicy: 'content-only'`，仅复制 `Content-Type` 和 `Content-Length`，其他请求头则通过请求 `headers` 配置显式设置。
 
@@ -231,16 +234,16 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 `onDownloadProgress` 函数允许你监听下载进度。
 
-### `maxContentLength` <Badge type="warning" text="仅 Node.js" />
+### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxContentLength` 属性定义服务器在响应中允许接收的最大字节数。
+`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。
 
 > ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli/zstd 解压，会带来解压炸弹导致的拒绝服务风险。
 > 在访问不完全可信的服务器时，请显式设置该限制。
 
-### `maxBodyLength` <Badge type="warning" text="仅 Node.js" />
+### `maxBodyLength` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxBodyLength` 属性定义服务器在请求中允许接收的最大字节数。
+`maxBodyLength` 属性定义请求体允许的最大字节数。Node.js HTTP 适配器会执行该限制；fetch 适配器会在请求体长度可确定时执行该限制。
 
 ### `redact`
 

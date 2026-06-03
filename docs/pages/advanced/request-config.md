@@ -266,19 +266,6 @@ The `validateStatus` function allows you to override the default status code val
 
 The `maxRedirects` property defines the maximum number of redirects to follow. If set to 0, no redirects will be followed.
 
-### `sensitiveHeaders` <Badge type="warning" text="Node.js only" />
-
-The `sensitiveHeaders` property is an optional array of custom secret-bearing header names to remove when axios follows a redirect to a different origin. Matching is case-insensitive. Same-origin redirects keep these headers.
-
-This only applies to redirects followed by the Node.js HTTP adapter. If `maxRedirects` is set to 0, `sensitiveHeaders` is not used.
-
-```js
-axios.get('https://api.example.com/users', {
-  headers: { 'X-API-Key': 'secret' },
-  sensitiveHeaders: ['X-API-Key']
-});
-```
-
 ### `beforeRedirect`
 
 The `beforeRedirect` function allows you to modify the request before it is redirected. Use this to adjust the request options upon redirecting, to inspect the latest response headers, or to cancel the request by throwing an error. If maxRedirects is set to 0, `beforeRedirect` is not used.
@@ -487,7 +474,6 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
-  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";

@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## Security Fixes
+
+- **HTTP Adapter Redirects:** Added a Node.js `sensitiveHeaders` request config option that strips caller-selected custom secret headers from cross-origin redirects. (**#10892**)
+
+## Docs updates
+
+- docs/pages/misc/security.md LN29 : | [`sensitiveHeaders`](/pages/advanced/request-config#sensitiveheaders) | Custom authentication headers such as `X-API-Key` can be forwarded to a different origin when a trusted server redirects there. | List custom secret-bearing headers in `sensitiveHeaders` so the Node.js adapter strips them on cross-origin redirects. |
+- docs/pages/advanced/request-config.md LN269 : | ### `sensitiveHeaders` <Badge type="warning" text="Node.js only" />
+
+The `sensitiveHeaders` property is an optional array of custom secret-bearing header names to remove when axios follows a redirect to a different origin. Matching is case-insensitive. Same-origin redirects keep these headers.
+
+This only applies to redirects followed by the Node.js HTTP adapter. If `maxRedirects` is set to 0, `sensitiveHeaders` is not used.
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key']
+});
+```
+
 ## New Features
 
 - **HTTP Adapter - Zstandard:** Added automatic zstd decompression on Node.js versions that support it. `zstd` is only advertised in the default `Accept-Encoding` header when `transitional.advertiseZstdAcceptEncoding: true` is set. (**#6792**)

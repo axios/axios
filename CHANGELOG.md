@@ -1,11 +1,5 @@
 # Changelog
 
-## Unreleased
-
-## 🔒 Security Fixes
-
-- **HTTP Adapter Redirects:** Added a Node.js `sensitiveHeaders` request config option that strips caller-selected custom secret headers from cross-origin redirects. (**#10892**)
-
 ## v1.16.1 — May 13, 2026
 
 This release ships a defence-in-depth fix for prototype pollution in `formDataToJSON`, hardens proxy and CI workflows, restores Webpack 4 compatibility for the fetch adapter, and includes several small bug fixes and maintenance improvements.

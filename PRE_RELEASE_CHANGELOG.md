@@ -8,6 +8,7 @@
 
 ## Bug Fixes
 
+- **URL Validation:** Reject malformed `http:` and `https:` URLs that omit `//` before adapter URL normalization, returning `ERR_INVALID_URL` instead of silently normalizing invalid input. (**#10900**, closes **#7315**)
 - **Types:** Add the missing readonly `name: 'CanceledError'` declaration to CommonJS `CanceledError` typings to match the ESM declarations. (**#10922**)
 - **Config Merge:** Added `transitional.validateStatusUndefinedResolves` (default `true`) so applications can opt into treating explicit `validateStatus: undefined` like an omitted option by setting it to `false`. `validateStatus: null` still accepts every response status. (**#10899**, closes **#6688**)
 

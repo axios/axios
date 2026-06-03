@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import axios from '../../index.js';
+import AxiosError from '../../lib/core/AxiosError.js';
 
 class MockXMLHttpRequest {
   constructor() {
@@ -220,6 +221,27 @@ describe('requests (vitest browser)', () => {
     expect(reason.config.method).toBe('get');
     expect(reason.config.url).toBe('http://thisisnotaserver/foo');
     expect(reason.request).toBeInstanceOf(MockXMLHttpRequest);
+  });
+
+  it('rejects malformed HTTP URLs before opening an XHR request', async () => {
+    const openSpy = vi.spyOn(MockXMLHttpRequest.prototype, 'open');
+
+    const reason = await axios
+      .get('\u0000https:example.com/users', {
+        adapter: 'xhr',
+        headers: {
+          'X-Test': 'yes',
+        },
+      })
+      .catch((error) => error);
+
+    expect(reason).toBeInstanceOf(AxiosError);
+    expect(reason.code).toBe(AxiosError.ERR_INVALID_URL);
+    expect(reason.message).toBe('Invalid URL: missing "//" after protocol');
+    expect(reason.config.url).toBe('\u0000https:example.com/users');
+    expect(reason.config.headers.get('X-Test')).toBe('yes');
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(requests).toHaveLength(0);
   });
 
   it('should reject on abort', async () => {

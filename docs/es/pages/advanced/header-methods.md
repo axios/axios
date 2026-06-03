@@ -45,6 +45,8 @@ El argumento `rewrite` controla el comportamiento de sobreescritura:
 
 La opción también puede aceptar una función definida por el usuario que determina si el valor debe ser sobreescrito o no. La función recibe el valor actual, el nombre del encabezado y el objeto de encabezados como argumentos.
 
+Los nombres de encabezado vacíos o compuestos solo por espacios se ignoran.
+
 `AxiosHeaders` conserva el formato de la primera clave coincidente que encuentra. Puedes usar esto para preservar el formato específico de un encabezado inicializando una clave con `undefined` y luego estableciendo los valores posteriormente. Consulta [Preservar el formato de un encabezado específico](/pages/advanced/headers#preserving-a-specific-header-case).
 
 ## Get (Obtener)

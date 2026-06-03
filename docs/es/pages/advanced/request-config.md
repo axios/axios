@@ -119,7 +119,10 @@ El `data` son los datos que se enviarán como cuerpo de la solicitud. Puede ser 
 
 - cadena de texto, objeto plano, ArrayBuffer, ArrayBufferView, URLSearchParams
 - Solo en el navegador: FormData, File, Blob
+- React Native: FormData
 - Solo en Node.js: Stream, Buffer, FormData (paquete form-data)
+
+Para `FormData` en navegador, web worker y React Native, no establezcas manualmente `Content-Type`; el entorno agrega el boundary multipart.
 
 Para los objetos `FormData` de Node.js que proporcionan un método `getHeaders()`, axios copia por defecto todos los encabezados devueltos para mantener la compatibilidad con v1. Si el objeto `FormData` es personalizado o no es de plena confianza, establece `formDataHeaderPolicy: 'content-only'` para copiar únicamente `Content-Type` y `Content-Length`, y define cualquier otro encabezado de la solicitud explícitamente mediante la configuración `headers`.
 
@@ -231,16 +234,16 @@ La función `onUploadProgress` te permite escuchar el progreso de una carga.
 
 La función `onDownloadProgress` te permite escuchar el progreso de una descarga.
 
-### `maxContentLength` <Badge type="warning" text="Solo en Node.js" />
+### `maxContentLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propiedad `maxContentLength` define el número máximo de bytes que el servidor aceptará en la respuesta.
+La propiedad `maxContentLength` define el tamaño máximo de la respuesta en bytes. El adaptador HTTP de Node.js lo aplica en respuestas almacenadas en búfer y en streaming. El adaptador fetch lo aplica cuando la longitud de la respuesta está declarada, se puede rastrear el stream de respuesta o se puede determinar el tamaño de la respuesta.
 
 > ⚠️ **Seguridad:** el valor por defecto es `-1` (sin límite). Las respuestas sin límite combinadas con la descompresión gzip/deflate/brotli/zstd permiten ataques de denegación de servicio por bomba de descompresión.
 > Establece un límite explícito al consumir servidores en los que no confíes plenamente.
 
-### `maxBodyLength` <Badge type="warning" text="Solo en Node.js" />
+### `maxBodyLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propiedad `maxBodyLength` define el número máximo de bytes que el servidor aceptará en la solicitud.
+La propiedad `maxBodyLength` define el tamaño máximo del cuerpo de la solicitud en bytes. El adaptador HTTP de Node.js lo aplica, y el adaptador fetch lo aplica cuando se puede determinar la longitud del cuerpo de la solicitud.
 
 ### `redact`
 

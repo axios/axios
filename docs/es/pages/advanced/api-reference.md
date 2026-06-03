@@ -97,6 +97,7 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 #### `set`
 
 Agrega un encabezado al objeto de encabezados.
+Los nombres de encabezado vacíos o compuestos solo por espacios se ignoran.
 
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;

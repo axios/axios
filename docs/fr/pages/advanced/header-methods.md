@@ -45,6 +45,8 @@ L'argument `rewrite` contrôle le comportement d'écrasement :
 
 L'option peut également accepter une fonction définie par l'utilisateur qui détermine si la valeur doit être écrasée ou non. La fonction reçoit la valeur actuelle, le nom de l'en-tête et l'objet d'en-têtes comme arguments.
 
+Les noms d'en-têtes vides ou composés uniquement d'espaces sont ignorés.
+
 `AxiosHeaders` conserve la casse de la première clé correspondante qu'il voit. Vous pouvez utiliser cela pour préserver la casse spécifique d'un en-tête en initialisant une clé avec `undefined` puis en définissant les valeurs ultérieurement. Voir [Préserver la casse d'un en-tête spécifique](/pages/advanced/headers#preserving-a-specific-header-case).
 
 ## Get

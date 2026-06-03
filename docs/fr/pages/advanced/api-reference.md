@@ -97,6 +97,7 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 #### `set`
 
 Ajoute un en-tête à l'objet d'en-têtes.
+Les noms d'en-têtes vides ou composés uniquement d'espaces sont ignorés.
 
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;

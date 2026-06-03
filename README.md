@@ -2328,7 +2328,7 @@ const { data, headers, status } = await axios.post('https://httpbin.org/post', f
 
 ## 🔥 Axios redirects
 
-An experimental Axios redirects implementation was introduced in `v1.17.0`.
+An experimental Axios redirects implementation was introduced in `v1.18.0`.
 
 This feature is `disabled` by default. When enabled, it replaces the `follow-redirects` package with Axios's native redirects implementation.
 

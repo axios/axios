@@ -2486,6 +2486,9 @@ await axios.get(url, {
 });
 ````
 
+> **Note**: When using Axios redirects, the request will throw an `AxiosError` with the `ERR_REDIRECT` code
+> if the redirect fails for any reason. This replaces `ERR_FR_TOO_MANY_REDIRECTS` with a more generic error code.
+
 ### 🔥 Body buffering
 
 When the request body is a stream, redirect handling may require request body buffering.

@@ -1104,6 +1104,28 @@ describe('redirects', () => {
         expect(response.data.regular).toBe('baz');
       });
 
+      it('should throw an error with ERR_REDIRECT code if protocol of redirected url is forbidden', async () => {
+        const server = await startHTTPServer((req, res) => {
+          if (req.path === '/redirect') {
+            res.writeHead(302, {Location: 'ftp://example.com'});
+            res.end();
+          }
+        }, {
+          useHTTP2,
+          useHTTPS
+        });
+
+        try {
+          await axiosInstance.get(`${server.origin}/redirect`);
+          expect.fail('Expected to throw an error due to unsupported protocol in redirect URL');
+        } catch (error) {
+          expect(error.code).toBe('ERR_REDIRECT');
+          expect(error.message).toMatch(/Forbidden protocol/);
+          expect(error.response).toBeDefined();
+          expect(error.response.status).toBe(302);
+          expect(error.response.headers.get('Location')).toBe('ftp://example.com');
+        }
+      });
     });
   });
 });

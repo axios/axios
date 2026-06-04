@@ -1065,7 +1065,44 @@ describe('redirects', () => {
         expect(response.config.meta.redirectsCount).toBe(1);
       });
 
+      it('should support sensitiveHeaders option to specify which headers should be sanitized during cross-origin redirects', async () => {
+        const server1 = await startHTTPServer((req, res) => {
+          if (req.path === '/redirect') {
+            res.writeHead(302, {Location: server2.origin + '/final'});
+            res.end(JSON.stringify(req.headers));
+          }
+        }, {
+          port: 0,
+          useHTTP2,
+          useHTTPS
+        });
 
+        const server2 = await startHTTPServer((req, res) => {
+          if (req.path === '/final') {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end(JSON.stringify(req.headers));
+          }
+        }, {
+          port: 0,
+          useHTTP2,
+          useHTTPS
+        });
+
+        const response = await axiosInstance.get(`${server1.origin}/redirect`, {
+          headers: {
+            secret1: 'foo',
+            secret2: 'bar',
+            regular: 'baz'
+          },
+
+          sensitiveHeaders: ['SeCret2', 'SECRET1']
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.data.secret1).toBeUndefined();
+        expect(response.data.secret2).toBeUndefined();
+        expect(response.data.regular).toBe('baz');
+      });
 
     });
   });

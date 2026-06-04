@@ -2382,7 +2382,7 @@ In the next major release, Axios redirects will be `enabled` by default, and the
 The main reasons for moving away from follow-redirects were:
 
 - adding redirects support for the http adapter when using HTTP/2, which was not possible with the follow-redirects package
-- adding redirects support for the fetch adapter in server environments and browser workers (the browser Fetch API does not expose redirect handling hooks)
+- adding redirects support for the fetch adapter in server environments (the browser Fetch API does not expose redirect handling hooks)
 - avoiding buffering the entire request body in memory when streaming requests in Node.js
 - improving the overall reliability and maintainability of redirects handling in Axios
 

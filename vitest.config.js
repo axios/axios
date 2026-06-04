@@ -15,7 +15,7 @@ export default defineConfig({
       },
       {
         test: {
-          name: 'e2e',
+          name: 'e2e:node',
           environment: 'node',
           include: ['tests/e2e/node/**/*.test.js'],
           setupFiles: [],

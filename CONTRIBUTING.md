@@ -18,6 +18,12 @@ Update tests for your changes. Pull requests must pass GitHub Actions.
 
 Update the [documentation](https://axios-http.com/docs/intro) when the API changes, so the API and docs stay in sync.
 
+## Dependency and GitHub Actions updates
+
+Please do not open pull requests that only update npm packages, lockfiles, or GitHub Actions versions. We close these PRs from outside collaborators. Only maintainers and approved automated bots may create package and GitHub Actions update PRs.
+
+We keep the 7-day Dependabot delay for these updates unless a critical vulnerability requires a maintainer-led manual update.
+
 ## Developing
 
 - `npm run test` runs the Jasmine and Mocha tests

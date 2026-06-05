@@ -28,6 +28,8 @@ When opening a PR, make sure:
 - Cover the change with unit tests. Update browser, smoke, or module suites when packaging or runtime surface is affected.
 - Lint and tests pass before review. Do not merge red PRs.
 - Do not add runtime dependencies without discussion. `package-lock.json` changes must keep `lockfile-lint` happy (npm HTTPS hosts, integrity hashes).
+- Package and GitHub Actions update PRs are maintainer/bot-only. Close PRs from outside collaborators that only update npm packages, lockfiles, or GitHub Actions versions.
+- Keep the 7-day Dependabot delay for these updates. Bypass it only when a critical vulnerability requires a maintainer-led manual update.
 - Security-sensitive changes get extra scrutiny and focused regression tests. This includes URL construction, redirects, proxy/env handling, XSRF, socket paths, decompression limits, prototype walking, and adapters. Consult [THREATMODEL.md](./THREATMODEL.md).
 - Warn before removing functionality.
 - New public API surface is predictable, consistent with existing options, and documented.
@@ -48,6 +50,7 @@ If someone reports a suspected vulnerability in a public issue, do not discuss s
 ## What collaborators should not do
 
 - Add runtime dependencies without discussion. The dependency surface is intentionally tiny.
+- Merge package, lockfile, or GitHub Actions version update PRs from outside collaborators.
 - Disable `ignore-scripts` in `.npmrc` or otherwise weaken install-time safety.
 - Weaken `beforeRedirect`, proxy, `socketPath`, XSRF, or prototype-pollution safeguards without tests covering the regression cases.
 

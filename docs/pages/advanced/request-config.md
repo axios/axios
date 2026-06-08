@@ -322,7 +322,7 @@ The `transport` property defines the transport to use for the request. This is u
 
 The `httpAgent` and `httpsAgent` define a custom agent to be used when performing http and https requests, respectively, in node.js. This allows options to be added like `keepAlive` that are not enabled by default.
 
-### `proxy`
+### `proxy` <Badge type="warning" text="Node.js only" />
 
 The `proxy` defines the hostname, port, and protocol of a proxy server you would like to use. You can also define your proxy using the conventional `http_proxy` and `https_proxy` environment variables.
 

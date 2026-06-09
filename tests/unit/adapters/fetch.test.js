@@ -3,11 +3,11 @@ import assert from 'assert';
 import {
   startHTTPServer,
   stopHTTPServer,
-  setTimeoutAsync,
   makeReadableStream,
   generateReadable,
   makeEchoStream,
 } from '../../setup/server.js';
+import {setTimeoutAsync} from '../../setup/helpers.js'
 import axios from '../../../index.js';
 import utils from '../../../lib/utils.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';

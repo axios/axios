@@ -5,9 +5,9 @@ import {
   stopHTTPServer,
   SERVER_HANDLER_STREAM_ECHO,
   handleFormData,
-  setTimeoutAsync,
   generateReadable,
 } from '../../setup/server.js';
+import { setTimeoutAsync } from '../../setup/helpers.js'
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import { __isSameOriginRedirect, __setProxy } from '../../../lib/adapters/http.js';
@@ -4940,6 +4940,7 @@ describe('supports http with nodejs', () => {
         },
         {
           useHTTP2: true,
+          useHTTPS: true,
           port: SERVER_PORT,
         }
       );
@@ -4958,6 +4959,7 @@ describe('supports http with nodejs', () => {
       const server = await startHTTPServer(null, {
         useHTTP2: true,
         port: SERVER_PORT,
+        useHTTPS: true
       });
 
       try {
@@ -4990,6 +4992,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -5032,6 +5035,7 @@ describe('supports http with nodejs', () => {
             {
               useHTTP2: true,
               port: SERVER_PORT,
+              useHTTPS: true
             }
           );
 
@@ -5063,6 +5067,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -5108,6 +5113,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -5149,6 +5155,7 @@ describe('supports http with nodejs', () => {
         {
           useHTTP2: true,
           port: SERVER_PORT,
+          useHTTPS: true
         }
       );
 
@@ -5204,6 +5211,8 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
+            port: SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -5240,6 +5249,8 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
+            port: SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -5251,6 +5262,8 @@ describe('supports http with nodejs', () => {
           },
           {
             useHTTP2: true,
+            port: ALTERNATE_SERVER_PORT,
+            useHTTPS: true
           }
         );
 
@@ -5291,6 +5304,7 @@ describe('supports http with nodejs', () => {
             },
             {
               useHTTP2: true,
+              useHTTPS: true
             }
           );
 
@@ -5329,6 +5343,7 @@ describe('supports http with nodejs', () => {
             },
             {
               useHTTP2: true,
+              useHTTPS: true
             }
           );
 
@@ -5373,6 +5388,7 @@ describe('supports http with nodejs', () => {
             },
             {
               useHTTP2: true,
+              useHTTPS: true
             }
           );
 

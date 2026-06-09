@@ -125,12 +125,16 @@ describe('basicAuth (vitest browser)', () => {
     await flushSuccess(request, promise);
   });
 
-  it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters in username', async () => {
-    await expect(axios('/foo', {
+  it('should not fail to encode HTTP Basic auth credentials with non-Latin1 characters in username', async () => {
+    const { request, promise } = startRequest('/foo', {
       auth: {
         username: 'Aladßç£☃din',
         password: 'open sesame',
-      },
-    })).rejects.toThrow(/character/i);
+      }
+    });
+
+    expect(request.requestHeaders.Authorization).toBe('Basic QWxhZMOfw6fCo+KYg2RpbjpvcGVuIHNlc2FtZQ==');
+
+    await flushSuccess(request, promise);
   });
 });

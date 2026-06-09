@@ -51,7 +51,8 @@
     "./dist/node/axios.cjs": "./dist/browser/axios.cjs",
     "./lib/adapters/http.js": "./lib/helpers/null.js",
     "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
-    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js"
+    "./lib/platform/node/classes/FormData.js": "./lib/helpers/null.js",
+    "./lib/core/dispatchWithRedirects.js": "./lib/helpers/null.js"
   },
   "react-native": {
     "./dist/node/axios.cjs": "./dist/browser/axios.cjs",
@@ -120,6 +121,7 @@
     "test": "npm run test:vitest",
     "test:vitest": "vitest run",
     "test:vitest:unit": "vitest run --project unit",
+    "test:vitest:e2e:node": "vitest run --project e2e:node",
     "test:vitest:browser": "vitest run --project browser",
     "test:vitest:browser:headless": "vitest run --project browser-headless",
     "test:vitest:watch": "vitest",

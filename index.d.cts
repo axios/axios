@@ -162,6 +162,8 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ECONNABORTED = 'ECONNABORTED';
   static readonly ECONNREFUSED = 'ECONNREFUSED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
+  static readonly ERR_STREAM_FLUSHED = 'ERR_STREAM_FLUSHED';
+  static readonly ERR_REDIRECT = 'ERR_REDIRECT';
 }
 
 declare class CanceledError<T> extends AxiosError<T> {
@@ -396,6 +398,7 @@ declare namespace axios {
     forcedJSONParsing?: boolean;
     clarifyTimeoutError?: boolean;
     legacyInterceptorReqResOrdering?: boolean;
+    useAxiosRedirects?: boolean;
     advertiseZstdAcceptEncoding?: boolean;
     validateStatusUndefinedResolves?: boolean;
   }
@@ -478,6 +481,28 @@ declare namespace axios {
 
   type LookupAddress = string | LookupAddressEntry;
 
+  interface AxiosRedirectMeta {
+    status: number;
+    headers: AxiosHeaders;
+    config: InternalAxiosRequestConfig,
+    redirectsCount: number;
+    maxRedirects: number;
+    url: URL;
+    redirectTo: URL;
+    response: AxiosResponse,
+    sanitize: () => void;
+  }
+
+  export interface AxiosRequestMeta {
+    redirectsCount?: number;
+  }
+
+  export interface AxiosBufferingConfig {
+    timout?: number;
+    limit?: number;
+    threshold?: number;
+  }
+
   interface AxiosRequestConfig<D = any> {
     url?: string;
     method?: Method | string;
@@ -505,11 +530,11 @@ declare namespace axios {
     maxBodyLength?: number;
     maxRedirects?: number;
     maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-    beforeRedirect?: (
+    beforeRedirect?: ((
       options: Record<string, any>,
       responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode },
       requestDetails: { headers: Record<string, string>; url: string; method: string },
-    ) => void;
+    ) => void | ((redirectMeta: AxiosRedirectMeta) => false | void));
     socketPath?: string | null;
     allowedSocketPaths?: string | string[] | null;
     transport?: any;
@@ -560,6 +585,9 @@ declare namespace axios {
     };
     formDataHeaderPolicy?: 'legacy' | 'content-only';
     redact?: string[];
+    buffering?: boolean | AxiosBufferingConfig;
+    allowDowngrade?: boolean;
+    followStatusCodes?: string | number | string[] | number[] | Record<string, boolean>;
     sensitiveHeaders?: string[];
   }
 
@@ -568,6 +596,7 @@ declare namespace axios {
 
   interface InternalAxiosRequestConfig<D = any> extends AxiosRequestConfig<D> {
     headers: AxiosRequestHeaders;
+    meta: AxiosRequestMeta;
   }
 
   interface HeadersDefaults {

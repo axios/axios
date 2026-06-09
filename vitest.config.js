@@ -15,6 +15,14 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'e2e:node',
+          environment: 'node',
+          include: ['tests/e2e/node/**/*.test.js'],
+          setupFiles: [],
+        },
+      },
+      {
+        test: {
           name: 'browser',
           include: ['tests/browser/**/*.browser.test.js'],
           browser: {

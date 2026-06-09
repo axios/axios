@@ -283,6 +283,7 @@ export interface TransitionalOptions {
   forcedJSONParsing?: boolean;
   clarifyTimeoutError?: boolean;
   legacyInterceptorReqResOrdering?: boolean;
+  useAxiosRedirects?: boolean;
   advertiseZstdAcceptEncoding?: boolean;
   validateStatusUndefinedResolves?: boolean;
 }
@@ -367,6 +368,29 @@ export interface LookupAddressEntry {
 
 export type LookupAddress = string | LookupAddressEntry;
 
+export interface AxiosRedirectMeta {
+  status: number;
+  headers: AxiosHeaders;
+  config: InternalAxiosRequestConfig,
+  redirectsCount: number;
+  maxRedirects: number;
+  url: URL;
+  redirectTo: URL;
+  response: AxiosResponse,
+  sanitize: () => void;
+}
+
+export interface AxiosRequestMeta {
+  redirectsCount?: number;
+}
+
+export interface AxiosBufferingConfig {
+  timout?: number;
+  limit?: number;
+  threshold?: number;
+}
+
+
 export interface AxiosRequestConfig<D = any> {
   url?: string;
   method?: StringLiteralsOrString<Method>;
@@ -394,7 +418,7 @@ export interface AxiosRequestConfig<D = any> {
   maxBodyLength?: number;
   maxRedirects?: number;
   maxRate?: number | [MaxUploadRate, MaxDownloadRate];
-  beforeRedirect?: (
+  beforeRedirect?: ((
     options: Record<string, any>,
     responseDetails: {
       headers: Record<string, string>;
@@ -405,7 +429,7 @@ export interface AxiosRequestConfig<D = any> {
       url: string;
       method: string;
     },
-  ) => void;
+  ) => void) | ((redirectMeta: AxiosRedirectMeta) => false | void);
   socketPath?: string | null;
   allowedSocketPaths?: string | string[] | null;
   transport?: any;
@@ -453,6 +477,9 @@ export interface AxiosRequestConfig<D = any> {
   };
   formDataHeaderPolicy?: 'legacy' | 'content-only';
   redact?: string[];
+  buffering?: boolean | AxiosBufferingConfig;
+  allowDowngrade?: boolean;
+  followStatusCodes?: string | number | string[] | number[] | Record<string, boolean>;
   sensitiveHeaders?: string[];
 }
 
@@ -461,6 +488,7 @@ export type RawAxiosRequestConfig<D = any> = AxiosRequestConfig<D>;
 
 export interface InternalAxiosRequestConfig<D = any> extends AxiosRequestConfig<D> {
   headers: AxiosRequestHeaders;
+  meta: AxiosRequestMeta;
 }
 
 export interface HeadersDefaults {
@@ -535,6 +563,8 @@ export class AxiosError<T = unknown, D = any> extends Error {
   static readonly ECONNABORTED = 'ECONNABORTED';
   static readonly ECONNREFUSED = 'ECONNREFUSED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
+  static readonly ERR_STREAM_FLUSHED = 'ERR_STREAM_FLUSHED';
+  static readonly ERR_REDIRECT = 'ERR_REDIRECT';
 }
 
 export class CanceledError<T> extends AxiosError<T> {

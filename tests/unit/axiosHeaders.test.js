@@ -84,6 +84,66 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('x'), '123');
     });
 
+    it('should support objects with an own iterator as a key-value source object', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set({
+        *[Symbol.iterator]() {
+          yield ['x', '123'];
+        },
+      });
+
+      assert.strictEqual(headers.get('x'), '123');
+    });
+
+    it('should not use inherited Symbol.iterator as a key-value source object', () => {
+      try {
+        Object.prototype[Symbol.iterator] = function* () {
+          yield ['x-app', 'changed'];
+          yield ['x-injected', 'yes'];
+        };
+
+        const headers = new AxiosHeaders({
+          'x-app': 'safe',
+        });
+
+        assert.strictEqual(headers.get('x-app'), 'safe');
+        assert.strictEqual(headers.get('x-injected'), undefined);
+      } finally {
+        delete Object.prototype[Symbol.iterator];
+      }
+    });
+
+    it('should not consume an inherited Symbol.iterator for non-plain header sources', () => {
+      try {
+        Object.prototype[Symbol.iterator] = function* () {
+          yield ['x-injected', 'yes'];
+          yield ['authorization', 'Bearer CHANGED'];
+        };
+
+        // A class instance and an Object.create(...) object both have a direct
+        // prototype other than Object.prototype, yet their only iterator comes
+        // from the polluted Object.prototype — they must not be iterated.
+        class HeaderBag {
+          constructor() {
+            this['authorization'] = 'Bearer VALID';
+          }
+        }
+
+        const fromClass = new AxiosHeaders(new HeaderBag());
+        assert.strictEqual(fromClass.get('x-injected'), undefined);
+        assert.notStrictEqual(fromClass.get('authorization'), 'Bearer CHANGED');
+
+        const created = Object.create({ 'x-app': 'safe' });
+        created['authorization'] = 'Bearer VALID';
+        const fromCreate = new AxiosHeaders(created);
+        assert.strictEqual(fromCreate.get('x-injected'), undefined);
+        assert.notStrictEqual(fromCreate.get('authorization'), 'Bearer CHANGED');
+      } finally {
+        delete Object.prototype[Symbol.iterator];
+      }
+    });
+
     const runIfNode18OrHigher = nodeMajorVersion >= 18 ? it : it.skip;
     runIfNode18OrHigher(
       'should support setting multiple header values from an iterable source',

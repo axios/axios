@@ -58,6 +58,44 @@ describe('utils::isX', () => {
     expect(utils.isPlainObject(Object.create({}))).toEqual(false);
   });
 
+  it('should ignore inherited symbol properties when validating plain Object', () => {
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['x-injected', 'yes'];
+      };
+      Object.prototype[Symbol.toStringTag] = 'Custom';
+
+      expect(utils.isPlainObject({})).toEqual(true);
+      expect(utils.isPlainObject([])).toEqual(false);
+      expect(
+        utils.isPlainObject({
+          [Symbol.iterator]: function* () {
+            yield ['x-own', 'yes'];
+          },
+        })
+      ).toEqual(false);
+      expect(
+        utils.isPlainObject({
+          [Symbol.toStringTag]: 'Custom',
+        })
+      ).toEqual(false);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+      delete Object.prototype[Symbol.toStringTag];
+    }
+  });
+
+  it('should treat an object with a genuinely inherited iterator as non-plain', () => {
+    // Iterator inherited from a custom (non-Object.prototype) source: this is a
+    // real iterable, not prototype pollution, so it must not be classified plain.
+    const proto = Object.create(null);
+    proto[Symbol.iterator] = function* () {
+      yield ['x', '1'];
+    };
+
+    expect(utils.isPlainObject(Object.create(proto))).toEqual(false);
+  });
+
   it('should validate Date', () => {
     expect(utils.isDate(new Date())).toEqual(true);
     expect(utils.isDate(Date.now())).toEqual(false);

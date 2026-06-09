@@ -123,6 +123,35 @@ describe('helpers::buildURL', () => {
 
     expect(buildURL('/foo', params, customSerializer)).toEqual('/foo?rendered');
   });
+
+  it('should ignore inherited serializer options', () => {
+    let serializeInvoked = false;
+    let encodeInvoked = false;
+
+    Object.defineProperty(Object.prototype, 'serialize', {
+      value() {
+        serializeInvoked = true;
+        return 'inherited=1';
+      },
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'encode', {
+      value() {
+        encodeInvoked = true;
+        return 'inherited';
+      },
+      configurable: true,
+    });
+
+    try {
+      expect(buildURL('/foo', { value: 'a b' }, {})).toEqual('/foo?value=a+b');
+      expect(serializeInvoked).toBe(false);
+      expect(encodeInvoked).toBe(false);
+    } finally {
+      delete Object.prototype.serialize;
+      delete Object.prototype.encode;
+    }
+  });
 });
 
 describe('helpers::encode', () => {

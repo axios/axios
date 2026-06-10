@@ -96,6 +96,25 @@ describe('utils::isX', () => {
     expect(utils.isPlainObject(Object.create(proto))).toEqual(false);
   });
 
+  it('should not read polluted Object.prototype iterator accessors for safe iterable checks', () => {
+    let accessed = false;
+
+    try {
+      Object.defineProperty(Object.prototype, Symbol.iterator, {
+        configurable: true,
+        get() {
+          accessed = true;
+          throw new Error('polluted iterator accessor');
+        }
+      });
+
+      expect(utils.isSafeIterable({})).toEqual(false);
+      expect(accessed).toEqual(false);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
   it('should stop safe prototype-chain reads on cyclic Proxy prototypes', () => {
     let calls = 0;
     let proxy;

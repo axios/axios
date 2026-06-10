@@ -90,6 +90,36 @@ describe('helpers::shouldBypassProxy', () => {
     }
   });
 
+  it('should bypass proxy for compressed IPv6 unspecified request forms', () => {
+    setNoProxy('localhost,127.0.0.1,::1');
+
+    for (const host of ['0::', '::0', '0:0::', '::0:0', '0::0']) {
+      expect(shouldBypassProxy(`http://[${host}]:7777/`)).toBe(true);
+    }
+  });
+
+  it('should bypass proxy for compressed IPv6 unspecified no_proxy entries', () => {
+    for (const entry of ['0::', '::0', '0:0::', '::0:0', '0::0']) {
+      setNoProxy(entry);
+
+      expect(shouldBypassProxy('http://[::]:7777/')).toBe(true);
+      expect(shouldBypassProxy('http://[0:0:0:0:0:0:0:0]:7777/')).toBe(true);
+    }
+  });
+
+  it('should respect explicit ports on compressed IPv6 unspecified no_proxy entries', () => {
+    setNoProxy('[0::]:8080');
+
+    expect(shouldBypassProxy('http://[::]:8080/')).toBe(true);
+    expect(shouldBypassProxy('http://[::]:9090/')).toBe(false);
+  });
+
+  it('should not treat nonzero compressed IPv6 addresses as unspecified', () => {
+    setNoProxy('0::2');
+
+    expect(shouldBypassProxy('http://[::]:7777/')).toBe(false);
+  });
+
   it('should still route a real public IPv6 host through the proxy', () => {
     setNoProxy('localhost');
 

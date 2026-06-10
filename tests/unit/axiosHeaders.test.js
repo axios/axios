@@ -129,6 +129,29 @@ describe('AxiosHeaders', () => {
       }
     });
 
+    it('should not read polluted Object.prototype Symbol.iterator accessors', () => {
+      let accessed = false;
+
+      try {
+        Object.defineProperty(Object.prototype, Symbol.iterator, {
+          configurable: true,
+          get() {
+            accessed = true;
+            throw new Error('polluted iterator accessor');
+          }
+        });
+
+        const headers = new AxiosHeaders({
+          'x-app': 'safe',
+        });
+
+        assert.strictEqual(headers.get('x-app'), 'safe');
+        assert.strictEqual(accessed, false);
+      } finally {
+        delete Object.prototype[Symbol.iterator];
+      }
+    });
+
     it('should not consume an inherited Symbol.iterator for non-plain header sources', () => {
       try {
         Object.prototype[Symbol.iterator] = function* () {

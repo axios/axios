@@ -1371,6 +1371,50 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.ok(bytesRead <= 1024, `custom fetch read too many bytes; got ${bytesRead}`);
     });
 
+    it('should not force ReadableStream bodies when Request does not support request streams', async () => {
+      let fetchCalled = false;
+
+      class NoStreamRequest {
+        constructor(_url, init) {
+          if (init && utils.isReadableStream(init.body)) {
+            throw new TypeError('ReadableStream request bodies are unsupported');
+          }
+        }
+      }
+
+      await assert.rejects(
+        fetchAxios.post('/', stream.Readable.from([Buffer.alloc(2048)]), {
+          maxBodyLength: 1024,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+          },
+          env: {
+            Request: NoStreamRequest,
+            Response: null,
+            async fetch() {
+              fetchCalled = true;
+              return {
+                headers: {},
+                status: 200,
+                statusText: 'OK',
+                text: async () => 'ok',
+              };
+            },
+          },
+        }),
+        (err) => {
+          assert.strictEqual(err.code, 'ERR_NOT_SUPPORT');
+          assert.strictEqual(
+            err.message,
+            'Stream request bodies are not supported by the current fetch implementation'
+          );
+          return true;
+        }
+      );
+
+      assert.strictEqual(fetchCalled, false, 'fetch must not receive a forced ReadableStream body');
+    });
+
     it('should reject a response whose Content-Length exceeds maxContentLength with ERR_BAD_RESPONSE', async () => {
       const payload = 'A'.repeat(8 * 1024);
       const server = await startHTTPServer(

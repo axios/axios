@@ -202,9 +202,19 @@ describe('helpers::toFormData', () => {
       }
     });
 
-    it('should allow {} metatoken values exactly at the default depth limit', () => {
-      const formData = toFormData({ 'safe{}': nest(100) }, new FormData());
+    it('should allow {} metatoken values at the same boundary as normal top-level properties', () => {
+      const formData = toFormData({ 'safe{}': nest(99) }, new FormData());
       assert.ok(formData instanceof FormData);
+    });
+
+    it('should reject {} metatoken values beyond the normal top-level property boundary', () => {
+      try {
+        toFormData({ 'evil{}': nest(100) }, new FormData());
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
+      }
     });
   });
 
@@ -233,6 +243,16 @@ describe('helpers::toFormData', () => {
         assert.ok(err instanceof AxiosError, 'error must be AxiosError, not RangeError');
         assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
         assert.ok(!(err instanceof RangeError));
+      }
+    });
+
+    it('should reject {} metatoken params beyond the normal property boundary', () => {
+      try {
+        new AxiosURLSearchParams({ 'evil{}': nest(100) });
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
       }
     });
   });

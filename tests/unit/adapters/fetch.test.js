@@ -53,23 +53,25 @@ const createBrokenDOMExceptionLikeError = () =>
 
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
   it('rejects malformed HTTP URLs before fetch normalization and preserves config', async () => {
-    await assert.rejects(
-      () =>
-        axios.get('\u0000https:example.com/users', {
-          adapter: 'fetch',
-          headers: {
-            'X-Test': 'yes',
-          },
-        }),
-      (error) => {
-        assert.ok(error instanceof AxiosError);
-        assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
-        assert.strictEqual(error.message, 'Invalid URL: missing "//" after protocol');
-        assert.strictEqual(error.config.url, '\u0000https:example.com/users');
-        assert.strictEqual(error.config.headers.get('X-Test'), 'yes');
-        return true;
-      }
-    );
+    for (const url of ['\u0000https:example.com/users', 'h\nttp:example.com/users']) {
+      await assert.rejects(
+        () =>
+          axios.get(url, {
+            adapter: 'fetch',
+            headers: {
+              'X-Test': 'yes',
+            },
+          }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+          assert.strictEqual(error.message, 'Invalid URL: missing "//" after protocol');
+          assert.strictEqual(error.config.url, url);
+          assert.strictEqual(error.config.headers.get('X-Test'), 'yes');
+          return true;
+        }
+      );
+    }
   });
 
   it('should sanitize request headers containing CRLF characters', async () => {
@@ -1334,6 +1336,41 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       }
     });
 
+    it('should enforce maxBodyLength with custom fetch when Request is unavailable', async () => {
+      let bytesRead = 0;
+
+      await assert.rejects(
+        fetchAxios.post('/', makeUploadStream(2048), {
+          maxBodyLength: 1024,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': '1',
+          },
+          env: {
+            Request: null,
+            async fetch(_url, options) {
+              for await (const chunk of options.body) {
+                bytesRead += chunk.byteLength;
+              }
+              return {
+                headers: {},
+                status: 200,
+                statusText: 'OK',
+                text: async () => 'ok',
+              };
+            },
+          },
+        }),
+        (err) => {
+          assert.strictEqual(err.code, 'ERR_BAD_REQUEST');
+          assert.strictEqual(err.message, 'Request body larger than maxBodyLength limit');
+          return true;
+        }
+      );
+
+      assert.ok(bytesRead <= 1024, `custom fetch read too many bytes; got ${bytesRead}`);
+    });
+
     it('should reject a response whose Content-Length exceeds maxContentLength with ERR_BAD_RESPONSE', async () => {
       const payload = 'A'.repeat(8 * 1024);
       const server = await startHTTPServer(
@@ -1358,6 +1395,33 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       } finally {
         await stopHTTPServer(server);
       }
+    });
+
+    it('should handle plain object response headers while enforcing maxContentLength', async () => {
+      const { data, headers } = await fetchAxios.get('/', {
+        maxContentLength: 10,
+        env: {
+          async fetch() {
+            return {
+              status: 200,
+              statusText: 'OK',
+              headers: {
+                'content-length': '4',
+                foo: 'bar',
+              },
+              body: new ReadableStream({
+                start(controller) {
+                  controller.enqueue(new Uint8Array([116, 101, 115, 116]));
+                  controller.close();
+                },
+              }),
+            };
+          },
+        },
+      });
+
+      assert.strictEqual(data, 'test');
+      assert.strictEqual(headers.get('foo'), 'bar');
     });
 
     it('should reject a chunked response that exceeds maxContentLength during streaming', async () => {
@@ -1422,6 +1486,15 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         assert.match(err.message, /maxContentLength size of 16 exceeded/);
         return true;
       });
+    });
+
+    it('should allow a percent-encoded data: URL within decoded maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+      const { data } = await bareAxios.get('data:text/plain,%E2%82%AC', {
+        maxContentLength: 4,
+      });
+
+      assert.strictEqual(data, '\u20ac');
     });
 
     it('should allow a response at or below maxContentLength', async () => {

@@ -38,6 +38,9 @@ describe('core::buildFullPath', () => {
       () => buildFullPath(undefined, 'https:example.com/users'),
       () => buildFullPath(undefined, '\thttps:example.com/users'),
       () => buildFullPath(undefined, '\u0000https:example.com/users'),
+      () => buildFullPath(undefined, 'h\nttp:example.com/users'),
+      () => buildFullPath(undefined, 'ht\ttp:example.com/users'),
+      () => buildFullPath(undefined, 'htt\rp:example.com/users'),
       () => buildFullPath(undefined, 'http:/example.com/users'),
       () => buildFullPath('http:example.com/api', '/users'),
     ]) {

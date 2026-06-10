@@ -84,6 +84,21 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('x'), '123');
     });
 
+    it('should not merge Object.prototype values into iterable headers', () => {
+      const descriptor = Object.getOwnPropertyDescriptor(Object.prototype, 'Authorization');
+      Object.prototype.Authorization = 'polluted';
+
+      try {
+        const headers = new AxiosHeaders(new Map([['Authorization', 'real']]));
+
+        assert.strictEqual(headers.get('authorization'), 'real');
+      } finally {
+        descriptor
+          ? Object.defineProperty(Object.prototype, 'Authorization', descriptor)
+          : delete Object.prototype.Authorization;
+      }
+    });
+
     it('should support objects with an own iterator as a key-value source object', () => {
       const headers = new AxiosHeaders();
 

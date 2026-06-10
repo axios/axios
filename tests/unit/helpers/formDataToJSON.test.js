@@ -133,6 +133,21 @@ describe('formDataToJSON', () => {
     }
   });
 
+  it('should throw AxiosError while tokenizing very deep field paths', () => {
+    const formData = new FormData();
+
+    formData.append('foo' + '[bar]'.repeat(10000), '123');
+
+    try {
+      formDataToJSON(formData);
+      throw new Error('Should have thrown');
+    } catch (err) {
+      expect(err).toBeInstanceOf(AxiosError);
+      expect(err.code).toBe(AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED);
+      expect(err).not.toBeInstanceOf(RangeError);
+    }
+  });
+
   it('should convert a field path at the default depth limit', () => {
     const formData = new FormData();
 

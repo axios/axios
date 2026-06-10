@@ -13,6 +13,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Use `npm ci`; repo `.npmrc` sets `ignore-scripts=true`, and CI also uses `npm ci --ignore-scripts`.
 - Do not remove `ignore-scripts=true`; if git hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once.
 - Adding or updating dependencies is security-sensitive; `package-lock.json` is checked by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
+- Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.
 - Build/test/lint tools still execute dependency code despite `ignore-scripts`; avoid unnecessary full builds when a focused check proves the change.
 - Do not add new runtime dependencies without discussion; the dependency surface is intentionally tiny.
 

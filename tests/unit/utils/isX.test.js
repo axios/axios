@@ -96,6 +96,24 @@ describe('utils::isX', () => {
     expect(utils.isPlainObject(Object.create(proto))).toEqual(false);
   });
 
+  it('should stop safe prototype-chain reads on cyclic Proxy prototypes', () => {
+    let calls = 0;
+    let proxy;
+    proxy = new Proxy({}, {
+      getPrototypeOf() {
+        calls += 1;
+        if (calls > 5) {
+          throw new Error('cycled');
+        }
+        return proxy;
+      }
+    });
+
+    expect(utils.hasOwnInPrototypeChain(proxy, 'missing')).toEqual(false);
+    expect(utils.getSafeProp(proxy, 'missing')).toEqual(undefined);
+    expect(calls).toBeLessThanOrEqual(2);
+  });
+
   it('should validate Date', () => {
     expect(utils.isDate(new Date())).toEqual(true);
     expect(utils.isDate(Date.now())).toEqual(false);

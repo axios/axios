@@ -190,6 +190,22 @@ describe('helpers::toFormData', () => {
       assert.strictEqual(caught.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
       assert.ok(!(caught instanceof RangeError));
     });
+
+    it('should reject deeply nested {} metatoken values before JSON.stringify overflows', () => {
+      try {
+        toFormData({ 'evil{}': nest(10000) }, new FormData());
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError, 'error must be AxiosError, not RangeError');
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
+        assert.ok(!(err instanceof RangeError));
+      }
+    });
+
+    it('should allow {} metatoken values exactly at the default depth limit', () => {
+      const formData = toFormData({ 'safe{}': nest(100) }, new FormData());
+      assert.ok(formData instanceof FormData);
+    });
   });
 
   describe('maxDepth — params serialization via AxiosURLSearchParams', () => {
@@ -207,6 +223,17 @@ describe('helpers::toFormData', () => {
       const params = new AxiosURLSearchParams(nest(150), { maxDepth: 200 });
       const qs = params.toString();
       assert.ok(typeof qs === 'string' && qs.length > 0);
+    });
+
+    it('should reject deeply nested {} metatoken params before JSON.stringify overflows', () => {
+      try {
+        new AxiosURLSearchParams({ 'evil{}': nest(10000) });
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError, 'error must be AxiosError, not RangeError');
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
+        assert.ok(!(err instanceof RangeError));
+      }
     });
   });
 

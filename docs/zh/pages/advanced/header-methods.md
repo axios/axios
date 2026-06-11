@@ -45,6 +45,8 @@ set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
 
 该参数也可以接受一个用户自定义函数，用于决定是否应覆盖该值，函数接收当前值、请求头名称和请求头对象作为参数。
 
+空字符串或仅包含空白字符的请求头名称会被忽略。
+
 `AxiosHeaders` 会保留第一个匹配键的大小写形式。你可以利用这一特性，先以 `undefined` 值预设一个键名，之后再设置值，从而保留特定的请求头大小写。详见[保留特定请求头大小写](/pages/advanced/headers#preserving-a-specific-header-case)。
 
 ## Get
@@ -166,7 +168,8 @@ concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | n
 将所有内部请求头值解析到一个新的 null 原型对象中。将 `asStrings` 设置为 true 可将数组解析为以逗号分隔的字符串。
 
 ```js
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ## From

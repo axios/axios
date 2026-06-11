@@ -31,6 +31,20 @@ try {
 }
 ```
 
+Usa `axios.isCancel<T>()` para reducir los errores de cancelación a `CanceledError<T>`:
+
+```ts
+const controller = new AbortController();
+
+try {
+  await axios.get<User>("/user?ID=12345", { signal: controller.signal });
+} catch (error) {
+  if (axios.isCancel<User>(error)) {
+    handleCancellation(error);
+  }
+}
+```
+
 ## Instancias e interceptores tipados
 
 Anota el resultado de `axios.create` con `AxiosInstance`, y anota los interceptores de solicitud con `InternalAxiosRequestConfig` para obtener verificación de tipos de extremo a extremo en un cliente personalizado:

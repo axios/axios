@@ -9,6 +9,7 @@ import {
   makeEchoStream,
 } from '../../setup/server.js';
 import axios from '../../../index.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 import utils from '../../../lib/utils.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
@@ -51,6 +52,28 @@ const createBrokenDOMExceptionLikeError = () =>
   );
 
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
+  it('rejects malformed HTTP URLs before fetch normalization and preserves config', async () => {
+    for (const url of ['\u0000https:example.com/users', 'h\nttp:example.com/users']) {
+      await assert.rejects(
+        () =>
+          axios.get(url, {
+            adapter: 'fetch',
+            headers: {
+              'X-Test': 'yes',
+            },
+          }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+          assert.strictEqual(error.message, 'Invalid URL: missing "//" after protocol');
+          assert.strictEqual(error.config.url, url);
+          assert.strictEqual(error.config.headers.get('X-Test'), 'yes');
+          return true;
+        }
+      );
+    }
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -77,6 +100,40 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(data.xTest, 'okInjected: yes');
       assert.strictEqual(data.injected, null);
     } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should not use inherited Symbol.iterator for request headers', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          authorization: req.headers.authorization,
+          xApp: req.headers['x-app'],
+          xInjected: req.headers['x-injected'] ?? null,
+        })
+      );
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['X-Injected', 'yes'];
+        yield ['Authorization', 'Bearer CHANGED'];
+      };
+
+      const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          Authorization: 'Bearer VALID_USER_TOKEN',
+          'X-App': 'safe',
+        },
+      });
+
+      assert.strictEqual(data.authorization, 'Bearer VALID_USER_TOKEN');
+      assert.strictEqual(data.xApp, 'safe');
+      assert.strictEqual(data.xInjected, null);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
       await stopHTTPServer(server);
     }
   });
@@ -465,13 +522,155 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     try {
       const user = 'foo';
       const headers = { Authorization: 'Bearer 1234' };
-      const res = await axios.get(`http://${user}@localhost:${server.address().port}/`, {
+      const res = await fetchAxios.get(`http://${user}@localhost:${server.address().port}/`, {
         headers,
       });
 
       const base64 = Buffer.from(`${user}:`, 'utf8').toString('base64');
       assert.equal(res.data, `Basic ${base64}`);
     } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should decode basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await fetchAxios.get(
+        `http://my%40email.com:pa%24ss@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('my@email.com:pa$ss', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should UTF-8 encode basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await fetchAxios.get(
+        `http://%E7%94%A8%E6%88%B7:pa%C3%9F@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('\u7528\u6237:pa\u00df', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('keeps malformed URL credentials percent-encoding and does not throw', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await fetchAxios.get(`http://user%:foo%zz@localhost:${server.address().port}/`);
+      const base64 = Buffer.from('user%:foo%zz', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support password-only basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await fetchAxios.get(`http://:secret@localhost:${server.address().port}/`);
+      const base64 = Buffer.from(':secret', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should prefer config auth over basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'config-user', password: 'config-pass' };
+      const response = await fetchAxios.get(
+        `http://url-user:url-pass@localhost:${server.address().port}/`,
+        { auth }
+      );
+      const base64 = Buffer.from('config-user:config-pass', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support basic auth with a header', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const headers = { AuThOrIzAtIoN: 'Bearer 1234' }; // wonky casing to ensure caseless comparison
+      const response = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        auth,
+        headers,
+      });
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should ignore inherited nested auth fields', async () => {
+    const server = await startHTTPServer((req, res) => res.end(req.headers.authorization), {
+      port: SERVER_PORT,
+    });
+
+    Object.defineProperty(Object.prototype, 'username', {
+      value: 'inherited-user',
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'password', {
+      value: 'inherited-pass',
+      configurable: true,
+    });
+
+    try {
+      const response = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        auth: {},
+      });
+
+      assert.strictEqual(response.data, 'Basic Og==');
+    } finally {
+      delete Object.prototype.username;
+      delete Object.prototype.password;
       await stopHTTPServer(server);
     }
   });
@@ -1017,6 +1216,23 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('size limits', () => {
+    const makeUploadStream = (totalBytes, chunkSize = 512) => {
+      let remaining = totalBytes;
+
+      return new ReadableStream({
+        pull(controller) {
+          if (remaining <= 0) {
+            controller.close();
+            return;
+          }
+
+          const size = Math.min(chunkSize, remaining);
+          remaining -= size;
+          controller.enqueue(new Uint8Array(size));
+        },
+      });
+    };
+
     it('should reject an outbound body that exceeds maxBodyLength with ERR_BAD_REQUEST', async () => {
       const server = await startHTTPServer(
         (req, res) => {
@@ -1039,6 +1255,164 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       } finally {
         await stopHTTPServer(server);
       }
+    });
+
+    it('should reject a streamed outbound body that exceeds maxBodyLength during upload', async () => {
+      let bytesReceived = 0;
+      const server = await startHTTPServer(
+        (req, res) => {
+          req.on('data', (chunk) => {
+            bytesReceived += chunk.length;
+          });
+          req.on('error', () => {});
+          req.on('end', () => {
+            res.end('ok');
+          });
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await assert.rejects(
+          fetchAxios.post(`${LOCAL_SERVER_URL}/`, makeUploadStream(2048), {
+            maxBodyLength: 1024,
+            headers: { 'Content-Type': 'application/octet-stream' },
+          }),
+          (err) => {
+            assert.strictEqual(err.code, 'ERR_BAD_REQUEST');
+            assert.strictEqual(err.message, 'Request body larger than maxBodyLength limit');
+            return true;
+          }
+        );
+
+        assert.ok(
+          bytesReceived <= 1024,
+          `server should not receive more than maxBodyLength; got ${bytesReceived}`
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should enforce maxBodyLength on a stream even when a smaller Content-Length is declared', async () => {
+      let bytesReceived = 0;
+      const server = await startHTTPServer(
+        (req, res) => {
+          req.on('data', (chunk) => {
+            bytesReceived += chunk.length;
+          });
+          req.on('error', () => {});
+          req.on('end', () => {
+            res.end('ok');
+          });
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await assert.rejects(
+          // A caller-declared Content-Length that under-reports the real body
+          // must not let an oversized stream slip past the limit.
+          fetchAxios.post(`${LOCAL_SERVER_URL}/`, makeUploadStream(8192), {
+            maxBodyLength: 1024,
+            headers: {
+              'Content-Type': 'application/octet-stream',
+              'Content-Length': '500',
+            },
+          }),
+          (err) => {
+            assert.strictEqual(err.code, 'ERR_BAD_REQUEST');
+            assert.strictEqual(err.message, 'Request body larger than maxBodyLength limit');
+            return true;
+          }
+        );
+
+        assert.ok(
+          bytesReceived <= 1024,
+          `server should not receive more than maxBodyLength; got ${bytesReceived}`
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should enforce maxBodyLength with custom fetch when Request is unavailable', async () => {
+      let bytesRead = 0;
+
+      await assert.rejects(
+        fetchAxios.post('/', makeUploadStream(2048), {
+          maxBodyLength: 1024,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': '1',
+          },
+          env: {
+            Request: null,
+            async fetch(_url, options) {
+              for await (const chunk of options.body) {
+                bytesRead += chunk.byteLength;
+              }
+              return {
+                headers: {},
+                status: 200,
+                statusText: 'OK',
+                text: async () => 'ok',
+              };
+            },
+          },
+        }),
+        (err) => {
+          assert.strictEqual(err.code, 'ERR_BAD_REQUEST');
+          assert.strictEqual(err.message, 'Request body larger than maxBodyLength limit');
+          return true;
+        }
+      );
+
+      assert.ok(bytesRead <= 1024, `custom fetch read too many bytes; got ${bytesRead}`);
+    });
+
+    it('should not force ReadableStream bodies when Request does not support request streams', async () => {
+      let fetchCalled = false;
+
+      class NoStreamRequest {
+        constructor(_url, init) {
+          if (init && utils.isReadableStream(init.body)) {
+            throw new TypeError('ReadableStream request bodies are unsupported');
+          }
+        }
+      }
+
+      await assert.rejects(
+        fetchAxios.post('/', stream.Readable.from([Buffer.alloc(2048)]), {
+          maxBodyLength: 1024,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+          },
+          env: {
+            Request: NoStreamRequest,
+            Response: null,
+            async fetch() {
+              fetchCalled = true;
+              return {
+                headers: {},
+                status: 200,
+                statusText: 'OK',
+                text: async () => 'ok',
+              };
+            },
+          },
+        }),
+        (err) => {
+          assert.strictEqual(err.code, 'ERR_NOT_SUPPORT');
+          assert.strictEqual(
+            err.message,
+            'Stream request bodies are not supported by the current fetch implementation'
+          );
+          return true;
+        }
+      );
+
+      assert.strictEqual(fetchCalled, false, 'fetch must not receive a forced ReadableStream body');
     });
 
     it('should reject a response whose Content-Length exceeds maxContentLength with ERR_BAD_RESPONSE', async () => {
@@ -1065,6 +1439,33 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       } finally {
         await stopHTTPServer(server);
       }
+    });
+
+    it('should handle plain object response headers while enforcing maxContentLength', async () => {
+      const { data, headers } = await fetchAxios.get('/', {
+        maxContentLength: 10,
+        env: {
+          async fetch() {
+            return {
+              status: 200,
+              statusText: 'OK',
+              headers: {
+                'content-length': '4',
+                foo: 'bar',
+              },
+              body: new ReadableStream({
+                start(controller) {
+                  controller.enqueue(new Uint8Array([116, 101, 115, 116]));
+                  controller.close();
+                },
+              }),
+            };
+          },
+        },
+      });
+
+      assert.strictEqual(data, 'test');
+      assert.strictEqual(headers.get('foo'), 'bar');
     });
 
     it('should reject a chunked response that exceeds maxContentLength during streaming', async () => {
@@ -1131,6 +1532,15 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
     });
 
+    it('should allow a percent-encoded data: URL within decoded maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+      const { data } = await bareAxios.get('data:text/plain,%E2%82%AC', {
+        maxContentLength: 4,
+      });
+
+      assert.strictEqual(data, '\u20ac');
+    });
+
     it('should allow a response at or below maxContentLength', async () => {
       const payload = 'ok';
       const server = await startHTTPServer(
@@ -1145,6 +1555,38 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           maxContentLength: 1024,
         });
         assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should allow a streamed outbound body at or below maxBodyLength', async () => {
+      const payloadLength = 1024;
+      let bytesReceived = 0;
+      const server = await startHTTPServer(
+        (req, res) => {
+          req.on('data', (chunk) => {
+            bytesReceived += chunk.length;
+          });
+          req.on('end', () => {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ received: bytesReceived }));
+          });
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const { data } = await fetchAxios.post(
+          `${LOCAL_SERVER_URL}/`,
+          makeUploadStream(payloadLength),
+          {
+            maxBodyLength: 1024,
+            headers: { 'Content-Type': 'application/octet-stream' },
+          }
+        );
+
+        assert.strictEqual(data.received, payloadLength);
       } finally {
         await stopHTTPServer(server);
       }

@@ -58,6 +58,81 @@ describe('utils::isX', () => {
     expect(utils.isPlainObject(Object.create({}))).toEqual(false);
   });
 
+  it('should ignore inherited symbol properties when validating plain Object', () => {
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['x-injected', 'yes'];
+      };
+      Object.prototype[Symbol.toStringTag] = 'Custom';
+
+      expect(utils.isPlainObject({})).toEqual(true);
+      expect(utils.isPlainObject([])).toEqual(false);
+      expect(
+        utils.isPlainObject({
+          [Symbol.iterator]: function* () {
+            yield ['x-own', 'yes'];
+          },
+        })
+      ).toEqual(false);
+      expect(
+        utils.isPlainObject({
+          [Symbol.toStringTag]: 'Custom',
+        })
+      ).toEqual(false);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+      delete Object.prototype[Symbol.toStringTag];
+    }
+  });
+
+  it('should treat an object with a genuinely inherited iterator as non-plain', () => {
+    // Iterator inherited from a custom (non-Object.prototype) source: this is a
+    // real iterable, not prototype pollution, so it must not be classified plain.
+    const proto = Object.create(null);
+    proto[Symbol.iterator] = function* () {
+      yield ['x', '1'];
+    };
+
+    expect(utils.isPlainObject(Object.create(proto))).toEqual(false);
+  });
+
+  it('should not read polluted Object.prototype iterator accessors for safe iterable checks', () => {
+    let accessed = false;
+
+    try {
+      Object.defineProperty(Object.prototype, Symbol.iterator, {
+        configurable: true,
+        get() {
+          accessed = true;
+          throw new Error('polluted iterator accessor');
+        }
+      });
+
+      expect(utils.isSafeIterable({})).toEqual(false);
+      expect(accessed).toEqual(false);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should stop safe prototype-chain reads on cyclic Proxy prototypes', () => {
+    let calls = 0;
+    let proxy;
+    proxy = new Proxy({}, {
+      getPrototypeOf() {
+        calls += 1;
+        if (calls > 5) {
+          throw new Error('cycled');
+        }
+        return proxy;
+      }
+    });
+
+    expect(utils.hasOwnInPrototypeChain(proxy, 'missing')).toEqual(false);
+    expect(utils.getSafeProp(proxy, 'missing')).toEqual(undefined);
+    expect(calls).toBeLessThanOrEqual(2);
+  });
+
   it('should validate Date', () => {
     expect(utils.isDate(new Date())).toEqual(true);
     expect(utils.isDate(Date.now())).toEqual(false);

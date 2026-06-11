@@ -66,7 +66,9 @@ declare class AxiosHeaders {
     ...targets: Array<AxiosHeaders | axios.RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
-  toJSON(asStrings?: boolean): axios.RawAxiosHeaders;
+  toJSON(asStrings: true): Record<string, string>;
+  toJSON(asStrings?: false): Record<string, string | string[]>;
+  toJSON(asStrings?: boolean): Record<string, string | string[]>;
 
   static from(thing?: AxiosHeaders | axios.RawAxiosHeaders | string): AxiosHeaders;
 
@@ -395,6 +397,7 @@ declare namespace axios {
     clarifyTimeoutError?: boolean;
     legacyInterceptorReqResOrdering?: boolean;
     advertiseZstdAcceptEncoding?: boolean;
+    validateStatusUndefinedResolves?: boolean;
   }
 
   interface GenericAbortSignal {
@@ -557,6 +560,7 @@ declare namespace axios {
     };
     formDataHeaderPolicy?: 'legacy' | 'content-only';
     redact?: string[];
+    sensitiveHeaders?: string[];
   }
 
   // Alias
@@ -694,7 +698,7 @@ declare namespace axios {
     CanceledError: typeof CanceledError;
     HttpStatusCode: typeof HttpStatusCode;
     readonly VERSION: string;
-    isCancel(value: any): value is Cancel;
+    isCancel<T = any>(value: any): value is CanceledError<T>;
     all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
     spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;

@@ -9,6 +9,8 @@ formData.append('foo', 'bar');
 axios.post('https://httpbin.org/post', formData);
 ```
 
+对于浏览器、Web Worker 或 React Native 的 `FormData`，不要手动设置 `Content-Type` 请求头；这些运行时会自行添加 multipart boundary。
+
 在 Node.js 中，可以使用 `form-data` 库，如下所示：
 
 ```js

@@ -12,6 +12,8 @@ const instance = axios.create({
 
 该适配器支持与 `xhr` 适配器相同的功能，包括上传和下载进度捕获，还支持额外的响应类型，如 `stream` 和 `formdata`（如果环境支持）。
 
+当省略 `auth` 时，fetch 适配器可以从请求 URL 中读取 HTTP Basic 认证凭据，例如 `https://user:pass@example.com`。生成 `Authorization` 请求头前会先解码 URL 中经过百分号编码的凭据，并且 `auth` 优先于 URL 中的凭据。
+
 ## 自定义 fetch <Badge type="tip" text="v1.12.0+" />
 
 从 `v1.12.0` 起，你可以自定义 fetch 适配器，使用自定义的 `fetch` 函数代替环境全局的 `fetch`。可以通过 `env` 配置选项传入自定义的 `fetch` 函数、`Request` 和 `Response` 构造函数。这在使用提供了自己 `fetch` 实现的自定义环境或应用框架时非常实用。

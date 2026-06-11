@@ -28,6 +28,7 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.baseURL;
     delete Object.prototype.socketPath;
     delete Object.prototype.beforeRedirect;
+    delete Object.prototype.sensitiveHeaders;
     delete Object.prototype.insecureHTTPParser;
     delete Object.prototype.adapter;
     delete Object.prototype.httpAgent;
@@ -492,6 +493,34 @@ describe('Prototype Pollution Protection', () => {
         const res = await axios.get(`http://127.0.0.1:${redirectorPort}/start`);
         assert.strictEqual(res.status, 200);
         assert.strictEqual(hijackCalled, false);
+      } finally {
+        await stopServer(redirector);
+        await stopServer(target);
+      }
+    }, 10000);
+
+    it('should not pick up Object.prototype.sensitiveHeaders during redirects', async () => {
+      Object.prototype.sensitiveHeaders = ['X-Secret'];
+      let capturedHeaders;
+
+      const target = await startServer((req, res) => {
+        capturedHeaders = req.headers;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"ok":true}');
+      });
+      const { port: targetPort } = target.address();
+
+      const redirector = await startServer((req, res) => {
+        res.writeHead(302, { Location: `http://127.0.0.1:${targetPort}/final` });
+        res.end();
+      });
+      const { port: redirectorPort } = redirector.address();
+
+      try {
+        await axios.get(`http://127.0.0.1:${redirectorPort}/start`, {
+          headers: { 'X-Secret': 'keep' },
+        });
+        assert.strictEqual(capturedHeaders['x-secret'], 'keep');
       } finally {
         await stopServer(redirector);
         await stopServer(target);

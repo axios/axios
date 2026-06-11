@@ -47,7 +47,9 @@ export class AxiosHeaders {
     ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
-  toJSON(asStrings?: boolean): RawAxiosHeaders;
+  toJSON(asStrings: true): Record<string, string>;
+  toJSON(asStrings?: false): Record<string, string | string[]>;
+  toJSON(asStrings?: boolean): Record<string, string | string[]>;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
 
@@ -282,6 +284,7 @@ export interface TransitionalOptions {
   clarifyTimeoutError?: boolean;
   legacyInterceptorReqResOrdering?: boolean;
   advertiseZstdAcceptEncoding?: boolean;
+  validateStatusUndefinedResolves?: boolean;
 }
 
 export interface GenericAbortSignal {
@@ -450,6 +453,7 @@ export interface AxiosRequestConfig<D = any> {
   };
   formDataHeaderPolicy?: 'legacy' | 'content-only';
   redact?: string[];
+  sensitiveHeaders?: string[];
 }
 
 // Alias

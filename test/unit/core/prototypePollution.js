@@ -20,6 +20,7 @@ describe("Prototype Pollution Protection", function () {
     delete Object.prototype.get;
     delete Object.prototype.post;
     delete Object.prototype.set;
+    delete Object.prototype.data;
   }
 
   // Defensive: clear before and after each test so pollution leaking from
@@ -410,6 +411,28 @@ describe("Prototype Pollution Protection", function () {
       });
 
       instance.get("/users").then(function () {
+        done();
+      }).catch(done);
+    });
+
+    it("should not copy inherited data into bodyless request aliases", function (done) {
+      var axios = require("../../../index");
+
+      Object.prototype.data = "polluted";
+
+      axios.get("/users", {
+        adapter: function adapter(config) {
+          assert.strictEqual(config.data, undefined);
+
+          return Promise.resolve({
+            data: null,
+            status: 200,
+            statusText: "OK",
+            headers: {},
+            config: config,
+          });
+        },
+      }).then(function () {
         done();
       }).catch(done);
     });

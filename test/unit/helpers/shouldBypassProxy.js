@@ -72,6 +72,19 @@ describe('helpers::shouldBypassProxy', function () {
     assert.strictEqual(shouldBypassProxy('http://127.0.0.1:8081/'), false);
   });
 
+  it('should treat 0.0.0.0 as a local address for no_proxy matching', function () {
+    setNoProxy('localhost,127.0.0.1,::1');
+
+    assert.strictEqual(shouldBypassProxy('http://0.0.0.0:8080/'), true);
+  });
+
+  it('should keep 0.0.0.0 no_proxy matching port-aware', function () {
+    setNoProxy('localhost:8080');
+
+    assert.strictEqual(shouldBypassProxy('http://0.0.0.0:8080/'), true);
+    assert.strictEqual(shouldBypassProxy('http://0.0.0.0:8081/'), false);
+  });
+
   it('should bypass proxy for IPv4-mapped IPv6 loopback when IPv4 is listed', function () {
     setNoProxy('127.0.0.1');
 

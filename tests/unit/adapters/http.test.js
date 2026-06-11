@@ -5847,6 +5847,28 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    it('ignores a prototype-polluted socketPath (security, regression #6611)', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      // Pollute the prototype so `socketPath` is visible via the chain but is
+      // NOT an own property of the request config.
+      Object.prototype.socketPath = socketPath;
+      try {
+        // With no own socketPath, the polluted prototype value must not be
+        // honored: the path-only url gets no synthetic base and the request is
+        // never routed to the (attacker-controlled) socket, so it rejects
+        // instead of silently connecting.
+        await assert.rejects(axios.get('/echo?q=1'), (err) => {
+          assert.ok(err instanceof Error);
+          assert.notStrictEqual(err.code, undefined);
+          return true;
+        });
+      } finally {
+        delete Object.prototype.socketPath;
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
     it('allows socketPath when it matches an allowedSocketPaths string', async () => {
       const socketPath = makeSocketPath();
       const server = await startUnixServer(socketPath);

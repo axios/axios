@@ -32,6 +32,10 @@ describe("supports http with nodejs", function () {
     delete Object.prototype.common;
     delete Object.prototype.get;
     delete Object.prototype.post;
+    delete Object.prototype.proxy;
+    delete Object.prototype.paramsSerializer;
+    delete Object.prototype.serialize;
+    delete Object.prototype.encode;
   }
 
   // Defensive: clear before each test in case another suite left pollution.
@@ -757,6 +761,55 @@ describe("supports http with nodejs", function () {
           .then(function (res) {
             var base64 = Buffer.from("foo:bar", "utf8").toString("base64");
             assert.equal(res.data, "Basic " + base64);
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should normalize nullish own basic auth credentials to empty strings", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.end(req.headers.authorization);
+      })
+      .listen(4444, function () {
+        axios
+          .get("http://localhost:4444/", {
+            auth: {
+              username: undefined,
+              password: null,
+            },
+          })
+          .then(function (res) {
+            assert.equal(res.data, "Basic " + Buffer.from(":", "utf8").toString("base64"));
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should not use inherited basic auth credentials after config cloning", function (done) {
+    Object.prototype.username = "polluted-user";
+    Object.prototype.password = "polluted-pass";
+
+    server = http
+      .createServer(function (req, res) {
+        res.end(req.headers.authorization || "");
+      })
+      .listen(4444, function () {
+        var instance = axios.create();
+        var polluted = "Basic " + Buffer.from("polluted-user:polluted-pass", "utf8").toString("base64");
+
+        instance.interceptors.request.use(function (config) {
+          var clone = Object.assign({}, config);
+          clone.auth = {};
+          return clone;
+        });
+
+        instance
+          .get("http://localhost:4444/")
+          .then(function (res) {
+            assert.notStrictEqual(res.data, polluted);
             done();
           })
           .catch(done);
@@ -1692,6 +1745,39 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  it("should not use proxy for 0.0.0.0 when no_proxy is localhost", function (done) {
+    var proxyRequests = 0;
+
+    server = http
+      .createServer(function (req, res) {
+        res.end("bypassed");
+      })
+      .listen(4444, "0.0.0.0", function () {
+        proxy = http
+          .createServer(function (req, res) {
+            proxyRequests += 1;
+            res.end("proxied");
+          })
+          .listen(4000, function () {
+            process.env.http_proxy = "http://localhost:4000/";
+            process.env.no_proxy = "localhost,127.0.0.1,::1";
+
+            axios
+              .get("http://0.0.0.0:4444/")
+              .then(function (res) {
+                assert.equal(res.data, "bypassed");
+                assert.equal(
+                  proxyRequests,
+                  0,
+                  "should not use proxy for 0.0.0.0",
+                );
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
   it("should not use proxy for [::1] when no_proxy is localhost", function (done) {
     var proxyRequests = 0;
 
@@ -1948,6 +2034,84 @@ describe("supports http with nodejs", function () {
               })
               .catch(done);
           });
+      });
+  });
+
+  it("should not use inherited proxy after request interceptor clones config", function (done) {
+    var proxyRequests = 0;
+
+    process.env.no_proxy = "localhost,127.0.0.1,::1";
+
+    server = http
+      .createServer(function (req, res) {
+        res.end("target");
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (req, res) {
+            proxyRequests += 1;
+            res.end("proxy");
+          })
+          .listen(4000, function () {
+            Object.prototype.proxy = {
+              protocol: "http",
+              host: "localhost",
+              port: 4000,
+            };
+
+            var instance = axios.create();
+
+            instance.interceptors.request.use(function (config) {
+              var clone = Object.assign({}, config);
+              clone.headers = Object.assign({}, config.headers);
+              return clone;
+            });
+
+            instance
+              .get("http://localhost:4444/secret", {
+                headers: {
+                  Authorization: "Bearer test",
+                },
+              })
+              .then(function (res) {
+                assert.equal(res.data, "target");
+                assert.equal(proxyRequests, 0);
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should not use inherited paramsSerializer after request interceptor clones config", function (done) {
+    Object.prototype.paramsSerializer = {
+      serialize: function serialize() {
+        return "polluted=1";
+      },
+    };
+
+    server = http
+      .createServer(function (req, res) {
+        res.end(req.url);
+      })
+      .listen(4444, function () {
+        var instance = axios.create();
+
+        instance.interceptors.request.use(function (config) {
+          return Object.assign({}, config);
+        });
+
+        instance
+          .get("http://localhost:4444/demo", {
+            params: {
+              safe: "1",
+            },
+          })
+          .then(function (res) {
+            assert.equal(res.data, "/demo?safe=1");
+            done();
+          })
+          .catch(done);
       });
   });
 

@@ -767,6 +767,27 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  it("should normalize nullish own basic auth credentials to empty strings", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.end(req.headers.authorization);
+      })
+      .listen(4444, function () {
+        axios
+          .get("http://localhost:4444/", {
+            auth: {
+              username: undefined,
+              password: null,
+            },
+          })
+          .then(function (res) {
+            assert.equal(res.data, "Basic " + Buffer.from(":", "utf8").toString("base64"));
+            done();
+          })
+          .catch(done);
+      });
+  });
+
   it("should not use inherited basic auth credentials after config cloning", function (done) {
     Object.prototype.username = "polluted-user";
     Object.prototype.password = "polluted-pass";

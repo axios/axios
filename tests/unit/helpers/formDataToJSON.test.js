@@ -161,4 +161,31 @@ describe('formDataToJSON', () => {
 
     expect(value).toBe('123');
   });
+
+  // https://github.com/axios/axios/issues/5402
+  it('should not split keys on characters other than brackets and dots', () => {
+    const formData = new FormData();
+
+    formData.append('user-name', 'johndoe');
+    formData.append('first name', 'john');
+    formData.append('a+b', 'plus');
+
+    expect(formDataToJSON(formData)).toEqual({
+      'user-name': 'johndoe',
+      'first name': 'john',
+      'a+b': 'plus',
+    });
+  });
+
+  it('should still split bracket and dot notation', () => {
+    const formData = new FormData();
+
+    formData.append('foo[bar-baz]', '1');
+    formData.append('a.b-c', '2');
+
+    expect(formDataToJSON(formData)).toEqual({
+      foo: { 'bar-baz': '1' },
+      a: { 'b-c': '2' },
+    });
+  });
 });

@@ -265,9 +265,33 @@ axios.get('/user/12345', {
 
 The `validateStatus` function allows you to override the default status code validation. By default, axios will reject the promise if the status code is not in the range of 200-299. You can override this behavior by providing a custom `validateStatus` function. The function should return `true` if the status code is within the range you want to accept.
 
+By default, explicit `validateStatus: undefined` keeps legacy behavior and resolves every response status because `transitional.validateStatusUndefinedResolves` defaults to `true`. Set `transitional.validateStatusUndefinedResolves` to `false` when you want an explicit `validateStatus: undefined` to behave as if `validateStatus` was omitted, so axios uses the configured/default validator and rejects non-2xx responses by default.
+
+`validateStatus: null` still accepts every response status. If you disable the transitional behavior and intentionally want all statuses to resolve, use `validateStatus: null` or a validator that returns `true`.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false
+  }
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="Node.js only" />
 
 The `maxRedirects` property defines the maximum number of redirects to follow. If set to 0, no redirects will be followed.
+
+### `sensitiveHeaders` <Badge type="warning" text="Node.js only" />
+
+The `sensitiveHeaders` property is an optional array of custom secret-bearing header names, such as `X-API-Key`, that the Node.js HTTP adapter removes when following a redirect to a different origin. Matching is case-insensitive. Same-origin redirects keep these headers. If `maxRedirects` is `0`, axios does not follow redirects and `sensitiveHeaders` is not used.
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key']
+});
+```
 
 ### `beforeRedirect`
 
@@ -381,6 +405,7 @@ The `transitional` property allows you to enable or disable certain transitional
 
 - `forcedJSONParsing`: Forces axios to parse the response string as JSON even if `responseType` is not `'json'`.
 - `clarifyTimeoutError`: Clarifies the error message when a request times out. This is useful when you are debugging timeout issues.
+- `validateStatusUndefinedResolves`: If set to `true` _(default)_, explicit `validateStatus: undefined` resolves every response status for backward compatibility. Set to `false` to treat explicit `undefined` as if `validateStatus` was omitted, so axios uses the configured/default validator. Use `validateStatus: null` or a validator that returns `true` when you intentionally want all statuses to resolve.
 - `advertiseZstdAcceptEncoding`: When set to `true`, axios adds `zstd` to the default `Accept-Encoding` request header when the current Node.js runtime supports zstd decompression. zstd responses are still decompressed automatically when supported and `decompress` is `true`.
 - `legacyInterceptorReqResOrdering`: When set to true we will use the legacy interceptor request/response ordering.
 
@@ -477,6 +502,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -507,6 +533,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
     advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },

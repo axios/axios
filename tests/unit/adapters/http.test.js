@@ -10,7 +10,7 @@ import {
 } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
-import { __isSameOriginRedirect, __setProxy } from '../../../lib/adapters/http.js';
+import httpAdapter, { __isSameOriginRedirect, __setProxy } from '../../../lib/adapters/http.js';
 import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
@@ -1338,6 +1338,158 @@ describe('supports http with nodejs', () => {
       const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
     } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should ignore inherited nested request option fields in http adapter', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            authorization: req.headers.authorization,
+            url: req.url,
+          })
+        );
+      },
+      { port: SERVER_PORT }
+    );
+
+    Object.defineProperty(Object.prototype, 'username', {
+      value: 'inherited-user',
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'password', {
+      value: 'inherited-pass',
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'serialize', {
+      value() {
+        return 'inherited=1';
+      },
+      configurable: true,
+    });
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/demo`, {
+        auth: {},
+        params: { value: 'a b' },
+        paramsSerializer: {},
+      });
+
+      assert.deepStrictEqual(response.data, {
+        authorization: 'Basic Og==',
+        url: '/demo?value=a+b',
+      });
+    } finally {
+      delete Object.prototype.username;
+      delete Object.prototype.password;
+      delete Object.prototype.serialize;
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should ignore inherited proxy when http adapter receives a plain config', async () => {
+    const proxyEnvKeys = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY'];
+    const originalProxyEnv = Object.create(null);
+    let proxy;
+    let target;
+    let proxyHits = 0;
+    let targetHits = 0;
+
+    for (const key of proxyEnvKeys) {
+      originalProxyEnv[key] = process.env[key];
+      delete process.env[key];
+    }
+
+    try {
+      proxy = await startHTTPServer((req, res) => {
+        proxyHits += 1;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ via: 'proxy', url: req.url }));
+      });
+
+      target = await startHTTPServer((req, res) => {
+        targetHits += 1;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ via: 'target', url: req.url }));
+      });
+
+      Object.defineProperty(Object.prototype, 'proxy', {
+        value: {
+          protocol: 'http',
+          host: '127.0.0.1',
+          port: proxy.address().port,
+        },
+        configurable: true,
+      });
+
+      const response = await httpAdapter({
+        method: 'get',
+        url: `http://127.0.0.1:${target.address().port}/direct`,
+        headers: {},
+        maxRedirects: 0,
+        maxContentLength: -1,
+        maxBodyLength: -1,
+        timeout: 0,
+      });
+      const data = JSON.parse(response.data);
+
+      assert.strictEqual(proxyHits, 0);
+      assert.strictEqual(targetHits, 1);
+      assert.deepStrictEqual(data, { via: 'target', url: '/direct' });
+    } finally {
+      delete Object.prototype.proxy;
+
+      for (const key of proxyEnvKeys) {
+        if (originalProxyEnv[key] === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = originalProxyEnv[key];
+        }
+      }
+
+      await stopHTTPServer(target);
+      await stopHTTPServer(proxy);
+    }
+  });
+
+  it('should ignore inherited paramsSerializer when http adapter receives a plain config', async () => {
+    let server;
+    let serializerInvoked = false;
+
+    Object.defineProperty(Object.prototype, 'paramsSerializer', {
+      value() {
+        serializerInvoked = true;
+        return 'inherited=1';
+      },
+      configurable: true,
+    });
+
+    try {
+      server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ url: req.url }));
+      });
+
+      const response = await httpAdapter({
+        method: 'get',
+        url: `http://127.0.0.1:${server.address().port}/direct`,
+        headers: {},
+        params: { value: 'a b' },
+        proxy: false,
+        maxRedirects: 0,
+        maxContentLength: -1,
+        maxBodyLength: -1,
+        timeout: 0,
+      });
+      const data = JSON.parse(response.data);
+
+      assert.strictEqual(serializerInvoked, false);
+      assert.deepStrictEqual(data, { url: '/direct?value=a+b' });
+    } finally {
+      delete Object.prototype.paramsSerializer;
       await stopHTTPServer(server);
     }
   });
@@ -3708,6 +3860,28 @@ describe('supports http with nodejs', () => {
     });
   });
 
+  it('rejects malformed HTTP URLs before Node URL normalization and preserves config', async () => {
+    for (const url of ['\u0000https:example.com/users', 'h\nttp:example.com/users']) {
+      await assert.rejects(
+        () =>
+          axios.get(url, {
+            adapter: 'http',
+            headers: {
+              'X-Test': 'yes',
+            },
+          }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+          assert.strictEqual(error.message, 'Invalid URL: missing "//" after protocol');
+          assert.strictEqual(error.config.url, url);
+          assert.strictEqual(error.config.headers.get('X-Test'), 'yes');
+          return true;
+        }
+      );
+    }
+  });
+
   it('should supply a user-agent if one is not specified', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -3941,6 +4115,60 @@ describe('supports http with nodejs', () => {
     describe('prototype pollution', () => {
       const pollutedKeys = ['getHeaders', 'append', 'pipe', 'on', 'once'];
       const toStringTagSym = Symbol.toStringTag;
+
+      it('should not use inherited Symbol.iterator for request or response headers', async () => {
+        let capturedHeaders;
+        const stubTransport = {
+          request(options, handleResponse) {
+            capturedHeaders = { ...options.headers };
+            const req = new EventEmitter();
+            req.write = () => true;
+            req.setTimeout = () => {};
+            req.destroy = () => {};
+            req.end = () => {
+              const res = new stream.Readable({ read() {} });
+              res.statusCode = 200;
+              res.statusMessage = 'OK';
+              res.headers = { 'x-server': 'real' };
+              res.rawHeaders = [];
+              res.req = req;
+              process.nextTick(() => {
+                handleResponse(res);
+                res.push(null);
+              });
+            };
+            return req;
+          },
+        };
+
+        try {
+          Object.prototype[Symbol.iterator] = function* () {
+            yield ['X-Injected', 'yes'];
+            yield ['Authorization', 'Bearer CHANGED'];
+          };
+
+          const response = await axios.get('http://stub.invalid/', {
+            headers: {
+              Authorization: 'Bearer VALID_USER_TOKEN',
+              'X-App': 'safe',
+            },
+            transport: stubTransport,
+            maxRedirects: 0,
+          });
+
+          assert.ok(capturedHeaders, 'transport was not invoked');
+          assert.strictEqual(capturedHeaders['X-App'], 'safe');
+          assert.strictEqual(
+            capturedHeaders.Authorization || capturedHeaders.authorization,
+            'Bearer VALID_USER_TOKEN'
+          );
+          assert.strictEqual(capturedHeaders['X-Injected'] || capturedHeaders['x-injected'], undefined);
+          assert.strictEqual(response.headers.get('x-server'), 'real');
+          assert.strictEqual(response.headers.get('x-injected'), undefined);
+        } finally {
+          delete Object.prototype[Symbol.iterator];
+        }
+      });
 
       function pollute() {
         Object.prototype[toStringTagSym] = 'FormData';
@@ -4967,6 +5195,55 @@ describe('supports http with nodejs', () => {
         const { data } = await http2Axios.post(localServerURL, payload);
         assert.deepStrictEqual(data, payload);
       } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should enforce maxBodyLength for HTTP/2 streamed uploads', async () => {
+      let bytesReceived = 0;
+      const server = await startHTTPServer(
+        (req, res) => {
+          req.on('data', (chunk) => {
+            bytesReceived += chunk.length;
+          });
+          req.on('error', () => {});
+          req.on('end', () => {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ received: bytesReceived }));
+          });
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+
+      try {
+        const localServerURL = `https://localhost:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+        const payload = Buffer.alloc(2 * 1024 * 1024, 0x63);
+        const source = stream.Readable.from([payload]);
+
+        await assert.rejects(
+          http2Axios.post(localServerURL, source, {
+            maxBodyLength: 1024,
+            headers: { 'Content-Type': 'application/octet-stream' },
+          }),
+          (error) => {
+            assert.strictEqual(error.message, 'Request body larger than maxBodyLength limit');
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+            return true;
+          }
+        );
+
+        assert.ok(
+          bytesReceived <= 1024 * 4,
+          `server should not receive full payload; got ${bytesReceived}`
+        );
+      } finally {
+        if (server.closeAllSessions) {
+          server.closeAllSessions();
+        }
         await stopHTTPServer(server);
       }
     });

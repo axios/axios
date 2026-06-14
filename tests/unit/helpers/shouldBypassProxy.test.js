@@ -66,6 +66,66 @@ describe('helpers::shouldBypassProxy', () => {
     expect(shouldBypassProxy('http://localhost:7777/')).toBe(true);
   });
 
+  it('should bypass proxy for 0.0.0.0 when no_proxy contains a local entry', () => {
+    for (const entry of ['localhost', '127.0.0.1', '::1']) {
+      setNoProxy(entry);
+
+      expect(shouldBypassProxy('http://0.0.0.0:7777/')).toBe(true);
+    }
+  });
+
+  it('should respect explicit ports for 0.0.0.0 local matching', () => {
+    setNoProxy('localhost:8080');
+
+    expect(shouldBypassProxy('http://0.0.0.0:8080/')).toBe(true);
+    expect(shouldBypassProxy('http://0.0.0.0:9090/')).toBe(false);
+  });
+
+  it('should bypass proxy for the IPv6 unspecified address symmetrically with 0.0.0.0', () => {
+    for (const entry of ['localhost', '127.0.0.1', '::1']) {
+      setNoProxy(entry);
+
+      expect(shouldBypassProxy('http://[::]:7777/')).toBe(true);
+      expect(shouldBypassProxy('http://[0:0:0:0:0:0:0:0]:7777/')).toBe(true);
+    }
+  });
+
+  it('should bypass proxy for compressed IPv6 unspecified request forms', () => {
+    setNoProxy('localhost,127.0.0.1,::1');
+
+    for (const host of ['0::', '::0', '0:0::', '::0:0', '0::0']) {
+      expect(shouldBypassProxy(`http://[${host}]:7777/`)).toBe(true);
+    }
+  });
+
+  it('should bypass proxy for compressed IPv6 unspecified no_proxy entries', () => {
+    for (const entry of ['0::', '::0', '0:0::', '::0:0', '0::0']) {
+      setNoProxy(entry);
+
+      expect(shouldBypassProxy('http://[::]:7777/')).toBe(true);
+      expect(shouldBypassProxy('http://[0:0:0:0:0:0:0:0]:7777/')).toBe(true);
+    }
+  });
+
+  it('should respect explicit ports on compressed IPv6 unspecified no_proxy entries', () => {
+    setNoProxy('[0::]:8080');
+
+    expect(shouldBypassProxy('http://[::]:8080/')).toBe(true);
+    expect(shouldBypassProxy('http://[::]:9090/')).toBe(false);
+  });
+
+  it('should not treat nonzero compressed IPv6 addresses as unspecified', () => {
+    setNoProxy('0::2');
+
+    expect(shouldBypassProxy('http://[::]:7777/')).toBe(false);
+  });
+
+  it('should still route a real public IPv6 host through the proxy', () => {
+    setNoProxy('localhost');
+
+    expect(shouldBypassProxy('http://[2001:db8::1]:7777/')).toBe(false);
+  });
+
   it('should match wildcard and explicit ports', () => {
     setNoProxy('*.example.com,localhost:8080');
 

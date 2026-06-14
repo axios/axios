@@ -125,6 +125,30 @@ describe('basicAuth (vitest browser)', () => {
     await flushSuccess(request, promise);
   });
 
+  it('should ignore inherited nested auth fields', async () => {
+    Object.defineProperty(Object.prototype, 'username', {
+      value: 'inherited-user',
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'password', {
+      value: 'inherited-pass',
+      configurable: true,
+    });
+
+    try {
+      const { request, promise } = startRequest('/foo', {
+        auth: {},
+      });
+
+      expect(request.requestHeaders.Authorization).toBe('Basic Og==');
+
+      await flushSuccess(request, promise);
+    } finally {
+      delete Object.prototype.username;
+      delete Object.prototype.password;
+    }
+  });
+
   it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters in username', async () => {
     await expect(axios('/foo', {
       auth: {

@@ -6170,11 +6170,16 @@ describe('supports http with nodejs', () => {
       );
     });
 
-    it('should not throw TypeError when a proxy agent stream does not define setKeepAlive (regression #10917)', async () => {
+    it('should not throw TypeError when a proxy agent stream does not define setKeepAlive (regression #10908)', async () => {
       // proxy agents (e.g. agent-base) may provide a generic Duplex stream as
       // the socket; that stream does not define setKeepAlive.
-      const socket = new EventEmitter();
-      // intentionally omit socket.setKeepAlive
+      const socket = new stream.Duplex({
+        read() {},
+        write(_chunk, _encoding, callback) {
+          callback();
+        },
+      });
+      assert.strictEqual(typeof socket.setKeepAlive, 'undefined');
 
       const transport = {
         request(_, cb) {

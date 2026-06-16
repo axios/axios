@@ -6316,9 +6316,10 @@ describe('supports http with nodejs', () => {
         : path.join(os.tmpdir(), `${pipe}.sock`);
     }
 
-    function startUnixServer(socketPath) {
+    function startUnixServer(socketPath, onRequest) {
       return new Promise((resolveStart, rejectStart) => {
         const server = http.createServer((req, res) => {
+          onRequest && onRequest(req);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ ok: true, url: req.url }));
         });
@@ -6370,9 +6371,28 @@ describe('supports http with nodejs', () => {
       }
     });
 
-    it('ignores a prototype-polluted socketPath (security, regression #6611)', async () => {
+    it('accepts a path-only url when socketPath matches allowedSocketPaths', async () => {
       const socketPath = makeSocketPath();
       const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('/echo?q=1', {
+          socketPath,
+          allowedSocketPaths: [socketPath],
+        });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.ok, true);
+        assert.strictEqual(res.data.url, '/echo?q=1');
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('ignores a prototype-polluted socketPath (security, regression #6611)', async () => {
+      const socketPath = makeSocketPath();
+      let requestCount = 0;
+      const server = await startUnixServer(socketPath, () => {
+        requestCount += 1;
+      });
       // Pollute the prototype so `socketPath` is visible via the chain but is
       // NOT an own property of the request config.
       Object.prototype.socketPath = socketPath;
@@ -6383,9 +6403,10 @@ describe('supports http with nodejs', () => {
         // instead of silently connecting.
         await assert.rejects(axios.get('/echo?q=1'), (err) => {
           assert.ok(err instanceof Error);
-          assert.notStrictEqual(err.code, undefined);
+          assert.strictEqual(err.code, AxiosError.ERR_INVALID_URL);
           return true;
         });
+        assert.strictEqual(requestCount, 0);
       } finally {
         delete Object.prototype.socketPath;
         await stopUnixServer(server, socketPath);

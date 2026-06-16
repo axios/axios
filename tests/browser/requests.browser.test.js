@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import axios from '../../index.js';
+import AxiosError from '../../lib/core/AxiosError.js';
 
 class MockXMLHttpRequest {
   constructor() {
@@ -222,6 +223,27 @@ describe('requests (vitest browser)', () => {
     expect(reason.request).toBeInstanceOf(MockXMLHttpRequest);
   });
 
+  it('rejects malformed HTTP URLs before opening an XHR request', async () => {
+    const openSpy = vi.spyOn(MockXMLHttpRequest.prototype, 'open');
+
+    const reason = await axios
+      .get('\u0000https:example.com/users', {
+        adapter: 'xhr',
+        headers: {
+          'X-Test': 'yes',
+        },
+      })
+      .catch((error) => error);
+
+    expect(reason).toBeInstanceOf(AxiosError);
+    expect(reason.code).toBe(AxiosError.ERR_INVALID_URL);
+    expect(reason.message).toBe('Invalid URL: missing "//" after protocol');
+    expect(reason.config.url).toBe('\u0000https:example.com/users');
+    expect(reason.config.headers.get('X-Test')).toBe('yes');
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(requests).toHaveLength(0);
+  });
+
   it('should reject on abort', async () => {
     const { request, promise } = startRequest('/foo');
 
@@ -283,13 +305,30 @@ describe('requests (vitest browser)', () => {
     await expect(promise).resolves.toBeDefined();
   });
 
-  it('should resolve when validateStatus is undefined', async () => {
+  it('should resolve when validateStatus is undefined by default', async () => {
     const { request, promise } = startRequest('/foo', {
       validateStatus: undefined,
     });
 
     request.respondWith({ status: 500 });
     await expect(promise).resolves.toBeDefined();
+  });
+
+  // https://github.com/axios/axios/issues/6688
+  it('should reject when validateStatus is undefined and the transitional option is disabled', async () => {
+    const { request, promise } = startRequest('/foo', {
+      validateStatus: undefined,
+      transitional: { validateStatusUndefinedResolves: false },
+    });
+
+    request.respondWith({ status: 500 });
+    const reason = await promise.catch((error) => error);
+
+    expect(reason).toBeInstanceOf(Error);
+    expect(reason.message).toBe('Request failed with status code 500');
+    expect(reason.config.method).toBe('get');
+    expect(reason.config.url).toBe('/foo');
+    expect(reason.response.status).toBe(500);
   });
 
   // https://github.com/axios/axios/issues/378

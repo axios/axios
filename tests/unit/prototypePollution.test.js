@@ -7,6 +7,7 @@ import mergeConfig from '../../lib/core/mergeConfig.js';
 import defaults from '../../lib/defaults/index.js';
 import AxiosError from '../../lib/core/AxiosError.js';
 import AxiosHeaders from '../../lib/core/AxiosHeaders.js';
+import resolveConfig from '../../lib/helpers/resolveConfig.js';
 import axios from '../../index.js';
 
 describe('Prototype Pollution Protection', () => {
@@ -27,6 +28,7 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.baseURL;
     delete Object.prototype.socketPath;
     delete Object.prototype.beforeRedirect;
+    delete Object.prototype.sensitiveHeaders;
     delete Object.prototype.insecureHTTPParser;
     delete Object.prototype.adapter;
     delete Object.prototype.httpAgent;
@@ -497,6 +499,34 @@ describe('Prototype Pollution Protection', () => {
       }
     }, 10000);
 
+    it('should not pick up Object.prototype.sensitiveHeaders during redirects', async () => {
+      Object.prototype.sensitiveHeaders = ['X-Secret'];
+      let capturedHeaders;
+
+      const target = await startServer((req, res) => {
+        capturedHeaders = req.headers;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"ok":true}');
+      });
+      const { port: targetPort } = target.address();
+
+      const redirector = await startServer((req, res) => {
+        res.writeHead(302, { Location: `http://127.0.0.1:${targetPort}/final` });
+        res.end();
+      });
+      const { port: redirectorPort } = redirector.address();
+
+      try {
+        await axios.get(`http://127.0.0.1:${redirectorPort}/start`, {
+          headers: { 'X-Secret': 'keep' },
+        });
+        assert.strictEqual(capturedHeaders['x-secret'], 'keep');
+      } finally {
+        await stopServer(redirector);
+        await stopServer(target);
+      }
+    }, 10000);
+
     it('should not enable insecureHTTPParser via Object.prototype', async () => {
       // A raw TCP server emits a response that uses LF-only line terminators
       // instead of CRLF. Node's strict HTTP parser rejects this payload with
@@ -688,6 +718,39 @@ describe('Prototype Pollution Protection', () => {
         await new Promise((resolve) => target.close(resolve));
       }
     }, 10000);
+  });
+
+  describe('resolveConfig params and paramsSerializer gadget', () => {
+    it('should not inherit polluted params via resolveConfig', () => {
+      Object.prototype.params = { injected: 'yes' };
+
+      try {
+        const resolved = resolveConfig({ url: '/api', method: 'get' });
+
+        assert.ok(resolved.url.indexOf('injected') === -1, 'polluted params must not appear in URL');
+        assert.strictEqual(resolved.url, '/api', 'URL must remain unchanged');
+      } finally {
+        delete Object.prototype.params;
+      }
+    });
+
+    it('should not invoke polluted paramsSerializer via resolveConfig', () => {
+      let serializerInvoked = false;
+      Object.prototype.paramsSerializer = function polluted() {
+        serializerInvoked = true;
+        return 'injected=yes';
+      };
+
+      try {
+        const resolved = resolveConfig({ url: '/api', method: 'get', params: { legit: 'true' } });
+
+        assert.strictEqual(serializerInvoked, false, 'polluted paramsSerializer must not be called');
+        // The URL should have legit param serialized normally
+        assert.ok(resolved.url.indexOf('legit=true') !== -1, 'legitimate params must still be serialized');
+      } finally {
+        delete Object.prototype.paramsSerializer;
+      }
+    });
   });
 
   // Structural defense: mergeConfig returns a null-prototype object, so any

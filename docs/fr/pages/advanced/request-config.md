@@ -3,7 +3,7 @@
 La configuration de requête est utilisée pour paramétrer la requête. Un large éventail d'options est disponible, mais la seule option obligatoire est `url`. Si l'objet de configuration ne contient pas de champ `method`, la méthode par défaut est `GET`.
 
 ::: warning Sécurité : la protection contre les bombes de décompression est optionnelle
-Par défaut, `maxContentLength` et `maxBodyLength` valent `-1` (illimité). Un serveur malveillant ou compromis peut renvoyer un petit corps compressé en gzip/deflate/brotli qui s'étend à plusieurs gigaoctets et épuise le processus Node.js.
+Par défaut, `maxContentLength` et `maxBodyLength` valent `-1` (illimité). Un serveur malveillant ou compromis peut renvoyer un petit corps compressé en gzip/deflate/brotli/zstd qui s'étend à plusieurs gigaoctets et épuise le processus Node.js.
 
 Si vous appelez des serveurs auxquels vous ne faites pas pleinement confiance, **définissez un plafond** :
 
@@ -119,7 +119,10 @@ Les `data` sont les données à envoyer comme corps de la requête. Il peut s'ag
 
 - chaîne, objet simple, ArrayBuffer, ArrayBufferView, URLSearchParams
 - Navigateur uniquement : FormData, File, Blob
+- React Native : FormData
 - Node uniquement : Stream, Buffer, FormData (package form-data)
+
+Pour les objets `FormData` de navigateur, web worker et React Native, ne définissez pas manuellement `Content-Type` ; l'environnement ajoute lui-même la boundary multipart.
 
 Pour les objets `FormData` Node.js qui fournissent une méthode `getHeaders()`, axios copie tous les en-têtes retournés par défaut pour assurer la compatibilité avec la v1. Si l'objet `FormData` est personnalisé ou n'est pas pleinement de confiance, définissez `formDataHeaderPolicy: 'content-only'` pour ne copier que `Content-Type` et `Content-Length`, et définissez explicitement tout autre en-tête de requête via la configuration `headers` de la requête.
 
@@ -147,7 +150,7 @@ Vous pouvez également passer un tableau d'adaptateurs ; axios utilisera le prem
 
 ### `auth`
 
-`auth` indique que l'authentification HTTP Basic doit être utilisée, et fournit les identifiants. Cela définira un en-tête `Authorization`, en écrasant tout en-tête `Authorization` personnalisé que vous auriez défini via `headers`. Notez que seule l'authentification HTTP Basic est configurable via ce paramètre. Pour les tokens Bearer et similaires, utilisez plutôt des en-têtes `Authorization` personnalisés.
+`auth` indique que l'authentification HTTP Basic doit être utilisée, et fournit les identifiants. Cela définira un en-tête `Authorization`, en écrasant tout en-tête `Authorization` personnalisé que vous auriez défini via `headers`. Si `auth` est omis, les adaptateurs HTTP Node.js et fetch peuvent déduire les identifiants Basic depuis l'URL de requête, par exemple `https://user:pass@example.com` ; les identifiants encodés en pourcentage dans l'URL sont décodés, et `auth` prend toujours le dessus sur les identifiants intégrés à l'URL. Dans l'adaptateur HTTP Node.js, l'authentification Basic est conservée lors des redirections de même origine et supprimée lors des redirections cross-origin. Notez que seule l'authentification HTTP Basic est configurable via ce paramètre. Pour les tokens Bearer et similaires, utilisez plutôt des en-têtes `Authorization` personnalisés.
 
 ### `responseType`
 
@@ -231,16 +234,16 @@ La fonction `onUploadProgress` vous permet d'écouter la progression d'un envoi.
 
 La fonction `onDownloadProgress` vous permet d'écouter la progression d'un téléchargement.
 
-### `maxContentLength` <Badge type="warning" text="Node.js uniquement" />
+### `maxContentLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxContentLength` définit le nombre maximum d'octets que le serveur acceptera dans la réponse.
+La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée.
 
-> ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli rendent possible un déni de service par bombe de décompression.
+> ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli/zstd rendent possible un déni de service par bombe de décompression.
 > Définissez une limite explicite lorsque vous consommez des serveurs auxquels vous ne faites pas pleinement confiance.
 
-### `maxBodyLength` <Badge type="warning" text="Node.js uniquement" />
+### `maxBodyLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxBodyLength` définit le nombre maximum d'octets que le serveur acceptera dans la requête.
+La propriété `maxBodyLength` définit la taille maximale du corps de requête en octets. L'adaptateur HTTP Node.js l'applique, et l'adaptateur fetch l'applique lorsque la longueur du corps de requête peut être déterminée.
 
 ### `redact`
 
@@ -262,9 +265,33 @@ axios.get('/user/12345', {
 
 La fonction `validateStatus` vous permet de remplacer la validation du code de statut par défaut. Par défaut, axios rejette la promise si le code de statut n'est pas dans la plage 200-299. Vous pouvez remplacer ce comportement en fournissant une fonction `validateStatus` personnalisée. La fonction doit retourner `true` si le code de statut est dans la plage que vous souhaitez accepter.
 
+Par défaut, définir explicitement `validateStatus: undefined` conserve le comportement historique et résout tous les statuts de réponse, car `transitional.validateStatusUndefinedResolves` vaut `true` par défaut. Définissez `transitional.validateStatusUndefinedResolves` à `false` si vous voulez qu'un `validateStatus: undefined` explicite se comporte comme si `validateStatus` était omis : axios utilise alors le validateur configuré/par défaut et rejette les réponses non-2xx par défaut.
+
+`validateStatus: null` accepte toujours tous les statuts de réponse. Si vous désactivez le comportement de transition et souhaitez intentionnellement résoudre tous les statuts, utilisez `validateStatus: null` ou un validateur qui retourne `true`.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false
+  }
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="Node.js uniquement" />
 
 La propriété `maxRedirects` définit le nombre maximum de redirections à suivre. Si défini à 0, aucune redirection ne sera suivie.
+
+### `sensitiveHeaders` <Badge type="warning" text="Node.js uniquement" />
+
+La propriété `sensitiveHeaders` est un tableau optionnel de noms d'en-têtes personnalisés contenant des secrets, comme `X-API-Key`, que l'adaptateur HTTP Node.js retire lorsqu'il suit une redirection vers une origine différente. La correspondance est insensible à la casse. Les redirections same-origin conservent ces en-têtes. Si `maxRedirects` vaut `0`, axios ne suit pas les redirections et `sensitiveHeaders` n'est pas utilisée.
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key']
+});
+```
 
 ### `beforeRedirect`
 
@@ -329,6 +356,8 @@ Utilisez `false` pour désactiver les proxies, en ignorant les variables d'envir
 
 Un en-tête `Host` fourni par l'utilisateur dans `headers` est préservé lorsqu'il est transféré via un proxy (correspondance insensible à la casse sur `host` / `Host` / `HOST`). Cela vous permet de cibler un hôte virtuel différent de l'URL de la requête — par exemple, atteindre `127.0.0.1:4000` tout en faisant traiter la requête par le proxy comme provenant de `example.com`. Si aucun en-tête `Host` n'est fourni, axios utilise par défaut le `hostname:port` de l'URL de la requête comme auparavant.
 
+Pour les cibles `https://`, axios établit un tunnel CONNECT via le proxy et effectue TLS de bout en bout avec l'origine. `Proxy-Authorization` est envoyé uniquement sur la requête CONNECT, jamais sur la requête TLS encapsulée. Les options TLS de `httpsAgent`, comme `ca`, `cert`, `key` et `rejectUnauthorized`, sont transmises à l'agent de tunnel généré afin qu'elles continuent de s'appliquer à la connexion TLS avec l'origine. Si vous fournissez un `HttpsProxyAgent`, axios laisse cet agent gérer le tunnel.
+
 ```js
 proxy: {
   protocol: "https",
@@ -352,7 +381,7 @@ La propriété `signal` vous permet de passer une instance d'`AbortSignal` à la
 
 ### `decompress` <Badge type="warning" text="Node.js uniquement" />
 
-La propriété `decompress` indique si les données de la réponse doivent être automatiquement décompressées. La valeur par défaut est `true`.
+La propriété `decompress` indique si les données de la réponse doivent être automatiquement décompressées. La valeur par défaut est `true`. L'adaptateur HTTP Node.js prend en charge gzip, deflate, brotli et zstd lorsque le runtime Node.js actuel fournit le décompresseur zlib correspondant.
 
 ### `insecureHTTPParser`
 
@@ -376,6 +405,8 @@ La propriété `transitional` vous permet d'activer ou de désactiver certaines 
 
 - `forcedJSONParsing` : Force axios à analyser la chaîne de réponse comme du JSON même si `responseType` n'est pas `'json'`.
 - `clarifyTimeoutError` : Clarifie le message d'erreur lorsqu'une requête expire. Utile lors du débogage de problèmes de délai d'attente.
+- `validateStatusUndefinedResolves` : Si défini à `true` _(par défaut)_, un `validateStatus: undefined` explicite résout tous les statuts de réponse pour préserver la compatibilité. Définissez à `false` pour traiter `undefined` explicite comme si `validateStatus` était omis, afin qu'axios utilise le validateur configuré/par défaut. Utilisez `validateStatus: null` ou un validateur qui retourne `true` lorsque vous voulez intentionnellement résoudre tous les statuts.
+- `advertiseZstdAcceptEncoding` : Lorsqu'elle vaut `true`, axios ajoute `zstd` à l'en-tête `Accept-Encoding` par défaut lorsque le runtime Node.js actuel prend en charge la décompression zstd. Les réponses zstd sont tout de même décompressées automatiquement lorsqu'elles sont prises en charge et que `decompress` vaut `true`.
 - `legacyInterceptorReqResOrdering` : Lorsque défini à true, l'ordre hérité de traitement requête/réponse des intercepteurs sera utilisé.
 
 ### `env`
@@ -471,6 +502,7 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -501,6 +533,8 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
+    advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },
   env: {

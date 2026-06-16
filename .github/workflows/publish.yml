@@ -15,7 +15,7 @@ jobs:
     environment: npm-publish
     steps:
       - name: Checkout repo
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
@@ -25,6 +25,11 @@ jobs:
           node-version: 26.x
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
+
+      # `npm stage publish` requires npm >= 11.15.0, newer than the npm bundled with
+      # this workflow's Node. Remove this step once Node bundles npm >= 11.15.0 by default.
+      - name: Pin npm with staged-publishing support
+        run: npm install -g npm@11.15.0
 
       - name: Install dependencies
         run: npm ci --ignore-scripts

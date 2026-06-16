@@ -97,6 +97,7 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 #### `set`
 
 Ajoute un en-tête à l'objet d'en-têtes.
+Les noms d'en-têtes vides ou composés uniquement d'espaces sont ignorés.
 
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -157,7 +158,8 @@ concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | n
 Convertit l'objet d'en-têtes en objet JSON.
 
 ```ts
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
 ### `CanceledError` <Badge type="tip" text="Extension d'AxiosError" />
@@ -173,7 +175,7 @@ La classe `Cancel` est un alias de la classe `CanceledError`. Elle est exportée
 Une fonction qui vérifie si une erreur est une `CanceledError`. Utile pour distinguer les annulations intentionnelles des erreurs inattendues.
 
 ```ts
-isCancel(value: any): boolean;
+isCancel<T = any>(value: any): value is CanceledError<T>;
 ```
 
 ```js

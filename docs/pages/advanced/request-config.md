@@ -3,7 +3,7 @@
 The request config is used to configure the request. There is a wide range of options available, but the only required option is `url`. If the configuration object does not contain a `method` field, the default method is `GET`.
 
 ::: warning Security: decompression-bomb protection is opt-in
-By default `maxContentLength` and `maxBodyLength` are `-1` (unlimited). A malicious or compromised server can return a tiny gzip/deflate/brotli body that expands to gigabytes and exhaust the Node.js process.
+By default `maxContentLength` and `maxBodyLength` are `-1` (unlimited). A malicious or compromised server can return a tiny gzip/deflate/brotli/zstd body that expands to gigabytes and exhaust the Node.js process.
 
 If you call servers you do not fully trust, **set a cap**:
 
@@ -33,7 +33,7 @@ The `allowAbsoluteUrls` determines whether or not absolute URLs will override a 
 
 ### `transformRequest`
 
-The `transformRequest` function allows you to modify the request data before it is sent to the server. This function is called with the request data as its only argument. This is only applicable for request methods `PUT`, `POST`, `PATCH` and `DELETE`. The last function in the array must return a string or an instance of Buffer, ArrayBuffer FormData or Stream.
+The `transformRequest` function allows you to modify the request data before it is sent to the server. This function is called with the request data as its only argument. This is only applicable for request methods `PUT`, `POST`, `PATCH` and `DELETE`. The last function in the array must return a string or an instance of Buffer, ArrayBuffer, FormData or Stream.
 
 ### `transformResponse`
 
@@ -119,7 +119,10 @@ The `data` is the data to be sent as the request body. This can be a string, a p
 
 - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
 - Browser only: FormData, File, Blob
+- React Native: FormData
 - Node only: Stream, Buffer, FormData (form-data package)
+
+For browser, web worker, and React Native `FormData`, do not manually set `Content-Type`; the runtime adds the multipart boundary.
 
 For Node.js `FormData` objects that provide a `getHeaders()` method, axios copies all returned headers by default for v1 compatibility. If the `FormData` object is custom or not fully trusted, set `formDataHeaderPolicy: 'content-only'` to copy only `Content-Type` and `Content-Length`, and set any other request headers explicitly via the request `headers` config.
 
@@ -147,7 +150,7 @@ You may also pass an array of adapters to be used, axios will use the first adap
 
 ### `auth`
 
-`auth` indicates that HTTP Basic auth should be used, and supplies credentials. This will set an `Authorization` header, overwriting any existing `Authorization` custom headers you have set using `headers`. Please note that only HTTP Basic auth is configurable through this parameter. For Bearer tokens and such, use `Authorization` custom headers instead.
+`auth` indicates that HTTP Basic auth should be used, and supplies credentials. This will set an `Authorization` header, overwriting any existing `Authorization` custom headers you have set using `headers`. If `auth` is omitted, the Node.js HTTP and fetch adapters can derive Basic auth credentials from the request URL, for example `https://user:pass@example.com`; percent-encoded URL credentials are decoded, and `auth` always takes precedence over URL-embedded credentials. In the Node.js HTTP adapter, Basic auth is preserved on same-origin redirects and stripped on cross-origin redirects. Please note that only HTTP Basic auth is configurable through this parameter. For Bearer tokens and such, use `Authorization` custom headers instead.
 
 ### `responseType`
 
@@ -231,16 +234,16 @@ The `onUploadProgress` function allows you to listen to the progress of an uploa
 
 The `onDownloadProgress` function allows you to listen to the progress of a download.
 
-### `maxContentLength` <Badge type="warning" text="Node.js only" />
+### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxContentLength` property defines the maximum number of bytes that the server will accept in the response.
+The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined.
 
-> ⚠️ **Security:** defaults to `-1` (unlimited). Unbounded responses combined with gzip/deflate/brotli decompression allow decompression-bomb DoS.
+> ⚠️ **Security:** defaults to `-1` (unlimited). Unbounded responses combined with gzip/deflate/brotli/zstd decompression allow decompression-bomb DoS.
 > Set an explicit limit when requesting servers you do not fully trust.
 
-### `maxBodyLength` <Badge type="warning" text="Node.js only" />
+### `maxBodyLength` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxBodyLength` property defines the maximum number of bytes that the server will accept in the request.
+The `maxBodyLength` property defines the maximum request body size in bytes. The Node.js HTTP adapter enforces it, and the fetch adapter enforces it when the request body length can be determined.
 
 ### `redact`
 
@@ -262,9 +265,33 @@ axios.get('/user/12345', {
 
 The `validateStatus` function allows you to override the default status code validation. By default, axios will reject the promise if the status code is not in the range of 200-299. You can override this behavior by providing a custom `validateStatus` function. The function should return `true` if the status code is within the range you want to accept.
 
+By default, explicit `validateStatus: undefined` keeps legacy behavior and resolves every response status because `transitional.validateStatusUndefinedResolves` defaults to `true`. Set `transitional.validateStatusUndefinedResolves` to `false` when you want an explicit `validateStatus: undefined` to behave as if `validateStatus` was omitted, so axios uses the configured/default validator and rejects non-2xx responses by default.
+
+`validateStatus: null` still accepts every response status. If you disable the transitional behavior and intentionally want all statuses to resolve, use `validateStatus: null` or a validator that returns `true`.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false
+  }
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="Node.js only" />
 
 The `maxRedirects` property defines the maximum number of redirects to follow. If set to 0, no redirects will be followed.
+
+### `sensitiveHeaders` <Badge type="warning" text="Node.js only" />
+
+The `sensitiveHeaders` property is an optional array of custom secret-bearing header names, such as `X-API-Key`, that the Node.js HTTP adapter removes when following a redirect to a different origin. Matching is case-insensitive. Same-origin redirects keep these headers. If `maxRedirects` is `0`, axios does not follow redirects and `sensitiveHeaders` is not used.
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key']
+});
+```
 
 ### `beforeRedirect`
 
@@ -319,7 +346,7 @@ The `transport` property defines the transport to use for the request. This is u
 
 The `httpAgent` and `httpsAgent` define a custom agent to be used when performing http and https requests, respectively, in node.js. This allows options to be added like `keepAlive` that are not enabled by default.
 
-### `proxy`
+### `proxy` <Badge type="warning" text="Node.js only" />
 
 The `proxy` defines the hostname, port, and protocol of a proxy server you would like to use. You can also define your proxy using the conventional `http_proxy` and `https_proxy` environment variables.
 
@@ -328,6 +355,8 @@ If you are using environment variables for your proxy configuration, you can als
 Use `false` to disable proxies, ignoring environment variables. `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and supplies credentials. This will set an `Proxy-Authorization` header, overwriting any existing `Proxy-Authorization` custom headers you have set using `headers`. If the proxy server uses HTTPS, then you must set the protocol to `https`.
 
 A user-supplied `Host` header in `headers` is preserved when forwarding through a proxy (case-insensitive match on `host` / `Host` / `HOST`). This lets you target a virtual host that differs from the request URL — for example, hitting `127.0.0.1:4000` while having the proxy treat the request as `example.com`. If no `Host` header is supplied, axios defaults it to the request URL's `hostname:port` as before.
+
+For `https://` targets, axios establishes a CONNECT tunnel through the proxy and performs TLS end-to-end with the origin. `Proxy-Authorization` is sent only on the CONNECT request, never on the wrapped TLS request. `httpsAgent` TLS options such as `ca`, `cert`, `key`, and `rejectUnauthorized` are forwarded to the generated tunneling agent so they still apply to the origin TLS connection. If you supply an `HttpsProxyAgent`, axios leaves tunneling to that agent.
 
 ```js
 proxy: {
@@ -352,7 +381,7 @@ The `signal` property allows you to pass an instance of `AbortSignal` to the req
 
 ### `decompress` <Badge type="warning" text="Node.js only" />
 
-The `decompress` property indicates whether or not to automatically decompress the response data. The default value is `true`.
+The `decompress` property indicates whether or not to automatically decompress the response data. The default value is `true`. The Node.js HTTP adapter supports gzip, deflate, brotli, and zstd when the current Node.js runtime provides the corresponding zlib decompressor.
 
 ### `insecureHTTPParser`
 
@@ -376,6 +405,8 @@ The `transitional` property allows you to enable or disable certain transitional
 
 - `forcedJSONParsing`: Forces axios to parse the response string as JSON even if `responseType` is not `'json'`.
 - `clarifyTimeoutError`: Clarifies the error message when a request times out. This is useful when you are debugging timeout issues.
+- `validateStatusUndefinedResolves`: If set to `true` _(default)_, explicit `validateStatus: undefined` resolves every response status for backward compatibility. Set to `false` to treat explicit `undefined` as if `validateStatus` was omitted, so axios uses the configured/default validator. Use `validateStatus: null` or a validator that returns `true` when you intentionally want all statuses to resolve.
+- `advertiseZstdAcceptEncoding`: When set to `true`, axios adds `zstd` to the default `Accept-Encoding` request header when the current Node.js runtime supports zstd decompression. zstd responses are still decompressed automatically when supported and `decompress` is `true`.
 - `legacyInterceptorReqResOrdering`: When set to true we will use the legacy interceptor request/response ordering.
 
 ### `env`
@@ -471,6 +502,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -501,6 +533,8 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
+    advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },
   env: {

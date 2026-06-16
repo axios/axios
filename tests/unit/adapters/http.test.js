@@ -2075,22 +2075,20 @@ describe('supports http with nodejs', () => {
     }
   });
 
-  it('should detect Node native env proxy support', () => {
-    const enabledEnv = { NODE_USE_ENV_PROXY: '1' };
-    const disabledEnv = {};
-    const cliFlag = ['--use-env-proxy'];
+  it('should detect Node native env proxy support from the selected agent', () => {
+    const nativeProxyAgent = { options: { proxyEnv: { HTTP_PROXY: 'http://proxy.local:9000' } } };
+    const plainAgent = { options: {} };
 
-    assert.strictEqual(__isNodeEnvProxyEnabled({}, '22.21.0'), false);
-    assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '22.20.0'), false);
-    assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '22.21.0'), true);
-    assert.strictEqual(__isNodeEnvProxyEnabled(disabledEnv, '22.21.0', cliFlag), true);
-    assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '24.4.0'), false);
-    assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '24.5.0'), true);
-    assert.strictEqual(__isNodeEnvProxyEnabled(disabledEnv, '24.5.0', cliFlag), true);
-    assert.strictEqual(__isNodeEnvProxyEnabled(enabledEnv, '25.0.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '22.20.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '22.21.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '24.4.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '24.5.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '25.0.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(plainAgent, '24.5.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(undefined, '24.5.0'), false);
   });
 
-  it('should leave env proxy handling to supported Node versions when NODE_USE_ENV_PROXY is enabled', () => {
+  it('should leave env proxy handling to supported Node versions when the selected agent uses proxyEnv', () => {
     const originalHttpProxy = process.env.http_proxy;
     const originalHTTPProxy = process.env.HTTP_PROXY;
     const originalNoProxy = process.env.no_proxy;
@@ -2113,10 +2111,18 @@ describe('supports http with nodejs', () => {
         protocol: 'http:',
         path: '/resource',
       };
+      const nativeProxyAgent = { options: { proxyEnv: process.env } };
 
-      __setProxy(options, undefined, 'http://target.example:4000/resource');
+      __setProxy(
+        options,
+        undefined,
+        'http://target.example:4000/resource',
+        false,
+        undefined,
+        nativeProxyAgent
+      );
 
-      if (__isNodeEnvProxyEnabled(process.env, process.versions.node)) {
+      if (__isNodeEnvProxyEnabled(nativeProxyAgent, process.versions.node)) {
         assert.strictEqual(options.hostname, 'target.example');
         assert.strictEqual(options.port, '4000');
         assert.strictEqual(options.path, '/resource');
@@ -2127,6 +2133,77 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(options.path, 'http://target.example:4000/resource');
       }
 
+      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function');
+    } finally {
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+
+      if (originalNodeUseEnvProxy === undefined) {
+        delete process.env.NODE_USE_ENV_PROXY;
+      } else {
+        process.env.NODE_USE_ENV_PROXY = originalNodeUseEnvProxy;
+      }
+    }
+  });
+
+  it('should keep axios env proxy handling when the selected agent has no proxyEnv', () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+    const originalNodeUseEnvProxy = process.env.NODE_USE_ENV_PROXY;
+
+    process.env.NODE_USE_ENV_PROXY = '1';
+    process.env.http_proxy = 'http://proxy.local:9000/';
+    process.env.HTTP_PROXY = 'http://proxy.local:9000/';
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'target.example',
+        host: 'target.example',
+        port: '4000',
+        protocol: 'http:',
+        path: '/resource',
+      };
+      const plainAgent = { options: {} };
+
+      __setProxy(
+        options,
+        undefined,
+        'http://target.example:4000/resource',
+        false,
+        undefined,
+        plainAgent
+      );
+
+      assert.strictEqual(options.hostname, 'proxy.local');
+      assert.strictEqual(options.port, '9000');
+      assert.strictEqual(options.path, 'http://target.example:4000/resource');
       assert.strictEqual(typeof options.beforeRedirects.proxy, 'function');
     } finally {
       if (originalHttpProxy === undefined) {

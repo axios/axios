@@ -265,9 +265,33 @@ axios.get('/user/12345', {
 
 La fonction `validateStatus` vous permet de remplacer la validation du code de statut par défaut. Par défaut, axios rejette la promise si le code de statut n'est pas dans la plage 200-299. Vous pouvez remplacer ce comportement en fournissant une fonction `validateStatus` personnalisée. La fonction doit retourner `true` si le code de statut est dans la plage que vous souhaitez accepter.
 
+Par défaut, définir explicitement `validateStatus: undefined` conserve le comportement historique et résout tous les statuts de réponse, car `transitional.validateStatusUndefinedResolves` vaut `true` par défaut. Définissez `transitional.validateStatusUndefinedResolves` à `false` si vous voulez qu'un `validateStatus: undefined` explicite se comporte comme si `validateStatus` était omis : axios utilise alors le validateur configuré/par défaut et rejette les réponses non-2xx par défaut.
+
+`validateStatus: null` accepte toujours tous les statuts de réponse. Si vous désactivez le comportement de transition et souhaitez intentionnellement résoudre tous les statuts, utilisez `validateStatus: null` ou un validateur qui retourne `true`.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false
+  }
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="Node.js uniquement" />
 
 La propriété `maxRedirects` définit le nombre maximum de redirections à suivre. Si défini à 0, aucune redirection ne sera suivie.
+
+### `sensitiveHeaders` <Badge type="warning" text="Node.js uniquement" />
+
+La propriété `sensitiveHeaders` est un tableau optionnel de noms d'en-têtes personnalisés contenant des secrets, comme `X-API-Key`, que l'adaptateur HTTP Node.js retire lorsqu'il suit une redirection vers une origine différente. La correspondance est insensible à la casse. Les redirections same-origin conservent ces en-têtes. Si `maxRedirects` vaut `0`, axios ne suit pas les redirections et `sensitiveHeaders` n'est pas utilisée.
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key']
+});
+```
 
 ### `beforeRedirect`
 
@@ -381,6 +405,7 @@ La propriété `transitional` vous permet d'activer ou de désactiver certaines 
 
 - `forcedJSONParsing` : Force axios à analyser la chaîne de réponse comme du JSON même si `responseType` n'est pas `'json'`.
 - `clarifyTimeoutError` : Clarifie le message d'erreur lorsqu'une requête expire. Utile lors du débogage de problèmes de délai d'attente.
+- `validateStatusUndefinedResolves` : Si défini à `true` _(par défaut)_, un `validateStatus: undefined` explicite résout tous les statuts de réponse pour préserver la compatibilité. Définissez à `false` pour traiter `undefined` explicite comme si `validateStatus` était omis, afin qu'axios utilise le validateur configuré/par défaut. Utilisez `validateStatus: null` ou un validateur qui retourne `true` lorsque vous voulez intentionnellement résoudre tous les statuts.
 - `advertiseZstdAcceptEncoding` : Lorsqu'elle vaut `true`, axios ajoute `zstd` à l'en-tête `Accept-Encoding` par défaut lorsque le runtime Node.js actuel prend en charge la décompression zstd. Les réponses zstd sont tout de même décompressées automatiquement lorsqu'elles sont prises en charge et que `decompress` vaut `true`.
 - `legacyInterceptorReqResOrdering` : Lorsque défini à true, l'ordre hérité de traitement requête/réponse des intercepteurs sera utilisé.
 
@@ -477,6 +502,7 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -507,6 +533,7 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
     advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },

@@ -265,9 +265,33 @@ axios.get('/user/12345', {
 
 `validateStatus` 函数允许你覆盖默认的状态码验证逻辑。默认情况下，axios 会在状态码不在 200-299 范围内时拒绝 Promise。你可以提供自定义的 `validateStatus` 函数来覆盖此行为，该函数应在状态码在你希望接受的范围内时返回 `true`。
 
+默认情况下，显式设置 `validateStatus: undefined` 会保留旧行为并 resolve 所有响应状态码，因为 `transitional.validateStatusUndefinedResolves` 默认值为 `true`。如果希望显式的 `validateStatus: undefined` 表现得像未设置 `validateStatus` 一样，请将 `transitional.validateStatusUndefinedResolves` 设置为 `false`；这样 axios 会使用已配置/默认的验证器，并默认拒绝非 2xx 响应。
+
+`validateStatus: null` 仍会接受所有响应状态码。如果你禁用了该过渡行为，但确实希望所有状态码都 resolve，请使用 `validateStatus: null` 或返回 `true` 的验证器。
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false
+  }
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="仅 Node.js" />
 
 `maxRedirects` 属性定义最大重定向次数，设置为 0 时不跟随任何重定向。
+
+### `sensitiveHeaders` <Badge type="warning" text="仅 Node.js" />
+
+`sensitiveHeaders` 属性是一个可选数组，用于列出承载密钥的自定义请求头名称（例如 `X-API-Key`）。Node.js HTTP 适配器在跟随重定向到不同源时会移除这些请求头。匹配不区分大小写。同源重定向会保留这些请求头。如果 `maxRedirects` 为 `0`，axios 不会跟随重定向，`sensitiveHeaders` 也不会使用。
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key']
+});
+```
 
 ### `beforeRedirect`
 
@@ -381,6 +405,7 @@ proxy: {
 
 - `forcedJSONParsing`：强制 axios 将响应解析为 JSON，即使响应不是有效的 JSON。适用于返回无效 JSON 的 API。
 - `clarifyTimeoutError`：在请求超时时提供更清晰的错误信息，适用于调试超时问题。
+- `validateStatusUndefinedResolves`：若设置为 `true` _（默认）_，显式的 `validateStatus: undefined` 会出于兼容性 resolve 所有响应状态码。设置为 `false` 后，显式的 `undefined` 会像未设置 `validateStatus` 一样处理，axios 将使用已配置/默认的验证器。如果你确实希望所有状态码都 resolve，请使用 `validateStatus: null` 或返回 `true` 的验证器。
 - `advertiseZstdAcceptEncoding`：设为 `true` 时，如果当前 Node.js 运行时支持 zstd 解压，axios 会在默认 `Accept-Encoding` 请求头中加入 `zstd`。在受支持且 `decompress` 为 `true` 时，zstd 响应仍会自动解压。
 - `legacyInterceptorReqResOrdering`：设置为 true 时使用旧版拦截器请求/响应排序。
 
@@ -477,6 +502,7 @@ proxy: {
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -507,6 +533,7 @@ proxy: {
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
     advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },

@@ -1,5 +1,7 @@
+# Axios Documentation
+
 ---
-# https://vitepress.dev/reference/default-theme-home-page
+<!-- https://vitepress.dev/reference/default-theme-home-page -->
 layout: home
 
 hero:
@@ -18,14 +20,17 @@ hero:
       link: /pages/advanced/api-reference
 
 features:
-  - title: Simple implementation
+
+- title: Simple implementation
     details: Getting started with axios is as simple as a single line of code. Making simple API requests can be done in 2 lines of code.
-  - title: Powerful interceptors
+- title: Powerful interceptors
     details: Our innovative interceptor system allows you to control the request and response lifecycle. You can modify requests, responses, and errors.
-  - title: TypeScript support
+- title: TypeScript support
     details: axios declares types and has full support for TypeScript. This means you can use axios with confidence in your TypeScript projects.
+
 ---
 
+<!-- markdownlint-disable MD033 -->
 <script setup>
 import Splide from '@splidejs/splide';
 import { onMounted } from 'vue';
@@ -214,7 +219,7 @@ const capitalizeFirstLetter = (word) => {
 }
 
 .tagSponsorSilver {
-  display: inline-flex; 
+  display: inline-flex;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   padding-left: 0.5rem;
@@ -291,7 +296,7 @@ const capitalizeFirstLetter = (word) => {
   border-bottom: 0px;
   border-style: solid;
   border-color: var(--vp-c-gutter);
-  width: 0; 
+  width: 0;
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 600;

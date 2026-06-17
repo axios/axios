@@ -1,5 +1,7 @@
+# Axios 文档
+
 ---
-# https://vitepress.dev/reference/default-theme-home-page
+<!-- https://vitepress.dev/reference/default-theme-home-page -->
 layout: home
 
 hero:
@@ -18,14 +20,17 @@ hero:
       link: /zh/pages/advanced/api-reference
 
 features:
-  - title: 简单易用
+
+- title: 简单易用
     details: axios 上手极为简单，一行代码即可完成初始化。最基本的 API 请求仅需 2 行代码。
-  - title: 强大的拦截器
+- title: 强大的拦截器
     details: 创新的拦截器系统让您可以完全掌控请求和响应的生命周期，支持修改请求、响应及错误。
-  - title: TypeScript 支持
+- title: TypeScript 支持
     details: axios 提供完整的类型声明，全面支持 TypeScript，让您可以在 TypeScript 项目中放心使用。
+
 ---
 
+<!-- markdownlint-disable MD033 -->
 <script setup>
 import Splide from '@splidejs/splide';
 import { onMounted } from 'vue';
@@ -214,7 +219,7 @@ const capitalizeFirstLetter = (word) => {
 }
 
 .tagSponsorSilver {
-  display: inline-flex; 
+  display: inline-flex;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   padding-left: 0.5rem;
@@ -291,7 +296,7 @@ const capitalizeFirstLetter = (word) => {
   border-bottom: 0px;
   border-style: solid;
   border-color: var(--vp-c-gutter);
-  width: 0; 
+  width: 0;
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 600;

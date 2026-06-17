@@ -6,37 +6,37 @@
 
 你可以通过多种方式在项目中使用 axios。最常见的方式是通过 npm 安装，也支持 jsDelivr、unpkg 等 CDN。
 
-#### 使用 npm
+### 使用 npm
 
 ```bash
 npm install axios
 ```
 
-#### 使用 pnpm
+### 使用 pnpm
 
 ```bash
 pnpm install axios
 ```
 
-#### 使用 yarn
+### 使用 yarn
 
 ```bash
 yarn add axios
 ```
 
-#### 使用 bun
+### 使用 bun
 
 ```bash
 bun add axios
 ```
 
-#### 使用 deno
+### 使用 deno
 
 ```bash
 deno install npm:axios
 ```
 
-#### 使用 jsDelivr
+### 使用 jsDelivr
 
 使用 jsDelivr 时，建议使用压缩版本并固定版本号，以避免意外更新。如需使用最新版本，可以去掉版本号，但强烈不建议在生产环境这样做，因为可能导致应用出现意外变化。
 
@@ -44,7 +44,7 @@ deno install npm:axios
 <script src="https://cdn.jsdelivr.net/npm/axios@<x.x.x>/dist/axios.min.js"></script>
 ```
 
-#### 使用 unpkg
+### 使用 unpkg
 
 使用 unpkg 时，建议使用压缩版本并固定版本号，以避免意外更新。如需使用最新版本，可以去掉版本号，但强烈不建议在生产环境这样做，因为可能导致应用出现意外变化。
 

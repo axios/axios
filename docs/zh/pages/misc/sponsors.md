@@ -2,6 +2,8 @@
 layout: page
 ---
 
+# 赞助商
+
 <script setup>
 import allSponsors from '../../../data/sponsors.json';
 
@@ -116,7 +118,7 @@ const capitalizeFirstLetter = (word) => {
 }
 
 .tagSponsorSilver {
-  display: inline-flex; 
+  display: inline-flex;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   padding-left: 0.5rem;
@@ -179,7 +181,7 @@ const capitalizeFirstLetter = (word) => {
 
 @media (min-width: 768px) {
   .sponsorCloudGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr)); 
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 </style>

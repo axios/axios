@@ -1,7 +1,7 @@
-# Axios Migration Guide
+﻿# Axios Migration Guide
 
 > **Migrating from Axios 0.x to 1.x**
-> 
+>
 > This guide helps developers upgrade from Axios 0.x to 1.x by documenting breaking changes, providing migration strategies, and offering solutions to common upgrade challenges.
 
 ## Table of Contents
@@ -23,7 +23,7 @@ Axios 1.x introduced several breaking changes to improve consistency, security, 
 ### Key Changes Summary
 
 | Area | 0.x Behavior | 1.x Behavior | Impact |
-|------|--------------|--------------|--------|
+| ------ | -------------- | -------------- | -------- |
 | Error Handling | Selective throwing | Consistent throwing | High |
 | JSON Parsing | Lenient | Strict | Medium |
 | Browser Support | IE11+ | Modern browsers | Low-Medium |
@@ -42,6 +42,7 @@ Axios 1.x introduced several breaking changes to improve consistency, security, 
 **The most significant change in Axios 1.x is how errors are handled.**
 
 #### 0.x Behavior
+
 ```javascript
 // Axios 0.x - Some HTTP error codes didn't throw
 axios.get('/api/data')
@@ -58,9 +59,11 @@ axios.interceptors.response.use(
     // Error was "handled" and didn't propagate
   }
 );
+
 ```
 
 #### 1.x Behavior
+
 ```javascript
 // Axios 1.x - All HTTP errors throw consistently
 axios.get('/api/data')
@@ -81,23 +84,28 @@ axios.interceptors.response.use(
     return Promise.reject(error); // or throw error;
   }
 );
+
 ```
 
 #### Impact
+
 - **Response interceptors** can no longer "swallow" errors silently
 - **Every API call** must handle errors explicitly or they become unhandled promise rejections
 - **Centralized error handling** requires new patterns
 
 ### 2. JSON Parsing Changes
 
-#### 0.x Behavior
+#### 0.x Behavior (JSON Parsing)
+
 ```javascript
 // Axios 0.x - Lenient JSON parsing
 // Would attempt to parse even invalid JSON
 response.data; // Might contain partial data or fallbacks
+
 ```
 
-#### 1.x Behavior
+#### 1.x Behavior (JSON Parsing)
+
 ```javascript
 // Axios 1.x - Strict JSON parsing
 // Throws clear errors for invalid JSON
@@ -106,20 +114,24 @@ try {
 } catch (error) {
   // Handle JSON parsing errors explicitly
 }
+
 ```
 
 ### 3. Request/Response Transform Changes
 
-#### 0.x Behavior
+#### 0.x Behavior (Transforms)
+
 ```javascript
 // Implicit transformations with some edge cases
 transformRequest: [function (data) {
   // Less predictable behavior
   return data;
 }]
+
 ```
 
-#### 1.x Behavior
+#### 1.x Behavior (Transforms)
+
 ```javascript
 // More consistent transformation pipeline
 transformRequest: [function (data, headers) {
@@ -127,6 +139,7 @@ transformRequest: [function (data, headers) {
   // More predictable behavior
   return data;
 }]
+
 ```
 
 ### 4. Browser Support Changes
@@ -227,6 +240,7 @@ async function fetchUserData(userId) {
     return { data: null, error: { message: 'Unexpected error occurred' } };
   }
 }
+
 ```
 
 ### Strategy 2: Wrapper Function Pattern
@@ -294,6 +308,7 @@ if (result.error) {
   // Handle success case
   console.log('Data:', result.data);
 }
+
 ```
 
 ### Strategy 3: Global Error Handler with Custom Events
@@ -349,6 +364,7 @@ async function apiCall() {
     return null;
   }
 }
+
 ```
 
 ## API Changes
@@ -356,6 +372,7 @@ async function apiCall() {
 ### Request Configuration
 
 #### 0.x to 1.x Changes
+
 ```javascript
 // 0.x - Some properties had different defaults
 const config = {
@@ -369,6 +386,7 @@ const config = {
   maxContentLength: 2000, // Default limit for security
   maxBodyLength: 2000, // New property
 };
+
 ```
 
 ### Response Object
@@ -395,6 +413,7 @@ error.response = {
   config: {},
   request: {}
 };
+
 ```
 
 ## Configuration Changes
@@ -410,6 +429,7 @@ axios.defaults.maxContentLength = -1; // No limit
 axios.defaults.timeout = 0; // Still no timeout
 axios.defaults.maxContentLength = 2000; // 2MB limit
 axios.defaults.maxBodyLength = 2000; // 2MB limit
+
 ```
 
 ### Instance Configuration
@@ -428,6 +448,7 @@ const api = axios.create({
   maxBodyLength: Infinity, // Override default if needed
   maxContentLength: Infinity,
 });
+
 ```
 
 ## Migration Strategies
@@ -435,12 +456,15 @@ const api = axios.create({
 ### Step-by-Step Migration Process
 
 #### Phase 1: Preparation
+
 1. **Audit Current Error Handling**
+
    ```bash
    # Find all axios usage
    grep -r "axios\." src/
    grep -r "\.catch" src/
    grep -r "interceptors" src/
+
    ```
 
 2. **Identify Patterns**
@@ -449,6 +473,7 @@ const api = axios.create({
    - Authentication and retry logic
 
 3. **Create Test Cases**
+
    ```javascript
    // Test current error handling behavior
    describe('Error Handling Migration', () => {
@@ -460,12 +485,16 @@ const api = axios.create({
        // Test server error handling
      });
    });
+
    ```
 
 #### Phase 2: Implementation
+
 1. **Update Dependencies**
+
    ```bash
    npm update axios
+
    ```
 
 2. **Implement New Error Handling**
@@ -474,6 +503,7 @@ const api = axios.create({
    - Add error handling to API calls
 
 3. **Update Authentication Logic**
+
    ```javascript
    // 0.x pattern
    axios.interceptors.response.use(null, error => {
@@ -493,9 +523,11 @@ const api = axios.create({
        return Promise.reject(error); // Always propagate
      }
    );
+
    ```
 
 #### Phase 3: Testing and Validation
+
 1. **Test Error Scenarios**
    - Network failures
    - HTTP error codes (401, 403, 404, 500, etc.)
@@ -542,6 +574,7 @@ function createLegacyWrapper(axiosInstance) {
   
   return axiosInstance;
 }
+
 ```
 
 ## Common Patterns
@@ -549,6 +582,7 @@ function createLegacyWrapper(axiosInstance) {
 ### Authentication Interceptors
 
 #### Updated Authentication Pattern
+
 ```javascript
 // Token refresh interceptor for 1.x
 let isRefreshing = false;
@@ -599,6 +633,7 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 ```
 
 ### Retry Logic
@@ -638,6 +673,7 @@ createRetryInterceptor(3, 1000);
 
 // Make request with retry
 api.get('/api/data', { retry: true });
+
 ```
 
 ### Loading State Management
@@ -679,6 +715,7 @@ class LoadingManager {
 }
 
 const loadingManager = new LoadingManager();
+
 ```
 
 ## Troubleshooting
@@ -688,12 +725,15 @@ const loadingManager = new LoadingManager();
 #### Issue 1: Unhandled Promise Rejections
 
 **Problem:**
+
 ```javascript
 // This pattern worked in 0.x but causes unhandled rejections in 1.x
 axios.get('/api/data'); // No .catch() handler
+
 ```
 
 **Solution:**
+
 ```javascript
 // Always handle promises
 axios.get('/api/data')
@@ -712,20 +752,24 @@ async function fetchData() {
     return null;
   }
 }
+
 ```
 
 #### Issue 2: Response Interceptors Not "Handling" Errors
 
 **Problem:**
+
 ```javascript
 // 0.x style - interceptor "handled" errors
 axios.interceptors.response.use(null, error => {
   showErrorMessage(error.message);
   // Error was considered "handled"
 });
+
 ```
 
 **Solution:**
+
 ```javascript
 // 1.x style - explicitly control error propagation
 axios.interceptors.response.use(
@@ -746,18 +790,22 @@ axios.interceptors.response.use(
     });
   }
 );
+
 ```
 
 #### Issue 3: JSON Parsing Errors
 
 **Problem:**
+
 ```javascript
 // 1.x is stricter about JSON parsing
 // This might throw where 0.x was lenient
 const data = response.data;
+
 ```
 
 **Solution:**
+
 ```javascript
 // Add response transformer for better error handling
 axios.defaults.transformResponse = [
@@ -774,18 +822,22 @@ axios.defaults.transformResponse = [
     return data;
   }
 ];
+
 ```
 
 #### Issue 4: TypeScript Errors After Upgrade
 
 **Problem:**
+
 ```typescript
 // TypeScript errors after upgrade
 const response = await axios.get('/api/data');
 // Property 'someProperty' does not exist on type 'any'
+
 ```
 
 **Solution:**
+
 ```typescript
 // Define proper interfaces
 interface ApiResponse {
@@ -797,11 +849,13 @@ interface ApiResponse {
 const response = await axios.get<ApiResponse>('/api/data');
 // Now properly typed
 console.log(response.data.data);
+
 ```
 
 ### Debug Migration Issues
 
 #### Enable Debug Logging
+
 ```javascript
 // Add request/response logging
 axios.interceptors.request.use(config => {
@@ -819,9 +873,11 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 ```
 
 #### Compare Behavior
+
 ```javascript
 // Create side-by-side comparison during migration
 const axios0x = require('axios-0x'); // Keep old version for testing
@@ -840,25 +896,30 @@ async function compareRequests(config) {
     console.log('Comparison error:', error);
   }
 }
+
 ```
 
 ## Resources
 
 ### Official Documentation
+
 - [Axios 1.x Documentation](https://axios-http.com/)
 - [Axios GitHub Repository](https://github.com/axios/axios)
 - [Axios Changelog](https://github.com/axios/axios/blob/main/CHANGELOG.md)
 
 ### Migration Tools
+
 - [Axios Migration Codemod](https://github.com/axios/axios-migration-codemod) *(if available)*
 - [ESLint Rules for Axios 1.x](https://github.com/axios/eslint-plugin-axios) *(if available)*
 
 ### Community Resources
+
 - [Stack Overflow - Axios Migration Questions](https://stackoverflow.com/questions/tagged/axios+migration)
 - [GitHub Discussions](https://github.com/axios/axios/discussions)
 - [Axios Discord Community](https://discord.gg/axios) *(if available)*
 
 ### Related Issues
+
 - [Error Handling Changes Discussion](https://github.com/axios/axios/issues/7208)
 - [Migration Guide Request](https://github.com/axios/axios/issues/xxxx) *(link to related issues)*
 

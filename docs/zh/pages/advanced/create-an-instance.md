@@ -84,4 +84,5 @@ await api.get("/slow-endpoint", { timeout: 30000 });
 ```js
 instance.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 ```
+
 :::

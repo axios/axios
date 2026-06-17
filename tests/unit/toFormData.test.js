@@ -66,6 +66,53 @@ describe('helpers::toFormData', () => {
     assert.ok(formData instanceof FormData);
   });
 
+  it('should use custom Blob constructor for typed array values', () => {
+    class CustomBlob {
+      constructor(parts) {
+        this.parts = parts;
+      }
+    }
+
+    const formData = {
+      calls: [],
+      append(key, value) {
+        this.calls.push([key, value]);
+      },
+      get [Symbol.toStringTag]() {
+        return 'FormData';
+      },
+      *[Symbol.iterator]() {}
+    };
+
+    const value = new Uint8Array([1, 2, 3]);
+    toFormData({ file: value }, formData, { Blob: CustomBlob });
+
+    assert.strictEqual(formData.calls.length, 1);
+    assert.strictEqual(formData.calls[0][0], 'file');
+    assert.ok(formData.calls[0][1] instanceof CustomBlob);
+    assert.deepStrictEqual(formData.calls[0][1].parts, [value]);
+  });
+
+  it('should throw AxiosError when typed array values require Buffer and Buffer is unavailable', () => {
+    const originalBuffer = globalThis.Buffer;
+    const formData = createRNFormDataSpy();
+
+    try {
+      globalThis.Buffer = undefined;
+
+      assert.throws(
+        () => toFormData({ file: new Uint8Array([1]) }, formData),
+        (err) => {
+          assert.ok(err instanceof AxiosError);
+          assert.strictEqual(err.code, AxiosError.ERR_NOT_SUPPORT);
+          return true;
+        }
+      );
+    } finally {
+      globalThis.Buffer = originalBuffer;
+    }
+  });
+
   it('should append root-level React Native blob without recursion', () => {
     const formData = createRNFormDataSpy();
 

@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Runtime and type declaration hardening
+
+- **Change:** Document the runtime edge-case fixes and public type declaration additions.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10959.
+- **Status:** Pending.
+- **Docs targets:** `README.md` cancellation section; `README.md` `AxiosHeaders` section; `README.md` FormData serializer section; generated docs pages for cancellation, headers, and multipart/urlencoded form serialization; translated docs after English docs are finalized.
+- **Required content:** Note that `CancelToken.subscribe`, `CancelToken.unsubscribe`, `CancelToken.toAbortSignal`, `CanceledError` constructor/`__CANCEL__`, `AxiosHeaders#set(Iterable)`, `AxiosHeaders#toString()`, `SerializerOptions.maxDepth`, `SerializerOptions.Blob`, and `axios.Cancel` typings now match the runtime API. Release notes should also mention the cookie, data URI, form serialization, config validation, XHR cleanup, and Node HTTP adapter error-shape hardening.
+- **Examples:** Consider a short `CancelToken.toAbortSignal()` example and an `AxiosHeaders#set(new Map(...))` example if the docs section is updated.
+- **Notes:** Keep this as release-preparation tracking. Do not imply that `CancelToken` is no longer deprecated.
+
 ### Node native env proxy interaction
 
 - **Change:** Document how the Node.js HTTP adapter interacts with Node native environment proxy handling.

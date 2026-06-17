@@ -229,6 +229,33 @@ describe('core::mergeConfig', () => {
     });
   });
 
+  describe('data property merging', () => {
+    it('merges data from instance defaults with request data (issue #5188)', () => {
+      const config1 = { data: { name: 'morpheus' } };
+      const config2 = { data: { job: 'leader' } };
+      const expected = { data: { name: 'morpheus', job: 'leader' } };
+
+      expect(mergeConfig(config1, config2)).toEqual(expected);
+    });
+
+    it('merges nested data objects correctly', () => {
+      const config1 = { data: { user: { id: 1 }, name: 'test' } };
+      const config2 = { data: { user: { email: 'test@example.com' } } };
+      const merged = mergeConfig(config1, config2);
+
+      expect(merged.data.name).toBe('test');
+      expect(merged.data.user.id).toBe(1);
+      expect(merged.data.user.email).toBe('test@example.com');
+    });
+
+    it('overwrites data when config2 provides non-object values', () => {
+      const config1 = { data: { foo: 'bar' } };
+      const config2 = { data: 'string-data' };
+
+      expect(mergeConfig(config1, config2).data).toBe('string-data');
+    });
+  });
+
   describe('defaultToConfig2Keys', () => {
     it('skips when both config1 and config2 values are undefined', () => {
       expect(mergeConfig({ transformRequest: undefined }, { transformRequest: undefined })).toEqual(

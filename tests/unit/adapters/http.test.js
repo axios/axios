@@ -1904,6 +1904,8 @@ describe('supports http with nodejs', () => {
         (error) => {
           assert.ok(error instanceof AxiosError, 'error should be an AxiosError');
           assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+          assert.strictEqual(error.exists, true);
+          assert.strictEqual(error.url, `http://localhost:${server.address().port}/`);
           return true;
         }
       );

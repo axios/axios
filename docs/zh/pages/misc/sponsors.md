@@ -2,8 +2,6 @@
 layout: page
 ---
 
-# 赞助商
-
 <script setup>
 import allSponsors from '../../../data/sponsors.json';
 

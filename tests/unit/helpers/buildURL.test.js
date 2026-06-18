@@ -16,6 +16,10 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar');
   });
 
+  it('should support params with undefined url', () => {
+    expect(buildURL(undefined, { foo: 'bar' })).toEqual('?foo=bar');
+  });
+
   it('should support sending raw params to custom serializer func', () => {
     const serializer = vi.fn().mockReturnValue('foo=bar');
     const params = { foo: 'bar' };

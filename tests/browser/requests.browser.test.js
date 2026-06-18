@@ -533,4 +533,38 @@ describe('requests (vitest browser)', () => {
       message: 'Unsupported protocol ftp:',
     });
   });
+
+  it('should clean up cancellation listeners after unsupported protocol rejection', async () => {
+    const source = axios.CancelToken.source();
+    const controller = new AbortController();
+    let abortListenerCount = 0;
+    const nativeAdd = controller.signal.addEventListener.bind(controller.signal);
+    const nativeRemove = controller.signal.removeEventListener.bind(controller.signal);
+
+    controller.signal.addEventListener = (type, fn, options) => {
+      if (type === 'abort') {
+        abortListenerCount++;
+      }
+      return nativeAdd(type, fn, options);
+    };
+    controller.signal.removeEventListener = (type, fn, options) => {
+      if (type === 'abort') {
+        abortListenerCount--;
+      }
+      return nativeRemove(type, fn, options);
+    };
+
+    await expect(
+      axios.get('ftp:localhost', {
+        adapter: 'xhr',
+        cancelToken: source.token,
+        signal: controller.signal,
+      })
+    ).rejects.toMatchObject({
+      message: 'Unsupported protocol ftp:',
+    });
+
+    expect(source.token._listeners || []).toEqual([]);
+    expect(abortListenerCount).toBe(0);
+  });
 });

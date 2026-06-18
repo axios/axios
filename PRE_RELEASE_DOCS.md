@@ -19,3 +19,13 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Notes:** Constraints, release-only wording, translation follow-up, etc.
 
 ## Unreleased
+
+### Malformed `http(s):` URL rejection
+
+- **Change:** Document that axios rejects `http:`/`https:` URLs that omit `//` after the protocol, and that the error now names the offending URL.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11000 (rejection) and #11008 (improved message).
+- **Status:** Pending.
+- **Docs targets:** `README.md` errors / handling-errors section; migration/upgrade notes; `docs/pages/advanced/request-config.md` `url`/`baseURL` description; translated docs after English docs are finalized.
+- **Required content:** Explain that since this release a request `url` or `baseURL` of the form `https:example.com` or `https:/example.com` (scheme present, `//` missing) is rejected with an `AxiosError` whose code is `ERR_INVALID_URL`, instead of being silently normalized by the browser/Node URL parser. This is a security fix preventing `baseURL`/allowlist (SSRF) bypasses. Callers must pass a well-formed URL such as `https://example.com`. The error message now includes the offending URL: `Invalid URL "https:example.com": missing "//" after protocol`.
+- **Examples:** None required.
+- **Notes:** Frame as a behavior change for upgraders; the previous lenient normalization is intentionally removed. Mention only the control-character-normalized URL is shown in the message.

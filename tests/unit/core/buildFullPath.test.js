@@ -53,8 +53,32 @@ describe('core::buildFullPath', () => {
 
       expect(error).toBeInstanceOf(AxiosError);
       expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
-      expect(error.message).toBe('Invalid URL: missing "//" after protocol');
+      expect(error.message).toMatch(/^Invalid URL ".*": missing "\/\/" after protocol$/);
     }
+  });
+
+  it('includes the offending URL in the error message', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, 'https:example.com/users');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
+  });
+
+  it('reports the normalized URL when the malformed URL contains control characters', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, '\thttps:example.com/users');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
   });
 
   it('does not reject an unused malformed baseURL for absolute requests', () => {
@@ -74,6 +98,6 @@ describe('core::buildFullPath', () => {
 
     expect(error).toBeInstanceOf(AxiosError);
     expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
-    expect(error.message).toBe('Invalid URL: missing "//" after protocol');
+    expect(error.message).toBe('Invalid URL "http:example.com/api": missing "//" after protocol');
   });
 });

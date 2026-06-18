@@ -4,13 +4,14 @@ import AxiosURLSearchParams from '../../../lib/helpers/AxiosURLSearchParams.js';
 describe('AxiosURLSearchParams::toString', () => {
   it('should pass the AxiosURLSearchParams instance as `this` to a custom encoder', () => {
     const params = new AxiosURLSearchParams({ foo: 'bar', baz: 'qux' });
-    let capturedThis;
+    const capturedThis = [];
 
-    params.toString(function customEncoder(value, defaultEncode) {
-      capturedThis = this;
+    const serialized = params.toString(function customEncoder(value, defaultEncode) {
+      capturedThis.push(this);
       return defaultEncode(value);
     });
 
-    expect(capturedThis).toBe(params);
+    expect(serialized).toBe('foo=bar&baz=qux');
+    expect(capturedThis).toEqual([params, params, params, params]);
   });
 });

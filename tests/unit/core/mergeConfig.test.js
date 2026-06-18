@@ -4,6 +4,10 @@ import mergeConfig from '../../../lib/core/mergeConfig.js';
 import { AxiosHeaders } from '../../../index.js';
 
 describe('core::mergeConfig', () => {
+  it('accepts null for first argument', () => {
+    expect(mergeConfig(null, { url: '/foo' })).toEqual({ url: '/foo' });
+  });
+
   it('accepts undefined for second argument', () => {
     expect(mergeConfig(defaults, undefined)).toEqual(defaults);
   });

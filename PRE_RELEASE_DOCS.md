@@ -20,50 +20,22 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
-### malformed HTTP URL rejection
+### Runtime and type declaration hardening
 
-- **Change:** Note that malformed `http:` and `https:` URLs missing `//` are rejected before adapter normalization.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10900, closes #7315.
-- **Status:** Skipped.
-- **Docs targets:** None beyond release notes.
-- **Required content:** No API documentation update is needed because this changes handling for invalid URL input without adding or changing request config, types, or public APIs. The release note should mention that axios now throws `AxiosError` with `ERR_INVALID_URL` for malformed HTTP(S) URLs such as `https:example.com` or `http:/example.com` instead of allowing platform URL normalization.
-- **Examples:** None.
-- **Notes:** Treat as a bug/security-hardening release note, not a request-config documentation change.
-
-### sensitiveHeaders request config
-
-- **Change:** Document the Node.js `sensitiveHeaders` request config option for stripping custom secret headers from cross-origin redirects.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Security Fixes, #10892.
+- **Change:** Document the runtime edge-case fixes and public type declaration additions.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10959.
 - **Status:** Pending.
-- **Docs targets:** `docs/pages/misc/security.md`; `docs/pages/advanced/request-config.md`; README request config section if it lists all config options; translated docs after English docs are finalized.
-- **Required content:** Explain that `sensitiveHeaders` is an optional array of custom secret-bearing header names. Matching is case-insensitive. The Node.js HTTP adapter removes matching headers only when following a redirect to a different origin. Same-origin redirects keep these headers. If `maxRedirects` is `0`, axios does not follow redirects and `sensitiveHeaders` is not used. Mention common custom authentication headers such as `X-API-Key`.
-- **Examples:** Include this request example.
+- **Docs targets:** `README.md` cancellation section; `README.md` `AxiosHeaders` section; `README.md` FormData serializer section; generated docs pages for cancellation, headers, and multipart/urlencoded form serialization; translated docs after English docs are finalized.
+- **Required content:** Note that `CancelToken.subscribe`, `CancelToken.unsubscribe`, `CancelToken.toAbortSignal`, `CanceledError` constructor/`__CANCEL__`, `AxiosHeaders#set(Iterable)`, `AxiosHeaders#toString()`, `SerializerOptions.maxDepth`, `SerializerOptions.Blob`, and `axios.Cancel` typings now match the runtime API. Release notes should also mention the cookie, data URI, form serialization, config validation, XHR cleanup, and Node HTTP adapter error-shape hardening.
+- **Examples:** Consider a short `CancelToken.toAbortSignal()` example and an `AxiosHeaders#set(new Map(...))` example if the docs section is updated.
+- **Notes:** Keep this as release-preparation tracking. Do not imply that `CancelToken` is no longer deprecated.
 
-```js
-axios.get('https://api.example.com/users', {
-  headers: { 'X-API-Key': 'secret' },
-  sensitiveHeaders: ['X-API-Key']
-});
-```
+### Node native env proxy interaction
 
-- **Notes:** Add a security page row linking to the request-config section and add a `sensitiveHeaders` request-config entry marked Node.js only.
-
-### validateStatus undefined transitional option
-
-- **Change:** Document `transitional.validateStatusUndefinedResolves` for the `validateStatus: undefined` merge behavior.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10899, closes #6688.
+- **Change:** Document how the Node.js HTTP adapter interacts with Node native environment proxy handling.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10942, closes #7299.
 - **Status:** Pending.
-- **Docs targets:** README request config section; `docs/pages/advanced/request-config.md` `validateStatus` section and request config example; translated request-config docs after English docs are finalized.
-- **Required content:** Explain that `validateStatus: undefined` keeps legacy behavior by default and resolves every response status because `transitional.validateStatusUndefinedResolves` defaults to `true`. Explain that setting `transitional.validateStatusUndefinedResolves` to `false` makes explicit `validateStatus: undefined` behave like the option was omitted, so axios uses the configured/default validator and rejects non-2xx responses by default. Mention that `validateStatus: null` still accepts every response status, and users who disable the transitional behavior should use `null` or `() => true` when they intentionally want all statuses to resolve.
-- **Examples:** Include a short opt-in example.
-
-```js
-axios.get('/user/12345', {
-  validateStatus: undefined,
-  transitional: {
-    validateStatusUndefinedResolves: false
-  }
-});
-```
-
-- **Notes:** This is release-prep documentation only; do not update README or docs pages in the feature/fix PR.
+- **Docs targets:** `README.md` proxy/request config sections; `docs/pages/advanced/request-config.md`; translated request-config docs after English docs are finalized.
+- **Required content:** Explain that axios normally resolves `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` itself for the Node.js HTTP adapter unless `config.proxy` is `false`. On Node.js versions with native HTTP proxy support, axios defers environment proxy handling to Node when the selected HTTP/HTTPS agent has `proxyEnv` enabled, including processes started with `NODE_USE_ENV_PROXY=1`, `--use-env-proxy`, or `NODE_OPTIONS=--use-env-proxy`. Custom agents without `proxyEnv` continue to use axios env proxy resolution. Explicit `config.proxy` remains handled by axios.
+- **Examples:** None required.
+- **Notes:** Keep the wording Node.js-only. Mention that this avoids double proxy rewriting while preserving existing custom-agent behavior.

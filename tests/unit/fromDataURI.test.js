@@ -11,6 +11,22 @@ describe('helpers::fromDataURI', () => {
     assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
   });
 
+  it('should not call decodeURIComponent for base64 data', () => {
+    const buffer = Buffer.from('123');
+    const originalDecodeURIComponent = globalThis.decodeURIComponent;
+    globalThis.decodeURIComponent = () => {
+      throw new Error('base64 body should not be URL decoded');
+    };
+
+    try {
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
+    } finally {
+      globalThis.decodeURIComponent = originalDecodeURIComponent;
+    }
+  });
+
   it('should parse data URI with no mediatype and base64', () => {
     const buffer = Buffer.from('123');
     const dataURI = 'data:;base64,' + buffer.toString('base64');

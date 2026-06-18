@@ -64,4 +64,17 @@ describe('validator::assertOptions', () => {
       );
     }).not.toThrow();
   });
+
+  it('should reject null options', () => {
+    let error;
+    try {
+      validator.assertOptions(null, {});
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect(error.message).toBe('options must be an object');
+    expect(error.code).toBe(AxiosError.ERR_BAD_OPTION_VALUE);
+  });
 });

@@ -10,7 +10,11 @@ import {
 } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
-import httpAdapter, { __isSameOriginRedirect, __setProxy } from '../../../lib/adapters/http.js';
+import httpAdapter, {
+  __isNodeEnvProxyEnabled,
+  __isSameOriginRedirect,
+  __setProxy,
+} from '../../../lib/adapters/http.js';
 import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
@@ -1898,7 +1902,10 @@ describe('supports http with nodejs', () => {
           },
         }),
         (error) => {
-          assert.deepStrictEqual(error.exists, true);
+          assert.ok(error instanceof AxiosError, 'error should be an AxiosError');
+          assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+          assert.strictEqual(error.exists, true);
+          assert.strictEqual(error.url, `http://localhost:${server.address().port}/`);
           return true;
         }
       );
@@ -2561,6 +2568,169 @@ describe('supports http with nodejs', () => {
         delete process.env.NO_PROXY;
       } else {
         process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
+  it('should detect Node native env proxy support from the selected agent', () => {
+    const nativeProxyAgent = { options: { proxyEnv: { HTTP_PROXY: 'http://proxy.local:9000' } } };
+    const plainAgent = { options: {} };
+
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '22.20.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '22.21.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '24.4.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '24.5.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '25.0.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(plainAgent, '24.5.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(undefined, '24.5.0'), false);
+  });
+
+  it('should leave env proxy handling to supported Node versions when the selected agent uses proxyEnv', () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+    const originalNodeUseEnvProxy = process.env.NODE_USE_ENV_PROXY;
+
+    process.env.NODE_USE_ENV_PROXY = '1';
+    process.env.http_proxy = 'http://proxy.local:9000/';
+    process.env.HTTP_PROXY = 'http://proxy.local:9000/';
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'target.example',
+        host: 'target.example',
+        port: '4000',
+        protocol: 'http:',
+        path: '/resource',
+      };
+      const nativeProxyAgent = { options: { proxyEnv: process.env } };
+
+      __setProxy(
+        options,
+        undefined,
+        'http://target.example:4000/resource',
+        false,
+        undefined,
+        nativeProxyAgent
+      );
+
+      if (__isNodeEnvProxyEnabled(nativeProxyAgent, process.versions.node)) {
+        assert.strictEqual(options.hostname, 'target.example');
+        assert.strictEqual(options.port, '4000');
+        assert.strictEqual(options.path, '/resource');
+        assert.strictEqual(options.headers.host, undefined);
+      } else {
+        assert.strictEqual(options.hostname, 'proxy.local');
+        assert.strictEqual(options.port, '9000');
+        assert.strictEqual(options.path, 'http://target.example:4000/resource');
+      }
+
+      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function');
+    } finally {
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+
+      if (originalNodeUseEnvProxy === undefined) {
+        delete process.env.NODE_USE_ENV_PROXY;
+      } else {
+        process.env.NODE_USE_ENV_PROXY = originalNodeUseEnvProxy;
+      }
+    }
+  });
+
+  it('should keep axios env proxy handling when the selected agent has no proxyEnv', () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+    const originalNodeUseEnvProxy = process.env.NODE_USE_ENV_PROXY;
+
+    process.env.NODE_USE_ENV_PROXY = '1';
+    process.env.http_proxy = 'http://proxy.local:9000/';
+    process.env.HTTP_PROXY = 'http://proxy.local:9000/';
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'target.example',
+        host: 'target.example',
+        port: '4000',
+        protocol: 'http:',
+        path: '/resource',
+      };
+      const plainAgent = { options: {} };
+
+      __setProxy(
+        options,
+        undefined,
+        'http://target.example:4000/resource',
+        false,
+        undefined,
+        plainAgent
+      );
+
+      assert.strictEqual(options.hostname, 'proxy.local');
+      assert.strictEqual(options.port, '9000');
+      assert.strictEqual(options.path, 'http://target.example:4000/resource');
+      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function');
+    } finally {
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+
+      if (originalNodeUseEnvProxy === undefined) {
+        delete process.env.NODE_USE_ENV_PROXY;
+      } else {
+        process.env.NODE_USE_ENV_PROXY = originalNodeUseEnvProxy;
       }
     }
   });
@@ -6169,6 +6339,58 @@ describe('supports http with nodejs', () => {
         'second request should be destroyed by its own active socket error'
       );
     });
+
+    it('should not throw TypeError when a proxy agent stream does not define setKeepAlive (regression #10908)', async () => {
+      // proxy agents (e.g. agent-base) may provide a generic Duplex stream as
+      // the socket; that stream does not define setKeepAlive.
+      const socket = new stream.Duplex({
+        read() {},
+        write(_chunk, _encoding, callback) {
+          callback();
+        },
+      });
+      assert.strictEqual(typeof socket.setKeepAlive, 'undefined');
+
+      const transport = {
+        request(_, cb) {
+          return new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+            }
+
+            setTimeout() {}
+            write() {}
+
+            end() {
+              this.emit('socket', socket);
+
+              setImmediate(() => {
+                const response = stream.Readable.from(['ok']);
+                response.statusCode = 200;
+                response.headers = {};
+                cb(response);
+                this.emit('close');
+              });
+            }
+
+            destroy(err) {
+              if (this.destroyed) return;
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+        },
+      };
+
+      const result = await axios.get('http://example.com/', {
+        transport,
+        maxRedirects: 0,
+      });
+
+      assert.strictEqual(result.status, 200);
+    });
   });
 
   describe('redirect listener accumulation', () => {
@@ -6316,9 +6538,10 @@ describe('supports http with nodejs', () => {
         : path.join(os.tmpdir(), `${pipe}.sock`);
     }
 
-    function startUnixServer(socketPath) {
+    function startUnixServer(socketPath, onRequest) {
       return new Promise((resolveStart, rejectStart) => {
         const server = http.createServer((req, res) => {
+          onRequest && onRequest(req);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ ok: true, url: req.url }));
         });
@@ -6353,6 +6576,61 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(res.status, 200);
         assert.strictEqual(res.data.ok, true);
       } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('accepts a path-only url when socketPath is set (regression #6611)', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('/echo?q=1', { socketPath });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.ok, true);
+        assert.strictEqual(res.data.url, '/echo?q=1');
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('accepts a path-only url when socketPath matches allowedSocketPaths', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('/echo?q=1', {
+          socketPath,
+          allowedSocketPaths: [socketPath],
+        });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.ok, true);
+        assert.strictEqual(res.data.url, '/echo?q=1');
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('ignores a prototype-polluted socketPath (security, regression #6611)', async () => {
+      const socketPath = makeSocketPath();
+      let requestCount = 0;
+      const server = await startUnixServer(socketPath, () => {
+        requestCount += 1;
+      });
+      // Pollute the prototype so `socketPath` is visible via the chain but is
+      // NOT an own property of the request config.
+      Object.prototype.socketPath = socketPath;
+      try {
+        // With no own socketPath, the polluted prototype value must not be
+        // honored: the path-only url gets no synthetic base and the request is
+        // never routed to the (attacker-controlled) socket, so it rejects
+        // instead of silently connecting.
+        await assert.rejects(axios.get('/echo?q=1'), (err) => {
+          assert.ok(err instanceof Error);
+          assert.strictEqual(err.code, AxiosError.ERR_INVALID_URL);
+          return true;
+        });
+        assert.strictEqual(requestCount, 0);
+      } finally {
+        delete Object.prototype.socketPath;
         await stopUnixServer(server, socketPath);
       }
     });

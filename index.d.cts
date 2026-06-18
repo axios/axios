@@ -50,6 +50,7 @@ declare class AxiosHeaders {
     rewrite?: boolean | AxiosHeaderMatcher
   ): AxiosHeaders;
   set(headers?: axios.RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+  set(headers?: Iterable<[string, axios.AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
   get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
@@ -119,6 +120,8 @@ declare class AxiosHeaders {
 
   getSetCookie(): string[];
 
+  toString(): string;
+
   [Symbol.iterator](): IterableIterator<[string, axios.AxiosHeaderValue]>;
 }
 
@@ -165,7 +168,9 @@ declare class AxiosError<T = unknown, D = any> extends Error {
 }
 
 declare class CanceledError<T> extends AxiosError<T> {
+  constructor(message?: string, config?: axios.InternalAxiosRequestConfig, request?: any);
   readonly name: 'CanceledError';
+  __CANCEL__?: boolean;
 }
 
 declare class Axios {
@@ -296,6 +301,12 @@ declare enum HttpStatusCode {
   LoopDetected = 508,
   NotExtended = 510,
   NetworkAuthenticationRequired = 511,
+  WebServerIsDown = 521,
+  ConnectionTimedOut = 522,
+  OriginIsUnreachable = 523,
+  TimeoutOccurred = 524,
+  SslHandshakeFailed = 525,
+  InvalidSslCertificate = 526,
 }
 
 type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
@@ -428,6 +439,8 @@ declare namespace axios {
     dots?: boolean;
     metaTokens?: boolean;
     indexes?: boolean | null;
+    maxDepth?: number;
+    Blob?: { new (...args: any[]): any };
   }
 
   // tslint:disable-next-line
@@ -625,6 +638,9 @@ declare namespace axios {
     promise: Promise<Cancel>;
     reason?: Cancel;
     throwIfRequested(): void;
+    subscribe(listener: (cancel: Cancel | any) => void): void;
+    unsubscribe(listener: (cancel: Cancel | any) => void): void;
+    toAbortSignal(): AbortSignal;
   }
 
   interface CancelTokenSource {
@@ -691,7 +707,7 @@ declare namespace axios {
   }
 
   interface AxiosStatic extends AxiosInstance {
-    Cancel: CancelStatic;
+    Cancel: typeof CanceledError;
     CancelToken: CancelTokenStatic;
     Axios: typeof Axios;
     AxiosError: typeof AxiosError;

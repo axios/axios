@@ -27,6 +27,7 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 | --- | --- | --- |
 | [`socketPath`](/pages/advanced/request-config#socketpath) | 如果取自不可信输入，攻击者可将流量重定向到 `/var/run/docker.sock` 等特权本地套接字，绕过基于主机名的 SSRF 防护（CWE-918）。 | 对来自不可信输入的配置进行过滤或仅允许特定键。使用 [`allowedSocketPaths`](/pages/advanced/request-config#allowedsocketpaths) 限制可接受的套接字路径。 |
 | [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | 在 `follow-redirects` 因协议降级剥离凭据**之后**运行。如果不检查目标协议就重新注入凭据，可能在明文 HTTP 上泄露凭据。 | 仅对可信的 HTTPS 目标重新添加凭据。在为 `auth` 赋值前检查 `options.protocol === "https:"`。 |
+| [`sensitiveHeaders`](/pages/advanced/request-config#sensitiveheaders) | `X-API-Key` 等自定义密钥请求头在 Node.js HTTP 适配器跟随重定向到不同源时可能被转发。 | 在 `sensitiveHeaders` 中列出这些自定义密钥请求头名称；axios 会在跨源重定向时不区分大小写地移除匹配项。同源重定向会保留它们。 |
 | [`withXSRFToken`](/pages/advanced/request-config#withxsrftoken) | 设置为 `true` 会在跨域请求中强制设置 XSRF 请求头。较旧的 axios 版本会在 `withCredentials: true` 时隐式启用此行为；新版本要求两个标志同时设置。 | 保持为 `undefined`（仅同源），除非你的后端确实在跨域请求中校验 XSRF。 |
 | [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` 默认会包含请求配置，可能将 `Authorization` 请求头或 `auth` 凭据泄露到错误日志和遥测中。 | 通过 `redact` 数组传入需要遮蔽的配置键名。匹配不区分大小写，且会递归处理。 |
 | [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) | 自定义 `FormData` 的 `getHeaders()` 若返回攻击者可控的值，可能在 Node.js 中覆盖 `Authorization` 等请求头或注入任意请求头。 | 设置为 `'content-only'` 仅复制 `Content-Type` 与 `Content-Length`，再通过请求 `headers` 配置显式设置其他请求头。 |

@@ -75,6 +75,27 @@ describe('helpers::cookies (vitest browser)', () => {
     expect(document.cookie).toBe('foo=bar%20baz%25');
   });
 
+  it('returns raw cookie value when it is not valid URI encoding', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, 'cookie');
+
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get() {
+        return 'foo=bar%';
+      },
+    });
+
+    try {
+      expect(cookies.read('foo')).toBe('bar%');
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(document, 'cookie', descriptor);
+      } else {
+        delete document.cookie;
+      }
+    }
+  });
+
   it('matches cookie names exactly even when the name contains regex metacharacters', () => {
     // previously cookies.read built a RegExp by interpolating
     // the requested name. Metacharacters could match a different cookie or trigger

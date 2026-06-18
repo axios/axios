@@ -265,9 +265,33 @@ axios.get('/user/12345', {
 
 La función `validateStatus` te permite sobreescribir la validación predeterminada del código de estado. Por defecto, axios rechazará la Promise si el código de estado no está en el rango 200-299. Puedes sobreescribir este comportamiento proporcionando una función `validateStatus` personalizada. La función debe devolver `true` si el código de estado está dentro del rango que deseas aceptar.
 
+Por defecto, un `validateStatus: undefined` explícito conserva el comportamiento heredado y resuelve todos los estados de respuesta, porque `transitional.validateStatusUndefinedResolves` tiene `true` como valor predeterminado. Establece `transitional.validateStatusUndefinedResolves` en `false` si quieres que un `validateStatus: undefined` explícito se comporte como si `validateStatus` se hubiera omitido; así axios usa el validador configurado/predeterminado y rechaza las respuestas que no sean 2xx por defecto.
+
+`validateStatus: null` sigue aceptando todos los estados de respuesta. Si desactivas el comportamiento transicional y quieres intencionalmente resolver todos los estados, usa `validateStatus: null` o un validador que devuelva `true`.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false
+  }
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="Solo en Node.js" />
 
 La propiedad `maxRedirects` define el número máximo de redirecciones a seguir. Si se establece en 0, no se seguirá ninguna redirección.
+
+### `sensitiveHeaders` <Badge type="warning" text="Solo en Node.js" />
+
+La propiedad `sensitiveHeaders` es un arreglo opcional de nombres de encabezados personalizados que contienen secretos, como `X-API-Key`, que el adaptador HTTP de Node.js elimina al seguir una redirección a un origen diferente. La coincidencia no distingue mayúsculas/minúsculas. Las redirecciones al mismo origen conservan estos encabezados. Si `maxRedirects` es `0`, axios no sigue redirecciones y `sensitiveHeaders` no se usa.
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key']
+});
+```
 
 ### `beforeRedirect`
 
@@ -381,6 +405,7 @@ La propiedad `transitional` te permite habilitar o deshabilitar ciertas caracter
 
 - `forcedJSONParsing`: Fuerza a axios a analizar la cadena de respuesta como JSON incluso si `responseType` no es `'json'`.
 - `clarifyTimeoutError`: Clarifica el mensaje de error cuando una solicitud expira. Es útil cuando depuras problemas de timeout.
+- `validateStatusUndefinedResolves`: Si se establece en `true` _(predeterminado)_, un `validateStatus: undefined` explícito resuelve todos los estados de respuesta por compatibilidad. Establécelo en `false` para tratar `undefined` explícito como si `validateStatus` se hubiera omitido, de modo que axios use el validador configurado/predeterminado. Usa `validateStatus: null` o un validador que devuelva `true` cuando quieras intencionalmente resolver todos los estados.
 - `advertiseZstdAcceptEncoding`: Cuando se establece en `true`, axios añade `zstd` al encabezado `Accept-Encoding` predeterminado cuando el runtime actual de Node.js soporta descompresión zstd. Las respuestas zstd se descomprimen automáticamente cuando son compatibles y `decompress` es `true`.
 - `legacyInterceptorReqResOrdering`: Cuando se establece en `true`, se usará el orden de solicitud/respuesta de interceptores heredado.
 
@@ -477,6 +502,7 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -507,6 +533,7 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
     advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },

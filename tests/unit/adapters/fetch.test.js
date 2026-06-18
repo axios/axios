@@ -844,6 +844,45 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       );
     });
 
+    it('sets a non-enumerable cause on canceled fetch errors so loggers do not throw (#7205)', async () => {
+      const underlying = new Error('abort internals');
+      const socket = { name: 'Socket' };
+      socket.self = socket;
+      underlying.socket = socket;
+
+      const abortingFetch = (url, init) => {
+        const signal = getFetchSignal(url, init);
+
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => {
+            signal.removeEventListener('abort', onAbort);
+            reject(underlying);
+          };
+
+          if (signal.aborted) return onAbort();
+          signal.addEventListener('abort', onAbort);
+        });
+      };
+
+      const controller = new AbortController();
+
+      const request = fetchAxios.get('/', {
+        signal: controller.signal,
+        env: { fetch: abortingFetch },
+      });
+
+      controller.abort();
+
+      const err = await request.catch((e) => e);
+
+      assert.strictEqual(err.name, 'CanceledError');
+      assert.strictEqual(err.code, 'ERR_CANCELED');
+      assert.strictEqual(err.cause, underlying);
+      assert.strictEqual(Object.getOwnPropertyDescriptor(err, 'cause').enumerable, false);
+      assert.ok(!Object.keys(err).includes('cause'));
+      assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
+    });
+
     // Timing-sensitive: a 50ms abort race observed by a fake fetch can flake
     // under CI runner load even though the production code is fine. Retry as
     // a backstop.
@@ -945,7 +984,30 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     } catch (err) {
       assert.strictEqual(String(err), 'AxiosError: Network Error');
       assert.strictEqual(err.cause && err.cause.code, 'ENOTFOUND');
+      // `cause` must be non-enumerable so own-property serialization is safe (#7205).
+      assert.strictEqual(Object.getOwnPropertyDescriptor(err, 'cause').enumerable, false);
     }
+  });
+
+  it('sets a non-enumerable cause on network errors so loggers do not throw (#7205)', async () => {
+    // Underlying error carrying a circular reference, like a Node socket.
+    const underlying = new Error('connect ECONNREFUSED');
+    underlying.code = 'ECONNREFUSED';
+    const socket = { name: 'Socket' };
+    socket.self = socket; // circular
+    underlying.socket = socket;
+
+    const failingFetch = () =>
+      Promise.reject(Object.assign(new TypeError('fetch failed'), { cause: underlying }));
+
+    const err = await fetchAxios.get('/', { env: { fetch: failingFetch } }).catch((e) => e);
+
+    assert.strictEqual(err.code, 'ERR_NETWORK');
+    assert.strictEqual(err.cause, underlying); // still accessible for debugging
+    assert.strictEqual(Object.getOwnPropertyDescriptor(err, 'cause').enumerable, false);
+    assert.ok(!Object.keys(err).includes('cause'));
+    // pino/winston-style own-property walk must not throw on the circular cause.
+    assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
   });
 
   it('should get response headers', async () => {

@@ -1,6 +1,7 @@
 import { beforeEach, describe, it } from 'vitest';
 import assert from 'assert';
 import adapters from '../../../lib/adapters/adapters.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('adapters', () => {
   const store = { ...adapters.adapters };
@@ -31,7 +32,15 @@ describe('adapters', () => {
 
   it('should detect adapter unsupported status', () => {
     adapters.adapters.testadapter = false;
-    assert.throws(() => adapters.getAdapter('testAdapter'), /is not supported by the environment/);
+    assert.throws(
+      () => adapters.getAdapter('testAdapter'),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_NOT_SUPPORT);
+        assert.match(err.message, /is not supported by the environment/);
+        return true;
+      }
+    );
   });
 
   it('should pick suitable adapter from the list', () => {

@@ -1,6 +1,8 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
+import FormData from 'form-data';
 import resolveConfig from '../../../lib/helpers/resolveConfig.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 class ReactNativeFormData {
   append() {}
@@ -54,6 +56,40 @@ describe('helpers::resolveConfig', () => {
       delete Object.prototype.username;
       delete Object.prototype.password;
     }
+  });
+
+  it('should wrap invalid auth encoding as AxiosError', () => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          auth: {
+            username: 'user',
+            password: '\uD800',
+          },
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        return true;
+      }
+    );
+  });
+
+  it('should ignore null form-data headers with content-only policy', () => {
+    const data = new FormData();
+    data.getHeaders = () => null;
+
+    const config = resolveConfig({
+      url: '/upload',
+      data,
+      formDataHeaderPolicy: 'content-only',
+      headers: {
+        'X-Test': 'ok',
+      },
+    });
+
+    assert.strictEqual(config.headers.get('X-Test'), 'ok');
   });
 
   it('should ignore inherited nested serializer fields', () => {

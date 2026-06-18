@@ -1,5 +1,37 @@
 # Changelog
 
+## v1.18.0 — June 13, 2026
+
+This release hardens redirect and URL handling, improves the validateStatus configuration semantics, and includes updates to documentation, dependencies, and release metadata.
+
+## 🔒 Security Fixes
+
+* **Redirect Header Safety:** Added Node HTTP adapter support for stripping caller-specified sensitive headers on cross-origin redirects, helping prevent custom auth headers such as API keys from leaking to another origin. (__#10892__)
+
+* **URL And Request Hardening:** Rejects malformed `http:` and `https:` URLs that omit `//` with `ERR_INVALID_URL`, while tightening prototype-pollution-safe config reads, stream size limits, FormData depth handling, data URL sizing, and local `NO_PROXY` matching. (__#11000__)
+
+## 🐛 Bug Fixes
+
+* **Status Validation:** Added `transitional.validateStatusUndefinedResolves` so applications can opt in to treating `validateStatus: undefined` like the option was omitted, while `validateStatus: null` remains the explicit way to accept every status. (__#10899__)
+
+## 🔧 Maintenance & Chores
+
+* **Documentation:** Published the v1.17.0 release notes, fixed a changelog typo, clarified the package update PR policy, and marked the `proxy` request config as Node.js-only in the advanced docs. (__#10984__, __#10988__, __#10992__, __#10995__)
+
+* **Dependencies:** Bumped `@babel/core`, `@babel/preset-env`, `@commitlint/cli`, `@commitlint/config-conventional`, `@rollup/plugin-babel`, `@rollup/plugin-commonjs`, `@vitest/browser`, `@vitest/browser-playwright`, `eslint`, `lint-staged`, `rollup`, `vitest`, and `actions/checkout`. (__#10989__, __#10996__, __#10997__)
+
+* **Release Metadata:** Prepared the 1.18.0 release by updating package metadata and the runtime `VERSION` value. (__#11003__)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+* __@drori12__ (__#10984__)
+* __@eyupcanakman__ (__#10899__)
+* __@Adi-Beker__ (__#10995__)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.17.0...v1.18.0)
+
 ## v1.17.0 — June 1, 2026
 
 This release adds Node HTTP zstd decompression, hardens config and release workflows, and fixes authentication, header, proxy, and type-handling regressions.

@@ -188,4 +188,29 @@ describe('formDataToJSON', () => {
       a: { 'b-c': '2' },
     });
   });
+
+  it('should treat `.` and `[` as separators inside bracket groups', () => {
+    const formData = new FormData();
+
+    formData.append('foo[bar.baz]', '1');
+    formData.append('qux[a[b]', '2');
+
+    // `.`, `[` and `]` are not part of a key, so bracket contents are split the
+    // same way as dot notation rather than captured as a single literal key.
+    expect(formDataToJSON(formData)).toEqual({
+      foo: { bar: { baz: '1' } },
+      qux: { a: { b: '2' } },
+    });
+  });
+
+  it('should parse long malformed bracket names in linear time', () => {
+    const formData = new FormData();
+
+    // A run of unmatched `[` must not make the tokenizer rescan to the end of
+    // the string from each `[` (quadratic). This completes instantly when the
+    // bracket group fails fast; the previous pattern hangs well past the timeout.
+    formData.append('a' + '['.repeat(100000), 'x');
+
+    expect(formDataToJSON(formData)).toEqual({ a: 'x' });
+  });
 });

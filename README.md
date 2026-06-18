@@ -430,6 +430,12 @@ Using bun:
 $ bun add axios
 ```
 
+Using Deno:
+
+```bash
+$ deno add axios
+```
+
 Once the package is installed, import it with `import` or `require`:
 
 ```js

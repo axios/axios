@@ -471,6 +471,8 @@ La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segund
   data: {
     firstName: "Fred"
   },
+  // `data` es específico de cada solicitud: axios no lo hereda ni lo fusiona en profundidad desde los valores predeterminados.
+  // Para agregar campos compartidos al cuerpo, usa un interceptor de solicitud o transformRequest.
   formDataHeaderPolicy: "legacy",
   // Syntax alternative to send data into the body method post only the value is sent, not the key
   data: "Country=Brasil&City=Belo Horizonte",

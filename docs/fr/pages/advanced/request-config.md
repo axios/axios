@@ -471,6 +471,8 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
   data: {
     firstName: "Fred"
   },
+  // `data` est propre à chaque requête : axios ne l'hérite pas et ne le fusionne pas en profondeur depuis les valeurs par défaut.
+  // Pour ajouter des champs de corps communs, utilisez un intercepteur de requête ou transformRequest.
   formDataHeaderPolicy: "legacy",
   // Syntaxe alternative pour envoyer des données dans le corps de la méthode post : seule la valeur est envoyée, pas la clé
   data: "Country=Brasil&City=Belo Horizonte",

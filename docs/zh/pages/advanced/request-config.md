@@ -471,6 +471,8 @@ proxy: {
   data: {
     firstName: "Fred"
   },
+  // `data` 是请求专属的：axios 不会从默认值继承或深度合并它。
+  // 如需添加共享请求体字段，请使用请求拦截器或 transformRequest。
   formDataHeaderPolicy: "legacy",
   // 另一种将数据发送到请求体的语法，仅适用于 POST 方法，只发送值，不发送键
   data: "Country=Brasil&City=Belo Horizonte",

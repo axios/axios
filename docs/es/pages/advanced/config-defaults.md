@@ -31,6 +31,8 @@ instance.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 
 La configuración se combinará con un orden de precedencia. El orden es el siguiente: primero se establecen los valores predeterminados de la librería, luego las propiedades predeterminadas de la instancia y, finalmente, el argumento de configuración de la solicitud. A continuación se muestra un ejemplo del orden de precedencia.
 
+Algunas opciones son específicas de cada solicitud y solo se toman de la configuración de la solicitud. `data` es una de ellas: axios no hereda ni fusiona en profundidad cuerpos de solicitud desde los valores predeterminados globales o de instancia. Si todas las solicitudes necesitan campos compartidos en el cuerpo, agrégalos con un interceptor de solicitud o `transformRequest`, y limita cuidadosamente ese comportamiento para no enviar valores sensibles al endpoint equivocado.
+
 Primero, vamos a crear una instancia con los valores predeterminados que proporciona la librería. En este punto, el valor de configuración de timeout es `0`, que es el valor predeterminado de la librería.
 
 ```js

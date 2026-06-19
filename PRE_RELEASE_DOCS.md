@@ -24,11 +24,11 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 - **Change:** Clarify that request `data` is request-specific and is not inherited or deep-merged from defaults.
 - **Source:** Documentation clarification for issue #5188 / PR #11020 review.
-- **Status:** Pending.
-- **Docs targets:** Translated request config and config defaults pages after English docs are finalized.
+- **Status:** Applied.
+- **Docs targets:** `README.md`; English, Spanish, French, and Chinese request config and config defaults pages.
 - **Required content:** Explain that `data` is only taken from the per-request config. Shared body fields should be added with a request interceptor or `transformRequest`, scoped carefully to avoid sending sensitive values to unintended endpoints.
 - **Examples:** None required.
-- **Notes:** English README and docs pages have been updated directly.
+- **Notes:** English README/docs and translated docs pages have been updated directly.
 
 ### Runtime and type declaration hardening
 

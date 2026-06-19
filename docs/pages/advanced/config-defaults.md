@@ -31,6 +31,8 @@ instance.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 
 Config will be merged with an order of precedence. The order is as follows, first the library defaults are set, then default properties of the instance, and finally config argument for the request. An example of the order of precedence is shown below:
 
+Some options are request-specific and are only taken from the request config. `data` is one of those options: axios does not inherit or deep-merge request bodies from global or instance defaults. If every request needs shared body fields, add them with a request interceptor or `transformRequest`, and scope that logic carefully so sensitive values are not sent to the wrong endpoint.
+
 First lets create an instance with the defaults provided by the library. At this point the timeout config value is `0` as is the default for the library.
 
 ```js

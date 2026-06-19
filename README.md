@@ -776,6 +776,8 @@ These config options are available for requests. Only `url` is required. Request
 
   // `data` is the data to be sent as the request body
   // Only applicable for request methods 'PUT', 'POST', 'DELETE', and 'PATCH'
+  // `data` is request-specific: axios does not inherit or deep-merge it from defaults.
+  // To add shared body fields, use a request interceptor or transformRequest.
   // When no `transformRequest` is set, it must be of one of the following types:
   // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
   // - Browser only: FormData, File, Blob
@@ -1198,6 +1200,8 @@ instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 ### Config order of precedence
 
 Axios merges config in this order: library defaults from [lib/defaults/index.js](https://github.com/axios/axios/blob/main/lib/defaults/index.js#L49), the instance `defaults` property, and the request `config` argument. Later values take precedence over earlier ones.
+
+Some options are request-specific and are only taken from the request `config`. `data` is one of those options: axios does not inherit or deep-merge request bodies from global or instance defaults. If every request needs shared body fields, add them with a request interceptor or `transformRequest`, and scope that logic carefully so sensitive values are not sent to the wrong endpoint.
 
 ```js
 // Create an instance using the config defaults provided by the library

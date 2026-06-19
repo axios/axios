@@ -471,6 +471,9 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
   data: {
     firstName: "Fred"
   },
+
+  // `data` is request-specific: axios does not inherit or deep-merge it from defaults.
+  // To add shared body fields, use a request interceptor or transformRequest.
   formDataHeaderPolicy: "legacy",
   // Syntax alternative to send data into the body method post only the value is sent, not the key
   data: "Country=Brasil&City=Belo Horizonte",

@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Request data defaults clarification
+
+- **Change:** Clarify that request `data` is request-specific and is not inherited or deep-merged from defaults.
+- **Source:** Documentation clarification for issue #5188 / PR #11020 review.
+- **Status:** Pending.
+- **Docs targets:** Translated request config and config defaults pages after English docs are finalized.
+- **Required content:** Explain that `data` is only taken from the per-request config. Shared body fields should be added with a request interceptor or `transformRequest`, scoped carefully to avoid sending sensitive values to unintended endpoints.
+- **Examples:** None required.
+- **Notes:** English README and docs pages have been updated directly.
+
 ### Runtime and type declaration hardening
 
 - **Change:** Document the runtime edge-case fixes and public type declaration additions.

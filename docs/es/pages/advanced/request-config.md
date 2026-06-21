@@ -104,12 +104,12 @@ Usa la opción `encode` para sobrescribir el codificador predeterminado:
 // Por solicitud: emitir codificación porcentual estricta RFC 3986 para los valores de consulta
 axios.get('/foo', {
   params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 
 // O establecerlo en los valores predeterminados de la instancia
 const client = axios.create({
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 ```
 
@@ -224,6 +224,7 @@ withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => bo
 ```js
 axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ```
+
 :::
 
 ### `onUploadProgress`
@@ -252,13 +253,15 @@ La propiedad `redact` es un arreglo opcional de nombres de claves de configuraci
 `redact` solo afecta a la serialización del error. No modifica los datos de la solicitud, los encabezados ni el objeto de configuración original.
 
 ```js
-axios.get('/user/12345', {
-  headers: { Authorization: 'Bearer token' },
-  auth: { username: 'me', password: 'secret' },
-  redact: ['authorization', 'password']
-}).catch((error) => {
-  console.log(error.toJSON().config);
-});
+axios
+  .get('/user/12345', {
+    headers: { Authorization: 'Bearer token' },
+    auth: { username: 'me', password: 'secret' },
+    redact: ['authorization', 'password'],
+  })
+  .catch((error) => {
+    console.log(error.toJSON().config);
+  });
 ```
 
 ### `validateStatus`
@@ -273,8 +276,8 @@ Por defecto, un `validateStatus: undefined` explícito conserva el comportamient
 axios.get('/user/12345', {
   validateStatus: undefined,
   transitional: {
-    validateStatusUndefinedResolves: false
-  }
+    validateStatusUndefinedResolves: false,
+  },
 });
 ```
 
@@ -289,7 +292,7 @@ La propiedad `sensitiveHeaders` es un arreglo opcional de nombres de encabezados
 ```js
 axios.get('https://api.example.com/users', {
   headers: { 'X-API-Key': 'secret' },
-  sensitiveHeaders: ['X-API-Key']
+  sensitiveHeaders: ['X-API-Key'],
 });
 ```
 
@@ -299,13 +302,10 @@ La función `beforeRedirect` te permite modificar la solicitud antes de que sea 
 
 ```js
 beforeRedirect: (options, { headers }) => {
-  if (
-    options.hostname === "example.com" &&
-    options.protocol === "https:"
-  ) {
-    options.auth = "user:password";
+  if (options.hostname === 'example.com' && options.protocol === 'https:') {
+    options.auth = 'user:password';
   }
-}
+};
 ```
 
 ::: warning Seguridad: reinyección de credenciales en redirecciones
@@ -326,7 +326,7 @@ Restringe qué rutas de socket pueden usarse a través de `socketPath`. Acepta u
 
 ```js
 const client = axios.create({
-  allowedSocketPaths: ['/var/run/docker.sock']
+  allowedSocketPaths: ['/var/run/docker.sock'],
 });
 
 // permitido
@@ -351,6 +351,8 @@ La propiedad `transport` define el transporte a usar para la solicitud. Es útil
 `proxy` define el nombre de host, puerto y protocolo del servidor proxy que deseas usar. También puedes definir tu proxy usando las variables de entorno convencionales `http_proxy` y `https_proxy`.
 
 Si usas variables de entorno para tu configuración de proxy, también puedes definir una variable de entorno `no_proxy` como una lista separada por comas de dominios que no deben ser enviados a través del proxy.
+
+En versiones de Node.js con soporte nativo para proxy mediante variables de entorno, axios delega el manejo del proxy de entorno a Node cuando el `httpAgent` o `httpsAgent` seleccionado tiene `proxyEnv` habilitado, incluidos procesos iniciados con `NODE_USE_ENV_PROXY=1`, `--use-env-proxy` o `NODE_OPTIONS=--use-env-proxy`. Los agentes personalizados sin `proxyEnv` siguen usando la resolución de proxy de entorno de axios. La configuración explícita `proxy` sigue siendo manejada por axios.
 
 Usa `false` para deshabilitar los proxies, ignorando las variables de entorno. `auth` indica que se debe usar autenticación HTTP Basic para conectarse al proxy, y proporciona las credenciales. Esto establecerá un encabezado `Proxy-Authorization`, sobrescribiendo cualquier encabezado `Proxy-Authorization` personalizado que hayas definido usando `headers`. Si el servidor proxy usa HTTPS, debes establecer el protocolo en `https`.
 
@@ -401,6 +403,7 @@ La propiedad `transitional` te permite habilitar o deshabilitar ciertas caracter
   ```js
   { responseType: 'json', transitional: { silentJSONParsing: false } }
   ```
+
   :::
 
 - `forcedJSONParsing`: Fuerza a axios a analizar la cadena de respuesta como JSON incluso si `responseType` no es `'json'`.
@@ -424,6 +427,7 @@ La opción `formSerializer` te permite configurar cómo se serializan los objeto
 - `metaTokens` — preservar terminaciones especiales de clave como `{}`
 - `indexes` — controlar el formato de corchetes para claves de arreglo (`null` / `false` / `true`)
 - `maxDepth` _(predeterminado: `100`)_ — profundidad máxima de anidación antes de lanzar un `AxiosError` con código `ERR_FORM_DATA_DEPTH_EXCEEDED`. Establece en `Infinity` para desactivar.
+- `Blob` — constructor de Blob usado al convertir valores tipo ArrayBuffer para `FormData` compatible con la especificación.
 
 Consulta la página [multipart/form-data](/pages/advanced/multipart-form-data-format) para todos los detalles, y el ejemplo completo de configuración de solicitud al final de esta página.
 

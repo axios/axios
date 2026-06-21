@@ -104,12 +104,12 @@ Use the `encode` option to override the default encoder:
 // Per-request: emit strict RFC 3986 percent-encoding for query values
 axios.get('/foo', {
   params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 
 // Or set it on the instance defaults
 const client = axios.create({
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 ```
 
@@ -224,6 +224,7 @@ withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => bo
 ```js
 axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ```
+
 :::
 
 ### `onUploadProgress`
@@ -252,13 +253,15 @@ The `redact` property is an optional array of config key names to mask when an `
 `redact` only affects error serialization. It does not change request data, headers, or the original config object.
 
 ```js
-axios.get('/user/12345', {
-  headers: { Authorization: 'Bearer token' },
-  auth: { username: 'me', password: 'secret' },
-  redact: ['authorization', 'password']
-}).catch((error) => {
-  console.log(error.toJSON().config);
-});
+axios
+  .get('/user/12345', {
+    headers: { Authorization: 'Bearer token' },
+    auth: { username: 'me', password: 'secret' },
+    redact: ['authorization', 'password'],
+  })
+  .catch((error) => {
+    console.log(error.toJSON().config);
+  });
 ```
 
 ### `validateStatus`
@@ -273,8 +276,8 @@ By default, explicit `validateStatus: undefined` keeps legacy behavior and resol
 axios.get('/user/12345', {
   validateStatus: undefined,
   transitional: {
-    validateStatusUndefinedResolves: false
-  }
+    validateStatusUndefinedResolves: false,
+  },
 });
 ```
 
@@ -289,7 +292,7 @@ The `sensitiveHeaders` property is an optional array of custom secret-bearing he
 ```js
 axios.get('https://api.example.com/users', {
   headers: { 'X-API-Key': 'secret' },
-  sensitiveHeaders: ['X-API-Key']
+  sensitiveHeaders: ['X-API-Key'],
 });
 ```
 
@@ -299,13 +302,10 @@ The `beforeRedirect` function allows you to modify the request before it is redi
 
 ```js
 beforeRedirect: (options, { headers }) => {
-  if (
-    options.hostname === "example.com" &&
-    options.protocol === "https:"
-  ) {
-    options.auth = "user:password";
+  if (options.hostname === 'example.com' && options.protocol === 'https:') {
+    options.auth = 'user:password';
   }
-}
+};
 ```
 
 ::: warning Security: re-injecting credentials on redirect
@@ -351,6 +351,8 @@ The `httpAgent` and `httpsAgent` define a custom agent to be used when performin
 The `proxy` defines the hostname, port, and protocol of a proxy server you would like to use. You can also define your proxy using the conventional `http_proxy` and `https_proxy` environment variables.
 
 If you are using environment variables for your proxy configuration, you can also define a `no_proxy` environment variable as a comma-separated list of domains that should not be proxied.
+
+On Node.js versions with native environment proxy support, axios defers environment proxy handling to Node when the selected `httpAgent` or `httpsAgent` has `proxyEnv` enabled, including processes started with `NODE_USE_ENV_PROXY=1`, `--use-env-proxy`, or `NODE_OPTIONS=--use-env-proxy`. Custom agents without `proxyEnv` continue to use axios environment proxy resolution. Explicit `proxy` config is still handled by axios.
 
 Use `false` to disable proxies, ignoring environment variables. `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and supplies credentials. This will set an `Proxy-Authorization` header, overwriting any existing `Proxy-Authorization` custom headers you have set using `headers`. If the proxy server uses HTTPS, then you must set the protocol to `https`.
 
@@ -401,6 +403,7 @@ The `transitional` property allows you to enable or disable certain transitional
   ```js
   { responseType: 'json', transitional: { silentJSONParsing: false } }
   ```
+
   :::
 
 - `forcedJSONParsing`: Forces axios to parse the response string as JSON even if `responseType` is not `'json'`.
@@ -424,6 +427,7 @@ The `formSerializer` option allows you to configure how plain objects are serial
 - `metaTokens` — preserve special key endings such as `{}`
 - `indexes` — control bracket format for array keys (`null` / `false` / `true`)
 - `maxDepth` _(default: `100`)_ — maximum nesting depth before throwing `AxiosError` with code `ERR_FORM_DATA_DEPTH_EXCEEDED`. Set to `Infinity` to disable.
+- `Blob` — Blob constructor used when converting ArrayBuffer-like values for spec-compliant `FormData`.
 
 See the [multipart/form-data](/pages/advanced/multipart-form-data-format) page for full details, and the full request config example at the end of this page.
 

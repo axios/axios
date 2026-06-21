@@ -298,7 +298,6 @@
     </tr>
 </table>
 
-
 <!--<div>marker</div>-->
 
 <br><br>
@@ -519,16 +518,16 @@ axios
 // Want to use async/await? Add the `async` keyword to your outer function/method.
 async function getUser() {
   try {
-// Example: GET request with query parameters
-const response = await axios.get('/user', {
-  params: {
-    ID: 12345
-  }
-});
+    // Example: GET request with query parameters
+    const response = await axios.get('/user', {
+      params: {
+        ID: 12345,
+      },
+    });
 
-// Using the `params` option improves readability and automatically formats query strings
+    // Using the `params` option improves readability and automatically formats query strings
 
-console.log(response);
+    console.log(response);
   } catch (error) {
     console.error(error);
   }
@@ -977,6 +976,12 @@ These config options are available for requests. Only `url` is required. Request
   // for your proxy configuration, you can also define a `no_proxy` environment
   // variable as a comma-separated list of domains that should not be proxied.
   // Use `false` to disable proxies, ignoring environment variables.
+  // On Node.js versions with native environment proxy support, axios defers
+  // environment proxy handling to Node when the selected agent has `proxyEnv`
+  // enabled, including processes started with `NODE_USE_ENV_PROXY=1`,
+  // `--use-env-proxy`, or `NODE_OPTIONS=--use-env-proxy`. Custom agents without
+  // `proxyEnv` continue to use axios environment proxy resolution. Explicit
+  // `proxy` config is still handled by axios.
   // `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and
   // supplies credentials.
   // For `http://` targets, axios sends the request to the proxy in
@@ -1093,7 +1098,7 @@ For custom secret-bearing headers in Node.js, list them in `sensitiveHeaders` so
 ```js
 axios.get('https://api.example.com/users', {
   headers: { 'X-API-Key': 'secret' },
-  sensitiveHeaders: ['X-API-Key']
+  sensitiveHeaders: ['X-API-Key'],
 });
 ```
 
@@ -1107,12 +1112,12 @@ Override the default encoder via `paramsSerializer.encode`:
 // Per-request: emit strict RFC 3986 percent-encoding for query values
 axios.get('/foo', {
   params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 
 // Or set it on the instance defaults
 const client = axios.create({
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 ```
 
@@ -1396,7 +1401,7 @@ These are the internal Axios error codes:
 | ERR_INVALID_URL           | Invalid URL provided for axios request.                                                                                                                                                                                                                                                                                                                                                        |
 | ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin.                                                                                                                                                                                                                                            |
 | ERR_CANCELED              | The user explicitly canceled the request with an AbortSignal or CancelToken.                                                                                                                                                                                                                                                                                                                   |
-| ETIMEDOUT                 | Request timed out after exceeding the configured Axios timeout. Set `transitional.clarifyTimeoutError` to `true`; otherwise Axios throws a generic `ECONNABORTED` error.                                                                                                                                                                                                                        |
+| ETIMEDOUT                 | Request timed out after exceeding the configured Axios timeout. Set `transitional.clarifyTimeoutError` to `true`; otherwise Axios throws a generic `ECONNABORTED` error.                                                                                                                                                                                                                       |
 | ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request exceeded the configured maximum number of redirects.                                                                                                                                                                                                                                                                                                                                   |
 | ERR_BAD_RESPONSE          | Response cannot be parsed properly or is in an unexpected format. Usually related to a response with `5xx` status code.                                                                                                                                                                                                                                                                        |
@@ -1445,8 +1450,8 @@ By default, explicit `validateStatus: undefined` keeps legacy behavior and resol
 axios.get('/user/12345', {
   validateStatus: undefined,
   transitional: {
-    validateStatusUndefinedResolves: false
-  }
+    validateStatusUndefinedResolves: false,
+  },
 });
 ```
 
@@ -1461,12 +1466,14 @@ axios.get('/user/12345').catch(function (error) {
 To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
 
 ```js
-axios.get('/user/12345', {
-  headers: { Authorization: 'Bearer token' },
-  redact: ['authorization']
-}).catch(function (error) {
-  console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
-});
+axios
+  .get('/user/12345', {
+    headers: { Authorization: 'Bearer token' },
+    redact: ['authorization'],
+  })
+  .catch(function (error) {
+    console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
+  });
 ```
 
 ## Handling timeouts
@@ -1576,10 +1583,43 @@ axios.get('/user/12345', {
 cancel();
 ```
 
+`CancelToken` also exposes low-level helpers for legacy integrations:
+
+```js
+const source = axios.CancelToken.source();
+
+const listener = (cancel) => {
+  console.log(cancel.message);
+};
+
+source.token.subscribe(listener);
+
+const signal = source.token.toAbortSignal();
+// Pass `signal` to APIs that accept AbortSignal.
+
+source.cancel('Operation canceled by the user.');
+source.token.unsubscribe(listener);
+```
+
+Canceled requests reject with `axios.CanceledError`. The legacy `axios.Cancel` export is an alias of `axios.CanceledError`, and cancellation errors include `__CANCEL__` for `axios.isCancel` compatibility.
+
 > Note: You can cancel several requests with the same cancel token or abort controller.
 > If a cancellation token is already cancelled when an Axios request starts, Axios cancels the request immediately without making a real request.
 
 > During the transition period, you can use both cancellation APIs, even for the same request:
+
+```js
+const controller = new AbortController();
+const source = axios.CancelToken.source();
+
+axios.get('/user/12345', {
+  cancelToken: source.token,
+  signal: controller.signal,
+});
+
+controller.abort();
+source.cancel('Operation canceled by the user.');
+```
 
 ## Using `application/x-www-form-urlencoded` format
 
@@ -1782,6 +1822,9 @@ FormData serializer supports additional options via `config.formSerializer: obje
   input object exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is
   thrown instead of overflowing the call stack. This protects server applications from DoS
   attacks via deeply nested payloads. Set to `Infinity` to disable the limit and restore pre-fix behaviour.
+- `Blob: typeof Blob` - Blob constructor used when converting ArrayBuffer-like values for spec-compliant
+  `FormData`. Override it only for runtimes that provide a compatible `Blob` constructor under a
+  different binding.
 
 ```js
 // Raise the limit for a schema that genuinely nests deeper than 100 levels:
@@ -2108,6 +2151,7 @@ console.log(headers);
 set(headerName, value: Axios, rewrite?: boolean);
 set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean);
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean);
 ```
 
 The `rewrite` argument controls the overwriting behavior:
@@ -2119,6 +2163,19 @@ The `rewrite` argument controls the overwriting behavior:
 The option can also accept a user-defined function that determines whether to overwrite the value.
 
 Empty or whitespace-only header names are ignored.
+
+Iterable key/value pairs, such as a `Map`, are accepted:
+
+```js
+const headers = new AxiosHeaders();
+
+headers.set(
+  new Map([
+    ['X-Trace-Id', 'abc123'],
+    ['Accept', 'application/json'],
+  ])
+);
+```
 
 Returns `this`.
 
@@ -2239,6 +2296,14 @@ toJSON(asStrings?: false): Record<string, string | string[]>;
 
 Resolves all internal header values into a new null prototype object.
 Set `asStrings` to true to resolve arrays as a string containing all elements, separated by commas.
+
+### AxiosHeaders#toString()
+
+```
+toString(): string;
+```
+
+Returns the headers as a CRLF-free HTTP header block, one `name: value` pair per line.
 
 ### AxiosHeaders.from(thing?)
 

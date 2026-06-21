@@ -34,7 +34,15 @@ The `CancelToken` class was based on the `tc39/proposal-cancelable-promises` pro
 
 As of version 0.22.0, the `CancelToken` class is deprecated and will be removed in a future release. It is recommended that you use the `AbortController` API instead.
 
-The class is exported mainly for backwards compatibility and will be removed in a future release. We also strongly discourage its use in new projects, we therefore are not documenting the API as use is discouraged.
+The class is exported mainly for backwards compatibility and will be removed in a future release. We strongly discourage its use in new projects; the legacy interop helpers below are listed only for existing code.
+
+The legacy methods remain typed for existing integrations:
+
+```ts
+subscribe(listener: (cancel: Cancel | any) => void): void;
+unsubscribe(listener: (cancel: Cancel | any) => void): void;
+toAbortSignal(): AbortSignal;
+```
 
 ## Functions
 
@@ -102,6 +110,7 @@ Empty or whitespace-only header names are ignored.
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 ```
 
 #### `get`
@@ -162,13 +171,30 @@ toJSON(asStrings: true): Record<string, string>;
 toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
+#### `toString`
+
+Returns the headers as a CRLF-free HTTP header block, one `name: value` pair per line.
+
+```ts
+toString(): string;
+```
+
 ### `CanceledError` <Badge type="tip" text="Extended AxiosError" />
 
 The `CanceledError` class is an error class that is thrown when an HTTP request is canceled. It extends the `AxiosError` class.
 
+```ts
+constructor(message?: string, config?: InternalAxiosRequestConfig, request?: any);
+__CANCEL__?: boolean;
+```
+
 ### `Cancel` <Badge type="tip" text="Alias for CanceledError" />
 
 The `Cancel` class is an alias for the `CanceledError` class. It is exported for backwards compatibility and will be removed in a future release.
+
+```ts
+Cancel: typeof CanceledError;
+```
 
 ### `isCancel`
 
@@ -179,19 +205,19 @@ isCancel<T = any>(value: any): value is CanceledError<T>;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 const controller = new AbortController();
 
-axios.get("/api/data", { signal: controller.signal }).catch((error) => {
+axios.get('/api/data', { signal: controller.signal }).catch((error) => {
   if (axios.isCancel(error)) {
-    console.log("Request was cancelled:", error.message);
+    console.log('Request was cancelled:', error.message);
   } else {
-    console.error("Unexpected error:", error);
+    console.error('Unexpected error:', error);
   }
 });
 
-controller.abort("User navigated away");
+controller.abort('User navigated away');
 ```
 
 ### `isAxiosError`
@@ -203,14 +229,14 @@ isAxiosError(value: any): value is AxiosError;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 try {
-  await axios.get("/api/resource");
+  await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     // error.response, error.config, error.code are all available
-    console.error("HTTP error", error.response?.status, error.message);
+    console.error('HTTP error', error.response?.status, error.message);
   } else {
     // A non-axios error (e.g. a programming mistake)
     throw error;
@@ -241,12 +267,12 @@ toFormData(sourceObj: object, formData?: FormData, options?: FormSerializerOptio
 ```
 
 ```js
-import { toFormData } from "axios";
+import { toFormData } from 'axios';
 
-const data = { name: "Jay", avatar: fileBlob };
+const data = { name: 'Jay', avatar: fileBlob };
 const form = toFormData(data);
 // form is now a FormData instance ready to post
-await axios.post("/api/users", form);
+await axios.post('/api/users', form);
 ```
 
 ### `formToJSON`
@@ -258,11 +284,11 @@ formToJSON(form: FormData): object;
 ```
 
 ```js
-import { formToJSON } from "axios";
+import { formToJSON } from 'axios';
 
 const form = new FormData();
-form.append("name", "Jay");
-form.append("role", "admin");
+form.append('name', 'Jay');
+form.append('role', 'admin');
 
 const obj = formToJSON(form);
 console.log(obj); // { name: "Jay", role: "admin" }
@@ -277,13 +303,13 @@ getAdapter(adapters: string | string[]): AxiosAdapter;
 ```
 
 ```js
-import { getAdapter } from "axios";
+import { getAdapter } from 'axios';
 
 // Get the fetch adapter explicitly
-const fetchAdapter = getAdapter("fetch");
+const fetchAdapter = getAdapter('fetch');
 
 // Get the best available adapter from a priority list
-const adapter = getAdapter(["fetch", "xhr", "http"]);
+const adapter = getAdapter(['fetch', 'xhr', 'http']);
 ```
 
 ### `mergeConfig`
@@ -295,10 +321,10 @@ mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): 
 ```
 
 ```js
-import { mergeConfig } from "axios";
+import { mergeConfig } from 'axios';
 
-const base = { baseURL: "https://api.example.com", timeout: 5000 };
-const override = { timeout: 10000, headers: { "X-Custom": "value" } };
+const base = { baseURL: 'https://api.example.com', timeout: 5000 };
+const override = { timeout: 10000, headers: { 'X-Custom': 'value' } };
 
 const merged = mergeConfig(base, override);
 // { baseURL: "https://api.example.com", timeout: 10000, headers: { "X-Custom": "value" } }
@@ -311,16 +337,16 @@ const merged = mergeConfig(base, override);
 An object that contains a list of HTTP status codes as named constants. Use this to write readable conditionals instead of bare numbers.
 
 ```js
-import axios, { HttpStatusCode } from "axios";
+import axios, { HttpStatusCode } from 'axios';
 
 try {
-  const response = await axios.get("/api/resource");
+  const response = await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === HttpStatusCode.NotFound) {
-      console.error("Resource not found");
+      console.error('Resource not found');
     } else if (error.response?.status === HttpStatusCode.Unauthorized) {
-      console.error("Authentication required");
+      console.error('Authentication required');
     }
   }
 }

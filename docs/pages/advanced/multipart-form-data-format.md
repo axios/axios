@@ -70,10 +70,10 @@ When you pass a Node.js `FormData` object that exposes `getHeaders()` (such as t
 Set `formDataHeaderPolicy: 'content-only'` to copy **only** `Content-Type` and `Content-Length` from `getHeaders()`, then set any other headers explicitly via the request `headers` config:
 
 ```js
-await axios.post("https://example.com/upload", form, {
-  formDataHeaderPolicy: "content-only",
+await axios.post('https://example.com/upload', form, {
+  formDataHeaderPolicy: 'content-only',
   headers: {
-    Authorization: "Bearer my-token",
+    Authorization: 'Bearer my-token',
   },
 });
 ```
@@ -103,6 +103,7 @@ FormData serializer supports additional options via config.formSerializer: objec
   - `false` (default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - add brackets with indexes (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
 - `maxDepth: number = 100` - maximum object nesting depth the serializer will recurse into. If the input exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is thrown. This protects server-side applications from DoS attacks via deeply nested payloads. Set to `Infinity` to disable the limit.
+- `Blob: typeof Blob` - Blob constructor used when converting ArrayBuffer-like values for spec-compliant `FormData`. Override it only for runtimes that provide a compatible `Blob` constructor under a different binding.
 
 ```js
 // Allow deeper nesting for schemas that legitimately exceed 100 levels:

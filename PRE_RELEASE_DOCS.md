@@ -34,18 +34,18 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 - **Change:** Document the runtime edge-case fixes and public type declaration additions.
 - **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10959.
-- **Status:** Pending.
+- **Status:** Applied.
 - **Docs targets:** `README.md` cancellation section; `README.md` `AxiosHeaders` section; `README.md` FormData serializer section; generated docs pages for cancellation, headers, and multipart/urlencoded form serialization; translated docs after English docs are finalized.
 - **Required content:** Note that `CancelToken.subscribe`, `CancelToken.unsubscribe`, `CancelToken.toAbortSignal`, `CanceledError` constructor/`__CANCEL__`, `AxiosHeaders#set(Iterable)`, `AxiosHeaders#toString()`, `SerializerOptions.maxDepth`, `SerializerOptions.Blob`, and `axios.Cancel` typings now match the runtime API. Release notes should also mention the cookie, data URI, form serialization, config validation, XHR cleanup, and Node HTTP adapter error-shape hardening.
 - **Examples:** Consider a short `CancelToken.toAbortSignal()` example and an `AxiosHeaders#set(new Map(...))` example if the docs section is updated.
-- **Notes:** Keep this as release-preparation tracking. Do not imply that `CancelToken` is no longer deprecated.
+- **Notes:** README, English docs, and translated docs now document the public runtime/type additions without implying that `CancelToken` is no longer deprecated.
 
 ### Node native env proxy interaction
 
 - **Change:** Document how the Node.js HTTP adapter interacts with Node native environment proxy handling.
 - **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #10942, closes #7299.
-- **Status:** Pending.
+- **Status:** Applied.
 - **Docs targets:** `README.md` proxy/request config sections; `docs/pages/advanced/request-config.md`; translated request-config docs after English docs are finalized.
 - **Required content:** Explain that axios normally resolves `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` itself for the Node.js HTTP adapter unless `config.proxy` is `false`. On Node.js versions with native HTTP proxy support, axios defers environment proxy handling to Node when the selected HTTP/HTTPS agent has `proxyEnv` enabled, including processes started with `NODE_USE_ENV_PROXY=1`, `--use-env-proxy`, or `NODE_OPTIONS=--use-env-proxy`. Custom agents without `proxyEnv` continue to use axios env proxy resolution. Explicit `config.proxy` remains handled by axios.
 - **Examples:** None required.
-- **Notes:** Keep the wording Node.js-only. Mention that this avoids double proxy rewriting while preserving existing custom-agent behavior.
+- **Notes:** README, English request-config docs, and translated request-config docs now describe the Node.js-only native env proxy interaction and custom-agent behavior.

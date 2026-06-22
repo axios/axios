@@ -466,12 +466,15 @@ describe('helpers::shouldBypassProxy', () => {
     });
 
     it('should NOT bypass when a 2-part tail exceeds the remaining octet capacity (fail-safe)', () => {
-      // 127.16777216 → tail 16777216 > 2^24 - 1, exceeds the 3-octet tail
-      // capacity. The helper returns the entry unchanged; the URL also
-      // fails to parse (`Invalid URL`), so neither side matches and the
-      // policy correctly falls through to non-bypass.
+      // 127.16777216 → tail 16777216 = 2^24 > 2^24 - 1, exceeds the 3-octet
+      // tail capacity. The helper returns the entry unchanged; the URL host
+      // normalises to `127.0.0.0`. The two sides never match, so the policy
+      // correctly falls through to non-bypass.
       setNoProxy('127.16777216');
 
+      // Lock in that the URL side parses cleanly — the fail-safe is on the
+      // entry side, not the URL side (cubic-bot P3 review on commit ed73218).
+      expect(new URL('http://127.0.0.0:7777/').hostname).toBe('127.0.0.0');
       expect(shouldBypassProxy('http://127.0.0.0:7777/')).toBe(false);
     });
 

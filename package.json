@@ -138,7 +138,7 @@
   },
   "dependencies": {
     "follow-redirects": "^1.16.0",
-    "form-data": "^4.0.5",
+    "form-data": "^4.0.6",
     "https-proxy-agent": "^5.0.1",
     "proxy-from-env": "^2.1.0"
   },

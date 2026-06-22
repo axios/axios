@@ -320,4 +320,98 @@ describe('helpers::shouldBypassProxy', () => {
       expect(shouldBypassProxy('http://[2001:db8::2]/')).toBe(false);
     });
   });
+
+  // Node's URL parser accepts IPv4 shorthand, octal (0-prefixed), and hex
+  // (0x-prefixed) forms in the host portion, canonicalising them to dotted-
+  // decimal. Without symmetric normalisation of NO_PROXY entries, an entry
+  // like `NO_PROXY=127.1` would fail to match a request to `127.0.0.1` even
+  // though the user clearly meant the same host. These tests pin down both
+  // sides of the comparison.
+  describe('IPv4 shorthand / octal / hex normalization', () => {
+    it('should match a shorthand entry against a canonical request', () => {
+      setNoProxy('127.1');
+
+      expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(true);
+    });
+
+    it('should match an octal entry against a canonical request', () => {
+      setNoProxy('0177.0.0.1');
+
+      expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(true);
+    });
+
+    it('should match a hex entry against a canonical request', () => {
+      setNoProxy('0x7f.0.0.1');
+
+      expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(true);
+    });
+
+    it('should match a shorthand request against a canonical entry', () => {
+      setNoProxy('127.0.0.1');
+
+      // Node URL parser canonicalises shorthand `127.1` to `127.0.0.1`.
+      expect(shouldBypassProxy('http://127.1:7777/')).toBe(true);
+    });
+
+    it('should match an octal request against a canonical entry', () => {
+      setNoProxy('127.0.0.1');
+
+      // Node URL parser canonicalises octal `0177.0.0.1` to `127.0.0.1`.
+      expect(shouldBypassProxy('http://0177.0.0.1:7777/')).toBe(true);
+    });
+
+    it('should match a hex request against a canonical entry', () => {
+      setNoProxy('127.0.0.1');
+
+      // Node URL parser canonicalises hex `0x7f.0.0.1` to `127.0.0.1`.
+      expect(shouldBypassProxy('http://0x7f.0.0.1:7777/')).toBe(true);
+    });
+
+    it('should normalise octal on non-loopback addresses symmetrically', () => {
+      // Both sides use the same octal form; both canonicalise to 8.0.0.1.
+      setNoProxy('010.0.0.1');
+
+      expect(shouldBypassProxy('http://010.0.0.1:7777/')).toBe(true);
+    });
+
+    it('should treat octal `00` as equivalent to decimal `0`', () => {
+      setNoProxy('00.0.0.0');
+
+      expect(shouldBypassProxy('http://0.0.0.0:7777/')).toBe(true);
+    });
+
+    it('should NOT bypass for an out-of-range entry that the helper cannot canonicalise', () => {
+      setNoProxy('999.0.0.1');
+
+      // Helper rejects `999` (out of 0-255) so the entry stays as `999.0.0.1`,
+      // which does not match the canonical request hostname.
+      expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(false);
+    });
+
+    it('should NOT bypass for an entry with an invalid hex digit', () => {
+      setNoProxy('0xz.0.0.1');
+
+      // `0xz` is neither hex (z is not [0-9a-fA-F]) nor octal nor decimal,
+      // so the helper returns the entry unchanged and the comparison fails.
+      expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(false);
+    });
+
+    it('should NOT bypass when an entry is a single numeric token (32-bit-int semantics)', () => {
+      setNoProxy('127');
+
+      // Node URL parser treats 1-part as a 32-bit integer, giving `127` ->
+      // `0.0.0.127`. The helper intentionally rejects 1-part inputs as
+      // fail-safe so the policy falls through to non-bypass.
+      expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(false);
+    });
+
+    it('should preserve explicit ports across octal normalisation', () => {
+      setNoProxy('0177.0.0.1:8080');
+
+      // Same port → bypass via cross-octal equivalence.
+      expect(shouldBypassProxy('http://0177.0.0.1:8080/')).toBe(true);
+      // Different port → no bypass.
+      expect(shouldBypassProxy('http://0177.0.0.1:9090/')).toBe(false);
+    });
+  });
 });

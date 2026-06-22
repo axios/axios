@@ -413,5 +413,74 @@ describe('helpers::shouldBypassProxy', () => {
       // Different port → no bypass.
       expect(shouldBypassProxy('http://0177.0.0.1:9090/')).toBe(false);
     });
+
+    it('should expand a multi-byte decimal tail low-byte-right (entry-side normalisation)', () => {
+      // 127.65535 → tail 0xFFFF packed into 3 octets → 127.0.255.255.
+      setNoProxy('127.65535');
+
+      expect(shouldBypassProxy('http://127.0.255.255/')).toBe(true);
+    });
+
+    it('should expand a hex tail low-byte-right (entry-side normalisation)', () => {
+      // 127.0x00ff → tail 0xFF packed into 3 octets → 127.0.0.255.
+      setNoProxy('127.0x00ff');
+
+      expect(shouldBypassProxy('http://127.0.0.255/')).toBe(true);
+    });
+
+    it('should expand an octal tail low-byte-right (entry-side normalisation)', () => {
+      // 127.0177 → tail 0o177 packed into 3 octets → 127.0.0.127.
+      setNoProxy('127.0177');
+
+      expect(shouldBypassProxy('http://127.0.0.127/')).toBe(true);
+    });
+
+    it('should expand a multi-byte decimal tail in a 3-part entry', () => {
+      // 127.0.65535 → tail 0xFFFF packed into 2 octets → 127.0.255.255.
+      setNoProxy('127.0.65535');
+
+      expect(shouldBypassProxy('http://127.0.255.255/')).toBe(true);
+    });
+
+    it('should expand a hex tail in a 3-part entry', () => {
+      // 0.0.0xff → tail 0xFF packed into 1 octet → 0.0.0.255.
+      setNoProxy('0.0.0xff');
+
+      expect(shouldBypassProxy('http://0.0.0.255/')).toBe(true);
+    });
+
+    it('should match a canonical entry against a shorthand URL whose tail expands to the same address', () => {
+      // Node URL parser canonicalises http://127.65535/ → 127.0.255.255.
+      setNoProxy('127.0.255.255');
+
+      expect(shouldBypassProxy('http://127.65535/')).toBe(true);
+    });
+
+    it('should NOT bypass when a 1-part hex entry cannot be canonicalised (preserves the deliberate 1-part rejection)', () => {
+      // Node parses 0x7f as 0.0.0.127 (1-part → 32-bit split), but the helper
+      // intentionally rejects 1-part inputs to keep behaviour predictable. The
+      // entry stays as 0x7f; the comparison falls through to non-bypass.
+      setNoProxy('0x7f');
+
+      expect(shouldBypassProxy('http://127.0.0.127:7777/')).toBe(false);
+    });
+
+    it('should NOT bypass when a 2-part tail exceeds the remaining octet capacity (fail-safe)', () => {
+      // 127.16777216 → tail 16777216 > 2^24 - 1, exceeds the 3-octet tail
+      // capacity. The helper returns the entry unchanged; the URL also
+      // fails to parse (`Invalid URL`), so neither side matches and the
+      // policy correctly falls through to non-bypass.
+      setNoProxy('127.16777216');
+
+      expect(shouldBypassProxy('http://127.0.0.0:7777/')).toBe(false);
+    });
+
+    it('should NOT bypass when a 3-part tail exceeds the remaining octet capacity (fail-safe)', () => {
+      // 127.0.65536 → tail 65536 > 2^16 - 1, exceeds the 2-octet tail
+      // capacity. Same fail-safe posture as the 2-part out-of-range case.
+      setNoProxy('127.0.65536');
+
+      expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(false);
+    });
   });
 });

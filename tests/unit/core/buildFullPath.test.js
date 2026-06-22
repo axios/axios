@@ -69,7 +69,7 @@ describe('core::buildFullPath', () => {
     expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
   });
 
-  it('reports the normalized URL when the malformed URL contains control characters', () => {
+  it('reports the control-character-normalized URL for a leading control character', () => {
     let error;
 
     try {
@@ -79,6 +79,40 @@ describe('core::buildFullPath', () => {
     }
 
     expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
+  });
+
+  it('reports the control-character-normalized URL for an interior control character', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, 'h\nttp:example.com/users');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe('Invalid URL "http:example.com/users": missing "//" after protocol');
+  });
+
+  it('redacts credentials and query/fragment values while keeping the URL identifiable', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, 'https:admin:hunter2@api.example.com/v1?apikey=topsecret&id=42#token=xyz');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe(
+      'Invalid URL "https:[REDACTED ****]@api.example.com/v1?apikey=[REDACTED ****]&id=[REDACTED ****]#token=[REDACTED ****]": missing "//" after protocol'
+    );
+    // Credentials and parameter values must not leak.
+    for (const secret of ['admin', 'hunter2', 'topsecret', '42', 'xyz']) {
+      expect(error.message).not.toContain(secret);
+    }
+    // Non-sensitive structure stays intact so the request is still identifiable.
+    for (const kept of ['api.example.com', '/v1', 'apikey', 'id', 'token']) {
+      expect(error.message).toContain(kept);
+    }
   });
 
   it('does not reject an unused malformed baseURL for absolute requests', () => {

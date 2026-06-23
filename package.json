@@ -195,6 +195,9 @@
       "@commitlint/config-conventional"
     ]
   },
+  "overrides": {
+    "ws": ">=8.21.0"
+  },
   "lint-staged": {
     "*.{js,cjs,mjs,ts,json,md,yml,yaml}": "prettier --write"
   }

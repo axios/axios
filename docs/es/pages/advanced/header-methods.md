@@ -35,6 +35,7 @@ El método `set` se usa para establecer encabezados en la instancia de `AxiosHea
 set(headerName, value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher);
 set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string) => boolean);
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean);
 ```
 
 El argumento `rewrite` controla el comportamiento de sobreescritura:
@@ -46,6 +47,19 @@ El argumento `rewrite` controla el comportamiento de sobreescritura:
 La opción también puede aceptar una función definida por el usuario que determina si el valor debe ser sobreescrito o no. La función recibe el valor actual, el nombre del encabezado y el objeto de encabezados como argumentos.
 
 Los nombres de encabezado vacíos o compuestos solo por espacios se ignoran.
+
+Se aceptan pares clave/valor iterables, como un `Map`:
+
+```js
+const headers = new AxiosHeaders();
+
+headers.set(
+  new Map([
+    ['X-Trace-Id', 'abc123'],
+    ['Accept', 'application/json'],
+  ])
+);
+```
 
 `AxiosHeaders` conserva el formato de la primera clave coincidente que encuentra. Puedes usar esto para preservar el formato específico de un encabezado inicializando una clave con `undefined` y luego estableciendo los valores posteriormente. Consulta [Preservar el formato de un encabezado específico](/pages/advanced/headers#preserving-a-specific-header-case).
 
@@ -170,6 +184,14 @@ Resuelve todos los valores de encabezados internos en un nuevo objeto de prototi
 ```js
 toJSON(asStrings: true): Record<string, string>;
 toJSON(asStrings?: false): Record<string, string | string[]>;
+```
+
+## toString
+
+Devuelve los encabezados como un bloque HTTP sin CRLF, con un par `nombre: valor` por línea.
+
+```js
+toString(): string;
 ```
 
 ## From (Desde)

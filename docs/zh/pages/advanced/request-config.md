@@ -104,12 +104,12 @@ axios 默认会将 `%3A`、`%24`、`%2C` 和 `%20` 解码回 `:`、`$`、`,` 和
 // 单次请求：对查询值使用严格的 RFC 3986 百分号编码
 axios.get('/foo', {
   params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 
 // 也可在实例默认值中设置
 const client = axios.create({
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 ```
 
@@ -224,6 +224,7 @@ withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => bo
 ```js
 axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ```
+
 :::
 
 ### `onUploadProgress`
@@ -252,13 +253,15 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 `redact` 仅影响错误序列化，不会修改请求数据、请求头或原始配置对象。
 
 ```js
-axios.get('/user/12345', {
-  headers: { Authorization: 'Bearer token' },
-  auth: { username: 'me', password: 'secret' },
-  redact: ['authorization', 'password']
-}).catch((error) => {
-  console.log(error.toJSON().config);
-});
+axios
+  .get('/user/12345', {
+    headers: { Authorization: 'Bearer token' },
+    auth: { username: 'me', password: 'secret' },
+    redact: ['authorization', 'password'],
+  })
+  .catch((error) => {
+    console.log(error.toJSON().config);
+  });
 ```
 
 ### `validateStatus`
@@ -273,8 +276,8 @@ axios.get('/user/12345', {
 axios.get('/user/12345', {
   validateStatus: undefined,
   transitional: {
-    validateStatusUndefinedResolves: false
-  }
+    validateStatusUndefinedResolves: false,
+  },
 });
 ```
 
@@ -289,7 +292,7 @@ axios.get('/user/12345', {
 ```js
 axios.get('https://api.example.com/users', {
   headers: { 'X-API-Key': 'secret' },
-  sensitiveHeaders: ['X-API-Key']
+  sensitiveHeaders: ['X-API-Key'],
 });
 ```
 
@@ -299,13 +302,10 @@ axios.get('https://api.example.com/users', {
 
 ```js
 beforeRedirect: (options, { headers }) => {
-  if (
-    options.hostname === "example.com" &&
-    options.protocol === "https:"
-  ) {
-    options.auth = "user:password";
+  if (options.hostname === 'example.com' && options.protocol === 'https:') {
+    options.auth = 'user:password';
   }
-}
+};
 ```
 
 ::: warning 安全提示：在重定向时重新注入凭据
@@ -326,7 +326,7 @@ beforeRedirect: (options, { headers }) => {
 
 ```js
 const client = axios.create({
-  allowedSocketPaths: ['/var/run/docker.sock']
+  allowedSocketPaths: ['/var/run/docker.sock'],
 });
 
 // 允许
@@ -351,6 +351,8 @@ await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' 
 `proxy` 定义代理服务器的主机名、端口和协议，也可以通过常规的 `http_proxy` 和 `https_proxy` 环境变量来定义代理。
 
 如果你使用环境变量配置代理，还可以定义 `no_proxy` 环境变量，以逗号分隔的方式列出不需要代理的域名。
+
+在支持原生环境变量代理的 Node.js 版本中，当所选 `httpAgent` 或 `httpsAgent` 启用了 `proxyEnv` 时，axios 会将环境变量代理处理交给 Node，包括使用 `NODE_USE_ENV_PROXY=1`、`--use-env-proxy` 或 `NODE_OPTIONS=--use-env-proxy` 启动的进程。没有 `proxyEnv` 的自定义 agent 仍继续使用 axios 的环境变量代理解析。显式的 `proxy` 配置仍由 axios 处理。
 
 设置为 `false` 可禁用代理，忽略环境变量。`auth` 表示使用 HTTP Basic 认证连接代理并提供凭据，这将设置 `Proxy-Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Proxy-Authorization` 请求头。如果代理服务器使用 HTTPS，则必须将协议设置为 `https`。
 
@@ -401,6 +403,7 @@ proxy: {
   ```js
   { responseType: 'json', transitional: { silentJSONParsing: false } }
   ```
+
   :::
 
 - `forcedJSONParsing`：强制 axios 将响应解析为 JSON，即使响应不是有效的 JSON。适用于返回无效 JSON 的 API。
@@ -424,6 +427,7 @@ proxy: {
 - `metaTokens` — 保留特殊的键后缀（如 `{}`）
 - `indexes` — 控制数组键的方括号格式（`null` / `false` / `true`）
 - `maxDepth` _（默认：`100`）_ — 抛出 `AxiosError`（错误码 `ERR_FORM_DATA_DEPTH_EXCEEDED`）前的最大嵌套深度。设置为 `Infinity` 可禁用。
+- `Blob` — 在符合规范的 `FormData` 中转换类 ArrayBuffer 值时使用的 Blob 构造函数。
 
 详见 [multipart/form-data](/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
 

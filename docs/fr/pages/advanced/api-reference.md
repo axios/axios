@@ -34,7 +34,15 @@ La classe `CancelToken` était basée sur la proposition `tc39/proposal-cancelab
 
 Depuis la version 0.22.0, la classe `CancelToken` est dépréciée et sera supprimée dans une prochaine version. Il est recommandé d'utiliser l'API `AbortController` à la place.
 
-La classe est exportée principalement pour des raisons de rétrocompatibilité et sera supprimée dans une prochaine version. Nous déconseillons fortement son utilisation dans de nouveaux projets et ne documentons donc pas cette API.
+La classe est exportée principalement pour des raisons de rétrocompatibilité et sera supprimée dans une prochaine version. Nous déconseillons fortement son utilisation dans de nouveaux projets ; les helpers d'interopérabilité hérités ci-dessous ne sont listés que pour le code existant.
+
+Les méthodes héritées restent typées pour les intégrations existantes :
+
+```ts
+subscribe(listener: (cancel: Cancel | any) => void): void;
+unsubscribe(listener: (cancel: Cancel | any) => void): void;
+toAbortSignal(): AbortSignal;
+```
 
 ## Fonctions
 
@@ -102,6 +110,7 @@ Les noms d'en-têtes vides ou composés uniquement d'espaces sont ignorés.
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 ```
 
 #### `get`
@@ -162,13 +171,30 @@ toJSON(asStrings: true): Record<string, string>;
 toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
+#### `toString`
+
+Retourne les en-têtes sous forme de bloc d'en-têtes HTTP sans CRLF, avec une paire `nom: valeur` par ligne.
+
+```ts
+toString(): string;
+```
+
 ### `CanceledError` <Badge type="tip" text="Extension d'AxiosError" />
 
 La classe `CanceledError` est une classe d'erreur levée lorsqu'une requête HTTP est annulée. Elle étend la classe `AxiosError`.
 
+```ts
+constructor(message?: string, config?: InternalAxiosRequestConfig, request?: any);
+__CANCEL__?: boolean;
+```
+
 ### `Cancel` <Badge type="tip" text="Alias de CanceledError" />
 
 La classe `Cancel` est un alias de la classe `CanceledError`. Elle est exportée pour des raisons de rétrocompatibilité et sera supprimée dans une prochaine version.
+
+```ts
+Cancel: typeof CanceledError;
+```
 
 ### `isCancel`
 
@@ -179,19 +205,19 @@ isCancel<T = any>(value: any): value is CanceledError<T>;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 const controller = new AbortController();
 
-axios.get("/api/data", { signal: controller.signal }).catch((error) => {
+axios.get('/api/data', { signal: controller.signal }).catch((error) => {
   if (axios.isCancel(error)) {
-    console.log("Request was cancelled:", error.message);
+    console.log('Request was cancelled:', error.message);
   } else {
-    console.error("Unexpected error:", error);
+    console.error('Unexpected error:', error);
   }
 });
 
-controller.abort("User navigated away");
+controller.abort('User navigated away');
 ```
 
 ### `isAxiosError`
@@ -203,14 +229,14 @@ isAxiosError(value: any): value is AxiosError;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 try {
-  await axios.get("/api/resource");
+  await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     // error.response, error.config, error.code sont tous disponibles
-    console.error("HTTP error", error.response?.status, error.message);
+    console.error('HTTP error', error.response?.status, error.message);
   } else {
     // Une erreur non-axios (ex. une erreur de programmation)
     throw error;
@@ -241,12 +267,12 @@ toFormData(sourceObj: object, formData?: FormData, options?: FormSerializerOptio
 ```
 
 ```js
-import { toFormData } from "axios";
+import { toFormData } from 'axios';
 
-const data = { name: "Jay", avatar: fileBlob };
+const data = { name: 'Jay', avatar: fileBlob };
 const form = toFormData(data);
 // form est maintenant une instance FormData prête à être envoyée
-await axios.post("/api/users", form);
+await axios.post('/api/users', form);
 ```
 
 ### `formToJSON`
@@ -258,11 +284,11 @@ formToJSON(form: FormData): object;
 ```
 
 ```js
-import { formToJSON } from "axios";
+import { formToJSON } from 'axios';
 
 const form = new FormData();
-form.append("name", "Jay");
-form.append("role", "admin");
+form.append('name', 'Jay');
+form.append('role', 'admin');
 
 const obj = formToJSON(form);
 console.log(obj); // { name: "Jay", role: "admin" }
@@ -277,13 +303,13 @@ getAdapter(adapters: string | string[]): AxiosAdapter;
 ```
 
 ```js
-import { getAdapter } from "axios";
+import { getAdapter } from 'axios';
 
 // Obtenir explicitement l'adaptateur fetch
-const fetchAdapter = getAdapter("fetch");
+const fetchAdapter = getAdapter('fetch');
 
 // Obtenir le meilleur adaptateur disponible depuis une liste de priorité
-const adapter = getAdapter(["fetch", "xhr", "http"]);
+const adapter = getAdapter(['fetch', 'xhr', 'http']);
 ```
 
 ### `mergeConfig`
@@ -295,10 +321,10 @@ mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): 
 ```
 
 ```js
-import { mergeConfig } from "axios";
+import { mergeConfig } from 'axios';
 
-const base = { baseURL: "https://api.example.com", timeout: 5000 };
-const override = { timeout: 10000, headers: { "X-Custom": "value" } };
+const base = { baseURL: 'https://api.example.com', timeout: 5000 };
+const override = { timeout: 10000, headers: { 'X-Custom': 'value' } };
 
 const merged = mergeConfig(base, override);
 // { baseURL: "https://api.example.com", timeout: 10000, headers: { "X-Custom": "value" } }
@@ -311,16 +337,16 @@ const merged = mergeConfig(base, override);
 Un objet contenant une liste de codes de statut HTTP sous forme de constantes nommées. Utilisez-le pour écrire des conditions lisibles plutôt que des nombres bruts.
 
 ```js
-import axios, { HttpStatusCode } from "axios";
+import axios, { HttpStatusCode } from 'axios';
 
 try {
-  const response = await axios.get("/api/resource");
+  const response = await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === HttpStatusCode.NotFound) {
-      console.error("Resource not found");
+      console.error('Resource not found');
     } else if (error.response?.status === HttpStatusCode.Unauthorized) {
-      console.error("Authentication required");
+      console.error('Authentication required');
     }
   }
 }

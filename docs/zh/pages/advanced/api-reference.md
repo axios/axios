@@ -34,7 +34,15 @@ request(configOrUrl: string | AxiosRequestConfig<D>, config: AxiosRequestConfig<
 
 从 0.22.0 版本起，`CancelToken` 类已废弃，将在未来版本中移除。建议改用 `AbortController` API。
 
-该类主要为了向后兼容而保留导出，未来将被移除。我们强烈不建议在新项目中使用，因此不再对其 API 进行文档说明。
+该类主要为了向后兼容而保留导出，未来将被移除。我们强烈不建议在新项目中使用；下面的旧版互操作辅助方法仅为已有代码列出。
+
+这些旧版方法仍为现有集成提供类型：
+
+```ts
+subscribe(listener: (cancel: Cancel | any) => void): void;
+unsubscribe(listener: (cancel: Cancel | any) => void): void;
+toAbortSignal(): AbortSignal;
+```
 
 ## 函数
 
@@ -102,6 +110,7 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 ```
 
 #### `get`
@@ -162,13 +171,30 @@ toJSON(asStrings: true): Record<string, string>;
 toJSON(asStrings?: false): Record<string, string | string[]>;
 ```
 
+#### `toString`
+
+将请求头返回为不含 CRLF 的 HTTP 请求头块，每行一个 `name: value` 键值对。
+
+```ts
+toString(): string;
+```
+
 ### `CanceledError` <Badge type="tip" text="继承自 AxiosError" />
 
 `CanceledError` 类是 HTTP 请求被取消时抛出的错误类，继承自 `AxiosError` 类。
 
+```ts
+constructor(message?: string, config?: InternalAxiosRequestConfig, request?: any);
+__CANCEL__?: boolean;
+```
+
 ### `Cancel` <Badge type="tip" text="CanceledError 的别名" />
 
 `Cancel` 类是 `CanceledError` 类的别名，为向后兼容而保留导出，将在未来版本中移除。
+
+```ts
+Cancel: typeof CanceledError;
+```
 
 ### `isCancel`
 
@@ -179,19 +205,19 @@ isCancel<T = any>(value: any): value is CanceledError<T>;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 const controller = new AbortController();
 
-axios.get("/api/data", { signal: controller.signal }).catch((error) => {
+axios.get('/api/data', { signal: controller.signal }).catch((error) => {
   if (axios.isCancel(error)) {
-    console.log("Request was cancelled:", error.message);
+    console.log('Request was cancelled:', error.message);
   } else {
-    console.error("Unexpected error:", error);
+    console.error('Unexpected error:', error);
   }
 });
 
-controller.abort("User navigated away");
+controller.abort('User navigated away');
 ```
 
 ### `isAxiosError`
@@ -203,14 +229,14 @@ isAxiosError(value: any): value is AxiosError;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 try {
-  await axios.get("/api/resource");
+  await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     // error.response、error.config、error.code 均可使用
-    console.error("HTTP error", error.response?.status, error.message);
+    console.error('HTTP error', error.response?.status, error.message);
   } else {
     // 非 axios 错误（例如编程错误）
     throw error;
@@ -241,12 +267,12 @@ toFormData(sourceObj: object, formData?: FormData, options?: FormSerializerOptio
 ```
 
 ```js
-import { toFormData } from "axios";
+import { toFormData } from 'axios';
 
-const data = { name: "Jay", avatar: fileBlob };
+const data = { name: 'Jay', avatar: fileBlob };
 const form = toFormData(data);
 // form 现在是一个可直接发送的 FormData 实例
-await axios.post("/api/users", form);
+await axios.post('/api/users', form);
 ```
 
 ### `formToJSON`
@@ -258,11 +284,11 @@ formToJSON(form: FormData): object;
 ```
 
 ```js
-import { formToJSON } from "axios";
+import { formToJSON } from 'axios';
 
 const form = new FormData();
-form.append("name", "Jay");
-form.append("role", "admin");
+form.append('name', 'Jay');
+form.append('role', 'admin');
 
 const obj = formToJSON(form);
 console.log(obj); // { name: "Jay", role: "admin" }
@@ -277,13 +303,13 @@ getAdapter(adapters: string | string[]): AxiosAdapter;
 ```
 
 ```js
-import { getAdapter } from "axios";
+import { getAdapter } from 'axios';
 
 // 显式获取 fetch 适配器
-const fetchAdapter = getAdapter("fetch");
+const fetchAdapter = getAdapter('fetch');
 
 // 按优先级列表获取最合适的适配器
-const adapter = getAdapter(["fetch", "xhr", "http"]);
+const adapter = getAdapter(['fetch', 'xhr', 'http']);
 ```
 
 ### `mergeConfig`
@@ -295,10 +321,10 @@ mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): 
 ```
 
 ```js
-import { mergeConfig } from "axios";
+import { mergeConfig } from 'axios';
 
-const base = { baseURL: "https://api.example.com", timeout: 5000 };
-const override = { timeout: 10000, headers: { "X-Custom": "value" } };
+const base = { baseURL: 'https://api.example.com', timeout: 5000 };
+const override = { timeout: 10000, headers: { 'X-Custom': 'value' } };
 
 const merged = mergeConfig(base, override);
 // { baseURL: "https://api.example.com", timeout: 10000, headers: { "X-Custom": "value" } }
@@ -311,16 +337,16 @@ const merged = mergeConfig(base, override);
 包含 HTTP 状态码命名常量的对象，可用于编写更具可读性的条件判断，避免直接使用数字字面量。
 
 ```js
-import axios, { HttpStatusCode } from "axios";
+import axios, { HttpStatusCode } from 'axios';
 
 try {
-  const response = await axios.get("/api/resource");
+  const response = await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === HttpStatusCode.NotFound) {
-      console.error("Resource not found");
+      console.error('Resource not found');
     } else if (error.response?.status === HttpStatusCode.Unauthorized) {
-      console.error("Authentication required");
+      console.error('Authentication required');
     }
   }
 }

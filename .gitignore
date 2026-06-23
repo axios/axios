@@ -11,4 +11,5 @@ sauce_connect.log
 .claude/
 openspec/
 .opencode/
+.codex/
 dist/

@@ -40,4 +40,10 @@ describe('helpers::parseHeaders', () => {
     expect(parsed.age).toEqual('age-a');
     expect(parsed.foo).toEqual('foo-a, foo-b');
   });
+
+  it('should ignore duplicate node-style headers after an empty first value', () => {
+    const parsed = parseHeaders('Content-Length:\n' + 'Content-Length: 10\n');
+
+    expect(parsed['content-length']).toEqual('');
+  });
 });

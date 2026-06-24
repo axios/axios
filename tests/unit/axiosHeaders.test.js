@@ -658,6 +658,14 @@ describe('AxiosHeaders', () => {
       assert.deepStrictEqual(headers.getSetCookie(), ['key=val;', 'key2=val2;']);
     });
 
+    it('should return programmatic set-cookie as an array', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('set-cookie', 'key=val;');
+
+      assert.deepStrictEqual(headers.getSetCookie(), ['key=val;']);
+    });
+
     it('should return empty set-cookie', () => {
       assert.deepStrictEqual(new AxiosHeaders().getSetCookie(), []);
     });

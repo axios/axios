@@ -47,4 +47,19 @@ describe('helpers::progressEventReducer', () => {
     expect(events[0].loaded).toBe(50);
     expect(events[0].bytes).toBe(50);
   });
+
+  it('should clamp negative loaded values to zero', () => {
+    const events = [];
+    const [onProgress, flush] = progressEventReducer((data) => {
+      events.push(data);
+    }, false, Number.POSITIVE_INFINITY);
+
+    onProgress({ lengthComputable: true, loaded: -5, total: 10 });
+    flush();
+
+    expect(events.length).toBe(1);
+    expect(events[0].loaded).toBe(0);
+    expect(events[0].progress).toBe(0);
+    expect(events[0].bytes).toBe(0);
+  });
 });

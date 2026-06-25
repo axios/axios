@@ -6,7 +6,7 @@
 const controller = new AbortController();
 
 axios
-  .get("/foo/bar", {
+  .get('/foo/bar', {
     signal: controller.signal,
   })
   .then(function (response) {
@@ -25,21 +25,21 @@ const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
 
 axios
-  .get("/user/12345", {
+  .get('/user/12345', {
     cancelToken: source.token,
   })
   .catch(function (thrown) {
     if (axios.isCancel(thrown)) {
-      console.log("Request canceled", thrown.message);
+      console.log('Request canceled', thrown.message);
     } else {
       // gérer l'erreur
     }
   });
 
 axios.post(
-  "/user/12345",
+  '/user/12345',
   {
-    name: "new name",
+    name: 'new name',
   },
   {
     cancelToken: source.token,
@@ -47,7 +47,7 @@ axios.post(
 );
 
 // annuler la requête (le paramètre message est optionnel)
-source.cancel("Operation canceled by the user.");
+source.cancel('Operation canceled by the user.');
 ```
 
 Vous pouvez également créer un token d'annulation en passant une fonction d'exécution au constructeur `CancelToken` :
@@ -56,7 +56,7 @@ Vous pouvez également créer un token d'annulation en passant une fonction d'ex
 const CancelToken = axios.CancelToken;
 let cancel;
 
-axios.get("/user/12345", {
+axios.get('/user/12345', {
   cancelToken: new CancelToken(function executor(c) {
     // Une fonction d'exécution reçoit une fonction d'annulation comme paramètre
     cancel = c;
@@ -66,5 +66,25 @@ axios.get("/user/12345", {
 // annuler la requête
 cancel();
 ```
+
+`CancelToken` expose aussi des helpers de bas niveau pour les intégrations héritées :
+
+```js
+const source = axios.CancelToken.source();
+
+const listener = (cancel) => {
+  console.log(cancel.message);
+};
+
+source.token.subscribe(listener);
+
+const signal = source.token.toAbortSignal();
+// Passez `signal` aux APIs qui acceptent AbortSignal.
+
+source.cancel('Operation canceled by the user.');
+source.token.unsubscribe(listener);
+```
+
+Les requêtes annulées sont rejetées avec `axios.CanceledError`. L'export hérité `axios.Cancel` est un alias de `axios.CanceledError`, et les erreurs d'annulation incluent `__CANCEL__` pour la compatibilité avec `axios.isCancel`.
 
 Vous pouvez annuler plusieurs requêtes avec le même token d'annulation ou le même abort controller. Si un token d'annulation est déjà annulé au moment où une requête Axios démarre, alors la requête est annulée immédiatement, sans aucune tentative d'effectuer une vraie requête.

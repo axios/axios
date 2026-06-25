@@ -42,8 +42,9 @@ await axios.post('https://httpbin.org/post', document.querySelector('#htmlForm')
 {
   "foo": "1",
   "deep": {
-    "prop": "2",
-    "prop spaced": "3"
+    "prop": {
+      "spaced": "3"
+    }
   },
   "baz": ["4", "5"],
   "user": {
@@ -51,6 +52,10 @@ await axios.post('https://httpbin.org/post', document.querySelector('#htmlForm')
   }
 }
 ```
+
+::: tip 路径冲突会覆盖先前的值
+字段名会按 `.`、方括号或空白拆分为属性路径。两个路径重叠的输入会发生冲突：在上面的示例中，`deep.prop` 解析为 `["deep", "prop"]`，而 `deep prop spaced` 解析为 `["deep", "prop", "spaced"]`，因此更深的赋值会将 `deep.prop = "2"` 替换为嵌套对象 `{ spaced: "3" }`。如果你需要同时保留两个值，请使用互不重叠的字段名。
+:::
 
 ::: warning
 目前不支持将 Blob/File 以 JSON（base64）格式发送。

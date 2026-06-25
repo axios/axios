@@ -25,4 +25,26 @@ describe('module cjs typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('narrows isCancel to CanceledError in commonjs typings', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-is-cancel-typing.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'typings-cjs-is-cancel', sourcePath, tsconfig);
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
+  it('type-checks additive commonjs public typings', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-added-types.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'typings-cjs-added', sourcePath, tsconfig);
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
 });

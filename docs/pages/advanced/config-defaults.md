@@ -9,6 +9,10 @@ axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
 ```
 
+::: warning Global headers are sent to every host
+If your application talks to more than one domain, setting `axios.defaults.headers.common["Authorization"]` will send the token to **all** of them, including third-party APIs you may not control. Use a [custom instance](#custom-instance-defaults) with a scoped `baseURL` for any client that carries credentials.
+:::
+
 ## Custom instance defaults
 
 axios instances are declared with their own defaults when created. These defaults may be overridden setting the `defaults` property to the instance. An example of using custom instance defaults is shown below:
@@ -26,6 +30,8 @@ instance.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 ## Config order of precedence
 
 Config will be merged with an order of precedence. The order is as follows, first the library defaults are set, then default properties of the instance, and finally config argument for the request. An example of the order of precedence is shown below:
+
+Some options are request-specific and are only taken from the request config. `data` is one of those options: axios does not inherit or deep-merge request bodies from global or instance defaults. If every request needs shared body fields, add them with a request interceptor or `transformRequest`, and scope that logic carefully so sensitive values are not sent to the wrong endpoint.
 
 First lets create an instance with the defaults provided by the library. At this point the timeout config value is `0` as is the default for the library.
 

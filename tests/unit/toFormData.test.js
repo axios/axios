@@ -66,6 +66,64 @@ describe('helpers::toFormData', () => {
     assert.ok(formData instanceof FormData);
   });
 
+  it('should use custom Blob constructor for typed array values', () => {
+    class CustomBlob {
+      constructor(parts) {
+        this.parts = parts;
+      }
+    }
+
+    const formData = {
+      calls: [],
+      append(key, value) {
+        this.calls.push([key, value]);
+      },
+      get [Symbol.toStringTag]() {
+        return 'FormData';
+      },
+      *[Symbol.iterator]() {}
+    };
+
+    const value = new Uint8Array([1, 2, 3]);
+    toFormData({ file: value }, formData, { Blob: CustomBlob });
+
+    assert.strictEqual(formData.calls.length, 1);
+    assert.strictEqual(formData.calls[0][0], 'file');
+    assert.ok(formData.calls[0][1] instanceof CustomBlob);
+    assert.deepStrictEqual(formData.calls[0][1].parts, [value]);
+  });
+
+  it('should convert typed array values to Buffer for non-spec Node FormData', () => {
+    const formData = createRNFormDataSpy();
+
+    toFormData({ file: new Uint8Array([1, 2, 3]) }, formData);
+
+    assert.strictEqual(formData.calls.length, 1);
+    assert.strictEqual(formData.calls[0][0], 'file');
+    assert.ok(Buffer.isBuffer(formData.calls[0][1]));
+    assert.deepStrictEqual([...formData.calls[0][1]], [1, 2, 3]);
+  });
+
+  it('should throw AxiosError when typed array values require Buffer and Buffer is unavailable', () => {
+    const originalBuffer = globalThis.Buffer;
+    const formData = createRNFormDataSpy();
+
+    try {
+      globalThis.Buffer = undefined;
+
+      assert.throws(
+        () => toFormData({ file: new Uint8Array([1]) }, formData),
+        (err) => {
+          assert.ok(err instanceof AxiosError);
+          assert.strictEqual(err.code, AxiosError.ERR_NOT_SUPPORT);
+          return true;
+        }
+      );
+    } finally {
+      globalThis.Buffer = originalBuffer;
+    }
+  });
+
   it('should append root-level React Native blob without recursion', () => {
     const formData = createRNFormDataSpy();
 
@@ -190,6 +248,32 @@ describe('helpers::toFormData', () => {
       assert.strictEqual(caught.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
       assert.ok(!(caught instanceof RangeError));
     });
+
+    it('should reject deeply nested {} metatoken values before JSON.stringify overflows', () => {
+      try {
+        toFormData({ 'evil{}': nest(10000) }, new FormData());
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError, 'error must be AxiosError, not RangeError');
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
+        assert.ok(!(err instanceof RangeError));
+      }
+    });
+
+    it('should allow {} metatoken values at the same boundary as normal top-level properties', () => {
+      const formData = toFormData({ 'safe{}': nest(99) }, new FormData());
+      assert.ok(formData instanceof FormData);
+    });
+
+    it('should reject {} metatoken values beyond the normal top-level property boundary', () => {
+      try {
+        toFormData({ 'evil{}': nest(100) }, new FormData());
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
+      }
+    });
   });
 
   describe('maxDepth — params serialization via AxiosURLSearchParams', () => {
@@ -207,6 +291,27 @@ describe('helpers::toFormData', () => {
       const params = new AxiosURLSearchParams(nest(150), { maxDepth: 200 });
       const qs = params.toString();
       assert.ok(typeof qs === 'string' && qs.length > 0);
+    });
+
+    it('should reject deeply nested {} metatoken params before JSON.stringify overflows', () => {
+      try {
+        new AxiosURLSearchParams({ 'evil{}': nest(10000) });
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError, 'error must be AxiosError, not RangeError');
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
+        assert.ok(!(err instanceof RangeError));
+      }
+    });
+
+    it('should reject {} metatoken params beyond the normal property boundary', () => {
+      try {
+        new AxiosURLSearchParams({ 'evil{}': nest(100) });
+        assert.fail('Should have thrown');
+      } catch (err) {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, 'ERR_FORM_DATA_DEPTH_EXCEEDED');
+      }
     });
   });
 

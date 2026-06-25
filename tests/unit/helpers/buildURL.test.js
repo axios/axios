@@ -16,6 +16,10 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar');
   });
 
+  it('should support params with undefined url', () => {
+    expect(buildURL(undefined, { foo: 'bar' })).toEqual('?foo=bar');
+  });
+
   it('should support sending raw params to custom serializer func', () => {
     const serializer = vi.fn().mockReturnValue('foo=bar');
     const params = { foo: 'bar' };
@@ -61,6 +65,21 @@ describe('helpers::buildURL', () => {
         foo: ['bar', 'baz'],
       })
     ).toEqual('/foo?foo%5B%5D=bar&foo%5B%5D=baz');
+  });
+
+  it('should pass the params serializer instance as `this` to custom encode', () => {
+    const capturedThis = [];
+
+    expect(
+      buildURL('/foo', { foo: 'bar', baz: 'qux' }, {
+        encode(value, defaultEncode) {
+          capturedThis.push(this);
+          return defaultEncode(value);
+        },
+      })
+    ).toEqual('/foo?foo=bar&baz=qux');
+    expect(capturedThis).toHaveLength(4);
+    expect(new Set(capturedThis).size).toBe(1);
   });
 
   it('should support special char params', () => {
@@ -122,6 +141,35 @@ describe('helpers::buildURL', () => {
     };
 
     expect(buildURL('/foo', params, customSerializer)).toEqual('/foo?rendered');
+  });
+
+  it('should ignore inherited serializer options', () => {
+    let serializeInvoked = false;
+    let encodeInvoked = false;
+
+    Object.defineProperty(Object.prototype, 'serialize', {
+      value() {
+        serializeInvoked = true;
+        return 'inherited=1';
+      },
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'encode', {
+      value() {
+        encodeInvoked = true;
+        return 'inherited';
+      },
+      configurable: true,
+    });
+
+    try {
+      expect(buildURL('/foo', { value: 'a b' }, {})).toEqual('/foo?value=a+b');
+      expect(serializeInvoked).toBe(false);
+      expect(encodeInvoked).toBe(false);
+    } finally {
+      delete Object.prototype.serialize;
+      delete Object.prototype.encode;
+    }
   });
 });
 

@@ -1,48 +1,54 @@
 # Contributing
 
-We are open to, and grateful for, any contributions made by the community. By contributing to axios, you agree to abide by the [code of conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md).
+We accept community contributions. By contributing to axios, you agree to follow the [code of conduct](https://github.com/axios/axios/blob/master/CODE_OF_CONDUCT.md).
 
-## Code Style
+## Code style
 
-Please follow the [node style guide](https://github.com/felixge/node-style-guide).
+Follow the [node style guide](https://github.com/felixge/node-style-guide).
 
-## Commit Messages
+## Commit messages
 
-Please follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
+Follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## Testing
 
-Please update the tests to reflect your code changes. Pull requests will not be accepted if they are failing on GitHub actions.
+Update tests for your changes. Pull requests must pass GitHub Actions.
 
 ## Documentation
 
-Please update the [documentation](https://axios-http.com/docs/intro) accordingly so that there are no discrepancies between the API and the documentation.
+Update the [documentation](https://axios-http.com/docs/intro) when the API changes, so the API and docs stay in sync.
+
+## Dependency and GitHub Actions updates
+
+Please do not open pull requests that only update npm packages, lockfiles, or GitHub Actions versions. We close these PRs from outside collaborators. Only maintainers and approved automated bots may create package and GitHub Actions update PRs.
+
+We keep the 7-day Dependabot delay for these updates unless a critical vulnerability requires a maintainer-led manual update.
 
 ## Developing
 
-- `npm run test` runs the jasmine and mocha tests
-- `npm run build` runs rollup and bundles the source
+- `npm run test` runs the Jasmine and Mocha tests
+- `npm run build` runs Rollup and bundles the source
 - `npm run version` prepares the code for release
 
-## Running Examples
+## Running examples
 
-Examples are included in part to allow manual testing.
+Use the examples for manual testing.
 
-Running example
+Run the examples:
 
 ```bash
 > npm run examples
 # Open 127.0.0.1:3000
 ```
 
-Running sandbox in browser
+Run the browser sandbox:
 
 ```bash
 > npm start
 # Open 127.0.0.1:3000
 ```
 
-Running sandbox in terminal
+Run the terminal sandbox:
 
 ```bash
 > npm start

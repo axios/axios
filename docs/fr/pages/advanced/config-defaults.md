@@ -9,6 +9,10 @@ axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
 ```
 
+::: warning Les en-têtes globaux sont envoyés à chaque hôte
+Si votre application communique avec plus d'un domaine, définir `axios.defaults.headers.common["Authorization"]` enverra le token à **tous** ces domaines, y compris à des APIs tierces que vous ne contrôlez peut-être pas. Utilisez une [instance personnalisée](#valeurs-par-défaut-d-une-instance-personnalisée) avec une `baseURL` limitée pour tout client qui transporte des identifiants.
+:::
+
 ## Valeurs par défaut d'une instance personnalisée
 
 Les instances axios sont déclarées avec leurs propres valeurs par défaut lors de leur création. Ces valeurs par défaut peuvent être remplacées en définissant la propriété `defaults` de l'instance. Voici un exemple d'utilisation des valeurs par défaut d'une instance personnalisée :
@@ -26,6 +30,8 @@ instance.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 ## Ordre de priorité de la configuration
 
 La configuration est fusionnée selon un ordre de priorité. L'ordre est le suivant : d'abord les valeurs par défaut de la bibliothèque, puis les propriétés par défaut de l'instance, et enfin l'argument de configuration de la requête. Voici un exemple de cet ordre de priorité :
+
+Certaines options sont propres à chaque requête et ne sont lues que depuis la configuration de la requête. `data` en fait partie : axios n'hérite pas des corps de requête depuis les valeurs par défaut globales ou d'instance et ne les fusionne pas en profondeur. Si chaque requête doit inclure des champs de corps communs, ajoutez-les avec un intercepteur de requête ou `transformRequest`, en limitant soigneusement cette logique pour éviter d'envoyer des valeurs sensibles au mauvais point de terminaison.
 
 Créons d'abord une instance avec les valeurs par défaut fournies par la bibliothèque. À ce stade, la valeur de configuration du timeout est `0`, valeur par défaut de la bibliothèque.
 

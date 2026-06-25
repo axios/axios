@@ -28,4 +28,17 @@ describe('module esm typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('type-checks additive esm public typings', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-added-types.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'typings-esm-added', sourcePath, tsconfig, {
+      type: 'module',
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
 });

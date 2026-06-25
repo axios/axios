@@ -100,6 +100,27 @@ const { data } = await axios.query("/api/search", {
 The QUERY method is defined by an IETF [Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/) and has not yet been standardized. Semantics and the method name itself may change before final publication, and server, proxy, and CDN support is uneven. Verify your stack accepts `QUERY` end to end before relying on it in production.
 :::
 
+### `getUri`
+
+The `getUri` method returns the URL that would be sent for a given config without actually making the request. It applies `baseURL`, `paramsSerializer`, and `params`, so you get back the same string axios would put on the wire. Useful for building links, debugging serialization, or reusing the resolved URL in another request.
+
+```ts
+axios.getUri(config?: AxiosRequestConfig): string;
+```
+
+```js
+const url = axios.getUri({
+  url: "/users",
+  baseURL: "https://api.example.com",
+  params: { active: true, role: "admin" },
+});
+// "https://api.example.com/users?active=true&role=admin"
+```
+
+::: tip
+Use `getUri` on an instance (`instance.getUri(config)`) to inherit the instance's `baseURL`, `params`, and `paramsSerializer` defaults.
+:::
+
 ## Form data shorthand methods
 
 These methods are equivalent to their counterparts above, but preset `Content-Type` to `multipart/form-data`. They are the recommended way to upload files or submit HTML forms.

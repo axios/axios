@@ -9,6 +9,8 @@ formData.append('foo', 'bar');
 axios.post('https://httpbin.org/post', formData);
 ```
 
+Ne définissez pas manuellement l'en-tête `Content-Type` pour les objets `FormData` de navigateur, web worker ou React Native ; ces environnements ajoutent eux-mêmes la boundary multipart.
+
 Dans Node.js, vous pouvez utiliser la bibliothèque `form-data` comme suit :
 
 ```js
@@ -61,6 +63,23 @@ axios
   .then(({ data }) => console.log(data));
 ```
 
+## Politique d'en-têtes pour `FormData` Node.js <Badge type="warning" text="Node.js uniquement" />
+
+Lorsque vous passez un objet `FormData` Node.js qui expose `getHeaders()` (comme le package [`form-data`](https://github.com/form-data/form-data)), axios copie par défaut tous les en-têtes qu'il retourne sur la requête. Cela préserve la compatibilité v1 mais peut être problématique lorsque l'objet `FormData` provient d'une source non fiable — `getHeaders()` pourrait écraser des en-têtes comme `Authorization` ou en injecter des arbitraires.
+
+Définissez `formDataHeaderPolicy: 'content-only'` pour copier **uniquement** `Content-Type` et `Content-Length` depuis `getHeaders()`, puis définissez tout autre en-tête explicitement via la configuration `headers` de la requête :
+
+```js
+await axios.post('https://example.com/upload', form, {
+  formDataHeaderPolicy: 'content-only',
+  headers: {
+    Authorization: 'Bearer my-token',
+  },
+});
+```
+
+La valeur par défaut est `'legacy'`. Voir [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) dans la référence de configuration de requête pour plus de détails.
+
 ## Terminaisons supportées
 
 Le sérialiseur FormData d'Axios supporte quelques terminaisons spéciales pour effectuer les opérations suivantes :
@@ -84,6 +103,7 @@ Le sérialiseur FormData supporte des options supplémentaires via la propriét�
   - `false` (défaut) - ajouter des crochets vides (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - ajouter des crochets avec index (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
 - `maxDepth: number = 100` - profondeur maximale d'imbrication des objets dans laquelle le sérialiseur va récurser. Si l'entrée dépasse cette profondeur, une `AxiosError` avec `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` est levée. Cela protège les applications côté serveur contre les attaques DoS via des charges utiles profondément imbriquées. Définir à `Infinity` pour désactiver la limite.
+- `Blob: typeof Blob` - constructeur Blob utilisé lors de la conversion de valeurs de type ArrayBuffer pour un `FormData` conforme à la spécification. Ne le remplacez que dans les runtimes qui fournissent un constructeur `Blob` compatible sous un autre identifiant.
 
 ```js
 // Autoriser une imbrication plus profonde pour les schémas qui dépassent légitimement 100 niveaux :

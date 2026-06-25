@@ -27,6 +27,7 @@ A continuación se lista una relación de posibles errores identificados por axi
 | ERR_CANCELED              | La característica o método fue cancelado explícitamente por el usuario usando un AbortSignal (o un CancelToken). |
 | ERR_NOT_SUPPORT           | Característica o método no compatible en el entorno actual de axios.                          |
 | ERR_INVALID_URL           | URL inválida proporcionada para la solicitud de axios.                                        |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | Un objeto excede el `maxDepth` configurado al serializar `params` o datos de formulario. El límite predeterminado es de 100 niveles. Consulta [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) y [`formSerializer`](/pages/advanced/request-config#formserializer). |
 
 ## Manejo de errores
 
@@ -70,3 +71,50 @@ axios.get("/user/12345").catch(function (error) {
   console.log(error.toJSON());
 });
 ```
+
+Para evitar registrar secretos desde `error.config`, pasa un arreglo `redact` en la configuración de la solicitud. Las claves de configuración coincidentes se enmascaran de forma insensible a mayúsculas/minúsculas a cualquier profundidad cuando se llama a `AxiosError#toJSON()`.
+
+```js
+axios.get("/user/12345", {
+  headers: { Authorization: "Bearer token" },
+  redact: ["authorization"]
+}).catch(function (error) {
+  console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
+});
+```
+
+## Manejo de tiempos de espera
+
+Cuando una solicitud excede su `timeout` configurado, axios rechaza con `ECONNABORTED` por defecto. Establece `transitional.clarifyTimeoutError: true` para recibir `ETIMEDOUT` en su lugar, lo que facilita distinguir los errores de tiempo de espera de otros abortos.
+
+```js
+async function fetchWithTimeout() {
+  try {
+    const response = await axios.get("https://example.com/data", {
+      timeout: 5000, // 5 segundos
+      transitional: {
+        // establecer en true si prefieres ETIMEDOUT en lugar de ECONNABORTED
+        clarifyTimeoutError: true,
+      },
+    });
+
+    console.log("Response:", response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+        console.error("Request timed out. Please try again.");
+        return;
+      }
+
+      console.error("Axios error:", error.message);
+      return;
+    }
+
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+::: tip Establece siempre un `timeout` en producción
+Sin uno, una solicitud detenida puede colgarse indefinidamente. Consulta [`timeout`](/pages/advanced/request-config#timeout) y [`transitional.clarifyTimeoutError`](/pages/advanced/request-config#transitional) para las opciones de configuración correspondientes.
+:::

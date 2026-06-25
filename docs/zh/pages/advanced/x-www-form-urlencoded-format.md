@@ -19,12 +19,31 @@ const qs = require('qs');
 axios.post('/foo', qs.stringify({ bar: 123 }));
 ```
 
+如需完全控制请求头和方法，可将 `qs.stringify` 的输出作为请求 `data` 传入，并显式设置 `Content-Type`：
+
+```js
+import qs from 'qs';
+
+const data = { bar: 123 };
+const options = {
+  method: 'POST',
+  headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  data: qs.stringify(data),
+  url: '/foo',
+};
+axios(options);
+```
+
 在非常旧的 Node.js 版本中，可以使用 Node.js 内置的 `querystring` 模块。注意该模块在 Node.js v16 中已废弃——新代码请优先使用 `URLSearchParams` 或 `qs`。
 
 ```js
 const querystring = require('querystring');
 axios.post('https://something.com/', querystring.stringify({ foo: 'bar' }));
 ```
+
+::: tip 嵌套对象优先使用 `qs`
+如果你需要序列化嵌套对象，建议使用 `qs` 库，因为 `querystring` 方法在该场景下存在[已知问题](https://github.com/nodejs/node-v0.x-archive/issues/1665)。
+:::
 
 ## 自动序列化为 URLSearchParams <Badge type="tip" text="新特性" />
 
@@ -67,6 +86,8 @@ await axios.postForm('https://postman-echo.com/post', data, {
 ## 参数序列化的深度限制
 
 当 axios 通过 `AxiosURLSearchParams` 序列化 `params` 对象时，会调用与 FormData 序列化器相同的递归遍历器。`maxDepth` 选项（默认 `100`）限制递归的最大深度。超过限制的载荷会抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`，而不是导致调用栈溢出。
+
+共享类型成员 `SerializerOptions.Blob` 只影响序列化到符合规范的 `FormData`；序列化到 `URLSearchParams` 时没有效果。
 
 ```js
 // 如果你的 params 对象确实需要超过 100 层嵌套，可提高限制：

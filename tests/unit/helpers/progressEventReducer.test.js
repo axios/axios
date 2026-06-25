@@ -24,4 +24,27 @@ describe('helpers::progressEventReducer', () => {
     expect(last.upload).toBe(true);
     expect(last.bytes).toBe(20);
   });
+
+  it('should ignore malformed events that lack a numeric loaded value', () => {
+    const events = [];
+    const [onProgress, flush] = progressEventReducer((data) => {
+      events.push(data);
+    }, false, Number.POSITIVE_INFINITY);
+
+    onProgress(undefined);
+    onProgress(null);
+    onProgress({});
+    onProgress({ loaded: null, total: 100, lengthComputable: true });
+    onProgress({ loaded: 'abc', total: 100, lengthComputable: true });
+    flush();
+
+    expect(events.length).toBe(0);
+
+    onProgress({ lengthComputable: true, loaded: 50, total: 100 });
+    flush();
+
+    expect(events.length).toBe(1);
+    expect(events[0].loaded).toBe(50);
+    expect(events[0].bytes).toBe(50);
+  });
 });

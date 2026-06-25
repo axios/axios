@@ -10,7 +10,12 @@ import {
 } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
-import { __setProxy } from '../../../lib/adapters/http.js';
+import httpAdapter, {
+  __isNodeEnvProxyEnabled,
+  __isSameOriginRedirect,
+  __setProxy,
+} from '../../../lib/adapters/http.js';
+import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
 import net from 'net';
@@ -50,6 +55,37 @@ describe('supports http with nodejs', () => {
     return (actualValue, value) => {
       return actualValue > value ? actualValue <= value * p : actualValue >= value * n;
     };
+  }
+
+  class HangingConnectSocket extends stream.Duplex {
+    constructor() {
+      super();
+      this.connecting = true;
+    }
+
+    _read() {}
+
+    _write(_chunk, _encoding, callback) {
+      callback();
+    }
+
+    setKeepAlive() {
+      return this;
+    }
+
+    setNoDelay() {
+      return this;
+    }
+
+    setTimeout() {
+      return this;
+    }
+  }
+
+  class HangingConnectAgent extends http.Agent {
+    createConnection() {
+      return new HangingConnectSocket();
+    }
   }
 
   it('should support IPv4 literal strings', async () => {
@@ -154,6 +190,66 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should allow request interceptors to encode Unicode header values before Node sends them', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            oprtName: req.headers.oprtname,
+          })
+        );
+      },
+      { port: SERVER_PORT }
+    );
+
+    const instance = axios.create({ proxy: false });
+
+    instance.interceptors.request.use((config) => {
+      config.headers.oprtName = encodeURIComponent(config.headers.oprtName);
+      return config;
+    });
+
+    try {
+      const { data } = await instance.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          oprtName: '请求用户',
+        },
+      });
+
+      assert.strictEqual(data.oprtName, encodeURIComponent('请求用户'));
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should sanitize unencoded Unicode request headers before passing them to Node', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            xTest: req.headers['x-test'],
+          })
+        );
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const { data } = await axios.get(`http://localhost:${server.address().port}/`, {
+        proxy: false,
+        headers: {
+          'x-test': '请求用户',
+        },
+      });
+
+      assert.strictEqual(data.xTest, '');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should parse the timeout property', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -203,6 +299,69 @@ describe('supports http with nodejs', () => {
       );
     } finally {
       await stopHTTPServer(server);
+    }
+  });
+
+  it('should respect the timeout property during TCP connect with maxRedirects set to 0', async () => {
+    const timeout = 100;
+    const guardTimeout = 1000;
+    const started = Date.now();
+    const controller = new AbortController();
+    const agent = new HangingConnectAgent();
+    let guardTimer;
+    const request = axios.get('http://connect-timeout.test/', {
+      httpAgent: agent,
+      maxRedirects: 0,
+      proxy: false,
+      signal: controller.signal,
+      timeout,
+    });
+    const guard = new Promise((_resolve, reject) => {
+      guardTimer = setTimeout(() => {
+        controller.abort();
+        reject(new Error('request did not honor timeout during connect'));
+      }, guardTimeout);
+    });
+
+    try {
+      await assert.rejects(Promise.race([request, guard]), (error) => {
+        const elapsed = Date.now() - started;
+        assert.strictEqual(error.code, 'ECONNABORTED');
+        assert.strictEqual(error.message, `timeout of ${timeout}ms exceeded`);
+        assert.ok(elapsed < guardTimeout, `request timed out after ${elapsed}ms`);
+        return true;
+      });
+    } finally {
+      clearTimeout(guardTimer);
+      controller.abort();
+      agent.destroy();
+    }
+  });
+
+  it('should not time out immediately for timeout set to zero during TCP connect', async () => {
+    const controller = new AbortController();
+    const agent = new HangingConnectAgent();
+    const request = axios
+      .get('http://connect-timeout.test/', {
+        httpAgent: agent,
+        maxRedirects: 0,
+        proxy: false,
+        signal: controller.signal,
+        timeout: '0',
+      })
+      .then(
+        () => null,
+        (error) => error
+      );
+
+    try {
+      await setTimeoutAsync(50);
+      controller.abort();
+      const error = await request;
+      assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+    } finally {
+      controller.abort();
+      agent.destroy();
     }
   });
 
@@ -477,6 +636,166 @@ describe('supports http with nodejs', () => {
     await stopHTTPServer(proxy);
   });
 
+  it('should strip sensitiveHeaders on cross-origin redirect', async () => {
+    let capturedHeaders;
+
+    // destination server — different port means different origin
+    const destination = await startHTTPServer((req, res) => {
+      capturedHeaders = req.headers;
+      res.statusCode = 200;
+      res.end('ok');
+    });
+
+    // origin server — redirects to destination (cross-origin)
+    const origin = await startHTTPServer((req, res) => {
+      res.setHeader('Location', `http://localhost:${destination.address().port}/dest`);
+      res.statusCode = 302;
+      res.end();
+    });
+
+    try {
+      await axios.get(`http://localhost:${origin.address().port}/src`, {
+        maxRedirects: 5,
+        headers: { 'X-API-Key': 'secret', 'X-Other': 'keep' },
+        sensitiveHeaders: ['X-API-Key'],
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-API-Key should be stripped');
+      assert.strictEqual(capturedHeaders['x-other'], 'keep', 'X-Other should be preserved');
+    } finally {
+      await stopHTTPServer(origin);
+      await stopHTTPServer(destination);
+    }
+  });
+
+  it('should preserve sensitiveHeaders on same-origin redirect', async () => {
+    let capturedHeaders;
+    let requestCount = 0;
+
+    const server = await startHTTPServer((req, res) => {
+      requestCount++;
+      if (requestCount === 1) {
+        res.setHeader('Location', '/dest');
+        res.statusCode = 302;
+        res.end();
+      } else {
+        capturedHeaders = req.headers;
+        res.statusCode = 200;
+        res.end('ok');
+      }
+    });
+
+    try {
+      await axios.get(`http://localhost:${server.address().port}/src`, {
+        maxRedirects: 5,
+        headers: { 'X-API-Key': 'secret' },
+        sensitiveHeaders: ['X-API-Key'],
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], 'secret', 'X-API-Key should be preserved on same-origin redirect');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should strip sensitiveHeaders case-insensitively on cross-origin redirect', async () => {
+    let capturedHeaders;
+
+    const destination = await startHTTPServer((req, res) => {
+      capturedHeaders = req.headers;
+      res.statusCode = 200;
+      res.end('ok');
+    });
+
+    const origin = await startHTTPServer((req, res) => {
+      res.setHeader('Location', `http://localhost:${destination.address().port}/dest`);
+      res.statusCode = 302;
+      res.end();
+    });
+
+    try {
+      await axios.get(`http://localhost:${origin.address().port}/src`, {
+        maxRedirects: 5,
+        // Header sent with mixed casing; sensitiveHeaders list uses different casing
+        headers: { 'X-Api-Key': 'secret' },
+        sensitiveHeaders: ['x-api-key'],
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-Api-Key should be stripped case-insensitively');
+    } finally {
+      await stopHTTPServer(origin);
+      await stopHTTPServer(destination);
+    }
+  });
+
+  it('should strip sensitiveHeaders configured on an instance', async () => {
+    let capturedHeaders;
+
+    const destination = await startHTTPServer((req, res) => {
+      capturedHeaders = req.headers;
+      res.statusCode = 200;
+      res.end('ok');
+    });
+
+    const origin = await startHTTPServer((req, res) => {
+      res.setHeader('Location', `http://localhost:${destination.address().port}/dest`);
+      res.statusCode = 302;
+      res.end();
+    });
+
+    const client = axios.create({
+      headers: { 'X-API-Key': 'secret', 'X-Other': 'keep' },
+      sensitiveHeaders: ['X-API-Key'],
+    });
+
+    try {
+      await client.get(`http://localhost:${origin.address().port}/src`, {
+        maxRedirects: 5,
+      });
+
+      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-API-Key should be stripped');
+      assert.strictEqual(capturedHeaders['x-other'], 'keep', 'X-Other should be preserved');
+    } finally {
+      await stopHTTPServer(origin);
+      await stopHTTPServer(destination);
+    }
+  });
+
+  it('should reject invalid sensitiveHeaders config', async () => {
+    await assert.rejects(
+      axios.get('http://localhost:1/', { sensitiveHeaders: 'X-API-Key' }),
+      (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.strictEqual(error.message, 'sensitiveHeaders must be an array of strings');
+        return true;
+      }
+    );
+
+    await assert.rejects(
+      axios.get('http://localhost:1/', { sensitiveHeaders: [null] }),
+      (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.strictEqual(error.message, 'sensitiveHeaders must be an array of strings');
+        return true;
+      }
+    );
+  });
+
+  it('should fail closed when sensitiveHeaders redirect origin cannot be parsed', () => {
+    assert.strictEqual(
+      __isSameOriginRedirect(
+        { href: 'http://localhost/final' },
+        { url: 'http://localhost/start' }
+      ),
+      true
+    );
+    assert.strictEqual(
+      __isSameOriginRedirect({ href: 'http://[::1' }, { url: 'http://localhost/start' }),
+      false
+    );
+    assert.strictEqual(__isSameOriginRedirect({ href: 'http://localhost/final' }), false);
+  });
+
   it('should wrap HTTP errors and keep stack', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -572,6 +891,9 @@ describe('supports http with nodejs', () => {
   });
 
   describe('compression', async () => {
+    const isZstdSupported = typeof zlib.createZstdDecompress === 'function' &&
+      typeof zlib.zstdCompress === 'function';
+
     it('should support transparent gunzip', async () => {
       const data = {
         firstName: 'Fred',
@@ -673,6 +995,52 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    it('should not advertise zstd by default', async () => {
+      let acceptEncoding;
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          acceptEncoding = req.headers['accept-encoding'];
+          res.end('ok');
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await axios.get(`http://localhost:${server.address().port}/`);
+        assert.strictEqual(acceptEncoding.includes('zstd'), false);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should advertise zstd when enabled through transitional config and supported', async () => {
+      if (!isZstdSupported) {
+        return;
+      }
+
+      let acceptEncoding;
+
+      const server = await startHTTPServer(
+        (req, res) => {
+          acceptEncoding = req.headers['accept-encoding'];
+          res.end('ok');
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        await axios.get(`http://localhost:${server.address().port}/`, {
+          transitional: {
+            advertiseZstdAcceptEncoding: true,
+          },
+        });
+        assert.strictEqual(acceptEncoding.includes('zstd'), true);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
     describe('algorithms', () => {
       const responseBody = 'str';
 
@@ -724,6 +1092,18 @@ describe('supports http with nodejs', () => {
           });
         });
 
+      const zstdCompress = (value) =>
+        new Promise((resolve, reject) => {
+          zlib.zstdCompress(value, (error, compressed) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(compressed);
+          });
+        });
+
       for (const [typeName, zipped] of Object.entries({
         gzip: gzip(responseBody),
         GZIP: gzip(responseBody),
@@ -731,6 +1111,7 @@ describe('supports http with nodejs', () => {
         deflate: deflate(responseBody),
         'deflate-raw': deflateRaw(responseBody),
         br: brotliCompress(responseBody),
+        ...(isZstdSupported ? { zstd: zstdCompress(responseBody) } : {}),
       })) {
         const type = typeName.split('-')[0];
 
@@ -823,6 +1204,28 @@ describe('supports http with nodejs', () => {
               await stopHTTPServer(server);
             }
           });
+
+          it('should reject when the server aborts mid-stream and maxRedirects is 0', async () => {
+            const server = await startHTTPServer(
+              async (req, res) => {
+                res.setHeader('Content-Encoding', type);
+                res.setHeader('Transfer-Encoding', 'chunked');
+                res.removeHeader('Content-Length');
+                res.write(await zipped);
+                setTimeout(() => res.socket.destroy(), 10);
+              },
+              { port: SERVER_PORT }
+            );
+
+            try {
+              await assert.rejects(
+                axios.get(`http://localhost:${server.address().port}`, { maxRedirects: 0 }),
+                (err) => err && err.code === 'ECONNRESET'
+              );
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
         });
       }
     });
@@ -868,6 +1271,59 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should decode basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(
+        `http://my%40email.com:pa%24ss@localhost:${server.address().port}/`
+      );
+      const base64 = Buffer.from('my@email.com:pa$ss', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('keeps malformed URL credentials percent-encoding and does not throw', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://user%:foo%zz@localhost:${server.address().port}/`);
+      const base64 = Buffer.from('user%:foo%zz', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should support password-only basic auth credentials from the request URL', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://:secret@localhost:${server.address().port}/`);
+      const base64 = Buffer.from(':secret', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support basic auth with a header', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -885,6 +1341,250 @@ describe('supports http with nodejs', () => {
       });
       const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should ignore inherited nested request option fields in http adapter', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            authorization: req.headers.authorization,
+            url: req.url,
+          })
+        );
+      },
+      { port: SERVER_PORT }
+    );
+
+    Object.defineProperty(Object.prototype, 'username', {
+      value: 'inherited-user',
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'password', {
+      value: 'inherited-pass',
+      configurable: true,
+    });
+    Object.defineProperty(Object.prototype, 'serialize', {
+      value() {
+        return 'inherited=1';
+      },
+      configurable: true,
+    });
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/demo`, {
+        auth: {},
+        params: { value: 'a b' },
+        paramsSerializer: {},
+      });
+
+      assert.deepStrictEqual(response.data, {
+        authorization: 'Basic Og==',
+        url: '/demo?value=a+b',
+      });
+    } finally {
+      delete Object.prototype.username;
+      delete Object.prototype.password;
+      delete Object.prototype.serialize;
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should ignore inherited proxy when http adapter receives a plain config', async () => {
+    const proxyEnvKeys = ['http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY'];
+    const originalProxyEnv = Object.create(null);
+    let proxy;
+    let target;
+    let proxyHits = 0;
+    let targetHits = 0;
+
+    for (const key of proxyEnvKeys) {
+      originalProxyEnv[key] = process.env[key];
+      delete process.env[key];
+    }
+
+    try {
+      proxy = await startHTTPServer((req, res) => {
+        proxyHits += 1;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ via: 'proxy', url: req.url }));
+      });
+
+      target = await startHTTPServer((req, res) => {
+        targetHits += 1;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ via: 'target', url: req.url }));
+      });
+
+      Object.defineProperty(Object.prototype, 'proxy', {
+        value: {
+          protocol: 'http',
+          host: '127.0.0.1',
+          port: proxy.address().port,
+        },
+        configurable: true,
+      });
+
+      const response = await httpAdapter({
+        method: 'get',
+        url: `http://127.0.0.1:${target.address().port}/direct`,
+        headers: {},
+        maxRedirects: 0,
+        maxContentLength: -1,
+        maxBodyLength: -1,
+        timeout: 0,
+      });
+      const data = JSON.parse(response.data);
+
+      assert.strictEqual(proxyHits, 0);
+      assert.strictEqual(targetHits, 1);
+      assert.deepStrictEqual(data, { via: 'target', url: '/direct' });
+    } finally {
+      delete Object.prototype.proxy;
+
+      for (const key of proxyEnvKeys) {
+        if (originalProxyEnv[key] === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = originalProxyEnv[key];
+        }
+      }
+
+      await stopHTTPServer(target);
+      await stopHTTPServer(proxy);
+    }
+  });
+
+  it('should ignore inherited paramsSerializer when http adapter receives a plain config', async () => {
+    let server;
+    let serializerInvoked = false;
+
+    Object.defineProperty(Object.prototype, 'paramsSerializer', {
+      value() {
+        serializerInvoked = true;
+        return 'inherited=1';
+      },
+      configurable: true,
+    });
+
+    try {
+      server = await startHTTPServer((req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ url: req.url }));
+      });
+
+      const response = await httpAdapter({
+        method: 'get',
+        url: `http://127.0.0.1:${server.address().port}/direct`,
+        headers: {},
+        params: { value: 'a b' },
+        proxy: false,
+        maxRedirects: 0,
+        maxContentLength: -1,
+        maxBodyLength: -1,
+        timeout: 0,
+      });
+      const data = JSON.parse(response.data);
+
+      assert.strictEqual(serializerInvoked, false);
+      assert.deepStrictEqual(data, { url: '/direct?value=a+b' });
+    } finally {
+      delete Object.prototype.paramsSerializer;
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should preserve basic auth across same-origin 303 POST -> GET redirect', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.url === '/login') {
+          res.setHeader('Location', '/profile');
+          res.statusCode = 303;
+          res.end();
+          return;
+        }
+        res.end(req.headers.authorization || '');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.post(
+        `http://localhost:${server.address().port}/login`,
+        { hello: 'world' },
+        { auth, maxRedirects: 1 }
+      );
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+      assert.strictEqual(response.request.path, '/profile');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should strip basic auth on cross-origin redirect', async () => {
+    const targetServer = await startHTTPServer(
+      (req, res) => {
+        res.end(req.headers.authorization || 'no-auth');
+      },
+      { port: ALTERNATE_SERVER_PORT }
+    );
+    const redirectServer = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Location', `http://127.0.0.1:${targetServer.address().port}/`);
+        res.statusCode = 302;
+        res.end();
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.get(`http://localhost:${redirectServer.address().port}/start`, {
+        auth,
+        maxRedirects: 1,
+      });
+      assert.strictEqual(response.data, 'no-auth');
+    } finally {
+      await stopHTTPServer(redirectServer);
+      await stopHTTPServer(targetServer);
+    }
+  });
+
+  it('should preserve basic auth across multi-hop same-origin redirects', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        if (req.url === '/a') {
+          res.setHeader('Location', '/b');
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        if (req.url === '/b') {
+          res.setHeader('Location', '/c');
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        res.end(req.headers.authorization || '');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const auth = { username: 'foo', password: 'bar' };
+      const response = await axios.get(`http://localhost:${server.address().port}/a`, {
+        auth,
+        maxRedirects: 5,
+      });
+      const base64 = Buffer.from('foo:bar', 'utf8').toString('base64');
+      assert.strictEqual(response.data, `Basic ${base64}`);
+      assert.strictEqual(response.request.path, '/c');
     } finally {
       await stopHTTPServer(server);
     }
@@ -1030,7 +1730,7 @@ describe('supports http with nodejs', () => {
     }
   });
 
-  it('should enforce maxContentLength for streamed responses (GHSA-vf2m-468p-8v99)', async () => {
+  it('should enforce maxContentLength for streamed responses', async () => {
     const size = 2 * 1024 * 1024;
     const body = Buffer.alloc(size, 0x63);
     const server = await startHTTPServer(
@@ -1049,17 +1749,16 @@ describe('supports http with nodejs', () => {
 
       let bytesRead = 0;
       const err = await new Promise((resolve) => {
-        response.data.on('data', (chunk) => { bytesRead += chunk.length; });
+        response.data.on('data', (chunk) => {
+          bytesRead += chunk.length;
+        });
         response.data.on('error', resolve);
         response.data.on('end', () => resolve(null));
       });
 
       assert.ok(err, 'stream should emit an error');
       assert.strictEqual(err.message, 'maxContentLength size of 1024 exceeded');
-      assert.ok(
-        bytesRead <= 1024 * 64,
-        `stream should not deliver full payload; got ${bytesRead}`
-      );
+      assert.ok(bytesRead <= 1024 * 64, `stream should not deliver full payload; got ${bytesRead}`);
     } finally {
       await stopHTTPServer(server);
     }
@@ -1094,7 +1793,7 @@ describe('supports http with nodejs', () => {
     }
   });
 
-  it('should enforce maxBodyLength for streamed uploads with maxRedirects: 0 (GHSA-5c9x-8gcm-mpgx)', async () => {
+  it('should enforce maxBodyLength for streamed uploads with maxRedirects: 0', async () => {
     let bytesReceived = 0;
     const server = await startHTTPServer(
       (req, res) => {
@@ -1154,15 +1853,11 @@ describe('supports http with nodejs', () => {
       const payload = Buffer.alloc(512, 0x62);
       const source = stream.Readable.from([payload]);
 
-      const response = await axios.post(
-        `http://localhost:${server.address().port}/`,
-        source,
-        {
-          maxBodyLength: 1024,
-          maxRedirects: 0,
-          headers: { 'Content-Type': 'application/octet-stream' },
-        }
-      );
+      const response = await axios.post(`http://localhost:${server.address().port}/`, source, {
+        maxBodyLength: 1024,
+        maxRedirects: 0,
+        headers: { 'Content-Type': 'application/octet-stream' },
+      });
 
       assert.strictEqual(response.data.received, payload.length);
     } finally {
@@ -1207,7 +1902,10 @@ describe('supports http with nodejs', () => {
           },
         }),
         (error) => {
-          assert.deepStrictEqual(error.exists, true);
+          assert.ok(error instanceof AxiosError, 'error should be an AxiosError');
+          assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+          assert.strictEqual(error.exists, true);
+          assert.strictEqual(error.url, `http://localhost:${server.address().port}/`);
           return true;
         }
       );
@@ -1415,6 +2113,7 @@ describe('supports http with nodejs', () => {
       { port: SERVER_PORT }
     );
 
+    let connectAttempts = 0;
     const proxy = await startHTTPServer(
       (request, response) => {
         const parsed = new URL(request.url);
@@ -1439,6 +2138,10 @@ describe('supports http with nodejs', () => {
       },
       { port: PROXY_PORT }
     );
+    proxy.on('connect', (req, sock) => {
+      connectAttempts += 1;
+      sock.end();
+    });
 
     try {
       const response = await axios.get(`http://localhost:${server.address().port}/`, {
@@ -1449,6 +2152,7 @@ describe('supports http with nodejs', () => {
       });
 
       assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
+      assert.strictEqual(connectAttempts, 0, 'HTTP targets must use forward-proxy mode, not CONNECT');
     } finally {
       await stopHTTPServer(server);
       await stopHTTPServer(proxy);
@@ -1474,74 +2178,285 @@ describe('supports http with nodejs', () => {
       });
 
     const server = await new Promise((resolve, reject) => {
-      const httpsServer = https
-        .createServer(
-          tlsOptions,
-          (req, res) => {
-            res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-            res.end('12345');
-          },
-          { port: SERVER_PORT }
-        )
-        .listen(SERVER_PORT, () => resolve(httpsServer));
-
+      const httpsServer = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('12345');
+      });
+      httpsServer.listen(0, 'localhost', () => resolve(httpsServer));
       httpsServer.on('error', reject);
     });
 
+    let plaintextRequests = 0;
+    const connectTargets = [];
+    const upstreamSockets = [];
     const proxy = await new Promise((resolve, reject) => {
-      const httpsProxy = https
-        .createServer(
-          tlsOptions,
-          (request, response) => {
-            const targetUrl = new URL(request.url);
-            const opts = {
-              host: targetUrl.hostname,
-              port: targetUrl.port,
-              path: `${targetUrl.pathname}${targetUrl.search}`,
-              protocol: targetUrl.protocol,
-              rejectUnauthorized: false,
-            };
+      const httpsProxy = https.createServer(tlsOptions, () => {
+        plaintextRequests += 1;
+      });
 
-            const proxyRequest = https.get(opts, (res) => {
-              let body = '';
+      httpsProxy.on('connect', (req, clientSocket, head) => {
+        connectTargets.push(req.url);
+        const [targetHost, targetPort] = req.url.split(':');
+        const upstream = net.connect(Number(targetPort), targetHost, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
 
-              res.on('data', (data) => {
-                body += data;
-              });
-
-              res.on('end', () => {
-                response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-                response.end(body + '6789');
-              });
-            });
-
-            proxyRequest.on('error', () => {
-              response.statusCode = 502;
-              response.end();
-            });
-          },
-          { port: PROXY_PORT }
-        )
-        .listen(PROXY_PORT, () => resolve(httpsProxy));
-
+      httpsProxy.listen(0, '127.0.0.1', () => resolve(httpsProxy));
       httpsProxy.on('error', reject);
     });
 
+    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const tunnelingAgent = new HttpsProxyAgent({
+      protocol: 'https:',
+      host: '127.0.0.1',
+      port: proxy.address().port,
+      ALPNProtocols: ['http/1.1'],
+      rejectUnauthorized: false,
+    });
     try {
       const response = await axios.get(`https://localhost:${server.address().port}/`, {
-        proxy: {
-          host: 'localhost',
-          port: proxy.address().port,
-          protocol: 'https:',
-        },
-        httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
-        }),
+        httpsAgent: tunnelingAgent,
       });
 
-      assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
+      // axios may auto-parse the body as JSON; compare as number to tolerate either form.
+      assert.strictEqual(Number(response.data), 12345, 'origin body should be received unmodified');
+      assert.strictEqual(plaintextRequests, 0, 'proxy must not see plaintext requests');
+      assert.strictEqual(connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        connectTargets[0].startsWith(`localhost:${server.address().port}`),
+        `CONNECT should target the origin: ${connectTargets[0]}`
+      );
     } finally {
-      await Promise.all([closeServer(server), closeServer(proxy)]);
+      if (originalReject === undefined) {
+        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      } else {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
+      }
+      tunnelingAgent.destroy();
+      // Tear down everything synchronously. server.close() on tls.Server can hang
+      // when CONNECT-tunneled sockets have been pumped through, even after
+      // closeAllConnections — destroy the underlying handles directly so the
+      // test doesn't wait on a graceful shutdown.
+      for (const s of upstreamSockets) s.destroy();
+      server.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      server.close();
+      proxy.close();
+      server.unref?.();
+      proxy.unref?.();
+    }
+  });
+
+  it('should CONNECT-tunnel HTTPS targets through an HTTP proxy by default (issue #6320)', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const origin = await new Promise((resolve, reject) => {
+      const s = https.createServer(tlsOptions, (req, res) => {
+        if (req.headers['proxy-authorization']) {
+          // Proxy-Authorization MUST NOT reach the origin under tunneling.
+          res.writeHead(500);
+          res.end('LEAKED:' + req.headers['proxy-authorization']);
+          return;
+        }
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('secret-body-12345');
+      });
+      s.listen(0, 'localhost', () => resolve(s));
+      s.on('error', reject);
+    });
+
+    const captured = { plaintext: 0, connectTargets: [], connectAuth: [] };
+    const upstreamSockets = [];
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer((req) => {
+        // Plaintext arrival = tunneling regression. Capture URL/headers so
+        // assertions below can show what leaked.
+        captured.plaintext += 1;
+        captured.plaintextUrl = req.url;
+      });
+      p.on('connect', (req, clientSocket, head) => {
+        captured.connectTargets.push(req.url);
+        captured.connectAuth.push(req.headers['proxy-authorization'] || null);
+        const [host, port] = req.url.split(':');
+        const upstream = net.connect(Number(port), host, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    try {
+      const response = await axios.post(
+        `https://localhost:${origin.address().port}/path?token=abc123`,
+        { sensitive: 'leak-canary' },
+        {
+          proxy: {
+            host: '127.0.0.1',
+            port: proxy.address().port,
+            protocol: 'http',
+            auth: { username: 'admin', password: 'secret' },
+          },
+          validateStatus: () => true,
+        }
+      );
+
+      assert.strictEqual(response.data, 'secret-body-12345', 'origin body should arrive unmodified through the tunnel');
+      assert.strictEqual(captured.plaintext, 0, 'proxy must not see any plaintext request line');
+      assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
+        `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
+      );
+      assert.ok(captured.connectAuth[0], 'Proxy-Authorization should be present on the CONNECT request');
+      assert.match(
+        captured.connectAuth[0],
+        /^Basic /,
+        'CONNECT auth should be Basic-encoded'
+      );
+      const decoded = Buffer.from(captured.connectAuth[0].slice(6), 'base64').toString('utf8');
+      assert.strictEqual(decoded, 'admin:secret', 'Proxy-Authorization credentials should match');
+    } finally {
+      if (originalReject === undefined) {
+        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      } else {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
+      }
+      for (const s of upstreamSockets) s.destroy();
+      origin.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      origin.close();
+      proxy.close();
+      origin.unref?.();
+      proxy.unref?.();
+    }
+  });
+
+  it('should apply httpsAgent TLS options to CONNECT-tunneled origins (issue #10953)', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const origin = await new Promise((resolve, reject) => {
+      const s = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('trusted-through-agent');
+      });
+      s.listen(0, 'localhost', () => resolve(s));
+      s.on('error', reject);
+    });
+
+    const captured = { plaintext: 0, connectTargets: [] };
+    const upstreamSockets = [];
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer(() => {
+        captured.plaintext += 1;
+      });
+      p.on('connect', (req, clientSocket, head) => {
+        captured.connectTargets.push(req.url);
+        const [host, port] = req.url.split(':');
+        const upstream = net.connect(Number(port), host, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    const httpsAgent = new https.Agent({ ca: tlsOptions.cert });
+
+    try {
+      const response = await axios.get(`https://localhost:${origin.address().port}/`, {
+        httpsAgent,
+        proxy: {
+          host: '127.0.0.1',
+          port: proxy.address().port,
+          protocol: 'http',
+        },
+      });
+
+      assert.strictEqual(response.data, 'trusted-through-agent');
+      assert.strictEqual(captured.plaintext, 0, 'proxy must not see plaintext HTTPS requests');
+      assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
+        `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
+      );
+    } finally {
+      httpsAgent.destroy();
+      for (const s of upstreamSockets) s.destroy();
+      origin.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      origin.close();
+      proxy.close();
+      origin.unref?.();
+      proxy.unref?.();
+    }
+  });
+
+  it('should surface a CONNECT 407 from the proxy as an AxiosError (issue #6320)', async () => {
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer();
+      p.on('connect', (req, clientSocket) => {
+        clientSocket.write(
+          'HTTP/1.1 407 Proxy Authentication Required\r\n' +
+            'Proxy-Authenticate: Basic realm="proxy"\r\n' +
+            'Content-Length: 0\r\n' +
+            '\r\n'
+        );
+        clientSocket.end();
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    try {
+      await assert.rejects(
+        async () => {
+          await axios.get('https://127.0.0.1:1/', {
+            proxy: {
+              host: '127.0.0.1',
+              port: proxy.address().port,
+              protocol: 'http',
+            },
+            timeout: 4000,
+          });
+        },
+        (err) => {
+          assert.ok(err instanceof AxiosError, 'rejection should be an AxiosError');
+          return true;
+        }
+      );
+    } finally {
+      proxy.closeAllConnections?.();
+      proxy.close();
+      proxy.unref?.();
     }
   });
 
@@ -1657,6 +2572,169 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should detect Node native env proxy support from the selected agent', () => {
+    const nativeProxyAgent = { options: { proxyEnv: { HTTP_PROXY: 'http://proxy.local:9000' } } };
+    const plainAgent = { options: {} };
+
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '22.20.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '22.21.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '24.4.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '24.5.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(nativeProxyAgent, '25.0.0'), true);
+    assert.strictEqual(__isNodeEnvProxyEnabled(plainAgent, '24.5.0'), false);
+    assert.strictEqual(__isNodeEnvProxyEnabled(undefined, '24.5.0'), false);
+  });
+
+  it('should leave env proxy handling to supported Node versions when the selected agent uses proxyEnv', () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+    const originalNodeUseEnvProxy = process.env.NODE_USE_ENV_PROXY;
+
+    process.env.NODE_USE_ENV_PROXY = '1';
+    process.env.http_proxy = 'http://proxy.local:9000/';
+    process.env.HTTP_PROXY = 'http://proxy.local:9000/';
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'target.example',
+        host: 'target.example',
+        port: '4000',
+        protocol: 'http:',
+        path: '/resource',
+      };
+      const nativeProxyAgent = { options: { proxyEnv: process.env } };
+
+      __setProxy(
+        options,
+        undefined,
+        'http://target.example:4000/resource',
+        false,
+        undefined,
+        nativeProxyAgent
+      );
+
+      if (__isNodeEnvProxyEnabled(nativeProxyAgent, process.versions.node)) {
+        assert.strictEqual(options.hostname, 'target.example');
+        assert.strictEqual(options.port, '4000');
+        assert.strictEqual(options.path, '/resource');
+        assert.strictEqual(options.headers.host, undefined);
+      } else {
+        assert.strictEqual(options.hostname, 'proxy.local');
+        assert.strictEqual(options.port, '9000');
+        assert.strictEqual(options.path, 'http://target.example:4000/resource');
+      }
+
+      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function');
+    } finally {
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+
+      if (originalNodeUseEnvProxy === undefined) {
+        delete process.env.NODE_USE_ENV_PROXY;
+      } else {
+        process.env.NODE_USE_ENV_PROXY = originalNodeUseEnvProxy;
+      }
+    }
+  });
+
+  it('should keep axios env proxy handling when the selected agent has no proxyEnv', () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+    const originalNodeUseEnvProxy = process.env.NODE_USE_ENV_PROXY;
+
+    process.env.NODE_USE_ENV_PROXY = '1';
+    process.env.http_proxy = 'http://proxy.local:9000/';
+    process.env.HTTP_PROXY = 'http://proxy.local:9000/';
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'target.example',
+        host: 'target.example',
+        port: '4000',
+        protocol: 'http:',
+        path: '/resource',
+      };
+      const plainAgent = { options: {} };
+
+      __setProxy(
+        options,
+        undefined,
+        'http://target.example:4000/resource',
+        false,
+        undefined,
+        plainAgent
+      );
+
+      assert.strictEqual(options.hostname, 'proxy.local');
+      assert.strictEqual(options.port, '9000');
+      assert.strictEqual(options.path, 'http://target.example:4000/resource');
+      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function');
+    } finally {
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+
+      if (originalNodeUseEnvProxy === undefined) {
+        delete process.env.NODE_USE_ENV_PROXY;
+      } else {
+        process.env.NODE_USE_ENV_PROXY = originalNodeUseEnvProxy;
+      }
+    }
+  });
+
   it('should support HTTPS proxy set via env var', async () => {
     const originalHttpsProxy = process.env.https_proxy;
     const originalHTTPSProxy = process.env.HTTPS_PROXY;
@@ -1681,75 +2759,67 @@ describe('supports http with nodejs', () => {
       });
 
     const server = await new Promise((resolve, reject) => {
-      const httpsServer = https
-        .createServer(
-          tlsOptions,
-          (req, res) => {
-            res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-            res.end('12345');
-          },
-          { port: SERVER_PORT }
-        )
-        .listen(SERVER_PORT, () => resolve(httpsServer));
-
+      const httpsServer = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('12345');
+      });
+      httpsServer.listen(0, 'localhost', () => resolve(httpsServer));
       httpsServer.on('error', reject);
     });
 
+    let plaintextRequests = 0;
+    const connectTargets = [];
+    const upstreamSockets = [];
     const proxy = await new Promise((resolve, reject) => {
-      const httpsProxy = https
-        .createServer(
-          tlsOptions,
-          (request, response) => {
-            const targetUrl = new URL(request.url);
-            const opts = {
-              host: targetUrl.hostname,
-              port: targetUrl.port,
-              path: `${targetUrl.pathname}${targetUrl.search}`,
-              protocol: targetUrl.protocol,
-              rejectUnauthorized: false,
-            };
+      const httpsProxy = https.createServer(tlsOptions, () => {
+        plaintextRequests += 1;
+      });
 
-            const proxyRequest = https.get(opts, (res) => {
-              let body = '';
+      httpsProxy.on('connect', (req, clientSocket, head) => {
+        connectTargets.push(req.url);
+        const [targetHost, targetPort] = req.url.split(':');
+        const upstream = net.connect(Number(targetPort), targetHost, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
 
-              res.on('data', (data) => {
-                body += data;
-              });
-
-              res.on('end', () => {
-                response.setHeader('Content-Type', 'text/html; charset=UTF-8');
-                response.end(body + '6789');
-              });
-            });
-
-            proxyRequest.on('error', () => {
-              response.statusCode = 502;
-              response.end();
-            });
-          },
-          { port: PROXY_PORT }
-        )
-        .listen(PROXY_PORT, () => resolve(httpsProxy));
-
+      httpsProxy.listen(0, '127.0.0.1', () => resolve(httpsProxy));
       httpsProxy.on('error', reject);
     });
 
-    const proxyUrl = `https://localhost:${proxy.address().port}/`;
+    const proxyUrl = `https://127.0.0.1:${proxy.address().port}/`;
     process.env.https_proxy = proxyUrl;
     process.env.HTTPS_PROXY = proxyUrl;
     process.env.no_proxy = '';
     process.env.NO_PROXY = '';
 
+    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     try {
-      const response = await axios.get(`https://localhost:${server.address().port}/`, {
-        httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
-        }),
-      });
+      const response = await axios.get(`https://localhost:${server.address().port}/`);
 
-      assert.equal(response.data, '123456789', 'should pass through proxy');
+      assert.strictEqual(Number(response.data), 12345, 'origin body should be received unmodified');
+      assert.strictEqual(plaintextRequests, 0, 'proxy must not see plaintext requests');
+      assert.strictEqual(connectTargets.length, 1, 'proxy should see exactly one CONNECT');
     } finally {
-      await Promise.all([closeServer(server), closeServer(proxy)]);
+      if (originalReject === undefined) {
+        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      } else {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
+      }
+      for (const s of upstreamSockets) s.destroy();
+      server.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      server.close();
+      proxy.close();
+      server.unref?.();
+      proxy.unref?.();
 
       if (originalHttpsProxy === undefined) {
         delete process.env.https_proxy;
@@ -2349,7 +3419,84 @@ describe('supports http with nodejs', () => {
     }
   });
 
-  describe('Proxy-Authorization header leak on redirect (GHSA-j5f8-grm9-p9fc)', () => {
+  describe('Host header preservation when forwarding through a proxy (#10805)', () => {
+    const proxyConfig = { hostname: '127.0.0.1', protocol: 'http:', port: 8888 };
+
+    it('defaults the Host header to the request target when the user does not set one', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.host, '127.0.0.1:4000');
+    });
+
+    it('preserves a user-supplied lowercase host header', () => {
+      const options = {
+        headers: { host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.host, 'example.com');
+    });
+
+    it('preserves a user-supplied Host header regardless of casing', () => {
+      const options = {
+        headers: { Host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+      assert.strictEqual(options.headers.Host, 'example.com');
+      assert.strictEqual(options.headers.host, undefined);
+    });
+
+    it('preserves a user-supplied Host header across a redirect re-invocation', () => {
+      const options = {
+        headers: { Host: 'example.com' },
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/', true);
+
+      assert.strictEqual(options.headers.Host, 'example.com');
+      assert.strictEqual(options.headers.host, undefined);
+    });
+
+    it('ignores polluted prototype Host fields when detecting user-supplied headers', () => {
+      Object.prototype.host = 'polluted.example.com';
+
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '127.0.0.1',
+        port: 4000,
+      };
+
+      try {
+        __setProxy(options, proxyConfig, 'http://127.0.0.1:4000/');
+
+        assert.strictEqual(options.headers.host, '127.0.0.1:4000');
+      } finally {
+        delete Object.prototype.host;
+      }
+    });
+  });
+
+  describe('Proxy-Authorization header leak on redirect', () => {
     it('clears a stale Proxy-Authorization header when redirected request resolves to no proxy (configProxy=false)', () => {
       const options = {
         headers: {},
@@ -2359,7 +3506,11 @@ describe('supports http with nodejs', () => {
         port: 80,
       };
 
-      __setProxy(options, { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } }, 'http://initial.example.com/start');
+      __setProxy(
+        options,
+        { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } },
+        'http://initial.example.com/start'
+      );
       assert.strictEqual(
         options.headers['Proxy-Authorization'],
         'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64'),
@@ -2425,9 +3576,12 @@ describe('supports http with nodejs', () => {
           'stale Proxy-Authorization must be stripped when redirect target is covered by NO_PROXY'
         );
       } finally {
-        if (originalHttpProxy === undefined) delete process.env.http_proxy; else process.env.http_proxy = originalHttpProxy;
-        if (originalHttpsProxy === undefined) delete process.env.https_proxy; else process.env.https_proxy = originalHttpsProxy;
-        if (originalNoProxy === undefined) delete process.env.no_proxy; else process.env.no_proxy = originalNoProxy;
+        if (originalHttpProxy === undefined) delete process.env.http_proxy;
+        else process.env.http_proxy = originalHttpProxy;
+        if (originalHttpsProxy === undefined) delete process.env.https_proxy;
+        else process.env.https_proxy = originalHttpsProxy;
+        if (originalNoProxy === undefined) delete process.env.no_proxy;
+        else process.env.no_proxy = originalNoProxy;
       }
     });
 
@@ -2440,8 +3594,15 @@ describe('supports http with nodejs', () => {
         port: 80,
       };
 
-      __setProxy(options, { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } }, 'http://initial.example.com/start');
-      assert.ok(options.headers['Proxy-Authorization'], 'precondition: initial proxy auth header set');
+      __setProxy(
+        options,
+        { host: '127.0.0.1', port: 8030, auth: { username: 'user', password: 'pass' } },
+        'http://initial.example.com/start'
+      );
+      assert.ok(
+        options.headers['Proxy-Authorization'],
+        'precondition: initial proxy auth header set'
+      );
 
       const redirectOptions = {
         headers: { ...options.headers },
@@ -2450,7 +3611,12 @@ describe('supports http with nodejs', () => {
         host: 'second.example.com',
         port: 80,
       };
-      __setProxy(redirectOptions, { host: '127.0.0.2', port: 8031 }, 'http://second.example.com/final', true);
+      __setProxy(
+        redirectOptions,
+        { host: '127.0.0.2', port: 8031 },
+        'http://second.example.com/final',
+        true
+      );
 
       assert.strictEqual(
         redirectOptions.headers['Proxy-Authorization'],
@@ -2461,7 +3627,9 @@ describe('supports http with nodejs', () => {
 
     it('strips stale Proxy-Authorization when the beforeRedirects.proxy hook is invoked with configProxy=false', () => {
       const options = {
-        headers: { 'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64') },
+        headers: {
+          'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64'),
+        },
         beforeRedirects: {},
         hostname: 'initial.example.com',
         host: 'initial.example.com',
@@ -2469,10 +3637,16 @@ describe('supports http with nodejs', () => {
       };
 
       __setProxy(options, false, 'http://initial.example.com/start');
-      assert.strictEqual(typeof options.beforeRedirects.proxy, 'function', 'initial setProxy must install redirect hook');
+      assert.strictEqual(
+        typeof options.beforeRedirects.proxy,
+        'function',
+        'initial setProxy must install redirect hook'
+      );
 
       const redirectOptions = {
-        headers: { 'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64') },
+        headers: {
+          'Proxy-Authorization': 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64'),
+        },
         beforeRedirects: {},
         hostname: 'attacker.example.com',
         host: 'attacker.example.com',
@@ -2510,7 +3684,12 @@ describe('supports http with nodejs', () => {
 
     it('strips stale Proxy-Authorization regardless of header key casing', () => {
       const staleValue = 'Basic ' + Buffer.from('user:pass', 'utf8').toString('base64');
-      const casings = ['proxy-authorization', 'PROXY-AUTHORIZATION', 'Proxy-authorization', 'pRoXy-AuThOrIzAtIoN'];
+      const casings = [
+        'proxy-authorization',
+        'PROXY-AUTHORIZATION',
+        'Proxy-authorization',
+        'pRoXy-AuThOrIzAtIoN',
+      ];
 
       for (const casing of casings) {
         const redirectOptions = {
@@ -2533,6 +3712,77 @@ describe('supports http with nodejs', () => {
         );
       }
     });
+
+    // End-to-end exercise of the redirect leak. An
+    // authenticated env-supplied proxy sees the initial request, 302s the
+    // client to a target that NO_PROXY excludes, and the redirected request
+    // must not carry the stale Proxy-Authorization to the direct target.
+    it('does not forward Proxy-Authorization to a redirect target that resolves to no-proxy', async () => {
+      const startServer = (handler) =>
+        new Promise((resolve) => {
+          const s = http.createServer(handler);
+          s.listen(0, '127.0.0.1', () => resolve(s));
+        });
+      const stop = (s) => new Promise((r) => s.close(r));
+
+      let attackerPort;
+      const proxySaw = [];
+      const attackerSaw = [];
+
+      // The proxy receives the absolute-form URL (`GET http://target/path`) on
+      // the initial request, then forwards to the destination. We short-circuit
+      // by responding directly with the redirect.
+      const corpProxy = await startServer((req, res) => {
+        proxySaw.push({ url: req.url, proxyAuth: req.headers['proxy-authorization'] });
+        res.writeHead(302, { Location: `http://127.0.0.1:${attackerPort}/final` });
+        res.end();
+      });
+
+      const attacker = await startServer((req, res) => {
+        attackerSaw.push({
+          url: req.url,
+          proxyAuth: req.headers['proxy-authorization'],
+          authorization: req.headers.authorization,
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"final":true}');
+      });
+      attackerPort = attacker.address().port;
+
+      const corpProxyPort = corpProxy.address().port;
+      const originalHttpProxy = process.env.http_proxy;
+      const originalNoProxy = process.env.no_proxy;
+      process.env.http_proxy = `http://user:pass@127.0.0.1:${corpProxyPort}`;
+      // NO_PROXY entry covers only the attacker target (port-specific), so the
+      // initial request still uses the proxy but the redirect resolves direct.
+      process.env.no_proxy = `127.0.0.1:${attackerPort}`;
+
+      try {
+        await axios.get('http://example.com/start');
+
+        assert.ok(
+          proxySaw.some((h) => h.proxyAuth),
+          'precondition: corp proxy must see Proxy-Authorization on the initial request'
+        );
+        assert.strictEqual(
+          attackerSaw.length,
+          1,
+          'attacker target must receive exactly the redirected request'
+        );
+        assert.strictEqual(
+          attackerSaw[0].proxyAuth,
+          undefined,
+          'stale Proxy-Authorization must not leak to the redirect target'
+        );
+      } finally {
+        if (originalHttpProxy === undefined) delete process.env.http_proxy;
+        else process.env.http_proxy = originalHttpProxy;
+        if (originalNoProxy === undefined) delete process.env.no_proxy;
+        else process.env.no_proxy = originalNoProxy;
+        await stop(corpProxy);
+        await stop(attacker);
+      }
+    }, 10000);
   });
 
   it('should support cancel', async () => {
@@ -2649,6 +3899,123 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  describe('HTTPS CONNECT tunneling agent management', () => {
+    const buildOptions = () => ({
+      headers: {},
+      beforeRedirects: {},
+      hostname: 'example.com',
+      host: 'example.com',
+      port: 443,
+      path: '/',
+      protocol: 'https:',
+    });
+    const proxyConfig = { host: '127.0.0.1', port: 8030, protocol: 'http' };
+
+    it('reuses the same tunneling agent for repeated requests through the same proxy', () => {
+      const a = buildOptions();
+      const b = buildOptions();
+      __setProxy(a, proxyConfig, 'https://example.com/');
+      __setProxy(b, proxyConfig, 'https://example.com/');
+      assert.ok(a.agent, 'first request must install a tunneling agent');
+      assert.strictEqual(
+        a.agent,
+        b.agent,
+        'subsequent requests through the same proxy must share one tunneling agent so socket pooling works'
+      );
+    });
+
+    it('still tunnels through the proxy when a non-proxy httpsAgent is supplied', () => {
+      const userAgent = new https.Agent({ rejectUnauthorized: false });
+      const options = buildOptions();
+      __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
+      assert.ok(options.agent, 'proxy must not be silently bypassed when a custom httpsAgent is set');
+      assert.notStrictEqual(
+        options.agent,
+        userAgent,
+        'tunneling agent must be installed in place of the user agent (its TLS options are forwarded internally)'
+      );
+      assert.ok(options.agent instanceof HttpsProxyAgent);
+    });
+
+    it('includes user httpsAgent options in the tunneling agent constructor options', () => {
+      const userAgent = new https.Agent({ rejectUnauthorized: false, ca: 'sentinel-ca' });
+      const options = buildOptions();
+      __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
+      // Origin TLS behavior is covered by the issue #10953 integration test.
+      assert.strictEqual(options.agent.proxy.rejectUnauthorized, false);
+      assert.strictEqual(options.agent.proxy.ca, 'sentinel-ca');
+    });
+
+    it('respects a user-supplied HttpsProxyAgent without installing its own', () => {
+      const userTunnel = new HttpsProxyAgent({
+        protocol: 'http:',
+        hostname: '127.0.0.1',
+        port: 9999,
+      });
+      const options = buildOptions();
+      __setProxy(options, proxyConfig, 'https://example.com/', false, userTunnel);
+      // The user is handling tunneling end-to-end; setProxy must not overwrite agent.
+      assert.strictEqual(options.agent, undefined, 'must not install a competing tunneling agent');
+    });
+
+    it('does not strip a user-supplied HttpsProxyAgent on redirect', () => {
+      const userTunnel = new HttpsProxyAgent({
+        protocol: 'http:',
+        hostname: '127.0.0.1',
+        port: 9999,
+      });
+      const redirectOptions = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'redirect.example.com',
+        host: 'redirect.example.com',
+        port: 443,
+        path: '/',
+        protocol: 'https:',
+        agent: userTunnel,
+      };
+      __setProxy(redirectOptions, false, 'https://redirect.example.com/', true);
+      assert.strictEqual(
+        redirectOptions.agent,
+        userTunnel,
+        'user-supplied HttpsProxyAgent must survive redirects (no proxy on redirect target)'
+      );
+    });
+
+    it('strips its own tunneling agent on redirect when the redirect target has no proxy', () => {
+      const initial = buildOptions();
+      __setProxy(initial, proxyConfig, 'https://example.com/');
+      assert.ok(initial.agent instanceof HttpsProxyAgent, 'precondition: tunneling agent installed');
+
+      const redirectOptions = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: 'final.example.com',
+        host: 'final.example.com',
+        port: 443,
+        path: '/',
+        protocol: 'https:',
+        agent: initial.agent,
+      };
+      __setProxy(redirectOptions, false, 'https://final.example.com/', true);
+      assert.strictEqual(
+        redirectOptions.agent,
+        undefined,
+        'axios-installed tunneling agent must be cleared when redirect drops the proxy'
+      );
+    });
+
+    it('handles IPv6 literal proxy hosts', () => {
+      const options = buildOptions();
+      __setProxy(
+        options,
+        { host: '::1', port: 8030, protocol: 'http' },
+        'https://example.com/'
+      );
+      assert.ok(options.agent instanceof HttpsProxyAgent, 'must build a tunneling agent for an IPv6 proxy host');
+    });
+  });
+
   it('should return malformed URL', async () => {
     await assert.rejects(axios.get('tel:484-695-3408'), (error) => {
       assert.equal(error.message, 'Unsupported protocol tel:');
@@ -2661,6 +4028,28 @@ describe('supports http with nodejs', () => {
       assert.equal(error.message, 'Unsupported protocol ftp:');
       return true;
     });
+  });
+
+  it('rejects malformed HTTP URLs before Node URL normalization and preserves config', async () => {
+    for (const url of ['\u0000https:example.com/users', 'h\nttp:example.com/users']) {
+      await assert.rejects(
+        () =>
+          axios.get(url, {
+            adapter: 'http',
+            headers: {
+              'X-Test': 'yes',
+            },
+          }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+          assert.strictEqual(error.message, 'Invalid URL: missing "//" after protocol');
+          assert.strictEqual(error.config.url, url);
+          assert.strictEqual(error.config.headers.get('X-Test'), 'yes');
+          return true;
+        }
+      );
+    }
   });
 
   it('should supply a user-agent if one is not specified', async () => {
@@ -2893,20 +4282,81 @@ describe('supports http with nodejs', () => {
       });
     });
 
-    describe('prototype pollution (GHSA-6chq-wfr3-2hj9)', () => {
+    describe('prototype pollution', () => {
       const pollutedKeys = ['getHeaders', 'append', 'pipe', 'on', 'once'];
       const toStringTagSym = Symbol.toStringTag;
+
+      it('should not use inherited Symbol.iterator for request or response headers', async () => {
+        let capturedHeaders;
+        const stubTransport = {
+          request(options, handleResponse) {
+            capturedHeaders = { ...options.headers };
+            const req = new EventEmitter();
+            req.write = () => true;
+            req.setTimeout = () => {};
+            req.destroy = () => {};
+            req.end = () => {
+              const res = new stream.Readable({ read() {} });
+              res.statusCode = 200;
+              res.statusMessage = 'OK';
+              res.headers = { 'x-server': 'real' };
+              res.rawHeaders = [];
+              res.req = req;
+              process.nextTick(() => {
+                handleResponse(res);
+                res.push(null);
+              });
+            };
+            return req;
+          },
+        };
+
+        try {
+          Object.prototype[Symbol.iterator] = function* () {
+            yield ['X-Injected', 'yes'];
+            yield ['Authorization', 'Bearer CHANGED'];
+          };
+
+          const response = await axios.get('http://stub.invalid/', {
+            headers: {
+              Authorization: 'Bearer VALID_USER_TOKEN',
+              'X-App': 'safe',
+            },
+            transport: stubTransport,
+            maxRedirects: 0,
+          });
+
+          assert.ok(capturedHeaders, 'transport was not invoked');
+          assert.strictEqual(capturedHeaders['X-App'], 'safe');
+          assert.strictEqual(
+            capturedHeaders.Authorization || capturedHeaders.authorization,
+            'Bearer VALID_USER_TOKEN'
+          );
+          assert.strictEqual(capturedHeaders['X-Injected'] || capturedHeaders['x-injected'], undefined);
+          assert.strictEqual(response.headers.get('x-server'), 'real');
+          assert.strictEqual(response.headers.get('x-injected'), undefined);
+        } finally {
+          delete Object.prototype[Symbol.iterator];
+        }
+      });
 
       function pollute() {
         Object.prototype[toStringTagSym] = 'FormData';
         Object.prototype.append = () => {};
         Object.prototype.getHeaders = () => ({
           'x-injected': 'attacker',
-          'authorization': 'Bearer ATTACKER_TOKEN',
+          authorization: 'Bearer ATTACKER_TOKEN',
         });
-        Object.prototype.pipe = function (d) { if (d && d.end) d.end(); return d; };
-        Object.prototype.on = function () { return this; };
-        Object.prototype.once = function () { return this; };
+        Object.prototype.pipe = function (d) {
+          if (d && d.end) d.end();
+          return d;
+        };
+        Object.prototype.on = function () {
+          return this;
+        };
+        Object.prototype.once = function () {
+          return this;
+        };
       }
 
       function cleanup() {
@@ -2949,7 +4399,7 @@ describe('supports http with nodejs', () => {
             'http://stub.invalid/',
             { userId: 42 },
             {
-              headers: { 'Authorization': 'Bearer VALID_USER_TOKEN' },
+              headers: { Authorization: 'Bearer VALID_USER_TOKEN' },
               transport: stubTransport,
               maxRedirects: 0,
             }
@@ -2962,6 +4412,97 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(capturedHeaders['x-injected'], undefined);
         assert.notStrictEqual(capturedHeaders['Authorization'], 'Bearer ATTACKER_TOKEN');
         assert.notStrictEqual(capturedHeaders['authorization'], 'Bearer ATTACKER_TOKEN');
+      });
+    });
+
+    describe('formDataHeaderPolicy', () => {
+      function createStubTransport(captureHeaders) {
+        return {
+          request(options, handleResponse) {
+            captureHeaders({ ...options.headers });
+            const req = new EventEmitter();
+            req.write = () => true;
+            req.setTimeout = () => {};
+            req.destroy = () => {};
+            req.end = () => {
+              const res = new stream.Readable({ read() {} });
+              res.statusCode = 200;
+              res.statusMessage = 'OK';
+              res.headers = {};
+              res.rawHeaders = [];
+              res.req = req;
+              process.nextTick(() => {
+                handleResponse(res);
+                res.push(null);
+              });
+            };
+            return req;
+          },
+        };
+      }
+
+      class CustomFormData extends stream.Readable {
+        _read() {
+          this.push(null);
+        }
+        append() {}
+        getHeaders() {
+          return {
+            'content-type': 'multipart/form-data; boundary=----fake',
+            'x-injected': 'custom',
+            'x-forwarded-for': '10.0.0.1',
+            authorization: 'Bearer CUSTOM_TOKEN',
+            host: 'custom.example.com',
+          };
+        }
+        get [Symbol.toStringTag]() {
+          return 'FormData';
+        }
+      }
+
+      it('preserves legacy getHeaders() propagation by default', async () => {
+        let capturedHeaders;
+
+        await axios.post('http://stub.invalid/', new CustomFormData(), {
+          transport: createStubTransport((headers) => {
+            capturedHeaders = headers;
+          }),
+          maxRedirects: 0,
+        });
+
+        assert.ok(capturedHeaders, 'transport was not invoked');
+        const ct = capturedHeaders['Content-Type'] || capturedHeaders['content-type'];
+        assert.match(ct, /multipart\/form-data/);
+        assert.strictEqual(capturedHeaders['x-injected'], 'custom');
+        assert.strictEqual(capturedHeaders['x-forwarded-for'], '10.0.0.1');
+        assert.strictEqual(
+          capturedHeaders.Authorization || capturedHeaders.authorization,
+          'Bearer CUSTOM_TOKEN'
+        );
+        assert.strictEqual(capturedHeaders.Host || capturedHeaders.host, 'custom.example.com');
+      });
+
+      it('only copies content headers when formDataHeaderPolicy is content-only', async () => {
+        let capturedHeaders;
+
+        await axios.post('http://stub.invalid/', new CustomFormData(), {
+          transport: createStubTransport((headers) => {
+            capturedHeaders = headers;
+          }),
+          maxRedirects: 0,
+          formDataHeaderPolicy: 'content-only',
+        });
+
+        assert.ok(capturedHeaders, 'transport was not invoked');
+        const ct = capturedHeaders['Content-Type'] || capturedHeaders['content-type'];
+        assert.match(ct, /multipart\/form-data/);
+        assert.strictEqual(capturedHeaders['x-injected'], undefined);
+        assert.strictEqual(capturedHeaders['x-forwarded-for'], undefined);
+        assert.strictEqual(
+          capturedHeaders.Authorization || capturedHeaders.authorization,
+          undefined
+        );
+        assert.strictEqual(capturedHeaders.Host || capturedHeaders.host, undefined);
       });
     });
   });
@@ -3828,6 +5369,55 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    it('should enforce maxBodyLength for HTTP/2 streamed uploads', async () => {
+      let bytesReceived = 0;
+      const server = await startHTTPServer(
+        (req, res) => {
+          req.on('data', (chunk) => {
+            bytesReceived += chunk.length;
+          });
+          req.on('error', () => {});
+          req.on('end', () => {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ received: bytesReceived }));
+          });
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+
+      try {
+        const localServerURL = `https://localhost:${server.address().port}`;
+        const http2Axios = createHttp2Axios(localServerURL);
+        const payload = Buffer.alloc(2 * 1024 * 1024, 0x63);
+        const source = stream.Readable.from([payload]);
+
+        await assert.rejects(
+          http2Axios.post(localServerURL, source, {
+            maxBodyLength: 1024,
+            headers: { 'Content-Type': 'application/octet-stream' },
+          }),
+          (error) => {
+            assert.strictEqual(error.message, 'Request body larger than maxBodyLength limit');
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+            return true;
+          }
+        );
+
+        assert.ok(
+          bytesReceived <= 1024 * 4,
+          `server should not receive full payload; got ${bytesReceived}`
+        );
+      } finally {
+        if (server.closeAllSessions) {
+          server.closeAllSessions();
+        }
+        await stopHTTPServer(server);
+      }
+    });
+
     it('should support FormData as a payload', async () => {
       if (typeof FormData !== 'function') {
         return;
@@ -4136,126 +5726,137 @@ describe('supports http with nodejs', () => {
         }
       });
 
-      it('should use different sessions for requests with different http2Options set', { retry: 2 }, async () => {
-        const server = await startHTTPServer(
-          (req, res) => {
-            setTimeout(() => {
-              res.end('OK');
-            }, 1000);
-          },
-          {
-            useHTTP2: true,
-          }
-        );
-
-        try {
-          const localServerURL = `https://localhost:${server.address().port}`;
-          const http2Axios = createHttp2Axios(localServerURL);
-
-          const [response1, response2] = await Promise.all([
-            http2Axios.get(localServerURL, {
-              http2Options: {
-                sessionTimeout: 2000,
-              },
-            }),
-            http2Axios.get(localServerURL, {
-              http2Options: {
-                sessionTimeout: 4000,
-              },
-            }),
-          ]);
-
-          assert.notStrictEqual(response1.request.session, response2.request.session);
-          assert.deepStrictEqual([response1.data, response2.data], ['OK', 'OK']);
-        } finally {
-          await stopHTTPServer(server);
-        }
-      });
-
-      it('should use the same session for request with the same resolved http2Options set', { retry: 2 }, async () => {
-        const server = await startHTTPServer(
-          (req, res) => {
-            setTimeout(() => res.end('OK'), 1000);
-          },
-          {
-            useHTTP2: true,
-          }
-        );
-
-        try {
-          const localServerURL = `https://localhost:${server.address().port}`;
-          const http2Axios = createHttp2Axios(localServerURL);
-
-          const responses = await Promise.all([
-            http2Axios.get(localServerURL, {
-              responseType: 'stream',
-            }),
-            http2Axios.get(localServerURL, {
-              responseType: 'stream',
-              http2Options: undefined,
-            }),
-            http2Axios.get(localServerURL, {
-              responseType: 'stream',
-              http2Options: {},
-            }),
-          ]);
-
-          assert.strictEqual(responses[1].data.session, responses[0].data.session);
-          assert.strictEqual(responses[2].data.session, responses[0].data.session);
-
-          assert.deepStrictEqual(await Promise.all(responses.map(({ data }) => getStream(data))), [
-            'OK',
-            'OK',
-            'OK',
-          ]);
-        } finally {
-          await stopHTTPServer(server);
-        }
-      });
-
-      it('should use different sessions after previous session timeout', { retry: 2, timeout: 15000 }, async () => {
-        const server = await startHTTPServer(
-          (req, res) => {
-            setTimeout(() => res.end('OK'), 100);
-          },
-          {
-            useHTTP2: true,
-          }
-        );
-
-        try {
-          const localServerURL = `https://localhost:${server.address().port}`;
-          const http2Axios = createHttp2Axios(localServerURL);
-
-          const response1 = await http2Axios.get(localServerURL, {
-            responseType: 'stream',
-            http2Options: {
-              sessionTimeout: 1000,
+      it(
+        'should use different sessions for requests with different http2Options set',
+        { retry: 2 },
+        async () => {
+          const server = await startHTTPServer(
+            (req, res) => {
+              setTimeout(() => {
+                res.end('OK');
+              }, 1000);
             },
-          });
+            {
+              useHTTP2: true,
+            }
+          );
 
-          const session1 = response1.data.session;
-          const data1 = await getStream(response1.data);
+          try {
+            const localServerURL = `https://localhost:${server.address().port}`;
+            const http2Axios = createHttp2Axios(localServerURL);
 
-          await setTimeoutAsync(5000);
+            const [response1, response2] = await Promise.all([
+              http2Axios.get(localServerURL, {
+                http2Options: {
+                  sessionTimeout: 2000,
+                },
+              }),
+              http2Axios.get(localServerURL, {
+                http2Options: {
+                  sessionTimeout: 4000,
+                },
+              }),
+            ]);
 
-          const response2 = await http2Axios.get(localServerURL, {
-            responseType: 'stream',
-            http2Options: {
-              sessionTimeout: 1000,
-            },
-          });
-
-          const session2 = response2.data.session;
-          const data2 = await getStream(response2.data);
-
-          assert.notStrictEqual(session1, session2);
-          assert.strictEqual(data1, 'OK');
-          assert.strictEqual(data2, 'OK');
-        } finally {
-          await stopHTTPServer(server);
+            assert.notStrictEqual(response1.request.session, response2.request.session);
+            assert.deepStrictEqual([response1.data, response2.data], ['OK', 'OK']);
+          } finally {
+            await stopHTTPServer(server);
+          }
         }
-      });
+      );
+
+      it(
+        'should use the same session for request with the same resolved http2Options set',
+        { retry: 2 },
+        async () => {
+          const server = await startHTTPServer(
+            (req, res) => {
+              setTimeout(() => res.end('OK'), 1000);
+            },
+            {
+              useHTTP2: true,
+            }
+          );
+
+          try {
+            const localServerURL = `https://localhost:${server.address().port}`;
+            const http2Axios = createHttp2Axios(localServerURL);
+
+            const responses = await Promise.all([
+              http2Axios.get(localServerURL, {
+                responseType: 'stream',
+              }),
+              http2Axios.get(localServerURL, {
+                responseType: 'stream',
+                http2Options: undefined,
+              }),
+              http2Axios.get(localServerURL, {
+                responseType: 'stream',
+                http2Options: {},
+              }),
+            ]);
+
+            assert.strictEqual(responses[1].data.session, responses[0].data.session);
+            assert.strictEqual(responses[2].data.session, responses[0].data.session);
+
+            assert.deepStrictEqual(
+              await Promise.all(responses.map(({ data }) => getStream(data))),
+              ['OK', 'OK', 'OK']
+            );
+          } finally {
+            await stopHTTPServer(server);
+          }
+        }
+      );
+
+      it(
+        'should use different sessions after previous session timeout',
+        { retry: 2, timeout: 15000 },
+        async () => {
+          const server = await startHTTPServer(
+            (req, res) => {
+              setTimeout(() => res.end('OK'), 100);
+            },
+            {
+              useHTTP2: true,
+            }
+          );
+
+          try {
+            const localServerURL = `https://localhost:${server.address().port}`;
+            const http2Axios = createHttp2Axios(localServerURL);
+
+            const response1 = await http2Axios.get(localServerURL, {
+              responseType: 'stream',
+              http2Options: {
+                sessionTimeout: 1000,
+              },
+            });
+
+            const session1 = response1.data.session;
+            const data1 = await getStream(response1.data);
+
+            await setTimeoutAsync(5000);
+
+            const response2 = await http2Axios.get(localServerURL, {
+              responseType: 'stream',
+              http2Options: {
+                sessionTimeout: 1000,
+              },
+            });
+
+            const session2 = response2.data.session;
+            const data2 = await getStream(response2.data);
+
+            assert.notStrictEqual(session1, session2);
+            assert.strictEqual(data1, 'OK');
+            assert.strictEqual(data2, 'OK');
+          } finally {
+            await stopHTTPServer(server);
+          }
+        }
+      );
     });
   });
 
@@ -4710,11 +6311,18 @@ describe('supports http with nodejs', () => {
       await setTimeoutAsync(0);
 
       const firstReq = createdReqs[0];
-      assert.ok(firstReq && firstReq.destroyed === false, 'first request must not have been destroyed by a socket error');
+      assert.ok(
+        firstReq && firstReq.destroyed === false,
+        'first request must not have been destroyed by a socket error'
+      );
 
       // Stray socket error after first req has closed: must not destroy firstReq.
       socket.emit('error', new Error('stray error after close'));
-      assert.strictEqual(firstReq.destroyed, false, 'socket error after close must not destroy the old request');
+      assert.strictEqual(
+        firstReq.destroyed,
+        false,
+        'socket error after close must not destroy the old request'
+      );
 
       // Second request claims the socket, then its socket errors. It should reject.
       const err = await axios
@@ -4725,7 +6333,63 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(err.code, 'EPIPE');
 
       const secondReq = createdReqs[1];
-      assert.strictEqual(secondReq.destroyed, true, 'second request should be destroyed by its own active socket error');
+      assert.strictEqual(
+        secondReq.destroyed,
+        true,
+        'second request should be destroyed by its own active socket error'
+      );
+    });
+
+    it('should not throw TypeError when a proxy agent stream does not define setKeepAlive (regression #10908)', async () => {
+      // proxy agents (e.g. agent-base) may provide a generic Duplex stream as
+      // the socket; that stream does not define setKeepAlive.
+      const socket = new stream.Duplex({
+        read() {},
+        write(_chunk, _encoding, callback) {
+          callback();
+        },
+      });
+      assert.strictEqual(typeof socket.setKeepAlive, 'undefined');
+
+      const transport = {
+        request(_, cb) {
+          return new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+            }
+
+            setTimeout() {}
+            write() {}
+
+            end() {
+              this.emit('socket', socket);
+
+              setImmediate(() => {
+                const response = stream.Readable.from(['ok']);
+                response.statusCode = 200;
+                response.headers = {};
+                cb(response);
+                this.emit('close');
+              });
+            }
+
+            destroy(err) {
+              if (this.destroyed) return;
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+        },
+      };
+
+      const result = await axios.get('http://example.com/', {
+        transport,
+        maxRedirects: 0,
+      });
+
+      assert.strictEqual(result.status, 200);
     });
   });
 
@@ -4865,22 +6529,27 @@ describe('supports http with nodejs', () => {
     }, 30000);
   });
 
-  describe('socketPath security (GHSA-j96w-fp6f-pq6v)', () => {
+  describe('socketPath security', () => {
     function makeSocketPath() {
       const pipe = `axios-socketpath-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-      return os.platform() === 'win32' ?
-        `\\\\.\\pipe\\${pipe}` :
-        path.join(os.tmpdir(), `${pipe}.sock`);
+      return os.platform() === 'win32'
+        ? `\\\\.\\pipe\\${pipe}`
+        : path.join(os.tmpdir(), `${pipe}.sock`);
     }
 
-    function startUnixServer(socketPath) {
+    function startUnixServer(socketPath, onRequest) {
       return new Promise((resolveStart, rejectStart) => {
         const server = http.createServer((req, res) => {
+          onRequest && onRequest(req);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ ok: true, url: req.url }));
         });
-        try { fs.unlinkSync(socketPath); } catch (_) { /* noop */ }
+        try {
+          fs.unlinkSync(socketPath);
+        } catch (_) {
+          /* noop */
+        }
         server.once('error', rejectStart);
         server.listen(socketPath, () => resolveStart(server));
       });
@@ -4889,7 +6558,11 @@ describe('supports http with nodejs', () => {
     function stopUnixServer(server, socketPath) {
       return new Promise((done) => {
         server.close(() => {
-          try { fs.unlinkSync(socketPath); } catch (_) { /* noop */ }
+          try {
+            fs.unlinkSync(socketPath);
+          } catch (_) {
+            /* noop */
+          }
           done();
         });
       });
@@ -4903,6 +6576,61 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(res.status, 200);
         assert.strictEqual(res.data.ok, true);
       } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('accepts a path-only url when socketPath is set (regression #6611)', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('/echo?q=1', { socketPath });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.ok, true);
+        assert.strictEqual(res.data.url, '/echo?q=1');
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('accepts a path-only url when socketPath matches allowedSocketPaths', async () => {
+      const socketPath = makeSocketPath();
+      const server = await startUnixServer(socketPath);
+      try {
+        const res = await axios.get('/echo?q=1', {
+          socketPath,
+          allowedSocketPaths: [socketPath],
+        });
+        assert.strictEqual(res.status, 200);
+        assert.strictEqual(res.data.ok, true);
+        assert.strictEqual(res.data.url, '/echo?q=1');
+      } finally {
+        await stopUnixServer(server, socketPath);
+      }
+    });
+
+    it('ignores a prototype-polluted socketPath (security, regression #6611)', async () => {
+      const socketPath = makeSocketPath();
+      let requestCount = 0;
+      const server = await startUnixServer(socketPath, () => {
+        requestCount += 1;
+      });
+      // Pollute the prototype so `socketPath` is visible via the chain but is
+      // NOT an own property of the request config.
+      Object.prototype.socketPath = socketPath;
+      try {
+        // With no own socketPath, the polluted prototype value must not be
+        // honored: the path-only url gets no synthetic base and the request is
+        // never routed to the (attacker-controlled) socket, so it rejects
+        // instead of silently connecting.
+        await assert.rejects(axios.get('/echo?q=1'), (err) => {
+          assert.ok(err instanceof Error);
+          assert.strictEqual(err.code, AxiosError.ERR_INVALID_URL);
+          return true;
+        });
+        assert.strictEqual(requestCount, 0);
+      } finally {
+        delete Object.prototype.socketPath;
         await stopUnixServer(server, socketPath);
       }
     });
@@ -4981,15 +6709,12 @@ describe('supports http with nodejs', () => {
     });
 
     it('rejects non-string socketPath', async () => {
-      await assert.rejects(
-        axios.get('http://localhost/echo', { socketPath: 12345 }),
-        (err) => {
-          assert.ok(err instanceof AxiosError);
-          assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
-          assert.match(err.message, /socketPath must be a string/);
-          return true;
-        }
-      );
+      await assert.rejects(axios.get('http://localhost/echo', { socketPath: 12345 }), (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.match(err.message, /socketPath must be a string/);
+        return true;
+      });
     });
 
     it('empty allowedSocketPaths array blocks all socketPath values', async () => {

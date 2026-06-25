@@ -52,6 +52,43 @@ Al usar unpkg, recomendamos utilizar la versión minificada y fijar el número d
 <script src="https://unpkg.com/axios@<x.x.x>/dist/axios.min.js"></script>
 ```
 
+## Importación de axios
+
+Una vez instalado, puedes importar la librería usando `import` o `require`:
+
+```js
+import axios, { isCancel, AxiosError } from "axios";
+```
+
+También puedes usar la exportación por defecto, ya que las exportaciones nombradas son simplemente re-exportaciones desde la fábrica de axios:
+
+```js
+import axios from "axios";
+
+console.log(axios.isCancel("something"));
+```
+
+Si usas `require` para importar, **solo está disponible la exportación por defecto**:
+
+```js
+const axios = require("axios");
+
+console.log(axios.isCancel("something"));
+```
+
+Para algunos bundlers y linters de ES6 puede que necesites:
+
+```js
+import { default as axios } from "axios";
+```
+
+Para entornos personalizados o heredados donde la resolución de módulos no se comporta correctamente, puedes importar el bundle preconstruido directamente:
+
+```js
+const axios = require("axios/dist/browser/axios.cjs"); // bundle CommonJS para navegador (ES2017)
+// const axios = require("axios/dist/node/axios.cjs"); // bundle CommonJS para node (ES2017)
+```
+
 ## Tu primera solicitud
 
 Una solicitud con axios puede realizarse en tan solo dos líneas de código. Hacer tu primera solicitud con axios es muy sencillo. Puedes hacer una solicitud a cualquier API indicando la URL y el método. Por ejemplo, para hacer una solicitud GET a la API de JSONPlaceholder, puedes usar el siguiente código:
@@ -67,6 +104,18 @@ console.log(response.data);
 ```
 
 axios ofrece una API sencilla para realizar solicitudes. Puedes usar el método `axios.get` para hacer una solicitud GET, el método `axios.post` para hacer una solicitud POST, y así sucesivamente. También puedes usar el método `axios.request` para hacer una solicitud con cualquier método.
+
+::: tip Establece un timeout en producción
+Sin un `timeout`, una solicitud detenida puede colgarse indefinidamente. Pásalo en la configuración de la solicitud:
+
+```js
+const response = await axios.get("https://example.com/data", {
+  timeout: 5000, // 5 segundos
+});
+```
+
+Consulta [`timeout` en la configuración de solicitud](/pages/advanced/request-config#timeout) y [Manejo de errores](/pages/advanced/error-handling) para los códigos `ECONNABORTED` / `ETIMEDOUT` correspondientes.
+:::
 
 ## Próximos pasos
 

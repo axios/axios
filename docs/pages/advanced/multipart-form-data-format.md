@@ -9,6 +9,8 @@ formData.append('foo', 'bar');
 axios.post('https://httpbin.org/post', formData);
 ```
 
+Do not manually set the `Content-Type` header for browser, web worker, or React Native `FormData`; those runtimes add the multipart boundary themselves.
+
 In node.js, you can use the `form-data` library as follows:
 
 ```js
@@ -61,6 +63,23 @@ axios
   .then(({ data }) => console.log(data));
 ```
 
+## Header policy for Node.js `FormData` <Badge type="warning" text="Node.js only" />
+
+When you pass a Node.js `FormData` object that exposes `getHeaders()` (such as the [`form-data`](https://github.com/form-data/form-data) package), axios copies all headers it returns onto the request by default. This preserves v1 compatibility but can be problematic when the `FormData` object comes from an untrusted source — `getHeaders()` could overwrite headers like `Authorization` or inject arbitrary ones.
+
+Set `formDataHeaderPolicy: 'content-only'` to copy **only** `Content-Type` and `Content-Length` from `getHeaders()`, then set any other headers explicitly via the request `headers` config:
+
+```js
+await axios.post('https://example.com/upload', form, {
+  formDataHeaderPolicy: 'content-only',
+  headers: {
+    Authorization: 'Bearer my-token',
+  },
+});
+```
+
+The default value is `'legacy'`. See [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) in the request config reference for details.
+
 ## Supported endings
 
 Axios FormData serializer supports some special endings to perform the following operations:
@@ -84,6 +103,7 @@ FormData serializer supports additional options via config.formSerializer: objec
   - `false` (default) - add empty brackets (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - add brackets with indexes (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
 - `maxDepth: number = 100` - maximum object nesting depth the serializer will recurse into. If the input exceeds this depth, an `AxiosError` with `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` is thrown. This protects server-side applications from DoS attacks via deeply nested payloads. Set to `Infinity` to disable the limit.
+- `Blob: typeof Blob` - Blob constructor used when converting ArrayBuffer-like values for spec-compliant `FormData`. Override it only for runtimes that provide a compatible `Blob` constructor under a different binding.
 
 ```js
 // Allow deeper nesting for schemas that legitimately exceed 100 levels:

@@ -9,6 +9,8 @@ formData.append('foo', 'bar');
 axios.post('https://httpbin.org/post', formData);
 ```
 
+对于浏览器、Web Worker 或 React Native 的 `FormData`，不要手动设置 `Content-Type` 请求头；这些运行时会自行添加 multipart boundary。
+
 在 Node.js 中，可以使用 `form-data` 库，如下所示：
 
 ```js
@@ -61,6 +63,23 @@ axios
   .then(({ data }) => console.log(data));
 ```
 
+## Node.js `FormData` 的请求头策略 <Badge type="warning" text="仅 Node.js" />
+
+当你传入一个暴露 `getHeaders()` 的 Node.js `FormData` 对象（例如 [`form-data`](https://github.com/form-data/form-data) 包）时，axios 默认会将它返回的所有请求头复制到请求上。这保留了 v1 的兼容性，但如果 `FormData` 对象来自不可信来源，可能会出问题——`getHeaders()` 可能覆盖 `Authorization` 等请求头或注入任意请求头。
+
+设置 `formDataHeaderPolicy: 'content-only'` 可**只**从 `getHeaders()` 复制 `Content-Type` 和 `Content-Length`，再通过请求的 `headers` 配置显式设置其他请求头：
+
+```js
+await axios.post('https://example.com/upload', form, {
+  formDataHeaderPolicy: 'content-only',
+  headers: {
+    Authorization: 'Bearer my-token',
+  },
+});
+```
+
+默认值为 `'legacy'`。详见请求配置参考中的 [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy)。
+
 ## 支持的特殊结尾
 
 axios FormData 序列化器支持以下特殊结尾，用于执行对应操作：
@@ -84,6 +103,7 @@ FormData 序列化器通过 `config.formSerializer` 对象属性支持以下额�
   - `false`（默认）- 添加空方括号（`arr[]: 1`，`arr[]: 2`，`arr[]: 3`）
   - `true` - 添加带索引的方括号（`arr[0]: 1`，`arr[1]: 2`，`arr[2]: 3`）
 - `maxDepth: number = 100` - 序列化器递归的最大对象嵌套深度。如果输入超过此深度，将抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`。这可以保护服务端应用免受深层嵌套载荷的 DoS 攻击。设置为 `Infinity` 可禁用此限制。
+- `Blob: typeof Blob` - 在符合规范的 `FormData` 中转换类 ArrayBuffer 值时使用的 Blob 构造函数。只有当运行时以其他标识符提供兼容的 `Blob` 构造函数时，才需要覆盖它。
 
 ```js
 // 当 schema 确实需要超过 100 层嵌套时，可提高限制：

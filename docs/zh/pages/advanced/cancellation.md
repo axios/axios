@@ -6,7 +6,7 @@
 const controller = new AbortController();
 
 axios
-  .get("/foo/bar", {
+  .get('/foo/bar', {
     signal: controller.signal,
   })
   .then(function (response) {
@@ -25,21 +25,21 @@ const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
 
 axios
-  .get("/user/12345", {
+  .get('/user/12345', {
     cancelToken: source.token,
   })
   .catch(function (thrown) {
     if (axios.isCancel(thrown)) {
-      console.log("Request canceled", thrown.message);
+      console.log('Request canceled', thrown.message);
     } else {
       // 处理错误
     }
   });
 
 axios.post(
-  "/user/12345",
+  '/user/12345',
   {
-    name: "new name",
+    name: 'new name',
   },
   {
     cancelToken: source.token,
@@ -47,7 +47,7 @@ axios.post(
 );
 
 // 取消请求（message 参数可选）
-source.cancel("Operation canceled by the user.");
+source.cancel('Operation canceled by the user.');
 ```
 
 也可以通过向 `CancelToken` 构造函数传入执行函数来创建取消令牌：
@@ -56,7 +56,7 @@ source.cancel("Operation canceled by the user.");
 const CancelToken = axios.CancelToken;
 let cancel;
 
-axios.get("/user/12345", {
+axios.get('/user/12345', {
   cancelToken: new CancelToken(function executor(c) {
     // 执行函数接收一个 cancel 函数作为参数
     cancel = c;
@@ -66,5 +66,25 @@ axios.get("/user/12345", {
 // 取消请求
 cancel();
 ```
+
+`CancelToken` 还为旧版集成暴露了一些底层辅助方法：
+
+```js
+const source = axios.CancelToken.source();
+
+const listener = (cancel) => {
+  console.log(cancel.message);
+};
+
+source.token.subscribe(listener);
+
+const signal = source.token.toAbortSignal();
+// 将 `signal` 传给接受 AbortSignal 的 API。
+
+source.cancel('Operation canceled by the user.');
+source.token.unsubscribe(listener);
+```
+
+被取消的请求会以 `axios.CanceledError` 拒绝。旧版导出 `axios.Cancel` 是 `axios.CanceledError` 的别名，取消错误还包含 `__CANCEL__`，用于兼容 `axios.isCancel`。
 
 你可以使用同一个取消令牌或 AbortController 取消多个请求。如果在 axios 请求开始时取消令牌已处于已取消状态，则请求会立即被取消，不会尝试发起实际的网络请求。

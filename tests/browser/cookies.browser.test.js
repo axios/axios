@@ -41,6 +41,27 @@ describe('helpers::cookies (vitest browser)', () => {
     expect(cookies.read('bar')).toBe('def');
   });
 
+  it('reads cookies when the cookie separator has no following space', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, 'cookie');
+
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get() {
+        return 'foo=abc;bar=def';
+      },
+    });
+
+    try {
+      expect(cookies.read('bar')).toBe('def');
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(document, 'cookie', descriptor);
+      } else {
+        delete document.cookie;
+      }
+    }
+  });
+
   it('removes cookies', () => {
     cookies.write('foo', 'bar');
     cookies.remove('foo');
@@ -52,5 +73,42 @@ describe('helpers::cookies (vitest browser)', () => {
     cookies.write('foo', 'bar baz%');
 
     expect(document.cookie).toBe('foo=bar%20baz%25');
+  });
+
+  it('returns raw cookie value when it is not valid URI encoding', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, 'cookie');
+
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get() {
+        return 'foo=bar%';
+      },
+    });
+
+    try {
+      expect(cookies.read('foo')).toBe('bar%');
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(document, 'cookie', descriptor);
+      } else {
+        delete document.cookie;
+      }
+    }
+  });
+
+  it('matches cookie names exactly even when the name contains regex metacharacters', () => {
+    // previously cookies.read built a RegExp by interpolating
+    // the requested name. Metacharacters could match a different cookie or trigger
+    // catastrophic backtracking. A name such as "X.Y" must not match a cookie called
+    // "XAY" set by the same site.
+    cookies.write('XAY', 'wrong');
+
+    expect(cookies.read('X.Y')).toBeNull();
+  });
+
+  it('does not return a partial match for a name that is a prefix of another cookie', () => {
+    cookies.write('xsrf-token-extra', 'wrong');
+
+    expect(cookies.read('xsrf-token')).toBeNull();
   });
 });

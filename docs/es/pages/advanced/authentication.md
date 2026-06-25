@@ -33,6 +33,8 @@ const response = await axios.get("https://api.example.com/data", {
 });
 ```
 
+Si no se proporciona `auth`, los adaptadores HTTP de Node.js y fetch también pueden obtener credenciales Basic desde la URL de la solicitud, por ejemplo `https://myUser:myPassword@api.example.com/data`. Las credenciales codificadas con porcentaje en la URL se decodifican antes de generar el encabezado `Authorization`. Para código nuevo, prefiere la opción explícita `auth`; tiene prioridad sobre las credenciales incluidas en la URL.
+
 ::: tip
 Para tokens Bearer y claves de API, usa un encabezado `Authorization` personalizado en lugar de la opción `auth` — `auth` es solo para HTTP Basic.
 :::

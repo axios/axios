@@ -319,7 +319,7 @@
                 <a
                     href="https://www.jbo88b.com/vn/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
                     target="_blank"
-                    ><b>hjbo88b.com</b></a
+                    ><b>jbo88b.com</b></a
                 >
             </p>
         </td>

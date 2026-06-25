@@ -207,8 +207,8 @@ describe('formDataToJSON', () => {
     const formData = new FormData();
 
     // A run of unmatched `[` must not make the tokenizer rescan to the end of
-    // the string from each `[` (quadratic). This completes instantly when the
-    // bracket group fails fast; the previous pattern hangs well past the timeout.
+    // the string from each `[` (quadratic). This guards the bracket-capture
+    // grammar against regressions by requiring the match to fail fast.
     formData.append('a' + '['.repeat(100000), 'x');
 
     expect(formDataToJSON(formData)).toEqual({ a: 'x' });

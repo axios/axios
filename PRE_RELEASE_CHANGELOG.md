@@ -10,6 +10,10 @@
 - **HTTP Adapter - socketPath:** Path-only request URLs (e.g. `'/foo'`) now work again with `config.socketPath`, fixing the `TypeError [ERR_INVALID_URL]` regression introduced in 1.7.4 when `new URL()` was added to the dispatch path. A synthetic `http://localhost` base is supplied only when an own `socketPath` is set, so absolute URLs, non-socket requests, and prototype-polluted `socketPath` values are unaffected. (**#6611**)
 - **FormData:** `formDataToJSON`/`formToJSON` no longer split field names on `-`, spaces, `+`, `*`, or `&`; only bracket and dot notation create nested keys, so a key like `user-name` stays literal. (**#11006**, closes **#5402**)
 
+## Documentation
+
+- **Request data defaults:** Clarified that `data` is request-specific and is not inherited or deep-merged from global or instance defaults. Shared body fields should be added with a request interceptor or `transformRequest`, scoped carefully to avoid sending sensitive values to unintended endpoints.
+
 ## Release Tracking
 
 - **Proxy Agent Streams:** Guarded Node HTTP adapter TCP keep-alive setup so proxy agents that return generic Duplex streams do not throw when `setKeepAlive` is unavailable. (**#10917**, closes **#10908**)

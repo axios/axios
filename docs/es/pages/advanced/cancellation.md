@@ -6,7 +6,7 @@ A partir de la versión v0.22.0, Axios es compatible con AbortController para ca
 const controller = new AbortController();
 
 axios
-  .get("/foo/bar", {
+  .get('/foo/bar', {
     signal: controller.signal,
   })
   .then(function (response) {
@@ -25,21 +25,21 @@ const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
 
 axios
-  .get("/user/12345", {
+  .get('/user/12345', {
     cancelToken: source.token,
   })
   .catch(function (thrown) {
     if (axios.isCancel(thrown)) {
-      console.log("Request canceled", thrown.message);
+      console.log('Request canceled', thrown.message);
     } else {
       // handle error
     }
   });
 
 axios.post(
-  "/user/12345",
+  '/user/12345',
   {
-    name: "new name",
+    name: 'new name',
   },
   {
     cancelToken: source.token,
@@ -47,7 +47,7 @@ axios.post(
 );
 
 // cancel the request (the message parameter is optional)
-source.cancel("Operation canceled by the user.");
+source.cancel('Operation canceled by the user.');
 ```
 
 También puedes crear un token de cancelación pasando una función ejecutora al constructor de `CancelToken`:
@@ -56,7 +56,7 @@ También puedes crear un token de cancelación pasando una función ejecutora al
 const CancelToken = axios.CancelToken;
 let cancel;
 
-axios.get("/user/12345", {
+axios.get('/user/12345', {
   cancelToken: new CancelToken(function executor(c) {
     // An executor function receives a cancel function as a parameter
     cancel = c;
@@ -66,5 +66,25 @@ axios.get("/user/12345", {
 // cancel the request
 cancel();
 ```
+
+`CancelToken` también expone helpers de bajo nivel para integraciones heredadas:
+
+```js
+const source = axios.CancelToken.source();
+
+const listener = (cancel) => {
+  console.log(cancel.message);
+};
+
+source.token.subscribe(listener);
+
+const signal = source.token.toAbortSignal();
+// Pasa `signal` a APIs que acepten AbortSignal.
+
+source.cancel('Operation canceled by the user.');
+source.token.unsubscribe(listener);
+```
+
+Las solicitudes canceladas se rechazan con `axios.CanceledError`. La exportación heredada `axios.Cancel` es un alias de `axios.CanceledError`, y los errores de cancelación incluyen `__CANCEL__` para compatibilidad con `axios.isCancel`.
 
 Puedes cancelar varias solicitudes con el mismo token de cancelación o controlador de cancelación. Si un token de cancelación ya fue cancelado en el momento en que se inicia una solicitud de Axios, la solicitud se cancela inmediatamente, sin intentar realizar ninguna solicitud real.

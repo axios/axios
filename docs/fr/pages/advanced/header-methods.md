@@ -35,6 +35,7 @@ La méthode `set` est utilisée pour définir des en-têtes sur l'instance d'`Ax
 set(headerName, value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher);
 set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string) => boolean);
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean);
 ```
 
 L'argument `rewrite` contrôle le comportement d'écrasement :
@@ -46,6 +47,19 @@ L'argument `rewrite` contrôle le comportement d'écrasement :
 L'option peut également accepter une fonction définie par l'utilisateur qui détermine si la valeur doit être écrasée ou non. La fonction reçoit la valeur actuelle, le nom de l'en-tête et l'objet d'en-têtes comme arguments.
 
 Les noms d'en-têtes vides ou composés uniquement d'espaces sont ignorés.
+
+Les paires clé/valeur itérables, comme un `Map`, sont acceptées :
+
+```js
+const headers = new AxiosHeaders();
+
+headers.set(
+  new Map([
+    ['X-Trace-Id', 'abc123'],
+    ['Accept', 'application/json'],
+  ])
+);
+```
 
 `AxiosHeaders` conserve la casse de la première clé correspondante qu'il voit. Vous pouvez utiliser cela pour préserver la casse spécifique d'un en-tête en initialisant une clé avec `undefined` puis en définissant les valeurs ultérieurement. Voir [Préserver la casse d'un en-tête spécifique](/pages/advanced/headers#preserving-a-specific-header-case).
 
@@ -170,6 +184,14 @@ Résout toutes les valeurs d'en-têtes internes dans un nouvel objet à prototyp
 ```js
 toJSON(asStrings: true): Record<string, string>;
 toJSON(asStrings?: false): Record<string, string | string[]>;
+```
+
+## toString
+
+Retourne les en-têtes sous forme de bloc d'en-têtes HTTP sans CRLF, avec une paire `nom: valeur` par ligne.
+
+```js
+toString(): string;
 ```
 
 ## From

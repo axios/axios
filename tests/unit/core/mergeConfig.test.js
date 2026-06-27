@@ -377,5 +377,13 @@ describe('core::mergeConfig', () => {
 
       expect(mergeConfig(defaults, { validateStatus: null }).validateStatus).toBe(null);
     });
+
+    it('supports symbol keys', () => {
+      const symbol = Symbol();
+      const config1 = { [symbol]: { a: 1, b: 2 } };
+      const config2 = { [symbol]: { b: 3, c: 4 } };
+      const merged = mergeConfig(config1, config2);
+      expect(merged[symbol]).toEqual({ a: 1, b: 3, c: 4 });
+    });
   });
 });

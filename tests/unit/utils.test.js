@@ -136,6 +136,64 @@ describe('utils', () => {
         assert.deepStrictEqual(cursor, { v: 'leaf' });
       });
     });
+    // https://github.com/axios/axios/issues/5910
+    describe('Set handling', () => {
+      it('should convert a flat Set to an array', () => {
+        const result = utils.toJSONObject(new Set([1, 2, 3]));
+
+        assert.deepStrictEqual(result, [1, 2, 3]);
+      });
+
+      it('should convert a Set nested inside a plain object', () => {
+        const result = utils.toJSONObject({ tags: new Set(['a', 'b', 'c']) });
+
+        assert.deepStrictEqual(result, { tags: ['a', 'b', 'c'] });
+      });
+
+      it('should convert nested Sets recursively', () => {
+        const inner = new Set(['x', 'y']);
+        const outer = new Set([inner, 1]);
+
+        assert.deepStrictEqual(utils.toJSONObject(outer), [['x', 'y'], 1]);
+      });
+
+      it('should skip undefined values inside a Set (mirrors object/array behaviour)', () => {
+        const result = utils.toJSONObject(new Set([1, undefined, 3]));
+
+        assert.deepStrictEqual(result, [1, 3]);
+      });
+
+      it('should handle a Set that appears in multiple places (DAG, not cycle)', () => {
+        const shared = new Set([42]);
+        const source = { a: shared, b: shared };
+
+        assert.deepStrictEqual(utils.toJSONObject(source), { a: [42], b: [42] });
+      });
+
+      it('should not follow a Set that directly contains itself (self-cycle)', () => {
+        const s = new Set();
+        s.add(s); // self-referential
+        s.add(1);
+
+        // The cyclic self-reference is skipped; other values are kept.
+        const result = utils.toJSONObject(s);
+        assert.deepStrictEqual(result, [1]);
+      });
+
+      it('should reproduce the original issue #5910 test case', () => {
+        const obj = { a: [0] };
+        const source = { x: 1, y: 2, obj };
+        source.circular1 = source;
+        obj.a[1] = obj;
+        obj.b = new Set(['a', 'b']);
+
+        assert.deepStrictEqual(utils.toJSONObject(source), {
+          x: 1,
+          y: 2,
+          obj: { a: [0], b: ['a', 'b'] },
+        });
+      });
+    });
   });
 
   describe('Buffer RangeError Fix', () => {

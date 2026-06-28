@@ -97,16 +97,19 @@ describe('core::buildFullPath', () => {
     let error;
 
     try {
-      buildFullPath(undefined, 'https:admin:hunter2@api.example.com/v1?apikey=topsecret&id=42#token=xyz');
+      buildFullPath(
+        undefined,
+        'https:admin:hunter2@api.example.com/v1?apikey=topsecret&id=42#token=xyz&opaque'
+      );
     } catch (err) {
       error = err;
     }
 
     expect(error.message).toBe(
-      'Invalid URL "https:[REDACTED ****]@api.example.com/v1?apikey=[REDACTED ****]&id=[REDACTED ****]#token=[REDACTED ****]": missing "//" after protocol'
+      'Invalid URL "https:[REDACTED ****]@api.example.com/v1?apikey=[REDACTED ****]&id=[REDACTED ****]#token=[REDACTED ****]&[REDACTED ****]": missing "//" after protocol'
     );
     // Credentials and parameter values must not leak.
-    for (const secret of ['admin', 'hunter2', 'topsecret', '42', 'xyz']) {
+    for (const secret of ['admin', 'hunter2', 'topsecret', '42', 'xyz', 'opaque']) {
       expect(error.message).not.toContain(secret);
     }
     // Non-sensitive structure stays intact so the request is still identifiable.

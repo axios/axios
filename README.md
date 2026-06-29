@@ -296,6 +296,48 @@
             </p>
         </td>
     </tr>
+    <tr width="33.333333333333336%">
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://www.jbo88b.com/vn/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="71px"
+                    height="70px"
+                    src="https://images.opencollective.com/jbo-vietnam/3fc6159/avatar.png"
+                    alt="JBO Vietnam"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                JBO Vietnam is a prominent online entertainment brand in Vietnam, offering sports betting, esports, online casino games, and a wide range of other exciting games.
+            </p>
+            <p align="center">
+                <a
+                    href="https://www.jbo88b.com/vn/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>jbo88b.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://opencollective.com/axios/contribute"
+                target="_blank"
+                >💜 Become a sponsor</a
+            >
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://opencollective.com/axios/contribute"
+                target="_blank"
+                >💜 Become a sponsor</a
+            >
+        </td>
+    </tr>
 </table>
 
 <!--<div>marker</div>-->

@@ -93,6 +93,17 @@ describe('helpers::toFormData', () => {
     assert.deepStrictEqual(formData.calls[0][1].parts, [value]);
   });
 
+  it('should convert typed array values to Buffer for non-spec Node FormData', () => {
+    const formData = createRNFormDataSpy();
+
+    toFormData({ file: new Uint8Array([1, 2, 3]) }, formData);
+
+    assert.strictEqual(formData.calls.length, 1);
+    assert.strictEqual(formData.calls[0][0], 'file');
+    assert.ok(Buffer.isBuffer(formData.calls[0][1]));
+    assert.deepStrictEqual([...formData.calls[0][1]], [1, 2, 3]);
+  });
+
   it('should throw AxiosError when typed array values require Buffer and Buffer is unavailable', () => {
     const originalBuffer = globalThis.Buffer;
     const formData = createRNFormDataSpy();

@@ -46,4 +46,19 @@ describe('helpers::parseHeaders', () => {
 
     expect(parsed['content-length']).toEqual('');
   });
+
+  it('should ignore inherited parsed header values', () => {
+    Object.prototype['content-length'] = '';
+    Object.prototype.foo = true;
+
+    try {
+      const parsed = parseHeaders('Content-Length: 10\n' + 'Foo: foo\n' + 'Foo: bar\n');
+
+      expect(parsed['content-length']).toEqual('10');
+      expect(parsed.foo).toEqual('foo, bar');
+    } finally {
+      delete Object.prototype['content-length'];
+      delete Object.prototype.foo;
+    }
+  });
 });

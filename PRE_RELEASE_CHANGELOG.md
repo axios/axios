@@ -4,6 +4,7 @@
 
 ## Bug Fixes
 
+- **Headers:** Response header parsing now preserves an empty first value for singleton Node-style headers when later duplicate header lines are present, instead of replacing it with the duplicate. (**#11036**)
 - **Params serialization:** Custom `paramsSerializer.encode` functions now receive the active `AxiosURLSearchParams` instance as `this`, matching the intended `encoder.call(this, value, defaultEncode)` behavior during query string construction. (**#11019**)
 - **Runtime and types hardening:** Guarded several edge-case crashes in cookie decoding, data URI parsing, form serialization, config merging, option validation, XHR cleanup, and Node HTTP URL serialization error handling. Type declarations now expose missing `CanceledError`, `CancelToken`, `AxiosHeaders`, `SerializerOptions`, and Cloudflare 52x status-code members that already exist at runtime. (**#10959**)
 - **HTTP Adapter - native env proxy:** Avoid double-applying environment proxy handling when Node.js native HTTP proxy support is active for the selected agent. Axios still resolves env proxies itself when the selected agent is not using Node's `proxyEnv` support. (**#10942**, closes **#7299**)

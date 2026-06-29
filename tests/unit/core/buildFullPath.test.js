@@ -7,6 +7,12 @@ describe('core::buildFullPath', () => {
     expect(buildFullPath('https://api.github.com', '/users')).toBe('https://api.github.com/users');
   });
 
+  it('removes repeated trailing slashes from baseURL when combining URLs', () => {
+    expect(buildFullPath('https://api.github.com///', '/users')).toBe(
+      'https://api.github.com/users'
+    );
+  });
+
   it('does not combine URLs when the requested URL is absolute', () => {
     expect(buildFullPath('https://api.github.com', 'https://api.example.com/users')).toBe(
       'https://api.example.com/users'

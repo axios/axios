@@ -53,7 +53,68 @@ describe('core::buildFullPath', () => {
 
       expect(error).toBeInstanceOf(AxiosError);
       expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
-      expect(error.message).toBe('Invalid URL: missing "//" after protocol');
+      expect(error.message).toMatch(/^Invalid URL ".*": missing "\/\/" after protocol$/);
+    }
+  });
+
+  it('includes the offending URL in the error message', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, 'https:example.com/users');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
+  });
+
+  it('reports the control-character-normalized URL for a leading control character', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, '\thttps:example.com/users');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
+  });
+
+  it('reports the control-character-normalized URL for an interior control character', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, 'h\nttp:example.com/users');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe('Invalid URL "http:example.com/users": missing "//" after protocol');
+  });
+
+  it('redacts credentials and query/fragment values while keeping the URL identifiable', () => {
+    let error;
+
+    try {
+      buildFullPath(
+        undefined,
+        'https:admin:hunter2@api.example.com/v1?apikey=topsecret&id=42#token=xyz&opaque'
+      );
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe(
+      'Invalid URL "https:[REDACTED ****]@api.example.com/v1?apikey=[REDACTED ****]&id=[REDACTED ****]#token=[REDACTED ****]&[REDACTED ****]": missing "//" after protocol'
+    );
+    // Credentials and parameter values must not leak.
+    for (const secret of ['admin', 'hunter2', 'topsecret', '42', 'xyz', 'opaque']) {
+      expect(error.message).not.toContain(secret);
+    }
+    // Non-sensitive structure stays intact so the request is still identifiable.
+    for (const kept of ['api.example.com', '/v1', 'apikey', 'id', 'token']) {
+      expect(error.message).toContain(kept);
     }
   });
 
@@ -74,6 +135,6 @@ describe('core::buildFullPath', () => {
 
     expect(error).toBeInstanceOf(AxiosError);
     expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
-    expect(error.message).toBe('Invalid URL: missing "//" after protocol');
+    expect(error.message).toBe('Invalid URL "http:example.com/api": missing "//" after protocol');
   });
 });

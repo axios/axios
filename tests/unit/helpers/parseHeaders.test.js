@@ -40,4 +40,24 @@ describe('helpers::parseHeaders', () => {
     expect(parsed.age).toEqual('age-a');
     expect(parsed.foo).toEqual('foo-a, foo-b');
   });
+
+  it('should parse header names that match Object prototype properties', () => {
+    const parsed = parseHeaders(
+      '__proto__: proto-value\n' +
+        'Constructor: constructor-value\n' +
+        'ToString: tostring-value'
+    );
+
+    expect(Object.getPrototypeOf(parsed)).toBeNull();
+    expect(Object.prototype.hasOwnProperty.call(parsed, '__proto__')).toBe(true);
+    expect(parsed['__proto__']).toEqual('proto-value');
+    expect(parsed.constructor).toEqual('constructor-value');
+    expect(parsed.tostring).toEqual('tostring-value');
+  });
+
+  it('should ignore duplicate singleton headers even when the first value is empty', () => {
+    const parsed = parseHeaders('Content-Type:\nContent-Type: text/plain');
+
+    expect(parsed['content-type']).toEqual('');
+  });
 });

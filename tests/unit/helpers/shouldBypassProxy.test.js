@@ -396,6 +396,20 @@ describe('helpers::shouldBypassProxy', () => {
       expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(false);
     });
 
+    it('should NOT bypass for zero-prefixed entries with invalid octal digits', () => {
+      for (const [entry, request] of [
+        ['08.0.0.1', 'http://8.0.0.1:7777/'],
+        ['127.08', 'http://127.0.0.8:7777/'],
+        ['127.0.08', 'http://127.0.0.8:7777/'],
+      ]) {
+        setNoProxy(entry);
+
+        // Node rejects these zero-prefixed host forms instead of treating them
+        // as decimal, so entry-side normalisation must also fail closed.
+        expect(shouldBypassProxy(request)).toBe(false);
+      }
+    });
+
     it('should NOT bypass when an entry is a single numeric token (32-bit-int semantics)', () => {
       setNoProxy('127');
 

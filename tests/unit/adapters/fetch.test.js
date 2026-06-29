@@ -65,7 +65,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         (error) => {
           assert.ok(error instanceof AxiosError);
           assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
-          assert.strictEqual(error.message, 'Invalid URL: missing "//" after protocol');
+          assert.match(error.message, /^Invalid URL ".*": missing "\/\/" after protocol$/);
           assert.strictEqual(error.config.url, url);
           assert.strictEqual(error.config.headers.get('X-Test'), 'yes');
           return true;

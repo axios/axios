@@ -116,7 +116,7 @@
     "dist/node/axios.cjs"
   ],
   "scripts": {
-    "build": "gulp clear && cross-env NODE_ENV=production rollup -c -m",
+    "build": "gulp clear && cross-env NODE_ENV=production rollup -c",
     "version": "npm run build && git add package.json",
     "preversion": "gulp version",
     "test": "npm run test:vitest",

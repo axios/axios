@@ -13,6 +13,6 @@
   "devDependencies": {
     "@types/node": "20.19.39",
     "typescript": "5.9.3",
-    "vitest": "4.1.5"
+    "vitest": "4.1.9"
   }
 }

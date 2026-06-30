@@ -310,6 +310,26 @@ describe('AxiosHeaders', () => {
         );
       });
     });
+  describe('parseTokens (get with true parser)', () => {
+    it('should strip surrounding double-quotes from token values (RFC 9110 §5.6.4)', () => {
+      const headers = new AxiosHeaders();
+      // Simulates a response Content-Type with a quoted boundary, as sent by browsers/servers
+      headers.set('content-type', 'multipart/form-data; boundary="----=_Part_123"');
+      const tokens = headers.get('content-type', true);
+      assert.strictEqual(tokens['boundary'], '----=_Part_123');
+    });
+
+    it('should trim trailing whitespace from token parameter values before a delimiter', () => {
+      const headers = new AxiosHeaders();
+      // Internal whitespace between the parameter value and the semicolon is NOT stripped by
+      // sanitizeHeaderValue (which only trims the outer edges of the entire header value).
+      // parseTokens must trim each captured token value individually.
+      headers.set('content-type', 'text/html; charset=utf-8   ; q=0.9');
+      const tokens = headers.get('content-type', true);
+      assert.strictEqual(tokens['charset'], 'utf-8');
+    });
+  });
+
   });
 
   describe('has', () => {

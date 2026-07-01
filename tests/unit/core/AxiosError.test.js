@@ -90,6 +90,24 @@ describe('core::AxiosError', () => {
 
       expect(axiosError.status).toBe(404);
     });
+
+    it('synthesizes a message from AggregateError.errors when the aggregate message is empty (#6721)', () => {
+      const timeout = Object.assign(new Error('connect ETIMEDOUT 1.2.3.4:443'), { code: 'ETIMEDOUT' });
+      const unreach = Object.assign(new Error('connect EHOSTUNREACH ::1:443'), { code: 'EHOSTUNREACH' });
+      const aggregate = new AggregateError([timeout, unreach]);
+      expect(aggregate.message).toBe('');
+
+      const axiosError = AxiosError.from(aggregate, 'ETIMEDOUT', { foo: 'bar' });
+
+      expect(axiosError.message).toContain('connect ETIMEDOUT 1.2.3.4:443');
+      expect(axiosError.message).toContain('connect EHOSTUNREACH ::1:443');
+    });
+
+    it('leaves a normal error message unchanged', () => {
+      const axiosError = AxiosError.from(new Error('Boom!'), 'ESOMETHING', {});
+
+      expect(axiosError.message).toBe('Boom!');
+    });
   });
 
   describe('cause serialization (regression #7205)', () => {

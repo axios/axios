@@ -237,7 +237,7 @@ describe('requests (vitest browser)', () => {
 
     expect(reason).toBeInstanceOf(AxiosError);
     expect(reason.code).toBe(AxiosError.ERR_INVALID_URL);
-    expect(reason.message).toBe('Invalid URL: missing "//" after protocol');
+    expect(reason.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
     expect(reason.config.url).toBe('\u0000https:example.com/users');
     expect(reason.config.headers.get('X-Test')).toBe('yes');
     expect(openSpy).not.toHaveBeenCalled();

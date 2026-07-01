@@ -4,6 +4,7 @@
 
 ## Bug Fixes
 
+- **URL construction:** `combineURLs()` now removes repeated trailing slashes from `baseURL` before joining a relative request URL, avoiding unintended double slashes in the final request path. (**#11038**)
 - **Headers:** `AxiosHeaders#getSetCookie()` now always returns an array for present `set-cookie` values, including programmatic single-value headers. (**#11037**)
 - **Headers:** Response header parsing now preserves an empty first value for singleton Node-style headers when later duplicate header lines are present, instead of replacing it with the duplicate. (**#11036**)
 - **Params serialization:** Custom `paramsSerializer.encode` functions now receive the active `AxiosURLSearchParams` instance as `this`, matching the intended `encoder.call(this, value, defaultEncode)` behavior during query string construction. (**#11019**)

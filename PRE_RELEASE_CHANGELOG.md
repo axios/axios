@@ -4,6 +4,7 @@
 
 ## Bug Fixes
 
+- **HTTP Adapter - download progress:** Flushed the final `onDownloadProgress` callback before streamed responses emit `close`, preventing trailing progress notifications after consumers observe the stream as closed. (closes **#6878**)
 - **URL construction:** `combineURLs()` now removes repeated trailing slashes from `baseURL` before joining a relative request URL, avoiding unintended double slashes in the final request path. (**#11038**)
 - **Headers:** `AxiosHeaders#getSetCookie()` now always returns an array for present `set-cookie` values, including programmatic single-value headers. (**#11037**)
 - **Headers:** Response header parsing now preserves an empty first value for singleton Node-style headers when later duplicate header lines are present, instead of replacing it with the duplicate. (**#11036**)

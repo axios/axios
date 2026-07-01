@@ -3,6 +3,7 @@ import assert from 'assert';
 import utils from '../../lib/utils.js';
 import FormData from 'form-data';
 import stream from 'stream';
+import vm from 'node:vm';
 
 describe('utils', () => {
   it('should validate Stream', () => {
@@ -148,6 +149,13 @@ describe('utils', () => {
         const result = utils.toJSONObject({ tags: new Set(['a', 'b', 'c']) });
 
         assert.deepStrictEqual(result, { tags: ['a', 'b', 'c'] });
+      });
+
+      it('should convert a cross-realm Set to an array', () => {
+        const set = vm.runInNewContext('new Set(["a", "b", "c"])');
+
+        assert.strictEqual(set instanceof Set, false);
+        assert.deepStrictEqual(utils.toJSONObject({ tags: set }), { tags: ['a', 'b', 'c'] });
       });
 
       it('should convert nested Sets recursively', () => {

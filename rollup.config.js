@@ -28,6 +28,7 @@ const buildConfig = ({ es5, browser = true, minifiedVersion = true, alias, ...co
     output: {
       ...config.output,
       file: `${path.dirname(file)}/${basename}.${(minified ? ['min', ...extArr] : extArr).join('.')}`,
+      sourcemap: minified,
     },
     plugins: [
       aliasPlugin({

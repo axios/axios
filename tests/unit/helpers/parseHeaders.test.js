@@ -40,4 +40,25 @@ describe('helpers::parseHeaders', () => {
     expect(parsed.age).toEqual('age-a');
     expect(parsed.foo).toEqual('foo-a, foo-b');
   });
+
+  it('should ignore duplicate node-style headers after an empty first value', () => {
+    const parsed = parseHeaders('Content-Length:\n' + 'Content-Length: 10\n');
+
+    expect(parsed['content-length']).toEqual('');
+  });
+
+  it('should ignore inherited parsed header values', () => {
+    Object.prototype['content-length'] = '';
+    Object.prototype.foo = true;
+
+    try {
+      const parsed = parseHeaders('Content-Length: 10\n' + 'Foo: foo\n' + 'Foo: bar\n');
+
+      expect(parsed['content-length']).toEqual('10');
+      expect(parsed.foo).toEqual('foo, bar');
+    } finally {
+      delete Object.prototype['content-length'];
+      delete Object.prototype.foo;
+    }
+  });
 });

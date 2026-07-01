@@ -161,4 +161,56 @@ describe('formDataToJSON', () => {
 
     expect(value).toBe('123');
   });
+
+  // https://github.com/axios/axios/issues/5402
+  it('should not split keys on characters other than brackets and dots', () => {
+    const formData = new FormData();
+
+    formData.append('user-name', 'johndoe');
+    formData.append('first name', 'john');
+    formData.append('a+b', 'plus');
+
+    expect(formDataToJSON(formData)).toEqual({
+      'user-name': 'johndoe',
+      'first name': 'john',
+      'a+b': 'plus',
+    });
+  });
+
+  it('should still split bracket and dot notation', () => {
+    const formData = new FormData();
+
+    formData.append('foo[bar-baz]', '1');
+    formData.append('a.b-c', '2');
+
+    expect(formDataToJSON(formData)).toEqual({
+      foo: { 'bar-baz': '1' },
+      a: { 'b-c': '2' },
+    });
+  });
+
+  it('should treat `.` and `[` as separators inside bracket groups', () => {
+    const formData = new FormData();
+
+    formData.append('foo[bar.baz]', '1');
+    formData.append('qux[a[b]', '2');
+
+    // `.`, `[` and `]` are not part of a key, so bracket contents are split the
+    // same way as dot notation rather than captured as a single literal key.
+    expect(formDataToJSON(formData)).toEqual({
+      foo: { bar: { baz: '1' } },
+      qux: { a: { b: '2' } },
+    });
+  });
+
+  it('should parse long malformed bracket names in linear time', () => {
+    const formData = new FormData();
+
+    // A run of unmatched `[` must not make the tokenizer rescan to the end of
+    // the string from each `[` (quadratic). This guards the bracket-capture
+    // grammar against regressions by requiring the match to fail fast.
+    formData.append('a' + '['.repeat(100000), 'x');
+
+    expect(formDataToJSON(formData)).toEqual({ a: 'x' });
+  });
 });

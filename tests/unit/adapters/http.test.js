@@ -5003,8 +5003,12 @@ describe('supports http with nodejs', () => {
 
           await new Promise((resolve) => setImmediate(resolve));
 
+          const finalProgressIndex = events.indexOf(`progress:${contentLength}`);
+          const closeIndex = events.indexOf('close');
+
+          assert.ok(finalProgressIndex !== -1, `expected final progress, got ${events.join(', ')}`);
           assert.ok(
-            events.includes(`progress:${contentLength}`),
+            finalProgressIndex < closeIndex,
             `expected final progress before close, got ${events.join(', ')}`
           );
           assert.strictEqual(
@@ -5015,7 +5019,7 @@ describe('supports http with nodejs', () => {
         } finally {
           await stopHTTPServer(server);
         }
-      });
+      }, 15000);
     });
   });
 

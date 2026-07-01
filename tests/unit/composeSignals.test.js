@@ -22,6 +22,22 @@ describe('helpers::composeSignals', () => {
     assert.ok(called);
   });
 
+  runIfAbortController('should abort immediately when a signal is already aborted', () => {
+    const controller = new AbortController();
+    const reason = new Error('already aborted');
+
+    controller.abort(reason);
+
+    const signal = composeSignals([controller.signal]);
+
+    try {
+      assert.strictEqual(signal.aborted, true);
+      assert.strictEqual(signal.reason.message, reason.message);
+    } finally {
+      signal.unsubscribe();
+    }
+  });
+
   runIfAbortController('should abort on timeout', async () => {
     const signal = composeSignals([], 100);
 

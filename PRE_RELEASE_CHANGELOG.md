@@ -4,7 +4,7 @@
 
 ## Bug Fixes
 
-- **Headers:** `AxiosHeaders#set()` no longer treats a comma-containing string as a valid single header name; comma is a delimiter, not a `tchar`, per RFC 7230 section 3.2.6. (**#TBD**)
+- **Headers:** `AxiosHeaders#set()` no longer treats a comma-containing string as a valid single header name; comma is a delimiter, not a `tchar`, per RFC 7230 section 3.2.6. (**#11063**)
 - **AxiosError:** `AxiosError#toJSON()` now serializes `Set` values in request config snapshots as arrays instead of empty objects. (**#11044**, refs **#5910**)
 - **HTTP Adapter - download progress:** Flushed the final `onDownloadProgress` callback before streamed responses emit `close`, preventing trailing progress notifications after consumers observe the stream as closed. (closes **#6878**)
 - **URL construction:** `combineURLs()` now removes repeated trailing slashes from `baseURL` before joining a relative request URL, avoiding unintended double slashes in the final request path. (**#11038**)

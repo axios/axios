@@ -278,6 +278,17 @@ describe('utils', () => {
         const result = utils.toJSONObject(m);
         assert.deepStrictEqual(result, [['n', 1]]);
       });
+
+      it('should drop an entry whose key directly contains itself (cyclic key)', () => {
+        const m = new Map();
+        m.set(m, 1); // the key is the map itself
+        m.set('n', 2);
+
+        // A cyclic key resolves to undefined and must not surface as `[null, value]`;
+        // the whole entry is dropped, other entries are kept.
+        const result = utils.toJSONObject(m);
+        assert.deepStrictEqual(result, [['n', 2]]);
+      });
     });
   });
 

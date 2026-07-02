@@ -202,6 +202,83 @@ describe('utils', () => {
         });
       });
     });
+
+    describe('Map handling', () => {
+      it('should convert a flat Map to an array of key/value pairs', () => {
+        const result = utils.toJSONObject(
+          new Map([
+            ['a', 1],
+            ['b', 2],
+          ])
+        );
+
+        assert.deepStrictEqual(result, [
+          ['a', 1],
+          ['b', 2],
+        ]);
+      });
+
+      it('should convert a Map nested inside a plain object', () => {
+        const result = utils.toJSONObject({ tags: new Map([['a', 1]]) });
+
+        assert.deepStrictEqual(result, { tags: [['a', 1]] });
+      });
+
+      it('should convert a cross-realm Map to an array of key/value pairs', () => {
+        const map = vm.runInNewContext('new Map([["a", 1]])');
+
+        assert.strictEqual(map instanceof Map, false);
+        assert.deepStrictEqual(utils.toJSONObject({ tags: map }), { tags: [['a', 1]] });
+      });
+
+      it('should convert nested Maps recursively', () => {
+        const inner = new Map([['x', 'y']]);
+        const outer = new Map([
+          ['inner', inner],
+          ['n', 1],
+        ]);
+
+        assert.deepStrictEqual(utils.toJSONObject(outer), [
+          ['inner', [['x', 'y']]],
+          ['n', 1],
+        ]);
+      });
+
+      it('should skip entries whose value is undefined (mirrors object/array behaviour)', () => {
+        const result = utils.toJSONObject(
+          new Map([
+            ['a', 1],
+            ['b', undefined],
+            ['c', 3],
+          ])
+        );
+
+        assert.deepStrictEqual(result, [
+          ['a', 1],
+          ['c', 3],
+        ]);
+      });
+
+      it('should handle a Map that appears in multiple places (DAG, not cycle)', () => {
+        const shared = new Map([['k', 42]]);
+        const source = { a: shared, b: shared };
+
+        assert.deepStrictEqual(utils.toJSONObject(source), {
+          a: [['k', 42]],
+          b: [['k', 42]],
+        });
+      });
+
+      it('should not follow a Map whose value directly contains itself (self-cycle)', () => {
+        const m = new Map();
+        m.set('self', m); // self-referential
+        m.set('n', 1);
+
+        // The cyclic self-reference is skipped; other values are kept.
+        const result = utils.toJSONObject(m);
+        assert.deepStrictEqual(result, [['n', 1]]);
+      });
+    });
   });
 
   describe('Buffer RangeError Fix', () => {

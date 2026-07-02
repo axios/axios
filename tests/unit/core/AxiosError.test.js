@@ -51,6 +51,22 @@ describe('core::AxiosError', () => {
     });
   });
 
+  it('serializes Map values in config snapshots', () => {
+    const error = new AxiosError('Boom!', 'ESOMETHING', {
+      tags: new Map([['a', 1]]),
+      nested: {
+        ids: new Map([['b', 2]]),
+      },
+    });
+
+    expect(error.toJSON().config).toEqual({
+      tags: [['a', 1]],
+      nested: {
+        ids: [['b', 2]],
+      },
+    });
+  });
+
   describe('AxiosError.from', () => {
     it('adds config, code, request and response to the wrapped error', () => {
       const error = new Error('Boom!');

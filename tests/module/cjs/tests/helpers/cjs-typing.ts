@@ -512,6 +512,10 @@ for (const [header, value] of headers) {
 
   headers.y = 2;
   headers.z = null;
+  headers.optional = undefined;
+  // Callable values remain accepted because AxiosHeaders class methods also flow through
+  // the string index signature; TypeScript cannot distinguish those from dynamic keys.
+  headers.callable = () => 'not a runtime header value';
 
   // @ts-expect-error -- dynamic header values must be serializable Axios header values
   headers.promise = Promise.resolve('foo');

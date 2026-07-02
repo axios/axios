@@ -267,6 +267,16 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('x'), 'y');
       assert.strictEqual(Object.keys(headers).length, 2);
     });
+
+    // Regression: comma is a delimiter, not a tchar, per RFC 7230 section 3.2.6 -
+    // it must not be accepted as part of a single header name.
+    it('should not treat a comma-containing string as a valid header name', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('X-Foo,Bar', 'value');
+
+      assert.strictEqual(headers.has('X-Foo,Bar'), false);
+    });
   });
 
   it('should support uppercase name mapping for names overlapped by class methods', () => {

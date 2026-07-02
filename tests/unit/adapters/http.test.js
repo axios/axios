@@ -4504,6 +4504,28 @@ describe('supports http with nodejs', () => {
         );
         assert.strictEqual(capturedHeaders.Host || capturedHeaders.host, undefined);
       });
+
+      it('ignores undefined getHeaders() results with content-only policy', async () => {
+        let capturedHeaders;
+
+        class FormDataWithoutHeaders extends CustomFormData {
+          getHeaders() {}
+        }
+
+        await axios.post('http://stub.invalid/', new FormDataWithoutHeaders(), {
+          headers: {
+            'X-Test': 'ok',
+          },
+          transport: createStubTransport((headers) => {
+            capturedHeaders = headers;
+          }),
+          maxRedirects: 0,
+          formDataHeaderPolicy: 'content-only',
+        });
+
+        assert.ok(capturedHeaders, 'transport was not invoked');
+        assert.strictEqual(capturedHeaders['X-Test'] || capturedHeaders['x-test'], 'ok');
+      });
     });
   });
 

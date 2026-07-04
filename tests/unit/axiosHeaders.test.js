@@ -678,4 +678,16 @@ describe('AxiosHeaders', () => {
       assert.deepStrictEqual(new AxiosHeaders().getSetCookie(), []);
     });
   });
+
+  describe('get with parser', () => {
+    it('should strip DQUOTE delimiters from parameter values per RFC 9110', () => {
+      const headers = new AxiosHeaders({
+        'content-type': 'multipart/form-data; boundary="----boundary123"'
+      });
+
+      const parsed = headers.get('content-type', true);
+
+      assert.deepStrictEqual(parsed, { 'multipart/form-data': undefined, boundary: '----boundary123' });
+    });
+  });
 });

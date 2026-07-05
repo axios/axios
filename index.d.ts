@@ -241,6 +241,7 @@ export enum HttpStatusCode {
   LoopDetected = 508,
   NotExtended = 510,
   NetworkAuthenticationRequired = 511,
+  WebServerReturnsAnUnknownError = 520,
   WebServerIsDown = 521,
   ConnectionTimedOut = 522,
   OriginIsUnreachable = 523,

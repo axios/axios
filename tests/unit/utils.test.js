@@ -290,6 +290,26 @@ describe('utils', () => {
         assert.deepStrictEqual(result, [['n', 2]]);
       });
     });
+
+    describe('WeakSet and WeakMap handling', () => {
+      it('should convert a WeakSet to a placeholder string (entries are not enumerable)', () => {
+        const result = utils.toJSONObject(new WeakSet());
+
+        assert.strictEqual(result, '[WeakSet]');
+      });
+
+      it('should convert a WeakMap to a placeholder string (entries are not enumerable)', () => {
+        const result = utils.toJSONObject(new WeakMap());
+
+        assert.strictEqual(result, '[WeakMap]');
+      });
+
+      it('should convert a WeakSet/WeakMap nested inside a plain object', () => {
+        const result = utils.toJSONObject({ a: new WeakSet(), b: new WeakMap() });
+
+        assert.deepStrictEqual(result, { a: '[WeakSet]', b: '[WeakMap]' });
+      });
+    });
   });
 
   describe('Buffer RangeError Fix', () => {

@@ -27,6 +27,8 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 `baseURL` 是拼接在 `url` 前面的基础 URL，除非 `url` 是绝对 URL。这对于向同一域名发起请求非常实用，无需在每次请求时重复写域名和 API 版本前缀。
 
+`baseURL` 只是构造 URL 的便利选项，并不是安全边界。如果请求的 `url` 来自不可信输入，应先校验再传给 axios。相对 `url` 可以包含 `..` 路径段；axios 将其与 `baseURL` 拼接后，运行平台的 URL 解析器会规范化路径，可能把请求解析到预期路径前缀之外。`allowAbsoluteUrls: false` 可以阻止绝对 URL 替换 `baseURL`，但不会校验或限制相对路径。
+
 ### `allowAbsoluteUrls`
 
 `allowAbsoluteUrls` 决定绝对 URL 是否可以覆盖已配置的 `baseUrl`。设置为 `true`（默认值）时，绝对 `url` 会覆盖 `baseUrl`；设置为 `false` 时，绝对 `url` 始终会拼接在 `baseUrl` 之后。

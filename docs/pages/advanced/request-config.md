@@ -27,6 +27,8 @@ The `method` is the HTTP method to use for the request. The default method is `G
 
 The `baseURL` is the base URL to be prepended to the `url` unless the `url` is an absolute URL. This is useful for making requests to the same domain without having to repeat the domain name and any api or version prefix.
 
+`baseURL` is a URL-construction convenience, not a security boundary. If a request `url` comes from untrusted input, validate it before passing it to axios. A relative `url` can contain `..` segments; after axios combines it with `baseURL`, the platform URL parser normalizes the path and may resolve the request outside the intended path prefix. `allowAbsoluteUrls: false` prevents absolute URLs from replacing `baseURL`, but it does not validate or constrain relative paths.
+
 ### `allowAbsoluteUrls`
 
 The `allowAbsoluteUrls` determines whether or not absolute URLs will override a configured `baseUrl`. When set to true (default), absolute values for `url` will override `baseUrl`. When set to false, absolute values for `url` will always be prepended by `baseUrl`.

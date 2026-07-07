@@ -2,7 +2,7 @@
 
 > **Migrating from Axios 0.x to 1.x**
 > 
-> This guide helps developers upgrade from Axios 0.x to 1.x by documenting breaking changes, providing migration strategies, and offering solutions to common upgrade challenges.
+> This guide helps developrs upgrade from Axios 0.x to 1.x by documenting breaking changes, providing migration strategies, and offering solutions to common upgrade challenges.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@
 
 ## Overview
 
-Axios 1.x introduced several breaking changes to improve consistency, security, and developer experience. While these changes provide better error handling and more predictable behavior, they require code updates when migrating from 0.x versions.
+Axios 1.x introduced several breaking changes to improve consistency, security, and developr experience. While these changes provide better error handling and more predictable behavior, they require code updates when migrating from 0.x versions.
 
 ### Key Changes Summary
 

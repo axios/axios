@@ -281,6 +281,30 @@ describe('AxiosHeaders', () => {
   });
 
   describe('get', () => {
+    it('should strip quoted-string delimiters from parsed header parameters', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('content-type', 'multipart/form-data; boundary="----=_Part_123"');
+
+      assert.strictEqual(headers.get('content-type', true).boundary, '----=_Part_123');
+    });
+
+    it('should preserve delimiters inside quoted header parameters', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('content-type', 'multipart/form-data; boundary="abc;def,ghi"');
+
+      assert.strictEqual(headers.get('content-type', true).boundary, 'abc;def,ghi');
+    });
+
+    it('should trim trailing whitespace from parsed header parameters', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('content-type', 'text/plain; charset=utf-8   ; format=flowed');
+
+      assert.strictEqual(headers.get('content-type', true).charset, 'utf-8');
+    });
+
     describe('filter', () => {
       it('should support RegExp', () => {
         const headers = new AxiosHeaders();

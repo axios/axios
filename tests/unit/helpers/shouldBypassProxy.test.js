@@ -142,12 +142,15 @@ describe('helpers::shouldBypassProxy', () => {
     expect(shouldBypassProxy('http://[::1]:8080/')).toBe(true);
   });
 
-  it('should bypass proxy for any host when no_proxy list contains *', () => {
-    setNoProxy('localhost,*,.example.org');
+  it.each(['localhost,*,.example.org', 'localhost * .example.org'])(
+    'should bypass proxy for any host when no_proxy list contains *: %s',
+    (noProxy) => {
+      setNoProxy(noProxy);
 
-    expect(shouldBypassProxy('http://example.com/')).toBe(true);
-    expect(shouldBypassProxy('http://[2001:db8::1]:8080/')).toBe(true);
-  });
+      expect(shouldBypassProxy('http://example.com/')).toBe(true);
+      expect(shouldBypassProxy('http://[2001:db8::1]:8080/')).toBe(true);
+    },
+  );
 
   it('should support bracketed ipv6 with explicit port in no_proxy', () => {
     setNoProxy('[::1]:8080');

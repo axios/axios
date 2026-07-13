@@ -4964,6 +4964,62 @@ describe('supports http with nodejs', () => {
           await stopHTTPServer(server);
         }
       }, 15000);
+
+      it('should flush final download progress before a streamed response closes', async () => {
+        const chunks = ['test', 'test', 'test', 'test'];
+        const contentLength = chunks.reduce((total, chunk) => total + Buffer.byteLength(chunk), 0);
+        const server = await startHTTPServer(
+          async (req, res) => {
+            res.setHeader('Content-Length', contentLength);
+
+            for (const chunk of chunks) {
+              res.write(chunk);
+              await setTimeoutAsync(10);
+            }
+
+            res.end();
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const events = [];
+          const { data } = await axios.get(`http://localhost:${server.address().port}`, {
+            responseType: 'stream',
+            onDownloadProgress: ({ loaded }) => {
+              events.push(`progress:${loaded}`);
+            },
+            maxRedirects: 0,
+          });
+
+          await new Promise((resolve, reject) => {
+            data.on('error', reject);
+            data.on('close', () => {
+              events.push('close');
+              resolve();
+            });
+            data.resume();
+          });
+
+          await new Promise((resolve) => setImmediate(resolve));
+
+          const finalProgressIndex = events.indexOf(`progress:${contentLength}`);
+          const closeIndex = events.indexOf('close');
+
+          assert.ok(finalProgressIndex !== -1, `expected final progress, got ${events.join(', ')}`);
+          assert.ok(
+            finalProgressIndex < closeIndex,
+            `expected final progress before close, got ${events.join(', ')}`
+          );
+          assert.strictEqual(
+            events[events.length - 1],
+            'close',
+            `expected no download progress after close, got ${events.join(', ')}`
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      }, 15000);
     });
   });
 

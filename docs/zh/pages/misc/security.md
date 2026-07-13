@@ -25,6 +25,7 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 | 选项 | 风险 | 缓解措施 |
 | --- | --- | --- |
+| [`baseURL`](/pages/advanced/request-config#baseurl) | 有些应用会把 `baseURL` 中的路径前缀（例如 `https://api.example.com/v1/`）当作请求边界。用户可控的相对 `url` 可能包含 `..` 路径段，最终 URL 解析器会对其进行规范化，并可能把请求解析到该路径前缀之外。 | 不要依赖 `baseURL` 做路径隔离。将不可信请求路径传给 axios 前先校验；拒绝绝对 URL、协议相对 URL 和 `..` 路径段，或根据 allowlist 检查解析后 URL 的 origin 与 pathname。 |
 | [`socketPath`](/pages/advanced/request-config#socketpath) | 如果取自不可信输入，攻击者可将流量重定向到 `/var/run/docker.sock` 等特权本地套接字，绕过基于主机名的 SSRF 防护（CWE-918）。 | 对来自不可信输入的配置进行过滤或仅允许特定键。使用 [`allowedSocketPaths`](/pages/advanced/request-config#allowedsocketpaths) 限制可接受的套接字路径。 |
 | [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | 在 `follow-redirects` 因协议降级剥离凭据**之后**运行。如果不检查目标协议就重新注入凭据，可能在明文 HTTP 上泄露凭据。 | 仅对可信的 HTTPS 目标重新添加凭据。在为 `auth` 赋值前检查 `options.protocol === "https:"`。 |
 | [`sensitiveHeaders`](/pages/advanced/request-config#sensitiveheaders) | `X-API-Key` 等自定义密钥请求头在 Node.js HTTP 适配器跟随重定向到不同源时可能被转发。 | 在 `sensitiveHeaders` 中列出这些自定义密钥请求头名称；axios 会在跨源重定向时不区分大小写地移除匹配项。同源重定向会保留它们。 |

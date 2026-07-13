@@ -27,6 +27,8 @@ La `method` est la méthode HTTP à utiliser pour la requête. La méthode par d
 
 La `baseURL` est l'URL de base à ajouter en préfixe à l'`url`, sauf si celle-ci est une URL absolue. Utile pour effectuer des requêtes vers le même domaine sans avoir à répéter le nom de domaine et tout préfixe d'API ou de version.
 
+`baseURL` est une commodité de construction d'URL, pas une limite de sécurité. Si l'`url` d'une requête provient d'une entrée non fiable, validez-la avant de la transmettre à axios. Une `url` relative peut contenir des segments `..` ; après qu'axios l'a combinée avec `baseURL`, le parseur d'URL de la plateforme normalise le chemin et peut résoudre la requête en dehors du préfixe de chemin prévu. `allowAbsoluteUrls: false` empêche les URLs absolues de remplacer `baseURL`, mais ne valide ni ne limite les chemins relatifs.
+
 ### `allowAbsoluteUrls`
 
 `allowAbsoluteUrls` détermine si les URLs absolues peuvent remplacer une `baseUrl` configurée. Lorsqu'elle est définie à `true` (valeur par défaut), les valeurs absolues de `url` remplacent `baseUrl`. Lorsqu'elle est définie à `false`, les valeurs absolues de `url` sont toujours précédées de `baseUrl`.

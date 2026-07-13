@@ -17,7 +17,10 @@ The maintainer incident-response runbook, including session revocation, key rota
 
 ## Verifying a release
 
-Since v1.6.1 on the 1.x line and v0.31.0 on the 0.x line, `axios` tarballs on npm are published from GitHub Actions with an [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements) that cryptographically binds the package to the workflow and commit SHA that produced it. Older versions predate provenance publishing and have no attestation, and a few others (v1.13.3 and v0.29.0–v0.30.3; v0.28.x does have them) were published without one.
+`axios` tarballs on npm are published from GitHub Actions with an [npm provenance attestation](https://docs.npmjs.com/generating-provenance-statements) that cryptographically binds the package to the workflow and commit SHA that produced it. Attestation became the default at **v1.6.1** (1.x line) and **v0.31.0** (0.x line); releases before those points generally have none. A few releases are exceptions to that rule:
+
+- **v0.28.0** and **v0.28.1** carry an attestation even though they predate the 0.x default.
+- **v1.13.3** (1.x line) and **v0.29.0** through **v0.30.3** (0.x line) were published *without* one.
 
 Consumers can verify provenance locally:
 

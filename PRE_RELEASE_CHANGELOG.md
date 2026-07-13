@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Features
+
+- **AxiosHeaders parameter parsing:** Added `AxiosHeaders.parseParameters()` as an opt-in parser for `AxiosHeaders#get()`. It returns a hardened null-prototype parameter map, removes RFC quoted-string delimiters, decodes quoted-pair escapes, preserves commas and semicolons inside quoted values, and trims only optional SP/HTAB whitespace while leaving the legacy `get(name, true)` parser unchanged. (**#11051**, closes **#11050**)
+
 ## Bug Fixes
 
 - **AxiosError:** `AxiosError#toJSON()` now serializes `Set` values in request config snapshots as arrays instead of empty objects. (**#11044**, refs **#5910**)

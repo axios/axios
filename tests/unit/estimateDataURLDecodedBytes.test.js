@@ -1,6 +1,8 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
-import estimateDataURLDecodedBytes from '../../lib/helpers/estimateDataURLDecodedBytes.js';
+import estimateDataURLDecodedBytes, {
+  estimateDataURLBufferAllocation,
+} from '../../lib/helpers/estimateDataURLDecodedBytes.js';
 
 describe('estimateDataURLDecodedBytes', () => {
   it('should return 0 for non-data URLs', () => {
@@ -35,23 +37,36 @@ describe('estimateDataURLDecodedBytes', () => {
   });
 
   it('should handle base64 with %3D padding', () => {
-    // Node's Buffer.from(body, 'base64') decodes the raw body and does NOT
-    // percent-decode, so `%3D` is not padding: the '%' is dropped and `3D`
-    // decode as ordinary base64 data. The estimate must match that (any lower
-    // value would let maxContentLength be bypassed).
     const url = 'data:text/plain;base64,TQ%3D%3D';
-    assert.strictEqual(estimateDataURLDecodedBytes(url), Buffer.from('TQ%3D%3D', 'base64').length);
+    assert.strictEqual(estimateDataURLDecodedBytes(url), 1);
   });
 
-  it('must not under-report base64 bodies that embed percent signs (maxContentLength guard)', () => {
-    // Regression for a maxContentLength bypass: a '%XX' triplet whose hex
-    // digits are valid base64 characters (e.g. `%41` -> `41`) was wrongly
-    // treated as consumed by percent-decoding and subtracted, yielding a ~2x
-    // under-estimate that defeated the data: URL DoS guard (CVE-2025-58754).
+  it('should include the remainder after percent-decoding a Fetch base64 body', () => {
     const body = 'QQ' + '%41'.repeat(4000);
     const url = 'data:application/octet-stream;base64,' + body;
-    const actual = Buffer.from(body, 'base64').length;
-    assert.ok(estimateDataURLDecodedBytes(url) >= actual);
-    assert.strictEqual(estimateDataURLDecodedBytes(url), actual);
+
+    assert.strictEqual(estimateDataURLDecodedBytes(url), 3001);
+  });
+
+  it('should estimate the raw Buffer allocation for percent-embedded base64', () => {
+    const body = 'QQ' + '%41'.repeat(4000);
+    const url = 'data:application/octet-stream;base64,' + body;
+
+    assert.strictEqual(
+      estimateDataURLBufferAllocation(url),
+      Buffer.byteLength(body, 'base64')
+    );
+    assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
+  });
+
+  it('should include ignored input after padding in the raw Buffer allocation', () => {
+    const body = 'TQ==' + '%'.repeat(4096);
+    const url = 'data:application/octet-stream;base64,' + body;
+
+    assert.strictEqual(
+      estimateDataURLBufferAllocation(url),
+      Buffer.byteLength(body, 'base64')
+    );
+    assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
   });
 });

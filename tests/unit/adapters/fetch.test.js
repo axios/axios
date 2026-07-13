@@ -1582,6 +1582,27 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
     });
 
+    it('should reject percent-embedded base64 whose decoded size exceeds maxContentLength', async () => {
+      const body = 'QQ' + '%41'.repeat(4000);
+      const dataUrl = 'data:application/octet-stream;base64,' + body;
+      const bareAxios = axios.create({ adapter: 'fetch' });
+
+      await assert.rejects(bareAxios.get(dataUrl, { maxContentLength: 3000 }), (err) => {
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+        assert.match(err.message, /maxContentLength size of 3000 exceeded/);
+        return true;
+      });
+    });
+
+    it('should allow percent-encoded base64 padding at the decoded maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+      const { data } = await bareAxios.get('data:text/plain;base64,TQ%3D%3D', {
+        maxContentLength: 1,
+      });
+
+      assert.strictEqual(data, 'M');
+    });
+
     it('should reject a data: URL whose body size exceeds maxContentLength (non-base64)', async () => {
       const dataUrl = 'data:text/plain,' + 'X'.repeat(4096);
 

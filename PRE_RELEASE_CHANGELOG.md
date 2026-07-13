@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Features
+
+- **AxiosHeaders parameter parsing:** Added `AxiosHeaders.parseParameters()` as an opt-in parser for `AxiosHeaders#get()`. It returns a hardened null-prototype parameter map, removes RFC quoted-string delimiters, decodes quoted-pair escapes, preserves commas and semicolons inside quoted values, and trims only optional SP/HTAB whitespace while leaving the legacy `get(name, true)` parser unchanged. (**#11051**, closes **#11050**)
+
 ## Bug Fixes
 
 - **Headers:** `AxiosHeaders#getSetCookie()` now always returns an array for present `set-cookie` values, including programmatic single-value headers. (**#11037**)

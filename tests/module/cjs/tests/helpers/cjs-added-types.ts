@@ -4,6 +4,14 @@ const headers = new axios.AxiosHeaders();
 const iterableHeaders: Iterable<[string, axios.AxiosHeaderValue]> = [['x-test', 'ok']];
 headers.set(iterableHeaders);
 const serializedHeaders: string = headers.toString();
+const parsedParameters: axios.AxiosHeaderParameters = axios.AxiosHeaders.parseParameters(
+  'multipart/form-data; boundary="test"'
+);
+headers.set('content-type', 'multipart/form-data; boundary="test"');
+const parsedHeaderParameters: axios.AxiosHeaderParameters = headers.get(
+  'content-type',
+  axios.AxiosHeaders.parseParameters
+);
 
 const source = axios.CancelToken.source();
 source.token.subscribe((cancel) => {
@@ -35,4 +43,12 @@ const serializerOptions: axios.FormSerializerOptions = {
 
 axios.toFormData({ file: new Uint8Array([1]) }, undefined, serializerOptions);
 
-console.log(serializedHeaders, signal.aborted, cancelFlag, cancelFromAlias.message, status);
+console.log(
+  serializedHeaders,
+  parsedParameters,
+  parsedHeaderParameters,
+  signal.aborted,
+  cancelFlag,
+  cancelFromAlias.message,
+  status
+);

@@ -8,6 +8,7 @@
 
 ## Bug Fixes
 
+- **AxiosError - aggregate errors:** `AxiosError.from()` now synthesizes a message from nested `AggregateError` entries when the outer message is blank, preserving dual-stack connection failure details in structured logs. (**#11059**, closes **#6721**)
 - **AxiosError:** `AxiosError#toJSON()` now serializes `Set` values in request config snapshots as arrays instead of empty objects. (**#11044**, refs **#5910**)
 - **HTTP Adapter - download progress:** Flushed the final `onDownloadProgress` callback before streamed responses emit `close`, preventing trailing progress notifications after consumers observe the stream as closed. (closes **#6878**)
 - **URL construction:** `combineURLs()` now removes repeated trailing slashes from `baseURL` before joining a relative request URL, avoiding unintended double slashes in the final request path. (**#11038**)

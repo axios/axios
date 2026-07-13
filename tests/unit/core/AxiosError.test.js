@@ -35,6 +35,22 @@ describe('core::AxiosError', () => {
     expect(json.response).toBeUndefined();
   });
 
+  it('serializes Set values in config snapshots', () => {
+    const error = new AxiosError('Boom!', 'ESOMETHING', {
+      tags: new Set(['a', 'b']),
+      nested: {
+        ids: new Set([1, 2]),
+      },
+    });
+
+    expect(error.toJSON().config).toEqual({
+      tags: ['a', 'b'],
+      nested: {
+        ids: [1, 2],
+      },
+    });
+  });
+
   describe('AxiosError.from', () => {
     it('adds config, code, request and response to the wrapped error', () => {
       const error = new Error('Boom!');

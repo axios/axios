@@ -27,6 +27,8 @@ El `method` es el método HTTP a usar para la solicitud. El método predetermina
 
 La `baseURL` es la URL base que se antepondrá a la `url` a menos que la `url` sea una URL absoluta. Es útil para hacer solicitudes al mismo dominio sin tener que repetir el nombre de dominio, ni ningún prefijo de API o versión.
 
+`baseURL` es una comodidad para construir URLs, no un límite de seguridad. Si la `url` de una solicitud proviene de entrada no confiable, valídala antes de pasarla a axios. Una `url` relativa puede contener segmentos `..`; después de que axios la combine con `baseURL`, el parser de URL de la plataforma normaliza la ruta y puede resolver la solicitud fuera del prefijo de ruta previsto. `allowAbsoluteUrls: false` evita que las URLs absolutas reemplacen `baseURL`, pero no valida ni restringe rutas relativas.
+
 ### `allowAbsoluteUrls`
 
 `allowAbsoluteUrls` determina si las URLs absolutas sobrescribirán un `baseUrl` configurado. Cuando se establece en `true` (valor predeterminado), los valores absolutos para `url` sobrescribirán `baseUrl`. Cuando se establece en `false`, los valores absolutos para `url` siempre serán antepuestos por `baseUrl`.

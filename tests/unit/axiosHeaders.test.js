@@ -305,6 +305,14 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('content-type', true).charset, 'utf-8');
     });
 
+    it('should preserve malformed quote-prefixed header parameters', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('content-type', 'text/plain; foo="unterminated');
+
+      assert.strictEqual(headers.get('content-type', true).foo, '"unterminated');
+    });
+
     describe('filter', () => {
       it('should support RegExp', () => {
         const headers = new AxiosHeaders();

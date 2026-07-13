@@ -3,6 +3,8 @@ type StringLiteralsOrString<Literals extends string> = Literals | (string & {});
 
 export type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
+export type AxiosHeaderParameters = Record<string, string>;
+
 export interface RawAxiosHeaders {
   [key: string]: AxiosHeaderValue;
 }
@@ -33,6 +35,7 @@ export class AxiosHeaders {
   set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
   set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 
+  get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
   get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 
@@ -53,6 +56,8 @@ export class AxiosHeaders {
   toJSON(asStrings?: boolean): Record<string, string | string[]>;
 
   static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
+
+  static parseParameters(value: AxiosHeaderValue): AxiosHeaderParameters;
 
   static accessor(header: string | string[]): AxiosHeaders;
 

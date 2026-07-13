@@ -310,6 +310,110 @@ describe('AxiosHeaders', () => {
         );
       });
     });
+    describe('parameter parsing', () => {
+      it('should preserve the legacy true parser behavior', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set(
+          'content-type',
+          'multipart/form-data; charset=utf-8   ; boundary="----=_Part_123"'
+        );
+
+        assert.deepStrictEqual({ ...headers.get('content-type', true) }, {
+          'multipart/form-data': undefined,
+          charset: 'utf-8   ',
+          boundary: '"----=_Part_123"',
+        });
+      });
+
+      it('should opt in to normalized parameter parsing', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set(
+          'content-type',
+          'multipart/form-data; charset=\t utf-8 \t ; boundary="----=_Part_123"'
+        );
+
+        assert.deepStrictEqual(
+          { ...headers.get('content-type', AxiosHeaders.parseParameters) },
+          {
+            charset: 'utf-8',
+            boundary: '----=_Part_123',
+          }
+        );
+      });
+
+      it('should keep commas and semicolons inside quoted parameter values', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set('content-type', 'multipart/form-data; boundary="a,b;c"; title="one; two, three"');
+
+        assert.deepStrictEqual(
+          { ...headers.get('content-type', AxiosHeaders.parseParameters) },
+          {
+            boundary: 'a,b;c',
+            title: 'one; two, three',
+          }
+        );
+      });
+
+      it('should decode quoted-pair DQUOTE and backslash characters', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set('content-disposition', String.raw`attachment; filename="a\"b\\c.txt"`);
+
+        assert.deepStrictEqual(
+          { ...headers.get('content-disposition', AxiosHeaders.parseParameters) },
+          {
+            filename: 'a"b\\c.txt',
+          }
+        );
+      });
+
+      it('should preserve whitespace inside quotes and support empty quoted values', () => {
+        const parameters = AxiosHeaders.parseParameters('text/plain; empty=""; padded=" value "');
+
+        assert.deepStrictEqual({ ...parameters }, {
+          empty: '',
+          padded: ' value ',
+        });
+      });
+
+      it('should preserve malformed quoted values without creating spurious parameters', () => {
+        const unterminated = AxiosHeaders.parseParameters(
+          'text/plain; name="unterminated; charset=utf-8'
+        );
+        const trailingData = AxiosHeaders.parseParameters(
+          'text/plain; name="quoted"junk; charset=utf-8'
+        );
+
+        assert.deepStrictEqual({ ...unterminated }, {
+          name: '"unterminated; charset=utf-8',
+        });
+        assert.deepStrictEqual({ ...trailingData }, {
+          name: '"quoted"junk',
+          charset: 'utf-8',
+        });
+      });
+
+      it('should normalize names and safely ignore valueless or invalid parameters', () => {
+        const parameters = AxiosHeaders.parseParameters(
+          'text/plain; flag; BAD NAME=ignored; BOUNDARY=first; boundary=second; ' +
+            '__proto__=unsafe; Constructor=unsafe; PROTOTYPE=unsafe'
+        );
+
+        assert.strictEqual(Object.getPrototypeOf(parameters), null);
+        assert.deepStrictEqual({ ...parameters }, {
+          boundary: 'second',
+        });
+      });
+
+      it('should trim only RFC optional whitespace from unquoted values', () => {
+        const parameters = AxiosHeaders.parseParameters('text/plain; charset=utf-8\u00a0');
+
+        assert.strictEqual(parameters.charset, 'utf-8\u00a0');
+      });
+    });
   });
 
   describe('has', () => {

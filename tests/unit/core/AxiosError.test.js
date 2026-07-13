@@ -90,6 +90,52 @@ describe('core::AxiosError', () => {
 
       expect(axiosError.status).toBe(404);
     });
+
+    it('synthesizes a message from AggregateError.errors when the aggregate message is empty (#6721)', () => {
+      const timeout = Object.assign(new Error('connect ETIMEDOUT 1.2.3.4:443'), {
+        code: 'ETIMEDOUT',
+      });
+      const unreach = Object.assign(new Error('connect EHOSTUNREACH ::1:443'), {
+        code: 'EHOSTUNREACH',
+      });
+      const aggregate = new AggregateError([timeout, unreach]);
+      expect(aggregate.message).toBe('');
+
+      const axiosError = AxiosError.from(aggregate, 'ETIMEDOUT', { foo: 'bar' });
+
+      const expectedMessage = 'connect ETIMEDOUT 1.2.3.4:443; connect EHOSTUNREACH ::1:443';
+      expect(axiosError.message).toBe(expectedMessage);
+      expect(axiosError.toJSON().message).toBe(expectedMessage);
+    });
+
+    it('preserves an explicit AggregateError message', () => {
+      const aggregate = new AggregateError([new Error('inner failure')], 'outer failure');
+
+      const axiosError = AxiosError.from(aggregate, 'ETIMEDOUT', {});
+
+      expect(axiosError.message).toBe('outer failure');
+    });
+
+    it('ignores aggregate entries that cannot be converted to strings', () => {
+      const throwsOnCoercion = {
+        [Symbol.toPrimitive]() {
+          throw new Error('cannot convert');
+        },
+      };
+      const aggregate = new AggregateError([Object.create(null), throwsOnCoercion]);
+
+      const axiosError = AxiosError.from(aggregate, 'ETIMEDOUT', {});
+
+      expect(axiosError).toBeInstanceOf(AxiosError);
+      expect(axiosError.message).toBe('AggregateError');
+      expect(axiosError.cause).toBe(aggregate);
+    });
+
+    it('leaves a normal error message unchanged', () => {
+      const axiosError = AxiosError.from(new Error('Boom!'), 'ESOMETHING', {});
+
+      expect(axiosError.message).toBe('Boom!');
+    });
   });
 
   describe('cause serialization (regression #7205)', () => {

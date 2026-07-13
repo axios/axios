@@ -3,6 +3,7 @@ import axios, {
   CanceledError,
   HttpStatusCode,
   toFormData,
+  type AxiosHeaderParameters,
   type AxiosHeaderValue,
   type FormSerializerOptions,
   type InternalAxiosRequestConfig,
@@ -12,6 +13,14 @@ const headers = new AxiosHeaders();
 const iterableHeaders: Iterable<[string, AxiosHeaderValue]> = [['x-test', 'ok']];
 headers.set(iterableHeaders);
 const serializedHeaders: string = headers.toString();
+const parsedParameters: AxiosHeaderParameters = AxiosHeaders.parseParameters(
+  'multipart/form-data; boundary="test"'
+);
+headers.set('content-type', 'multipart/form-data; boundary="test"');
+const parsedHeaderParameters: AxiosHeaderParameters = headers.get(
+  'content-type',
+  AxiosHeaders.parseParameters
+);
 
 const source = axios.CancelToken.source();
 source.token.subscribe((cancel) => {
@@ -43,4 +52,12 @@ const serializerOptions: FormSerializerOptions = {
 
 toFormData({ file: new Uint8Array([1]) }, undefined, serializerOptions);
 
-console.log(serializedHeaders, signal.aborted, cancelFlag, cancelFromAlias.message, status);
+console.log(
+  serializedHeaders,
+  parsedParameters,
+  parsedHeaderParameters,
+  signal.aborted,
+  cancelFlag,
+  cancelFromAlias.message,
+  status
+);

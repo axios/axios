@@ -52,6 +52,10 @@ declare class AxiosHeaders {
   set(headers?: axios.RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
   set(headers?: Iterable<[string, axios.AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 
+  get(
+    headerName: string,
+    parser: typeof AxiosHeaders.parseParameters
+  ): axios.AxiosHeaderParameters;
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
   get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
 
@@ -72,6 +76,8 @@ declare class AxiosHeaders {
   toJSON(asStrings?: boolean): Record<string, string | string[]>;
 
   static from(thing?: AxiosHeaders | axios.RawAxiosHeaders | string): AxiosHeaders;
+
+  static parseParameters(value: axios.AxiosHeaderValue): axios.AxiosHeaderParameters;
 
   static accessor(header: string | string[]): AxiosHeaders;
 
@@ -312,6 +318,8 @@ declare enum HttpStatusCode {
 type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 
 declare namespace axios {
+  type AxiosHeaderParameters = Record<string, string>;
+
   type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
 
   interface RawAxiosHeaders {

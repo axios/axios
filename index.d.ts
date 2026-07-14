@@ -383,7 +383,7 @@ export interface LookupAddressEntry {
 
 export type LookupAddress = string | LookupAddressEntry;
 
-export interface AxiosRequestConfig<D = any> {
+export interface AxiosRequestConfig<D = any, P = any> {
   url?: string;
   method?: StringLiteralsOrString<Method>;
   baseURL?: string;
@@ -391,7 +391,7 @@ export interface AxiosRequestConfig<D = any> {
   transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
   transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
   headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
-  params?: any;
+  params?: P;
   paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
   data?: D;
   timeout?: Milliseconds;

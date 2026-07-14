@@ -25,7 +25,7 @@ constructor(instanceConfig?: AxiosRequestConfig);
 Handles request invocation and response resolution. This is the main method that you will use to make HTTP requests. It takes a configuration object as an argument and returns a promise that resolves to the response object.
 
 ```ts
-request(configOrUrl: string | AxiosRequestConfig<D>, config: AxiosRequestConfig<D>): Promise<AxiosResponse<T>>;
+request(configOrUrl: string | AxiosRequestConfig<D, P>, config: AxiosRequestConfig<D, P>): Promise<AxiosResponse<T>>;
 ```
 
 ### `CancelToken` <Badge type="danger" text="Deprecated in favour of AbortController" />
@@ -55,7 +55,7 @@ The `AxiosError` class is an error class that is thrown when an HTTP request fai
 Creates a new instance of the `AxiosError` class. The constructor takes an optional message, code, config, request, and response as arguments.
 
 ```ts
-constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D>, request?: any, response?: AxiosResponse<T, D>);
+constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any, response?: AxiosResponse<T, D>);
 ```
 
 #### `properties`
@@ -64,7 +64,7 @@ The `AxiosError` class provides the following properties:
 
 ```ts
 // Config instance.
-config?: InternalAxiosRequestConfig<D>;
+config?: InternalAxiosRequestConfig<D, P>;
 
 // Error code.
 code?: string;

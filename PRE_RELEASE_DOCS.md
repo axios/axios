@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Typed request params
+
+- **Change:** Document the additive request-params generic across axios's public TypeScript declarations.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11081, closes #4954.
+- **Status:** Pending.
+- **Docs targets:** TypeScript usage guidance; request config reference for `params` and `paramsSerializer`; API reference for request methods, `AxiosResponse`, and `AxiosError`; translated docs after the English documentation is finalized.
+- **Required content:** Explain that `AxiosRequestConfig<D = any, P = any>` uses `D` for request data and `P` for query params, and that custom params serializers receive the same `P`. Cover propagation through `RawAxiosRequestConfig`, `InternalAxiosRequestConfig`, defaults, responses, errors, request aliases, callable instances, and `mergeConfig()`. Note that request methods add `P` as the final generic so the existing `T`, `R`, and `D` positions remain unchanged.
+- **Examples:** Show a `SearchParams` interface used with `AxiosRequestConfig<RequestBody, SearchParams>`, including a serializer callback that receives `SearchParams`, and an invalid params object rejected by TypeScript.
+- **Notes:** The default remains `any` for backward compatibility. Keep ESM and CommonJS examples behaviorally aligned, and apply translated documentation only during release preparation.
+
 ### Opt-in AxiosHeaders parameter parsing
 
 - **Change:** Document the additive `AxiosHeaders.parseParameters()` parser for normalized HTTP parameter values.

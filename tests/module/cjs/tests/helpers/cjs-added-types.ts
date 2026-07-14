@@ -43,6 +43,73 @@ const serializerOptions: axios.FormSerializerOptions = {
 
 axios.toFormData({ file: new Uint8Array([1]) }, undefined, serializerOptions);
 
+interface SearchBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+const paramsConfig: axios.AxiosRequestConfig<SearchBody, SearchParams> = {
+  data: { includeArchived: false },
+  params: { query: 'axios', page: 1 },
+  paramsSerializer: (params) => {
+    const query: string = params.query;
+    const page: number | undefined = params.page;
+    // @ts-expect-error -- serializer params use the request params type
+    const invalidQuery: number = params.query;
+    void invalidQuery;
+    return `${query}:${page ?? 1}`;
+  },
+  withXSRFToken: (config) => config.params?.query === 'axios',
+};
+
+const customParamsSerializer: axios.CustomParamsSerializer<SearchParams> = (params) => params.query;
+const rawParamsConfig: axios.RawAxiosRequestConfig<SearchBody, SearchParams> = paramsConfig;
+const internalParamsConfig = {
+  ...paramsConfig,
+  headers: new axios.AxiosHeaders(),
+} as axios.InternalAxiosRequestConfig<SearchBody, SearchParams>;
+const paramsResponse = {} as axios.AxiosResponse<unknown, SearchBody, {}, SearchParams>;
+const paramsError = {} as axios.AxiosError<unknown, SearchBody, SearchParams>;
+
+const internalQuery: string = internalParamsConfig.params!.query;
+const responseQuery: string = paramsResponse.config.params!.query;
+const errorQuery: string = paramsError.config!.params!.query;
+
+const legacyParamsConfig: axios.AxiosRequestConfig = {
+  params: 'legacy values remain accepted',
+  paramsSerializer: (params) => {
+    const legacyParams: Record<string, any> = params;
+    // @ts-expect-error -- the default serializer input remains a params record, not any
+    const legacyParamsNumber: number = params;
+    void legacyParamsNumber;
+    return String(legacyParams.query);
+  },
+};
+
+axios.get<unknown, axios.AxiosResponse<unknown>, any, SearchParams>('/search', {
+  params: { query: 'axios' },
+});
+
+const invalidParamsConfig: axios.AxiosRequestConfig<unknown, SearchParams> = {
+  // @ts-expect-error -- params must match the explicit request params type
+  params: { query: 1 },
+};
+
+axios.get<unknown, axios.AxiosResponse<unknown>, any, SearchParams>('/search', {
+  // @ts-expect-error -- request aliases enforce their trailing params type
+  params: { query: 1 },
+});
+
+const mergedParamsConfig = axios.mergeConfig<SearchBody, SearchParams>(
+  rawParamsConfig,
+  paramsConfig
+);
+const mergedQuery: string = mergedParamsConfig.params!.query;
+
 console.log(
   serializedHeaders,
   parsedParameters,
@@ -50,5 +117,12 @@ console.log(
   signal.aborted,
   cancelFlag,
   cancelFromAlias.message,
-  status
+  status,
+  customParamsSerializer,
+  internalQuery,
+  responseQuery,
+  errorQuery,
+  legacyParamsConfig,
+  mergedQuery,
+  invalidParamsConfig
 );

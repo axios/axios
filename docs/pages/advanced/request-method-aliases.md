@@ -21,7 +21,7 @@ The following aliases are available for making requests:
 The `request` method is the main method that you will use to make HTTP requests. It takes a configuration object as an argument and returns a promise that resolves to the response object. The `request` method is a generic method that can be used to make any type of HTTP request.
 
 ```ts
-axios.request(config: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.request(config: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `get`
@@ -29,7 +29,7 @@ axios.request(config: AxiosRequestConfig<C, P>): AxiosResponse<R>;
 The `get` method is used to make a GET request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
 
 ```ts
-axios.get(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.get(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `delete`
@@ -37,7 +37,7 @@ axios.get(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
 The `delete` method is used to make a DELETE request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
 
 ```ts
-axios.delete(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.delete(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `head`
@@ -45,7 +45,7 @@ axios.delete(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
 The `head` method is used to make a HEAD request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
 
 ```ts
-axios.head(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.head(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `options`
@@ -53,7 +53,7 @@ axios.head(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
 The `options` method is used to make an OPTIONS request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
 
 ```ts
-axios.options(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.options(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `post`
@@ -61,7 +61,7 @@ axios.options(url: string, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
 The `post` method is used to make a POST request. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object.
 
 ```ts
-axios.post(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.post(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `put`
@@ -69,7 +69,7 @@ axios.post(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosRespo
 The `put` method is used to make a PUT request. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object.
 
 ```ts
-axios.put(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.put(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `patch`
@@ -77,7 +77,7 @@ axios.put(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosRespon
 The `patch` method is used to make a PATCH request. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object.
 
 ```ts
-axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ### `query`
@@ -85,7 +85,7 @@ axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResp
 The `query` method is used to make a QUERY request, a safe and idempotent method that carries a body. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object. Use it for read-style operations whose parameters are too complex or sensitive to fit in the URL.
 
 ```ts
-axios.query(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.query(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ```js
@@ -128,7 +128,7 @@ These methods are equivalent to their counterparts above, but preset `Content-Ty
 ### `postForm`
 
 ```ts
-axios.postForm(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.postForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ```js
@@ -142,7 +142,7 @@ await axios.postForm("/api/upload", {
 ### `putForm`
 
 ```ts
-axios.putForm(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.putForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ```js
@@ -155,7 +155,7 @@ await axios.putForm("/api/users/1/avatar", {
 ### `patchForm`
 
 ```ts
-axios.patchForm(url: string, data?: D, config?: AxiosRequestConfig<C, P>): AxiosResponse<R>;
+axios.patchForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 ```
 
 ```js

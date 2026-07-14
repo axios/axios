@@ -4,6 +4,7 @@
 
 ## Features
 
+- **Typed request params:** Added a second, defaulted generic parameter to `AxiosRequestConfig` and related public types so applications can type query params, custom params serializers, internal configs, responses, errors, request aliases, and `mergeConfig()` consistently across ESM and CommonJS declarations. Existing call sites remain compatible through the `P = any` default. (**#11081**, closes **#4954**)
 - **AxiosHeaders parameter parsing:** Added `AxiosHeaders.parseParameters()` as an opt-in parser for `AxiosHeaders#get()`. It returns a hardened null-prototype parameter map, removes RFC quoted-string delimiters, decodes quoted-pair escapes, preserves commas and semicolons inside quoted values, and trims only optional SP/HTAB whitespace while leaving the legacy `get(name, true)` parser unchanged. (**#11051**, closes **#11050**)
 
 ## Bug Fixes

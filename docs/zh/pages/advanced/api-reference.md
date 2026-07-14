@@ -25,7 +25,7 @@ constructor(instanceConfig?: AxiosRequestConfig);
 处理请求调用和响应解析，是发起 HTTP 请求的核心方法。接受一个配置对象作为参数，返回一个解析为响应对象的 Promise。
 
 ```ts
-request(configOrUrl: string | AxiosRequestConfig<D>, config: AxiosRequestConfig<D>): Promise<AxiosResponse<T>>;
+request(configOrUrl: string | AxiosRequestConfig<D, P>, config: AxiosRequestConfig<D, P>): Promise<AxiosResponse<T>>;
 ```
 
 ### `CancelToken` <Badge type="danger" text="已废弃，请改用 AbortController" />
@@ -55,7 +55,7 @@ toAbortSignal(): AbortSignal;
 创建一个新的 `AxiosError` 实例，构造函数接受可选的 message、code、config、request 和 response 作为参数。
 
 ```ts
-constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D>, request?: any, response?: AxiosResponse<T, D>);
+constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any, response?: AxiosResponse<T, D>);
 ```
 
 #### `properties`
@@ -64,7 +64,7 @@ constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig
 
 ```ts
 // 配置实例。
-config?: InternalAxiosRequestConfig<D>;
+config?: InternalAxiosRequestConfig<D, P>;
 
 // 错误代码。
 code?: string;

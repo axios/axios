@@ -1603,6 +1603,14 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(data, 'M');
     });
 
+    it('should ignore a data: URL fragment when enforcing maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+      const dataUrl = 'data:text/plain;base64,TQ==#' + 'x'.repeat(4096);
+      const { data } = await bareAxios.get(dataUrl, { maxContentLength: 1 });
+
+      assert.strictEqual(data, 'M');
+    });
+
     it('should reject a data: URL whose body size exceeds maxContentLength (non-base64)', async () => {
       const dataUrl = 'data:text/plain,' + 'X'.repeat(4096);
 

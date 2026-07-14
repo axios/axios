@@ -41,6 +41,12 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes(url), 1);
   });
 
+  it('should ignore URL fragments when estimating a Fetch payload', () => {
+    const url = 'data:text/plain;base64,TQ==#' + 'x'.repeat(4096);
+
+    assert.strictEqual(estimateDataURLDecodedBytes(url), 1);
+  });
+
   it('should include the remainder after percent-decoding a Fetch base64 body', () => {
     const body = 'QQ' + '%41'.repeat(4000);
     const url = 'data:application/octet-stream;base64,' + body;
@@ -68,5 +74,15 @@ describe('estimateDataURLDecodedBytes', () => {
       Buffer.byteLength(body, 'base64')
     );
     assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
+  });
+
+  it('should include fragments in the raw Buffer allocation', () => {
+    const body = 'TQ==#' + 'x'.repeat(4096);
+    const url = 'data:application/octet-stream;base64,' + body;
+
+    assert.strictEqual(
+      estimateDataURLBufferAllocation(url),
+      Buffer.byteLength(body, 'base64')
+    );
   });
 });

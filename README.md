@@ -325,10 +325,29 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opencollective.com/axios/contribute"
+                href="https://www.jbo579.com/th/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
                 target="_blank"
-                >💜 Become a sponsor</a
             >
+                <img
+                    width="71px"
+                    height="70px"
+                    src="https://images.opencollective.com/jbo-thailand/d17e84f/avatar.png"
+                    alt="JBO Thailand"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                JBO Thailand is a prominent online entertainment brand in Thailand, offering sports betting, esports, online casino games, and a wide range of other exciting games.
+            </p>
+            <p align="center">
+                <a
+                    href="https://www.jbo579.com/th/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>jbo88b.com</b></a
+                >
+            </p>
         </td>
         <td align="center" width="33.333333333333336%">
             <a

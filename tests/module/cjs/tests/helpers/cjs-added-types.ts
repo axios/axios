@@ -79,6 +79,19 @@ const internalQuery: string = internalParamsConfig.params!.query;
 const responseQuery: string = paramsResponse.config.params!.query;
 const errorQuery: string = paramsError.config!.params!.query;
 
+axios.get('/search', paramsConfig).then((response) => {
+  const aliasData: SearchBody | undefined = response.config.data;
+  const aliasParams: SearchParams | undefined = response.config.params;
+  // @ts-expect-error -- default alias responses preserve the request data type
+  const invalidAliasData: { includeArchived: string } | undefined = response.config.data;
+  // @ts-expect-error -- default alias responses preserve the request params type
+  const invalidAliasParams: { query: number } | undefined = response.config.params;
+  void aliasData;
+  void aliasParams;
+  void invalidAliasData;
+  void invalidAliasParams;
+});
+
 const legacyParamsConfig: axios.AxiosRequestConfig = {
   params: 'legacy values remain accepted',
   paramsSerializer: (params) => {

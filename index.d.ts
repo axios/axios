@@ -564,6 +564,14 @@ export class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
   __CANCEL__?: boolean;
 }
 
+declare const axiosResponseDefault: unique symbol;
+
+type AxiosResponseDefault = typeof axiosResponseDefault;
+
+type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
+  ? AxiosResponse<T, D, {}, P>
+  : R;
+
 export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
 
 export interface CancelStatic {
@@ -638,68 +646,70 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
-  request<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  request<T = any, R = AxiosResponseDefault, D = any, P = any>(
     config: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  get<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  get<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  delete<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  delete<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  head<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  head<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  options<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  options<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  post<T = any, R = AxiosResponse<T>, D = any, P = any>(
-    url: string,
-    data?: D,
-    config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  put<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  post<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  patch<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  put<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  postForm<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  patch<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  putForm<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  postForm<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  patchForm<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  putForm<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
-  query<T = any, R = AxiosResponse<T>, D = any, P = any>(
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  patchForm<T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     data?: D,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  query<T = any, R = AxiosResponseDefault, D = any, P = any>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig<D, P>
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
 }
 
 export interface AxiosInstance extends Axios {
-  <T = any, R = AxiosResponse<T>, D = any, P = any>(config: AxiosRequestConfig<D, P>): Promise<R>;
-  <T = any, R = AxiosResponse<T>, D = any, P = any>(
+  <T = any, R = AxiosResponseDefault, D = any, P = any>(
+    config: AxiosRequestConfig<D, P>
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
+  <T = any, R = AxiosResponseDefault, D = any, P = any>(
     url: string,
     config?: AxiosRequestConfig<D, P>
-  ): Promise<R>;
+  ): Promise<AxiosResponseResult<T, R, D, P>>;
 
   create(config?: CreateAxiosDefaults): AxiosInstance;
   defaults: Omit<AxiosDefaults, 'headers'> & {
@@ -737,7 +747,7 @@ export function isAxiosError<T = any, D = any, P = any>(
 
 export function spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
 
-export function isCancel<T = any>(value: any): value is CanceledError<T>;
+export function isCancel<T = any, D = any, P = any>(value: any): value is CanceledError<T, D, P>;
 
 export function all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
 

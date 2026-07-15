@@ -2,6 +2,7 @@ import axios, {
   AxiosHeaders,
   CanceledError,
   HttpStatusCode,
+  isCancel,
   toFormData,
   type AxiosHeaderParameters,
   type AxiosHeaderValue,
@@ -92,6 +93,34 @@ const paramsError = {} as AxiosError<unknown, SearchBody, SearchParams>;
 const internalQuery: string = internalParamsConfig.params!.query;
 const responseQuery: string = paramsResponse.config.params!.query;
 const errorQuery: string = paramsError.config!.params!.query;
+
+axios.get('/search', paramsConfig).then((response) => {
+  const aliasData: SearchBody | undefined = response.config.data;
+  const aliasParams: SearchParams | undefined = response.config.params;
+  // @ts-expect-error -- default alias responses preserve the request data type
+  const invalidAliasData: { includeArchived: string } | undefined = response.config.data;
+  // @ts-expect-error -- default alias responses preserve the request params type
+  const invalidAliasParams: { query: number } | undefined = response.config.params;
+  void aliasData;
+  void aliasParams;
+  void invalidAliasData;
+  void invalidAliasParams;
+});
+
+declare const thrown: unknown;
+
+if (isCancel<unknown, SearchBody, SearchParams>(thrown)) {
+  const canceledData: SearchBody | undefined = thrown.config?.data;
+  const canceledParams: SearchParams | undefined = thrown.config?.params;
+  // @ts-expect-error -- canceled request data must not be widened to any
+  const invalidCanceledData: { includeArchived: string } | undefined = thrown.config?.data;
+  // @ts-expect-error -- canceled request params must not be widened to any
+  const invalidCanceledParams: { query: number } | undefined = thrown.config?.params;
+  void canceledData;
+  void canceledParams;
+  void invalidCanceledData;
+  void invalidCanceledParams;
+}
 
 const legacyParamsConfig: AxiosRequestConfig = {
   params: 'legacy values remain accepted',

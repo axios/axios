@@ -636,7 +636,7 @@ declare namespace axios {
     request?: any;
   }
 
-  type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
+  type AxiosPromise<T = any, D = any, P = any> = Promise<AxiosResponse<T, D, {}, P>>;
 
   interface CancelStatic {
     new (message?: string): Cancel;

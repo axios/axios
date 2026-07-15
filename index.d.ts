@@ -572,7 +572,7 @@ type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
   ? AxiosResponse<T, D, {}, P>
   : R;
 
-export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
+export type AxiosPromise<T = any, D = any, P = any> = Promise<AxiosResponse<T, D, {}, P>>;
 
 export interface CancelStatic {
   new (message?: string): Cancel;

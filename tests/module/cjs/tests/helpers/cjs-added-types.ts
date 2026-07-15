@@ -74,10 +74,24 @@ const internalParamsConfig = {
 } as axios.InternalAxiosRequestConfig<SearchBody, SearchParams>;
 const paramsResponse = {} as axios.AxiosResponse<unknown, SearchBody, {}, SearchParams>;
 const paramsError = {} as axios.AxiosError<unknown, SearchBody, SearchParams>;
+declare const paramsPromise: axios.AxiosPromise<unknown, SearchBody, SearchParams>;
 
 const internalQuery: string = internalParamsConfig.params!.query;
 const responseQuery: string = paramsResponse.config.params!.query;
 const errorQuery: string = paramsError.config!.params!.query;
+
+paramsPromise.then((response) => {
+  const promiseData: SearchBody | undefined = response.config.data;
+  const promiseParams: SearchParams | undefined = response.config.params;
+  // @ts-expect-error -- AxiosPromise preserves the request data type
+  const invalidPromiseData: { includeArchived: string } | undefined = response.config.data;
+  // @ts-expect-error -- AxiosPromise preserves the request params type
+  const invalidPromiseParams: { query: number } | undefined = response.config.params;
+  void promiseData;
+  void promiseParams;
+  void invalidPromiseData;
+  void invalidPromiseParams;
+});
 
 axios.get('/search', paramsConfig).then((response) => {
   const aliasData: SearchBody | undefined = response.config.data;

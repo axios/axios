@@ -69,3 +69,14 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Explain that `.`, `[`, and `]` are structural path separators when converting FormData back to JSON, while other characters such as `-`, spaces, `+`, `*`, and `&` remain literal key characters. Mention that `foo[bar]`, `foo.bar`, and `foo[]` continue to create nested object/array paths.
 - **Examples:** Include a short example showing `form.append('user-name', 'johndoe')` converting to `{ 'user-name': 'johndoe' }`, and `form.append('user.name', 'john')` or `form.append('user[name]', 'john')` converting to `{ user: { name: 'john' } }`.
 - **Notes:** This is release-preparation tracking for a bug fix; avoid presenting the old hyphen/space splitting behavior as supported.
+
+### Async Cookie Store XSRF token reads
+
+- **Change:** Document asynchronous Cookie Store API integration for XSRF token reads in standard browser environments (XHR adapter).
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #10826.
+- **Status:** Pending.
+- **Docs targets:** `README.md` cookies/XSRF section; request config documentation for `withXSRFToken`, `xsrfCookieName`, and `xsrfHeaderName`; translated docs.
+- **Required content:** Explain that in standard browser environments, when using the XHR adapter, Axios will automatically detect and use the asynchronous Cookie Store API (`window.cookieStore`) if available to read the XSRF token cookie. This avoids synchronous blocking reads on the main thread. Explain that if `window.cookieStore` is not supported (e.g. Safari or older browsers), Axios will fall back seamlessly to synchronous `document.cookie` reads with zero change in behavior. Note that raw cookie values read through `window.cookieStore` are not double decoded or encoded.
+- **Examples:** None required.
+- **Notes:** Reiterate that this feature requires no new configuration options and is fully transparent to users.
+

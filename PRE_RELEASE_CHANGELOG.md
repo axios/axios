@@ -4,6 +4,8 @@
 
 ## Features
 
+- **Async Cookie Store:** Implemented support for the asynchronous Cookie Store API (`window.cookieStore`) for XSRF token reads in standard browser environments (XHR adapter only). When the Cookie Store API is available, XSRF token reads are performed asynchronously, preventing main-thread blocking synchronous reads. If the API is absent, the adapter falls back synchronously to `document.cookie` with byte-for-byte unchanged behavior. (**#10826**)
+
 - **HTTP status codes:** Added `HttpStatusCode.WebServerReturnsAnUnknownError` for Cloudflare status 520 across the runtime API and ESM/CommonJS declarations. (**#11067**)
 - **Typed request params:** Added a second, defaulted generic parameter to `AxiosRequestConfig` and propagated it through params serializers, internal configs, default response and `AxiosPromise` shapes, errors, cancellation guards (`CanceledError`/`isCancel`), request methods, callable instances, adapters, and `mergeConfig()` across ESM and CommonJS declarations. Default request and typed promise results retain the request-data and params types on `response.config`, while explicit custom response types and the existing generic argument positions remain compatible. Untyped call sites retain the previous behavior through the `P = any` default. (**#11081**, closes **#4954**)
 - **AxiosHeaders parameter parsing:** Added `AxiosHeaders.parseParameters()` as an opt-in parser for `AxiosHeaders#get()`. It returns a hardened null-prototype parameter map, removes RFC quoted-string delimiters, decodes quoted-pair escapes, preserves commas and semicolons inside quoted values, and trims only optional SP/HTAB whitespace while leaving the legacy `get(name, true)` parser unchanged. (**#11051**, closes **#11050**)

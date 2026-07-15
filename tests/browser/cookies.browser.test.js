@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import cookies from '../../lib/helpers/cookies.js';
 
@@ -110,5 +110,62 @@ describe('helpers::cookies (vitest browser)', () => {
     cookies.write('xsrf-token-extra', 'wrong');
 
     expect(cookies.read('xsrf-token')).toBeNull();
+  });
+
+  describe('async cookieStore operations', () => {
+    let mockStore;
+    let originalCookieStore;
+
+    beforeEach(() => {
+      mockStore = new Map();
+      originalCookieStore = window.cookieStore;
+      Object.defineProperty(window, 'cookieStore', {
+        configurable: true,
+        writable: true,
+        value: {
+          get: vi.fn(async (name) => {
+            const val = mockStore.get(name);
+            return val !== undefined ? { name, value: val } : null;
+          }),
+          set: vi.fn(async (options) => {
+            mockStore.set(options.name, options.value);
+          }),
+          delete: vi.fn(async (name) => {
+            mockStore.delete(name);
+          })
+        }
+      });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'cookieStore', {
+        configurable: true,
+        writable: true,
+        value: originalCookieStore
+      });
+    });
+
+    it('reads raw values without decoding', async () => {
+      mockStore.set('foo', 'bar%20baz%25');
+      const val = await cookies.readAsync('foo');
+      expect(val).toBe('bar%20baz%25');
+      expect(window.cookieStore.get).toHaveBeenCalledWith('foo');
+    });
+
+    it('writes raw values without encoding', async () => {
+      await cookies.writeAsync('foo', 'bar baz%');
+      expect(mockStore.get('foo')).toBe('bar baz%');
+      expect(window.cookieStore.set).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'foo',
+        value: 'bar baz%'
+      }));
+    });
+
+    it('removes cookies via delete', async () => {
+      mockStore.set('foo', 'val');
+      await cookies.removeAsync('foo');
+      expect(mockStore.has('foo')).toBe(false);
+      expect(window.cookieStore.delete).toHaveBeenCalledWith('foo');
+    });
   });
 });

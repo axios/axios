@@ -67,7 +67,14 @@ const clearXsrfCookie = () => {
 };
 
 const sendRequest = async (url, config) => {
+  const initialLength = requests.length;
   const responsePromise = axios(url, config);
+
+  const startTime = Date.now();
+  while (requests.length === initialLength && Date.now() - startTime < 1000) {
+    await new Promise((resolve) => queueMicrotask(resolve));
+  }
+
   const request = requests.at(-1);
 
   expect(request).toBeDefined();
@@ -233,6 +240,84 @@ describe('xsrf (vitest browser)', () => {
       const request = await sendRequest('/foo');
 
       expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(token);
+    });
+  });
+
+  describe('async cookieStore XSRF support', () => {
+    let mockStore;
+    let originalCookieStore;
+
+    beforeEach(() => {
+      mockStore = new Map();
+      originalCookieStore = window.cookieStore;
+      Object.defineProperty(window, 'cookieStore', {
+        configurable: true,
+        writable: true,
+        value: {
+          get: vi.fn(async (name) => {
+            const val = mockStore.get(name);
+            return val !== undefined ? { name, value: val } : null;
+          })
+        }
+      });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'cookieStore', {
+        configurable: true,
+        writable: true,
+        value: originalCookieStore
+      });
+    });
+
+    it('should set xsrf header via cookieStore and assert the async branch runs', async () => {
+      const token = 'async-token-123';
+      mockStore.set(axios.defaults.xsrfCookieName, token);
+
+      const request = await sendRequest('/foo');
+
+      expect(window.cookieStore.get).toHaveBeenCalledWith(axios.defaults.xsrfCookieName);
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(token);
+    });
+
+    it('should fallback to document.cookie when cookieStore is undefined', async () => {
+      window.cookieStore = undefined;
+      const token = 'fallback-token-456';
+      setXsrfCookie(token);
+
+      const request = await sendRequest('/foo');
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(token);
+    });
+
+    it('should support raw-value round-trip (no decoding/encoding for special characters)', async () => {
+      const rawToken = 'raw value %20 special';
+      mockStore.set(axios.defaults.xsrfCookieName, rawToken);
+
+      const request = await sendRequest('/foo');
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(rawToken);
+    });
+
+    it('should still respect the own(key) guard and withXSRFToken gating', async () => {
+      const token = 'gated-token';
+      mockStore.set(axios.defaults.xsrfCookieName, token);
+
+      // test withXSRFToken = false gating
+      const requestGated = await sendRequest('/foo', {
+        withXSRFToken: false
+      });
+      expect(requestGated.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
+
+      // test withXSRFToken = true cross-origin (should send)
+      const requestCrossTrue = await sendRequest('http://example.com/', {
+        withXSRFToken: true
+      });
+      expect(requestCrossTrue.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(token);
+
+      // test withXSRFToken = undefined cross-origin (should not send)
+      const requestCrossDefault = await sendRequest('http://example.com/');
+      expect(requestCrossDefault.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
     });
   });
 });

@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Typed request params
+
+- **Change:** Document the additive request-params generic across axios's public TypeScript declarations.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11081, closes #4954.
+- **Status:** Pending.
+- **Docs targets:** TypeScript usage guidance; request config reference for `params` and `paramsSerializer`; API reference for request methods, `AxiosResponse`, `AxiosPromise`, `AxiosError`, `CanceledError`, `isCancel`, and adapters; cancellation guidance; translated docs after the English documentation is finalized.
+- **Required content:** Explain that `AxiosRequestConfig<D = any, P = any>` uses `D` for request data and `P` for query params, and that custom params serializers receive the same `P`. Cover propagation through `RawAxiosRequestConfig`, `InternalAxiosRequestConfig`, defaults, default response shapes, `AxiosResponse`, `AxiosPromise<T, D, P>`, `AxiosError`, `CanceledError`, the `isCancel<T, D, P>` type guard, request aliases, `request()`, callable instances, adapters, and `mergeConfig()`. State that default request results and explicitly typed `AxiosPromise` values preserve `D` and `P` on `response.config.data` and `response.config.params`, including when request methods infer those types from request config. Note that request methods add `P` as the final generic so the existing `T`, custom response `R`, and `D` positions remain unchanged, and explicitly supplied custom response types continue to control the resolved value.
+- **Examples:** Show a `SearchParams` interface used with `AxiosRequestConfig<RequestBody, SearchParams>`, including a serializer callback that receives `SearchParams`, an invalid params object rejected by TypeScript, and an inferred default response whose `response.config.params` remains `SearchParams`. Include an `AxiosPromise<ResponseBody, RequestBody, SearchParams>` adapter/promise example and cancellation narrowing from `unknown` with `isCancel<ResponseBody, RequestBody, SearchParams>()`, demonstrating that both preserve request data and params on the config.
+- **Notes:** The params generic defaults to `any` for backward compatibility. The default-response marker used internally to preserve generic argument order is an implementation detail and should not be documented as public API. Keep ESM and CommonJS examples behaviorally aligned, and apply translated documentation only during release preparation.
+
 ### Opt-in AxiosHeaders parameter parsing
 
 - **Change:** Document the additive `AxiosHeaders.parseParameters()` parser for normalized HTTP parameter values.

@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Synchronous request interceptor error handling
+
+- **Change:** Document how synchronous request interceptor errors are handled without changing the existing paired-handler contract.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11071.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; migration/upgrade notes; translated docs after the English documentation is finalized.
+- **Required content:** Explain that when a synchronous request interceptor throws, axios calls that interceptor's paired `onRejected` handler and stops running the remaining request interceptors. If the handler returns normally, including returning `undefined` or a fulfilled Promise, axios treats the error as handled and dispatches with the last valid config; a value returned by the handler does not replace that config. If there is no rejection handler, or the handler throws or returns a rejected Promise, axios does not dispatch the request. Terminal errors continue through response rejection interceptors.
+- **Examples:** Show a synchronous validation interceptor whose rejection handler returns `Promise.reject(error)` to block dispatch, and a logging-only rejection handler that returns normally to preserve the existing request-continuation behavior.
+- **Notes:** This deliberately preserves axios's synchronous paired-handler semantics rather than changing them to native `Promise.then(onFulfilled, onRejected)` sibling-handler semantics.
+
 ### Malformed `http(s):` URL rejection
 
 - **Change:** Document that axios rejects `http:`/`https:` URLs that omit `//` after the protocol, and that the error now names the offending URL.

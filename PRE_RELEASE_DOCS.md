@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Typed request params
+
+- **Change:** Document the additive request-params generic across axios's public TypeScript declarations.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11081, closes #4954.
+- **Status:** Pending.
+- **Docs targets:** TypeScript usage guidance; request config reference for `params` and `paramsSerializer`; API reference for request methods, `AxiosResponse`, `AxiosPromise`, `AxiosError`, `CanceledError`, `isCancel`, and adapters; cancellation guidance; translated docs after the English documentation is finalized.
+- **Required content:** Explain that `AxiosRequestConfig<D = any, P = any>` uses `D` for request data and `P` for query params, and that custom params serializers receive the same `P`. Cover propagation through `RawAxiosRequestConfig`, `InternalAxiosRequestConfig`, defaults, default response shapes, `AxiosResponse`, `AxiosPromise<T, D, P>`, `AxiosError`, `CanceledError`, the `isCancel<T, D, P>` type guard, request aliases, `request()`, callable instances, adapters, and `mergeConfig()`. State that default request results and explicitly typed `AxiosPromise` values preserve `D` and `P` on `response.config.data` and `response.config.params`, including when request methods infer those types from request config. Note that request methods add `P` as the final generic so the existing `T`, custom response `R`, and `D` positions remain unchanged, and explicitly supplied custom response types continue to control the resolved value.
+- **Examples:** Show a `SearchParams` interface used with `AxiosRequestConfig<RequestBody, SearchParams>`, including a serializer callback that receives `SearchParams`, an invalid params object rejected by TypeScript, and an inferred default response whose `response.config.params` remains `SearchParams`. Include an `AxiosPromise<ResponseBody, RequestBody, SearchParams>` adapter/promise example and cancellation narrowing from `unknown` with `isCancel<ResponseBody, RequestBody, SearchParams>()`, demonstrating that both preserve request data and params on the config.
+- **Notes:** The params generic defaults to `any` for backward compatibility. The default-response marker used internally to preserve generic argument order is an implementation detail and should not be documented as public API. Keep ESM and CommonJS examples behaviorally aligned, and apply translated documentation only during release preparation.
+
 ### Synchronous request interceptor error handling
 
 - **Change:** Document how synchronous request interceptor errors are handled without changing the existing paired-handler contract.
@@ -29,6 +39,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Explain that when a synchronous request interceptor throws, axios calls that interceptor's paired `onRejected` handler and stops running the remaining request interceptors. If the handler returns normally, including returning `undefined` or a fulfilled Promise, axios treats the error as handled and dispatches with the last valid config; a value returned by the handler does not replace that config. If there is no rejection handler, or the handler throws or returns a rejected Promise, axios does not dispatch the request. Terminal errors continue through response rejection interceptors.
 - **Examples:** Show a synchronous validation interceptor whose rejection handler returns `Promise.reject(error)` to block dispatch, and a logging-only rejection handler that returns normally to preserve the existing request-continuation behavior.
 - **Notes:** This deliberately preserves axios's synchronous paired-handler semantics rather than changing them to native `Promise.then(onFulfilled, onRejected)` sibling-handler semantics.
+
+### Opt-in AxiosHeaders parameter parsing
+
+- **Change:** Document the additive `AxiosHeaders.parseParameters()` parser for normalized HTTP parameter values.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11051, closes #11050.
+- **Status:** Pending.
+- **Docs targets:** `README.md` `AxiosHeaders#get` section; `docs/pages/advanced/api-reference.md` and `docs/pages/advanced/header-methods.md`; translated docs after English docs are finalized.
+- **Required content:** Explain that callers can pass `AxiosHeaders.parseParameters` to `AxiosHeaders#get()` to produce a null-prototype map with case-insensitive parameter names, remove surrounding quoted-string delimiters, decode quoted-pair DQUOTE/backslash escapes, keep commas and semicolons inside quoted values, and remove only RFC optional whitespace around unquoted values. Note that unsafe object-materialization keys (`__proto__`, `constructor`, and `prototype`) are omitted. State explicitly that `get(name, true)` remains the legacy tokenizer and keeps its existing output for backward compatibility.
+- **Examples:** Show `headers.get('content-type', AxiosHeaders.parseParameters)` returning `{ boundary: 'a,b' }` for `multipart/form-data; boundary="a,b"`.
+- **Notes:** This is an additive API for the current major line. Do not replace or silently change the documented legacy `true` parser during release preparation.
 
 ### Malformed `http(s):` URL rejection
 

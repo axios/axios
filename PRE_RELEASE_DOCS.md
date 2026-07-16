@@ -30,6 +30,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show a `SearchParams` interface used with `AxiosRequestConfig<RequestBody, SearchParams>`, including a serializer callback that receives `SearchParams`, an invalid params object rejected by TypeScript, and an inferred default response whose `response.config.params` remains `SearchParams`. Include an `AxiosPromise<ResponseBody, RequestBody, SearchParams>` adapter/promise example and cancellation narrowing from `unknown` with `isCancel<ResponseBody, RequestBody, SearchParams>()`, demonstrating that both preserve request data and params on the config.
 - **Notes:** The params generic defaults to `any` for backward compatibility. The default-response marker used internally to preserve generic argument order is an implementation detail and should not be documented as public API. Keep ESM and CommonJS examples behaviorally aligned, and apply translated documentation only during release preparation.
 
+### Synchronous request interceptor error handling
+
+- **Change:** Document how synchronous request interceptor errors are handled without changing the existing paired-handler contract.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11071.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; migration/upgrade notes; translated docs after the English documentation is finalized.
+- **Required content:** Explain that when a synchronous request interceptor throws, axios calls that interceptor's paired `onRejected` handler and stops running the remaining request interceptors. If the handler returns normally, including returning `undefined` or a fulfilled Promise, axios treats the error as handled and dispatches with the last valid config; a value returned by the handler does not replace that config. If there is no rejection handler, or the handler throws or returns a rejected Promise, axios does not dispatch the request. Terminal errors continue through response rejection interceptors.
+- **Examples:** Show a synchronous validation interceptor whose rejection handler returns `Promise.reject(error)` to block dispatch, and a logging-only rejection handler that returns normally to preserve the existing request-continuation behavior.
+- **Notes:** This deliberately preserves axios's synchronous paired-handler semantics rather than changing them to native `Promise.then(onFulfilled, onRejected)` sibling-handler semantics.
+
 ### Opt-in AxiosHeaders parameter parsing
 
 - **Change:** Document the additive `AxiosHeaders.parseParameters()` parser for normalized HTTP parameter values.

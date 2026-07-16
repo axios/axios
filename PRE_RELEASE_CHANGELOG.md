@@ -10,6 +10,7 @@
 
 ## Bug Fixes
 
+- **Synchronous request interceptors:** Preserved paired `onRejected` handling while preventing request dispatch when the handler throws or returns a rejected Promise. Fulfilled recovery handlers continue with the last valid request config, and terminal interceptor errors now reach response rejection interceptors. (**#11071**)
 - **FormData headers:** Node.js requests using `formDataHeaderPolicy: 'content-only'` now tolerate custom `FormData#getHeaders()` implementations that return no headers instead of throwing while filtering them. (**#11062**)
 - **Data URL size limits:** Corrected base64 `data:` URL size estimation so percent-embedded input cannot bypass `maxContentLength`. The Node HTTP adapter now bounds the raw `Buffer` allocation, including ignored characters and content after padding, while the fetch adapter preserves percent-decoded base64 semantics and excludes URL fragments from the payload estimate. (**#11061**)
 - **AxiosError - aggregate errors:** `AxiosError.from()` now synthesizes a message from nested `AggregateError` entries when the outer message is blank, preserving dual-stack connection failure details in structured logs. (**#11059**, closes **#6721**)

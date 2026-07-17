@@ -381,6 +381,94 @@ describe('interceptors (vitest browser)', () => {
     expect(rejectedSpy).toHaveBeenCalledWith(error);
   });
 
+  it('should reject with the original error and not send when a synchronous interceptor has no onRejected', async () => {
+    const error = new Error('deadly error');
+
+    axios.interceptors.request.use(
+      () => {
+        throw error;
+      },
+      null,
+      { synchronous: true }
+    );
+
+    await expect(axios('/foo')).rejects.toBe(error);
+    expect(requests).toHaveLength(0);
+  });
+
+  it('should not send when a synchronous interceptor onRejected returns a rejected promise', async () => {
+    const error = new Error('deadly error');
+    const rejectedSpy = vi.fn(() => Promise.reject(error));
+
+    axios.interceptors.request.use(
+      () => {
+        throw error;
+      },
+      rejectedSpy,
+      { synchronous: true }
+    );
+
+    await expect(axios('/foo')).rejects.toBe(error);
+    expect(rejectedSpy).toHaveBeenCalledWith(error);
+    expect(requests).toHaveLength(0);
+  });
+
+  it('should send with the last valid config when a synchronous interceptor onRejected resolves', async () => {
+    const error = new Error('deadly error');
+
+    axios.interceptors.request.use(
+      () => {
+        throw error;
+      },
+      () => Promise.resolve({ url: '/bar' }),
+      { synchronous: true }
+    );
+
+    const responsePromise = axios('/foo');
+    expect(requests).toHaveLength(0);
+
+    const request = await waitForRequest();
+    expect(request.url).toBe('/foo');
+    request.respondWith();
+    await responsePromise;
+  });
+
+  it('should reject and not send when a synchronous interceptor onRejected throws', async () => {
+    const interceptorError = new Error('interceptor error');
+    const rejectedError = new Error('rejected error');
+
+    axios.interceptors.request.use(
+      () => {
+        throw interceptorError;
+      },
+      () => {
+        throw rejectedError;
+      },
+      { synchronous: true }
+    );
+
+    await expect(axios('/foo')).rejects.toBe(rejectedError);
+    expect(requests).toHaveLength(0);
+  });
+
+  it('should pass terminal synchronous request interceptor errors to response onRejected', async () => {
+    const error = new Error('deadly error');
+    const responseRejectedSpy = vi.fn((reason) => Promise.reject(reason));
+
+    axios.interceptors.request.use(
+      () => {
+        throw error;
+      },
+      null,
+      { synchronous: true }
+    );
+    axios.interceptors.response.use(null, responseRejectedSpy);
+
+    await expect(axios('/foo')).rejects.toBe(error);
+    expect(responseRejectedSpy).toHaveBeenCalledWith(error);
+    expect(requests).toHaveLength(0);
+  });
+
   it('should add a request interceptor that returns a new config object', async () => {
     axios.interceptors.request.use(() => ({
       url: '/bar',

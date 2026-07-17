@@ -1,6 +1,6 @@
 # Config defaults
 
-axios allows you to specify config defaults that will be applied to ever request. You can specify defaults for the `baseURL`, `headers`, `timeout`, and other properties. An example of using config defaults is shown below:
+axios allows you to specify config defaults that will be applied to every request. You can specify defaults for the `baseURL`, `headers`, `timeout`, and other properties. An example of using config defaults is shown below:
 
 ```js
 axios.defaults.baseURL = "https://jsonplaceholder.typicode.com/posts";

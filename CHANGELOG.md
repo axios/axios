@@ -508,7 +508,7 @@ Patch release fixing regressions introduced in v1.13.3, including TypeScript exp
 - <img src="https://avatars.githubusercontent.com/u/39668736?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [rohit miryala](https://github.com/rohitmiryala '+22/-0 (#7250 )')
 - <img src="https://avatars.githubusercontent.com/u/30316250?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Wilson Mun](https://github.com/wmundev '+20/-0 (#6053 )')
 - <img src="https://avatars.githubusercontent.com/u/184506226?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [techcodie](https://github.com/techcodie '+7/-7 (#7236 )')
-- <img src="https://avatars.githubusercontent.com/u/187598667?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ved Vadnere](https://github.com/Archis009 '+5/-6 (#7283 )')
+- <img src="https://avatars.githubusercontent.com/u/187598667?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Ved Vadnere](https://github.com/Archis009 '+5/-6 (#7283 )'
 - <img src="https://avatars.githubusercontent.com/u/115612815?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [svihpinc](https://github.com/svihpinc '+5/-3 (#6134 )')
 - <img src="https://avatars.githubusercontent.com/u/123884782?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [SANDESH LENDVE](https://github.com/mrsandy1965 '+3/-3 (#7246 )')
 - <img src="https://avatars.githubusercontent.com/u/12529395?v&#x3D;4&amp;s&#x3D;18" alt="avatar" width="18"/> [Lubos](https://github.com/mrlubos '+5/-1 (#7312 )')

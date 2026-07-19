@@ -37,6 +37,27 @@ describe('core::InterceptorManager', () => {
     expect(manager.handlers[first]).not.toBeNull();
   });
 
+  it('does not reuse an ejected interceptor ID after trimming its handler', () => {
+    const manager = new InterceptorManager();
+    const active = () => {};
+    const staleId = manager.use(() => {});
+
+    manager.eject(staleId);
+
+    const activeId = manager.use(active);
+
+    expect(activeId).not.toBe(staleId);
+
+    manager.eject(staleId);
+
+    expect(manager.handlers).toHaveLength(1);
+    expect(manager.handlers[0].fulfilled).toBe(active);
+
+    manager.eject(activeId);
+
+    expect(manager.handlers).toHaveLength(0);
+  });
+
   it('defers compaction while iterating so newly registered handlers are not visited', () => {
     const manager = new InterceptorManager();
     const first = () => {};

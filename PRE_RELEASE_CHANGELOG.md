@@ -10,7 +10,7 @@
 
 ## Bug Fixes
 
-- **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape and interceptor iteration behavior. (closes **#11070**)
+- **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape, interceptor iteration behavior, and interceptor ID identity across registrations. (closes **#11070**)
 - **Synchronous request interceptors:** Preserved paired `onRejected` handling while preventing request dispatch when the handler throws or returns a rejected Promise. Fulfilled recovery handlers continue with the last valid request config, and terminal interceptor errors now reach response rejection interceptors. (**#11071**)
 - **FormData headers:** Node.js requests using `formDataHeaderPolicy: 'content-only'` now tolerate custom `FormData#getHeaders()` implementations that return no headers instead of throwing while filtering them. (**#11062**)
 - **Data URL size limits:** Corrected base64 `data:` URL size estimation so percent-embedded input cannot bypass `maxContentLength`. The Node HTTP adapter now bounds the raw `Buffer` allocation, including ignored characters and content after padding, while the fetch adapter preserves percent-decoded base64 semantics and excludes URL fragments from the payload estimate. (**#11061**)

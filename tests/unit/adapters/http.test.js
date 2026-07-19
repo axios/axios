@@ -4504,6 +4504,28 @@ describe('supports http with nodejs', () => {
         );
         assert.strictEqual(capturedHeaders.Host || capturedHeaders.host, undefined);
       });
+
+      it('ignores undefined getHeaders() results with content-only policy', async () => {
+        let capturedHeaders;
+
+        class FormDataWithoutHeaders extends CustomFormData {
+          getHeaders() {}
+        }
+
+        await axios.post('http://stub.invalid/', new FormDataWithoutHeaders(), {
+          headers: {
+            'X-Test': 'ok',
+          },
+          transport: createStubTransport((headers) => {
+            capturedHeaders = headers;
+          }),
+          maxRedirects: 0,
+          formDataHeaderPolicy: 'content-only',
+        });
+
+        assert.ok(capturedHeaders, 'transport was not invoked');
+        assert.strictEqual(capturedHeaders['X-Test'] || capturedHeaders['x-test'], 'ok');
+      });
     });
   });
 
@@ -4823,6 +4845,35 @@ describe('supports http with nodejs', () => {
 
       const { data } = await axios.get(dataURI, { responseType: 'stream' });
       assert.strictEqual(await getStream(data), '123');
+    });
+
+    it('should allow a base64 data URL at the Buffer allocation limit', async () => {
+      const dataURI = 'data:application/octet-stream;base64,TQ==';
+
+      const { data } = await axios.get(dataURI, { maxContentLength: 1 });
+      assert.deepStrictEqual(data, Buffer.from('M'));
+    });
+
+    it('should reject percent-embedded base64 whose Buffer allocation exceeds the limit', async () => {
+      const body = 'QQ' + '%41'.repeat(4000);
+      const dataURI = 'data:application/octet-stream;base64,' + body;
+
+      await assert.rejects(axios.get(dataURI, { maxContentLength: 3000 }), (err) => {
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+        assert.match(err.message, /maxContentLength size of 3000 exceeded/);
+        return true;
+      });
+    });
+
+    it('should count ignored input after base64 padding toward the Buffer allocation limit', async () => {
+      const dataURI =
+        'data:application/octet-stream;base64,TQ==' + '%'.repeat(4096);
+
+      await assert.rejects(axios.get(dataURI, { maxContentLength: 1 }), (err) => {
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+        assert.match(err.message, /maxContentLength size of 1 exceeded/);
+        return true;
+      });
     });
   });
 

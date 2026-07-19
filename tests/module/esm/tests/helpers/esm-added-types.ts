@@ -47,6 +47,7 @@ const cancelCtor: typeof CanceledError = axios.Cancel;
 const cancelFromAlias = new cancelCtor('from alias');
 
 const status: HttpStatusCode = HttpStatusCode.WebServerIsDown;
+const unknownErrorStatus: HttpStatusCode = HttpStatusCode.WebServerReturnsAnUnknownError;
 
 class CustomBlob {
   constructor(_parts?: any[]) {}

@@ -4,11 +4,14 @@
 
 ## Features
 
+- **HTTP status codes:** Added `HttpStatusCode.WebServerReturnsAnUnknownError` for Cloudflare status 520 across the runtime API and ESM/CommonJS declarations. (**#11067**)
 - **Typed request params:** Added a second, defaulted generic parameter to `AxiosRequestConfig` and propagated it through params serializers, internal configs, default response and `AxiosPromise` shapes, errors, cancellation guards (`CanceledError`/`isCancel`), request methods, callable instances, adapters, and `mergeConfig()` across ESM and CommonJS declarations. Default request and typed promise results retain the request-data and params types on `response.config`, while explicit custom response types and the existing generic argument positions remain compatible. Untyped call sites retain the previous behavior through the `P = any` default. (**#11081**, closes **#4954**)
 - **AxiosHeaders parameter parsing:** Added `AxiosHeaders.parseParameters()` as an opt-in parser for `AxiosHeaders#get()`. It returns a hardened null-prototype parameter map, removes RFC quoted-string delimiters, decodes quoted-pair escapes, preserves commas and semicolons inside quoted values, and trims only optional SP/HTAB whitespace while leaving the legacy `get(name, true)` parser unchanged. (**#11051**, closes **#11050**)
 
 ## Bug Fixes
 
+- **Synchronous request interceptors:** Preserved paired `onRejected` handling while preventing request dispatch when the handler throws or returns a rejected Promise. Fulfilled recovery handlers continue with the last valid request config, and terminal interceptor errors now reach response rejection interceptors. (**#11071**)
+- **FormData headers:** Node.js requests using `formDataHeaderPolicy: 'content-only'` now tolerate custom `FormData#getHeaders()` implementations that return no headers instead of throwing while filtering them. (**#11062**)
 - **Data URL size limits:** Corrected base64 `data:` URL size estimation so percent-embedded input cannot bypass `maxContentLength`. The Node HTTP adapter now bounds the raw `Buffer` allocation, including ignored characters and content after padding, while the fetch adapter preserves percent-decoded base64 semantics and excludes URL fragments from the payload estimate. (**#11061**)
 - **AxiosError - aggregate errors:** `AxiosError.from()` now synthesizes a message from nested `AggregateError` entries when the outer message is blank, preserving dual-stack connection failure details in structured logs. (**#11059**, closes **#6721**)
 - **AxiosError:** `AxiosError#toJSON()` now serializes `Set` values in request config snapshots as arrays instead of empty objects. (**#11044**, refs **#5910**)

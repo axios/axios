@@ -58,6 +58,27 @@ describe('core::InterceptorManager', () => {
     expect(manager.handlers).toHaveLength(0);
   });
 
+  it('invalidates interceptor IDs when the handlers array is replaced', () => {
+    const manager = new InterceptorManager();
+    const stale = () => {};
+    const active = () => {};
+    const staleId = manager.use(stale);
+
+    manager.handlers = [...manager.handlers];
+
+    const activeId = manager.use(active);
+
+    expect(activeId).not.toBe(staleId);
+
+    manager.eject(staleId);
+
+    expect(manager.handlers.map((handler) => handler.fulfilled)).toEqual([stale, active]);
+
+    manager.eject(activeId);
+
+    expect(manager.handlers.map((handler) => handler.fulfilled)).toEqual([stale]);
+  });
+
   it('defers compaction while iterating so newly registered handlers are not visited', () => {
     const manager = new InterceptorManager();
     const first = () => {};

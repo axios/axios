@@ -33,6 +33,8 @@
 
 ## Documentation
 
+- **Global search:** Added localized, private, in-browser full-text search for the active documentation language, with fuzzy and prefix matching.
+
 - **Request data defaults:** Clarified that `data` is request-specific and is not inherited or deep-merged from global or instance defaults. Shared body fields should be added with a request interceptor or `transformRequest`, scoped carefully to avoid sending sensitive values to unintended endpoints.
 
 ## Release Tracking

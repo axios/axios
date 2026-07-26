@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.19.0 - July 22, 2026
+## v1.19.0 — July 22, 2026
 
 This release raises the form-data security floor, adds configuration and type-system capabilities, and fixes NO_PROXY matching, interceptor errors, progress reporting, and serialization edge cases.
 

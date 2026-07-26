@@ -28,6 +28,19 @@
 }
 ```
 
+在 TypeScript 中，`AxiosResponse<T, D, H, P>` 分别表示响应数据（`T`）、请求数据（`D`）、响应头（`H`）和查询参数（`P`）的类型。配置会保留两种请求侧类型：
+
+```ts
+interface AxiosResponse<T = any, D = any, H = {}, P = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
+  config: InternalAxiosRequestConfig<D, P>;
+  request?: any;
+}
+```
+
 ## 访问响应字段
 
 实际使用中，你通常只需要解构出所需的部分：

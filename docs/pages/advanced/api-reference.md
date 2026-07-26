@@ -6,6 +6,27 @@ Below is a list of all the available functions and classes in the axios package.
 
 The `axios` instance is the main object that you will use to make HTTP requests. It is a factory function that creates a new instance of the `Axios` class. The `axios` instance has a number of methods that you can use to make HTTP requests. These methods are documented in the [Request aliases section](/pages/advanced/request-method-aliases) of the documentation.
 
+## TypeScript request types
+
+The public request types use separate generics for request data and query params:
+
+```ts
+AxiosRequestConfig<D = any, P = any>
+RawAxiosRequestConfig<D = any, P = any>
+InternalAxiosRequestConfig<D = any, P = any>
+AxiosDefaults<D = any, P = any>
+CreateAxiosDefaults<D = any, P = any>
+
+AxiosResponse<T = any, D = any, H = {}, P = any>
+AxiosPromise<T = any, D = any, P = any>
+AxiosError<T = unknown, D = any, P = any>
+CanceledError<T, D = any, P = any>
+```
+
+`D` is the request body type and `P` is the query params type. `AxiosResponse`, `AxiosPromise`, errors, defaults, callable instances, request aliases, adapters, and `mergeConfig()` preserve both on the request config. Custom params serializers receive the same `P`.
+
+Request methods use the generic order `<T, R, D, P>`, with `P` added last so existing explicit generic arguments remain compatible. When no custom response type `R` is supplied, the resolved `AxiosResponse` keeps `D` and `P` on `response.config`; an explicitly supplied `R` continues to control the resolved value. All request-data and params generics default to `any` for backward compatibility.
+
 ## Classes
 
 ### `Axios`
@@ -25,7 +46,7 @@ constructor(instanceConfig?: AxiosRequestConfig);
 Handles request invocation and response resolution. This is the main method that you will use to make HTTP requests. It takes a configuration object as an argument and returns a promise that resolves to the response object.
 
 ```ts
-request(configOrUrl: string | AxiosRequestConfig<D>, config: AxiosRequestConfig<D>): Promise<AxiosResponse<T>>;
+request<T, R, D, P>(config: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `CancelToken` <Badge type="danger" text="Deprecated in favour of AbortController" />
@@ -55,7 +76,7 @@ The `AxiosError` class is an error class that is thrown when an HTTP request fai
 Creates a new instance of the `AxiosError` class. The constructor takes an optional message, code, config, request, and response as arguments.
 
 ```ts
-constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D>, request?: any, response?: AxiosResponse<T, D>);
+constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any, response?: AxiosResponse<T, D, {}, P>);
 ```
 
 #### `properties`
@@ -64,7 +85,7 @@ The `AxiosError` class provides the following properties:
 
 ```ts
 // Config instance.
-config?: InternalAxiosRequestConfig<D>;
+config?: InternalAxiosRequestConfig<D, P>;
 
 // Error code.
 code?: string;
@@ -73,7 +94,7 @@ code?: string;
 request?: any;
 
 // Response instance.
-response?: AxiosResponse<T, D>;
+response?: AxiosResponse<T, D, {}, P>;
 
 // Boolean indicating if the error is an `AxiosError`.
 isAxiosError: boolean;
@@ -119,8 +140,24 @@ Gets a header from the headers object.
 
 ```ts
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
+
+Pass `AxiosHeaders.parseParameters` to parse normalized HTTP parameters into a hardened null-prototype map:
+
+```js
+const headers = new AxiosHeaders({
+  "Content-Type": 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...headers.get("Content-Type", AxiosHeaders.parseParameters),
+});
+// { boundary: "a,b" }
+```
+
+Parameter names are case-insensitive. The parser removes quoted-string delimiters, decodes escaped quotes and backslashes, preserves commas and semicolons inside quoted values, and trims only RFC optional whitespace around unquoted values. It omits `__proto__`, `constructor`, and `prototype`. `get(name, true)` remains the legacy tokenizer.
 
 #### `has`
 
@@ -184,7 +221,7 @@ toString(): string;
 The `CanceledError` class is an error class that is thrown when an HTTP request is canceled. It extends the `AxiosError` class.
 
 ```ts
-constructor(message?: string, config?: InternalAxiosRequestConfig, request?: any);
+constructor(message?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any);
 __CANCEL__?: boolean;
 ```
 
@@ -201,7 +238,7 @@ Cancel: typeof CanceledError;
 A function that checks if an error is a `CanceledError`. Useful for distinguishing intentional cancellations from unexpected errors.
 
 ```ts
-isCancel<T = any>(value: any): value is CanceledError<T>;
+isCancel<T = any, D = any, P = any>(value: any): value is CanceledError<T, D, P>;
 ```
 
 ```js
@@ -279,6 +316,8 @@ await axios.post('/api/users', form);
 
 Converts a `FormData` instance back to a plain JavaScript object. Useful for reading form data in a structured format.
 
+Only dot notation and bracket notation are structural: `.`, `[`, and `]` split paths, while `-`, spaces, `+`, `*`, and `&` stay in literal keys. `foo.bar` and `foo[bar]` create nested objects, and `foo[]` creates an array.
+
 ```ts
 formToJSON(form: FormData): object;
 ```
@@ -287,11 +326,12 @@ formToJSON(form: FormData): object;
 import { formToJSON } from 'axios';
 
 const form = new FormData();
-form.append('name', 'Jay');
-form.append('role', 'admin');
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
 
 const obj = formToJSON(form);
-console.log(obj); // { name: "Jay", role: "admin" }
+console.log(obj);
+// { "user-name": "johndoe", user: { name: "john" } }
 ```
 
 ### `getAdapter`
@@ -317,7 +357,10 @@ const adapter = getAdapter(['fetch', 'xhr', 'http']);
 Merges two axios config objects together, applying the same deep-merge strategy that axios uses internally when combining defaults with per-request options. Later values take precedence.
 
 ```ts
-mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): AxiosRequestConfig<T>;
+mergeConfig<D = any, P = any>(
+  config1: AxiosRequestConfig<D, P>,
+  config2: AxiosRequestConfig<D, P>
+): AxiosRequestConfig<D, P>;
 ```
 
 ```js

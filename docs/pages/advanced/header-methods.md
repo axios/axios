@@ -69,6 +69,7 @@ The `get` method is used to retrieve the value of a header. The method can be ca
 
 ```js
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
 ```
 
@@ -88,6 +89,15 @@ console.log(headers.get('Content-Type', true)); // parse key-value pairs from a 
 //    boundary: 'Asrf456BGe4h'
 // }
 
+const quotedHeaders = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...quotedHeaders.get('Content-Type', AxiosHeaders.parseParameters),
+});
+// { boundary: 'a,b' }
+
 console.log(
   headers.get('Content-Type', (value, name, headers) => {
     return String(value).replace(/a/g, 'ZZZ');
@@ -98,6 +108,10 @@ console.log(
 console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
+
+`AxiosHeaders.parseParameters` is an opt-in parser for normalized HTTP parameter values. It returns a null-prototype map with case-insensitive parameter names. Quoted-string delimiters are removed, escaped DQUOTE and backslash pairs are decoded, and commas or semicolons inside quoted values remain part of the value. For unquoted values, only RFC optional whitespace (space and horizontal tab) around the value is removed.
+
+The parser omits unsafe object-materialization keys (`__proto__`, `constructor`, and `prototype`). Passing `true` remains the legacy tokenizer and keeps its existing output for backward compatibility.
 
 ## Has
 

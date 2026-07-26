@@ -69,6 +69,7 @@ El método `get` se usa para recuperar el valor de un encabezado. El método pue
 
 ```js
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
 ```
 
@@ -88,6 +89,15 @@ console.log(headers.get('Content-Type', true)); // parse key-value pairs from a 
 //    boundary: 'Asrf456BGe4h'
 // }
 
+const quotedHeaders = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...quotedHeaders.get('Content-Type', AxiosHeaders.parseParameters),
+});
+// { boundary: 'a,b' }
+
 console.log(
   headers.get('Content-Type', (value, name, headers) => {
     return String(value).replace(/a/g, 'ZZZ');
@@ -98,6 +108,10 @@ console.log(
 console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
+
+`AxiosHeaders.parseParameters` es un analizador opcional para valores normalizados de parámetros HTTP. Devuelve un mapa con prototipo nulo y nombres de parámetros sin distinción entre mayúsculas y minúsculas. Elimina los delimitadores de cadenas entre comillas, decodifica pares escapados de comillas dobles y barras invertidas, y conserva las comas o los puntos y coma dentro de valores entre comillas. En valores sin comillas solo elimina el espacio en blanco opcional de RFC (espacio y tabulación horizontal) alrededor del valor.
+
+El analizador omite las claves inseguras para materializar objetos (`__proto__`, `constructor` y `prototype`). Pasar `true` sigue usando el tokenizador heredado y conserva su salida por compatibilidad.
 
 ## Has (Verificar existencia)
 

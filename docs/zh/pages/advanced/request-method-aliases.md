@@ -9,8 +9,13 @@ axios 尽量遵循 RFC 7231 和 RFC 5789 规范，别名方法与这些规范中
 axios 可以通过仅传入配置对象来发起 HTTP 请求，完整的配置对象文档见[此处](/pages/advanced/request-config)。
 
 ```ts
-axios(url: string | AxiosRequestConfig, config?: AxiosRequestConfig);
+axios<T, R, D, P>(
+  url: string | AxiosRequestConfig<D, P>,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
 ```
+
+请求方法的泛型参数顺序为 `<T, R, D, P>`：响应数据、自定义响应、请求数据和查询参数。`P` 添加在最后，因此现有的显式 `T`、`R` 和 `D` 参数含义保持不变。未提供自定义 `R` 时，默认 `AxiosResponse` 会在 `response.config` 中保留 `D` 和 `P`。
 
 ## 方法别名
 
@@ -21,7 +26,7 @@ axios(url: string | AxiosRequestConfig, config?: AxiosRequestConfig);
 `request` 方法是发起 HTTP 请求的主方法，接受一个配置对象并返回解析为响应对象的 Promise，可用于发起任意类型的 HTTP 请求。
 
 ```ts
-axios.request(config: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.request<T, R, D, P>(config: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `get`
@@ -29,7 +34,7 @@ axios.request(config: AxiosRequestConfig<C>): AxiosResponse<R>;
 `get` 方法用于发起 GET 请求，接受 URL 和可选配置对象，返回解析为响应对象的 Promise。
 
 ```ts
-axios.get(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.get<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `delete`
@@ -37,7 +42,7 @@ axios.get(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 `delete` 方法用于发起 DELETE 请求，接受 URL 和可选配置对象，返回解析为响应对象的 Promise。
 
 ```ts
-axios.delete(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.delete<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `head`
@@ -45,7 +50,7 @@ axios.delete(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 `head` 方法用于发起 HEAD 请求，接受 URL 和可选配置对象，返回解析为响应对象的 Promise。
 
 ```ts
-axios.head(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.head<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `options`
@@ -53,7 +58,7 @@ axios.head(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 `options` 方法用于发起 OPTIONS 请求，接受 URL 和可选配置对象，返回解析为响应对象的 Promise。
 
 ```ts
-axios.options(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.options<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `post`
@@ -61,7 +66,7 @@ axios.options(url: string, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
 `post` 方法用于发起 POST 请求，接受 URL、可选数据对象和可选配置对象，返回解析为响应对象的 Promise。
 
 ```ts
-axios.post(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.post<T, R, D, P>(url: string, data?: D, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `put`
@@ -69,7 +74,7 @@ axios.post(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse
 `put` 方法用于发起 PUT 请求，接受 URL、可选数据对象和可选配置对象，返回解析为响应对象的 Promise。
 
 ```ts
-axios.put(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.put<T, R, D, P>(url: string, data?: D, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `patch`
@@ -77,7 +82,7 @@ axios.put(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<
 `patch` 方法用于发起 PATCH 请求，接受 URL、可选数据对象和可选配置对象，返回解析为响应对象的 Promise。
 
 ```ts
-axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.patch<T, R, D, P>(url: string, data?: D, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `query`
@@ -85,7 +90,7 @@ axios.patch(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosRespons
 `query` 方法用于发起 QUERY 请求，这是一种安全且幂等的、可以携带请求体的方法。它接受 URL、可选数据对象和可选配置对象，返回解析为响应对象的 Promise。当读取类操作的参数过于复杂或敏感、不适合放在 URL 中时，可以使用该方法。
 
 ```ts
-axios.query(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.query<T, R, D, P>(url: string, data?: D, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ```js
@@ -105,7 +110,7 @@ QUERY 方法目前由 IETF 的 [Internet-Draft](https://datatracker.ietf.org/doc
 `getUri` 方法返回给定配置在不实际发起请求的情况下会发送的 URL。它会应用 `baseURL`、`paramsSerializer` 和 `params`，因此你拿到的字符串与 axios 实际发出的 URL 相同。可用于构建链接、调试序列化逻辑，或在另一个请求中复用解析后的 URL。
 
 ```ts
-axios.getUri(config?: AxiosRequestConfig): string;
+axios.getUri(config?: AxiosRequestConfig<D, P>): string;
 ```
 
 ```js
@@ -128,7 +133,7 @@ const url = axios.getUri({
 ### `postForm`
 
 ```ts
-axios.postForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.postForm<T, R, D, P>(url: string, data?: D, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ```js
@@ -142,7 +147,7 @@ await axios.postForm("/api/upload", {
 ### `putForm`
 
 ```ts
-axios.putForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.putForm<T, R, D, P>(url: string, data?: D, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ```js
@@ -155,7 +160,7 @@ await axios.putForm("/api/users/1/avatar", {
 ### `patchForm`
 
 ```ts
-axios.patchForm(url: string, data?: D, config?: AxiosRequestConfig<C>): AxiosResponse<R>;
+axios.patchForm<T, R, D, P>(url: string, data?: D, config?: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ```js

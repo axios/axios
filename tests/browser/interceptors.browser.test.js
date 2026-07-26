@@ -129,8 +129,8 @@ describe('interceptors (vitest browser)', () => {
 
   afterEach(() => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
-    axios.interceptors.request.handlers = [];
-    axios.interceptors.response.handlers = [];
+    axios.interceptors.request.clear();
+    axios.interceptors.response.clear();
     vi.restoreAllMocks();
   });
 
@@ -817,7 +817,7 @@ describe('interceptors (vitest browser)', () => {
     instance.interceptors.request.use((config) => config);
     instance.interceptors.request.clear();
 
-    expect(instance.interceptors.request.handlers.length).toBe(0);
+    expect(instance.interceptors.request.handlers.size).toBe(0);
   });
 
   it('should clear all response interceptors', () => {
@@ -828,6 +828,6 @@ describe('interceptors (vitest browser)', () => {
     instance.interceptors.response.use((config) => config);
     instance.interceptors.response.clear();
 
-    expect(instance.interceptors.response.handlers.length).toBe(0);
+    expect(instance.interceptors.response.handlers.size).toBe(0);
   });
 });

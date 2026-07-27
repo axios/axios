@@ -58,7 +58,7 @@ We are thrilled to welcome our new contributors. Thank you for helping improve A
 - @TheHonoredOne914 (#11071)
 - @Ahsan1Murtaza (#11073)
 
-Full Changelog (https://github.com/axios/axios/compare/v1.18.1...v1.19.0)
+[Full Changelog](https://github.com/axios/axios/compare/v1.18.1...v1.19.0)
 
 ## v1.18.0 — June 13, 2026
 

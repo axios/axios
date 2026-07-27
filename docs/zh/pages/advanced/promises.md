@@ -2,6 +2,18 @@
 
 axios 基于原生 ES6 Promise API 构建。每个 axios 请求都返回一个 Promise，该 Promise 解析为响应对象或以错误拒绝。如果你的环境不支持 ES6 Promise，需要使用 polyfill，例如 [es6-promise](https://github.com/stefanpenner/es6-promise)。
 
+对于 TypeScript 集成，`AxiosPromise<T, D, P>` 是 `AxiosResponse<T, D, {}, P>` 的 Promise。它会在 `response.config` 中保留请求数据和查询参数：
+
+```ts
+declare const search: AxiosPromise<SearchResponse, RequestBody, SearchParams>;
+
+search.then((response) => {
+  response.data;          // SearchResponse
+  response.config.data;   // RequestBody | undefined
+  response.config.params; // SearchParams | undefined
+});
+```
+
 ## then / catch / finally
 
 由于 axios 返回的是标准 Promise，你可以使用 `.then()`、`.catch()` 和 `.finally()` 来处理结果：

@@ -147,4 +147,22 @@ formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
 
+## Converting FormData back to JSON
+
+`axios.formToJSON()` converts dot and bracket notation in field names into nested objects and arrays. Only `.`, `[`, and `]` are structural separators. Characters such as `-`, spaces, `+`, `*`, and `&` remain part of literal keys.
+
+```js
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+console.log(axios.formToJSON(form));
+// {
+//   'user-name': 'johndoe',
+//   user: { name: 'john' }
+// }
+```
+
+`user[name]` also creates a nested object path, while `items[]` creates an array.
+
 Axios supports the following shortcut methods: `postForm`, `putForm`, `patchForm` which are just the corresponding http methods with the `Content-Type` header preset to `multipart/form-data`.

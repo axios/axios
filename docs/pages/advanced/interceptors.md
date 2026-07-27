@@ -79,6 +79,44 @@ axios.interceptors.request.use(
 );
 ```
 
+### Synchronous interceptor errors
+
+When a synchronous request interceptor throws, axios calls that interceptor's paired `onRejected` handler and stops running the remaining request interceptors. If the handler returns normally—including returning `undefined` or a fulfilled Promise—the error is handled and axios dispatches with the last valid config. The handler's return value does not replace that config.
+
+To prevent dispatch, omit the rejection handler or have it throw or return a rejected Promise. The terminal error then continues through response rejection interceptors.
+
+Use a rejected Promise when validation must block the request:
+
+```js
+axios.interceptors.request.use(
+  function validate(config) {
+    if (!config.headers.has("Authorization")) {
+      throw new Error("Authorization is required");
+    }
+    return config;
+  },
+  function rejectInvalidRequest(error) {
+    return Promise.reject(error);
+  },
+  { synchronous: true }
+);
+```
+
+A logging-only rejection handler can return normally to retain the existing continuation behavior:
+
+```js
+axios.interceptors.request.use(
+  function prepare(config) {
+    throw new Error("Optional preparation failed");
+  },
+  function logPreparationFailure(error) {
+    console.warn(error);
+    // Returning normally dispatches with the last valid config.
+  },
+  { synchronous: true }
+);
+```
+
 ## Interceptors using `runWhen`
 
 If you want to execute a particular interceptor based on a runtime check, you can add a runWhen function to the options object. The interceptor will not be executed if and only if the return of runWhen is false. The function will be called with the config object (don't forget that you can bind your own arguments to it as well.) This can be handy when you have an asynchronous request interceptor that only needs to run at certain times.

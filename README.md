@@ -2305,9 +2305,9 @@ Returns `this`.
 ### AxiosHeaders#get(header)
 
 ```
-  get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
   get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
+  get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 Returns the internal value of the header. It can take an extra argument to parse the header's value with `RegExp.exec`,

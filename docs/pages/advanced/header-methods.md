@@ -68,9 +68,9 @@ headers.set(
 The `get` method is used to retrieve the value of a header. The method can be called with a single header name, an optional matcher, or a parser. The matcher is defaulted to `true`. The parser can be a regular expression that is used to extract the value from the header.
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 An example of some of the possible usages of the `get` method is shown below:

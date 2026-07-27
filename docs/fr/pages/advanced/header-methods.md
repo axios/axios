@@ -68,9 +68,9 @@ headers.set(
 La méthode `get` est utilisée pour récupérer la valeur d'un en-tête. La méthode peut être appelée avec un seul nom d'en-tête, un matcher optionnel ou un analyseur. Le matcher est par défaut `true`. L'analyseur peut être une expression régulière utilisée pour extraire la valeur de l'en-tête.
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 Voici un exemple de quelques-unes des utilisations possibles de la méthode `get` :

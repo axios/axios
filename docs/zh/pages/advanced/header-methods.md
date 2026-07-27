@@ -68,9 +68,9 @@ headers.set(
 `get` 方法用于获取请求头的值，可以传入单个请求头名称、可选的匹配器或解析器。匹配器默认为 `true`，解析器可以是用于从请求头中提取值的正则表达式。
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 以下是 `get` 方法的一些使用示例：

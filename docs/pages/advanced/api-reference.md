@@ -139,8 +139,8 @@ set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHea
 Gets a header from the headers object.
 
 ```ts
-get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
+get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 

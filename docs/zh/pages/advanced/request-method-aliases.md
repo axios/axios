@@ -110,7 +110,7 @@ QUERY 方法目前由 IETF 的 [Internet-Draft](https://datatracker.ietf.org/doc
 `getUri` 方法返回给定配置在不实际发起请求的情况下会发送的 URL。它会应用 `baseURL`、`paramsSerializer` 和 `params`，因此你拿到的字符串与 axios 实际发出的 URL 相同。可用于构建链接、调试序列化逻辑，或在另一个请求中复用解析后的 URL。
 
 ```ts
-axios.getUri(config?: AxiosRequestConfig<D, P>): string;
+axios.getUri(config?: AxiosRequestConfig): string;
 ```
 
 ```js

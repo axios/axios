@@ -126,7 +126,7 @@ The QUERY method is defined by an IETF [Internet-Draft](https://datatracker.ietf
 The `getUri` method returns the URL that would be sent for a given config without actually making the request. It applies `baseURL`, `paramsSerializer`, and `params`, so you get back the same string axios would put on the wire. Useful for building links, debugging serialization, or reusing the resolved URL in another request.
 
 ```ts
-axios.getUri(config?: AxiosRequestConfig<D, P>): string;
+axios.getUri(config?: AxiosRequestConfig): string;
 ```
 
 ```js

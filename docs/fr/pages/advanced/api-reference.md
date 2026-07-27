@@ -139,8 +139,8 @@ set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHea
 Récupère un en-tête depuis l'objet d'en-têtes.
 
 ```ts
-get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
+get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 

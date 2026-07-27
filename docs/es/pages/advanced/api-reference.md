@@ -139,8 +139,8 @@ set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHea
 Obtiene un encabezado del objeto de encabezados.
 
 ```ts
-get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
+get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 

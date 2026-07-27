@@ -110,7 +110,7 @@ El método QUERY está definido por un [Internet-Draft](https://datatracker.ietf
 El método `getUri` devuelve la URL que se enviaría para una configuración dada sin realizar realmente la solicitud. Aplica `baseURL`, `paramsSerializer` y `params`, así que recibes la misma cadena que axios pondría en el cable. Útil para construir enlaces, depurar la serialización o reutilizar la URL resuelta en otra solicitud.
 
 ```ts
-axios.getUri(config?: AxiosRequestConfig<D, P>): string;
+axios.getUri(config?: AxiosRequestConfig): string;
 ```
 
 ```js

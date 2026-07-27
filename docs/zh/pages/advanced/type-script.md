@@ -45,6 +45,72 @@ try {
 }
 ```
 
+## 为请求数据和查询参数添加类型
+
+`AxiosRequestConfig<D = any, P = any>` 使用 `D` 表示请求数据，使用 `P` 表示查询参数。自定义参数序列化器会接收同一个 `P` 类型：
+
+```ts
+import axios, {
+  type AxiosPromise,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from "axios";
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+interface SearchResponse {
+  results: string[];
+}
+
+const searchConfig: AxiosRequestConfig<RequestBody, SearchParams> = {
+  data: { includeArchived: false },
+  params: { query: "axios", page: 1 },
+  paramsSerializer: (params) => `${params.query}:${params.page ?? 1}`,
+};
+
+const response = await axios.get("/search", searchConfig);
+response.config.data;   // RequestBody | undefined
+response.config.params; // SearchParams | undefined
+
+const invalidConfig: AxiosRequestConfig<RequestBody, SearchParams> = {
+  // @ts-expect-error `query` 必须是字符串
+  params: { query: 123 },
+};
+```
+
+默认请求结果会在 `response.config` 上保留 `D` 和 `P`，包括请求别名从带类型的请求配置中推断出这些类型的情况。`RawAxiosRequestConfig`、`InternalAxiosRequestConfig`、`AxiosDefaults`、`CreateAxiosDefaults`、`AxiosResponse`、`AxiosPromise`、`AxiosError`、`CanceledError`、可调用实例、适配器和 `mergeConfig()` 也会保留查询参数类型。
+
+请求方法将 `P` 添加为最后一个泛型参数，即 `<T, R, D, P>`，因此现有的响应数据（`T`）、自定义响应（`R`）和请求数据（`D`）参数位置保持不变。显式提供的自定义响应类型仍然控制最终返回值。为保持向后兼容，`P` 默认为 `any`。
+
+适配器或其他显式添加类型的 Promise 可以同时保留两种请求类型：
+
+```ts
+const searchAdapter = (
+  config: InternalAxiosRequestConfig<RequestBody, SearchParams>
+): AxiosPromise<SearchResponse, RequestBody, SearchParams> =>
+  Promise.resolve({
+    data: { results: [] },
+    status: 200,
+    statusText: "OK",
+    headers: {},
+    config,
+  });
+
+declare const error: unknown;
+
+if (axios.isCancel<SearchResponse, RequestBody, SearchParams>(error)) {
+  error.config?.data;   // RequestBody | undefined
+  error.config?.params; // SearchParams | undefined
+}
+```
+
 ## 带类型的实例与拦截器
 
 将 `axios.create` 的结果标注为 `AxiosInstance`，并将请求拦截器标注为 `InternalAxiosRequestConfig`，即可对自定义客户端实现端到端的类型检查：
@@ -62,6 +128,35 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 ```
+
+## 使用 Symbol 键的自定义请求配置
+
+axios 合并默认配置和单次请求配置时，会保留自身的、可枚举的 Symbol 属性。应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定的 Symbol 键，然后在拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项：
+
+```ts
+import axios from "axios";
+
+export const someFlag: unique symbol = Symbol(
+  "some flag used in request interceptor"
+);
+
+declare module "axios" {
+  interface AxiosRequestConfig<D = any, P = any> {
+    [someFlag]?: boolean;
+  }
+}
+
+axios.interceptors.request.use((config) => {
+  if (config[someFlag]) {
+    config.headers.set("X-Some-Flag", "enabled");
+  }
+  return config;
+});
+
+await axios.get("/users", { [someFlag]: true });
+```
+
+只有自身的、可枚举的 Symbol 属性会被复制；不可枚举或继承的 Symbol 属性不会被复制。
 
 ## 为响应数据添加类型
 

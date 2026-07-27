@@ -42,10 +42,9 @@ El formulario anterior se enviará como:
 {
   "foo": "1",
   "deep": {
-    "prop": {
-      "spaced": "3"
-    }
+    "prop": "2"
   },
+  "deep prop spaced": "3",
   "baz": ["4", "5"],
   "user": {
     "age": "value2"
@@ -53,8 +52,8 @@ El formulario anterior se enviará como:
 }
 ```
 
-::: tip Las colisiones de rutas sobrescriben los valores anteriores
-Los nombres de campo se analizan como rutas de propiedad dividiendo por `.`, corchetes o espacios en blanco. Dos inputs cuyas rutas se solapan colisionarán: en el ejemplo anterior, `deep.prop` se analiza como `["deep", "prop"]` y `deep prop spaced` como `["deep", "prop", "spaced"]`, por lo que la asignación más profunda reemplaza `deep.prop = "2"` por el objeto anidado `{ spaced: "3" }`. Elige nombres de campo no superpuestos si necesitas conservar ambos valores.
+::: tip Notación de rutas en nombres de campo
+Solo la notación con puntos y corchetes crea rutas de propiedades. Los demás caracteres —incluidos espacios, `-`, `+`, `*` y `&`— permanecen en nombres de campo literales. Por ejemplo, `deep.prop` crea una ruta anidada, mientras que `deep prop spaced` permanece como una clave de nivel superior.
 :::
 
 ::: warning

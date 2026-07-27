@@ -68,8 +68,9 @@ headers.set(
 `get` 方法用于获取请求头的值，可以传入单个请求头名称、可选的匹配器或解析器。匹配器默认为 `true`，解析器可以是用于从请求头中提取值的正则表达式。
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 以下是 `get` 方法的一些使用示例：
@@ -88,6 +89,15 @@ console.log(headers.get('Content-Type', true)); // 解析以 \s,;= 为分隔符�
 //    boundary: 'Asrf456BGe4h'
 // }
 
+const quotedHeaders = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...quotedHeaders.get('Content-Type', AxiosHeaders.parseParameters),
+});
+// { boundary: 'a,b' }
+
 console.log(
   headers.get('Content-Type', (value, name, headers) => {
     return String(value).replace(/a/g, 'ZZZ');
@@ -98,6 +108,10 @@ console.log(
 console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
+
+`AxiosHeaders.parseParameters` 是用于规范化 HTTP 参数值的可选解析器。它返回一个原型为 null 的映射，参数名称不区分大小写。它会移除带引号字符串的定界引号，解码转义的双引号和反斜杠，并保留带引号值中的逗号和分号。对于不带引号的值，只会移除其两侧的 RFC 可选空白（空格和水平制表符）。
+
+解析器会忽略会导致对象安全问题的键（`__proto__`、`constructor` 和 `prototype`）。传入 `true` 仍会使用旧版分词器，其输出保持不变以实现向后兼容。
 
 ## Has
 

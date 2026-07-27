@@ -2,6 +2,18 @@
 
 axios est construit sur l'API Promise native d'ES6. Chaque requête axios retourne une Promise qui se résout vers un objet de réponse ou se rejette avec une erreur. Si votre environnement ne supporte pas les Promises ES6, vous devrez les polyfiller — par exemple avec [es6-promise](https://github.com/stefanpenner/es6-promise).
 
+Pour les intégrations TypeScript, `AxiosPromise<T, D, P>` est une promise de `AxiosResponse<T, D, {}, P>`. Elle conserve les données et paramètres de requête dans `response.config` :
+
+```ts
+declare const search: AxiosPromise<SearchResponse, RequestBody, SearchParams>;
+
+search.then((response) => {
+  response.data;          // SearchResponse
+  response.config.data;   // RequestBody | undefined
+  response.config.params; // SearchParams | undefined
+});
+```
+
 ## then / catch / finally
 
 Comme axios retourne une Promise standard, vous pouvez utiliser `.then()`, `.catch()` et `.finally()` pour gérer le résultat :

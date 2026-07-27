@@ -19,6 +19,8 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 `url` 是请求的目标 URL，可以是字符串或 `URL` 实例。
 
+`http:` 或 `https:` URL 必须在协议后包含 `//`。`https:example.com` 和 `https:/example.com` 等格式错误的值会以 `ERR_INVALID_URL` 拒绝；请使用 `https://example.com` 等格式正确的 URL。
+
 ### `method`
 
 `method` 是请求使用的 HTTP 方法，默认为 `GET`。
@@ -28,6 +30,8 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 `baseURL` 是拼接在 `url` 前面的基础 URL，除非 `url` 是绝对 URL。这对于向同一域名发起请求非常实用，无需在每次请求时重复写域名和 API 版本前缀。
 
 `baseURL` 只是构造 URL 的便利选项，并不是安全边界。如果请求的 `url` 来自不可信输入，应先校验再传给 axios。相对 `url` 可以包含 `..` 路径段；axios 将其与 `baseURL` 拼接后，运行平台的 URL 解析器会规范化路径，可能把请求解析到预期路径前缀之外。`allowAbsoluteUrls: false` 可以阻止绝对 URL 替换 `baseURL`，但不会校验或限制相对路径。
+
+同样的格式规则也适用于 `baseURL`：`http:` 和 `https:` 值必须在协议后包含 `//`。
 
 ### `allowAbsoluteUrls`
 
@@ -96,6 +100,20 @@ const client = axios.create({
 
 `paramsSerializer` 函数允许你在参数发送到服务器之前自定义 `params` 对象的序列化方式，有多个可用选项，详见本页末尾的完整请求配置示例。
 
+在 TypeScript 中，`AxiosRequestConfig<D, P>` 使用 `P` 表示 `params`，自定义 `paramsSerializer` 会接收同一个类型：
+
+```ts
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+const config: AxiosRequestConfig<unknown, SearchParams> = {
+  params: { query: "axios", page: 1 },
+  paramsSerializer: (params) => `${params.query}:${params.page ?? 1}`,
+};
+```
+
 #### 严格的 RFC 3986 百分号编码
 
 axios 默认会将 `%3A`、`%24`、`%2C` 和 `%20` 解码回 `:`、`$`、`,` 和 `+`，以提升可读性（其中 `+` 遵循查询字符串中表示空格的 `application/x-www-form-urlencoded` 约定）。这些字符在 [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4) 中对查询组件而言都是合法的，因此默认输出是正确的。但部分后端要求严格的百分号编码，会拒绝这种可读形式。
@@ -131,6 +149,10 @@ const client = axios.create({
 ### `formDataHeaderPolicy` <Badge type="warning" text="仅 Node.js" />
 
 控制 axios 如何复制 Node.js `FormData#getHeaders()` 返回的请求头。默认值为 `'legacy'`，即复制所有返回的请求头以保留现有的 v1 行为。设置为 `'content-only'` 时，仅从 `getHeaders()` 复制 `Content-Type` 和 `Content-Length`。
+
+### 使用 Symbol 键的自定义选项
+
+配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
 
 ### `timeout`
 

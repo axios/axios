@@ -21,7 +21,8 @@ This release raises the form-data security floor, adds configuration and type-sy
 - Proxy Bypass: Canonicalized IPv4 shorthand, octal, and hexadecimal forms during NO_PROXY matching and honored * entries within comma- or space-separated bypass lists. (#11029, #11053)
 - Cancellation: Propagated already-aborted input signals immediately when composing abort signals. (#11035)
 - Header Handling: Preserved empty first values for duplicate singleton headers and made AxiosHeaders#getSetCookie() consistently return arrays for present values. (#11036, #11037)
-- URL Handling: Included normalized, safely redacted offending URLs in malformed-protocol errors and removed repeated trailing slashes when combining base URLs. (#11000, #11008, #11038)
+- URL Handling: Included normalized, safely redacted offending URLs in malformed-protocol errors and removed repeated trailing slashes when combining base URLs. (#11008, #11038)
+
 - Progress Events: Clamped malformed negative progress values to zero and ensured final Node.js download progress events are delivered before streamed responses close. (#11039, #11040)
 - Error and JSON Serialization: Serialized Set values as arrays in JSON-compatible snapshots and synthesized useful AxiosError messages from otherwise-empty AggregateError instances. (#11044, #11059)
 - Content-Length Enforcement: Corrected base64 data: URL size estimation so maxContentLength is enforced consistently by the HTTP and Fetch adapters. (#11061)
@@ -58,7 +59,8 @@ We are thrilled to welcome our new contributors. Thank you for helping improve A
 - @TheHonoredOne914 (#11071)
 - @Ahsan1Murtaza (#11073)
 
-[Full Changelog](https://github.com/axios/axios/compare/v1.18.1...v1.19.0)
+[Full Changelog](https://github.com/axios/axios/compare/v1.18.1...v1.19.0)
+
 
 ## v1.18.0 — June 13, 2026
 

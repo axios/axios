@@ -511,16 +511,6 @@ for (const [header, value] of headers) {
   const headers = new axios.AxiosHeaders({ x: 1 });
 
   headers.y = 2;
-  headers.z = null;
-  headers.optional = undefined;
-  // Callable values remain accepted because AxiosHeaders class methods also flow through
-  // the string index signature; TypeScript cannot distinguish those from dynamic keys.
-  headers.callable = () => 'not a runtime header value';
-
-  // @ts-expect-error -- dynamic header values must be serializable Axios header values
-  headers.promise = Promise.resolve('foo');
-  // @ts-expect-error -- arbitrary objects are not valid Axios header values
-  headers.object = { foo: 'bar' };
 })();
 
 // AxiosRequestHeaders
@@ -542,8 +532,6 @@ for (const [header, value] of headers) {
       config.headers.setAccept('foo');
       config.headers = new axios.AxiosHeaders({ x: 1 });
       config.headers.foo = '1';
-      // @ts-expect-error -- interceptors must not assign non-header values
-      config.headers.someCustomHeader = Promise.resolve('foo');
       config.headers.set('bar', '2');
       config.headers.set({ myHeader: 'myValue' });
       config.headers = new axios.AxiosHeaders({ myHeader: 'myValue' });

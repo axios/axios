@@ -42,10 +42,9 @@ The above form will be submitted as:
 {
   "foo": "1",
   "deep": {
-    "prop": {
-      "spaced": "3"
-    }
+    "prop": "2"
   },
+  "deep prop spaced": "3",
   "baz": ["4", "5"],
   "user": {
     "age": "value2"
@@ -53,8 +52,8 @@ The above form will be submitted as:
 }
 ```
 
-::: tip Path collisions overwrite earlier values
-Field names are parsed into property paths by splitting on `.`, brackets, or whitespace. Two inputs whose paths overlap will collide: in the example above, `deep.prop` parses to `["deep", "prop"]` and `deep prop spaced` parses to `["deep", "prop", "spaced"]`, so the deeper assignment replaces `deep.prop = "2"` with the nested object `{ spaced: "3" }`. Pick non-overlapping field names if you need both values.
+::: tip Field-name path notation
+Only dot and bracket notation create property paths. Other characters—including spaces, `-`, `+`, `*`, and `&`—remain part of literal field names. For example, `deep.prop` creates a nested path, while `deep prop spaced` remains a top-level key.
 :::
 
 ::: warning

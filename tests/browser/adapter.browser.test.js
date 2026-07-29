@@ -86,8 +86,8 @@ describe('adapter (vitest browser)', () => {
 
   afterEach(() => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
-    axios.interceptors.request.handlers = [];
-    axios.interceptors.response.handlers = [];
+    axios.interceptors.request.clear();
+    axios.interceptors.response.clear();
   });
 
   it('should support custom adapter', async () => {

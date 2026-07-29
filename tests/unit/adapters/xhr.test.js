@@ -69,6 +69,17 @@ describe('xhr adapter status 0 handling', () => {
     expect(reason.message).toBe('Request aborted');
   });
 
+  it('should reject before validateStatus can accept a status 0 response', async () => {
+    const axios = await importAxiosForPage('http://localhost/index.html');
+    const validateStatus = vi.fn(() => true);
+    const reason = await axios
+      .get('data.json', { adapter: 'xhr', validateStatus })
+      .catch((error) => error);
+    expect(reason).toBeInstanceOf(axios.AxiosError);
+    expect(reason.code).toBe(axios.AxiosError.ECONNABORTED);
+    expect(validateStatus).not.toHaveBeenCalled();
+  });
+
   it('should resolve an absolute file: read from an http page when responseURL is unavailable', async () => {
     const axios = await importAxiosForPage('http://localhost/index.html');
     const response = await axios.get('file:///app/data.json', { adapter: 'xhr' });

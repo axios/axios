@@ -94,4 +94,17 @@ describe('xhr adapter status 0 handling', () => {
     expect(reason).toBeInstanceOf(axios.AxiosError);
     expect(reason.code).toBe(axios.AxiosError.ECONNABORTED);
   });
+
+  it.each([
+    ['an ASCII space', ' https://api.example.com/things'],
+    ['a C0 control', '\u0000https://api.example.com/things'],
+  ])(
+    'should reject an absolute http request from a file: page when prefixed by %s',
+    async (description, url) => {
+      const axios = await importAxiosForPage('file:///app/index.html');
+      const reason = await axios.get(url, { adapter: 'xhr' }).catch((error) => error);
+      expect(reason).toBeInstanceOf(axios.AxiosError);
+      expect(reason.code).toBe(axios.AxiosError.ECONNABORTED);
+    }
+  );
 });

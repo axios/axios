@@ -79,6 +79,21 @@ describe('core::InterceptorManager', () => {
     expect(manager.handlers.map((handler) => handler.fulfilled)).toEqual([stale]);
   });
 
+  it('does not retain interceptor entries when the handlers array is cleared in place', () => {
+    const manager = new InterceptorManager();
+    const handler = () => {};
+
+    for (let i = 0; i < 10000; i++) {
+      manager.handlers.length = 0;
+      manager.use(handler);
+    }
+
+    const internals = manager[Object.getOwnPropertySymbols(manager)[0]];
+
+    expect(manager.handlers).toHaveLength(1);
+    expect(internals.handlerEntries.size).toBe(1);
+  });
+
   it('defers compaction while iterating so newly registered handlers are not visited', () => {
     const manager = new InterceptorManager();
     const first = () => {};

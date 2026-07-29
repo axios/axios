@@ -1,10 +1,16 @@
 import type { DefaultTheme } from 'vitepress';
+import { tokenizeSearchText } from './tokenizeSearchText.js';
 
 export const searchConfig = {
   provider: 'local',
   options: {
     detailedView: 'auto',
     disableQueryPersistence: false,
+    miniSearch: {
+      options: {
+        tokenize: tokenizeSearchText,
+      },
+    },
     locales: {
       root: {
         translations: {

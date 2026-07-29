@@ -648,6 +648,7 @@ axios({
 
 ```js
 // GET request for remote image in node.js
+import fs from 'fs';
 const response = await axios({
   method: 'get',
   url: 'https://bit.ly/2mTM3nY',

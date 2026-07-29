@@ -147,4 +147,22 @@ formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
 
+## Reconvertir FormData en JSON
+
+`axios.formToJSON()` convertit la notation par points et crochets des noms de champs en objets et tableaux imbriqués. Seuls `.`, `[` et `]` sont des séparateurs structurels. Les caractères tels que `-`, les espaces, `+`, `*` et `&` restent dans les clés littérales.
+
+```js
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+console.log(axios.formToJSON(form));
+// {
+//   'user-name': 'johndoe',
+//   user: { name: 'john' }
+// }
+```
+
+`user[name]` crée également un chemin d'objet imbriqué, tandis que `items[]` crée un tableau.
+
 Axios supporte les méthodes raccourcies suivantes : `postForm`, `putForm`, `patchForm` qui sont simplement les méthodes HTTP correspondantes avec l'en-tête `Content-Type` prédéfini à `multipart/form-data`.

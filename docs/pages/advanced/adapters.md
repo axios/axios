@@ -83,6 +83,38 @@ function myAdapter(config) {
 const instance = axios.create({ adapter: myAdapter });
 ```
 
+TypeScript adapters can preserve both request data and query params on the response config by using the matching generics:
+
+```ts
+import type {
+  AxiosPromise,
+  InternalAxiosRequestConfig,
+} from "axios";
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+}
+
+interface SearchResponse {
+  results: string[];
+}
+
+const searchAdapter = (
+  config: InternalAxiosRequestConfig<RequestBody, SearchParams>
+): AxiosPromise<SearchResponse, RequestBody, SearchParams> =>
+  Promise.resolve({
+    data: { results: [] },
+    status: 200,
+    statusText: "OK",
+    headers: {},
+    config,
+  });
+```
+
 ::: tip
 The `settle` helper resolves the promise for 2xx status codes and rejects it for everything else, matching axios's default behaviour. If you want custom status validation, use the `validateStatus` config option instead.
 :::

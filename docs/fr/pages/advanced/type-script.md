@@ -45,6 +45,72 @@ try {
 }
 ```
 
+## Typage des données de requête et des paramètres de requête
+
+`AxiosRequestConfig<D = any, P = any>` utilise `D` pour les données de requête et `P` pour les paramètres de requête. Un sérialiseur de paramètres personnalisé reçoit le même `P` :
+
+```ts
+import axios, {
+  type AxiosPromise,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from "axios";
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+interface SearchResponse {
+  results: string[];
+}
+
+const searchConfig: AxiosRequestConfig<RequestBody, SearchParams> = {
+  data: { includeArchived: false },
+  params: { query: "axios", page: 1 },
+  paramsSerializer: (params) => `${params.query}:${params.page ?? 1}`,
+};
+
+const response = await axios.get("/search", searchConfig);
+response.config.data;   // RequestBody | undefined
+response.config.params; // SearchParams | undefined
+
+const invalidConfig: AxiosRequestConfig<RequestBody, SearchParams> = {
+  // @ts-expect-error `query` doit être une chaîne
+  params: { query: 123 },
+};
+```
+
+Les résultats de requête par défaut conservent `D` et `P` dans `response.config`, y compris lorsque les alias de requête infèrent ces types depuis une configuration typée. `RawAxiosRequestConfig`, `InternalAxiosRequestConfig`, `AxiosDefaults`, `CreateAxiosDefaults`, `AxiosResponse`, `AxiosPromise`, `AxiosError`, `CanceledError`, les instances appelables, les adaptateurs et `mergeConfig()` conservent également le type des paramètres.
+
+Les méthodes de requête ajoutent `P` comme dernier générique —`<T, R, D, P>`— afin que les positions existantes des données de réponse (`T`), de la réponse personnalisée (`R`) et des données de requête (`D`) restent inchangées. Un type de réponse personnalisé fourni explicitement continue de contrôler la valeur résolue. `P` vaut `any` par défaut pour préserver la compatibilité.
+
+Un adaptateur ou une autre promise explicitement typée peut conserver les deux types de requête :
+
+```ts
+const searchAdapter = (
+  config: InternalAxiosRequestConfig<RequestBody, SearchParams>
+): AxiosPromise<SearchResponse, RequestBody, SearchParams> =>
+  Promise.resolve({
+    data: { results: [] },
+    status: 200,
+    statusText: "OK",
+    headers: {},
+    config,
+  });
+
+declare const error: unknown;
+
+if (axios.isCancel<SearchResponse, RequestBody, SearchParams>(error)) {
+  error.config?.data;   // RequestBody | undefined
+  error.config?.params; // SearchParams | undefined
+}
+```
+
 ## Instances et intercepteurs typés
 
 Annotez le résultat de `axios.create` avec `AxiosInstance`, et annotez les intercepteurs de requête avec `InternalAxiosRequestConfig` pour obtenir une vérification de types de bout en bout sur un client personnalisé :
@@ -62,6 +128,35 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 ```
+
+## Configuration de requête personnalisée avec des clés symboles
+
+axios préserve les propriétés symboles propres et énumérables lorsqu'il fusionne les valeurs par défaut et la configuration de chaque requête. Une application peut augmenter le module `AxiosRequestConfig` avec une clé symbole précise, puis lire cette option depuis `InternalAxiosRequestConfig` dans un intercepteur ou un adaptateur :
+
+```ts
+import axios from "axios";
+
+export const someFlag: unique symbol = Symbol(
+  "some flag used in request interceptor"
+);
+
+declare module "axios" {
+  interface AxiosRequestConfig<D = any, P = any> {
+    [someFlag]?: boolean;
+  }
+}
+
+axios.interceptors.request.use((config) => {
+  if (config[someFlag]) {
+    config.headers.set("X-Some-Flag", "enabled");
+  }
+  return config;
+});
+
+await axios.get("/users", { [someFlag]: true });
+```
+
+Seules les propriétés symboles propres et énumérables sont copiées. Les propriétés symboles héritées ou non énumérables ne le sont pas.
 
 ## Typage des données de réponse
 

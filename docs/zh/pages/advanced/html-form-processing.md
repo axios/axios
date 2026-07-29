@@ -42,10 +42,9 @@ await axios.post('https://httpbin.org/post', document.querySelector('#htmlForm')
 {
   "foo": "1",
   "deep": {
-    "prop": {
-      "spaced": "3"
-    }
+    "prop": "2"
   },
+  "deep prop spaced": "3",
   "baz": ["4", "5"],
   "user": {
     "age": "value2"
@@ -53,8 +52,8 @@ await axios.post('https://httpbin.org/post', document.querySelector('#htmlForm')
 }
 ```
 
-::: tip 路径冲突会覆盖先前的值
-字段名会按 `.`、方括号或空白拆分为属性路径。两个路径重叠的输入会发生冲突：在上面的示例中，`deep.prop` 解析为 `["deep", "prop"]`，而 `deep prop spaced` 解析为 `["deep", "prop", "spaced"]`，因此更深的赋值会将 `deep.prop = "2"` 替换为嵌套对象 `{ spaced: "3" }`。如果你需要同时保留两个值，请使用互不重叠的字段名。
+::: tip 字段名路径表示法
+只有点号和方括号表示法会创建属性路径。其他字符（包括空格、`-`、`+`、`*` 和 `&`）都会保留为字面字段名的一部分。例如，`deep.prop` 会创建嵌套路径，而 `deep prop spaced` 仍是顶层键。
 :::
 
 ::: warning

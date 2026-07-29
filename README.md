@@ -763,6 +763,8 @@ These config options are available for requests. Only `url` is required. Request
   // `baseURL` is not a security boundary. If `url` is attacker-controlled, validate it
   // before passing it to axios. Relative URLs can contain `..` segments that resolve
   // outside an intended path prefix after the final URL is parsed.
+  // HTTP(S) URLs must include `//` after the protocol. Values such as
+  // `https:example.com` and `https:/example.com` are rejected with ERR_INVALID_URL.
   baseURL: 'https://some-domain.com/api/',
 
   // `allowAbsoluteUrls` determines whether or not absolute URLs will override a configured `baseUrl`.
@@ -1371,6 +1373,40 @@ axios.interceptors.request.use(
 );
 ```
 
+If a synchronous request interceptor throws, Axios calls that interceptor's paired rejection handler and stops running the remaining request interceptors. A rejection handler that returns normally, including one that returns `undefined` or a fulfilled Promise, treats the error as handled: Axios dispatches the request with the last valid config, and ignores the handler's return value. To block dispatch, omit the rejection handler or throw/return a rejected Promise from it. The final error then continues through response rejection interceptors.
+
+Use a rejected Promise when validation must prevent the request:
+
+```js
+axios.interceptors.request.use(
+  function validate(config) {
+    if (!config.headers.has('Authorization')) {
+      throw new Error('Authorization is required');
+    }
+    return config;
+  },
+  function rejectInvalidRequest(error) {
+    return Promise.reject(error);
+  },
+  { synchronous: true }
+);
+```
+
+A logging-only rejection handler can return normally to preserve the existing request-continuation behavior:
+
+```js
+axios.interceptors.request.use(
+  function prepare(config) {
+    throw new Error('Optional preparation failed');
+  },
+  function logPreparationFailure(error) {
+    console.warn(error);
+    // Returning normally dispatches with the last valid config.
+  },
+  { synchronous: true }
+);
+```
+
 If you want to execute a particular interceptor based on a runtime check,
 you can add a `runWhen` function to the options object. The request interceptor will not run **if and only if** the return
 of `runWhen` is `false`. Axios calls the function with the config
@@ -1495,6 +1531,10 @@ axios.get('/user/12345').catch(function (error) {
   console.log(error.config);
 });
 ```
+
+Axios rejects an `http:` or `https:` request `url` or `baseURL` that omits `//` after the protocol. For example, `https:example.com` and `https:/example.com` reject with `AxiosError` code `ERR_INVALID_URL` instead of being silently normalized. Pass a well-formed URL such as `https://example.com`.
+
+The error identifies the malformed URL, for example `Invalid URL "https:example.com": missing "//" after protocol`. To keep logs useful without leaking secrets, Axios reports the control-character-normalized URL with credentials, query parameter values, and fragment contents redacted; the scheme, host, path, and query parameter names remain visible.
 
 Use `validateStatus` to override the default condition (`status >= 200 && status < 300`) and choose which HTTP status codes should reject.
 
@@ -1931,6 +1971,24 @@ formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
 
+### Converting FormData to JSON
+
+`axios.formToJSON()` converts `FormData` field names that use dot or bracket notation into nested objects and arrays. Only `.`, `[`, and `]` are structural separators. Other characters, including `-`, spaces, `+`, `*`, and `&`, remain part of the literal key.
+
+```js
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+console.log(axios.formToJSON(form));
+// {
+//   'user-name': 'johndoe',
+//   user: { name: 'john' }
+// }
+```
+
+`user[name]` also creates `{ user: { name: ... } }`, while `items[]` creates an array.
+
 Axios supports `postForm`, `putForm`, and `patchForm` as shortcuts for the matching HTTP methods with the `Content-Type` header preset to `multipart/form-data`.
 
 ## Posting files
@@ -2004,10 +2062,9 @@ submits this JSON object:
 {
   "foo": "1",
   "deep": {
-    "prop": {
-      "spaced": "3"
-    }
+    "prop": "2"
   },
+  "deep prop spaced": "3",
   "baz": [
     "4",
     "5"
@@ -2017,6 +2074,8 @@ submits this JSON object:
   }
 }
 ```
+
+Only dot and bracket notation create nested paths when a form is converted to JSON. Spaces and other punctuation remain part of literal field names.
 
 Sending `Blobs`/`Files` as JSON (`base64`) is not currently supported.
 
@@ -2246,8 +2305,9 @@ Returns `this`.
 ### AxiosHeaders#get(header)
 
 ```
-  get(headerName: string, matcher?: true | AxiosHeaderMatcher): AxiosHeaderValue;
+  get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
+  get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 Returns the internal value of the header. It can take an extra argument to parse the header's value with `RegExp.exec`,
@@ -2267,6 +2327,15 @@ console.log(headers.get('Content-Type', true)); // parse key-value pairs from a 
 //    boundary: 'Asrf456BGe4h'
 // }
 
+const quotedHeaders = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...quotedHeaders.get('Content-Type', AxiosHeaders.parseParameters),
+});
+// { boundary: 'a,b' }
+
 console.log(
   headers.get('Content-Type', (value, name, headers) => {
     return String(value).replace(/a/g, 'ZZZ');
@@ -2277,6 +2346,10 @@ console.log(
 console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
+
+`AxiosHeaders.parseParameters` is the opt-in parser for normalized HTTP parameter values. It returns a null-prototype map, matches parameter names case-insensitively, removes quoted-string delimiters, decodes escaped quotes and backslashes, preserves commas and semicolons inside quoted values, and removes only HTTP optional whitespace around unquoted values. It omits the unsafe keys `__proto__`, `constructor`, and `prototype`.
+
+Passing `true` remains the legacy tokenizer and keeps its existing output for backward compatibility.
 
 Returns the value of the header.
 
@@ -2561,6 +2634,99 @@ try {
   }
 }
 ```
+
+### Typing request data and query params
+
+`AxiosRequestConfig<D = any, P = any>` uses `D` for the request body and `P` for query parameters. The params serializer receives the same `P`, and both types are preserved on the default response config:
+
+```typescript
+import axios, {
+  type AxiosPromise,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+interface SearchResponse {
+  results: string[];
+}
+
+const config: AxiosRequestConfig<RequestBody, SearchParams> = {
+  data: { includeArchived: false },
+  params: { query: 'axios', page: 1 },
+  paramsSerializer: (params) => `${params.query}:${params.page ?? 1}`,
+};
+
+const response = await axios.get('/search', config);
+response.config.data;   // RequestBody | undefined
+response.config.params; // SearchParams | undefined
+
+const invalidConfig: AxiosRequestConfig<RequestBody, SearchParams> = {
+  // @ts-expect-error `query` must be a string
+  params: { query: 123 },
+};
+
+const adapter = (
+  adapterConfig: InternalAxiosRequestConfig<RequestBody, SearchParams>
+): AxiosPromise<SearchResponse, RequestBody, SearchParams> =>
+  Promise.resolve({
+    data: { results: [] },
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: adapterConfig,
+  });
+```
+
+The request methods place `P` last—`<T, R, D, P>`—so the existing response data (`T`), custom response (`R`), and request data (`D`) positions do not change. Explicit custom response types still determine the resolved value. `RawAxiosRequestConfig`, `InternalAxiosRequestConfig`, defaults, `AxiosResponse`, `AxiosPromise<T, D, P>`, `AxiosError`, `CanceledError`, callable instances, adapters, and `mergeConfig()` also carry `P`. The default is `any` for backward compatibility.
+
+Use all three public error generics when cancellation narrowing must retain the response, request body, and params types:
+
+```typescript
+declare const error: unknown;
+
+if (axios.isCancel<SearchResponse, RequestBody, SearchParams>(error)) {
+  error.config?.data;   // RequestBody | undefined
+  error.config?.params; // SearchParams | undefined
+}
+```
+
+### Symbol-keyed custom request config
+
+Own enumerable symbol properties survive config merging, so module-augmented options can reach request interceptors and adapters:
+
+```typescript
+import axios from 'axios';
+
+export const someFlag: unique symbol = Symbol(
+  'some flag used in request interceptor'
+);
+
+declare module 'axios' {
+  interface AxiosRequestConfig<D = any, P = any> {
+    [someFlag]?: boolean;
+  }
+}
+
+axios.interceptors.request.use((config) => {
+  if (config[someFlag]) {
+    config.headers.set('X-Some-Flag', 'enabled');
+  }
+  return config;
+});
+
+await axios.get('/users', { [someFlag]: true });
+```
+
+Only own enumerable symbol properties are copied; inherited and non-enumerable symbol properties are not.
 
 Because axios publishes an ESM default export and a CJS `module.exports`, TypeScript has a few caveats.
 The recommended setting is `"moduleResolution": "node16"`, which is implied by `"module": "node16"`. This requires TypeScript 4.7 or greater.

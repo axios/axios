@@ -83,6 +83,38 @@ function myAdapter(config) {
 const instance = axios.create({ adapter: myAdapter });
 ```
 
+TypeScript 适配器可以使用相应的泛型，在响应配置中同时保留请求数据和查询参数：
+
+```ts
+import type {
+  AxiosPromise,
+  InternalAxiosRequestConfig,
+} from "axios";
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+}
+
+interface SearchResponse {
+  results: string[];
+}
+
+const searchAdapter = (
+  config: InternalAxiosRequestConfig<RequestBody, SearchParams>
+): AxiosPromise<SearchResponse, RequestBody, SearchParams> =>
+  Promise.resolve({
+    data: { results: [] },
+    status: 200,
+    statusText: "OK",
+    headers: {},
+    config,
+  });
+```
+
 ::: tip
 `settle` 辅助函数对 2xx 状态码 resolve Promise，对其他状态码 reject Promise，与 axios 的默认行为一致。如果需要自定义状态码验证，请改用 `validateStatus` 配置选项。
 :::

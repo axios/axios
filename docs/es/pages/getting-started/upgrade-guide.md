@@ -2,6 +2,16 @@
 
 Esta guía tiene como objetivo ayudarte a actualizar tu proyecto de una versión del framework a otra. Se recomienda leer las notas de la versión de cada versión mayor desde la que estás migrando, ya que pueden contener información importante sobre cambios que rompen la compatibilidad.
 
+## Actualización a v1.19.0
+
+### Se rechazan las URL HTTP(S) malformadas
+
+Ahora las solicitudes rechazan una `url` o `baseURL` `http:` o `https:` que omita `//` después del protocolo. Sustituye valores como `https:example.com` o `https:/example.com` por una URL bien formada como `https://example.com`. El `AxiosError` resultante usa el código `ERR_INVALID_URL` e identifica de forma segura la URL incorrecta con sus secretos ocultos. Este cambio de seguridad intencional evita que la normalización de URL malformadas eluda `baseURL` o las listas de direcciones permitidas.
+
+### Errores de interceptores de solicitud síncronos
+
+Cuando un interceptor de solicitud síncrono lanza un error, axios invoca su manejador de rechazo emparejado y detiene los interceptores de solicitud restantes. Un manejador de rechazo que retorna normalmente trata el error como resuelto y envía la solicitud con la última configuración válida; su valor de retorno no se convierte en la configuración. Si una validación debe impedir el envío, omite el manejador de rechazo o haz que lance o devuelva una Promise rechazada. Los errores terminales continúan por los interceptores de rechazo de respuesta.
+
 ## Actualización de v0.x a v1.x
 
 ### Cambios en la declaración de importación

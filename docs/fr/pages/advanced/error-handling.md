@@ -54,6 +54,18 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
+## URL HTTP(S) mal formées
+
+axios rejette une `url` ou une `baseURL` de requête `http:` ou `https:` qui omet `//` après le protocole. Par exemple, `https:example.com` et `https:/example.com` sont rejetées avec une `AxiosError` dont le code est `ERR_INVALID_URL`, au lieu d'être normalisées silencieusement par le parseur d'URL du navigateur ou de Node.js. Utilisez une URL bien formée comme `https://example.com`.
+
+Le message identifie l'URL concernée, par exemple :
+
+```text
+Invalid URL "https:example.com": missing "//" after protocol
+```
+
+Ce comportement empêche les URL mal formées de contourner `baseURL` ou les listes d'URL autorisées. L'URL affichée est normalisée pour les caractères de contrôle et masque les identifiants, les valeurs des paramètres de requête et le contenu du fragment. Elle conserve le schéma, l'hôte, le chemin et les noms des paramètres afin que la requête reste identifiable. Ce masquage du message est systématique car `AxiosError.message` est toujours inclus par `toJSON()` ; l'option `redact` de la configuration ne peut pas nettoyer un message déjà créé.
+
 En utilisant l'option de configuration `validateStatus`, vous pouvez remplacer la condition par défaut (status >= 200 && status < 300) et définir le ou les codes HTTP qui doivent lever une erreur.
 
 ```js

@@ -68,8 +68,9 @@ headers.set(
 La méthode `get` est utilisée pour récupérer la valeur d'un en-tête. La méthode peut être appelée avec un seul nom d'en-tête, un matcher optionnel ou un analyseur. Le matcher est par défaut `true`. L'analyseur peut être une expression régulière utilisée pour extraire la valeur de l'en-tête.
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 Voici un exemple de quelques-unes des utilisations possibles de la méthode `get` :
@@ -88,6 +89,15 @@ console.log(headers.get('Content-Type', true)); // analyser les paires clé-vale
 //    boundary: 'Asrf456BGe4h'
 // }
 
+const quotedHeaders = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...quotedHeaders.get('Content-Type', AxiosHeaders.parseParameters),
+});
+// { boundary: 'a,b' }
+
 console.log(
   headers.get('Content-Type', (value, name, headers) => {
     return String(value).replace(/a/g, 'ZZZ');
@@ -98,6 +108,10 @@ console.log(
 console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
+
+`AxiosHeaders.parseParameters` est un analyseur opt-in pour les valeurs normalisées des paramètres HTTP. Il retourne une map à prototype nul avec des noms de paramètres insensibles à la casse. Il retire les délimiteurs des chaînes entre guillemets, décode les guillemets doubles et barres obliques inverses échappés, et préserve les virgules ou points-virgules dans les valeurs entre guillemets. Pour les valeurs sans guillemets, seuls les espaces optionnels RFC (espace et tabulation horizontale) autour de la valeur sont retirés.
+
+L'analyseur omet les clés dangereuses lors de la matérialisation d'objets (`__proto__`, `constructor` et `prototype`). Passer `true` continue d'utiliser le tokenizer historique et conserve sa sortie pour la rétrocompatibilité.
 
 ## Has
 

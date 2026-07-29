@@ -79,6 +79,42 @@ axios.interceptors.request.use(
 );
 ```
 
+### Errores en interceptores síncronos
+
+Cuando un interceptor de solicitud síncrono lanza un error, axios llama al manejador `onRejected` emparejado con ese interceptor y deja de ejecutar los interceptores de solicitud restantes. Si el manejador retorna normalmente —incluido `undefined` o una Promise resuelta— el error se considera manejado y axios envía la solicitud con la última configuración válida. El valor devuelto por el manejador no reemplaza esa configuración.
+
+Para impedir el envío, omite el manejador de rechazo o haz que lance un error o devuelva una Promise rechazada. El error terminal continúa entonces por los interceptores de rechazo de respuesta.
+
+```js
+axios.interceptors.request.use(
+  function validate(config) {
+    if (!config.headers.has("Authorization")) {
+      throw new Error("Authorization is required");
+    }
+    return config;
+  },
+  function rejectInvalidRequest(error) {
+    return Promise.reject(error);
+  },
+  { synchronous: true }
+);
+```
+
+Un manejador que solo registra el error puede retornar normalmente para conservar el comportamiento existente de continuación:
+
+```js
+axios.interceptors.request.use(
+  function prepare(config) {
+    throw new Error("Optional preparation failed");
+  },
+  function logPreparationFailure(error) {
+    console.warn(error);
+    // Retornar normalmente envía la solicitud con la última configuración válida.
+  },
+  { synchronous: true }
+);
+```
+
 ## Interceptores usando `runWhen`
 
 Si deseas ejecutar un interceptor particular basándote en una verificación en tiempo de ejecución, puedes añadir una función `runWhen` al objeto de opciones. El interceptor no se ejecutará si y solo si el retorno de `runWhen` es `false`. La función se llamará con el objeto de configuración (recuerda que también puedes vincularle tus propios argumentos). Esto puede ser útil cuando tienes un interceptor de solicitud asíncrono que solo necesita ejecutarse en ciertos momentos.

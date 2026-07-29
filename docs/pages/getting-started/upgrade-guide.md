@@ -2,6 +2,16 @@
 
 This guide is intended to help you upgrade your project from one version of the framework to another. It is recommended to read the release notes for each major version you are upgrading from/to, as they may contain important information about breaking changes.
 
+## Upgrading to v1.19.0
+
+### Malformed HTTP(S) URLs are rejected
+
+Requests now reject an `http:` or `https:` `url` or `baseURL` that omits `//` after the protocol. Replace values such as `https:example.com` or `https:/example.com` with a well-formed URL such as `https://example.com`. The resulting `AxiosError` uses code `ERR_INVALID_URL` and identifies the safely redacted offending URL. This intentional security change prevents malformed-URL normalization from bypassing `baseURL` or URL allowlists.
+
+### Synchronous request interceptor errors
+
+When a synchronous request interceptor throws, axios invokes its paired rejection handler and stops the remaining request interceptors. A rejection handler that returns normally handles the error and dispatches with the last valid config; its return value does not become the request config. If validation must block dispatch, omit the rejection handler or throw/return a rejected Promise from it. Terminal errors continue through response rejection interceptors.
+
 ## Upgrading from v0.x to v1.x
 
 ### Changes to the import statement

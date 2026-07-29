@@ -2,6 +2,16 @@
 
 Ce guide a pour but de vous aider à migrer votre projet d'une version du framework à une autre. Il est recommandé de lire les notes de version de chaque version majeure que vous migrez, car elles peuvent contenir des informations importantes sur les changements incompatibles.
 
+## Migration vers v1.19.0
+
+### Les URL HTTP(S) mal formées sont rejetées
+
+Les requêtes rejettent désormais une `url` ou une `baseURL` `http:` ou `https:` qui omet `//` après le protocole. Remplacez les valeurs telles que `https:example.com` ou `https:/example.com` par une URL bien formée comme `https://example.com`. L'`AxiosError` résultante utilise le code `ERR_INVALID_URL` et identifie l'URL concernée après masquage sécurisé des secrets. Ce changement de sécurité intentionnel empêche la normalisation des URL mal formées de contourner `baseURL` ou les listes d'URL autorisées.
+
+### Erreurs des intercepteurs de requête synchrones
+
+Lorsqu'un intercepteur de requête synchrone lève une erreur, axios appelle son gestionnaire de rejet associé et arrête les intercepteurs de requête restants. Un gestionnaire de rejet qui retourne normalement traite l'erreur comme résolue et envoie la requête avec la dernière configuration valide ; sa valeur de retour ne devient pas la configuration. Si une validation doit empêcher l'envoi, omettez le gestionnaire de rejet ou faites-lui lever une erreur ou retourner une Promise rejetée. Les erreurs terminales continuent à travers les intercepteurs de rejet de réponse.
+
 ## Migration de v0.x vers v1.x
 
 ### Modification de l'instruction d'importation

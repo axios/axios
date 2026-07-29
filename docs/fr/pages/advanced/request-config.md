@@ -19,6 +19,8 @@ Consultez le [guide de sécurité](/pages/misc/security) pour plus de détails.
 
 L'`url` est l'URL vers laquelle la requête est envoyée. Il peut s'agir d'une chaîne de caractères ou d'une instance de `URL`.
 
+Une URL `http:` ou `https:` doit inclure `//` après le protocole. Les valeurs mal formées telles que `https:example.com` et `https:/example.com` sont rejetées avec `ERR_INVALID_URL` ; utilisez une URL bien formée comme `https://example.com`.
+
 ### `method`
 
 La `method` est la méthode HTTP à utiliser pour la requête. La méthode par défaut est `GET`.
@@ -28,6 +30,8 @@ La `method` est la méthode HTTP à utiliser pour la requête. La méthode par d
 La `baseURL` est l'URL de base à ajouter en préfixe à l'`url`, sauf si celle-ci est une URL absolue. Utile pour effectuer des requêtes vers le même domaine sans avoir à répéter le nom de domaine et tout préfixe d'API ou de version.
 
 `baseURL` est une commodité de construction d'URL, pas une limite de sécurité. Si l'`url` d'une requête provient d'une entrée non fiable, validez-la avant de la transmettre à axios. Une `url` relative peut contenir des segments `..` ; après qu'axios l'a combinée avec `baseURL`, le parseur d'URL de la plateforme normalise le chemin et peut résoudre la requête en dehors du préfixe de chemin prévu. `allowAbsoluteUrls: false` empêche les URLs absolues de remplacer `baseURL`, mais ne valide ni ne limite les chemins relatifs.
+
+La même règle d'URL bien formée s'applique à `baseURL` : les valeurs `http:` et `https:` doivent inclure `//` après le protocole.
 
 ### `allowAbsoluteUrls`
 
@@ -96,6 +100,20 @@ Les `params` sont les paramètres d'URL à envoyer avec la requête. Il doit s'a
 
 La fonction `paramsSerializer` vous permet de sérialiser l'objet `params` avant son envoi au serveur. Plusieurs options sont disponibles pour cette fonction ; veuillez vous référer à l'exemple de configuration complète en bas de cette page.
 
+En TypeScript, `AxiosRequestConfig<D, P>` utilise `P` pour `params`, et un `paramsSerializer` personnalisé reçoit ce même type :
+
+```ts
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+const config: AxiosRequestConfig<unknown, SearchParams> = {
+  params: { query: "axios", page: 1 },
+  paramsSerializer: (params) => `${params.query}:${params.page ?? 1}`,
+};
+```
+
 #### Encodage pour-cent strict RFC 3986
 
 Par défaut, axios redécode `%3A`, `%24`, `%2C` et `%20` vers `:`, `$`, `,` et `+` pour la lisibilité (le `+` suit la convention `application/x-www-form-urlencoded` pour représenter une espace dans une chaîne de requête). Ces caractères sont valides dans un composant de requête selon la [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), donc la sortie par défaut est correcte. Cependant, certains backends exigent un encodage pour-cent strict et rejettent la forme lisible.
@@ -131,6 +149,10 @@ Pour les objets `FormData` Node.js qui fournissent une méthode `getHeaders()`, 
 ### `formDataHeaderPolicy` <Badge type="warning" text="Node.js uniquement" />
 
 Contrôle la manière dont axios copie les en-têtes retournés par `FormData#getHeaders()` de Node.js. La valeur par défaut est `'legacy'`, qui copie tous les en-têtes retournés afin de préserver le comportement existant de la v1. Définissez `'content-only'` pour ne copier que `Content-Type` et `Content-Length` depuis `getHeaders()`.
+
+### Options personnalisées avec des clés symboles
+
+La fusion des configurations préserve les propriétés symboles propres et énumérables. Les applications TypeScript peuvent augmenter `AxiosRequestConfig` avec une clé symbole précise, puis lire cette option depuis `InternalAxiosRequestConfig` dans un intercepteur de requête ou un adaptateur. Les propriétés symboles héritées ou non énumérables ne sont pas copiées. Consultez le [guide TypeScript](/pages/advanced/type-script#configuration-de-requete-personnalisee-avec-des-cles-symboles) pour un exemple.
 
 ### `timeout`
 

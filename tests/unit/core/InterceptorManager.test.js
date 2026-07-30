@@ -164,4 +164,17 @@ describe('core::InterceptorManager', () => {
     expect(visited).toEqual([first, second]);
     expect(manager.handlers).toHaveLength(0);
   });
+
+  it('tolerates a falsy handlers array', () => {
+    const manager = new InterceptorManager();
+
+    manager.use(() => {});
+    manager.handlers = null;
+
+    expect(() => manager.forEach(() => {})).not.toThrow();
+
+    manager.handlers = undefined;
+
+    expect(() => manager.forEach(() => {})).not.toThrow();
+  });
 });

@@ -167,15 +167,18 @@ describe('core::InterceptorManager', () => {
 
   it('tolerates a falsy handlers array', () => {
     const manager = new InterceptorManager();
+    const visited = [];
+    const visit = (handler) => visited.push(handler);
 
     manager.use(() => {});
     manager.handlers = null;
 
-    expect(() => manager.forEach(() => {})).not.toThrow();
+    expect(() => manager.forEach(visit)).not.toThrow();
 
     manager.handlers = undefined;
 
-    expect(() => manager.forEach(() => {})).not.toThrow();
+    expect(() => manager.forEach(visit)).not.toThrow();
+    expect(visited).toEqual([]);
   });
 
   it.each([null, undefined])('tolerates ejecting when handlers is %s', (replacement) => {

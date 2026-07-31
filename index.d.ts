@@ -565,9 +565,7 @@ export class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
   __CANCEL__?: boolean;
 }
 
-declare const axiosResponseDefault: unique symbol;
-
-type AxiosResponseDefault = typeof axiosResponseDefault;
+type AxiosResponseDefault = typeof axios.axiosResponseDefault;
 
 type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
   ? AxiosResponse<T, D, {}, P>
@@ -760,6 +758,7 @@ export function mergeConfig<D = any, P = any>(
 export function create(config?: CreateAxiosDefaults): AxiosInstance;
 
 export interface AxiosStatic extends AxiosInstance {
+  readonly axiosResponseDefault: unique symbol;
   Cancel: typeof CanceledError;
   CancelToken: CancelTokenStatic;
   Axios: typeof Axios;

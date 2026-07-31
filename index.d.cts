@@ -179,9 +179,7 @@ declare class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
   __CANCEL__?: boolean;
 }
 
-declare const axiosResponseDefault: unique symbol;
-
-type AxiosResponseDefault = typeof axiosResponseDefault;
+type AxiosResponseDefault = typeof axios.axiosResponseDefault;
 
 type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
   ? axios.AxiosResponse<T, D, {}, P>
@@ -731,6 +729,7 @@ declare namespace axios {
   }
 
   interface AxiosStatic extends AxiosInstance {
+    readonly axiosResponseDefault: unique symbol;
     Cancel: typeof CanceledError;
     CancelToken: CancelTokenStatic;
     Axios: typeof Axios;

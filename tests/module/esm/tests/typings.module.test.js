@@ -15,6 +15,14 @@ const tsconfig = {
   },
 };
 
+const declarationTsconfig = {
+  compilerOptions: {
+    checkJs: true,
+    module: 'node16',
+    declaration: true,
+  },
+};
+
 describe('module esm typings compatibility', () => {
   it('type-checks esm axios typings', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-index.ts');
@@ -33,6 +41,32 @@ describe('module esm typings compatibility', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-added-types.ts');
     const fixturePath = createTempFixture(suiteRoot, 'typings-esm-added', sourcePath, tsconfig, {
       type: 'module',
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
+  it('emits declarations when forwarding a generic response type', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-declaration-emit.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'typings-esm-declaration', sourcePath, declarationTsconfig, {
+      type: 'module',
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
+  it('emits declarations when forwarding a generic response type through require', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-declaration-emit-require.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'typings-esm-declaration-require', sourcePath, declarationTsconfig, {
+      type: 'commonjs',
     });
 
     try {

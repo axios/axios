@@ -1475,7 +1475,7 @@ When a response is fulfilled and multiple response interceptors are registered:
 - If a fulfillment interceptor throws, Axios skips the next fulfillment interceptor and calls the next rejection interceptor.
 - After the error is caught, later fulfillment interceptors run again, just like in a promise chain.
 
-Read [the interceptor tests](./test/specs/interceptors.spec.js) to see all this in code.
+Read [the interceptor tests](./tests/browser/interceptors.browser.test.js) to see all this in code.
 
 ## Error types
 

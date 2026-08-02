@@ -164,4 +164,35 @@ describe('core::InterceptorManager', () => {
     expect(visited).toEqual([first, second]);
     expect(manager.handlers).toHaveLength(0);
   });
+
+  it('treats a falsy handlers array as empty in forEach (regression from #11087)', () => {
+    const manager = new InterceptorManager();
+    const visited = [];
+
+    manager.use(() => {});
+    manager.handlers = null;
+
+    expect(() => manager.forEach((handler) => {
+      visited.push(handler);
+    })).not.toThrow();
+    expect(visited).toEqual([]);
+
+    manager.handlers = undefined;
+
+    expect(() => manager.forEach((handler) => {
+      visited.push(handler);
+    })).not.toThrow();
+    expect(visited).toEqual([]);
+  });
+
+  it('ejects an interceptor with a string id (regression from #11087)', () => {
+    const manager = new InterceptorManager();
+    const first = () => {};
+
+    const id = manager.use(first);
+
+    manager.eject(String(id));
+
+    expect(manager.handlers).toHaveLength(0);
+  });
 });

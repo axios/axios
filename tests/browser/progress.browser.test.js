@@ -2,8 +2,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import axios from '../../index.js';
 
-class MockXMLHttpRequest {
+// Real EventTarget + ProgressEvent dispatches so events keep genuine browser
+// semantics: `target` survives the dispatch, `currentTarget` does not.
+class ProgressEventTarget extends EventTarget {
   constructor() {
+    super();
+    this._listenerCounts = {};
+  }
+
+  addEventListener(type, listener, options) {
+    this._listenerCounts[type] = (this._listenerCounts[type] || 0) + 1;
+    super.addEventListener(type, listener, options);
+  }
+}
+
+class MockXMLHttpRequest extends ProgressEventTarget {
+  constructor() {
+    super();
     this.requestHeaders = {};
     this.responseHeaders = {};
     this.readyState = 0;
@@ -18,14 +33,11 @@ class MockXMLHttpRequest {
     this.onabort = null;
     this.onerror = null;
     this.ontimeout = null;
-    this._listeners = {};
-    this._uploadListeners = {};
-    this.upload = {
-      addEventListener: (type, listener) => {
-        this._uploadListeners[type] ||= [];
-        this._uploadListeners[type].push(listener);
-      },
-    };
+    this.upload = new ProgressEventTarget();
+    // like a real XHR, invoke the onloadend property while loadend dispatches
+    this.addEventListener('loadend', (event) => {
+      this.onloadend && this.onloadend(event);
+    });
   }
 
   open(method, url, async = true) {
@@ -36,11 +48,6 @@ class MockXMLHttpRequest {
 
   setRequestHeader(key, value) {
     this.requestHeaders[key] = value;
-  }
-
-  addEventListener(type, listener) {
-    this._listeners[type] ||= [];
-    this._listeners[type].push(listener);
   }
 
   getAllResponseHeaders() {
@@ -56,13 +63,13 @@ class MockXMLHttpRequest {
   }
 
   getListenerCount(type, target = 'request') {
-    const listeners = target === 'upload' ? this._uploadListeners : this._listeners;
-    return listeners[type]?.length || 0;
+    const eventTarget = target === 'upload' ? this.upload : this;
+    return eventTarget._listenerCounts[type] || 0;
   }
 
-  emit(type, target = 'request', event = {}) {
-    const listeners = target === 'upload' ? this._uploadListeners : this._listeners;
-    (listeners[type] || []).forEach((listener) => listener(event));
+  emit(type, target = 'request', init = {}) {
+    const eventTarget = target === 'upload' ? this.upload : this;
+    eventTarget.dispatchEvent(new ProgressEvent(type, init));
   }
 
   respondWith({
@@ -87,7 +94,11 @@ class MockXMLHttpRequest {
 
     queueMicrotask(() => {
       if (this.onloadend) {
-        this.onloadend();
+        this.emit('loadend', 'request', {
+          loaded: this.responseText.length,
+          total: this.responseText.length,
+          lengthComputable: true,
+        });
       } else if (this.onreadystatechange) {
         this.onreadystatechange();
       }
@@ -226,5 +237,101 @@ describe('progress (vitest browser)', () => {
     await responsePromise;
 
     expect(downloadProgressSpy).toHaveBeenCalled();
+  });
+
+  it('should deliver the full streamed payload to a listener reading from the live event target', async () => {
+    let received = '';
+    let lastLength = 0;
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ event }) => {
+        const xhr = event && event.currentTarget;
+        if (!xhr || typeof xhr.responseText !== 'string') {
+          return;
+        }
+        received += xhr.responseText.slice(lastLength);
+        lastLength = xhr.responseText.length;
+      },
+    });
+    const request = getLastRequest();
+
+    request.responseText = 'AAAA';
+    request.emit('progress', 'request', { loaded: 4 });
+    request.responseText += 'BBBB';
+    request.emit('progress', 'request', { loaded: 8 });
+    request.responseText += 'CCCC';
+    request.emit('progress', 'request', { loaded: 12 });
+
+    request.respondWith({ status: 200, responseText: request.responseText });
+    await responsePromise;
+
+    expect(received).toBe('AAAABBBBCCCC');
+  });
+
+  it('should always deliver a final download progress event with a live event target', async () => {
+    const deliveries = [];
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ loaded, event }) => {
+        deliveries.push({ loaded, liveTarget: !!(event && event.currentTarget) });
+      },
+    });
+    const request = getLastRequest();
+
+    request.responseText = 'AAAA';
+    request.emit('progress', 'request', { loaded: 4 });
+    request.responseText += 'BBBB';
+    request.emit('progress', 'request', { loaded: 8 });
+
+    request.respondWith({ status: 200, responseText: request.responseText });
+    await responsePromise;
+
+    expect(deliveries.at(-1)).toEqual({ loaded: 8, liveTarget: true });
+  });
+
+  it('should always deliver a final upload progress event with a live event target', async () => {
+    const deliveries = [];
+    const responsePromise = axios.post('/foo', 'payload', {
+      onUploadProgress: ({ loaded, event }) => {
+        deliveries.push({ loaded, liveTarget: !!(event && event.currentTarget) });
+      },
+    });
+    const request = getLastRequest();
+
+    request.emit('progress', 'upload', { loaded: 3, total: 7, lengthComputable: true });
+    request.emit('progress', 'upload', { loaded: 5, total: 7, lengthComputable: true });
+    request.emit('loadend', 'upload', { loaded: 7, total: 7, lengthComputable: true });
+
+    request.respondWith({ status: 200, responseText: 'ok' });
+    await responsePromise;
+
+    expect(deliveries.at(-1)).toEqual({ loaded: 7, liveTarget: true });
+  });
+
+  it('should keep the request reachable via event.target on throttle-deferred deliveries', async () => {
+    vi.useFakeTimers();
+    try {
+      const deliveries = [];
+      const responsePromise = axios('/foo', {
+        onDownloadProgress: ({ event }) => {
+          deliveries.push(event && event.target);
+        },
+      });
+      const request = getLastRequest();
+
+      request.responseText = 'AAAA';
+      request.emit('progress', 'request', { loaded: 4 });
+      request.responseText += 'BBBB';
+      request.emit('progress', 'request', { loaded: 8 });
+
+      // step past the throttle window so the second event arrives via the timer
+      await vi.advanceTimersByTimeAsync(400);
+
+      request.respondWith({ status: 200, responseText: request.responseText });
+      await responsePromise;
+
+      expect(deliveries.length).toBeGreaterThanOrEqual(2);
+      expect(deliveries.every((target) => target === request)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { progressEventReducer } from '../../../lib/helpers/progressEventReducer.js';
 
 describe('helpers::progressEventReducer', () => {
@@ -76,5 +76,74 @@ describe('helpers::progressEventReducer', () => {
     expect(events[0].loaded).toBe(0);
     expect(events[0].progress).toBeUndefined();
     expect(events[0].bytes).toBe(0);
+  });
+
+  describe('flush with a fresh event', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should deliver a fresh progress event even when nothing is pending', () => {
+      const events = [];
+      const [onProgress, flush] = progressEventReducer((data) => {
+        events.push(data);
+      }, true, 1);
+
+      onProgress({ lengthComputable: false, loaded: 10 });
+      flush({ lengthComputable: false, loaded: 30 });
+
+      expect(events.length).toBe(2);
+      expect(events[1].loaded).toBe(30);
+      expect(events[1].download).toBe(true);
+    });
+
+    it('should prefer a fresh progress event over the pending one and clear it', () => {
+      const events = [];
+      const [onProgress, flush] = progressEventReducer((data) => {
+        events.push(data);
+      }, true, 1);
+
+      onProgress({ lengthComputable: false, loaded: 10 });
+      onProgress({ lengthComputable: false, loaded: 20 });
+      flush({ lengthComputable: false, loaded: 30 });
+
+      expect(events.length).toBe(2);
+      expect(events[1].loaded).toBe(30);
+
+      flush();
+      vi.runAllTimers();
+
+      expect(events.length).toBe(2);
+    });
+
+    it('should replay the pending event when flush receives a non-progress argument', () => {
+      const events = [];
+      const [onProgress, flush] = progressEventReducer((data) => {
+        events.push(data);
+      }, true, 1);
+
+      onProgress({ lengthComputable: false, loaded: 10 });
+      onProgress({ lengthComputable: false, loaded: 20 });
+      flush(new Error('stream error'));
+
+      expect(events.length).toBe(2);
+      expect(events[1].loaded).toBe(20);
+    });
+
+    it('should not fire for a non-progress argument when nothing is pending', () => {
+      const events = [];
+      const [onProgress, flush] = progressEventReducer((data) => {
+        events.push(data);
+      }, true, 1);
+
+      onProgress({ lengthComputable: false, loaded: 10 });
+      flush(new Error('stream error'));
+
+      expect(events.length).toBe(1);
+    });
   });
 });

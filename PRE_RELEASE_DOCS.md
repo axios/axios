@@ -30,6 +30,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show forward comparisons using `HttpStatusCode.ContentTooLarge` and `HttpStatusCode.UnprocessableContent`.
 - **Notes:** Removing the deprecated aliases or changing the numeric reverse-lookup strings is reserved for a future major release. Keep ESM and CommonJS examples aligned and update translated documentation after the English wording is finalized.
 
+### Streaming reads from progress events
+
+- **Change:** Document how to read incremental response data from throttled progress events, and the guaranteed final delivery on `loadend`.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, closes #6796.
+- **Status:** Pending.
+- **Docs targets:** README request config reference for `onDownloadProgress` and `onUploadProgress`; any response streaming examples.
+- **Required content:** Progress callbacks are throttled, so intermediate deliveries can run after the originating browser event finished dispatching; in that case `event.currentTarget` is `null` per DOM semantics, while `event.target` still references the request. A final delivery with the complete transfer state is guaranteed once `loadend` fires and is dispatched live.
+- **Examples:** An incremental `responseText` reader that slices new data using `progressEvent.event.target` inside `onDownloadProgress`.
+
 ### Typed request params
 
 - **Change:** Document the additive request-params generic across axios's public TypeScript declarations.

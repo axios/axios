@@ -306,6 +306,34 @@ describe('progress (vitest browser)', () => {
     expect(deliveries.at(-1)).toEqual({ loaded: 7, liveTarget: true });
   });
 
+  it('should settle the request when the final progress listener throws', async () => {
+    // fake timers keep the rethrown listener error parked so it cannot fail the test run
+    vi.useFakeTimers();
+    try {
+      let finalDeliveries = 0;
+      const responsePromise = axios('/foo', {
+        onDownloadProgress: ({ event }) => {
+          if (event && event.type === 'loadend') {
+            finalDeliveries += 1;
+            throw new Error('listener failure');
+          }
+        },
+      });
+      const request = getLastRequest();
+
+      request.responseText = 'AAAA';
+      request.emit('progress', 'request', { loaded: 4 });
+      request.respondWith({ status: 200, responseText: request.responseText });
+
+      const response = await responsePromise;
+
+      expect(finalDeliveries).toBe(1);
+      expect(response.status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('should keep the request reachable via event.target on throttle-deferred deliveries', async () => {
     vi.useFakeTimers();
     try {

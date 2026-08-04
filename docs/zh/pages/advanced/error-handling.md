@@ -52,6 +52,18 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
+## 格式错误的 HTTP(S) URL
+
+如果 `http:` 或 `https:` 请求的 `url` 或 `baseURL` 在协议后缺少 `//`，axios 会拒绝请求。例如，`https:example.com` 和 `https:/example.com` 会以代码为 `ERR_INVALID_URL` 的 `AxiosError` 拒绝，而不会由浏览器或 Node.js URL 解析器静默规范化。请使用 `https://example.com` 等格式正确的 URL。
+
+错误消息会指出有问题的 URL，例如：
+
+```text
+Invalid URL "https:example.com": missing "//" after protocol
+```
+
+此行为可防止格式错误的 URL 绕过 `baseURL` 或 URL 允许列表。报告的 URL 会先规范化控制字符，并隐藏凭据、查询参数值和片段内容；协议、主机、路径和查询参数名称会保留，以便识别请求。消息级脱敏始终生效，因为 `AxiosError.message` 一定会包含在 `toJSON()` 中；请求配置的 `redact` 选项无法清理已创建的消息。
+
 使用 `validateStatus` 配置选项，可以覆盖默认条件（`status >= 200 && status < 300`），自定义应当抛出错误的 HTTP 状态码。
 
 ```js

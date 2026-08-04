@@ -147,4 +147,22 @@ formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
 
+## 将 FormData 转回 JSON
+
+`axios.formToJSON()` 会将字段名称中的点号和方括号表示法转换为嵌套对象和数组。只有 `.`、`[` 和 `]` 是结构分隔符。`-`、空格、`+`、`*` 和 `&` 等其他字符会保留为字面键的一部分。
+
+```js
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+console.log(axios.formToJSON(form));
+// {
+//   'user-name': 'johndoe',
+//   user: { name: 'john' }
+// }
+```
+
+`user[name]` 同样会创建嵌套对象路径，而 `items[]` 会创建数组。
+
 axios 支持以下快捷方法：`postForm`、`putForm`、`patchForm`，它们分别对应相应的 HTTP 方法，并预设 `Content-Type` 请求头为 `multipart/form-data`。

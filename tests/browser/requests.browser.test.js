@@ -285,12 +285,36 @@ describe('requests (vitest browser)', () => {
     await expect(promise).resolves.toBeDefined();
   });
 
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1505389
+  it('should reject when the response status is 0 (non-file protocol)', async () => {
+    const { request, promise } = startRequest('/foo');
+
+    request.respondWith({ status: 0 });
+
+    const reason = await promise.catch((error) => error);
+
+    expect(reason).toBeInstanceOf(AxiosError);
+    expect(reason.code).toBe(AxiosError.ECONNABORTED);
+    expect(reason.message).toBe('Request aborted');
+  });
+
   it('should resolve when the response status is 0 (file protocol)', async () => {
     const { request, promise } = startRequest('file:///xxx');
 
     request.respondWith({
       status: 0,
       responseURL: 'file:///xxx',
+    });
+
+    await expect(promise).resolves.toBeDefined();
+  });
+
+  it('should resolve when the response status is 0 for a relative file: read', async () => {
+    const { request, promise } = startRequest('data.json');
+
+    request.respondWith({
+      status: 0,
+      responseURL: 'file:///app/data.json',
     });
 
     await expect(promise).resolves.toBeDefined();

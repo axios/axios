@@ -6,6 +6,27 @@
 
 `axios` 实例是你用于发起 HTTP 请求的主要对象，它是一个创建 `Axios` 类新实例的工厂函数。`axios` 实例提供了多个请求方法，详见文档的[请求别名](/pages/advanced/request-method-aliases)章节。
 
+## TypeScript 请求类型
+
+公共请求类型使用不同的泛型分别表示请求数据和查询参数：
+
+```ts
+AxiosRequestConfig<D = any, P = any>
+RawAxiosRequestConfig<D = any, P = any>
+InternalAxiosRequestConfig<D = any, P = any>
+AxiosDefaults<D = any, P = any>
+CreateAxiosDefaults<D = any, P = any>
+
+AxiosResponse<T = any, D = any, H = {}, P = any>
+AxiosPromise<T = any, D = any, P = any>
+AxiosError<T = unknown, D = any, P = any>
+CanceledError<T, D = any, P = any>
+```
+
+`D` 是请求体类型，`P` 是查询参数类型。`AxiosResponse`、`AxiosPromise`、错误、默认配置、可调用实例、请求别名、适配器和 `mergeConfig()` 都会在请求配置中保留这两种类型。自定义参数序列化器会接收同一个 `P`。
+
+请求方法使用 `<T, R, D, P>` 的泛型顺序，将 `P` 添加在最后，因此现有的显式泛型参数保持兼容。未提供自定义响应类型 `R` 时，默认 `AxiosResponse` 会在 `response.config` 中保留 `D` 和 `P`；显式提供的 `R` 仍然控制最终返回值。为保持向后兼容，请求数据和参数泛型均默认为 `any`。
+
 ## 类
 
 ### `Axios`
@@ -25,7 +46,7 @@ constructor(instanceConfig?: AxiosRequestConfig);
 处理请求调用和响应解析，是发起 HTTP 请求的核心方法。接受一个配置对象作为参数，返回一个解析为响应对象的 Promise。
 
 ```ts
-request(configOrUrl: string | AxiosRequestConfig<D>, config: AxiosRequestConfig<D>): Promise<AxiosResponse<T>>;
+request<T, R, D, P>(config: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `CancelToken` <Badge type="danger" text="已废弃，请改用 AbortController" />
@@ -55,7 +76,7 @@ toAbortSignal(): AbortSignal;
 创建一个新的 `AxiosError` 实例，构造函数接受可选的 message、code、config、request 和 response 作为参数。
 
 ```ts
-constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D>, request?: any, response?: AxiosResponse<T, D>);
+constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any, response?: AxiosResponse<T, D, {}, P>);
 ```
 
 #### `properties`
@@ -64,7 +85,7 @@ constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig
 
 ```ts
 // 配置实例。
-config?: InternalAxiosRequestConfig<D>;
+config?: InternalAxiosRequestConfig<D, P>;
 
 // 错误代码。
 code?: string;
@@ -73,7 +94,7 @@ code?: string;
 request?: any;
 
 // 响应实例。
-response?: AxiosResponse<T, D>;
+response?: AxiosResponse<T, D, {}, P>;
 
 // 表示该错误是否为 AxiosError 的布尔值。
 isAxiosError: boolean;
@@ -118,9 +139,25 @@ set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHea
 从请求头对象获取一个请求头。
 
 ```ts
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
+
+传入 `AxiosHeaders.parseParameters` 可将规范化的 HTTP 参数解析为安全的、原型为 null 的映射：
+
+```js
+const headers = new AxiosHeaders({
+  "Content-Type": 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...headers.get("Content-Type", AxiosHeaders.parseParameters),
+});
+// { boundary: "a,b" }
+```
+
+参数名称不区分大小写。解析器会移除带引号字符串的定界引号，解码转义的引号和反斜杠，保留带引号值中的逗号和分号，并且只移除不带引号值两侧的 RFC 可选空白。它会忽略 `__proto__`、`constructor` 和 `prototype`。`get(name, true)` 仍是旧版分词器。
 
 #### `has`
 
@@ -184,7 +221,7 @@ toString(): string;
 `CanceledError` 类是 HTTP 请求被取消时抛出的错误类，继承自 `AxiosError` 类。
 
 ```ts
-constructor(message?: string, config?: InternalAxiosRequestConfig, request?: any);
+constructor(message?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any);
 __CANCEL__?: boolean;
 ```
 
@@ -201,7 +238,7 @@ Cancel: typeof CanceledError;
 检查某个错误是否为 `CanceledError` 的函数，可用于区分主动取消和意外错误。
 
 ```ts
-isCancel<T = any>(value: any): value is CanceledError<T>;
+isCancel<T = any, D = any, P = any>(value: any): value is CanceledError<T, D, P>;
 ```
 
 ```js
@@ -279,6 +316,8 @@ await axios.post('/api/users', form);
 
 将 `FormData` 实例转换回普通 JavaScript 对象，在需要以结构化格式读取表单数据时非常实用。
 
+只有点号和方括号表示法具有结构含义：`.`、`[` 和 `]` 会分隔路径，而 `-`、空格、`+`、`*` 和 `&` 会保留在字面键中。`foo.bar` 和 `foo[bar]` 会创建嵌套对象，`foo[]` 会创建数组。
+
 ```ts
 formToJSON(form: FormData): object;
 ```
@@ -287,11 +326,12 @@ formToJSON(form: FormData): object;
 import { formToJSON } from 'axios';
 
 const form = new FormData();
-form.append('name', 'Jay');
-form.append('role', 'admin');
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
 
 const obj = formToJSON(form);
-console.log(obj); // { name: "Jay", role: "admin" }
+console.log(obj);
+// { "user-name": "johndoe", user: { name: "john" } }
 ```
 
 ### `getAdapter`
@@ -317,7 +357,10 @@ const adapter = getAdapter(['fetch', 'xhr', 'http']);
 合并两个 axios 配置对象，使用与 axios 内部合并默认配置和请求级选项相同的深度合并策略。后者的值优先级更高。
 
 ```ts
-mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): AxiosRequestConfig<T>;
+mergeConfig<D = any, P = any>(
+  config1: AxiosRequestConfig<D, P>,
+  config2: AxiosRequestConfig<D, P>
+): AxiosRequestConfig<D, P>;
 ```
 
 ```js

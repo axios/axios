@@ -87,4 +87,30 @@ source.token.unsubscribe(listener);
 
 被取消的请求会以 `axios.CanceledError` 拒绝。旧版导出 `axios.Cancel` 是 `axios.CanceledError` 的别名，取消错误还包含 `__CANCEL__`，用于兼容 `axios.isCancel`。
 
+在 TypeScript 中，`isCancel<T, D, P>()` 在收窄 `unknown` 错误类型时，会保留响应数据、请求数据和查询参数的类型：
+
+```ts
+interface SearchResponse {
+  results: string[];
+}
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+}
+
+try {
+  await axios.get("/search");
+} catch (error) {
+  if (axios.isCancel<SearchResponse, RequestBody, SearchParams>(error)) {
+    error.response?.data; // SearchResponse | undefined
+    error.config?.data;   // RequestBody | undefined
+    error.config?.params; // SearchParams | undefined
+  }
+}
+```
+
 你可以使用同一个取消令牌或 AbortController 取消多个请求。如果在 axios 请求开始时取消令牌已处于已取消状态，则请求会立即被取消，不会尝试发起实际的网络请求。

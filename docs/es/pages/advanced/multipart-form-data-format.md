@@ -147,4 +147,22 @@ formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
 
+## Convertir FormData de nuevo a JSON
+
+`axios.formToJSON()` convierte la notación con puntos y corchetes de los nombres de campo en objetos y arrays anidados. Solo `.`, `[` y `]` son separadores estructurales. Los caracteres como `-`, espacios, `+`, `*` y `&` permanecen en las claves literales.
+
+```js
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+console.log(axios.formToJSON(form));
+// {
+//   'user-name': 'johndoe',
+//   user: { name: 'john' }
+// }
+```
+
+`user[name]` también crea una ruta de objeto anidada, mientras que `items[]` crea un array.
+
 Axios admite los siguientes métodos abreviados: `postForm`, `putForm`, `patchForm`, que son simplemente los métodos HTTP correspondientes con el encabezado `Content-Type` preestablecido en `multipart/form-data`.

@@ -87,4 +87,30 @@ source.token.unsubscribe(listener);
 
 Les requêtes annulées sont rejetées avec `axios.CanceledError`. L'export hérité `axios.Cancel` est un alias de `axios.CanceledError`, et les erreurs d'annulation incluent `__CANCEL__` pour la compatibilité avec `axios.isCancel`.
 
+En TypeScript, `isCancel<T, D, P>()` conserve les types des données de réponse, des données de requête et des paramètres de requête lors du narrowing d'une erreur `unknown` :
+
+```ts
+interface SearchResponse {
+  results: string[];
+}
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+}
+
+try {
+  await axios.get("/search");
+} catch (error) {
+  if (axios.isCancel<SearchResponse, RequestBody, SearchParams>(error)) {
+    error.response?.data; // SearchResponse | undefined
+    error.config?.data;   // RequestBody | undefined
+    error.config?.params; // SearchParams | undefined
+  }
+}
+```
+
 Vous pouvez annuler plusieurs requêtes avec le même token d'annulation ou le même abort controller. Si un token d'annulation est déjà annulé au moment où une requête Axios démarre, alors la requête est annulée immédiatement, sans aucune tentative d'effectuer une vraie requête.

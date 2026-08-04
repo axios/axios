@@ -87,4 +87,30 @@ source.token.unsubscribe(listener);
 
 Canceled requests reject with `axios.CanceledError`. The legacy `axios.Cancel` export is an alias of `axios.CanceledError`, and cancellation errors include `__CANCEL__` for `axios.isCancel` compatibility.
 
+In TypeScript, `isCancel<T, D, P>()` preserves the response data, request data, and query params types while narrowing an `unknown` error:
+
+```ts
+interface SearchResponse {
+  results: string[];
+}
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+}
+
+try {
+  await axios.get("/search");
+} catch (error) {
+  if (axios.isCancel<SearchResponse, RequestBody, SearchParams>(error)) {
+    error.response?.data; // SearchResponse | undefined
+    error.config?.data;   // RequestBody | undefined
+    error.config?.params; // SearchParams | undefined
+  }
+}
+```
+
 You can cancel several requests with the same cancel token/abort controller. If a cancellation token is already cancelled at the moment of starting an Axios request, then the request is cancelled immediately, without any attempts to make a real request.

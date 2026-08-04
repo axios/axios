@@ -214,14 +214,18 @@ export enum HttpStatusCode {
   Gone = 410,
   LengthRequired = 411,
   PreconditionFailed = 412,
+  /** @deprecated Use `ContentTooLarge` instead. */
   PayloadTooLarge = 413,
+  ContentTooLarge = 413,
   UriTooLong = 414,
   UnsupportedMediaType = 415,
   RangeNotSatisfiable = 416,
   ExpectationFailed = 417,
   ImATeapot = 418,
   MisdirectedRequest = 421,
+  /** @deprecated Use `UnprocessableContent` instead. */
   UnprocessableEntity = 422,
+  UnprocessableContent = 422,
   Locked = 423,
   FailedDependency = 424,
   TooEarly = 425,

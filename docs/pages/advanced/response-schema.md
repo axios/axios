@@ -29,6 +29,19 @@ Every axios request resolves to a response object with the following shape. The 
 }
 ```
 
+In TypeScript, `AxiosResponse<T, D, H, P>` types the response data (`T`), request data (`D`), response headers (`H`), and query params (`P`). The config retains both request-side types:
+
+```ts
+interface AxiosResponse<T = any, D = any, H = {}, P = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
+  config: InternalAxiosRequestConfig<D, P>;
+  request?: any;
+}
+```
+
 ## Accessing response fields
 
 In practice you will usually destructure just the parts you need:

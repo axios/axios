@@ -1,5 +1,67 @@
 # Changelog
 
+## v1.19.0 — July 22, 2026
+
+This release raises the form-data security floor, adds configuration and type-system capabilities, and fixes NO_PROXY matching, interceptor errors, progress reporting, and serialization edge cases.
+
+## 🔒 Security Fixes
+
+- Multipart Form Data: Raised the form-data dependency floor to ^4.0.6, preventing fresh installations from resolving versions affected by the CRLF injection vulnerability GHSA-hmw2-7cc7-3qxx (https://github.com/advisories/GHSA-hmw2-7cc7-3qxx). (#11028)
+
+## 🚀 New Features
+
+- Configuration Extensibility: Preserved own-enumerable symbol-keyed fields through mergeConfig and added a generic params type across public TypeScript declarations, responses, errors,
+  adapters, and serializers. (#11043, #11081)
+- Header Parameter Parsing: Added the opt-in AxiosHeaders.parseParameters() parser for quote-aware, RFC-style HTTP parameter parsing while preserving legacy parsing behavior. (#11051)
+- HTTP Status Codes: Added the missing Cloudflare 520 WebServerReturnsAnUnknownError status and matching ESM/CJS declarations. (#11067)
+
+## 🐛 Bug Fixes
+
+- Form Data Conversion: Limited formDataToJSON path splitting to dot and bracket notation, preserving literal punctuation in keys, and removed browser-facing Buffer.from usage from toFormData to avoid unnecessary polyfills. (#11006, #11018)
+- Proxy Bypass: Canonicalized IPv4 shorthand, octal, and hexadecimal forms during NO_PROXY matching and honored * entries within comma- or space-separated bypass lists. (#11029, #11053)
+- Cancellation: Propagated already-aborted input signals immediately when composing abort signals. (#11035)
+- Header Handling: Preserved empty first values for duplicate singleton headers and made AxiosHeaders#getSetCookie() consistently return arrays for present values. (#11036, #11037)
+- URL Handling: Included normalized, safely redacted offending URLs in malformed-protocol errors and removed repeated trailing slashes when combining base URLs. (#11008, #11038)
+
+- Progress Events: Clamped malformed negative progress values to zero and ensured final Node.js download progress events are delivered before streamed responses close. (#11039, #11040)
+- Error and JSON Serialization: Serialized Set values as arrays in JSON-compatible snapshots and synthesized useful AxiosError messages from otherwise-empty AggregateError instances. (#11044, #11059)
+- Content-Length Enforcement: Corrected base64 data: URL size estimation so maxContentLength is enforced consistently by the HTTP and Fetch adapters. (#11061)
+- Synchronous Interceptors: Prevented requests from being dispatched after synchronous request interceptors fail unless their paired rejection handler resolves successfully. (#11071)
+
+## 🔧 Maintenance & Chores
+
+- Dependencies: Updated development and test tooling, the docs fixture's Axios version, and GitHub Actions integrations including Checkout, Setup Node, Setup Deno, and Zizmor. (#11031, #11055, #11056, #11058, #11079, #11080, #11088, #11089, #11090)
+- Build Outputs: Limited sourcemap generation to published minified bundles, removing broken map references from non-minified builds. (#11054)
+- Form Data Internals: Centralized FormData header handling and made the Node.js adapter tolerate getHeaders() returning undefined under the content-only policy. (#11062)
+- Developer Experience: Ignored common local AI-tooling directories and fixed a constant-reassignment crash when the development sandbox serves its root path. (#11032, #11073)
+- Documentation: Updated sponsor information, clarified that baseURL is not a path-security boundary, scoped provenance claims to attested releases, and corrected the configuration-defaults documentation. (#11041, #11068, #11076, #11078)
+- Publishing: Simplified v1 publishing to use the npm version bundled with Node.js 26 and updated package metadata for the 1.19.0 release. (#11083, #11095)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve Axios:
+
+- @afonsojramos (#11028)
+- @MahinAnowar (#11006)
+- @yassertawfik4 (#11024)
+- @AnandSundar (#11029)
+- @lin-hongkuan (#11035)
+- @Wali007-lab (#11054)
+- @magicdawn (#11043)
+- @andrewkernel (#11053)
+- @Sagargupta16 (#11059)
+- @Rpaudel379 (#11078)
+- @kobihikri (#11076)
+- @spokodev (#11061)
+- @shaedrich (#11081)
+- @QodeXcli (#11062)
+- @akahoshi1421 (#11067)
+- @TheHonoredOne914 (#11071)
+- @Ahsan1Murtaza (#11073)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.18.1...v1.19.0)
+
+
 ## v1.18.0 — June 13, 2026
 
 This release hardens redirect and URL handling, improves the validateStatus configuration semantics, and includes updates to documentation, dependencies, and release metadata.

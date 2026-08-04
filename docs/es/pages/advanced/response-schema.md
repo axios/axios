@@ -29,6 +29,19 @@ Cada solicitud de axios se resuelve en un objeto de respuesta con la siguiente e
 }
 ```
 
+En TypeScript, `AxiosResponse<T, D, H, P>` tipa los datos de respuesta (`T`), los datos de solicitud (`D`), los encabezados de respuesta (`H`) y los parámetros de consulta (`P`). La configuración conserva ambos tipos de la solicitud:
+
+```ts
+interface AxiosResponse<T = any, D = any, H = {}, P = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
+  config: InternalAxiosRequestConfig<D, P>;
+  request?: any;
+}
+```
+
 ## Acceder a los campos de la respuesta
 
 En la práctica, generalmente desestructurarás solo las partes que necesites:

@@ -351,10 +351,29 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opencollective.com/axios/contribute"
+                href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
                 target="_blank"
-                >💜 Become a sponsor</a
             >
+                <img
+                    width="71px"
+                    height="70px"
+                    src="https://images.opencollective.com/polskie-kasyno-online/c25e456/avatar.png"
+                    alt="polskie kasyno online"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Kasyno.us.com to niezależny portal o tematyce kasyno online Polska, który pomaga graczom znaleźć bezpieczne i sprawdzone kasyna internetowe.
+            </p>
+            <p align="center">
+                <a
+                    href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>kasyno.us.com</b></a
+                >
+            </p>
         </td>
     </tr>
 </table>
@@ -1475,7 +1494,7 @@ When a response is fulfilled and multiple response interceptors are registered:
 - If a fulfillment interceptor throws, Axios skips the next fulfillment interceptor and calls the next rejection interceptor.
 - After the error is caught, later fulfillment interceptors run again, just like in a promise chain.
 
-Read [the interceptor tests](./test/specs/interceptors.spec.js) to see all this in code.
+Read [the interceptor tests](./tests/browser/interceptors.browser.test.js) to see all this in code.
 
 ## Error types
 

@@ -32,6 +32,8 @@ const cancelFromAlias = new cancelCtor('from alias');
 
 const status = axios.HttpStatusCode.WebServerIsDown;
 const unknownErrorStatus = axios.HttpStatusCode.WebServerReturnsAnUnknownError;
+const contentTooLargeStatus = axios.HttpStatusCode.ContentTooLarge;
+const unprocessableContentStatus = axios.HttpStatusCode.UnprocessableContent;
 
 class CustomBlob {
   constructor(_parts?: any[]) {}

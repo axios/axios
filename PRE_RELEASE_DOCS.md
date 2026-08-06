@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### RFC 9110 HTTP status code names
+
+- **Change:** Document the additive RFC 9110 names for HTTP statuses 413 and 422.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11082, closes #11066.
+- **Status:** Pending.
+- **Docs targets:** `README.md` and `docs/pages/advanced/api-reference.md` `HttpStatusCode` guidance; migration or upgrade notes; translated docs after the English documentation is finalized.
+- **Required content:** Introduce `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 as the preferred RFC 9110 names. Explain that `PayloadTooLarge` and `UnprocessableEntity` remain available as deprecated aliases throughout v1.x, and that numeric reverse lookups continue returning those legacy names for backward compatibility.
+- **Examples:** Show forward comparisons using `HttpStatusCode.ContentTooLarge` and `HttpStatusCode.UnprocessableContent`.
+- **Notes:** Removing the deprecated aliases or changing the numeric reverse-lookup strings is reserved for a future major release. Keep ESM and CommonJS examples aligned and update translated documentation after the English wording is finalized.
+
 ### Typed request params
 
 - **Change:** Document the additive request-params generic across axios's public TypeScript declarations.

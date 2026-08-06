@@ -6259,6 +6259,89 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    it('should reuse one context-free error listener across different sockets', async () => {
+      const noop = () => {};
+      const sockets = [new EventEmitter(), new EventEmitter()];
+
+      for (const socket of sockets) {
+        socket.setKeepAlive = noop;
+        socket.on('error', noop);
+      }
+
+      const createdRequests = [];
+      const transport = {
+        request() {
+          const socket = sockets[createdRequests.length];
+          const req = new (class MockRequest extends EventEmitter {
+            constructor() {
+              super();
+              this.destroyed = false;
+            }
+
+            setTimeout() {}
+
+            write() {}
+
+            end() {
+              this.emit('socket', socket);
+            }
+
+            destroy(err) {
+              if (this.destroyed) {
+                return;
+              }
+
+              this.destroyed = true;
+              err && this.emit('error', err);
+              this.emit('close');
+            }
+          })();
+
+          createdRequests.push(req);
+          return req;
+        },
+      };
+
+      const pending = sockets.map((_, index) =>
+        axios
+          .get(`http://example.com/socket-${index}`, {
+            transport,
+            maxRedirects: 0,
+          })
+          .catch((err) => err)
+      );
+
+      await setTimeoutAsync(0);
+
+      const axiosListeners = sockets.map((socket) =>
+        socket.listeners('error').filter((listener) => listener !== noop)
+      );
+
+      assert.strictEqual(axiosListeners[0].length, 1);
+      assert.strictEqual(axiosListeners[1].length, 1);
+      assert.strictEqual(
+        axiosListeners[0][0],
+        axiosListeners[1][0],
+        'different sockets should share the same module-scope listener'
+      );
+
+      sockets[0].emit('error', Object.assign(new Error('first socket failed'), { code: 'EPIPE' }));
+      assert.strictEqual(createdRequests[0].destroyed, true);
+      assert.strictEqual(createdRequests[1].destroyed, false);
+
+      sockets[1].emit(
+        'error',
+        Object.assign(new Error('second socket failed'), { code: 'ECONNRESET' })
+      );
+
+      const errors = await Promise.all(pending);
+      assert.ok(errors[0] instanceof AxiosError);
+      assert.strictEqual(errors[0].code, 'EPIPE');
+      assert.ok(errors[1] instanceof AxiosError);
+      assert.strictEqual(errors[1].code, 'ECONNRESET');
+      assert.strictEqual(createdRequests[1].destroyed, true);
+    });
+
     it('should not accumulate socket error listeners when a pooled socket is reassigned before the previous request closes (regression #10780)', async () => {
       const noop = () => {};
       const socket = new EventEmitter();

@@ -128,7 +128,7 @@ jobs:
 
       - name: Install ESM smoke test dependencies
         working-directory: tests/smoke/esm
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Install packed axios
         working-directory: tests/smoke/esm

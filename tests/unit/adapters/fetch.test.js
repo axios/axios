@@ -1734,6 +1734,15 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
     });
 
+    it('should allow a spaced trailing base64 token at the decoded maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+      const { data } = await bareAxios.get('data:text/plain; base64,TQ==', {
+        maxContentLength: 1,
+      });
+
+      assert.strictEqual(data, 'M');
+    });
+
     it('should allow percent-encoded base64 padding at the decoded maxContentLength', async () => {
       const bareAxios = axios.create({ adapter: 'fetch' });
       const { data } = await bareAxios.get('data:text/plain;base64,TQ%3D%3D', {

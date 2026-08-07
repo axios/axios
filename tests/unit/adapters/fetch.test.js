@@ -1743,6 +1743,23 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(data, 'M');
     });
 
+    // The URL parser removes these before fetch decodes, so each is a 1-byte
+    // base64 body and must not be rejected at maxContentLength: 1.
+    it('should allow a base64 token split by tabs or newlines at the decoded maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+
+      for (const url of [
+        'data:text/plain;\tbase64,TQ==',
+        'data:text/plain;\nbase64,TQ==',
+        'data:text/plain;\rbase64,TQ==',
+        'data:text/plain;ba\tse64,TQ==',
+        'data:text/plain;base64,T\tQ==',
+      ]) {
+        const { data } = await bareAxios.get(url, { maxContentLength: 1 });
+        assert.strictEqual(data, 'M', JSON.stringify(url));
+      }
+    });
+
     it('should allow percent-encoded base64 padding at the decoded maxContentLength', async () => {
       const bareAxios = axios.create({ adapter: 'fetch' });
       const { data } = await bareAxios.get('data:text/plain;base64,TQ%3D%3D', {

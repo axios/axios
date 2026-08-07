@@ -100,6 +100,23 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64 ,TQ=='), 1);
   });
 
+  // The URL parser strips every tab, LF and CR from the URL before fetch sees it,
+  // so these all reach the data: URL processor as 'data:text/plain;base64,TQ=='.
+  it('should ignore tabs and newlines anywhere in the url, as the URL parser does', () => {
+    for (const ws of ['\t', '\n', '\r', '\r\n']) {
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/plain;${ws}base64,TQ==`), 1, `before token: ${JSON.stringify(ws)}`);
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/plain;ba${ws}se64,TQ==`), 1, `inside token: ${JSON.stringify(ws)}`);
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/plain;base64,T${ws}Q==`), 1, `inside body: ${JSON.stringify(ws)}`);
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/pl${ws}ain,abcd`), 4, `inside type: ${JSON.stringify(ws)}`);
+    }
+  });
+
+  // U+000C and U+0020 survive URL parsing, and the data: URL processor accepts only
+  // U+0020 between ';' and 'base64' — so a form feed leaves the body percent-decoded.
+  it('should not treat a form feed before the base64 token as base64 encoding', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;\fbase64,TQ=='), 4);
+  });
+
   it('should include fragments in the raw Buffer allocation', () => {
     const body = 'TQ==#' + 'x'.repeat(4096);
     const url = 'data:application/octet-stream;base64,' + body;

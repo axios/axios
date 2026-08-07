@@ -111,10 +111,14 @@ describe('estimateDataURLDecodedBytes', () => {
     }
   });
 
-  // U+000C and U+0020 survive URL parsing, and the data: URL processor accepts only
-  // U+0020 between ';' and 'base64' — so a form feed leaves the body percent-decoded.
-  it('should not treat a form feed before the base64 token as base64 encoding', () => {
+  // A form feed survives URL parsing as '%0C', so it is no longer whitespace when the
+  // media type is stripped and the token stops being a token: fetch decodes these as text.
+  it('should not treat a form feed around the base64 token as base64 encoding', () => {
     assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;\fbase64,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64\f,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64\f\f,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64 \f,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64%0C,TQ=='), 4);
   });
 
   it('should include fragments in the raw Buffer allocation', () => {

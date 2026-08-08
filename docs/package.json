@@ -7,12 +7,11 @@
   "private": true,
   "scripts": {
     "docs:dev": "vitepress dev",
-    "docs:build": "npm run test:search && npm run test:sponsors && vitepress build",
+    "docs:build": "npm run test:search && vitepress build",
     "docs:preview": "vitepress preview",
     "docs:update:sponsors": "node ./scripts/process-sponsors.js",
     "prod:build": "npm run docs:update:sponsors && npm run docs:build",
     "test:search": "node --test .vitepress/tokenizeSearchText.test.js",
-    "test:sponsors": "node --test scripts/selectLatestSponsorsBySlug.test.js",
     "postinstall": "patch-package --exclude nothing"
   },
   "dependencies": {

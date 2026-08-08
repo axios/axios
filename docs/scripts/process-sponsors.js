@@ -38,7 +38,7 @@ query Account {
   account(githubHandle: "https://github.com/axios") {
     name
     slug
-    members(role: BACKER) {
+    members(role: BACKER, limit: 1000) {
       totalCount
       nodes {
         account {
@@ -77,7 +77,7 @@ query Account {
 const getActiveSponsorsQuery = `
 query Account {
   account(githubHandle: "https://github.com/axios") {
-    orders(onlyActiveSubscriptions: true, onlySubscriptions: true, frequency: MONTHLY, status: ACTIVE) {
+    orders(onlyActiveSubscriptions: true, onlySubscriptions: true, frequency: MONTHLY, status: ACTIVE, limit: 1000) {
       totalCount
       nodes {
         tier {
@@ -224,7 +224,17 @@ const formatAllSponsorData = (sponsorsData) => {
     return sponsor.tier?.name.toLowerCase() || 'backer';
   };
 
-  const processedData = sponsorsData
+  const latestSponsorsBySlug = sponsorsData.reduce((sponsorsBySlug, sponsor) => {
+    const existingSponsor = sponsorsBySlug.get(sponsor.account.slug);
+
+    if (!existingSponsor || Date.parse(sponsor.since) > Date.parse(existingSponsor.since)) {
+      sponsorsBySlug.set(sponsor.account.slug, sponsor);
+    }
+
+    return sponsorsBySlug;
+  }, new Map());
+
+  const processedData = [...latestSponsorsBySlug.values()]
     .map((sponsor) => ({
       name: sponsor.account.name ?? 'Backer',
       imageUrl: sponsor.account.imageUrl ?? null,
@@ -251,10 +261,15 @@ const mainProcess = async () => {
   try {
     const allSponsors = await getAllSponsors();
     const activeSponsors = await getActiveSponsors();
-    const allSponsorsProcessedData = formatAllSponsorData(allSponsors.account.members.nodes);
+    const additionalSponsorSlugs = new Set(
+      config.additionalSponsors.map((sponsor) => sponsor.slug)
+    );
+    const allSponsorsProcessedData = formatAllSponsorData(
+      allSponsors.account.members.nodes
+    ).filter((sponsor) => !additionalSponsorSlugs.has(sponsor.slug));
     const activeSponsorsProcessedData = formatActiveSponsorData(
       activeSponsors.account.orders.nodes
-    );
+    ).filter((sponsor) => !additionalSponsorSlugs.has(sponsor.slug));
 
     const sponsorsByTier = {};
 

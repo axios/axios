@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import axios from 'axios';
 import { printSuccessMessage, printErrorMessage, printInfoMessage } from './utils.js';
+import { selectLatestSponsorsBySlug } from './selectLatestSponsorsBySlug.js';
 
 /**
  * Special configuration for processing sponsor data.
@@ -224,15 +225,7 @@ const formatAllSponsorData = (sponsorsData) => {
     return sponsor.tier?.name.toLowerCase() || 'backer';
   };
 
-  const latestSponsorsBySlug = sponsorsData.reduce((sponsorsBySlug, sponsor) => {
-    const existingSponsor = sponsorsBySlug.get(sponsor.account.slug);
-
-    if (!existingSponsor || Date.parse(sponsor.since) > Date.parse(existingSponsor.since)) {
-      sponsorsBySlug.set(sponsor.account.slug, sponsor);
-    }
-
-    return sponsorsBySlug;
-  }, new Map());
+  const latestSponsorsBySlug = selectLatestSponsorsBySlug(sponsorsData);
 
   const processedData = [...latestSponsorsBySlug.values()]
     .map((sponsor) => ({

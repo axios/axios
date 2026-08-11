@@ -204,7 +204,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
-  it('should pass a fully resolved Request to a custom fetch implementation', async () => {
+  it('should pass a fully resolved Request and safe options to a custom fetch implementation', async () => {
     let captured;
     const fetchOptions = Object.create({
       headers: {
@@ -213,6 +213,9 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
     fetchOptions.cache = 'no-store';
     fetchOptions.redirect = 'error';
+    fetchOptions.customOption = 'custom-value';
+    fetchOptions.credentials = 'omit';
+    fetchOptions.duplex = 'full';
 
     const customFetch = function (input, init) {
       captured = {
@@ -227,6 +230,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       headers: {
         'X-Safe': 'value',
       },
+      withCredentials: true,
       fetchOptions,
       env: {
         fetch: customFetch,
@@ -239,8 +243,16 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     assert.strictEqual(captured.input.headers.get('X-Injected'), null);
     assert.strictEqual(captured.input.cache, 'no-store');
     assert.strictEqual(captured.input.redirect, 'error');
-    assert.strictEqual(captured.init, undefined);
-    assert.strictEqual(captured.argumentCount, 1);
+    assert.strictEqual(captured.input.credentials, 'include');
+    assert.strictEqual(captured.input.duplex, 'half');
+    assert.strictEqual(Object.getPrototypeOf(captured.init), null);
+    assert.strictEqual(captured.init.cache, 'no-store');
+    assert.strictEqual(captured.init.redirect, 'error');
+    assert.strictEqual(captured.init.customOption, 'custom-value');
+    assert.strictEqual(captured.init.headers, undefined);
+    assert.strictEqual(captured.init.credentials, undefined);
+    assert.strictEqual(captured.init.duplex, undefined);
+    assert.strictEqual(captured.argumentCount, 2);
   });
 
   it('should ignore Request options inherited only from Object.prototype', async () => {
@@ -269,7 +281,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
-  it('should not follow redirects when maxRedirects is zero', async () => {
+  it('should expose an unfollowed redirect response in Node when maxRedirects is zero', async () => {
     let finalRequests = 0;
     const server = await startHTTPServer((req, res) => {
       if (req.url === '/start') {
@@ -288,6 +300,8 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         validateStatus: () => true,
       });
 
+      // Node exposes manual redirect responses; browsers return an opaque
+      // redirect whose status and headers cannot be inspected.
       assert.strictEqual(response.status, 302);
       assert.strictEqual(finalRequests, 0);
     } finally {

@@ -2597,6 +2597,33 @@ describe('supports http with nodejs', () => {
     assert.strictEqual(__isNodeEnvProxyEnabled(undefined, '24.5.0'), false);
   });
 
+  it('should report proxy false as direct when the selected agent uses proxyEnv', () => {
+    const options = {
+      headers: {},
+      beforeRedirects: {},
+      hostname: 'target.example',
+      host: 'target.example',
+      port: '4000',
+      protocol: 'http:',
+      path: '/resource',
+    };
+    const nativeProxyAgent = { options: { proxyEnv: { HTTP_PROXY: 'http://proxy.local:9000' } } };
+
+    const proxyApplied = __setProxy(
+      options,
+      false,
+      'http://target.example:4000/resource',
+      false,
+      undefined,
+      nativeProxyAgent
+    );
+
+    assert.strictEqual(proxyApplied, false);
+    assert.strictEqual(options.hostname, 'target.example');
+    assert.strictEqual(options.port, '4000');
+    assert.strictEqual(options.path, '/resource');
+  });
+
   it('should leave env proxy handling to supported Node versions when the selected agent uses proxyEnv', () => {
     const originalHttpProxy = process.env.http_proxy;
     const originalHTTPProxy = process.env.HTTP_PROXY;
@@ -5572,6 +5599,97 @@ describe('supports http with nodejs', () => {
             return true;
           }
         );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should connect directly for HTTP/2 when only an environment proxy is configured', async () => {
+      const proxyEnvKeys = ['https_proxy', 'HTTPS_PROXY', 'no_proxy', 'NO_PROXY'];
+      const originalProxyEnv = Object.create(null);
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('OK');
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+
+      for (const key of proxyEnvKeys) {
+        originalProxyEnv[key] = process.env[key];
+      }
+
+      process.env.https_proxy = 'http://127.0.0.1:1';
+      process.env.HTTPS_PROXY = 'http://127.0.0.1:1';
+      process.env.no_proxy = '';
+      process.env.NO_PROXY = '';
+
+      try {
+        const http2Axios = createHttp2Axios(`https://localhost:${server.address().port}`);
+        const { data } = await http2Axios.get('/');
+
+        assert.strictEqual(data, 'OK');
+      } finally {
+        for (const key of proxyEnvKeys) {
+          if (originalProxyEnv[key] === undefined) {
+            delete process.env[key];
+          } else {
+            process.env[key] = originalProxyEnv[key];
+          }
+        }
+
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should honor proxy false for HTTP/2 with a proxyEnv agent', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('OK');
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+
+      try {
+        const http2Axios = createHttp2Axios(`https://localhost:${server.address().port}`);
+        const { data } = await http2Axios.get('/', {
+          proxy: false,
+          httpsAgent: new https.Agent({
+            proxyEnv: { HTTPS_PROXY: 'http://127.0.0.1:1' },
+          }),
+        });
+
+        assert.strictEqual(data, 'OK');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should connect directly for HTTP/2 when only the selected agent has proxyEnv', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('OK');
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+
+      try {
+        const http2Axios = createHttp2Axios(`https://localhost:${server.address().port}`);
+        const { data } = await http2Axios.get('/', {
+          httpsAgent: new https.Agent({
+            proxyEnv: { HTTPS_PROXY: 'http://127.0.0.1:1' },
+          }),
+        });
+
+        assert.strictEqual(data, 'OK');
       } finally {
         await stopHTTPServer(server);
       }

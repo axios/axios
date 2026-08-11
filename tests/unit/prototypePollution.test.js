@@ -2,6 +2,7 @@
 import { afterEach, describe, it } from 'vitest';
 import assert from 'assert';
 import http from 'http';
+import vm from 'node:vm';
 import utils from '../../lib/utils.js';
 import mergeConfig from '../../lib/core/mergeConfig.js';
 import defaults from '../../lib/defaults/index.js';
@@ -1188,6 +1189,40 @@ describe('Prototype Pollution Protection', () => {
       });
 
       const response = await instance.get('/prototype-template');
+
+      assert.strictEqual(response.data, 'preserved');
+    });
+
+    it('should exclude a foreign realm Object.prototype while preserving its config prototype', async () => {
+      const context = vm.createContext({
+        adapter: async (config) => ({
+          data: config.customValue,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      const replacement = vm.runInContext(
+        `
+          Object.prototype.transformResponse = () => 'polluted';
+          Object.create({adapter, customValue: 'preserved'});
+        `,
+        context
+      );
+
+      const instance = axios.create();
+
+      instance.interceptors.request.use((config) => {
+        replacement.url = config.url;
+        replacement.method = config.method;
+        replacement.headers = config.headers;
+
+        return replacement;
+      });
+
+      const response = await instance.get('/cross-realm-prototype-template');
 
       assert.strictEqual(response.data, 'preserved');
     });

@@ -692,7 +692,11 @@ describe('supports http with nodejs', () => {
         sensitiveHeaders: ['X-API-Key'],
       });
 
-      assert.strictEqual(capturedHeaders['x-api-key'], 'secret', 'X-API-Key should be preserved on same-origin redirect');
+      assert.strictEqual(
+        capturedHeaders['x-api-key'],
+        'secret',
+        'X-API-Key should be preserved on same-origin redirect'
+      );
     } finally {
       await stopHTTPServer(server);
     }
@@ -721,7 +725,11 @@ describe('supports http with nodejs', () => {
         sensitiveHeaders: ['x-api-key'],
       });
 
-      assert.strictEqual(capturedHeaders['x-api-key'], undefined, 'X-Api-Key should be stripped case-insensitively');
+      assert.strictEqual(
+        capturedHeaders['x-api-key'],
+        undefined,
+        'X-Api-Key should be stripped case-insensitively'
+      );
     } finally {
       await stopHTTPServer(origin);
       await stopHTTPServer(destination);
@@ -783,10 +791,7 @@ describe('supports http with nodejs', () => {
 
   it('should fail closed when sensitiveHeaders redirect origin cannot be parsed', () => {
     assert.strictEqual(
-      __isSameOriginRedirect(
-        { href: 'http://localhost/final' },
-        { url: 'http://localhost/start' }
-      ),
+      __isSameOriginRedirect({ href: 'http://localhost/final' }, { url: 'http://localhost/start' }),
       true
     );
     assert.strictEqual(
@@ -891,8 +896,8 @@ describe('supports http with nodejs', () => {
   });
 
   describe('compression', async () => {
-    const isZstdSupported = typeof zlib.createZstdDecompress === 'function' &&
-      typeof zlib.zstdCompress === 'function';
+    const isZstdSupported =
+      typeof zlib.createZstdDecompress === 'function' && typeof zlib.zstdCompress === 'function';
 
     it('should support transparent gunzip', async () => {
       const data = {
@@ -2152,7 +2157,11 @@ describe('supports http with nodejs', () => {
       });
 
       assert.strictEqual(Number(response.data), 123456789, 'should pass through proxy');
-      assert.strictEqual(connectAttempts, 0, 'HTTP targets must use forward-proxy mode, not CONNECT');
+      assert.strictEqual(
+        connectAttempts,
+        0,
+        'HTTP targets must use forward-proxy mode, not CONNECT'
+      );
     } finally {
       await stopHTTPServer(server);
       await stopHTTPServer(proxy);
@@ -2320,19 +2329,22 @@ describe('supports http with nodejs', () => {
         }
       );
 
-      assert.strictEqual(response.data, 'secret-body-12345', 'origin body should arrive unmodified through the tunnel');
+      assert.strictEqual(
+        response.data,
+        'secret-body-12345',
+        'origin body should arrive unmodified through the tunnel'
+      );
       assert.strictEqual(captured.plaintext, 0, 'proxy must not see any plaintext request line');
       assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
       assert.ok(
         captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
         `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
       );
-      assert.ok(captured.connectAuth[0], 'Proxy-Authorization should be present on the CONNECT request');
-      assert.match(
+      assert.ok(
         captured.connectAuth[0],
-        /^Basic /,
-        'CONNECT auth should be Basic-encoded'
+        'Proxy-Authorization should be present on the CONNECT request'
       );
+      assert.match(captured.connectAuth[0], /^Basic /, 'CONNECT auth should be Basic-encoded');
       const decoded = Buffer.from(captured.connectAuth[0].slice(6), 'base64').toString('utf8');
       assert.strictEqual(decoded, 'admin:secret', 'Proxy-Authorization credentials should match');
     } finally {
@@ -3928,7 +3940,10 @@ describe('supports http with nodejs', () => {
       const userAgent = new https.Agent({ rejectUnauthorized: false });
       const options = buildOptions();
       __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
-      assert.ok(options.agent, 'proxy must not be silently bypassed when a custom httpsAgent is set');
+      assert.ok(
+        options.agent,
+        'proxy must not be silently bypassed when a custom httpsAgent is set'
+      );
       assert.notStrictEqual(
         options.agent,
         userAgent,
@@ -3985,7 +4000,10 @@ describe('supports http with nodejs', () => {
     it('strips its own tunneling agent on redirect when the redirect target has no proxy', () => {
       const initial = buildOptions();
       __setProxy(initial, proxyConfig, 'https://example.com/');
-      assert.ok(initial.agent instanceof HttpsProxyAgent, 'precondition: tunneling agent installed');
+      assert.ok(
+        initial.agent instanceof HttpsProxyAgent,
+        'precondition: tunneling agent installed'
+      );
 
       const redirectOptions = {
         headers: {},
@@ -4007,12 +4025,11 @@ describe('supports http with nodejs', () => {
 
     it('handles IPv6 literal proxy hosts', () => {
       const options = buildOptions();
-      __setProxy(
-        options,
-        { host: '::1', port: 8030, protocol: 'http' },
-        'https://example.com/'
+      __setProxy(options, { host: '::1', port: 8030, protocol: 'http' }, 'https://example.com/');
+      assert.ok(
+        options.agent instanceof HttpsProxyAgent,
+        'must build a tunneling agent for an IPv6 proxy host'
       );
-      assert.ok(options.agent instanceof HttpsProxyAgent, 'must build a tunneling agent for an IPv6 proxy host');
     });
   });
 
@@ -4332,7 +4349,10 @@ describe('supports http with nodejs', () => {
             capturedHeaders.Authorization || capturedHeaders.authorization,
             'Bearer VALID_USER_TOKEN'
           );
-          assert.strictEqual(capturedHeaders['X-Injected'] || capturedHeaders['x-injected'], undefined);
+          assert.strictEqual(
+            capturedHeaders['X-Injected'] || capturedHeaders['x-injected'],
+            undefined
+          );
           assert.strictEqual(response.headers.get('x-server'), 'real');
           assert.strictEqual(response.headers.get('x-injected'), undefined);
         } finally {
@@ -4866,8 +4886,7 @@ describe('supports http with nodejs', () => {
     });
 
     it('should count ignored input after base64 padding toward the Buffer allocation limit', async () => {
-      const dataURI =
-        'data:application/octet-stream;base64,TQ==' + '%'.repeat(4096);
+      const dataURI = 'data:application/octet-stream;base64,TQ==' + '%'.repeat(4096);
 
       await assert.rejects(axios.get(dataURI, { maxContentLength: 1 }), (err) => {
         assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
@@ -5457,6 +5476,118 @@ describe('supports http with nodejs', () => {
       } finally {
         await stopHTTPServer(server);
       }
+    });
+
+    it('should use a custom DNS lookup for HTTP/2 connections', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('OK');
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+      let lookupCalls = 0;
+
+      try {
+        const http2Axios = createHttp2Axios(`https://custom-host.axios:${server.address().port}`);
+        const { data } = await http2Axios.get('/', {
+          lookup: async () => {
+            lookupCalls++;
+            return '127.0.0.1';
+          },
+        });
+
+        assert.strictEqual(data, 'OK');
+        assert.ok(lookupCalls > 0);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should reuse an HTTP/2 session with the same custom DNS lookup', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('OK');
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+      let sessions = 0;
+      const lookup = async () => '127.0.0.1';
+
+      server.on('session', () => {
+        sessions++;
+      });
+
+      try {
+        const http2Axios = axios.create({
+          baseURL: `https://custom-host.axios:${server.address().port}`,
+          httpVersion: 2,
+          proxy: false,
+          lookup,
+          http2Options: {
+            rejectUnauthorized: false,
+            sessionTimeout: 10000,
+          },
+        });
+
+        await http2Axios.get('/one');
+        await http2Axios.get('/two');
+
+        assert.strictEqual(sessions, 1);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should reject when an HTTP/2 request selects a proxy', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('unexpected');
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+
+      try {
+        const http2Axios = createHttp2Axios(`https://localhost:${server.address().port}`);
+
+        await assert.rejects(
+          http2Axios.get('/', {
+            proxy: {
+              protocol: 'http',
+              host: '127.0.0.1',
+              port: 1,
+            },
+          }),
+          (error) => {
+            assert.strictEqual(error.code, AxiosError.ERR_NOT_SUPPORT);
+            assert.match(error.message, /HTTP\/2 requests with a proxy are not supported/);
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should reject HTTP/2 connection failures without an uncaught session error', async () => {
+      await assert.rejects(
+        axios.get('https://127.0.0.1:1/', {
+          httpVersion: 2,
+          proxy: false,
+          timeout: 1000,
+          http2Options: {
+            rejectUnauthorized: false,
+          },
+        })
+      );
     });
 
     it('should support request payload', async () => {

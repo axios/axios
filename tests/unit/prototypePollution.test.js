@@ -60,6 +60,7 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.get;
     delete Object.prototype.set;
     delete Object.prototype.headers;
+    delete Object.prototype.createConnection;
     delete Object.prototype.customNested;
   });
 
@@ -421,6 +422,34 @@ describe('Prototype Pollution Protection', () => {
         await new Promise((resolve) => server.close(resolve));
       }
     }, 10000);
+
+    it('should pass an own inert createConnection option to transports', async () => {
+      Object.prototype.createConnection = () => {
+        throw new Error('unexpected inherited createConnection');
+      };
+
+      const server = http.createServer((req, res) => res.end('ok'));
+      await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+
+      try {
+        const response = await axios.get(`http://127.0.0.1:${server.address().port}/`, {
+          transport: {
+            request(options, handleResponse) {
+              assert.strictEqual(
+                Object.prototype.hasOwnProperty.call(options, 'createConnection'),
+                true
+              );
+              assert.strictEqual(options.createConnection, undefined);
+              return http.request(options, handleResponse);
+            },
+          },
+        });
+
+        assert.strictEqual(response.data, 'ok');
+      } finally {
+        await new Promise((resolve) => server.close(resolve));
+      }
+    }, 10000);
   });
 
   // Five config properties were read via direct property
@@ -727,7 +756,10 @@ describe('Prototype Pollution Protection', () => {
       try {
         const resolved = resolveConfig({ url: '/api', method: 'get' });
 
-        assert.ok(resolved.url.indexOf('injected') === -1, 'polluted params must not appear in URL');
+        assert.ok(
+          resolved.url.indexOf('injected') === -1,
+          'polluted params must not appear in URL'
+        );
         assert.strictEqual(resolved.url, '/api', 'URL must remain unchanged');
       } finally {
         delete Object.prototype.params;
@@ -744,9 +776,16 @@ describe('Prototype Pollution Protection', () => {
       try {
         const resolved = resolveConfig({ url: '/api', method: 'get', params: { legit: 'true' } });
 
-        assert.strictEqual(serializerInvoked, false, 'polluted paramsSerializer must not be called');
+        assert.strictEqual(
+          serializerInvoked,
+          false,
+          'polluted paramsSerializer must not be called'
+        );
         // The URL should have legit param serialized normally
-        assert.ok(resolved.url.indexOf('legit=true') !== -1, 'legitimate params must still be serialized');
+        assert.ok(
+          resolved.url.indexOf('legit=true') !== -1,
+          'legitimate params must still be serialized'
+        );
       } finally {
         delete Object.prototype.paramsSerializer;
       }
@@ -1009,6 +1048,149 @@ describe('Prototype Pollution Protection', () => {
         await stop(server);
       }
     }, 10000);
+
+    it('should use GET when the default instance has no own method', async () => {
+      Object.prototype.method = 'DELETE';
+
+      const response = await axios({
+        url: '/default-method',
+        adapter: async (config) => ({
+          data: config.method,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      assert.strictEqual(response.data, 'get');
+    });
+
+    it('should ignore headers inherited after a request interceptor replaces config', async () => {
+      Object.prototype.headers = { 'X-Injected': 'yes' };
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: config.headers.get('X-Injected'),
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      instance.interceptors.request.use((config) => {
+        const replacement = { ...config };
+        delete replacement.headers;
+        return replacement;
+      });
+
+      const response = await instance.get('/interceptor-headers');
+
+      assert.strictEqual(response.data, undefined);
+    });
+
+    it('should ignore behavior inherited after a request interceptor replaces config', async () => {
+      let requestTransformCalled = false;
+      let responseTransformCalled = false;
+
+      Object.prototype.transformRequest = () => {
+        requestTransformCalled = true;
+      };
+      Object.prototype.transformResponse = () => {
+        responseTransformCalled = true;
+      };
+      Object.prototype.cancelToken = {
+        throwIfRequested() {
+          throw new Error('unexpected inherited cancelToken');
+        },
+      };
+      Object.prototype.signal = { aborted: true };
+      Object.prototype.method = 'delete';
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: config.method,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      instance.interceptors.request.use((config) => {
+        const replacement = { ...config };
+        delete replacement.transformRequest;
+        delete replacement.transformResponse;
+        delete replacement.cancelToken;
+        delete replacement.signal;
+        delete replacement.method;
+        return replacement;
+      });
+
+      const response = await instance.get('/interceptor-behavior');
+
+      assert.strictEqual(requestTransformCalled, false);
+      assert.strictEqual(responseTransformCalled, false);
+      assert.strictEqual(response.data, undefined);
+    });
+
+    it('should ignore an adapter inherited after a request interceptor replaces config', async () => {
+      let called = false;
+
+      Object.prototype.adapter = async (config) => {
+        called = true;
+        return {
+          data: 'unexpected',
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      };
+
+      const instance = axios.create();
+
+      instance.interceptors.request.use((config) => {
+        const replacement = { ...config };
+        delete replacement.adapter;
+        return replacement;
+      });
+
+      const response = await instance.get('data:text/plain,safe', {
+        responseType: 'text',
+      });
+
+      assert.strictEqual(called, false);
+      assert.strictEqual(response.data, 'safe');
+    });
+
+    it('should preserve config inherited from a non-shared prototype after interception', async () => {
+      const instance = axios.create();
+
+      instance.interceptors.request.use((config) => {
+        const replacement = Object.create({
+          adapter: async (resolvedConfig) => ({
+            data: resolvedConfig.customValue,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config: resolvedConfig,
+          }),
+          customValue: 'preserved',
+        });
+
+        replacement.url = config.url;
+        replacement.method = config.method;
+        replacement.headers = config.headers;
+
+        return replacement;
+      });
+
+      const response = await instance.get('/prototype-template');
+
+      assert.strictEqual(response.data, 'preserved');
+    });
 
     it('should ignore polluted decompress', async () => {
       Object.prototype.decompress = false;

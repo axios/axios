@@ -20,6 +20,26 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Proxy bypass CIDR ranges
+
+- **Change:** Document CIDR matching in `NO_PROXY` and `no_proxy`.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, Proxy bypass CIDR ranges.
+- **Status:** Pending.
+- **Docs targets:** Node proxy/environment-variable guidance and request-config proxy documentation; translated docs after the English documentation is finalized.
+- **Required content:** Explain that IPv4 and IPv6 CIDR entries are supported, bracketed IPv6 is accepted, IPv4-mapped IPv6 ranges are normalized to IPv4 when their prefix permits it, address families remain distinct, and malformed CIDR entries do not bypass the proxy.
+- **Examples:** Show `NO_PROXY=10.0.0.0/8,2001:db8::/32` bypassing matching HTTP destinations.
+- **Notes:** Preserve the existing hostname, explicit-port, wildcard, loopback, and non-CIDR matching behavior.
+
+### Fetch and HTTP/2 adapter option consistency
+
+- **Change:** Document adapter-specific redirect, custom fetch, DNS lookup, and proxy behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter consistency and HTTP/2 adapter consistency.
+- **Status:** Pending.
+- **Docs targets:** Request-config entries for `fetchOptions`, `maxRedirects`, `lookup`, `httpVersion`, and `proxy`; custom adapter/fetch guidance; translated docs after the English documentation is finalized.
+- **Required content:** State that a custom fetch receives the fully resolved `Request` when `Request` is supported, `maxRedirects: 0` requests manual redirect handling in the Fetch adapter, custom DNS lookup applies to HTTP/2 connections and participates in session reuse, and HTTP/2 requests that select a proxy reject with `ERR_NOT_SUPPORT`.
+- **Examples:** Include focused Fetch `maxRedirects: 0` and Node `httpVersion: 2` plus `lookup` examples.
+- **Notes:** Do not imply that positive Fetch `maxRedirects` values enforce a redirect count; only zero maps to the platform's manual redirect mode.
+
 ### RFC 9110 HTTP status code names
 
 - **Change:** Document the additive RFC 9110 names for HTTP statuses 413 and 422.

@@ -88,7 +88,7 @@ describe('utils::isX', () => {
   it('should treat an object with a genuinely inherited iterator as non-plain', () => {
     // Iterator inherited from a custom (non-Object.prototype) source: this is a
     // real iterable, not prototype pollution, so it must not be classified plain.
-    const proto = Object.create(null);
+    const proto = Object.create(Object.create(null));
     proto[Symbol.iterator] = function* () {
       yield ['x', '1'];
     };
@@ -148,6 +148,40 @@ describe('utils::isX', () => {
 
     expect(Object.keys(utils.toSafeFlatObject(proxy))).toEqual([]);
     expect(calls).toEqual(1);
+  });
+
+  it('should preserve null-prototype sources but exclude terminal templates', () => {
+    const root = Object.create(null);
+    root.own = 'preserved';
+
+    expect(utils.getSafeProp(root, 'own')).toEqual('preserved');
+    expect(utils.toSafeFlatObject(root)).toBe(root);
+
+    const template = Object.create(null);
+    template.inherited = 'excluded';
+
+    const source = Object.create(template);
+    source.own = 'preserved';
+
+    expect(utils.getSafeProp(source, 'own')).toEqual('preserved');
+    expect(utils.getSafeProp(source, 'inherited')).toEqual(undefined);
+
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(flattened.own).toEqual('preserved');
+    expect(Object.prototype.hasOwnProperty.call(flattened, 'inherited')).toEqual(false);
+  });
+
+  it('should exclude symbols inherited from terminal null-prototype templates', () => {
+    const behavior = Symbol('behavior');
+    const template = Object.create(null);
+    template[behavior] = () => 'excluded';
+
+    const source = Object.create(template);
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(utils.getSafeProp(source, behavior)).toEqual(undefined);
+    expect(Object.prototype.hasOwnProperty.call(flattened, behavior)).toEqual(false);
   });
 
   it('should validate Date', () => {

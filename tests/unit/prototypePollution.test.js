@@ -827,6 +827,79 @@ describe('Prototype Pollution Protection', () => {
     });
   });
 
+  describe('dispatch config compatibility', () => {
+    it('should preserve an unchanged merged config through dispatch', async () => {
+      let interceptedConfig;
+      let adapterConfig;
+
+      const instance = axios.create({
+        adapter: async (config) => {
+          adapterConfig = config;
+          return {
+            data: 'ok',
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+          };
+        },
+      });
+
+      instance.interceptors.request.use((config) => {
+        interceptedConfig = config;
+        return config;
+      });
+
+      const response = await instance.get('/config-identity');
+
+      assert.strictEqual(adapterConfig, interceptedConfig);
+      assert.strictEqual(response.config, interceptedConfig);
+      assert.strictEqual(Object.getPrototypeOf(adapterConfig), null);
+      assert.strictEqual(
+        Object.prototype.propertyIsEnumerable.call(adapterConfig, 'hasOwnProperty'),
+        false
+      );
+      assert.strictEqual(Object.keys(adapterConfig).includes('hasOwnProperty'), false);
+    });
+
+    it('should normalize a class-based interceptor replacement', async () => {
+      let replacement;
+
+      class ConfigTemplate {
+        marker() {
+          return 'template';
+        }
+      }
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: config.marker(),
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      instance.interceptors.request.use((config) => {
+        replacement = new ConfigTemplate();
+        replacement.url = config.url;
+        replacement.method = config.method;
+        replacement.headers = config.headers;
+        replacement.adapter = config.adapter;
+        return replacement;
+      });
+
+      const response = await instance.get('/normalized-replacement');
+
+      assert.strictEqual(response.data, 'template');
+      assert.notStrictEqual(response.config, replacement);
+      assert.strictEqual(response.config instanceof ConfigTemplate, false);
+      assert.strictEqual(Object.getPrototypeOf(response.config), null);
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(response.config, 'marker'), true);
+    });
+  });
+
   // Verify every gadget enumerated in the audit
   // is neutralized end-to-end by the null-prototype config.
   describe('Full gadget coverage via null-prototype config', () => {
@@ -1193,39 +1266,53 @@ describe('Prototype Pollution Protection', () => {
       assert.strictEqual(response.data, 'preserved');
     });
 
-    it('should exclude a foreign realm Object.prototype while preserving its config prototype', async () => {
-      const context = vm.createContext({
-        adapter: async (config) => ({
-          data: config.customValue,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config,
-        }),
+    for (const [description, mutateConstructor] of [
+      ['unchanged', ''],
+      ['set to null', 'Object.prototype.constructor = null;'],
+      ['deleted', 'delete Object.prototype.constructor;'],
+      [
+        'replaced by an accessor',
+        `Object.defineProperty(Object.prototype, 'constructor', {
+          configurable: true,
+          get() { return Object; }
+        });`,
+      ],
+    ]) {
+      it(`should exclude a foreign realm Object.prototype with its constructor ${description}`, async () => {
+        const context = vm.createContext({
+          adapter: async (config) => ({
+            data: config.customValue,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+          }),
+        });
+
+        const replacement = vm.runInContext(
+          `
+            Object.prototype.transformResponse = () => 'polluted';
+            ${mutateConstructor}
+            Object.create({adapter, customValue: 'preserved'});
+          `,
+          context
+        );
+
+        const instance = axios.create();
+
+        instance.interceptors.request.use((config) => {
+          replacement.url = config.url;
+          replacement.method = config.method;
+          replacement.headers = config.headers;
+
+          return replacement;
+        });
+
+        const response = await instance.get('/cross-realm-prototype-template');
+
+        assert.strictEqual(response.data, 'preserved');
       });
-
-      const replacement = vm.runInContext(
-        `
-          Object.prototype.transformResponse = () => 'polluted';
-          Object.create({adapter, customValue: 'preserved'});
-        `,
-        context
-      );
-
-      const instance = axios.create();
-
-      instance.interceptors.request.use((config) => {
-        replacement.url = config.url;
-        replacement.method = config.method;
-        replacement.headers = config.headers;
-
-        return replacement;
-      });
-
-      const response = await instance.get('/cross-realm-prototype-template');
-
-      assert.strictEqual(response.data, 'preserved');
-    });
+    }
 
     it('should ignore polluted decompress', async () => {
       Object.prototype.decompress = false;

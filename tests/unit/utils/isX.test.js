@@ -85,15 +85,18 @@ describe('utils::isX', () => {
     }
   });
 
-  it('should treat an object with a genuinely inherited iterator as non-plain', () => {
-    // Iterator inherited from a custom (non-Object.prototype) source: this is a
-    // real iterable, not prototype pollution, so it must not be classified plain.
-    const proto = Object.create(Object.create(null));
+  it('should ignore an iterator inherited from a terminal null-prototype boundary', () => {
+    // A terminal application template is indistinguishable from a mutated
+    // foreign Object.prototype, so its inherited members fail closed.
+    const proto = Object.create(null);
     proto[Symbol.iterator] = function* () {
       yield ['x', '1'];
     };
 
-    expect(utils.isPlainObject(Object.create(proto))).toEqual(false);
+    const value = Object.create(proto);
+
+    expect(utils.isPlainObject(value)).toEqual(true);
+    expect(utils.isSafeIterable(value)).toEqual(false);
   });
 
   it('should not read polluted Object.prototype iterator accessors for safe iterable checks', () => {
@@ -170,6 +173,32 @@ describe('utils::isX', () => {
 
     expect(flattened.own).toEqual('preserved');
     expect(Object.prototype.hasOwnProperty.call(flattened, 'inherited')).toEqual(false);
+  });
+
+  it('should materialize immutable null-prototype sources', () => {
+    const source = Object.freeze(Object.assign(Object.create(null), { own: 'preserved' }));
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(flattened).not.toBe(source);
+    expect(Object.getPrototypeOf(flattened)).toEqual(null);
+    expect(flattened.own).toEqual('preserved');
+    expect(Object.isFrozen(flattened)).toEqual(false);
+  });
+
+  it('should materialize and filter unsafe keys from null-prototype sources', () => {
+    const source = Object.create(null);
+    source.safe = 'preserved';
+    source.__proto__ = 'excluded';
+    source.constructor = 'excluded';
+    source.prototype = 'excluded';
+
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(flattened).not.toBe(source);
+    expect(flattened.safe).toEqual('preserved');
+    expect(Object.prototype.hasOwnProperty.call(flattened, '__proto__')).toEqual(false);
+    expect(Object.prototype.hasOwnProperty.call(flattened, 'constructor')).toEqual(false);
+    expect(Object.prototype.hasOwnProperty.call(flattened, 'prototype')).toEqual(false);
   });
 
   it('should exclude symbols inherited from terminal null-prototype templates', () => {

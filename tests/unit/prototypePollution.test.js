@@ -862,6 +862,70 @@ describe('Prototype Pollution Protection', () => {
       assert.strictEqual(Object.keys(adapterConfig).includes('hasOwnProperty'), false);
     });
 
+    it('should materialize a frozen null-prototype interceptor replacement', async () => {
+      let replacement;
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: 'ok',
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      instance.interceptors.request.use((config) => {
+        replacement = Object.freeze(Object.assign(Object.create(null), config));
+        return replacement;
+      });
+
+      const response = await instance.get('/frozen-replacement');
+
+      assert.strictEqual(response.data, 'ok');
+      assert.notStrictEqual(response.config, replacement);
+      assert.strictEqual(Object.getPrototypeOf(response.config), null);
+      assert.strictEqual(Object.isFrozen(response.config), false);
+    });
+
+    it('should filter unsafe keys from a null-prototype interceptor replacement', async () => {
+      let replacement;
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: {
+            safe: config.safe,
+            hasProto: Object.prototype.hasOwnProperty.call(config, '__proto__'),
+            hasConstructor: Object.prototype.hasOwnProperty.call(config, 'constructor'),
+            hasPrototype: Object.prototype.hasOwnProperty.call(config, 'prototype'),
+          },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      instance.interceptors.request.use((config) => {
+        replacement = Object.assign(Object.create(null), config);
+        replacement.safe = 'preserved';
+        replacement.__proto__ = 'excluded';
+        replacement.constructor = 'excluded';
+        replacement.prototype = 'excluded';
+        return replacement;
+      });
+
+      const response = await instance.get('/unsafe-own-keys');
+
+      assert.deepStrictEqual(response.data, {
+        safe: 'preserved',
+        hasProto: false,
+        hasConstructor: false,
+        hasPrototype: false,
+      });
+      assert.notStrictEqual(response.config, replacement);
+    });
+
     it('should normalize a class-based interceptor replacement', async () => {
       let replacement;
 

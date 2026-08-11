@@ -909,7 +909,12 @@ describe('Prototype Pollution Protection', () => {
       instance.interceptors.request.use((config) => {
         replacement = Object.assign(Object.create(null), config);
         replacement.safe = 'preserved';
-        replacement.__proto__ = 'excluded';
+        Object.defineProperty(replacement, '__proto__', {
+          value: 'excluded',
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        });
         replacement.constructor = 'excluded';
         replacement.prototype = 'excluded';
         return replacement;

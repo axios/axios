@@ -188,7 +188,12 @@ describe('utils::isX', () => {
   it('should materialize and filter unsafe keys from null-prototype sources', () => {
     const source = Object.create(null);
     source.safe = 'preserved';
-    source.__proto__ = 'excluded';
+    Object.defineProperty(source, '__proto__', {
+      value: 'excluded',
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
     source.constructor = 'excluded';
     source.prototype = 'excluded';
 

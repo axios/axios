@@ -133,6 +133,23 @@ describe('utils::isX', () => {
     expect(calls).toBeLessThanOrEqual(2);
   });
 
+  it('should stop safe prototype flattening on cyclic Proxy prototypes', () => {
+    let calls = 0;
+    let proxy;
+    proxy = new Proxy({}, {
+      getPrototypeOf() {
+        calls += 1;
+        if (calls > 1) {
+          throw new Error('cycled');
+        }
+        return proxy;
+      }
+    });
+
+    expect(Object.keys(utils.toSafeFlatObject(proxy))).toEqual([]);
+    expect(calls).toEqual(1);
+  });
+
   it('should validate Date', () => {
     expect(utils.isDate(new Date())).toEqual(true);
     expect(utils.isDate(Date.now())).toEqual(false);

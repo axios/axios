@@ -95,6 +95,44 @@ describe('core::AxiosError', () => {
     expect(JSON.parse(JSON.stringify(json.config))).toEqual({ url: '/api' });
   });
 
+  it('replaces agents inherited from the config prototype', () => {
+    const httpAgent = new http.Agent();
+    const httpsAgent = new https.Agent();
+    const prototype = {
+      httpAgent,
+      httpsAgent,
+      toJSON() {
+        return { url: this.url, httpAgent: this.httpAgent, httpsAgent: this.httpsAgent };
+      },
+    };
+
+    const config = Object.create(prototype);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(JSON.parse(JSON.stringify(json.config))).toEqual({
+      url: '/api',
+      httpAgent: '[Agent]',
+      httpsAgent: '[Agent]',
+    });
+    expect(Object.prototype.hasOwnProperty.call(config, 'httpAgent')).toBe(false);
+    expect(config.httpAgent).toBe(httpAgent);
+    expect(config.httpsAgent).toBe(httpsAgent);
+  });
+
+  it('ignores an agent coming from a polluted Object.prototype', () => {
+    Object.prototype.httpAgent = new http.Agent();
+
+    try {
+      const json = new AxiosError('Boom!', 'ESOMETHING', { url: '/api' }).toJSON();
+
+      expect(Object.prototype.hasOwnProperty.call(json.config, 'httpAgent')).toBe(false);
+    } finally {
+      delete Object.prototype.httpAgent;
+    }
+  });
+
   describe('AxiosError.from', () => {
     it('adds config, code, request and response to the wrapped error', () => {
       const error = new Error('Boom!');

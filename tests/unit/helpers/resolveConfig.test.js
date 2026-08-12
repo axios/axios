@@ -17,6 +17,30 @@ class ReactNativeFormData {
 }
 
 describe('helpers::resolveConfig', () => {
+  it('should ignore FormData getHeaders inherited only from Object.prototype', () => {
+    if (typeof globalThis.FormData !== 'function') {
+      return;
+    }
+
+    let called = false;
+    Object.prototype.getHeaders = () => {
+      called = true;
+      return { 'X-Injected': 'yes' };
+    };
+
+    try {
+      const config = resolveConfig({
+        url: '/upload',
+        data: new globalThis.FormData(),
+      });
+
+      assert.strictEqual(called, false);
+      assert.strictEqual(config.headers.get('X-Injected'), undefined);
+    } finally {
+      delete Object.prototype.getHeaders;
+    }
+  });
+
   it('clears Content-Type for React Native FormData', () => {
     const data = new ReactNativeFormData();
     const config = resolveConfig({

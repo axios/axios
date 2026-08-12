@@ -91,6 +91,23 @@ describe('helpers::fromDataURI', () => {
     assert.strictEqual(blob.type, 'text/plain;charset=utf-8');
   });
 
+  it('should treat the base64 token case-insensitively', () => {
+    const buffer = Buffer.from('hello');
+    const body = buffer.toString('base64');
+
+    for (const token of [';base64', ';BASE64', ';Base64', ';bAsE64']) {
+      assert.deepStrictEqual(fromDataURI('data:text/plain' + token + ',' + body, false), buffer);
+      assert.deepStrictEqual(fromDataURI('data:' + token + ',' + body, false), buffer);
+    }
+  });
+
+  it('should keep the media type unchanged for a case-variant base64 token', () => {
+    const dataURI = 'data:text/plain;charset=utf-8;BASE64,' + Buffer.from('hello').toString('base64');
+    const blob = fromDataURI(dataURI, true, { Blob });
+
+    assert.strictEqual(blob.type, 'text/plain;charset=utf-8');
+  });
+
   it('should reject data URI with unsupported protocol prefix', () => {
     assert.throws(
       () => {

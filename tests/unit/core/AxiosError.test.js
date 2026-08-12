@@ -78,6 +78,23 @@ describe('core::AxiosError', () => {
     expect(json.config.auth.password).toBe('[REDACTED ****]');
   });
 
+  it('keeps an inherited config toJSON when agents are replaced', () => {
+    class CustomConfig {
+      toJSON() {
+        return { url: this.url };
+      }
+    }
+
+    const config = new CustomConfig();
+    config.url = '/api';
+    config.secret = 'hunter2';
+    config.httpAgent = new http.Agent();
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(JSON.parse(JSON.stringify(json.config))).toEqual({ url: '/api' });
+  });
+
   describe('AxiosError.from', () => {
     it('adds config, code, request and response to the wrapped error', () => {
       const error = new Error('Boom!');

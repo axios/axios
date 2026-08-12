@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isNativeError } from 'node:util/types';
+import http from 'node:http';
+import https from 'node:https';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 
@@ -49,6 +51,31 @@ describe('core::AxiosError', () => {
         ids: [1, 2],
       },
     });
+  });
+
+  it('replaces http agents with a marker in config snapshots', () => {
+    const httpAgent = new http.Agent();
+    const httpsAgent = new https.Agent();
+    const error = new AxiosError('Boom!', 'ESOMETHING', { url: '/api', httpAgent, httpsAgent });
+
+    const json = error.toJSON();
+
+    expect(json.config).toEqual({ url: '/api', httpAgent: '[Agent]', httpsAgent: '[Agent]' });
+    expect(error.config.httpAgent).toBe(httpAgent);
+    expect(error.config.httpsAgent).toBe(httpsAgent);
+  });
+
+  it('replaces http agents before redaction walks the config', () => {
+    const error = new AxiosError('Boom!', 'ESOMETHING', {
+      httpAgent: new http.Agent(),
+      auth: { password: 'secret' },
+      redact: ['password'],
+    });
+
+    const json = error.toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+    expect(json.config.auth.password).toBe('[REDACTED ****]');
   });
 
   describe('AxiosError.from', () => {

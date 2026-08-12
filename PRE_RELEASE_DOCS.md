@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Interceptor handlers replaced with a nullish value
+
+- **Change:** Document that interceptor IDs are opaque and that `interceptors.request.handlers` / `interceptors.response.handlers` is internal state, alongside the restored tolerance for a nullish handlers array.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, closes #11114.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the value returned by `use()` is an opaque interceptor ID that must be passed back to `eject()` unchanged, and that it is not an index into the handlers array. State that `handlers` is internal bookkeeping rather than a supported API: replacing it with a nullish value makes axios skip that interceptor chain instead of throwing, but registering new interceptors afterwards requires restoring an array. Note that `eject()` with an unknown ID, or with the same ID twice, is a no-op.
+- **Examples:** None required; the existing `eject(myInterceptor)` snippet already covers the supported flow.
+- **Notes:** Index-like string IDs continue to work for `eject()` for backward compatibility, but the documentation should not present them as supported. Nothing here changes the documented interceptor execution order.
+
 ### RFC 9110 HTTP status code names
 
 - **Change:** Document the additive RFC 9110 names for HTTP statuses 413 and 422.

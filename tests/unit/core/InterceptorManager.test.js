@@ -22,19 +22,21 @@ describe('core::InterceptorManager', () => {
 
   it('preserves interior tombstones until trailing handlers are removed', () => {
     const manager = new InterceptorManager();
-    const first = manager.use(() => {});
+
+    manager.use(() => {});
     const second = manager.use(() => {});
     const third = manager.use(() => {});
 
     manager.eject(second);
 
     expect(manager.handlers).toHaveLength(3);
-    expect(manager.handlers[second]).toBeNull();
+    // Interceptor IDs are opaque, so assert on the array position instead.
+    expect(manager.handlers[1]).toBeNull();
 
     manager.eject(third);
 
     expect(manager.handlers).toHaveLength(1);
-    expect(manager.handlers[first]).not.toBeNull();
+    expect(manager.handlers[0]).not.toBeNull();
   });
 
   it('does not reuse an ejected interceptor ID after trimming its handler', () => {
@@ -163,5 +165,66 @@ describe('core::InterceptorManager', () => {
 
     expect(visited).toEqual([first, second]);
     expect(manager.handlers).toHaveLength(0);
+  });
+
+  it('iterates without throwing when handlers is replaced with a nullish value', () => {
+    const manager = new InterceptorManager();
+    const visited = [];
+
+    manager.use(() => {});
+    manager.handlers = null;
+
+    expect(() => manager.forEach((handler) => visited.push(handler))).not.toThrow();
+    expect(visited).toEqual([]);
+
+    manager.handlers = undefined;
+
+    expect(() => manager.forEach((handler) => visited.push(handler))).not.toThrow();
+    expect(visited).toEqual([]);
+  });
+
+  it('keeps eject usable after handlers is replaced with a nullish value', () => {
+    const manager = new InterceptorManager();
+    const staleId = manager.use(() => {});
+
+    manager.handlers = null;
+
+    expect(() => manager.eject(staleId)).not.toThrow();
+
+    manager.handlers = [];
+
+    const handler = () => {};
+    const activeId = manager.use(handler);
+
+    expect(manager.handlers).toHaveLength(1);
+    expect(manager.handlers[0].fulfilled).toBe(handler);
+
+    manager.eject(activeId);
+
+    expect(manager.handlers).toHaveLength(0);
+  });
+
+  it('ejects an interceptor when its ID is passed as an index-like string', () => {
+    const manager = new InterceptorManager();
+    const id = manager.use(() => {});
+
+    manager.eject(String(id));
+
+    expect(manager.handlers).toHaveLength(0);
+  });
+
+  it('ignores eject calls for values that were never returned by use', () => {
+    const manager = new InterceptorManager();
+    const handler = () => {};
+
+    manager.use(handler);
+
+    manager.eject(undefined);
+    manager.eject(null);
+    manager.eject('');
+    manager.eject('not-an-id');
+
+    expect(manager.handlers).toHaveLength(1);
+    expect(manager.handlers[0].fulfilled).toBe(handler);
   });
 });

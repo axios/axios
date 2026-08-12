@@ -53,4 +53,29 @@ describe('core::Axios', () => {
       }
     });
   });
+
+  describe('interceptor handlers replaced with a nullish value', () => {
+    it('dispatches the request and skips the interceptor chains', async () => {
+      const instance = axios.create({
+        adapter: (config) =>
+          Promise.resolve({
+            data: 'ok',
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+          }),
+      });
+
+      instance.interceptors.request.use((config) => config);
+      instance.interceptors.response.use((response) => response);
+
+      instance.interceptors.request.handlers = null;
+      instance.interceptors.response.handlers = undefined;
+
+      const response = await instance.get('http://localhost/test');
+
+      expect(response.data).toBe('ok');
+    });
+  });
 });

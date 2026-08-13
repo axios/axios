@@ -78,7 +78,7 @@ describe('helpers::progressEventReducer', () => {
     expect(events[0].bytes).toBe(0);
   });
 
-  describe('flush with a fresh event', () => {
+  describe('force with a fresh event', () => {
     beforeEach(() => {
       vi.useFakeTimers();
     });
@@ -89,12 +89,12 @@ describe('helpers::progressEventReducer', () => {
 
     it('should deliver a fresh progress event even when nothing is pending', () => {
       const events = [];
-      const [onProgress, flush] = progressEventReducer((data) => {
+      const [onProgress, , force] = progressEventReducer((data) => {
         events.push(data);
       }, true, 1);
 
       onProgress({ lengthComputable: false, loaded: 10 });
-      flush({ lengthComputable: false, loaded: 30 });
+      force({ lengthComputable: false, loaded: 30 });
 
       expect(events.length).toBe(2);
       expect(events[1].loaded).toBe(30);
@@ -103,13 +103,13 @@ describe('helpers::progressEventReducer', () => {
 
     it('should prefer a fresh progress event over the pending one and clear it', () => {
       const events = [];
-      const [onProgress, flush] = progressEventReducer((data) => {
+      const [onProgress, flush, force] = progressEventReducer((data) => {
         events.push(data);
       }, true, 1);
 
       onProgress({ lengthComputable: false, loaded: 10 });
       onProgress({ lengthComputable: false, loaded: 20 });
-      flush({ lengthComputable: false, loaded: 30 });
+      force({ lengthComputable: false, loaded: 30 });
 
       expect(events.length).toBe(2);
       expect(events[1].loaded).toBe(30);
@@ -120,7 +120,7 @@ describe('helpers::progressEventReducer', () => {
       expect(events.length).toBe(2);
     });
 
-    it('should replay the pending event when flush receives a non-progress argument', () => {
+    it('should replay the pending event without inspecting a loaded-shaped flush argument', () => {
       const events = [];
       const [onProgress, flush] = progressEventReducer((data) => {
         events.push(data);
@@ -128,22 +128,32 @@ describe('helpers::progressEventReducer', () => {
 
       onProgress({ lengthComputable: false, loaded: 10 });
       onProgress({ lengthComputable: false, loaded: 20 });
-      flush(new Error('stream error'));
+      flush(Object.assign(new Error('stream error'), { loaded: 30 }));
 
       expect(events.length).toBe(2);
       expect(events[1].loaded).toBe(20);
     });
 
-    it('should not fire for a non-progress argument when nothing is pending', () => {
+    it('should not inspect arbitrary flush arguments', () => {
       const events = [];
       const [onProgress, flush] = progressEventReducer((data) => {
         events.push(data);
       }, true, 1);
+      const reason = {};
+
+      Object.defineProperty(reason, 'loaded', {
+        get() {
+          throw new Error('loaded must not be read');
+        },
+      });
 
       onProgress({ lengthComputable: false, loaded: 10 });
-      flush(new Error('stream error'));
+      onProgress({ lengthComputable: false, loaded: 20 });
 
-      expect(events.length).toBe(1);
+      expect(() => flush(reason)).not.toThrow();
+
+      expect(events.length).toBe(2);
+      expect(events[1].loaded).toBe(20);
     });
   });
 });

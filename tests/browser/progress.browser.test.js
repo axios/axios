@@ -62,6 +62,12 @@ class MockXMLHttpRequest extends ProgressEventTarget {
     requests.push(this);
   }
 
+  abort() {
+    this.aborted = true;
+    this.readyState = 0;
+    this.status = 0;
+  }
+
   getListenerCount(type, target = 'request') {
     const eventTarget = target === 'upload' ? this.upload : this;
     return eventTarget._listenerCounts[type] || 0;
@@ -287,23 +293,70 @@ describe('progress (vitest browser)', () => {
     expect(deliveries.at(-1)).toEqual({ loaded: 8, liveTarget: true });
   });
 
-  it('should always deliver a final upload progress event with a live event target', async () => {
-    const deliveries = [];
+  it('should not force a final download progress event for a status-zero failure', async () => {
+    const eventTypes = [];
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ event }) => {
+        eventTypes.push(event.type);
+      },
+    });
+    const request = getLastRequest();
+
+    request.respondWith({ status: 0 });
+
+    await expect(responsePromise).rejects.toMatchObject({ code: 'ECONNABORTED' });
+    expect(eventTypes).toEqual(['progress']);
+  });
+
+  it('should replay pending upload progress when loadend reports an unsuccessful transfer', async () => {
+    const loaded = [];
     const responsePromise = axios.post('/foo', 'payload', {
-      onUploadProgress: ({ loaded, event }) => {
-        deliveries.push({ loaded, liveTarget: !!(event && event.currentTarget) });
+      onUploadProgress: (event) => {
+        loaded.push(event.loaded);
       },
     });
     const request = getLastRequest();
 
     request.emit('progress', 'upload', { loaded: 3, total: 7, lengthComputable: true });
     request.emit('progress', 'upload', { loaded: 5, total: 7, lengthComputable: true });
-    request.emit('loadend', 'upload', { loaded: 7, total: 7, lengthComputable: true });
+    request.emit('loadend', 'upload', { loaded: 0, total: 0, lengthComputable: false });
+
+    expect(loaded).toEqual([3, 5]);
 
     request.respondWith({ status: 200, responseText: 'ok' });
     await responsePromise;
+  });
 
-    expect(deliveries.at(-1)).toEqual({ loaded: 7, liveTarget: true });
+  it('should stop loadend processing when the final progress listener cancels the request', async () => {
+    const controller = new AbortController();
+    const reportedErrors = [];
+    const onWindowError = (event) => {
+      reportedErrors.push(event.error);
+      event.preventDefault();
+    };
+
+    window.addEventListener('error', onWindowError);
+    try {
+      const responsePromise = axios('/foo', {
+        signal: controller.signal,
+        onDownloadProgress: ({ event }) => {
+          if (event && event.type === 'loadend') {
+            controller.abort();
+          }
+        },
+      });
+      const request = getLastRequest();
+
+      request.respondWith({ status: 200, responseText: 'complete' });
+
+      await expect(responsePromise).rejects.toMatchObject({ code: 'ERR_CANCELED' });
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(request.aborted).toBe(true);
+      expect(reportedErrors).toEqual([]);
+    } finally {
+      window.removeEventListener('error', onWindowError);
+    }
   });
 
   it('should settle the request when the final progress listener throws', async () => {

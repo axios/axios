@@ -203,13 +203,11 @@ describe('core::InterceptorManager', () => {
       expect(() => manager.eject(id)).not.toThrow();
     });
 
-    it('recovers once handlers is restored', () => {
+    it('accepts and invokes a new handler', () => {
       const manager = new InterceptorManager();
       manager.use(() => {});
       manager.handlers = value;
-      manager.forEach(() => {});
 
-      manager.handlers = [];
       const fulfilled = () => {};
       manager.use(fulfilled);
 

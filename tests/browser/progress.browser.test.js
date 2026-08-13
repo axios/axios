@@ -293,6 +293,29 @@ describe('progress (vitest browser)', () => {
     expect(deliveries.at(-1)).toEqual({ loaded: 8, liveTarget: true });
   });
 
+  it('should flush pending download progress in the ready-state fallback', async () => {
+    window.XMLHttpRequest = class extends MockXMLHttpRequest {
+      constructor() {
+        super();
+        delete this.onloadend;
+      }
+    };
+
+    const loaded = [];
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: (event) => loaded.push(event.loaded),
+    });
+    const request = getLastRequest();
+
+    request.responseText = 'AAAA';
+    request.emit('progress', 'request', { loaded: 4 });
+    request.respondWith({ status: 200, responseText: 'AAAABBBB' });
+
+    await responsePromise;
+
+    expect(loaded).toEqual([4, 8]);
+  });
+
   it('should not force a final download progress event for a status-zero failure', async () => {
     const eventTypes = [];
     const responsePromise = axios('/foo', {

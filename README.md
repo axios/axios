@@ -351,6 +351,67 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
+                href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="71px"
+                    height="70px"
+                    src="https://images.opencollective.com/polskie-kasyno-online/c25e456/avatar.png"
+                    alt="polskie kasyno online"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Kasyno.us.com to niezależny portal o tematyce kasyno online Polska, który pomaga graczom znaleźć bezpieczne i sprawdzone kasyna internetowe.
+            </p>
+            <p align="center">
+                <a
+                    href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>kasyno.us.com</b></a
+                >
+            </p>
+        </td>
+    </tr>
+    <tr width="33.333333333333336%">
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://www.scrapingbee.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/scrapingbee/6d5dc95/logo.png"
+                    alt="ScrapingBee"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Scrape websites with a powerful web scraping API without managing proxies, browsers, or anti-bot defenses.
+            </p>
+            <p align="center">
+                <a
+                    href="https://www.scrapingbee.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>scrapingbee.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://opencollective.com/axios/contribute"
+                target="_blank"
+                >💜 Become a sponsor</a
+            >
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
                 href="https://opencollective.com/axios/contribute"
                 target="_blank"
                 >💜 Become a sponsor</a
@@ -1475,7 +1536,7 @@ When a response is fulfilled and multiple response interceptors are registered:
 - If a fulfillment interceptor throws, Axios skips the next fulfillment interceptor and calls the next rejection interceptor.
 - After the error is caught, later fulfillment interceptors run again, just like in a promise chain.
 
-Read [the interceptor tests](./test/specs/interceptors.spec.js) to see all this in code.
+Read [the interceptor tests](./tests/browser/interceptors.browser.test.js) to see all this in code.
 
 ## Error types
 

@@ -24,6 +24,60 @@ afterEach(() => {
 });
 
 describe('helpers::shouldBypassProxy', () => {
+  describe('CIDR entries', () => {
+    it('should match IPv4 ranges and their prefix boundaries', () => {
+      setNoProxy('172.16.0.0/12');
+
+      expect(shouldBypassProxy('http://172.16.0.1/')).toBe(true);
+      expect(shouldBypassProxy('http://172.31.255.255/')).toBe(true);
+      expect(shouldBypassProxy('http://172.15.255.255/')).toBe(false);
+      expect(shouldBypassProxy('http://172.32.0.0/')).toBe(false);
+    });
+
+    it('should match bracketed and unbracketed IPv6 ranges', () => {
+      for (const entry of ['fd00::/8', '[fd00::]/8']) {
+        setNoProxy(entry);
+
+        expect(shouldBypassProxy('http://[fd12:3456::1]/')).toBe(true);
+        expect(shouldBypassProxy('http://[fe00::1]/')).toBe(false);
+      }
+    });
+
+    it('should translate IPv4-mapped IPv6 ranges', () => {
+      setNoProxy('::ffff:127.0.0.0/104');
+
+      expect(shouldBypassProxy('http://127.10.20.30/')).toBe(true);
+      expect(shouldBypassProxy('http://128.0.0.1/')).toBe(false);
+    });
+
+    it('should keep address families separate for zero-length prefixes', () => {
+      setNoProxy('0.0.0.0/0');
+
+      expect(shouldBypassProxy('http://203.0.113.7/')).toBe(true);
+      expect(shouldBypassProxy('http://[2001:db8::1]/')).toBe(false);
+
+      setNoProxy('::/0');
+
+      expect(shouldBypassProxy('http://[2001:db8::1]/')).toBe(true);
+      expect(shouldBypassProxy('http://203.0.113.7/')).toBe(false);
+    });
+
+    it('should fail closed for malformed ranges', () => {
+      for (const entry of ['10.0.0.0/33', 'fd00::/129', 'example.com/24', '10.0.0.0/01']) {
+        setNoProxy(entry);
+
+        expect(shouldBypassProxy('http://10.0.0.1/')).toBe(false);
+        expect(shouldBypassProxy('http://[fd00::1]/')).toBe(false);
+      }
+    });
+  });
+
+  it('should handle a long non-matching dotted entry within the test timeout', () => {
+    setNoProxy(`example.com${'.'.repeat(100000)}invalid`);
+
+    expect(shouldBypassProxy('http://example.com/')).toBe(false);
+  }, 1000);
+
   it('should bypass proxy for localhost with a trailing dot', () => {
     setNoProxy('localhost,127.0.0.1,::1');
 
@@ -149,7 +203,7 @@ describe('helpers::shouldBypassProxy', () => {
 
       expect(shouldBypassProxy('http://example.com/')).toBe(true);
       expect(shouldBypassProxy('http://[2001:db8::1]:8080/')).toBe(true);
-    },
+    }
   );
 
   it('should support bracketed ipv6 with explicit port in no_proxy', () => {

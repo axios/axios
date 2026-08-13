@@ -20,6 +20,36 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Runtime configuration prototype hardening
+
+- **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Runtime configuration hardening.
+- **Status:** Pending.
+- **Docs targets:** Request interceptor and custom adapter guidance; request-config security and migration notes; translated docs after the English documentation is finalized.
+- **Required content:** Explain that own request-config fields remain supported, including fields on a root null-prototype config, except that unsafe materialization keys (`__proto__`, `constructor`, and `prototype`) are always excluded. Values inherited only from a realm's shared `Object.prototype` are ignored even if that prototype's `constructor` is changed, deleted, or replaced by an accessor. An interceptor that returns the writable, already-merged null-prototype config preserves object identity through the adapter and `response.config`. A frozen, sealed, accessor-based, otherwise restricted, or unsafe-key-bearing null-prototype replacement is materialized into a writable filtered snapshot because dispatch updates fields such as headers, data, and temporary response state and must retain the dangerous-key filtering invariant. An interceptor replacement with a non-terminal application-defined prototype is likewise converted to a null-prototype normalized snapshot: safe inherited fields are materialized as own fields, but the original identity, prototype, `instanceof` branding, accessor placement, and property descriptor attributes are not preserved. Because a foreign shared `Object.prototype` is structurally indistinguishable from an application-created terminal null-prototype template once mutable properties are altered, inherited fields on terminal null-prototype ancestors are intentionally excluded as a fail-closed security boundary.
+- **Examples:** Show an unchanged merged config retaining identity between a request interceptor and custom adapter. Show a request interceptor returning an object with a non-terminal application prototype whose custom adapter field is materialized into the normalized snapshot, and contrast it with a terminal `Object.create(null)` prototype whose inherited behavior fields are ignored.
+- **Notes:** Present replacement normalization and the terminal null-prototype restriction as intentional security compatibility changes. Do not imply that mutating `Object.prototype` is supported or safe.
+
+### Proxy bypass CIDR ranges
+
+- **Change:** Document CIDR matching in `NO_PROXY` and `no_proxy`.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, Proxy bypass CIDR ranges.
+- **Status:** Pending.
+- **Docs targets:** Node proxy/environment-variable guidance and request-config proxy documentation; translated docs after the English documentation is finalized.
+- **Required content:** Explain that IPv4 and IPv6 CIDR entries are supported, bracketed IPv6 is accepted, IPv4-mapped IPv6 ranges are normalized to IPv4 when their prefix permits it, address families remain distinct, and malformed CIDR entries do not bypass the proxy. State explicitly that `0.0.0.0/0` bypasses the proxy for every IPv4 destination and `::/0` does the same for IPv6.
+- **Examples:** Show `NO_PROXY=10.0.0.0/8,2001:db8::/32` bypassing matching HTTP destinations and identify `/0` as the entire-family form.
+- **Notes:** Preserve the existing hostname, explicit-port, wildcard, loopback, and non-CIDR matching behavior.
+
+### Fetch and HTTP/2 adapter option consistency
+
+- **Change:** Document adapter-specific redirect, custom fetch, DNS lookup, and proxy behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter consistency and HTTP/2 adapter consistency.
+- **Status:** Pending.
+- **Docs targets:** Request-config entries for `fetchOptions`, `maxRedirects`, `lookup`, `httpVersion`, and `proxy`; custom adapter/fetch guidance; translated docs after the English documentation is finalized.
+- **Required content:** State that a custom fetch receives the fully resolved `Request` when `Request` is supported and continues to receive a second `fetchOptions` argument containing safe own custom fields; Axios-managed fields such as method, headers, body, signal, duplex, and credentials are represented by the `Request` and omitted from that second argument. Custom fetch implementations that previously inspected those fields on the second argument must migrate to the `Request`; identify this as an intentional compatibility change that prevents the second argument from overriding the authoritative request. Explain that `maxRedirects: 0` requests manual redirect handling in the Fetch adapter, but response visibility follows the Fetch runtime: Node may expose the 3xx status and `Location`, while browsers return an opaque redirect with status 0 and inaccessible headers. Custom DNS lookup applies to HTTP/2 connections and participates in session reuse. HTTP/2 ignores process-environment and HTTP/1-agent `proxyEnv` settings because `http2.connect()` cannot apply them, `proxy: false` remains direct, and an explicit Axios proxy object rejects with `ERR_NOT_SUPPORT`.
+- **Examples:** Include focused Fetch `maxRedirects: 0` and Node `httpVersion: 2` plus `lookup` examples.
+- **Notes:** Present the filtered custom-Fetch second argument, Fetch manual redirects, and explicit HTTP/2 proxy rejection as intentional compatibility changes. Do not imply that positive Fetch `maxRedirects` values enforce a redirect count; only zero maps to the platform's manual redirect mode. Do not present the Node-visible 3xx response as portable browser behavior. Keep the HTTP/2 environment-proxy direct-egress residual prominent for deployments that treat proxying as mandatory policy.
+
 ### RFC 9110 HTTP status code names
 
 - **Change:** Document the additive RFC 9110 names for HTTP statuses 413 and 422.

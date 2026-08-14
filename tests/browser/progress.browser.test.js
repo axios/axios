@@ -2,8 +2,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import axios from '../../index.js';
 
-class MockXMLHttpRequest {
+// Real EventTarget + ProgressEvent dispatches so events keep genuine browser
+// semantics: `target` survives the dispatch, `currentTarget` does not.
+class ProgressEventTarget extends EventTarget {
   constructor() {
+    super();
+    this._listenerCounts = {};
+  }
+
+  addEventListener(type, listener, options) {
+    this._listenerCounts[type] = (this._listenerCounts[type] || 0) + 1;
+    super.addEventListener(type, listener, options);
+  }
+}
+
+class MockXMLHttpRequest extends ProgressEventTarget {
+  constructor() {
+    super();
     this.requestHeaders = {};
     this.responseHeaders = {};
     this.readyState = 0;
@@ -18,14 +33,11 @@ class MockXMLHttpRequest {
     this.onabort = null;
     this.onerror = null;
     this.ontimeout = null;
-    this._listeners = {};
-    this._uploadListeners = {};
-    this.upload = {
-      addEventListener: (type, listener) => {
-        this._uploadListeners[type] ||= [];
-        this._uploadListeners[type].push(listener);
-      },
-    };
+    this.upload = new ProgressEventTarget();
+    // like a real XHR, invoke the onloadend property while loadend dispatches
+    this.addEventListener('loadend', (event) => {
+      this.onloadend && this.onloadend(event);
+    });
   }
 
   open(method, url, async = true) {
@@ -36,11 +48,6 @@ class MockXMLHttpRequest {
 
   setRequestHeader(key, value) {
     this.requestHeaders[key] = value;
-  }
-
-  addEventListener(type, listener) {
-    this._listeners[type] ||= [];
-    this._listeners[type].push(listener);
   }
 
   getAllResponseHeaders() {
@@ -55,14 +62,20 @@ class MockXMLHttpRequest {
     requests.push(this);
   }
 
-  getListenerCount(type, target = 'request') {
-    const listeners = target === 'upload' ? this._uploadListeners : this._listeners;
-    return listeners[type]?.length || 0;
+  abort() {
+    this.aborted = true;
+    this.readyState = 0;
+    this.status = 0;
   }
 
-  emit(type, target = 'request', event = {}) {
-    const listeners = target === 'upload' ? this._uploadListeners : this._listeners;
-    (listeners[type] || []).forEach((listener) => listener(event));
+  getListenerCount(type, target = 'request') {
+    const eventTarget = target === 'upload' ? this.upload : this;
+    return eventTarget._listenerCounts[type] || 0;
+  }
+
+  emit(type, target = 'request', init = {}) {
+    const eventTarget = target === 'upload' ? this.upload : this;
+    eventTarget.dispatchEvent(new ProgressEvent(type, init));
   }
 
   respondWith({
@@ -87,7 +100,11 @@ class MockXMLHttpRequest {
 
     queueMicrotask(() => {
       if (this.onloadend) {
-        this.onloadend();
+        this.emit('loadend', 'request', {
+          loaded: this.responseText.length,
+          total: this.responseText.length,
+          lengthComputable: true,
+        });
       } else if (this.onreadystatechange) {
         this.onreadystatechange();
       }
@@ -226,5 +243,199 @@ describe('progress (vitest browser)', () => {
     await responsePromise;
 
     expect(downloadProgressSpy).toHaveBeenCalled();
+  });
+
+  it('should deliver the full streamed payload to a listener reading from the live event target', async () => {
+    let received = '';
+    let lastLength = 0;
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ event }) => {
+        const xhr = event && event.currentTarget;
+        if (!xhr || typeof xhr.responseText !== 'string') {
+          return;
+        }
+        received += xhr.responseText.slice(lastLength);
+        lastLength = xhr.responseText.length;
+      },
+    });
+    const request = getLastRequest();
+
+    request.responseText = 'AAAA';
+    request.emit('progress', 'request', { loaded: 4 });
+    request.responseText += 'BBBB';
+    request.emit('progress', 'request', { loaded: 8 });
+    request.responseText += 'CCCC';
+    request.emit('progress', 'request', { loaded: 12 });
+
+    request.respondWith({ status: 200, responseText: request.responseText });
+    await responsePromise;
+
+    expect(received).toBe('AAAABBBBCCCC');
+  });
+
+  it('should always deliver a final download progress event with a live event target', async () => {
+    const deliveries = [];
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ loaded, event }) => {
+        deliveries.push({ loaded, liveTarget: !!(event && event.currentTarget) });
+      },
+    });
+    const request = getLastRequest();
+
+    request.responseText = 'AAAA';
+    request.emit('progress', 'request', { loaded: 4 });
+    request.responseText += 'BBBB';
+    request.emit('progress', 'request', { loaded: 8 });
+
+    request.respondWith({ status: 200, responseText: request.responseText });
+    await responsePromise;
+
+    expect(deliveries.at(-1)).toEqual({ loaded: 8, liveTarget: true });
+  });
+
+  it('should flush pending download progress in the ready-state fallback', async () => {
+    window.XMLHttpRequest = class extends MockXMLHttpRequest {
+      constructor() {
+        super();
+        delete this.onloadend;
+      }
+    };
+
+    const loaded = [];
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: (event) => loaded.push(event.loaded),
+    });
+    const request = getLastRequest();
+
+    request.responseText = 'AAAA';
+    request.emit('progress', 'request', { loaded: 4 });
+    request.respondWith({ status: 200, responseText: 'AAAABBBB' });
+
+    await responsePromise;
+
+    expect(loaded).toEqual([4, 8]);
+  });
+
+  it('should not force a final download progress event for a status-zero failure', async () => {
+    const eventTypes = [];
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ event }) => {
+        eventTypes.push(event.type);
+      },
+    });
+    const request = getLastRequest();
+
+    request.respondWith({ status: 0 });
+
+    await expect(responsePromise).rejects.toMatchObject({ code: 'ECONNABORTED' });
+    expect(eventTypes).toEqual(['progress']);
+  });
+
+  it('should replay pending upload progress when loadend reports an unsuccessful transfer', async () => {
+    const loaded = [];
+    const responsePromise = axios.post('/foo', 'payload', {
+      onUploadProgress: (event) => {
+        loaded.push(event.loaded);
+      },
+    });
+    const request = getLastRequest();
+
+    request.emit('progress', 'upload', { loaded: 3, total: 7, lengthComputable: true });
+    request.emit('progress', 'upload', { loaded: 5, total: 7, lengthComputable: true });
+    request.emit('loadend', 'upload', { loaded: 0, total: 0, lengthComputable: false });
+
+    expect(loaded).toEqual([3, 5]);
+
+    request.respondWith({ status: 200, responseText: 'ok' });
+    await responsePromise;
+  });
+
+  it('should stop loadend processing when the final progress listener cancels the request', async () => {
+    const controller = new AbortController();
+    const reportedErrors = [];
+    const onWindowError = (event) => {
+      reportedErrors.push(event.error);
+      event.preventDefault();
+    };
+
+    window.addEventListener('error', onWindowError);
+    try {
+      const responsePromise = axios('/foo', {
+        signal: controller.signal,
+        onDownloadProgress: ({ event }) => {
+          if (event && event.type === 'loadend') {
+            controller.abort();
+          }
+        },
+      });
+      const request = getLastRequest();
+
+      request.respondWith({ status: 200, responseText: 'complete' });
+
+      await expect(responsePromise).rejects.toMatchObject({ code: 'ERR_CANCELED' });
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(request.aborted).toBe(true);
+      expect(reportedErrors).toEqual([]);
+    } finally {
+      window.removeEventListener('error', onWindowError);
+    }
+  });
+
+  it('should settle the request when the final progress listener throws', async () => {
+    // fake timers keep the rethrown listener error parked so it cannot fail the test run
+    vi.useFakeTimers();
+    try {
+      let finalDeliveries = 0;
+      const responsePromise = axios('/foo', {
+        onDownloadProgress: ({ event }) => {
+          if (event && event.type === 'loadend') {
+            finalDeliveries += 1;
+            throw new Error('listener failure');
+          }
+        },
+      });
+      const request = getLastRequest();
+
+      request.responseText = 'AAAA';
+      request.emit('progress', 'request', { loaded: 4 });
+      request.respondWith({ status: 200, responseText: request.responseText });
+
+      const response = await responsePromise;
+
+      expect(finalDeliveries).toBe(1);
+      expect(response.status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('should keep the request reachable via event.target on throttle-deferred deliveries', async () => {
+    vi.useFakeTimers();
+    try {
+      const deliveries = [];
+      const responsePromise = axios('/foo', {
+        onDownloadProgress: ({ event }) => {
+          deliveries.push(event && event.target);
+        },
+      });
+      const request = getLastRequest();
+
+      request.responseText = 'AAAA';
+      request.emit('progress', 'request', { loaded: 4 });
+      request.responseText += 'BBBB';
+      request.emit('progress', 'request', { loaded: 8 });
+
+      // step past the throttle window so the second event arrives via the timer
+      await vi.advanceTimersByTimeAsync(400);
+
+      request.respondWith({ status: 200, responseText: request.responseText });
+      await responsePromise;
+
+      expect(deliveries.length).toBeGreaterThanOrEqual(2);
+      expect(deliveries.every((target) => target === request)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

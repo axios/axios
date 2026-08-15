@@ -203,6 +203,57 @@ describe('core::AxiosError', () => {
     expect(error.status).toBe(400);
   });
 
+  describe('agent serialization (issue #11145)', () => {
+    // Build the shape that made this expensive: an agent that points at its
+    // sockets while every socket points back at the agent and at each other.
+    const buildAgentGraph = (socketCount) => {
+      const agent = { sockets: {}, freeSockets: {}, requests: {}, options: { keepAlive: true } };
+      const sockets = [];
+
+      for (let i = 0; i < socketCount; i++) {
+        const socket = { id: i, agent, _httpMessage: { agent }, peers: sockets };
+        socket._httpMessage.socket = socket;
+        sockets.push(socket);
+        agent.sockets['host:' + i] = [socket];
+      }
+
+      return agent;
+    };
+
+    it('replaces agents with a label instead of walking them', () => {
+      const config = { url: '/foo', httpAgent: buildAgentGraph(2), httpsAgent: buildAgentGraph(2) };
+      const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+      expect(json.config.httpAgent).toBe('[http.Agent]');
+      expect(json.config.httpsAgent).toBe('[https.Agent]');
+      expect(json.config.url).toBe('/foo');
+    });
+
+    it('keeps the serialized config small for a cross-referenced agent', () => {
+      const config = { url: '/foo', httpAgent: buildAgentGraph(6) };
+      const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+      expect(JSON.stringify(json.config).length).toBeLessThan(500);
+    });
+
+    it('does not mutate the original config', () => {
+      const agent = buildAgentGraph(2);
+      const config = { url: '/foo', httpAgent: agent };
+
+      new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+      expect(config.httpAgent).toBe(agent);
+    });
+
+    it('leaves non-object agent values alone', () => {
+      const config = { url: '/foo', httpAgent: false, httpsAgent: undefined };
+      const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+      expect(json.config.httpAgent).toBe(false);
+      expect(json.config).not.toHaveProperty('httpsAgent');
+    });
+  });
+
   describe('status field behaviour (issue #5330)', () => {
     it('error.status equals response.status for 4xx errors', () => {
       // Regression test: error.status must be directly accessible without

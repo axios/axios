@@ -204,8 +204,8 @@ describe('core::AxiosError', () => {
   });
 
   describe('agent serialization (issue #11145)', () => {
-    // Build the shape that made this expensive: an agent that points at its
-    // sockets while every socket points back at the agent and at each other.
+    // The shape that made this expensive: an agent pointing at its sockets
+    // while every socket points back at the agent and at its peers.
     const buildAgentGraph = (socketCount) => {
       const agent = { sockets: {}, freeSockets: {}, requests: {}, options: { keepAlive: true } };
       const sockets = [];
@@ -220,37 +220,62 @@ describe('core::AxiosError', () => {
       return agent;
     };
 
+    const serialize = (config) => new AxiosError('Boom!', 'ESOMETHING', config).toJSON().config;
+
     it('replaces agents with a label instead of walking them', () => {
       const config = { url: '/foo', httpAgent: buildAgentGraph(2), httpsAgent: buildAgentGraph(2) };
-      const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+      const json = serialize(config);
 
-      expect(json.config.httpAgent).toBe('[http.Agent]');
-      expect(json.config.httpsAgent).toBe('[https.Agent]');
-      expect(json.config.url).toBe('/foo');
+      expect(json.httpAgent).toBe('[http.Agent]');
+      expect(json.httpsAgent).toBe('[https.Agent]');
+      expect(json.url).toBe('/foo');
+      expect(JSON.stringify(json)).not.toContain('sockets');
     });
 
-    it('keeps the serialized config small for a cross-referenced agent', () => {
-      const config = { url: '/foo', httpAgent: buildAgentGraph(6) };
-      const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+    it('replaces the agent wherever it is reached, not just under its own key', () => {
+      const agent = buildAgentGraph(4);
+      const config = { url: '/foo', httpAgent: agent, nested: { alias: agent } };
+      const json = serialize(config);
 
-      expect(JSON.stringify(json.config).length).toBeLessThan(500);
+      expect(json.nested.alias).toBe('[http.Agent]');
+      expect(JSON.stringify(json)).not.toContain('sockets');
     });
 
-    it('does not mutate the original config', () => {
+    it('does not expose the agent through a circular config reference', () => {
+      const config = { url: '/foo', httpAgent: buildAgentGraph(4) };
+      config.self = config;
+
+      expect(JSON.stringify(serialize(config))).not.toContain('sockets');
+    });
+
+    it('does not copy or mutate the config', () => {
       const agent = buildAgentGraph(2);
       const config = { url: '/foo', httpAgent: agent };
 
-      new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+      serialize(config);
 
       expect(config.httpAgent).toBe(agent);
     });
 
-    it('leaves non-object agent values alone', () => {
-      const config = { url: '/foo', httpAgent: false, httpsAgent: undefined };
-      const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+    it('does not promote an inherited agent onto the serialized config', () => {
+      const config = Object.create({ httpAgent: buildAgentGraph(2) });
+      config.url = '/foo';
 
-      expect(json.config.httpAgent).toBe(false);
-      expect(json.config).not.toHaveProperty('httpsAgent');
+      expect(serialize(config)).not.toHaveProperty('httpAgent');
+    });
+
+    it('leaves non-object agent values alone', () => {
+      const json = serialize({ url: '/foo', httpAgent: false, httpsAgent: undefined });
+
+      expect(json.httpAgent).toBe(false);
+      expect(json).not.toHaveProperty('httpsAgent');
+    });
+
+    it('replaces agents on the redaction path too', () => {
+      const json = serialize({ url: '/foo', httpAgent: buildAgentGraph(2), token: 'secret', redact: ['token'] });
+
+      expect(json.httpAgent).toBe('[http.Agent]');
+      expect(json.token).not.toBe('secret');
     });
   });
 

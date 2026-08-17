@@ -264,6 +264,14 @@ describe('core::AxiosError', () => {
       expect(serialize(config)).not.toHaveProperty('httpAgent');
     });
 
+    it('labels a single agent serving both keys without picking a side', () => {
+      const agent = buildAgentGraph(2);
+      const json = serialize({ url: '/foo', httpAgent: agent, httpsAgent: agent });
+
+      expect(json.httpAgent).toBe('[Agent]');
+      expect(json.httpsAgent).toBe('[Agent]');
+    });
+
     it('leaves non-object agent values alone', () => {
       const json = serialize({ url: '/foo', httpAgent: false, httpsAgent: undefined });
 

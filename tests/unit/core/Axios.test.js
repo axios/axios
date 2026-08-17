@@ -3,6 +3,16 @@ import axios from '../../../index.js';
 
 describe('core::Axios', () => {
   describe('request error stack decoration', () => {
+    async function namedCaller() {
+      await axios.request({
+        url: 'http://localhost/test',
+        adapter: () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('adapter failure')), 0);
+          }),
+      });
+    }
+
     async function expectAdapterFailurePreserved() {
       const failure = new Error('adapter failure');
 
@@ -13,6 +23,32 @@ describe('core::Axios', () => {
         })
       ).rejects.toBe(failure);
     }
+
+    it('appends a caller stack of fewer than three frames', async () => {
+      const original = Error.stackTraceLimit;
+      Error.stackTraceLimit = 2;
+
+      try {
+        await namedCaller();
+        throw new Error('request should have rejected');
+      } catch (error) {
+        expect(error.stack).toContain('namedCaller');
+      } finally {
+        Error.stackTraceLimit = original;
+      }
+    });
+
+    it('does not append a caller stack the error already ends with', async () => {
+      const failure = new Error('adapter failure');
+      failure.stack = 'Error: adapter failure';
+      const before = failure.stack;
+
+      await expect(
+        axios.request({ url: 'http://localhost/test', adapter: () => Promise.reject(failure) })
+      ).rejects.toBe(failure);
+
+      expect(failure.stack.startsWith(before)).toBe(true);
+    });
 
     it('preserves the original error when Error.prepareStackTrace returns a non-string stack', async () => {
       const original = Error.prepareStackTrace;

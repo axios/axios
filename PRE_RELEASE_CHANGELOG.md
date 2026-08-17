@@ -21,6 +21,7 @@
 - **Request error stacks:** Preserved original request failures when custom `Error` stack instrumentation returns non-string data or throws during optional stack decoration. (**#11109**, closes **#11108**)
 - **Fetch adapter - cache mode:** Omitted the implicit `cache: 'default'` when a runtime rejects it but accepts a request without a cache option, restoring requests on Cloudflare Workers, including older compatibility dates and `cache_option_disabled` configurations that reject every explicit cache mode. Supporting runtimes retain the explicit default to protect against `Object.prototype` pollution, and caller-supplied cache options remain unchanged. (**#11194**, closes **#11192**)
 - **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape, interceptor iteration behavior, and interceptor ID identity across registrations. (**#11070**)
+- **Declaration emit in dependents:** The default for `R` on every request method is now a nameable `AxiosResponseDefault` interface rather than an unexported `unique symbol`. A dependent that forwarded an unresolved generic `R` produced an inferred type naming a symbol it could not reach, so `tsc --declaration` failed with TS2527; generated clients built from the `typescript-axios` template hit this. Both the ESM and CommonJS declarations are fixed, and nothing is exported that the package cannot load at runtime. (closes **#11116**)
 
 ## Documentation
 

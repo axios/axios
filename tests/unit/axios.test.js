@@ -135,6 +135,58 @@ describe('Axios', () => {
     assert.strictEqual(response.config.url, 'test-url');
   });
 
+  it('should not throw when a config Proxy reports a symbol key with no property descriptor', async () => {
+    const phantomSymbol = Symbol('phantom');
+    const target = { headers: { 'X-Test': '1' } };
+    const config = new Proxy(target, {
+      ownKeys(t) {
+        return [...Reflect.ownKeys(t), phantomSymbol];
+      },
+      getOwnPropertyDescriptor(t, prop) {
+        if (prop === phantomSymbol) {
+          return undefined;
+        }
+        return Reflect.getOwnPropertyDescriptor(t, prop);
+      },
+    });
+
+    const client = new Axios({
+      adapter: (cfg) => Promise.resolve({ data: null, status: 200, statusText: 'OK', headers: {}, config: cfg }),
+    });
+
+    const response = await client.request('test-url', config);
+
+    assert.strictEqual(response.config.url, 'test-url');
+  });
+
+  it('should not invoke an inherited Object.prototype setter while copying the config object', async () => {
+    let setterInvoked = false;
+
+    Object.defineProperty(Object.prototype, 'baseURL', {
+      configurable: true,
+      set() {
+        setterInvoked = true;
+      },
+      get() {
+        return undefined;
+      },
+    });
+
+    try {
+      const config = { baseURL: 'https://example.com', headers: { 'X-Test': '1' } };
+      const client = new Axios({
+        adapter: (cfg) => Promise.resolve({ data: null, status: 200, statusText: 'OK', headers: {}, config: cfg }),
+      });
+
+      const response = await client.request('test-url', config);
+
+      assert.strictEqual(setterInvoked, false);
+      assert.strictEqual(response.config.baseURL, 'https://example.com');
+    } finally {
+      delete Object.prototype.baseURL;
+    }
+  });
+
   it('should define default headers for every supported method', () => {
     assert.deepStrictEqual(methodList, expectedMethodList);
     assert.strictEqual(Object.isFrozen(methodList), true);

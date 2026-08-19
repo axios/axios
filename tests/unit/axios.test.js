@@ -105,6 +105,36 @@ describe('Axios', () => {
     assert.deepStrictEqual(gets, []);
   });
 
+  it('should not throw when the url shorthand is called without a config argument', async () => {
+    const client = new Axios({
+      adapter: (cfg) => Promise.resolve({ data: null, status: 200, statusText: 'OK', headers: {}, config: cfg }),
+    });
+
+    const response = await client.request('test-url');
+
+    assert.strictEqual(response.config.url, 'test-url');
+  });
+
+  it('should not read non-enumerable own properties off the config object passed alongside a url string', async () => {
+    const config = { headers: { 'X-Test': '1' } };
+
+    Object.defineProperty(config, 'hidden', {
+      enumerable: false,
+      configurable: true,
+      get() {
+        throw new Error('hidden getter should not be read');
+      },
+    });
+
+    const client = new Axios({
+      adapter: (cfg) => Promise.resolve({ data: null, status: 200, statusText: 'OK', headers: {}, config: cfg }),
+    });
+
+    const response = await client.request('test-url', config);
+
+    assert.strictEqual(response.config.url, 'test-url');
+  });
+
   it('should define default headers for every supported method', () => {
     assert.deepStrictEqual(methodList, expectedMethodList);
     assert.strictEqual(Object.isFrozen(methodList), true);

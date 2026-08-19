@@ -5,6 +5,7 @@ import Axios from '../../lib/core/Axios.js';
 import AxiosHeaders from '../../lib/core/AxiosHeaders.js';
 import methodList from '../../lib/core/methodList.js';
 import defaults from '../../lib/defaults/index.js';
+import { echoHeaders } from '../setup/adapters.js';
 
 const expectedMethodList = [
   'get',
@@ -119,15 +120,6 @@ describe('Axios', () => {
     const client = axios.create();
     const link = '<http://www.w3.org/ns/ldp#Resource>; rel="type"';
 
-    const echoHeaders = async (config) => ({
-      data: null,
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config,
-      request: {},
-    });
-
     for (const headerName of ['link', 'Link']) {
       const response = await client.post(
         '/literal-method-header',
@@ -159,15 +151,6 @@ describe('Axios', () => {
   it('should treat an AxiosHeaders instance under a method name as defaults', async () => {
     const client = axios.create();
 
-    const echoHeaders = async (config) => ({
-      data: null,
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config,
-      request: {},
-    });
-
     const response = await client.post(
       '/axios-headers-bucket',
       {},
@@ -189,15 +172,6 @@ describe('Axios', () => {
   it('should send a non-plain object under a method name as a literal header', async () => {
     const client = axios.create();
     const date = new Date(0);
-
-    const echoHeaders = async (config) => ({
-      data: null,
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config,
-      request: {},
-    });
 
     const response = await client.post(
       '/non-plain-literal-header',

@@ -1,0 +1,402 @@
+# API 参考
+
+以下是 axios 包中所有可用函数和类的列表。这些函数可在你的项目中使用和导入。所有函数和类均受我们遵循语义化版本的承诺保护，即在未发布主版本变更的情况下，这些 API 将保持稳定不变。
+
+## 实例
+
+`axios` 实例是你用于发起 HTTP 请求的主要对象，它是一个创建 `Axios` 类新实例的工厂函数。`axios` 实例提供了多个请求方法，详见文档的[请求别名](/pages/advanced/request-method-aliases)章节。
+
+## TypeScript 请求类型
+
+公共请求类型使用不同的泛型分别表示请求数据和查询参数：
+
+```ts
+AxiosRequestConfig<D = any, P = any>
+RawAxiosRequestConfig<D = any, P = any>
+InternalAxiosRequestConfig<D = any, P = any>
+AxiosDefaults<D = any, P = any>
+CreateAxiosDefaults<D = any, P = any>
+
+AxiosResponse<T = any, D = any, H = {}, P = any>
+AxiosPromise<T = any, D = any, P = any>
+AxiosError<T = unknown, D = any, P = any>
+CanceledError<T, D = any, P = any>
+```
+
+`D` 是请求体类型，`P` 是查询参数类型。`AxiosResponse`、`AxiosPromise`、错误、默认配置、可调用实例、请求别名、适配器和 `mergeConfig()` 都会在请求配置中保留这两种类型。自定义参数序列化器会接收同一个 `P`。
+
+请求方法使用 `<T, R, D, P>` 的泛型顺序，将 `P` 添加在最后，因此现有的显式泛型参数保持兼容。未提供自定义响应类型 `R` 时，默认 `AxiosResponse` 会在 `response.config` 中保留 `D` 和 `P`；显式提供的 `R` 仍然控制最终返回值。为保持向后兼容，请求数据和参数泛型均默认为 `any`。
+
+## 类
+
+### `Axios`
+
+`Axios` 类是发起 HTTP 请求的核心类，是一个创建 `Axios` 类新实例的工厂函数。该类提供多个 HTTP 请求方法，详见文档的[请求别名](/pages/advanced/request-method-aliases)章节。
+
+#### `constructor`
+
+创建一个新的 `Axios` 实例，构造函数接受一个可选的配置对象作为参数。
+
+```ts
+constructor(instanceConfig?: AxiosRequestConfig);
+```
+
+#### `request`
+
+处理请求调用和响应解析，是发起 HTTP 请求的核心方法。接受一个配置对象作为参数，返回一个解析为响应对象的 Promise。
+
+```ts
+request<T, R, D, P>(config: AxiosRequestConfig<D, P>): Promise<R>;
+```
+
+### `CancelToken` <Badge type="danger" text="已废弃，请改用 AbortController" />
+
+`CancelToken` 类基于 `tc39/proposal-cancelable-promises` 提案，用于创建可取消 HTTP 请求的令牌。该类现已废弃，推荐使用 `AbortController` API。
+
+从 0.22.0 版本起，`CancelToken` 类已废弃，将在未来版本中移除。建议改用 `AbortController` API。
+
+该类主要为了向后兼容而保留导出，未来将被移除。我们强烈不建议在新项目中使用；下面的旧版互操作辅助方法仅为已有代码列出。
+
+这些旧版方法仍为现有集成提供类型：
+
+```ts
+subscribe(listener: (cancel: Cancel | any) => void): void;
+unsubscribe(listener: (cancel: Cancel | any) => void): void;
+toAbortSignal(): AbortSignal;
+```
+
+## 函数
+
+### `AxiosError`
+
+`AxiosError` 类是 HTTP 请求失败时抛出的错误类，继承自 `Error` 类并添加了额外属性。
+
+#### `constructor`
+
+创建一个新的 `AxiosError` 实例，构造函数接受可选的 message、code、config、request 和 response 作为参数。
+
+```ts
+constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any, response?: AxiosResponse<T, D, {}, P>);
+```
+
+#### `properties`
+
+`AxiosError` 类提供以下属性：
+
+```ts
+// 配置实例。
+config?: InternalAxiosRequestConfig<D, P>;
+
+// 错误代码。
+code?: string;
+
+// 请求实例。
+request?: any;
+
+// 响应实例。
+response?: AxiosResponse<T, D, {}, P>;
+
+// 表示该错误是否为 AxiosError 的布尔值。
+isAxiosError: boolean;
+
+// 错误状态码。
+status?: number;
+
+// 将错误转换为 JSON 对象的辅助方法。
+toJSON: () => object;
+
+// 错误原因。
+cause?: Error;
+```
+
+### `AxiosHeaders`
+
+`AxiosHeaders` 类是用于管理 HTTP 请求头的工具类，提供添加、删除和获取请求头等操作方法。
+
+此处仅列出主要方法，完整方法列表请参阅类型声明文件。
+
+#### `constructor`
+
+创建一个新的 `AxiosHeaders` 实例，构造函数接受一个可选的请求头对象作为参数。
+
+```ts
+constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
+```
+
+#### `set`
+
+向请求头对象添加一个请求头。
+空字符串或仅包含空白字符的请求头名称会被忽略。
+
+```ts
+set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
+```
+
+#### `get`
+
+从请求头对象获取一个请求头。
+
+```ts
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
+get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+```
+
+传入 `AxiosHeaders.parseParameters` 可将规范化的 HTTP 参数解析为安全的、原型为 null 的映射：
+
+```js
+const headers = new AxiosHeaders({
+  "Content-Type": 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...headers.get("Content-Type", AxiosHeaders.parseParameters),
+});
+// { boundary: "a,b" }
+```
+
+参数名称不区分大小写。解析器会移除带引号字符串的定界引号，解码转义的引号和反斜杠，保留带引号值中的逗号和分号，并且只移除不带引号值两侧的 RFC 可选空白。它会忽略 `__proto__`、`constructor` 和 `prototype`。`get(name, true)` 仍是旧版分词器。
+
+#### `has`
+
+检查请求头对象中是否存在某个请求头。
+
+```ts
+has(header: string, matcher?: AxiosHeaderMatcher): boolean;
+```
+
+#### `delete`
+
+从请求头对象移除一个请求头。
+
+```ts
+delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
+```
+
+#### `clear`
+
+从请求头对象移除所有请求头。
+
+```ts
+clear(matcher?: AxiosHeaderMatcher): boolean;
+```
+
+#### `normalize`
+
+规范化请求头对象。
+
+```ts
+normalize(format: boolean): AxiosHeaders;
+```
+
+#### `concat`
+
+合并多个请求头对象。
+
+```ts
+concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
+```
+
+#### `toJSON`
+
+将请求头对象转换为 JSON 对象。
+
+```ts
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
+```
+
+#### `toString`
+
+将请求头返回为不含 CRLF 的 HTTP 请求头块，每行一个 `name: value` 键值对。
+
+```ts
+toString(): string;
+```
+
+### `CanceledError` <Badge type="tip" text="继承自 AxiosError" />
+
+`CanceledError` 类是 HTTP 请求被取消时抛出的错误类，继承自 `AxiosError` 类。
+
+```ts
+constructor(message?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any);
+__CANCEL__?: boolean;
+```
+
+### `Cancel` <Badge type="tip" text="CanceledError 的别名" />
+
+`Cancel` 类是 `CanceledError` 类的别名，为向后兼容而保留导出，将在未来版本中移除。
+
+```ts
+Cancel: typeof CanceledError;
+```
+
+### `isCancel`
+
+检查某个错误是否为 `CanceledError` 的函数，可用于区分主动取消和意外错误。
+
+```ts
+isCancel<T = any, D = any, P = any>(value: any): value is CanceledError<T, D, P>;
+```
+
+```js
+import axios from 'axios';
+
+const controller = new AbortController();
+
+axios.get('/api/data', { signal: controller.signal }).catch((error) => {
+  if (axios.isCancel(error)) {
+    console.log('Request was cancelled:', error.message);
+  } else {
+    console.error('Unexpected error:', error);
+  }
+});
+
+controller.abort('User navigated away');
+```
+
+### `isAxiosError`
+
+检查某个错误是否为 `AxiosError` 的函数。在 `catch` 块中使用此函数，可安全访问 axios 特有的错误属性，如 `error.response` 和 `error.config`。
+
+```ts
+isAxiosError(value: any): value is AxiosError;
+```
+
+```js
+import axios from 'axios';
+
+try {
+  await axios.get('/api/resource');
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    // error.response、error.config、error.code 均可使用
+    console.error('HTTP error', error.response?.status, error.message);
+  } else {
+    // 非 axios 错误（例如编程错误）
+    throw error;
+  }
+}
+```
+
+### `all` <Badge type="danger" text="已废弃，请改用 Promise.all" />
+
+`all` 函数接受一组 Promise 并返回一个在所有 Promise 都完成后才完成的单一 Promise，现已废弃，推荐使用 `Promise.all` 方法。
+
+从 0.22.0 版本起，`all` 函数已废弃，将在未来版本中移除。建议改用 `Promise.all` 方法。
+
+### `spread`
+
+`spread` 函数可将一个参数数组展开为函数调用的多个参数，在你需要将数组参数传递给接收多个参数的函数时非常实用。
+
+```ts
+spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
+```
+
+### `toFormData`
+
+将普通 JavaScript 对象（包括嵌套对象）转换为 `FormData` 实例，在需要从对象中以编程方式构建 multipart 表单数据时非常实用。
+
+```ts
+toFormData(sourceObj: object, formData?: FormData, options?: FormSerializerOptions): FormData;
+```
+
+```js
+import { toFormData } from 'axios';
+
+const data = { name: 'Jay', avatar: fileBlob };
+const form = toFormData(data);
+// form 现在是一个可直接发送的 FormData 实例
+await axios.post('/api/users', form);
+```
+
+### `formToJSON`
+
+将 `FormData` 实例转换回普通 JavaScript 对象，在需要以结构化格式读取表单数据时非常实用。
+
+只有点号和方括号表示法具有结构含义：`.`、`[` 和 `]` 会分隔路径，而 `-`、空格、`+`、`*` 和 `&` 会保留在字面键中。`foo.bar` 和 `foo[bar]` 会创建嵌套对象，`foo[]` 会创建数组。
+
+```ts
+formToJSON(form: FormData): object;
+```
+
+```js
+import { formToJSON } from 'axios';
+
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+const obj = formToJSON(form);
+console.log(obj);
+// { "user-name": "johndoe", user: { name: "john" } }
+```
+
+### `getAdapter`
+
+通过名称或名称数组解析并返回一个适配器函数。axios 在内部使用此函数为当前环境选择最合适的适配器。
+
+```ts
+getAdapter(adapters: string | string[]): AxiosAdapter;
+```
+
+```js
+import { getAdapter } from 'axios';
+
+// 显式获取 fetch 适配器
+const fetchAdapter = getAdapter('fetch');
+
+// 按优先级列表获取最合适的适配器
+const adapter = getAdapter(['fetch', 'xhr', 'http']);
+```
+
+### `mergeConfig`
+
+合并两个 axios 配置对象，使用与 axios 内部合并默认配置和请求级选项相同的深度合并策略。后者的值优先级更高。
+
+```ts
+mergeConfig<D = any, P = any>(
+  config1: AxiosRequestConfig<D, P>,
+  config2: AxiosRequestConfig<D, P>
+): AxiosRequestConfig<D, P>;
+```
+
+```js
+import { mergeConfig } from 'axios';
+
+const base = { baseURL: 'https://api.example.com', timeout: 5000 };
+const override = { timeout: 10000, headers: { 'X-Custom': 'value' } };
+
+const merged = mergeConfig(base, override);
+// { baseURL: "https://api.example.com", timeout: 10000, headers: { "X-Custom": "value" } }
+```
+
+## 常量
+
+### `HttpStatusCode`
+
+包含 HTTP 状态码命名常量的对象，可用于编写更具可读性的条件判断，避免直接使用数字字面量。
+
+```js
+import axios, { HttpStatusCode } from 'axios';
+
+try {
+  const response = await axios.get('/api/resource');
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    if (error.response?.status === HttpStatusCode.NotFound) {
+      console.error('Resource not found');
+    } else if (error.response?.status === HttpStatusCode.Unauthorized) {
+      console.error('Authentication required');
+    }
+  }
+}
+```
+
+## 其他
+
+### `VERSION`
+
+`axios` 包的当前版本号字符串，随每次发布更新。

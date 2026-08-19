@@ -1,5 +1,523 @@
 # Changelog
 
+## v1.19.0 — July 22, 2026
+
+This release raises the form-data security floor, adds configuration and type-system capabilities, and fixes NO_PROXY matching, interceptor errors, progress reporting, and serialization edge cases.
+
+## 🔒 Security Fixes
+
+- Multipart Form Data: Raised the form-data dependency floor to ^4.0.6, preventing fresh installations from resolving versions affected by the CRLF injection vulnerability GHSA-hmw2-7cc7-3qxx (https://github.com/advisories/GHSA-hmw2-7cc7-3qxx). (#11028)
+
+## 🚀 New Features
+
+- Configuration Extensibility: Preserved own-enumerable symbol-keyed fields through mergeConfig and added a generic params type across public TypeScript declarations, responses, errors,
+  adapters, and serializers. (#11043, #11081)
+- Header Parameter Parsing: Added the opt-in AxiosHeaders.parseParameters() parser for quote-aware, RFC-style HTTP parameter parsing while preserving legacy parsing behavior. (#11051)
+- HTTP Status Codes: Added the missing Cloudflare 520 WebServerReturnsAnUnknownError status and matching ESM/CJS declarations. (#11067)
+
+## 🐛 Bug Fixes
+
+- Form Data Conversion: Limited formDataToJSON path splitting to dot and bracket notation, preserving literal punctuation in keys, and removed browser-facing Buffer.from usage from toFormData to avoid unnecessary polyfills. (#11006, #11018)
+- Proxy Bypass: Canonicalized IPv4 shorthand, octal, and hexadecimal forms during NO_PROXY matching and honored * entries within comma- or space-separated bypass lists. (#11029, #11053)
+- Cancellation: Propagated already-aborted input signals immediately when composing abort signals. (#11035)
+- Header Handling: Preserved empty first values for duplicate singleton headers and made AxiosHeaders#getSetCookie() consistently return arrays for present values. (#11036, #11037)
+- URL Handling: Included normalized, safely redacted offending URLs in malformed-protocol errors and removed repeated trailing slashes when combining base URLs. (#11008, #11038)
+
+- Progress Events: Clamped malformed negative progress values to zero and ensured final Node.js download progress events are delivered before streamed responses close. (#11039, #11040)
+- Error and JSON Serialization: Serialized Set values as arrays in JSON-compatible snapshots and synthesized useful AxiosError messages from otherwise-empty AggregateError instances. (#11044, #11059)
+- Content-Length Enforcement: Corrected base64 data: URL size estimation so maxContentLength is enforced consistently by the HTTP and Fetch adapters. (#11061)
+- Synchronous Interceptors: Prevented requests from being dispatched after synchronous request interceptors fail unless their paired rejection handler resolves successfully. (#11071)
+
+## 🔧 Maintenance & Chores
+
+- Dependencies: Updated development and test tooling, the docs fixture's Axios version, and GitHub Actions integrations including Checkout, Setup Node, Setup Deno, and Zizmor. (#11031, #11055, #11056, #11058, #11079, #11080, #11088, #11089, #11090)
+- Build Outputs: Limited sourcemap generation to published minified bundles, removing broken map references from non-minified builds. (#11054)
+- Form Data Internals: Centralized FormData header handling and made the Node.js adapter tolerate getHeaders() returning undefined under the content-only policy. (#11062)
+- Developer Experience: Ignored common local AI-tooling directories and fixed a constant-reassignment crash when the development sandbox serves its root path. (#11032, #11073)
+- Documentation: Updated sponsor information, clarified that baseURL is not a path-security boundary, scoped provenance claims to attested releases, and corrected the configuration-defaults documentation. (#11041, #11068, #11076, #11078)
+- Publishing: Simplified v1 publishing to use the npm version bundled with Node.js 26 and updated package metadata for the 1.19.0 release. (#11083, #11095)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve Axios:
+
+- @afonsojramos (#11028)
+- @MahinAnowar (#11006)
+- @yassertawfik4 (#11024)
+- @AnandSundar (#11029)
+- @lin-hongkuan (#11035)
+- @Wali007-lab (#11054)
+- @magicdawn (#11043)
+- @andrewkernel (#11053)
+- @Sagargupta16 (#11059)
+- @Rpaudel379 (#11078)
+- @kobihikri (#11076)
+- @spokodev (#11061)
+- @shaedrich (#11081)
+- @QodeXcli (#11062)
+- @akahoshi1421 (#11067)
+- @TheHonoredOne914 (#11071)
+- @Ahsan1Murtaza (#11073)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.18.1...v1.19.0)
+
+
+## v1.18.0 — June 13, 2026
+
+This release hardens redirect and URL handling, improves the validateStatus configuration semantics, and includes updates to documentation, dependencies, and release metadata.
+
+## 🔒 Security Fixes
+
+* **Redirect Header Safety:** Added Node HTTP adapter support for stripping caller-specified sensitive headers on cross-origin redirects, helping prevent custom auth headers such as API keys from leaking to another origin. (__#10892__)
+
+* **URL And Request Hardening:** Rejects malformed `http:` and `https:` URLs that omit `//` with `ERR_INVALID_URL`, while tightening prototype-pollution-safe config reads, stream size limits, FormData depth handling, data URL sizing, and local `NO_PROXY` matching. (__#11000__)
+
+## 🐛 Bug Fixes
+
+* **Status Validation:** Added `transitional.validateStatusUndefinedResolves` so applications can opt in to treating `validateStatus: undefined` like the option was omitted, while `validateStatus: null` remains the explicit way to accept every status. (__#10899__)
+
+## 🔧 Maintenance & Chores
+
+* **Documentation:** Published the v1.17.0 release notes, fixed a changelog typo, clarified the package update PR policy, and marked the `proxy` request config as Node.js-only in the advanced docs. (__#10984__, __#10988__, __#10992__, __#10995__)
+
+* **Dependencies:** Bumped `@babel/core`, `@babel/preset-env`, `@commitlint/cli`, `@commitlint/config-conventional`, `@rollup/plugin-babel`, `@rollup/plugin-commonjs`, `@vitest/browser`, `@vitest/browser-playwright`, `eslint`, `lint-staged`, `rollup`, `vitest`, and `actions/checkout`. (__#10989__, __#10996__, __#10997__)
+
+* **Release Metadata:** Prepared the 1.18.0 release by updating package metadata and the runtime `VERSION` value. (__#11003__)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+* __@drori12__ (__#10984__)
+* __@eyupcanakman__ (__#10899__)
+* __@Adi-Beker__ (__#10995__)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.17.0...v1.18.0)
+
+## v1.17.0 — June 1, 2026
+
+This release adds Node HTTP zstd decompression, hardens config and release workflows, and fixes authentication, header, proxy, and type-handling regressions.
+
+## 🔒 Security Fixes
+
+* **Config Hardening:** Guarded `socketPath`, `params`, and `paramsSerializer` reads with own-property checks to prevent inherited prototype values from affecting request behavior, including SSRF-sensitive paths. (__#10901__, __#10922__)
+* **Release Publishing:** Switched the publish workflow to npm staged publishing for safer, auditable package releases with provenance. (__#10926__)
+
+## 🚀 New Features
+
+* **HTTP Compression:** Added Node HTTP adapter support for zstd response decompression, with `transitional.advertiseZstdAcceptEncoding` controlling whether `zstd` is advertised in `Accept-Encoding`. (__#6792__, __#10920__)
+
+## 🐛 Bug Fixes
+
+* **Authentication Handling:** Restored Basic auth on same-origin Node redirects while continuing to strip credentials cross-origin, and aligned the fetch adapter with HTTP adapter behavior for URL-embedded Basic auth. (__#10929__, __#10896__)
+* **Proxy TLS:** Preserved user `httpsAgent` TLS options when tunneling HTTPS requests through HTTP CONNECT proxies. (__#10957__)
+* **React Native FormData:** Cleared default `Content-Type` for React Native `FormData` so multipart boundaries can be generated correctly. (__#10898__)
+* **Headers:** Silently skipped empty or whitespace-only header names instead of throwing, matching parsed-header behavior and avoiding React Native response crashes. (__#10875__)
+* **Request Data Merging:** Preserved enumerable symbol keys when cloning plain request data through axios merge logic. (__#10812__)
+* **Bundler Compatibility:** Converted `resolveConfig` from an arrow default export to a named function export to avoid webpack and Babel transform interop failures. (__#10891__)
+* **Types:** Corrected `AxiosHeaders.toJSON()` return types and updated CommonJS `isCancel` typings to narrow to `CanceledError<T>`. (__#10956__, __#10952__)
+* **Build Tooling:** Avoided emitting a null `Authorization` header from the GitHub build helper when `GITHUB_TOKEN` is unset. (__#10931__)
+
+## 🔧 Maintenance & Chores
+
+* **HTTP/2 Internals:** Extracted `Http2Sessions` into its own helper module and added direct unit coverage for session pooling, timeout, and cleanup behavior. (__#10861__)
+* **Package Publishing:** Reduced published package size by switching to a `files` allowlist and dropping unneeded unminified bundle source maps. (__#10939__)
+* **CI and Release Automation:** Added bundle-size reporting, moved reports to the job summary, fixed bundle-size comparison coverage, added Node 26 to the matrix, pinned npm for staged publishing, and prepared the 1.17.0 release. (__#10907__, __#10911__, __#10916__, __#10927__, __#10935__, __#10983__)
+* **Developer Workflow:** Added a dev container and iterated on OpenSpec workflow files before removing them from the release branch. (__#10925__, __#10914__, __#10958__)
+* **Documentation and Policy:** Updated disclosure, contributor, collaboration, threat-model, advanced docs, README badges, release notes, moderator configuration, and project metadata. (__#10890__, __#10889__, __#10921__, __#10945__, __#10905__, __#10933__, __#10915__, __#10887__, __#10955__)
+* **Dependencies:** Bumped Babel tooling, Commitlint, ESLint, Rollup, Globals, Vitest, Playwright, `fs-extra`, `qs`, docs dependencies, and GitHub Actions dependencies including `actions/dependency-review-action` and `zizmorcore/zizmor-action`. (__#10871__, __#10879__, __#10918__, __#10919__, __#10934__, __#10947__, __#10954__, __#10960__)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+* __@BasixKOR__ (__#6792__)
+* __@carladams1299-lab__ (__#10861__)
+* __@LaplaceYoung__ (__#10812__)
+* __@JamieMagee__ (__#10939__)
+* __@RonGamzu__ (__#10905__)
+* __@sapirbaruch__ (__#10891__)
+* __@nezukoagent__ (__#10901__)
+* __@devareddy05__ (__#10929__)
+* __@Mohammad-Faiz-Cloud-Engineer__ (__#10922__)
+* __@azandabot__ (__#10931__)
+* __@niksy__ (__#10896__)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.16.1...v1.17.0)
+
+## v1.16.1 — May 13, 2026
+
+This release ships a defence-in-depth fix for prototype pollution in `formDataToJSON`, hardens proxy and CI workflows, restores Webpack 4 compatibility for the fetch adapter, and includes several small bug fixes and maintenance improvements.
+
+## 🔒 Security Fixes
+
+* **Prototype Pollution Defence-in-Depth:** Hardened `formDataToJSON` against already-polluted `Object.prototype` by walking own properties only, so attacker-controlled keys inherited from a poisoned prototype cannot propagate through deserialization. (__#7413__)
+* **Proxy Cleartext Leak:** Fixed an issue where HTTPS request data could be transmitted in cleartext to an HTTP proxy under certain configurations. (__#10858__)
+* **CI Cache Removal:** Removed all GitHub Actions caches as a defence-in-depth measure against cache poisoning vectors in the build pipeline. (__#10882__)
+
+## 🐛 Bug Fixes
+
+* **Data URI Parsing:** Updated the `fromDataURI` regex to match RFC 2397 more strictly, fixing edge cases in `data:` URL handling. (__#10829__)
+* **Unicode Headers:** Preserved Unicode header values when running through request interceptors, so non-ASCII header content is no longer corrupted before dispatch. (__#10850__)
+* **XHR Upload Progress:** Guarded against malformed `ProgressEvent` payloads emitted by some environments during XHR upload, preventing crashes when `loaded` / `total` are missing or invalid. (__#10868__)
+* **Webpack 4 Fetch Adapter:** Fixed an "unexpected token" error caused by syntax in the fetch adapter that Webpack 4 could not parse, restoring compatibility for legacy bundler users. (__#10864__)
+* **Type Definitions:** Made `parseReviver` `context.source` optional in the type definitions to align with the ES2023 specification. (__#10837__)
+* **URL Object Support Reverted:** Reverted the change that allowed passing a `URL` object as `config.url` (originally __#10866__) due to regressions; this support will be reintroduced in a later release once the underlying issues are addressed. (__#10874__)
+
+## 🔧 Maintenance & Chores
+
+* **Cycle Detection Refactor:** Replaced the array-based cycle tracker in `toJSONObject` with a `WeakSet`, improving performance and memory behaviour on large nested structures. (__#10832__)
+* **composeSignals Cleanup:** Refactored `composeSignals` to use a clearer early-return structure, simplifying the cancellation/abort composition path. (__#10844__)
+* **AI Readiness & Repo Docs:** Added `AGENTS.md` and related contributor-guide updates for both human and AI agents, plus post-release documentation improvements. (__#10835__, __#10841__)
+* **Docs Improvements:** Clarified the GET request example, fixed the interceptor `eject` example to reference the correct instance, and corrected the Buzzoid sponsor description in the README. (__#10836__, __#10853__, __#10856__)
+* **Sponsorship Tooling:** Fixed empty sponsor arrays in the sponsor processing script, added the ability to inject additional sponsors, updated the sponsorship link, and added a Twicsy advertisement entry. (__#10843__, __#10859__, __#10869__)
+* **Dependencies:** Bumped `@commitlint/cli` from 20.5.0 to 20.5.2. (__#10846__)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+* __@hpinmetaverse__ (__#10836__)
+* __@tommyhgunz14__ (__#7413__)
+* __@abhu85__ (__#10829__)
+* __@divyanshuraj1095__ (__#10853__)
+* __@sagodi97__ (__#10856__)
+* __@rkdfx__ (__#10868__)
+* __@Liuwei1125__ (__#10866__)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.16.0...v1.16.1)
+
+## v1.16.0 — May 2, 2026
+
+This release adds support for the QUERY HTTP method and a new `ECONNREFUSED` error constant, lands a substantial wave of HTTP, fetch, and XHR adapter bug fixes around redirects, aborts, headers, and timeouts, and welcomes 23 new contributors.
+
+## ⚠️ Notable Changes
+
+A handful of fixes in this release are either security-adjacent or change observable behaviour. Please review before upgrading:
+
+- **Fetch adapter now enforces `maxBodyLength` and `maxContentLength`.** These limits were silently ignored on the fetch adapter prior to 1.16.0 — anyone relying on them as a safety net (DoS protection, accidental large uploads) had no protection. (**#10795**)
+- **Proxy requests now preserve user-supplied `Host` headers.** Previously, the proxy path could overwrite a custom `Host`. Virtual-host-style routing through a proxy will now behave correctly. (**#10822**)
+- **Basic auth credentials embedded in URLs are now URL-decoded.** If you have percent-encoded credentials in a URL (e.g. `https://user:p%40ss@host`), the decoded value is what now goes on the wire. (**#10825**)
+- **`parseProtocol` now strictly requires a colon in the protocol separator.** Strings that loosely parsed as protocols before may no longer match. (**#10729**)
+- **Deprecated `unescape()` replaced with modern UTF-8 encoding.** Non-ASCII URL handling is now spec-correct; consumers depending on legacy `unescape()` quirks may see different output bytes. (**#7378**)
+- **`transformRequest` input typing change was reverted.** The typing change introduced in #10745 was reverted in #10810 after follow-up review — net behavior is unchanged from 1.15.2. (**#10745**, **#10810**)
+
+## 🚀 New Features
+
+- **QUERY HTTP Method:** Added support for the QUERY HTTP method across adapters and type definitions. (**#10802**)
+- **ECONNREFUSED Error Constant:** Exposed `ECONNREFUSED` as a constant on `AxiosError` so callers can match connection-refused failures without comparing string literals (closes #6485). (**#10680**)
+- **Encode Helper Export:** Exported the internal `encode` helper from `buildURL` so userland param serializers can reuse the same encoding logic that axios uses internally. (**#6897**)
+
+## 🐛 Bug Fixes
+
+- **HTTP Adapter — Redirects & Headers:** Cleared stale headers when a redirect targets a no-proxy host, fixed the redirect listener chain so listeners no longer stack across hops, restored the missing `requestDetails` argument on `beforeRedirect`, preserved user-supplied `Host` headers when forwarding through a proxy, and properly URL-decoded basic auth credentials. (**#10794**, **#10800**, **#6241**, **#10822**, **#10825**)
+- **HTTP Adapter — Streams & Timeouts:** Preserved the partial response object on `AxiosError` when a stream is aborted after headers arrive, honoured the `timeout` option during the connect phase when redirects are disabled, and resolved an unsettled-promise hang when an aborted request was combined with compression and `maxRedirects: 0`. (**#10708**, **#10819**, **#7149**)
+- **Fetch Adapter:** Enforced `maxBodyLength` / `maxContentLength` in the fetch adapter, set the `User-Agent` header to match the HTTP adapter, preserved the original abort reason instead of replacing it with a generic error, and deferred global access so importing the module no longer throws a `TypeError` in restricted environments. (**#10795**, **#10772**, **#10806**, **#7260**)
+- **XHR Adapter:** Unsubscribed the `cancelToken` and `AbortSignal` listeners on the error, timeout, and abort code paths to prevent leaked subscriptions. (**#10787**)
+- **Error Handling:** Attached the parsed response to `AxiosError` when `JSON.parse` fails inside `dispatchRequest`, prevented `settle` from emitting `undefined` error codes, and tightened the `parseProtocol` regex to require a colon in the protocol separator. (**#10724**, **#7276**, **#10729**)
+- **Types & Exports:** Aligned the CommonJS `CancelToken` typings with the ESM build, fixed a compiler error caused by `RawAxiosHeaders`, and re-exported `create` from the package index. (**#7414**, **#6389**, **#6460**)
+- **UTF-8 Encoding:** Replaced the deprecated `unescape()` call with a modern UTF-8 encoding implementation. (**#7378**)
+- **Misc Cleanup:** Resolved a batch of small inconsistencies and gadget-level issues across the codebase. (**#10833**)
+
+## 🔧 Maintenance & Chores
+
+- **Refactor — ES6 Modernisation:** Modernised the `utils` module and XHR adapter to use ES6 features, and tidied the multipart boundary error message. (**#10588**, **#7419**)
+- **Tests:** Hardened the HTTP test server lifecycle to fix flaky `FormData` EPIPE failures, fixed Win32 platform support for the pipe tests, and corrected an incorrect test assumption. (**#10820**, **#10791**, **#10796**)
+- **Docs:** Documented `paramsSerializer.encode` for strict RFC 3986 query encoding, updated the `parseReviver` TypeScript definitions and configuration docs for ES2023, added timeout guidance to the README's first async example, and expanded notes around the recent type changes. (**#10821**, **#10782**, **#10759**, **#10804**)
+- **Reverted:** Reverted the `transformRequest` input typing change from #10745 after follow-up review. (**#10745**, **#10810**)
+- **Dependencies:** Bumped `actions/setup-node`, the `github-actions` group, and `postcss` (in `/docs`) to their latest versions. (**#10785**, **#10813**, **#10814**)
+- **Release:** Updated changelog and packages, and prepared the 1.16.0 release. (**#10790**, **#10834**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@singhankit001** (**#10588**)
+- **@cuiweixie** (**#7419**)
+- **@iruizsalinas** (**#10787**)
+- **@MarcosNocetti** (**#10680**)
+- **@deepview-autofix** (**#10729**)
+- **@atharvasingh7007** (**#10745**)
+- **@OfekDanny** (**#10772**)
+- **@mnahkies** (**#7414**)
+- **@tboyila** (**#10759**)
+- **@Kingo64** (**#6897**)
+- **@ramram1048** (**#6389**)
+- **@FLNacif** (**#6460**)
+- **@zozo123** (**#10806**)
+- **@pierluigilenoci** (**#10802**)
+- **@afurm** (**#10708**)
+- **@karan-lrn** (**#7378**)
+- **@ebeigarts** (**#7149**)
+- **@Raymondo97** (**#10782**)
+- **@mixelburg** (**#10821**)
+- **@ashishkr96** (**#10822**)
+- **@cyphercodes** (**#10819**)
+- **@Jye10032** (**#7260**)
+- **@VeerShah41** (**#7276**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.15.2...v1.16.0)
+
+## v1.15.2 - April 21, 2026
+
+This release delivers prototype-pollution hardening for the Node HTTP adapter, adds an opt-in `allowedSocketPaths` allowlist to mitigate SSRF via Unix domain sockets, fixes a keep-alive socket memory leak, and ships supply-chain hardening across CI and security docs.
+
+## 🔒 Security Fixes
+
+- **Prototype Pollution Hardening (HTTP Adapter):** Hardened the Node HTTP adapter and `resolveConfig`/`mergeConfig`/validator paths to read only own properties and use null-prototype config objects, preventing polluted `auth`, `baseURL`, `socketPath`, `beforeRedirect`, and `insecureHTTPParser` from influencing requests. (**#10779**)
+- **SSRF via `socketPath`:** Rejects non-string `socketPath` values and adds an opt-in `allowedSocketPaths` config option to restrict permitted Unix domain socket paths, returning `AxiosError` `ERR_BAD_OPTION_VALUE` on mismatch. (**#10777**)
+- **Supply-chain Hardening:** Added `.npmrc` with `ignore-scripts=true`, lockfile lint CI, non-blocking reproducible build diff, scoped CODEOWNERS, expanded `SECURITY.md`/`THREATMODEL.md` with provenance verification (`npm audit signatures`), 60-day resolution policy, and maintainer incident-response runbook. (**#10776**)
+
+## 🚀 New Features
+
+- **`allowedSocketPaths` Config Option:** New request config option (and TypeScript types) to allowlist Unix domain socket paths used by the Node http adapter; backwards compatible when unset. (**#10777**)
+
+## 🐛 Bug Fixes
+
+- **Keep-alive Socket Memory Leak:** Installs a single per-socket `error` listener tracking the active request via `kAxiosSocketListener`/`kAxiosCurrentReq`, eliminating per-request listener accumulation, `MaxListenersExceededWarning`, and linear heap growth under concurrent or long-running keep-alive workloads (fixes #10780). (**#10788**)
+
+## 🔧 Maintenance & Chores
+
+- **Changelog:** Updated `CHANGELOG.md` with v1.15.1 release notes. (**#10781**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.15.1...v1.15.2)
+
+---
+
+## v1.15.1 - April 19, 2026
+
+This release ships a coordinated set of security hardening fixes across headers, body/redirect limits, multipart handling, and XSRF/prototype-pollution vectors, alongside a broad sweep of bug fixes, test migrations, and threat-model documentation updates.
+
+## 🔒 Security Fixes
+
+- **Header Injection Hardening:** Tightened validation and sanitisation across request header construction to close the header-injection attack surface. (**#10749**)
+
+- **CRLF Stripping in Multipart Headers:** Correctly strips CR/LF from multipart header values to prevent injection via field names and filenames. (**#10758**)
+
+- **Prototype Pollution / Auth Bypass:** Replaced unsafe `in` checks with `hasOwnProperty` to prevent authentication bypass via prototype pollution on config objects, with additional regression tests. (**#10761**, **#10760**)
+
+- **`withXSRFToken` Truthy Bypass:** Short-circuits on any truthy non-boolean value, so an ambiguous config no longer silently leaks the XSRF token cross-origin. (**#10762**)
+
+- **`maxBodyLength` With Zero Redirects:** Enforces `maxBodyLength` even when `maxRedirects` is set to `0`, closing a bypass path for oversized request bodies. (**#10753**)
+
+- **Streamed Response `maxContentLength` Bypass:** Applies `maxContentLength` to streamed responses that previously bypassed the cap. (**#10754**)
+
+- **Follow-up CVE Completion:** Completes an earlier incomplete CVE fix to fully close the regression window. (**#10755**)
+
+## 🚀 New Features
+
+- **AI-Based Docs Translations:** Initial scaffold for AI-assisted translations of the documentation site. (**#10705**)
+
+- **`Location` Request Header Type:** Adds `Location` to `CommonRequestHeadersList` for accurate typing of redirect-aware requests. (**#7528**)
+
+## 🐛 Bug Fixes
+
+- **FormData Handling:** Removes `Content-Type` when no boundary is present on `FormData` fetch requests, supports multi-select fields, cancels `request.body` instead of the source stream on fetch abort, and fixes a recursion bug in form-data serialisation. (**#7314**, **#10676**, **#10702**, **#10726**)
+
+- **HTTP Adapter:** Handles socket-only request errors without leaking keep-alive listeners. (**#10576**)
+
+- **Progress Events:** Clamps `loaded` to `total` for computable upload/download progress events. (**#7458**)
+
+- **Types:** Aligns `runWhen` type with the runtime behaviour in `InterceptorManager` and makes response header keys case-insensitive. (**#7529**, **#10677**)
+
+- **`buildFullPath`:** Uses strict equality in the base/relative URL check. (**#7252**)
+
+- **`AxiosURLSearchParams` Regex:** Improves the regex used for param serialisation to avoid edge-case mismatches. (**#10736**)
+
+- **Resilient Value Parsing:** Parses out header/config values instead of throwing on malformed input. (**#10687**)
+
+- **Docs Artefact Cleanup:** Removes the docs content that was incorrectly committed. (**#10727**)
+
+## 🔧 Maintenance & Chores
+
+- **Threat Model & Security Docs:** Ongoing refinement of `THREATMODEL.md`, including Hopper security update, TLS and tag-replay wording, mitigation descriptions, decompression-bomb guidance, and further cleanup. (**#10672**, **#10715**, **#10718**, **#10722**, **#10763**, **#10765**)
+
+- **Test Coverage & Migration:** Expanded `shouldBypassProxy` coverage for wildcard/IPv6/edge cases, documented and tested `AxiosError.status`, and migrated `progressEventReducer` tests to Vitest. (**#10723**, **#10725**, **#10741**)
+
+- **Type Refactor:** Uses TypeScript utility types to deduplicate literal unions. (**#7520**)
+
+- **Repo & CI:** Adds `CODEOWNERS`, switches v1.x releases to an ephemeral release branch, and removes orphaned Bower support. (**#10739**, **#10738**, **#10746**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@curiouscoder-cmd** (**#7252**)
+- **@tryonelove** (**#7520**)
+- **@darwin808** (**#7314**)
+- **@zoontek** (**#10702**)
+- **@AKIB473** (**#10725**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.15.0...v1.15.1)
+
+---
+
+## v1.15.0 - April 7, 2026
+
+This release delivers two critical security patches targeting header injection and SSRF via proxy bypass, adds official runtime support for Deno and Bun, and includes significant CI security hardening.
+
+## 🔒 Security Fixes
+
+- **Header Injection (CRLF):** Rejects any header value containing `\r` or `\n` characters to block CRLF injection chains that could be used to exfiltrate cloud metadata (IMDS). Behavior change: headers with CR/LF now throw `"Invalid character in header content"`. (**#10660**)
+
+- **SSRF via `no_proxy` Bypass:** Introduces a `shouldBypassProxy` helper that normalises hostnames (strips trailing dots, handles bracketed IPv6) before evaluating `no_proxy`/`NO_PROXY` rules, closing a gap that could cause loopback or internal hosts to be inadvertently proxied. (**#10661**)
+
+## 🚀 New Features
+
+- **Deno & Bun Runtime Support:** Added full smoke test suites for Deno and Bun, with CI workflows that run both runtimes before any release is cut. (**#10652**)
+
+## 🐛 Bug Fixes
+
+- **Node.js v22 Compatibility:** Replaced deprecated `url.parse()` calls with the WHATWG `URL`/`URLSearchParams` API across examples, sandbox, and tests, eliminating `DEP0169` deprecation warnings on Node.js v22+. (**#10625**)
+
+## 🔧 Maintenance & Chores
+
+- **CI Security Hardening:** Added [zizmor](https://github.com/zizmorcore/zizmor) GitHub Actions security scanner; switched npm publish to OIDC Trusted Publishing (removing the long-lived `NODE_AUTH_TOKEN`); pinned all action references to full commit SHAs; narrowed workflow permissions to least privilege; gated the publish step behind a dedicated `npm-publish` environment; and blocked the sponsor-block workflow from running on forks. (**#10618**, **#10619**, **#10627**, **#10637**, **#10641**, **#10666**)
+
+- **Docs:** Clarified HTTP/2 support and the unsupported `httpVersion` option; added documentation for header case preservation; improved the `beforeRedirect` example to prevent accidental credential leakage. (**#10644**, **#10654**, **#10624**)
+
+- **Dependencies:** Bumped `picomatch`, `handlebars`, `serialize-javascript`, `vite` (×3), `denoland/setup-deno`, and 4 additional dev dependencies to latest versions. (**#10564**, **#10565**, **#10567**, **#10568**, **#10572**, **#10574**, **#10663**, **#10664**, **#10665**, **#10669**, **#10670**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@Kilros0817** (**#10625**)
+- **@shaanmajid** (**#10616**, **#10617**, **#10618**, **#10619**, **#10637**, **#10641**, **#10666**)
+- **@ashstrc** (**#10624**, **#10644**)
+- **@Abhi3975** (**#10589**)
+- **@raashish1601** (**#10573**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.14.0...v1.15.0)
+
+---
+
+## v1.14.0 - March 27, 2026
+
+This release fixes a security vulnerability in the `formidable` dependency, resolves a CommonJS compatibility regression, hardens proxy and HTTP/2 handling, and modernises the build and test toolchain.
+
+## 🔒 Security Fixes
+
+- **Formidable Vulnerability:** Upgraded `formidable` from v2 to v3 to address a reported arbitrary-file vulnerability. Updated test server and assertions to align with the v3 API. (**#7533**)
+
+## 🐛 Bug Fixes
+
+- **CommonJS Compatibility:** Restored `require('axios')` in Node.js by correcting the `main` field in `package.json` to point to the built CJS bundle. (**#7532**)
+
+- **Fetch Adapter:** Cancel the `ReadableStream` body after the request stream capability probe to prevent resource leaks. (**#7515**)
+
+- **Proxy:** Upgraded `proxy-from-env` to v2 and switched to the named `getProxyForUrl` export, fixing proxy detection from environment variables and resolving CJS bundling errors. (**#7499**)
+
+- **HTTP/2:** Close detached HTTP/2 sessions on timeout to free resources when no new requests arrive. (**#7457**)
+
+- **Headers:** Trim trailing CRLF characters from normalised header values. (**#7456**)
+
+## 🔧 Maintenance & Chores
+
+- **Toolchain Modernisation:** Migrated test suite to Vitest, updated ESLint to v10, upgraded Rollup and `@rollup/plugin-babel`, migrated to Husky 9, upgraded TypeScript to latest, and modernised the Express test harness. (**#7484**, **#7489**, **#7498**, **#7505**, **#7506**, **#7507**, **#7508**, **#7509**, **#7510**, **#7516**, **#7522**)
+
+- **Dependencies:** Bumped `multer` to v2, `minimatch`, `tar`, `pacote`, `@babel/preset-env`, and additional dev dependencies. (**#7453**, **#7480**, **#7491**, **#7504**, **#7517**, **#7531**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@penkzhou** (**#7515**)
+- **@aviu16** (**#7456**)
+- **@fedotov** (**#7457**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.13.6...v1.14.0)
+
+---
+
+## v1.13.6 - February 27, 2026
+
+This release adds React Native Blob support, fixes several enumeration and export regressions, and patches FormData detection for WeChat Mini Program environments.
+
+## 🚀 New Features
+
+- **React Native Blob Support:** Axios now correctly handles native Blob objects in React Native environments. (**#5764**)
+
+## 🐛 Bug Fixes
+
+- **AxiosError:** Fixed `AxiosError.from` not copying the `status` field from the source error. (**#7403**)
+
+- **AxiosError:** Made the `message` property enumerable so it appears in `JSON.stringify` output and `Object.keys`. (**#7392**)
+
+- **FormData Detection:** Corrected safe FormData detection for WeChat Mini Program environments. (**#7324**)
+
+- **React Native / Browserify Export:** Fixed broken module export that caused import failures in React Native and Browserify. (**#7386**)
+
+## 🔧 Maintenance & Chores
+
+- **Dependencies:** Migrated `@rollup/plugin-babel` from v5 to v6 and bumped the development dependencies group. (**#7424**, **#7432**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@moh3n9595** (**#5764**)
+- **@skrtheboss** (**#7403**)
+- **@ybbus** (**#7392**)
+- **@Shiwaangee** (**#7324**)
+- **@Gudahtt** (**#7386**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.13.5...v1.13.6)
+
+---
+
+## v1.13.5 - February 8, 2026
+
+This release patches a prototype pollution denial-of-service vulnerability, fixes a missing `status` field regression in `AxiosError`, adds interceptor ordering control, and introduces URL validation for `isAbsoluteURL`.
+
+## 🔒 Security Fixes
+
+- **Prototype Pollution (DoS):** Hardened `mergeConfig` to ignore `__proto__`, `constructor`, and `prototype` keys, preventing denial-of-service via prototype pollution when merging user-supplied config. (**#7369**)
+
+## 🚀 New Features
+
+- **`isAbsoluteURL` Validation:** Added input validation to `isAbsoluteURL` to handle malformed or unexpected input gracefully. (**#7326**)
+
+## 🐛 Bug Fixes
+
+- **AxiosError `status`:** Restored the `status` field on `AxiosError` instances, which was missing in v1.13.3 and later. (**#7368**)
+
+- **Interceptor Ordering:** Added a `useLegacyInterceptorOrder` option to restore pre-v1.13 interceptor execution order for applications relying on the previous behaviour. ([569f028](https://github.com/axios/axios/commit/569f028a5878faaec8d7d138ba686aac407bda4c))
+
+## 🔧 Maintenance & Chores
+
+- **CI:** Fixed run conditions and updated workflow YAMLs. (**#7372**, **#7373**)
+
+- **Dependencies:** Bumped `karma-sourcemap-loader` and minor package versions. (**#7356**, **#7360**)
+
+## 🌟 New Contributors
+
+We are thrilled to welcome our new contributors. Thank you for helping improve axios:
+
+- **@asmitha-16** (**#7326**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.13.4...v1.13.5)
+
+---
+
+## v1.13.4 - January 27, 2026
+
+Patch release fixing regressions introduced in v1.13.3, including TypeScript export compatibility and CI/build stability.
+
+## 🐛 Bug Fixes
+
+- **v1.13.3 Regressions:** Fixed multiple issues introduced by the v1.13.3 release, including broken merge configs. (**#7352**)
+
+- **TypeScript Exports:** Corrected TypeScript export declarations to restore proper type resolution. (**#4884**)
+
+## 🔧 Maintenance & Chores
+
+- **CI & Build:** Refactored CI pipeline and build configuration for stability. (**#7340**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.13.3...v1.13.4)
+
+---
+
 ## [1.13.3](https://github.com/axios/axios/compare/v1.13.2...v1.13.3) (2026-01-20)
 
 ### Bug Fixes
@@ -180,7 +698,7 @@
 
 ### Bug Fixes
 
-- form-data npm pakcage ([#6970](https://github.com/axios/axios/issues/6970)) ([e72c193](https://github.com/axios/axios/commit/e72c193722530db538b19e5ddaaa4544d226b253))
+- form-data npm package ([#6970](https://github.com/axios/axios/issues/6970)) ([e72c193](https://github.com/axios/axios/commit/e72c193722530db538b19e5ddaaa4544d226b253))
 - prevent RangeError when using large Buffers ([#6961](https://github.com/axios/axios/issues/6961)) ([a2214ca](https://github.com/axios/axios/commit/a2214ca1bc60540baf2c80573cea3a0ff91ba9d1))
 - **types:** resolve type discrepancies between ESM and CJS TypeScript declaration files ([#6956](https://github.com/axios/axios/issues/6956)) ([8517aa1](https://github.com/axios/axios/commit/8517aa16f8d082fc1d5309c642220fa736159110))
 
@@ -1059,7 +1577,7 @@ This functionality is considered as a fix.
 
 - fix: improve AxiosHeaders class [#5224](https://github.com/axios/axios/pull/5224)
 - fix: TypeScript type definitions for commonjs [#5196](https://github.com/axios/axios/pull/5196)
-- fix: type definition of use method on AxiosInterceptorManager to match the the README [#5071](https://github.com/axios/axios/pull/5071)
+- fix: type definition of use method on AxiosInterceptorManager to match the README [#5071](https://github.com/axios/axios/pull/5071)
 - fix: \_\_dirname is not defined in the sandbox [#5269](https://github.com/axios/axios/pull/5269)
 - fix: AxiosError.toJSON method to avoid circular references [#5247](https://github.com/axios/axios/pull/5247)
 - fix: Z_BUF_ERROR when content-encoding is set but the response body is empty [#5250](https://github.com/axios/axios/pull/5250)

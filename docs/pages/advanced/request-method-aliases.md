@@ -1,0 +1,204 @@
+# Request aliases
+
+axios provides a set of aliases for making HTTP requests. These aliases are shortcuts for making requests using the `request` method. The aliases are designed to be easy to use and to provide a more convenient way to make requests.
+
+axios endeavours to follow RFC 7231 and RFC 5789, as closely as possible. The aliases are designed to be consistent with the HTTP methods defined in these RFCs.
+
+### `axios`
+
+axios can be used to make HTTP request by passing only the config object. The full config object is documented [here](/pages/advanced/request-config)
+
+```ts
+axios<T, R, D, P>(
+  url: string | AxiosRequestConfig<D, P>,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+Request methods use generic parameters in the order `<T, R, D, P>`: response data, custom response, request data, and query params. The params type `P` is last so existing explicit `T`, `R`, and `D` arguments retain their meaning. When you do not supply a custom `R`, the default `AxiosResponse` preserves `D` and `P` on `response.config`.
+
+## Method aliases
+
+The following aliases are available for making requests:
+
+### `request`
+
+The `request` method is the main method that you will use to make HTTP requests. It takes a configuration object as an argument and returns a promise that resolves to the response object. The `request` method is a generic method that can be used to make any type of HTTP request.
+
+```ts
+axios.request<T, R, D, P>(config: AxiosRequestConfig<D, P>): Promise<R>;
+```
+
+### `get`
+
+The `get` method is used to make a GET request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
+
+```ts
+axios.get<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
+```
+
+### `delete`
+
+The `delete` method is used to make a DELETE request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
+
+```ts
+axios.delete<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
+```
+
+### `head`
+
+The `head` method is used to make a HEAD request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
+
+```ts
+axios.head<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
+```
+
+### `options`
+
+The `options` method is used to make an OPTIONS request. It takes a URL and an optional configuration object as arguments and returns a promise that resolves to the response object.
+
+```ts
+axios.options<T, R, D, P>(url: string, config?: AxiosRequestConfig<D, P>): Promise<R>;
+```
+
+### `post`
+
+The `post` method is used to make a POST request. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object.
+
+```ts
+axios.post<T, R, D, P>(
+  url: string,
+  data?: D,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+### `put`
+
+The `put` method is used to make a PUT request. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object.
+
+```ts
+axios.put<T, R, D, P>(
+  url: string,
+  data?: D,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+### `patch`
+
+The `patch` method is used to make a PATCH request. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object.
+
+```ts
+axios.patch<T, R, D, P>(
+  url: string,
+  data?: D,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+### `query`
+
+The `query` method is used to make a QUERY request, a safe and idempotent method that carries a body. It takes a URL, an optional data object, and an optional configuration object as arguments and returns a promise that resolves to the response object. Use it for read-style operations whose parameters are too complex or sensitive to fit in the URL.
+
+```ts
+axios.query<T, R, D, P>(
+  url: string,
+  data?: D,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+```js
+// Send a complex search filter as a request body
+const { data } = await axios.query("/api/search", {
+  selector: ["name", "email"],
+  filter: { active: true, role: "admin" },
+});
+```
+
+::: warning Draft specification
+The QUERY method is defined by an IETF [Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-httpbis-safe-method-w-body/) and has not yet been standardized. Semantics and the method name itself may change before final publication, and server, proxy, and CDN support is uneven. Verify your stack accepts `QUERY` end to end before relying on it in production.
+:::
+
+### `getUri`
+
+The `getUri` method returns the URL that would be sent for a given config without actually making the request. It applies `baseURL`, `paramsSerializer`, and `params`, so you get back the same string axios would put on the wire. Useful for building links, debugging serialization, or reusing the resolved URL in another request.
+
+```ts
+axios.getUri(config?: AxiosRequestConfig): string;
+```
+
+```js
+const url = axios.getUri({
+  url: "/users",
+  baseURL: "https://api.example.com",
+  params: { active: true, role: "admin" },
+});
+// "https://api.example.com/users?active=true&role=admin"
+```
+
+::: tip
+Use `getUri` on an instance (`instance.getUri(config)`) to inherit the instance's `baseURL`, `params`, and `paramsSerializer` defaults.
+:::
+
+## Form data shorthand methods
+
+These methods are equivalent to their counterparts above, but preset `Content-Type` to `multipart/form-data`. They are the recommended way to upload files or submit HTML forms.
+
+### `postForm`
+
+```ts
+axios.postForm<T, R, D, P>(
+  url: string,
+  data?: D,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+```js
+// Upload a file from a browser file input
+await axios.postForm("/api/upload", {
+  file: document.querySelector("#fileInput").files[0],
+  description: "Profile photo",
+});
+```
+
+### `putForm`
+
+```ts
+axios.putForm<T, R, D, P>(
+  url: string,
+  data?: D,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+```js
+// Replace a resource with form data
+await axios.putForm("/api/users/1/avatar", {
+  avatar: document.querySelector("#avatarInput").files[0],
+});
+```
+
+### `patchForm`
+
+```ts
+axios.patchForm<T, R, D, P>(
+  url: string,
+  data?: D,
+  config?: AxiosRequestConfig<D, P>
+): Promise<R>;
+```
+
+```js
+// Update specific fields using form data
+await axios.patchForm("/api/users/1", {
+  displayName: "New Name",
+  avatar: document.querySelector("#avatarInput").files[0],
+});
+```
+
+::: tip
+`postForm`, `putForm`, and `patchForm` accept all the same data types as their base methods — plain objects, `FormData`, `FileList`, and `HTMLFormElement`. See [File posting](/pages/advanced/file-posting) for more examples.
+:::

@@ -1,0 +1,51 @@
+name: Bundle Size
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+permissions:
+  contents: read
+
+jobs:
+  bundle-size:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 26.x
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build project
+        run: npm run build
+
+      - name: Compare bundle size
+        uses: axios/bundle-size@6940d767de28b002599d1ab36cc04748de2c49e7 # 0.2.0
+        with:
+          path: '.'
+          package-name: axios
+          files: |
+            dist/axios.js
+            dist/axios.min.js
+            dist/browser/axios.cjs
+            dist/esm/axios.js
+            dist/esm/axios.min.js
+            dist/node/axios.cjs
+          output-file: bundle-size-comparison.json
+          release-stream: '1'
+
+      - name: Add bundle size report to summary
+        if: always() && hashFiles('bundle-size-comparison.md') != ''
+        run: cat bundle-size-comparison.md >> "$GITHUB_STEP_SUMMARY"

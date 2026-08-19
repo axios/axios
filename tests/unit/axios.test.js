@@ -70,6 +70,17 @@ describe('Axios', () => {
     assert.deepStrictEqual(client.defaults, {});
   });
 
+  it('should not mutate the config object passed alongside a url string', async () => {
+    const client = new Axios({
+      adapter: () => Promise.resolve({ data: null, status: 200, statusText: 'OK', headers: {}, config: {} }),
+    });
+    const config = { headers: { 'X-Test': '1' } };
+
+    await client.request('test-url', config);
+
+    assert.deepStrictEqual(config, { headers: { 'X-Test': '1' } });
+  });
+
   it('should define default headers for every supported method', () => {
     assert.deepStrictEqual(methodList, expectedMethodList);
     assert.strictEqual(Object.isFrozen(methodList), true);

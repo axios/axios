@@ -17,6 +17,7 @@ import axios, {
 } from 'axios';
 import { Agent as NodeHttpAgent } from 'node:http';
 import { Agent as NodeHttpsAgent } from 'node:https';
+import createHttpsProxyAgent from 'https-proxy-agent';
 
 const headers = new AxiosHeaders();
 const iterableHeaders: Iterable<[string, AxiosHeaderValue]> = [['x-test', 'ok']];
@@ -167,6 +168,15 @@ const agentConfig: AxiosRequestConfig = {
   httpsAgent: new NodeHttpsAgent({ keepAlive: true }),
 };
 
+const dispatcherAgentConfig: AxiosRequestConfig = {
+  httpAgent: { addRequest() {} },
+  httpsAgent: { addRequest() {} },
+};
+
+const proxyAgentConfig: AxiosRequestConfig = {
+  httpsAgent: createHttpsProxyAgent('http://localhost:8080'),
+};
+
 const invalidHttpAgentConfig: AxiosRequestConfig = {
   // @ts-expect-error -- destroy alone does not make an object an agent instance
   httpAgent: { destroy() {} },
@@ -180,6 +190,19 @@ const invalidHttpAgentOptionsConfig: AxiosRequestConfig = {
 const invalidHttpsAgentConfig: AxiosRequestConfig = {
   // @ts-expect-error -- destroy alone does not make an object an agent instance
   httpsAgent: { destroy() {} },
+};
+
+const invalidStateOnlyAgentConfig: AxiosRequestConfig = {
+  // @ts-expect-error -- socket-pool state without a dispatch lifecycle is not an agent
+  httpAgent: {
+    maxSockets: 1,
+    maxTotalSockets: 1,
+    maxFreeSockets: 1,
+    freeSockets: {},
+    requests: {},
+    sockets: {},
+    destroy() {},
+  },
 };
 
 axios.get<unknown, AxiosResponse<unknown>, any, SearchParams>('/search', {
@@ -209,7 +232,10 @@ console.log(
   mergedQuery,
   invalidParamsConfig,
   agentConfig,
+  dispatcherAgentConfig,
+  proxyAgentConfig,
   invalidHttpAgentConfig,
   invalidHttpAgentOptionsConfig,
-  invalidHttpsAgentConfig
+  invalidHttpsAgentConfig,
+  invalidStateOnlyAgentConfig
 );

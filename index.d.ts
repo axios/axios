@@ -480,23 +480,33 @@ export interface AxiosRequestConfig<D = any, P = any> {
 }
 
 // Alias
-// Structural type for a Node http.Agent/https.Agent instance (this package has no
-// @types/node dependency, so it can't reference `http.Agent`/`https.Agent` directly).
-export interface HttpAgent {
-  keepAlive?: boolean;
-  keepAliveMsecs?: number;
-  maxSockets: number;
-  maxTotalSockets: number;
-  maxFreeSockets: number;
-  scheduling?: string;
-  readonly requests: { readonly [key: string]: readonly unknown[] | undefined };
-  readonly sockets: { readonly [key: string]: readonly unknown[] | undefined };
-  destroy(): void;
-}
+// Node validates custom agents through `addRequest`, but its public type declarations
+// omit that runtime method from the built-in Agent class. Accept either the dispatch
+// contract used by custom agents or the public shape of a Node 20+ built-in Agent instance.
+export type HttpAgent =
+  | {
+      addRequest(request: any, options: any): void;
+    }
+  | {
+      keepAlive?: boolean;
+      keepAliveMsecs?: number;
+      maxSockets: number;
+      maxTotalSockets: number;
+      maxFreeSockets: number;
+      scheduling?: string;
+      readonly freeSockets: { readonly [key: string]: readonly unknown[] | undefined };
+      readonly requests: { readonly [key: string]: readonly unknown[] | undefined };
+      readonly sockets: { readonly [key: string]: readonly unknown[] | undefined };
+      createConnection(options: any, callback?: (...args: any[]) => void): any;
+      destroy(): void;
+      getName(options?: any): string;
+      keepSocketAlive(socket: any): void;
+      reuseSocket(socket: any, request: any): void;
+    };
 
-export interface HttpsAgent extends HttpAgent {
+export type HttpsAgent = HttpAgent & {
   maxCachedSessions?: number;
-}
+};
 
 export type RawAxiosRequestConfig<D = any, P = any> = AxiosRequestConfig<D, P>;
 

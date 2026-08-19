@@ -1,6 +1,4 @@
 import axios = require('axios');
-import http = require('http');
-import https = require('https');
 
 const headers = new axios.AxiosHeaders();
 const iterableHeaders: Iterable<[string, axios.AxiosHeaderValue]> = [['x-test', 'ok']];
@@ -132,8 +130,8 @@ const invalidParamsConfig: axios.AxiosRequestConfig<unknown, SearchParams> = {
 };
 
 const agentConfig: axios.AxiosRequestConfig = {
-  httpAgent: new http.Agent({ keepAlive: true }),
-  httpsAgent: new https.Agent({ keepAlive: true }),
+  httpAgent: { addRequest() {} },
+  httpsAgent: { addRequest() {} },
 };
 
 const invalidHttpAgentConfig: axios.AxiosRequestConfig = {
@@ -149,6 +147,19 @@ const invalidHttpAgentOptionsConfig: axios.AxiosRequestConfig = {
 const invalidHttpsAgentConfig: axios.AxiosRequestConfig = {
   // @ts-expect-error -- destroy alone does not make an object an agent instance
   httpsAgent: { destroy() {} },
+};
+
+const invalidStateOnlyAgentConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- socket-pool state without a dispatch lifecycle is not an agent
+  httpAgent: {
+    maxSockets: 1,
+    maxTotalSockets: 1,
+    maxFreeSockets: 1,
+    freeSockets: {},
+    requests: {},
+    sockets: {},
+    destroy() {},
+  },
 };
 
 axios.get<unknown, axios.AxiosResponse<unknown>, any, SearchParams>('/search', {
@@ -180,5 +191,6 @@ console.log(
   agentConfig,
   invalidHttpAgentConfig,
   invalidHttpAgentOptionsConfig,
-  invalidHttpsAgentConfig
+  invalidHttpsAgentConfig,
+  invalidStateOnlyAgentConfig
 );

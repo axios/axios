@@ -264,6 +264,20 @@ describe('core::AxiosError', () => {
       expect(serialize(config)).not.toHaveProperty('httpAgent');
     });
 
+    it('does not read an inherited agent accessor', () => {
+      const proto = {};
+      Object.defineProperty(proto, 'httpAgent', {
+        enumerable: true,
+        get() {
+          throw new Error('inherited agent should not be read');
+        },
+      });
+      const config = Object.create(proto);
+      config.url = '/foo';
+
+      expect(() => serialize(config)).not.toThrow();
+    });
+
     it('labels a single agent serving both keys without picking a side', () => {
       const agent = buildAgentGraph(2);
       const json = serialize({ url: '/foo', httpAgent: agent, httpsAgent: agent });

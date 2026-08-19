@@ -549,8 +549,8 @@ declare namespace axios {
     socketPath?: string | null;
     allowedSocketPaths?: string | string[] | null;
     transport?: any;
-    httpAgent?: any;
-    httpsAgent?: any;
+    httpAgent?: HttpAgent | false;
+    httpsAgent?: HttpsAgent | false;
     proxy?: AxiosProxyConfig | false;
     cancelToken?: CancelToken | undefined;
     decompress?: boolean;
@@ -600,6 +600,26 @@ declare namespace axios {
   }
 
   // Alias
+  // Structural type for a Node http.Agent/https.Agent *instance* (this package has no
+  // @types/node dependency, so it can't reference `http.Agent`/`https.Agent` directly).
+  // `destroy` is required so a plain options object (e.g. `{ keepAlive: true }`) can't be
+  // mistaken for an agent instance -- Node rejects anything that isn't a real Agent.
+  interface HttpAgent {
+    keepAlive?: boolean;
+    keepAliveMsecs?: number;
+    maxSockets?: number;
+    maxTotalSockets?: number;
+    maxFreeSockets?: number;
+    scheduling?: string;
+    timeout?: number;
+    destroy(): void;
+  }
+
+  interface HttpsAgent extends HttpAgent {
+    maxCachedSessions?: number;
+    servername?: string;
+  }
+
   type RawAxiosRequestConfig<D = any, P = any> = AxiosRequestConfig<D, P>;
 
   interface InternalAxiosRequestConfig<D = any, P = any> extends AxiosRequestConfig<D, P> {

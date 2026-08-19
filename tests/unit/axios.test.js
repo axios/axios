@@ -2,6 +2,7 @@ import { describe, it } from 'vitest';
 import assert from 'assert';
 import axios from '../../index.js';
 import Axios from '../../lib/core/Axios.js';
+import AxiosHeaders from '../../lib/core/AxiosHeaders.js';
 import methodList from '../../lib/core/methodList.js';
 import defaults from '../../lib/defaults/index.js';
 
@@ -153,5 +154,60 @@ describe('Axios', () => {
     assert.strictEqual(response.config.headers.get('purge'), 'b');
     assert.strictEqual(response.config.headers.get('unlink'), 'c');
     assert.strictEqual(response.config.headers.get('query'), 'd');
+  });
+
+  it('should treat an AxiosHeaders instance under a method name as defaults', async () => {
+    const client = axios.create();
+
+    const echoHeaders = async (config) => ({
+      data: null,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: {},
+    });
+
+    const response = await client.post(
+      '/axios-headers-bucket',
+      {},
+      {
+        headers: {
+          common: new AxiosHeaders({'X-Common': 'from-common'}),
+          post: new AxiosHeaders({'X-Post': 'from-post'}),
+        },
+        adapter: echoHeaders,
+      }
+    );
+
+    assert.strictEqual(response.config.headers.get('X-Common'), 'from-common');
+    assert.strictEqual(response.config.headers.get('X-Post'), 'from-post');
+    assert.strictEqual(response.config.headers.has('common'), false);
+    assert.strictEqual(response.config.headers.has('post'), false);
+  });
+
+  it('should send a non-plain object under a method name as a literal header', async () => {
+    const client = axios.create();
+    const date = new Date(0);
+
+    const echoHeaders = async (config) => ({
+      data: null,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: {},
+    });
+
+    const response = await client.post(
+      '/non-plain-literal-header',
+      {},
+      {
+        headers: {link: date},
+        adapter: echoHeaders,
+      }
+    );
+
+    assert.strictEqual(response.config.headers.get('Link'), date.toString());
   });
 });

@@ -113,4 +113,45 @@ describe('Axios', () => {
       });
     }
   });
+
+  it('should send a literal header that shares its name with a method', async () => {
+    const client = axios.create();
+    const link = '<http://www.w3.org/ns/ldp#Resource>; rel="type"';
+
+    const echoHeaders = async (config) => ({
+      data: null,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: {},
+    });
+
+    for (const headerName of ['link', 'Link']) {
+      const response = await client.post(
+        '/literal-method-header',
+        {},
+        {
+          headers: { [headerName]: link },
+          adapter: echoHeaders,
+        }
+      );
+
+      assert.strictEqual(response.config.headers.get('Link'), link);
+    }
+
+    const response = await client.post(
+      '/literal-method-header',
+      {},
+      {
+        headers: { options: 'a', purge: 'b', unlink: 'c', query: 'd' },
+        adapter: echoHeaders,
+      }
+    );
+
+    assert.strictEqual(response.config.headers.get('options'), 'a');
+    assert.strictEqual(response.config.headers.get('purge'), 'b');
+    assert.strictEqual(response.config.headers.get('unlink'), 'c');
+    assert.strictEqual(response.config.headers.get('query'), 'd');
+  });
 });

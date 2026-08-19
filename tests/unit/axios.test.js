@@ -81,6 +81,30 @@ describe('Axios', () => {
     assert.deepStrictEqual(config, { headers: { 'X-Test': '1' } });
   });
 
+  it('should not read __proto__/constructor/prototype getters off the config object passed alongside a url string', async () => {
+    const gets = [];
+    const config = { headers: { 'X-Test': '1' } };
+
+    ['__proto__', 'constructor', 'prototype'].forEach((key) => {
+      Object.defineProperty(config, key, {
+        enumerable: true,
+        configurable: true,
+        get() {
+          gets.push(key);
+          return key === '__proto__' ? Object.prototype : function () {};
+        },
+      });
+    });
+
+    const client = new Axios({
+      adapter: () => Promise.resolve({ data: null, status: 200, statusText: 'OK', headers: {}, config: {} }),
+    });
+
+    await client.request('test-url', config);
+
+    assert.deepStrictEqual(gets, []);
+  });
+
   it('should define default headers for every supported method', () => {
     assert.deepStrictEqual(methodList, expectedMethodList);
     assert.strictEqual(Object.isFrozen(methodList), true);

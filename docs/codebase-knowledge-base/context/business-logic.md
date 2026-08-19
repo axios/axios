@@ -15,7 +15,7 @@
 
 ## Core invariants
 
-- Later config layers override earlier layers, but merge behavior is field-specific. `url`, `method`, and `data` come only from the per-request layer; headers merge case-insensitively.
+- Later config layers override earlier layers, but merge behavior is field-specific. `url` and `data` come only from the per-request layer; `method` uses the request value when present, then falls back to instance defaults and finally `get`; headers merge case-insensitively.
 - Merged configs are new null-prototype objects. Unsafe materialization keys are excluded, and inherited shared-prototype fields cannot become network behavior.
 - Method defaults to `get`, is normalized to lowercase, and method-specific headers are flattened into one `AxiosHeaders` value before interceptors dispatch.
 - Request transformers run before adapter selection; response transformers run for both fulfilled responses and errors that carry a response.

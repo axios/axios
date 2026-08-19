@@ -25,17 +25,17 @@ All required architecture and context pages now have evidence-backed content, ex
 
 - Performed static, read-only discovery over repository instructions, manifests, public entries, representative core/adapters/helpers, tests, CI/release workflows, public docs, security policy, threat model, and recent history.
 - Cross-checked independent architecture, runtime/domain, and product/security evidence ledgers.
-- Planned final validation: source-drift comparison, `kb.py stamp`, `kb.py validate`, `kb.py status`, placeholder scan, and `git diff --check`.
-- No runtime build or test suite was required because this change is documentation-only and the knowledge-base validator is the relevant executable check.
+- Final validation compared the recorded source snapshot, verified the required KB layout, metadata, local links, and placeholder removal, and checked the Markdown diff for whitespace errors.
+- No runtime build or test suite was required because this change is documentation-only; the validation above covers the repository content introduced here.
 
 ### Recovery notes
 
 - **Reversal:** Remove `docs/codebase-knowledge-base/` to revert the documentation baseline; no application/runtime source depends on it.
 - **Data or migration:** None. The repository has no knowledge-base-backed runtime data or schema migration.
-- **Feature flags or configuration:** None. Freshness metadata is managed only by the document-codebase `kb.py` utility.
+- **Feature flags or configuration:** None. The recorded freshness fields in `SUMMARY.md` are documentation metadata and have no runtime effect.
 
 ### Follow-ups
 
 - Encode the v2 Node 20+/ESM-only decision in a repository roadmap or migration record before treating it as current package behavior.
 - Reconcile stale contributor, threat-model, security, retry, release-gating, dependency-count, and documentation-domain statements listed in `SUMMARY.md`.
-- Refresh and restamp this knowledge base whenever source outside `docs/codebase-knowledge-base/` changes.
+- Refresh this knowledge base and its recorded source metadata whenever source outside `docs/codebase-knowledge-base/` changes.

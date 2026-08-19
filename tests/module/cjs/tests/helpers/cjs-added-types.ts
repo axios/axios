@@ -1,4 +1,6 @@
 import axios = require('axios');
+import http = require('http');
+import https = require('https');
 
 const headers = new axios.AxiosHeaders();
 const iterableHeaders: Iterable<[string, axios.AxiosHeaderValue]> = [['x-test', 'ok']];
@@ -129,6 +131,26 @@ const invalidParamsConfig: axios.AxiosRequestConfig<unknown, SearchParams> = {
   params: { query: 1 },
 };
 
+const agentConfig: axios.AxiosRequestConfig = {
+  httpAgent: new http.Agent({ keepAlive: true }),
+  httpsAgent: new https.Agent({ keepAlive: true }),
+};
+
+const invalidHttpAgentConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- destroy alone does not make an object an agent instance
+  httpAgent: { destroy() {} },
+};
+
+const invalidHttpAgentOptionsConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- constructor options are not agent instances
+  httpAgent: { keepAlive: true },
+};
+
+const invalidHttpsAgentConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- destroy alone does not make an object an agent instance
+  httpsAgent: { destroy() {} },
+};
+
 axios.get<unknown, axios.AxiosResponse<unknown>, any, SearchParams>('/search', {
   // @ts-expect-error -- request aliases enforce their trailing params type
   params: { query: 1 },
@@ -154,5 +176,9 @@ console.log(
   errorQuery,
   legacyParamsConfig,
   mergedQuery,
-  invalidParamsConfig
+  invalidParamsConfig,
+  agentConfig,
+  invalidHttpAgentConfig,
+  invalidHttpAgentOptionsConfig,
+  invalidHttpsAgentConfig
 );

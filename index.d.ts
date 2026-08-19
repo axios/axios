@@ -431,7 +431,7 @@ export interface AxiosRequestConfig<D = any, P = any> {
   ) => void;
   socketPath?: string | null;
   httpAgent?: HttpAgent | false;
-  httpsAgent?: HttpsAgent| false;
+  httpsAgent?: HttpsAgent | false;
   allowedSocketPaths?: string | string[] | null;
   transport?: any;
   proxy?: AxiosProxyConfig | false;
@@ -480,24 +480,22 @@ export interface AxiosRequestConfig<D = any, P = any> {
 }
 
 // Alias
-// Structural type for a Node http.Agent/https.Agent *instance* (this package has no
+// Structural type for a Node http.Agent/https.Agent instance (this package has no
 // @types/node dependency, so it can't reference `http.Agent`/`https.Agent` directly).
-// `destroy` is required so a plain options object (e.g. `{ keepAlive: true }`) can't be
-// mistaken for an agent instance -- Node rejects anything that isn't a real Agent.
 export interface HttpAgent {
   keepAlive?: boolean;
   keepAliveMsecs?: number;
-  maxSockets?: number;
-  maxTotalSockets?: number;
-  maxFreeSockets?: number;
+  maxSockets: number;
+  maxTotalSockets: number;
+  maxFreeSockets: number;
   scheduling?: string;
-  timeout?: number;
+  readonly requests: { readonly [key: string]: readonly unknown[] | undefined };
+  readonly sockets: { readonly [key: string]: readonly unknown[] | undefined };
   destroy(): void;
 }
 
 export interface HttpsAgent extends HttpAgent {
   maxCachedSessions?: number;
-  servername?: string;
 }
 
 export type RawAxiosRequestConfig<D = any, P = any> = AxiosRequestConfig<D, P>;

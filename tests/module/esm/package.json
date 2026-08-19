@@ -12,6 +12,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "20.19.39",
+    "https-proxy-agent": "5.0.1",
     "typescript": "5.9.3",
     "vitest": "4.1.9"
   }

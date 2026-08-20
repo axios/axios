@@ -22,7 +22,14 @@ describe('helpers::buildURL', () => {
   });
 
   it('should reject params with a non-string url', () => {
-    for (const url of [null, undefined, 0, false, new URL('https://example.com/foo')]) {
+    for (const url of [
+      null,
+      undefined,
+      0,
+      false,
+      new URL('https://example.com/foo'),
+      Object.create(null),
+    ]) {
       let error;
       try {
         buildURL(url, { foo: 'bar' });

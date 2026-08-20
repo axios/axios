@@ -4,6 +4,9 @@
   "description": "ESM module compatibility tests for axios",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "test:module:esm": "vitest run --config vitest.config.js --project module"
   },

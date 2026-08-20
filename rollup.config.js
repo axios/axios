@@ -119,7 +119,7 @@ export default async () => {
       },
     }),
 
-    // Node.js commonjs bundle (transpiled for Node 12)
+    // Node.js CommonJS bundle (transpiled for Node 20)
     {
       input: defaultInput,
       external: nodeCjsExternal,
@@ -134,7 +134,7 @@ export default async () => {
         commonjs(),
         babel({
           babelHelpers: 'bundled',
-          presets: [['@babel/preset-env', { targets: { node: '12' } }]],
+          presets: [['@babel/preset-env', { targets: { node: '20' } }]],
         }),
       ],
     },

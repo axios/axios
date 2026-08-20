@@ -6,20 +6,20 @@
 
 ## Working commands
 
-| Task | Command | Defined or verified at | Confidence or caveat |
-| --- | --- | --- | --- |
-| Reproducible root install | `npm ci` | `AGENTS.md:7-14`, `.npmrc:1` | Confirmed; lifecycle scripts are disabled |
-| Build published artifacts | `npm run build` | `package.json:118-120`, `rollup.config.js` | Confirmed; clears and regenerates `dist/` |
-| Lint source | `npm run lint` | `package.json:137-138`, `eslint.config.js:4-58` | Confirmed; only `lib/**/*.js` is covered |
-| Focused lint | `npx eslint lib/path/to/file.js` | `AGENTS.md:18-19` | Confirmed |
-| Unit tests | `npm run test:vitest:unit` | `package.json:122-127`, `vitest.config.js:8-14` | Confirmed |
-| Focused unit test | `npm run test:vitest:unit -- tests/unit/path.test.js` | `AGENTS.md:19` | Confirmed |
-| Browser tests | `npm run test:vitest:browser:headless` | `package.json:125-126`, `vitest.config.js:28-43` | Requires Playwright browsers first |
-| ESM module/type tests | `npm run test:module:esm` | `package.json:133`, `tests/module/esm/package.json:7-16` | Tests an installed packed artifact in normal release flow |
-| CJS module/type tests | `npm run test:module:cjs` | `package.json:132`, `tests/module/cjs/package.json:6-17` | Current v1 compatibility surface; intended to disappear in v2 |
-| ESM smoke tests | `npm run test:smoke:esm:vitest` | `package.json:129`, `tests/smoke/esm/package.json:6-14` | Install and test the tarball, not source |
-| CJS smoke tests | `npm run test:smoke:cjs:vitest` | `package.json:128`, `tests/smoke/cjs/package.json:6-15` | Current v1 compatibility surface |
-| Documentation development | `npm run docs:dev` | `package.json:134`, `docs/package.json:8-15` | Runs the separate VitePress project |
+| Task                      | Command                                               | Defined or verified at                                   | Confidence or caveat                                                                     |
+| ------------------------- | ----------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Reproducible root install | `npm ci`                                              | `AGENTS.md:7-14`, `.npmrc:1`                             | Confirmed; lifecycle scripts are disabled                                                |
+| Build published artifacts | `npm run build`                                       | `package.json:118-120`, `rollup.config.js`               | Confirmed; clears and regenerates `dist/`                                                |
+| Lint source               | `npm run lint`                                        | `package.json:137-138`, `eslint.config.js:4-58`          | Confirmed; only `lib/**/*.js` is covered                                                 |
+| Focused lint              | `npx eslint lib/path/to/file.js`                      | `AGENTS.md:18-19`                                        | Confirmed                                                                                |
+| Unit tests                | `npm run test:vitest:unit`                            | `package.json:122-127`, `vitest.config.js:8-14`          | Confirmed                                                                                |
+| Focused unit test         | `npm run test:vitest:unit -- tests/unit/path.test.js` | `AGENTS.md:19`                                           | Confirmed                                                                                |
+| Browser tests             | `npm run test:vitest:browser:headless`                | `package.json:125-126`, `vitest.config.js:28-43`         | Requires Playwright browsers first                                                       |
+| ESM module/type tests     | `npm run test:module:esm`                             | `package.json:133`, `tests/module/esm/package.json:7-16` | Tests an installed packed artifact in normal release flow                                |
+| CJS module/type tests     | `npm run test:module:cjs`                             | `package.json:136`, `tests/module/cjs/package.json`      | Transitional v2 compatibility surface; still required until the separate ESM-only change |
+| ESM smoke tests           | `npm run test:smoke:esm:vitest`                       | `package.json:129`, `tests/smoke/esm/package.json:6-14`  | Install and test the tarball, not source                                                 |
+| CJS smoke tests           | `npm run test:smoke:cjs:vitest`                       | `package.json:132`, `tests/smoke/cjs/package.json`       | Transitional v2 compatibility surface on Node 20+                                        |
+| Documentation development | `npm run docs:dev`                                    | `package.json:134`, `docs/package.json:8-15`             | Runs the separate VitePress project                                                      |
 
 ## Enforced engineering rules
 
@@ -59,9 +59,9 @@ Unreleased user-visible behavior belongs in `PRE_RELEASE_CHANGELOG.md`. Deferred
 
 ## Compatibility and delivery expectations
 
-CI currently installs with scripts disabled, lints, builds, runs Node unit tests and Playwright browser tests, packs the npm tarball, and tests that installed artifact across ESM, CJS, Bun, and Deno. Current matrices use Node 12-18 for CJS and Node 20-26 for ESM (`.github/workflows/run-ci.yml:63-217`). The package currently publishes conditional ESM/CJS/browser/React Native paths (`package.json:12-63`).
+CI installs with scripts disabled, lints, builds, runs Node unit tests and Playwright browser tests, packs the npm tarball, and tests that installed artifact across ESM, CJS, Bun, and Deno. The dirty v2 snapshot configures both ESM and CJS module/smoke matrices for Node 20, 22, 24, and 26, and the published plus Node-based private manifests declare `engines.node: ">=20.0.0"` (`package.json:engines`, `.github/workflows/run-ci.yml`, `.github/workflows/release-branch.yml`).
 
-The v2 direction supplied for this work is ESM-only and Node 20+, while v1.x retains legacy format/runtime support. That intent is not yet a current compatibility guarantee: there is no root `engines` field, CJS outputs remain configured, and CI/docs still test and describe them. A v2 migration must update package exports, declarations, build outputs, smoke/module suites, CI, documentation, and release process together.
+The Node 20+ half of the v2 direction is implemented but not yet completion-gated: local package/build/module/smoke/browser/Bun checks passed, while Node 20/22/26 and Deno still need GitHub Actions evidence. Per the maintainer's repository-wide directive on 2026-08-20, Axios does not use E2E test plans; plan close-out uses the repository-native checks and CI/runtime evidence defined by the implementation plan. ESM-only is explicitly separate; CJS outputs and declarations remain configured and tested until that coordinated migration updates exports, declarations, build outputs, smoke/module suites, CI, documentation, and release process.
 
 Publishing is tag-driven for v1 tags, runs in GitHub Actions with OIDC and npm provenance, and uses an environment gate. Build reproducibility has a two-pass monitor but is intentionally non-blocking at this snapshot.
 
@@ -74,10 +74,10 @@ Publishing is tag-driven for v1 tags, runs in GitHub Actions with OIDC and npm p
 
 ## Evidence and gaps
 
-| Claim or area | Evidence | Confidence | Gap or conflict |
-| --- | --- | --- | --- |
-| Contributor authority | `AGENTS.md:3-5`; `.github/copilot-instructions.md` | Confirmed | None |
-| Build/test commands | `package.json:118-139`; `vitest.config.js`; `.github/workflows/run-ci.yml` | Confirmed | `CONTRIBUTING.md` test description is stale |
-| Security process | `THREATMODEL.md`; `SECURITY.md`; `.npmrc`; `.github/workflows/lockfile-lint.yml` | Confirmed | Threat-model details contain several stale statements catalogued in `SUMMARY.md` |
-| Release delivery | `.github/workflows/publish.yml`; `.github/workflows/release-branch.yml` | Confirmed | 0.x release mechanism is not documented; release-branch PR gating omits module jobs |
-| v2 compatibility | Stakeholder direction supplied 2026-08-19; current `package.json`, `rollup.config.js`, and CI | Confirmed as intent; not implemented | No checked-in v2 compatibility policy or migration plan |
+| Claim or area         | Evidence                                                                                       | Confidence                                                    | Gap or conflict                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Contributor authority | `AGENTS.md:3-5`; `.github/copilot-instructions.md`                                             | Confirmed                                                     | None                                                                                |
+| Build/test commands   | `package.json:118-139`; `vitest.config.js`; `.github/workflows/run-ci.yml`                     | Confirmed                                                     | `CONTRIBUTING.md` test description is stale                                         |
+| Security process      | `THREATMODEL.md`; `SECURITY.md`; `.npmrc`; `.github/workflows/lockfile-lint.yml`               | Confirmed                                                     | Threat-model details contain several stale statements catalogued in `SUMMARY.md`    |
+| Release delivery      | `.github/workflows/publish.yml`; `.github/workflows/release-branch.yml`                        | Confirmed                                                     | 0.x release mechanism is not documented; release-branch PR gating omits module jobs |
+| v2 compatibility      | `docs/plans/001-node-20-runtime-baseline.md`; `package.json`; `rollup.config.js`; CI workflows | Node 20+ implemented in dirty source; ESM-only remains intent | Repository-native completion is blocked only on remaining CI runtime evidence       |

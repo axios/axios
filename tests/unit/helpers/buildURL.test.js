@@ -39,6 +39,7 @@ describe('helpers::buildURL', () => {
 
       expect(error).toBeInstanceOf(AxiosError);
       expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+      expect(error.message).toBe('Invalid URL: url must be a string when params are provided');
     }
   });
 

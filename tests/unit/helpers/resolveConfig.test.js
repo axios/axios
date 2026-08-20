@@ -52,6 +52,7 @@ describe('helpers::resolveConfig', () => {
 
     assert.ok(error instanceof AxiosError);
     assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+    assert.strictEqual(error.message, 'Invalid URL: url must be a string when params are provided');
   });
 
   it('clears Content-Type for React Native FormData', () => {

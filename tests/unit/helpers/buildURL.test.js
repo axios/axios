@@ -21,8 +21,8 @@ describe('helpers::buildURL', () => {
     expect(buildURL('', { foo: 'bar' })).toEqual('?foo=bar');
   });
 
-  it('should reject params with a null or undefined url', () => {
-    for (const url of [null, undefined]) {
+  it('should reject params with a non-string url', () => {
+    for (const url of [null, undefined, 0, false, new URL('https://example.com/foo')]) {
       let error;
       try {
         buildURL(url, { foo: 'bar' });

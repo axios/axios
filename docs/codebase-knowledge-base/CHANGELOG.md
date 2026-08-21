@@ -2,11 +2,47 @@
 
 > Newest entries appear first. This log records durable source and knowledge-base outcomes plus honest recovery context; it is not a raw commit log.
 
+## 2026-08-21T15:00:28+02:00 — Establish the Axios v2 Node 20+ baseline
+
+- **Status:** Completed
+- **Source change:** `79e8255671827fb5626287b9104b8b3cd2c133ad..09b51559f573fc10151e25c9f65f5d65aaa4a896`, merged into `v2.x` as `9e51e031b453d7b766eaa9410b8b338f811e2cbf`; the archive branch starts from that clean merge revision and adds only this documentation close-out.
+- **Plan:** [Archived Plan 001](../plans/archive/2026-08-21-001-node-20-runtime-baseline.md)
+- **Affected areas:** Published/private package metadata, Node build target, TypeScript fixtures, packed-package coverage, PR/release runtime matrices, contributor guidance, and pre-release migration records.
+
+### What changed
+
+- Established `engines.node: ">=20.0.0"` for the Axios v2 package and every Node-executed private package while leaving Bun/Deno-native fixtures runtime-appropriate.
+- Retargeted the temporary Node CommonJS bundle and CJS type fixture to Node 20, retained TypeScript 4.9 and all current ESM/CJS/UMD/declaration surfaces, and aligned ESM/CJS CI matrices on Node 20, 22, 24, and 26.
+- Added paired packed-package assertions for the published engine contract, upgraded the isolated CJS fixture from Mocha 9.2.2 to 11.8.0 after Node 26 exposed its incompatible runner bridge, and removed the obsolete recursive `fs.rmdirSync` fallback.
+- Staged the v2 breaking-change and migration documentation, directing consumers that need Node 12–18 or legacy module support to v1.x and reserving ESM-only removal for a separately approved plan.
+
+### Knowledge-base impact
+
+Updated `SUMMARY.md`, `architecture/patterns.md`, `architecture/standards.md`, `architecture/tech-stack.md`, and `context/north-star.md` to record the completed Node 20+ boundary, final CI evidence, archived plan path, retained CommonJS transition, and remaining ESM-only/release follow-ups. Repaired historical Plan 001 links after moving the sole active file into the archive.
+
+### Validation
+
+- **Mode:** Repository-native, under the maintainer's 2026-08-20 repository-wide directive, “in this repo we will never have e2e tests.” The plan requires no manual checks and no `docs/e2e/` artifact.
+- Final PR revision `09b51559f573fc10151e25c9f65f5d65aaa4a896` passed CI run `32477064358`: build, lint, dependency review, unit/browser, package, Bun/Deno, and every ESM/CJS module and smoke lane on Node 20, 22, 24, and 26.
+- Same-revision lockfile run `32477064428`, reproducibility run `32477064502`, bundle-size run `32477064362`, and zizmor run `32477064291` passed. All PR review threads are resolved.
+- Local packed-artifact validation passed all six CJS module tests on Node 20.20.2, 24.18.0, and 26.7.0 plus all 71 CJS smoke tests on Node 26.7.0. The fixture lockfile passed HTTPS, npm-registry-host, and integrity validation.
+
+### Recovery notes
+
+- **Reversal:** Before merge/publication, close PR #11161 or discard its feature branch through the normal maintainer workflow. After merge but before v2 publication, revert the PR's merge commit or its constituent commits through a reviewed Git change. After v2 publication, restoring older-Node support requires a tested forward release; consumers that cannot run Node 20+ should remain on v1.x.
+- **Data or migration:** None. Axios owns no durable application data in this change; package metadata, build/test configuration, fixtures, and documentation are Git-reversible before publication.
+- **Feature flags or configuration:** No feature flag exists. The compatibility boundary is package metadata plus shipped build/CI policy and must not be disabled independently.
+
+### Follow-ups
+
+- Plan and approve ESM-only package-shape removal separately.
+- Complete the staged public documentation and v2 release-automation work before publishing Axios v2.
+
 ## 2026-08-21T11:44:51+02:00 — Confirm the corrected Node matrix
 
 - **Status:** KB maintenance
 - **Source change:** `37ba561e7f121b0f442c6a6bd4975c62c20aa5a9` with a dirty evidence-documentation worktree on PR #11161.
-- **Plan:** [Active Plan 001](../plans/001-node-20-runtime-baseline.md) — ready for completion audit and archival
+- **Plan:** [Active Plan 001 at this snapshot](../plans/archive/2026-08-21-001-node-20-runtime-baseline.md) — ready for completion audit and archival
 - **Affected areas:** Corrected CJS fixture CI evidence, compatibility status, plan success criteria, and review follow-up.
 
 ### What changed
@@ -39,7 +75,7 @@ Refreshed `SUMMARY.md`, `architecture/standards.md`, `architecture/tech-stack.md
 
 - **Status:** Partial
 - **Source change:** `fd443c050e88a5445fb55155712d1dc8cc4f2e47` with a dirty review-fix worktree; PR #11161 is awaiting a corrected CI rerun.
-- **Plan:** [Active Plan 001](../plans/001-node-20-runtime-baseline.md) — blocked and not archived
+- **Plan:** [Active Plan 001 at this snapshot](../plans/archive/2026-08-21-001-node-20-runtime-baseline.md) — blocked and not archived
 - **Affected areas:** CJS module runner, paired package-metadata smoke coverage, CI evidence, KB command anchors, validation wording, and v2 direction dates.
 
 ### What changed
@@ -76,7 +112,7 @@ Updated `SUMMARY.md`, `architecture/standards.md`, `architecture/tech-stack.md`,
 
 - **Status:** Corrective
 - **Source change:** Revision remains `4943cc2749393d55f0c8de28a5c57aca403aaeb7`; the dirty implementation snapshot is unchanged, while the active plan now records the repository-wide no-E2E directive and the corrected validation mode.
-- **Plan:** [Active Plan 001](../plans/001-node-20-runtime-baseline.md) — blocked and not archived
+- **Plan:** [Active Plan 001 at this snapshot](../plans/archive/2026-08-21-001-node-20-runtime-baseline.md) — blocked and not archived
 - **Affected areas:** Plan completion policy, acceptance evidence, compatibility status, and knowledge-base validation guidance.
 
 ### What changed
@@ -109,7 +145,7 @@ Updated `SUMMARY.md`, `architecture/standards.md`, and `context/north-star.md` t
 
 - **Status:** Partial
 - **Source change:** `84a9f3b9a4f3244b8c8e818f557d64c7b964fb25..4943cc2749393d55f0c8de28a5c57aca403aaeb7`, with a dirty worktree containing 19 modified tracked files and 2 untracked implementation/plan files.
-- **Plan:** [Active Plan 001](../plans/001-node-20-runtime-baseline.md) — blocked and not archived
+- **Plan:** [Active Plan 001 at this snapshot](../plans/archive/2026-08-21-001-node-20-runtime-baseline.md) — blocked and not archived
 - **Affected areas:** Package/runtime metadata, Node build target, TypeScript fixtures, installed-package smoke coverage, pull-request and release-validation matrices, contributor guidance, pre-release records, and compatibility documentation.
 
 ### What changed

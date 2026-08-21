@@ -23,22 +23,4 @@ describe('module fixture cleanup helper', () => {
 
     assert.strictEqual(fs.existsSync(fixturePath), false);
   });
-
-  it('removes fixture directories when fs.rmSync is unavailable', () => {
-    const fixturePath = fs.mkdtempSync(path.join(os.tmpdir(), 'axios-module-fixture-legacy-'));
-    const nestedPath = path.join(fixturePath, 'nested');
-    const originalRmSync = fs.rmSync;
-
-    fs.mkdirSync(nestedPath);
-    fs.writeFileSync(path.join(nestedPath, 'index.ts'), 'export {};\n');
-    fs.rmSync = undefined;
-
-    try {
-      cleanupTempFixture(fixturePath);
-    } finally {
-      fs.rmSync = originalRmSync;
-    }
-
-    assert.strictEqual(fs.existsSync(fixturePath), false);
-  });
 });

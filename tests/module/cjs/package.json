@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/node": "20.19.39",
     "chai": "4.5.0",
-    "mocha": "9.2.2",
+    "mocha": "11.8.0",
     "typescript": "4.9.5"
   }
 }

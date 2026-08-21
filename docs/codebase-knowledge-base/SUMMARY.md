@@ -1,12 +1,12 @@
 # axios knowledge base
 
-> Axios is a stateless, promise-based HTTP client whose shared configuration/interceptor/transform pipeline delegates I/O to capability-selected Node, XHR, Fetch, or custom adapters. This partial v2 snapshot documents an implemented-but-uncommitted Node 20+ runtime baseline while the current ESM, UMD, browser CommonJS, and Node CommonJS package surfaces remain intact pending a separate ESM-only migration.
+> Axios is a stateless, promise-based HTTP client whose shared configuration/interceptor/transform pipeline delegates I/O to capability-selected Node, XHR, Fetch, or custom adapters. This partial v2 snapshot documents the Node 20+ runtime baseline on PR #11161 while the current ESM, UMD, browser CommonJS, and Node CommonJS package surfaces remain intact pending a separate ESM-only migration.
 
 | Field              | Value                                                                     |
 | ------------------ | ------------------------------------------------------------------------- |
-| Last updated       | `2026-08-20T11:07:53+02:00`                                               |
-| Source revision    | `4943cc2749393d55f0c8de28a5c57aca403aaeb7`                                |
-| Source fingerprint | `sha256:f36cfe1c8fc64224f19f41f3620b3e7651f96d38addcda3c7f2a93d7cbd231de` |
+| Last updated       | `2026-08-21T11:35:54+02:00`                                               |
+| Source revision    | `fd443c050e88a5445fb55155712d1dc8cc4f2e47`                                |
+| Source fingerprint | `sha256:31d38385427db8248b7c09a3115baffbd01161c2fcf6b37e4bcd2718fa52258f` |
 | Source branch      | `feat/node-20-runtime-baseline`                                           |
 | Source state       | `dirty`                                                                   |
 | Scope              | `.`                                                                       |
@@ -48,6 +48,6 @@
 - **Documented scope:** Full repository (`.`), emphasizing runtime source, public declarations, tests, build/package/CI/release configuration, security policy/threat model, contributor rules, docs, examples, and recent branch context.
 - **Excluded areas:** Installed dependencies (`node_modules/`, including `docs/node_modules/` and test-fixture installs), generated/ignored `dist/` and site output, binary assets, exhaustive translated-doc comparison, every test case, and remote-only GitHub/npm state. These exclusions do not affect the documented runtime architecture.
 - **Important unknowns:** No formal north-star statement, product KPIs, completed ESM-only migration plan, 0.x release mechanism, or documentation hosting/deployment process was found. Consumer-specific authorization, persistence, destination policy, and retry/idempotency are outside Axios's boundary.
-- **Current compatibility boundary:** The dirty v2 worktree declares and tests a Node `>=20.0.0` package contract, targets the temporary Node CommonJS build and type fixture at Node 20, and configures ESM/CJS matrices for Node 20/22/24/26. CommonJS/UMD artifacts and declarations remain present by design. Axios uses repository-native acceptance validation rather than E2E plans; local evidence is green, but GitHub Actions evidence for Node 20/22/26 and Deno is still required before Plan 001 can complete.
+- **Current compatibility boundary:** PR #11161 declares and tests a Node `>=20.0.0` package contract, targets the temporary Node CommonJS build and type fixture at Node 20, and configures ESM/CJS matrices for Node 20/22/24/26. CommonJS/UMD artifacts and declarations remain present by design. The initial CI run passed build, lockfile, Bun/Deno, every smoke lane, every ESM module lane, and CJS module lanes on Node 20/22/24. The Node 26 CJS module runner failed before tests under Mocha 9.2.2; the fixture now uses Mocha 11.8.0, relies only on Node 20+ cleanup APIs, and passes locally on Node 20/24/26, with a remote rerun pending.
 - **Contradictions or stale upstream docs:** `CONTRIBUTING.md` still says tests use Jasmine/Mocha; `AGENTS.md` lists adapter selection before request transforms and states only the legacy-default interceptor order; `THREATMODEL.md` has stale redirect-default, header-sanitization, error-redaction, and runtime-dependency-count details; docs conflict on provenance history and domains; the retry guide's delay is not signal-aware; release-branch PR creation omits module-test jobs from its gate; `SECURITY.md` supports 0.x but the checked-in publish workflow only accepts v1 tags.
 - **Recovery:** This KB is documentation-only. Remove `docs/codebase-knowledge-base/` to reverse it, or refresh the pages and their recorded source metadata after source changes.

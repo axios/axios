@@ -2,6 +2,43 @@
 
 > Newest entries appear first. This log records durable source and knowledge-base outcomes plus honest recovery context; it is not a raw commit log.
 
+## 2026-08-21T11:24:33+02:00 — Repair the Node 26 fixture and review documentation
+
+- **Status:** Partial
+- **Source change:** `fd443c050e88a5445fb55155712d1dc8cc4f2e47` with a dirty review-fix worktree; PR #11161 is awaiting a corrected CI rerun.
+- **Plan:** [Active Plan 001](../plans/001-node-20-runtime-baseline.md) — blocked and not archived
+- **Affected areas:** CJS module runner, paired package-metadata smoke coverage, CI evidence, KB command anchors, validation wording, and v2 direction dates.
+
+### What changed
+
+- Reproduced the Node 26 CJS module failure as Mocha 9.2.2 loading its `yargs` 16 CommonJS bridge as ESM, then updated the isolated fixture to the repository-used Mocha 11.8.0 baseline.
+- Removed the fixture's obsolete recursive `fs.rmdirSync` fallback, which Node 26 rejects and the declared Node 20+ baseline no longer needs; cleanup now uses `fs.rmSync` directly.
+- Added a CommonJS installed-package assertion for the same `engines.node` contract covered by the ESM smoke suite.
+- Replaced brittle `package.json` line citations with stable script-key anchors, normalized the maintainer-direction date, and updated the KB from pre-PR assumptions to the observed CI matrix.
+- Replaced non-repository skill invocations in KB follow-ups with tool-agnostic completion language. Older incorrect workflow wording is marked as superseded rather than presented as a current command.
+
+### Knowledge-base impact
+
+Updated `SUMMARY.md`, `architecture/standards.md`, `architecture/tech-stack.md`, and `context/north-star.md` with the PR state, Node 26 root cause, actual passing lanes, pending rerun, stable command anchors, and consistent direction evidence. Updated Plan 001 with the same review and CI evidence.
+
+### Validation
+
+- The original failure reproduced on Node 26.7.0 with `ReferenceError: require is not defined` in `node_modules/yargs/yargs` before Mocha discovered tests.
+- After installing the exact packed Axios artifact, all six CJS module tests pass locally on Node 20.20.2, 24.18.0, and 26.7.0.
+- The full CJS packed-package smoke suite, including the new metadata assertion, passes on Node 26.7.0 with 71 tests.
+- The updated fixture lockfile passes HTTPS, npm-registry-host, and integrity validation. Package-name validation identifies only npm's intentional `string-width-cjs`, `strip-ansi-cjs`, and `wrap-ansi-cjs` aliases from the Mocha 11 graph, whose lock entries correctly name and integrity-pin their underlying packages.
+- PR #11161's initial run passed every other Node 20/22/24/26 module/smoke lane plus build, lockfile, browser/unit, Bun, and Deno checks; the corrected Node 26 CJS module rerun is pending.
+
+### Recovery notes
+
+- **Reversal:** Revert the review-fix commit to restore Mocha 9.2.2, the legacy cleanup fallback, the single ESM metadata assertion, and the previous KB wording. That also restores the confirmed Node 26 runner failure.
+- **Data or migration:** None. Changes are confined to test tooling, tests, plans, and documentation.
+- **Feature flags or configuration:** None. No Axios runtime dependency or request behavior changes.
+
+### Follow-ups
+
+- Push the locally verified review fixes, obtain a green CI rerun, resolve all PR threads, and repeat the completion audit.
+
 ## 2026-08-20T11:06:37+02:00 — Correct Plan 001 to repository-native validation
 
 - **Status:** Corrective
@@ -32,8 +69,8 @@ Updated `SUMMARY.md`, `architecture/standards.md`, and `context/north-star.md` t
 
 ### Follow-ups
 
-- Commit and push the implementation branch through the normal contributor workflow, obtain the required Node 20/22/24/26 and Deno checks, record their results in Plan 001, and rerun `complete-plan`.
-- No `create-test-plan` or `docs/e2e/` artifact is required for Axios.
+- Commit and push the implementation branch through the normal contributor workflow, obtain the required Node 20/22/24/26 and Deno checks, record their results in Plan 001, and repeat the completion audit.
+- No E2E acceptance artifact is required for Axios.
 
 ## 2026-08-20T08:53:54+02:00 — Stage the Axios v2 Node 20+ runtime baseline
 
@@ -66,8 +103,8 @@ Updated `SUMMARY.md`, `architecture/tech-stack.md`, `architecture/standards.md`,
 
 ### Follow-ups
 
-- Run `create-test-plan` for Plan 001 and validate its automated scenarios plus manual evidence or an explicit waiver.
-- Commit/push the branch through the normal contributor workflow so GitHub Actions can provide Node 20/22/24/26 and Deno evidence, record those results in the active plan, then rerun `complete-plan`.
+- Superseded by the corrective entry above: Axios uses repository-native acceptance evidence and does not require an E2E test-plan artifact.
+- Commit/push the branch through the normal contributor workflow so GitHub Actions can provide Node 20/22/24/26 and Deno evidence, record those results in the active plan, then repeat the completion audit.
 - Plan and approve ESM-only package-shape removal separately.
 
 ## 2026-08-19T18:43:28+02:00 — Initial knowledge-base baseline

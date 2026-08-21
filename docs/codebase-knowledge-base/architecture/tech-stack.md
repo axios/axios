@@ -16,7 +16,7 @@ Axios is a framework-free JavaScript/TypeScript-typed library. ESM source is bun
 | VitePress               | `^1.6.4`                                                                                              | Documentation site generator                       | `docs/package.json:17-26`                                                                                     |
 | Vue                     | `^3.5.32`                                                                                             | Documentation site components                      | `docs/package.json:22-26`                                                                                     |
 
-The v2 Node 20+ portion is implemented in the current dirty worktree: package metadata, the Node bundle target, type fixtures, and workflow matrices agree on that minimum. ESM-only remains future work; this snapshot still publishes and tests CJS.
+The v2 Node 20+ portion is implemented on PR #11161: package metadata, the Node bundle target, type fixtures, and workflow matrices agree on that minimum. ESM-only remains future work; this snapshot still publishes and tests CJS.
 
 ## Data, messaging, and storage
 
@@ -28,7 +28,7 @@ Axios has no database, durable message broker, cache service, or server-owned pe
 - Gulp clears `dist/` and manages version-generated data (`gulpfile.js`).
 - ESLint 10 checks `lib/**/*.js`; Prettier 3 formats staged JavaScript, TypeScript, JSON, Markdown, and YAML.
 - Vitest 4 runs Node unit and browser projects; Playwright provides Chromium, Firefox, and WebKit.
-- Mocha remains in the isolated CJS smoke/module compatibility fixtures.
+- Mocha 11.8 remains in the isolated CJS smoke/module compatibility fixtures and supports their Node 20–26 matrix; their cleanup path uses the Node 20+ `fs.rmSync` API.
 - TypeScript module fixtures validate ESM and CJS against Node 20 definitions; the CJS fixture deliberately retains TypeScript 4.9 compatibility during the transition.
 - Husky, lint-staged, and commitlint support local contribution workflow when explicitly rebuilt after a scripts-disabled install.
 - The docs project has its own npm manifest/lockfile, VitePress build, Node test for search tokenization, sponsor-processing script, and `patch-package` postinstall.
@@ -60,10 +60,10 @@ There is no library-owned logging, metrics, tracing backend, dashboard, or runti
 
 ## Evidence and gaps
 
-| Claim or area              | Evidence                                                                                       | Confidence                    | Gap or conflict                                                          |
-| -------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------ |
-| Runtime dependencies       | `package.json:141-145`                                                                         | Confirmed: four               | `THREATMODEL.md:393-397` says three while naming four                    |
-| Package outputs            | `package.json:5-67,106-121`; `rollup.config.js:83-140`                                         | Confirmed                     | Future v2 ESM-only output is not implemented; CJS/UMD remain intentional |
-| Runtime matrices and floor | `package.json:engines`; `.github/workflows/run-ci.yml`; `.github/workflows/release-branch.yml` | Confirmed in dirty source     | Node 20/22/26 and Deno results still require GitHub Actions evidence     |
-| Documentation stack        | `docs/package.json`; `docs/.vitepress/`                                                        | Confirmed                     | Hosting/deployment path was not evidenced                                |
-| Persistence/operations     | Source inventory and adapter architecture                                                      | Confirmed absent from library | Consumer infrastructure is intentionally out of scope                    |
+| Claim or area              | Evidence                                                                                                     | Confidence                    | Gap or conflict                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| Runtime dependencies       | `package.json:141-145`                                                                                       | Confirmed: four               | `THREATMODEL.md:393-397` says three while naming four                                       |
+| Package outputs            | `package.json:5-67,106-121`; `rollup.config.js:83-140`                                                       | Confirmed                     | Future v2 ESM-only output is not implemented; CJS/UMD remain intentional                    |
+| Runtime matrices and floor | `package.json:engines`; `.github/workflows/run-ci.yml`; `.github/workflows/release-branch.yml`; PR #11161 CI | Confirmed on PR branch        | Initial matrix passed except the Node 26 CJS module lane; corrected runner rerun is pending |
+| Documentation stack        | `docs/package.json`; `docs/.vitepress/`                                                                      | Confirmed                     | Hosting/deployment path was not evidenced                                                   |
+| Persistence/operations     | Source inventory and adapter architecture                                                                    | Confirmed absent from library | Consumer infrastructure is intentionally out of scope                                       |

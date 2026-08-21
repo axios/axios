@@ -6,6 +6,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 
 ## Setup And Safety
 
+- Use Node.js 20 or newer for v2 development and validation.
 - Use `npm ci`; repo `.npmrc` sets `ignore-scripts=true`, and CI also uses `npm ci --ignore-scripts`.
 - Do not remove `ignore-scripts=true`; if git hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once.
 - Adding or updating dependencies is security-sensitive; `package-lock.json` is checked by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
@@ -95,7 +96,8 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Test layout is runtime-first: `tests/unit/**/*.test.js`, `tests/browser/**/*.browser.test.js`, `tests/smoke/esm/**/*.smoke.test.js`, `tests/smoke/cjs/**/*.smoke.test.cjs`.
 - Use `tests/setup/server.js` for local HTTP servers and cleanup with `try/finally`; leaking servers causes Vitest hangs.
 - Keep CJS and ESM smoke coverage aligned when behavior is packaging/import related.
-- Type compatibility is exercised through `tests/module/cjs` with TypeScript 4.9 and `tests/module/esm` with TypeScript 5.x; run the matching module suite for declaration changes.
+- Type compatibility is exercised against Node 20 definitions through `tests/module/cjs` with TypeScript 4.9 and `tests/module/esm` with TypeScript 5.x; run the matching module suite for declaration changes.
+- Node.js 20 is the minimum supported v2 runtime. Installed-package CJS and ESM suites cover Node 20 and newer configured majors until the ESM-only migration removes the transitional CommonJS surface.
 - Browser tests replace globals such as XHR; restore globals and reset spies in cleanup hooks.
 
 ## Security-Sensitive Code

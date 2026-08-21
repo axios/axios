@@ -5,6 +5,9 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "npm run test:search && vitepress build",

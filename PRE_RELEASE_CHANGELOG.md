@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Breaking Changes
+
+- **Node.js runtime baseline:** Axios v2 now requires Node.js 20 or newer. Applications that must run on Node.js 12, 14, 16, or 18 should remain on the v1.x maintenance line or upgrade Node.js. This change aligns package metadata, the Node build target, type fixtures, and compatibility workflows; the existing CommonJS artifacts remain available on Node.js 20+ until the separately planned ESM-only migration.
+
 ## Features
 
 - **Proxy bypass CIDR ranges:** Added IPv4 and IPv6 CIDR matching to `NO_PROXY`/`no_proxy`, including bracketed IPv6 and IPv4-mapped IPv6 normalization, while malformed ranges fail closed. A `/0` entry bypasses the proxy for its entire address family.

@@ -5,6 +5,9 @@
   "main": "./dist/node/axios.cjs",
   "module": "./index.js",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "types": "index.d.ts",
   "jsdelivr": "dist/axios.min.js",
   "unpkg": "dist/axios.min.js",

@@ -6,6 +6,7 @@ The rules below are a Copilot-facing subset of the load-bearing safety guarantee
 
 ## Setup safety
 
+- Use Node.js 20 or newer for v2 development and validation.
 - Install with `npm ci`; the repo's `.npmrc` sets `ignore-scripts=true`. Do not remove that flag. If husky hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once.
 - Do not add new runtime dependencies without discussion. `package-lock.json` is verified by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
 - Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.

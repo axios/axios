@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Axios v2 Node.js 20+ baseline
+
+- **Change:** Document Node.js 20 as the minimum supported runtime for Axios v2.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Breaking Changes, Node.js runtime baseline.
+- **Status:** Pending.
+- **Docs targets:** README runtime support and older-Node examples; `docs/pages/getting-started/features.md`; the v2 upgrade guide; Node-specific request-config, URL-encoded form, and file-posting guidance; Spanish, French, and Chinese translations after the English wording is finalized.
+- **Required content:** State that Axios v2 requires Node.js 20 or newer and that consumers on Node.js 12, 14, 16, or 18 must upgrade Node.js or remain on Axios v1.x. Remove active claims that the current v2 package supports or tests Node.js 12 and revise older-Node `querystring`, `URLSearchParams`, `insecureHTTPParser`, and native `FormData` guidance where the Node.js 20 floor makes it obsolete or misleading. Distinguish the runtime-floor change from the later ESM-only package migration: this preparatory change still ships CommonJS on Node.js 20+.
+- **Examples:** No new API example is required; update installation and migration snippets only where they select an Axios major or Node.js runtime.
+- **Notes:** Apply these updates during v2 release preparation, not to documentation presenting the current v1.x release. Preserve useful historical API facts when they are clearly historical rather than compatibility promises. Coordinate the final wording with the ESM-only migration notes and update all maintained translations.
+
 ### Runtime configuration prototype hardening
 
 - **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.

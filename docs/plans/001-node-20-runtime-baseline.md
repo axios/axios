@@ -5,9 +5,9 @@
 | Field           | Value                                                                                                                                                                                                  |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Plan number     | `001`                                                                                                                                                                                                  |
-| Status          | Blocked                                                                                                                                                                                                |
+| Status          | Ready for completion audit                                                                                                                                                                             |
 | Created         | 2026-08-20T08:31:37+02:00                                                                                                                                                                              |
-| Last updated    | 2026-08-21T11:32:18+02:00                                                                                                                                                                              |
+| Last updated    | 2026-08-21T11:44:51+02:00                                                                                                                                                                              |
 | Source revision | `79e8255671827fb5626287b9104b8b3cd2c133ad`                                                                                                                                                             |
 | Scope           | `package.json`, package locks and Node-based private package manifests, `rollup.config.js`, `tests/module/`, `tests/smoke/`, `.github/workflows/`, contributor guidance, and pre-release documentation |
 | Approval        | Approved for implementation by the maintainer on 2026-08-20                                                                                                                                            |
@@ -21,8 +21,8 @@ Establish Node.js `>=20.0.0` as the explicit runtime and contributor-tooling bas
 - [x] The packed Axios v2 package advertises `engines.node: ">=20.0.0"`, and an installed-package smoke test prevents that contract from being removed accidentally.
 - [x] Every Node-based private package used to build, document, or test v2 declares the same Node 20+ floor, while Bun- and Deno-native fixtures remain runtime-appropriate.
 - [x] The temporary Node CommonJS artifact is transpiled for Node 20, and the CommonJS type fixture uses Node 20 definitions without silently raising Axios's TypeScript 4.9 compatibility contract.
-- [ ] Pull-request and release-validation workflows contain no Axios test lane below Node 20 and exercise both temporarily supported module formats on Node 20 and the maintained newer majors.
-- [ ] A clean install, build, packed-package module/smoke suites, unit/browser suites, lockfile checks, and Bun/Deno smoke coverage pass with the new baseline.
+- [x] Pull-request and release-validation workflows contain no Axios test lane below Node 20 and exercise both temporarily supported module formats on Node 20 and the maintained newer majors.
+- [x] A clean install, build, packed-package module/smoke suites, unit/browser suites, lockfile checks, and Bun/Deno smoke coverage pass with the new baseline.
 - [x] Pre-release records and contributor guidance identify the Node 20+ floor as a v2 breaking change, direct older-Node consumers to v1.x, and stage the public migration documentation required before release.
 - [x] This preparatory change does not remove or rename CommonJS, UMD, browser, declaration, or export artifacts; those format removals require the ESM-only follow-up plan.
 
@@ -336,6 +336,7 @@ This staged approach deliberately retains CommonJS while changing its runtime ta
 - 2026-08-20T11:06:37+02:00 — Remote inspection found no `feat/node-20-runtime-baseline` branch and no pull request on GitHub. Consequently there are no Node 20/22/26 or Deno check results, so step 5 and the two unchecked success criteria remain blocked. Revision `4943cc2749393d55f0c8de28a5c57aca403aaeb7` and the dirty source state are unchanged; the plan was not archived.
 - 2026-08-21T11:24:33+02:00 — Opened PR #11161 at `fd443c050e88a5445fb55155712d1dc8cc4f2e47`. Its initial CI passed build, lockfile, reproducibility, bundle, Bun/Deno, every ESM module/smoke lane, every CJS smoke lane, and CJS module lanes on Node 20, 22, and 24. The Node 26 CJS module job failed before tests because Mocha 9.2.2 loads the `yargs` 16 CommonJS bridge as ESM under Node 26 (`ReferenceError: require is not defined`).
 - 2026-08-21T11:32:18+02:00 — Updated the isolated CJS module fixture to the already-used Mocha 11.8.0 baseline and removed its pre-Node-20 `fs.rmdirSync({recursive: true})` fallback, which Node 26 no longer supports. All six tests pass against the packed Axios artifact on Node 20.20.2, 24.18.0, and 26.7.0; the Node 26 CJS smoke suite passes all 71 tests, including paired engine-metadata coverage. The fixture lockfile passes HTTPS, npm-registry-host, and integrity validation. Corrected four KB review findings. The remote rerun remains the only completion evidence still pending.
+- 2026-08-21T11:44:51+02:00 — Corrected-fixture CI run `32468769721` passed CJS module jobs on Node 20, 22, 24, and 26, including Node 22 job `96731529782` and the previously failing Node 26 job `96731529797`. The same run passed every ESM/CJS smoke and module lane, build, lint, unit/browser, dependency review, Bun, and Deno job; the accompanying lockfile, reproducibility, bundle-size, workflow-security, and package-security checks also passed. Both remaining success criteria are satisfied.
 
 ### Deviations
 
@@ -346,4 +347,4 @@ This staged approach deliberately retains CommonJS while changing its runtime ta
 
 ### Final outcome
 
-Blocked at the repository-native completion gate. PR #11161 has supplied every required CI result except a green rerun of the corrected Node 26 CJS module lane. No E2E artifact is required. After the review fixes are pushed and that lane passes, repeat the completion audit; until then this plan remains active and unarchived.
+Implementation and repository-native acceptance evidence are complete on PR #11161. Corrected-fixture CI is green across Node 20/22/24/26 plus Bun and Deno, and no E2E artifact is required. The plan remains active and unarchived until the completion audit records this final evidence and performs its normal close-out.

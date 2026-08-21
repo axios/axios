@@ -2,6 +2,39 @@
 
 > Newest entries appear first. This log records durable source and knowledge-base outcomes plus honest recovery context; it is not a raw commit log.
 
+## 2026-08-21T11:44:51+02:00 — Confirm the corrected Node matrix
+
+- **Status:** KB maintenance
+- **Source change:** `37ba561e7f121b0f442c6a6bd4975c62c20aa5a9` with a dirty evidence-documentation worktree on PR #11161.
+- **Plan:** [Active Plan 001](../plans/001-node-20-runtime-baseline.md) — ready for completion audit and archival
+- **Affected areas:** Corrected CJS fixture CI evidence, compatibility status, plan success criteria, and review follow-up.
+
+### What changed
+
+- Recorded the corrected-fixture results from CI run `32468769721`, including the previously omitted Node 22 CJS module job and the repaired Node 26 job.
+- Marked the final two Plan 001 success criteria satisfied and moved the active plan from blocked to ready for completion audit.
+- Replaced pending-rerun wording across the KB with the observed all-green Node 20/22/24/26, Bun, and Deno result.
+
+### Knowledge-base impact
+
+Refreshed `SUMMARY.md`, `architecture/standards.md`, `architecture/tech-stack.md`, and `context/north-star.md` so runtime support evidence is consistent with the corrected CI run.
+
+### Validation
+
+- CJS module jobs passed with the corrected fixture on Node 20, 22, 24, and 26. Node 22 job `96731529782` completed in 16 seconds; the previously failing Node 26 job `96731529797` completed in 24 seconds.
+- CI run `32468769721` also passed build, lint, unit/browser, dependency review, every CJS/ESM smoke and module lane, Bun, and Deno.
+- The accompanying lockfile, reproducibility, bundle-size, workflow-security, package-security, and Cubic re-review checks passed. Greptile remained pending at this snapshot and had posted no new thread.
+
+### Recovery notes
+
+- **Reversal:** Revert this documentation-only evidence commit to restore the pre-rerun snapshot; doing so does not alter the already-green remote checks or the fixture fix.
+- **Data or migration:** None.
+- **Feature flags or configuration:** None.
+
+### Follow-ups
+
+- Resolve the Node 22 evidence thread, monitor Greptile for any late finding, and run the repository-native completion audit when requested.
+
 ## 2026-08-21T11:24:33+02:00 — Repair the Node 26 fixture and review documentation
 
 - **Status:** Partial

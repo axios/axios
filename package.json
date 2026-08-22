@@ -119,9 +119,9 @@
     "dist/node/axios.cjs"
   ],
   "scripts": {
-    "build": "gulp clear && cross-env NODE_ENV=production rolldown -c",
+    "build": "node scripts/clear-dist.js && cross-env NODE_ENV=production rolldown -c",
     "version": "npm run build && git add package.json",
-    "preversion": "gulp version",
+    "preversion": "node scripts/prepare-version.js",
     "test": "npm run test:vitest",
     "test:vitest": "vitest run",
     "test:vitest:unit": "vitest run --project unit",
@@ -164,10 +164,8 @@
     "express": "^5.2.1",
     "formdata-node": "^6.0.3",
     "formidable": "^3.5.4",
-    "fs-extra": "^11.3.6",
     "get-stream": "^9.0.1",
     "globals": "^17.7.0",
-    "gulp": "^5.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
     "minimist": "^1.2.8",

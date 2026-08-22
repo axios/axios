@@ -7,7 +7,7 @@
 | Plan number     | `002`                                                                                                                                                                                            |
 | Status          | In progress                                                                                                                                                                                      |
 | Created         | 2026-08-22T18:40:30+02:00                                                                                                                                                                        |
-| Last updated    | 2026-08-22T19:05:55+02:00                                                                                                                                                                        |
+| Last updated    | 2026-08-22T19:27:36+02:00                                                                                                                                                                        |
 | Source revision | `9e51e031b453d7b766eaa9410b8b338f811e2cbf`                                                                                                                                                       |
 | Scope           | `package.json`, `package-lock.json`, the release bundler configuration, generated-artifact contract tests, build-related workflows, contributor/security guidance, and pre-release documentation |
 | Approval        | Approved for implementation by the maintainer on 2026-08-22                                                                                                                                      |
@@ -24,7 +24,7 @@ This migration will remove build-only Rollup, Babel, Terser, and compatibility p
 - [x] `dist/axios.js` and `dist/axios.min.js` remain valid UMD: a classic browser script exposes `globalThis.axios`, and an AMD/RequireJS loader receives the default Axios instance without changing the `jsdelivr` or `unpkg` fields.
 - [x] Every generated browser artifact parses at an explicit ES2018 ceiling, with no promise of ES5 syntax or missing-runtime polyfills, and Babel is no longer part of the Axios release build.
 - [x] Browser ESM, browser CommonJS, Node CommonJS, and root package imports retain their current default/named export behavior, platform selection, dependency externalization, banners, and public runtime behavior.
-- [x] The root manifest and lockfile contain one reviewed direct Rolldown build dependency, no Rollup/Babel/Terser build dependencies that have become unused, no runtime-dependency changes, and valid npm HTTPS/integrity metadata.
+- [x] The root manifest and lockfile contain one reviewed direct Rolldown build dependency, no obsolete Rollup/Babel/Terser/Gulp build dependencies, no runtime-dependency changes, and valid npm HTTPS/integrity metadata.
 - [ ] Existing unit, headless browser, packed ESM/CJS module and smoke, Bun, and Deno suites pass; dedicated generated-artifact tests detect UMD, syntax-target, export-shape, platform, filename, and source-map regressions.
 - [x] Bundle-size comparison and two-pass reproducibility evidence are recorded and reviewed, with no unexplained or unapproved regression caused by the bundler/minifier change.
 - [x] Contributor, threat-model, and pre-release records accurately describe Rolldown, its narrower build-time Node engine, the retained modern UMD surface, the ES5 compatibility break, and v1.x as the fallback for legacy consumers.
@@ -70,6 +70,7 @@ The v2 branch is the appropriate point to modernize the browser syntax contract 
 ### In scope
 
 - Replace the Rollup configuration and CLI invocation with an equivalent standalone Rolldown configuration and build script.
+- Replace the remaining Gulp cleanup and release-version orchestration with focused project-owned Node.js scripts, preserving contributor generation and optional version overrides without a general task runner.
 - Use Rolldown's native platform, resolver/interoperability, JSON, transform-target, and minification capabilities where parity is demonstrated.
 - Set browser ESM, UMD, and CommonJS builds to `platform: 'browser'` and an explicit ES2018 transform target; set the Node CommonJS build to `platform: 'node'` and preserve the Node 20-compatible runtime contract.
 - Preserve the current entry points, default/named export shapes, UMD global name, AMD support, filenames, banners, minified-only source maps, browser mappings, and Node externalization rule that bundles `proxy-from-env` while leaving other bare imports external.
@@ -182,7 +183,7 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 - Preserve `axios` as the UMD global name, the existing default/named export intent, the banner, minified-only source maps, and the unminified/minified filenames.
 - Preserve the Node external predicate, including bundled `proxy-from-env`, and verify browser resolution selects the browser platform replacements.
 - Use Rolldown-native minification and built-in resolver, JSON, and CommonJS handling. Introduce no third-party compatibility plugin unless a separately approved reassessment demonstrates it is necessary.
-- Change the production build command to invoke `rolldown -c` after the existing Gulp clear step.
+- Change the production build command to invoke a project-owned Node.js cleanup script followed by `rolldown -c`.
 
 **Likely areas:**
 
@@ -208,7 +209,7 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 **Changes:**
 
 - Select a stable Rolldown 1.x version that has aged at least seven days and is compatible with the approved configuration.
-- Add Rolldown as a direct development dependency; remove Rollup, Rollup plugins, Babel core/preset/plugin, Terser plugin, and the local bundle-size plugin when repository-wide search proves they are unused.
+- Add Rolldown as a direct development dependency; remove Rollup, Rollup plugins, Babel core/preset/plugin, Terser plugin, the local bundle-size plugin, Gulp, and `fs-extra` when repository-wide search proves they are unused.
 - Regenerate `package-lock.json` with scripts disabled and avoid unrelated dependency churn; do not update fixture locks unless their own package-manager validation requires it.
 - Inspect the chosen package's provenance, maintainers, lifecycle scripts, native optional bindings, advisories, license, engine range, resolved hosts, and integrity entries.
 - Keep the published Axios runtime `engines.node` value unchanged, but document and validate the narrower Node version required to build v2.
@@ -218,6 +219,9 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 - `package.json:devDependencies,engines`
 - `package-lock.json`
 - `.npmrc`
+- `scripts/clear-dist.js`
+- `scripts/prepare-version.js`
+- `gulpfile.js` (removed)
 - `AGENTS.md`
 - `.github/copilot-instructions.md`
 
@@ -389,6 +393,7 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 - 2026-08-22T19:05:55+02:00 — The pinned lockfile validator and production audit pass. The full audit retains the baseline's two development-only high findings: `brace-expansion` through ESLint and `nanoid` through Vitest/Vite/PostCSS. The lock diff removes 187 package paths, adds only the nested Rolldown/Vite paths needed by the new exact root pin, changes no runtime dependency, and introduces no install-script entry.
 - 2026-08-22T19:05:55+02:00 — Local validation passes: source and changed-file lint, formatting, workflow YAML parsing, 1,062 unit tests, 615 headless-browser tests, 22 artifact tests, 71 packed CJS smoke tests, 75 packed ESM smoke tests, 6 packed CJS/TypeScript module tests, 4 packed ESM module tests, and 22 packed Bun smoke tests. `npm pack` contains the expected artifact paths and produces a 475,668-byte tarball.
 - 2026-08-22T19:05:55+02:00 — Two consecutive Rolldown builds produced identical SHA-256 hashes for all eight artifacts. Raw/gzip level-9 comparison against an isolated Rollup build at the source revision is recorded below; the only increase is 50 gzip bytes (+0.27%) for minified browser ESM, while that file is 493 raw bytes smaller.
+- 2026-08-22T19:27:36+02:00 — Removed the remaining Gulp task runner and now-unused `fs-extra`. `scripts/clear-dist.js` performs the pre-build cleanup with native Node.js APIs, while `scripts/prepare-version.js` preserves the release-time version file, contributor refresh, GitHub rate-limit error, and optional `--bump` behavior. Three focused script tests cover cleanup plus manifest-derived and overridden versions. The clean install falls again from 470 to 339 packages; the lockfile removes exactly 131 paths with no additions or version changes. The production build, 25 build/script tests, 1,062 unit tests, 615 browser tests, lockfile-lint, production audit, package dry run, and two-pass reproducibility all pass; the same two pre-existing development audit findings remain.
 
 | Artifact                 | Rollup raw/gzip  | Rolldown raw/gzip | Raw delta         | Gzip delta        |
 | ------------------------ | ---------------- | ----------------- | ----------------- | ----------------- |

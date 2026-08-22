@@ -4,7 +4,7 @@
 
 Axios is a stateless transport library. A callable default client and user-created client instances feed a shared configuration/interceptor/transform pipeline, which delegates I/O to a capability-selected adapter. Node, browser, React Native, Bun, and Deno support is expressed through package export conditions, platform substitutions, and adapter availability rather than separate application layers.
 
-The source defaults to the Node platform. Browser and React Native builds replace Node-only modules through package mappings. The dirty v2 snapshot establishes Node 20+ across package metadata, the Node build target, type fixtures, and configured CI matrices while retaining the current ESM and generated CommonJS/browser bundles. ESM-only remains a separate future migration.
+The source defaults to the Node platform. Browser and React Native builds replace Node-only modules through package mappings. The v2 branch establishes Node 20+ across package metadata, the Node build target, type fixtures, and configured CI matrices while retaining the current ESM and generated CommonJS/browser bundles. ESM-only remains a separate future migration.
 
 ## Components and boundaries
 

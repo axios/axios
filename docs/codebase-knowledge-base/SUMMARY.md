@@ -1,13 +1,13 @@
 # axios knowledge base
 
-> Axios is a stateless, promise-based HTTP client whose shared configuration/interceptor/transform pipeline delegates I/O to capability-selected Node, XHR, Fetch, or custom adapters. This partial v2 snapshot documents the Node 20+ runtime baseline on PR #11161 while the current ESM, UMD, browser CommonJS, and Node CommonJS package surfaces remain intact pending a separate ESM-only migration.
+> Axios is a stateless, promise-based HTTP client whose shared configuration/interceptor/transform pipeline delegates I/O to capability-selected Node, XHR, Fetch, or custom adapters. This v2 snapshot documents the completed Node 20+ runtime baseline on PR #11161 while the current ESM, UMD, browser CommonJS, and Node CommonJS package surfaces remain intact pending a separate ESM-only migration.
 
 | Field              | Value                                                                     |
 | ------------------ | ------------------------------------------------------------------------- |
-| Last updated       | `2026-08-21T11:46:43+02:00`                                               |
-| Source revision    | `37ba561e7f121b0f442c6a6bd4975c62c20aa5a9`                                |
-| Source fingerprint | `sha256:269313af126351a2183bef986c3c8aa017bf4323cd628c87c0003a2375c9ec64` |
-| Source branch      | `feat/node-20-runtime-baseline`                                           |
+| Last updated       | `2026-08-21T15:08:15+02:00`                                               |
+| Source revision    | `9e51e031b453d7b766eaa9410b8b338f811e2cbf`                                |
+| Source fingerprint | `sha256:0aa8f5b8434bf5a866742b37dbb31a2e38047428849970dbfbb24ab65a9c70bc` |
+| Source branch      | `docs/archive-node-20-runtime-baseline`                                   |
 | Source state       | `dirty`                                                                   |
 | Scope              | `.`                                                                       |
 
@@ -48,6 +48,6 @@
 - **Documented scope:** Full repository (`.`), emphasizing runtime source, public declarations, tests, build/package/CI/release configuration, security policy/threat model, contributor rules, docs, examples, and recent branch context.
 - **Excluded areas:** Installed dependencies (`node_modules/`, including `docs/node_modules/` and test-fixture installs), generated/ignored `dist/` and site output, binary assets, exhaustive translated-doc comparison, every test case, and remote-only GitHub/npm state. These exclusions do not affect the documented runtime architecture.
 - **Important unknowns:** No formal north-star statement, product KPIs, completed ESM-only migration plan, 0.x release mechanism, or documentation hosting/deployment process was found. Consumer-specific authorization, persistence, destination policy, and retry/idempotency are outside Axios's boundary.
-- **Current compatibility boundary:** PR #11161 declares and tests a Node `>=20.0.0` package contract, targets the temporary Node CommonJS build and type fixture at Node 20, and configures ESM/CJS matrices for Node 20/22/24/26. CommonJS/UMD artifacts and declarations remain present by design. After replacing the Node 26-incompatible Mocha 9 runner and obsolete cleanup fallback, corrected-fixture CI passes every ESM/CJS module and smoke lane on Node 20/22/24/26 plus build, lockfile, Bun, and Deno checks. Plan 001 is ready for its completion audit.
+- **Current compatibility boundary:** PR #11161 declares and tests a Node `>=20.0.0` package contract, targets the temporary Node CommonJS build and type fixture at Node 20, and configures ESM/CJS matrices for Node 20/22/24/26. CommonJS/UMD artifacts and declarations remain present by design. After replacing the Node 26-incompatible Mocha 9 runner and obsolete cleanup fallback, final-revision CI passes every ESM/CJS module and smoke lane on Node 20/22/24/26 plus build, lint, dependency review, unit/browser, lockfile, reproducibility, bundle-size, workflow-security, Bun, and Deno checks. [Plan 001](../plans/archive/2026-08-21-001-node-20-runtime-baseline.md) is complete and archived; ESM-only removal remains a separate migration.
 - **Contradictions or stale upstream docs:** `CONTRIBUTING.md` still says tests use Jasmine/Mocha; `AGENTS.md` lists adapter selection before request transforms and states only the legacy-default interceptor order; `THREATMODEL.md` has stale redirect-default, header-sanitization, error-redaction, and runtime-dependency-count details; docs conflict on provenance history and domains; the retry guide's delay is not signal-aware; release-branch PR creation omits module-test jobs from its gate; `SECURITY.md` supports 0.x but the checked-in publish workflow only accepts v1 tags.
 - **Recovery:** This KB is documentation-only. Remove `docs/codebase-knowledge-base/` to reverse it, or refresh the pages and their recorded source metadata after source changes.

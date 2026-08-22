@@ -16,7 +16,7 @@ Axios is a framework-free JavaScript/TypeScript-typed library. ESM source is bun
 | VitePress               | `^1.6.4`                                                                                              | Documentation site generator                       | `docs/package.json:17-26`                                                                                     |
 | Vue                     | `^3.5.32`                                                                                             | Documentation site components                      | `docs/package.json:22-26`                                                                                     |
 
-The v2 Node 20+ portion is implemented on PR #11161: package metadata, the Node bundle target, type fixtures, and workflow matrices agree on that minimum. ESM-only remains future work; this snapshot still publishes and tests CJS.
+The v2 Node 20+ portion is complete under `docs/plans/archive/2026-08-21-001-node-20-runtime-baseline.md` on PR #11161: package metadata, the Node bundle target, type fixtures, and workflow matrices agree on that minimum, with the final revision green across the full configured matrix. ESM-only remains future work; this snapshot still publishes and tests CJS.
 
 ## Data, messaging, and storage
 

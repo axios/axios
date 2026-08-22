@@ -29,6 +29,20 @@ const parsedHeaderParameters: AxiosHeaderParameters = headers.get(
   AxiosHeaders.parseParameters
 );
 
+const dynamicHeaders = new AxiosHeaders({ x: 1 });
+dynamicHeaders.number = 2;
+dynamicHeaders.nullable = null;
+dynamicHeaders.optional = undefined;
+dynamicHeaders.callable = () => 'class members require callable index values';
+// @ts-expect-error -- promises are not valid dynamic header values
+dynamicHeaders.promise = Promise.resolve('foo');
+// @ts-expect-error -- arbitrary objects are not valid dynamic header values
+dynamicHeaders.object = { foo: 'bar' };
+
+declare const internalRequestConfig: InternalAxiosRequestConfig;
+// @ts-expect-error -- interceptor headers reject non-header values
+internalRequestConfig.headers.someCustomHeader = Promise.resolve('foo');
+
 const source = axios.CancelToken.source();
 source.token.subscribe((cancel) => {
   const message: string | undefined = cancel && cancel.message;

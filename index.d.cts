@@ -42,7 +42,7 @@ type BrowserProgressEvent = any;
 declare class AxiosHeaders {
   constructor(headers?: axios.RawAxiosHeaders | AxiosHeaders | string);
 
-  [key: string]: any;
+  [key: string]: axios.AxiosHeaderValue | undefined | ((...args: any[]) => any);
 
   set(
     headerName?: string,
@@ -544,7 +544,7 @@ declare namespace axios {
     beforeRedirect?: (
       options: Record<string, any>,
       responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode },
-      requestDetails: { headers: Record<string, string>; url: string; method: string },
+      requestDetails: { headers: Record<string, string>; url: string; method: string }
     ) => void;
     socketPath?: string | null;
     allowedSocketPaths?: string | string[] | null;

@@ -25,7 +25,7 @@ type AxiosHeaderParser = (this: AxiosHeaders, value: AxiosHeaderValue, header: s
 export class AxiosHeaders {
   constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 
-  [key: string]: any;
+  [key: string]: AxiosHeaderValue | undefined | ((...args: any[]) => any);
 
   set(
     headerName?: string,
@@ -427,7 +427,7 @@ export interface AxiosRequestConfig<D = any, P = any> {
       headers: Record<string, string>;
       url: string;
       method: string;
-    },
+    }
   ) => void;
   socketPath?: string | null;
   allowedSocketPaths?: string | string[] | null;

@@ -549,8 +549,8 @@ declare namespace axios {
     socketPath?: string | null;
     allowedSocketPaths?: string | string[] | null;
     transport?: any;
-    httpAgent?: any;
-    httpsAgent?: any;
+    httpAgent?: HttpAgent | false;
+    httpsAgent?: HttpsAgent | false;
     proxy?: AxiosProxyConfig | false;
     cancelToken?: CancelToken | undefined;
     decompress?: boolean;
@@ -600,6 +600,34 @@ declare namespace axios {
   }
 
   // Alias
+  // Node validates custom agents through `addRequest`, but its public type declarations
+  // omit that runtime method from the built-in Agent class. Accept either the dispatch
+  // contract used by custom agents or the public shape of a Node 20+ built-in Agent instance.
+  type HttpAgent =
+    | {
+        addRequest(request: any, options: any): void;
+      }
+    | {
+        keepAlive?: boolean;
+        keepAliveMsecs?: number;
+        maxSockets: number;
+        maxTotalSockets: number;
+        maxFreeSockets: number;
+        scheduling?: string;
+        readonly freeSockets: { readonly [key: string]: readonly unknown[] | undefined };
+        readonly requests: { readonly [key: string]: readonly unknown[] | undefined };
+        readonly sockets: { readonly [key: string]: readonly unknown[] | undefined };
+        createConnection(options: any, callback?: (...args: any[]) => void): any;
+        destroy(): void;
+        getName(options?: any): string;
+        keepSocketAlive(socket: any): void;
+        reuseSocket(socket: any, request: any): void;
+      };
+
+  type HttpsAgent = HttpAgent & {
+    maxCachedSessions?: number;
+  };
+
   type RawAxiosRequestConfig<D = any, P = any> = AxiosRequestConfig<D, P>;
 
   interface InternalAxiosRequestConfig<D = any, P = any> extends AxiosRequestConfig<D, P> {

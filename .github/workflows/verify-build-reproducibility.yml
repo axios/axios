@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'lib/**'
-      - 'rollup.config.js'
+      - 'rolldown.config.js'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/verify-build-reproducibility.yml'

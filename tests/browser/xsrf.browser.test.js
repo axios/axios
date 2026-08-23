@@ -68,9 +68,10 @@ const clearXsrfCookie = () => {
 
 const sendRequest = async (url, config) => {
   const responsePromise = axios(url, config);
+
+  await vi.waitFor(() => expect(requests.at(-1)).toBeDefined());
   const request = requests.at(-1);
 
-  expect(request).toBeDefined();
   await responsePromise;
 
   return request;
@@ -81,12 +82,14 @@ describe('xsrf (vitest browser)', () => {
     requests = [];
     OriginalXMLHttpRequest = window.XMLHttpRequest;
     window.XMLHttpRequest = MockXMLHttpRequest;
+    vi.stubGlobal('cookieStore', undefined);
   });
 
   afterEach(() => {
     clearXsrfCookie();
     window.XMLHttpRequest = OriginalXMLHttpRequest;
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('should not set xsrf header if cookie is null', async () => {
@@ -101,6 +104,97 @@ describe('xsrf (vitest browser)', () => {
     const request = await sendRequest('/foo');
 
     expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('12345');
+  });
+
+  it('should read the raw xsrf value from cookieStore when available', async () => {
+    const get = vi.fn().mockResolvedValue({
+      name: axios.defaults.xsrfCookieName,
+      value: 'raw%2Fvalue',
+    });
+    const readSpy = vi.spyOn(cookies, 'read');
+
+    vi.stubGlobal('cookieStore', { get });
+
+    const request = await sendRequest('/foo');
+
+    expect(get).toHaveBeenCalledWith(axios.defaults.xsrfCookieName);
+    expect(readSpy).not.toHaveBeenCalled();
+    expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('raw%2Fvalue');
+  });
+
+  it('should fall back to document.cookie if cookieStore.get rejects', async () => {
+    setXsrfCookie('fallback');
+    const get = vi.fn().mockRejectedValue(new Error('cookieStore unavailable'));
+    const readSpy = vi.spyOn(cookies, 'read');
+
+    vi.stubGlobal('cookieStore', { get });
+
+    const request = await sendRequest('/foo');
+
+    expect(get).toHaveBeenCalledWith(axios.defaults.xsrfCookieName);
+    expect(readSpy).toHaveBeenCalledWith(axios.defaults.xsrfCookieName);
+    expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('fallback');
+  });
+
+  it('should not read cookieStore for a cross-origin request by default', async () => {
+    const get = vi.fn().mockResolvedValue({ value: 'secret' });
+
+    vi.stubGlobal('cookieStore', { get });
+
+    const request = await sendRequest('http://example.com/');
+
+    expect(get).not.toHaveBeenCalled();
+    expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
+  });
+
+  it('should clean up cancellation while cookieStore.get is pending', async () => {
+    const source = axios.CancelToken.source();
+    const unsubscribeSpy = vi.spyOn(source.token, 'unsubscribe');
+
+    vi.stubGlobal('cookieStore', {
+      get: vi.fn(() => new Promise(() => {})),
+    });
+
+    const responsePromise = axios('/foo', { cancelToken: source.token });
+
+    await vi.waitFor(() => expect(source.token._listeners).toHaveLength(1));
+    source.cancel('canceled');
+
+    await expect(responsePromise).rejects.toMatchObject({ code: 'ERR_CANCELED' });
+    expect(unsubscribeSpy).toHaveBeenCalledOnce();
+    expect(requests).toHaveLength(0);
+  });
+
+  it('should clean up an abort signal while cookieStore.get is pending', async () => {
+    const controller = new AbortController();
+    const removeEventListenerSpy = vi.spyOn(controller.signal, 'removeEventListener');
+
+    vi.stubGlobal('cookieStore', {
+      get: vi.fn(() => new Promise(() => {})),
+    });
+
+    const responsePromise = axios('/foo', { signal: controller.signal });
+
+    controller.abort();
+
+    await expect(responsePromise).rejects.toMatchObject({ code: 'ERR_CANCELED' });
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('abort', expect.any(Function));
+    expect(requests).toHaveLength(0);
+  });
+
+  it('should not read cookieStore or dispatch XHR for an already aborted signal', async () => {
+    const controller = new AbortController();
+    const get = vi.fn(() => new Promise(() => {}));
+
+    controller.abort();
+    vi.stubGlobal('cookieStore', { get });
+
+    await expect(axios('/foo', { signal: controller.signal })).rejects.toMatchObject({
+      code: 'ERR_CANCELED',
+    });
+
+    expect(get).not.toHaveBeenCalled();
+    expect(requests).toHaveLength(0);
   });
 
   it('should not set xsrf header if xsrfCookieName is null', async () => {

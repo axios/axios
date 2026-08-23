@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Asynchronous XSRF cookie reads in the XHR adapter
+
+- **Change:** Document the XHR adapter's use of the Cookie Store API for XSRF token reads.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, XHR adapter cookie access; issue #10826.
+- **Status:** Pending.
+- **Docs targets:** README and request-config guidance for `xsrfCookieName`, `xsrfHeaderName`, and `withXSRFToken`; browser support notes; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the XHR adapter automatically uses `window.cookieStore` when available to avoid synchronous `document.cookie` access while resolving an eligible XSRF token. Browsers without Cookie Store support retain the existing `document.cookie` behavior, and a failed Cookie Store read also falls back to that path. Cookie Store values are used raw rather than URI-decoded. The Fetch adapter and the public request-config surface are unchanged.
+- **Examples:** None required because capability detection is automatic and adds no configuration.
+- **Notes:** Keep the explanation scoped to XHR XSRF reads; do not imply that all cookie operations or the Fetch adapter use Cookie Store.
+
 ### Runtime configuration prototype hardening
 
 - **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.

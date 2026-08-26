@@ -61,4 +61,20 @@ describe('helpers::parseHeaders', () => {
       delete Object.prototype.foo;
     }
   });
+
+  it('should safely parse special prototype property names without collision', () => {
+    const parsed = parseHeaders(
+      'Constructor: custom-constructor\n' +
+        'ToString: custom-tostring\n' +
+        '__proto__: custom-proto\n' +
+        'ValueOf: custom-valueof\n'
+    );
+
+    expect(parsed.constructor).toEqual('custom-constructor');
+    expect(parsed.tostring).toEqual('custom-tostring');
+    expect(parsed['__proto__']).toEqual('custom-proto');
+    expect(parsed.valueof).toEqual('custom-valueof');
+    expect(Object.getPrototypeOf(parsed)).toBeNull();
+  });
 });
+

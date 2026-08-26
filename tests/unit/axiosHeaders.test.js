@@ -630,6 +630,37 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(typeof headers.hasFoo, 'function');
       assert.strictEqual(headers.hasFoo(), true);
     });
+
+    it('should preserve existing accessor registrations when called again on the same constructor', () => {
+      AxiosHeaders.accessor('x-custom-one');
+
+      assert.strictEqual(typeof AxiosHeaders.prototype.getXCustomOne, 'function');
+
+      AxiosHeaders.accessor('x-custom-two');
+
+      assert.strictEqual(typeof AxiosHeaders.prototype.getXCustomOne, 'function');
+      assert.strictEqual(typeof AxiosHeaders.prototype.getXCustomTwo, 'function');
+    });
+
+    it('should give each subclass its own accessor registrations', () => {
+      class SubHeaders extends AxiosHeaders {}
+
+      SubHeaders.accessor('x-sub-header');
+
+      assert.strictEqual(typeof SubHeaders.prototype.getXSubHeader, 'function');
+      assert.strictEqual(typeof AxiosHeaders.prototype.getXSubHeader, 'undefined');
+    });
+
+    it('should not let a subclass registration leak to the parent', () => {
+      class SiblingA extends AxiosHeaders {}
+      class SiblingB extends AxiosHeaders {}
+
+      SiblingA.accessor('x-sibling-a');
+
+      assert.strictEqual(typeof SiblingA.prototype.getXSiblingA, 'function');
+      assert.strictEqual(typeof SiblingB.prototype.getXSiblingA, 'undefined');
+      assert.strictEqual(typeof AxiosHeaders.prototype.getXSiblingA, 'undefined');
+    });
   });
 
   it('should be caseless', () => {

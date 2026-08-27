@@ -246,6 +246,38 @@ describe('helpers::shouldBypassProxy', function () {
       assert.strictEqual(shouldBypassProxy('http://[1::]/'), false);
     });
 
+    it('should reject an IPv6 range whose dotted quad precedes the compression marker', function () {
+      // A dotted quad only stands for the final 32 bits, so it cannot sit before
+      // `::`. Expanding it anyway read this entry as 102:304::/64 and bypassed
+      // the proxy for a network the operator never listed.
+      setNoProxy('1.2.3.4::/64');
+
+      assert.strictEqual(shouldBypassProxy('http://[102:304::1]/'), false);
+      assert.strictEqual(shouldBypassProxy('http://[1:2:3:4::1]/'), false);
+    });
+
+    it('should reject an IPv6 range with a dotted quad in the middle of the head', function () {
+      setNoProxy('a:1.2.3.4::/32');
+
+      assert.strictEqual(shouldBypassProxy('http://[a:102::1]/'), false);
+    });
+
+    it('should reject a compressed IPv6 range that already spells out all eight groups', function () {
+      // `::` stands for at least one group of zeros, so this entry is malformed.
+      // Accepting it parsed the prefix as a valid /0 network, which matched every
+      // IPv6 destination.
+      setNoProxy('1:2:3:4:5:6:7:8::/0');
+
+      assert.strictEqual(shouldBypassProxy('http://[dead:beef::1]/'), false);
+      assert.strictEqual(shouldBypassProxy('http://[1:2:3:4:5:6:7:8]/'), false);
+    });
+
+    it('should reject a compressed IPv6 range that compresses nothing', function () {
+      setNoProxy('1:2:3:4::5:6:7:8/64');
+
+      assert.strictEqual(shouldBypassProxy('http://[1:2:3:4:aaaa::1]/'), false);
+    });
+
     it('should reject an IPv6 prefix longer than 128 bits', function () {
       setNoProxy('2001:db8::/129');
 

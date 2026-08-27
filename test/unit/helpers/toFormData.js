@@ -79,6 +79,19 @@ describe("helpers::toFormData", function () {
       };
     }
 
+    // toFormData only considers a Blob implementation at all when the target
+    // looks like a spec-compliant FormData, so the Blob test needs one.
+    function specCompliantRecorder() {
+      var form = recorder();
+
+      form[Symbol.toStringTag] = "FormData";
+      form[Symbol.iterator] = function values() {
+        return form.keys[Symbol.iterator]();
+      };
+
+      return form;
+    }
+
     beforeEach(clearPollution);
     afterEach(clearPollution);
 
@@ -118,19 +131,66 @@ describe("helpers::toFormData", function () {
     });
 
     it("should not use an inherited Blob implementation", function () {
-      var used = false;
+      // The Blob option is only ever read as a truthiness gate, so the polluted
+      // constructor is never called and cannot be observed directly. What it
+      // does change is whether the serializer runs in Blob mode, and that
+      // decides whether a Blob value is rejected.
+      //
+      // The bare global Blob has to be taken out of the picture first, and
+      // deleting it is not enough: the global object inherits from
+      // Object.prototype too, so the pollution would simply resurface there.
+      // Shadow it with an own undefined property instead, which leaves the
+      // option lookup as the only possible source of a Blob implementation.
+      var globalBlob = Object.getOwnPropertyDescriptor(global, "Blob");
 
-      Object.prototype.Blob = function PollutedBlob() {
-        used = true;
-      };
+      Object.defineProperty(global, "Blob", {
+        value: undefined,
+        writable: true,
+        enumerable: false,
+        configurable: true
+      });
 
-      toFormData({ a: "b" }, recorder());
+      try {
+        Object.prototype.Blob = function PollutedBlob() {};
 
-      assert.strictEqual(used, false);
+        assert.strictEqual(
+          typeof Blob,
+          "undefined",
+          "the global Blob must be out of reach for this test to prove anything"
+        );
+
+        var form = specCompliantRecorder();
+        var blobLike = {};
+        blobLike[Symbol.toStringTag] = "Blob";
+
+        // The caller passes an options object that says nothing about Blob, so
+        // the only place a Blob implementation could come from is the prototype.
+        assert.throws(
+          function () {
+            toFormData({ file: blobLike }, form, {});
+          },
+          function (error) {
+            return error instanceof AxiosError &&
+              /Blob is not supported/.test(error.message);
+          }
+        );
+
+        assert.deepStrictEqual(form.keys, []);
+      } finally {
+        if (globalBlob) {
+          Object.defineProperty(global, "Blob", globalBlob);
+        } else {
+          delete global.Blob;
+        }
+      }
     });
 
-    it("should keep caller options when the same key is polluted", function () {
-      Object.prototype.dots = true;
+    it("should not let a polluted key mask a caller option", function () {
+      // Merging the options onto a plain object used a plain object as its
+      // "already copied" cache too, so any truthy inherited value made the
+      // caller's own option look like it had been copied already and the
+      // serializer silently fell back to the default key format.
+      Object.prototype.dots = "polluted";
 
       var form = recorder();
       toFormData({ a: { b: "c" } }, form, { dots: true });

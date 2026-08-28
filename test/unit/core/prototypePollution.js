@@ -1,8 +1,12 @@
 "use strict";
 
 var assert = require('assert');
+var http = require('http');
 var utils = require('../../../lib/utils');
 var mergeConfig = require('../../../lib/core/mergeConfig');
+var dispatchRequest = require('../../../lib/core/dispatchRequest');
+var axios = require('../../../index');
+var AxiosError = require('../../../lib/core/AxiosError');
 
 describe("Prototype Pollution Protection", function () {
   function clearPollution() {
@@ -21,6 +25,23 @@ describe("Prototype Pollution Protection", function () {
     delete Object.prototype.post;
     delete Object.prototype.set;
     delete Object.prototype.data;
+    delete Object.prototype.method;
+    delete Object.prototype.headers;
+    delete Object.prototype.config;
+  }
+
+  function stubAdapter(store) {
+    return function adapter(config) {
+      store.config = config;
+
+      return Promise.resolve({
+        data: '',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: config
+      });
+    };
   }
 
   // Defensive: clear before and after each test so pollution leaking from
@@ -445,6 +466,205 @@ describe("Prototype Pollution Protection", function () {
         var axiosErrorPath = require.resolve("../../../lib/core/AxiosError");
         delete require.cache[axiosErrorPath];
         require("../../../lib/core/AxiosError");
+      });
+    });
+  });
+
+  describe("request method fallback", function () {
+    var originalAdapter;
+
+    beforeEach(function () {
+      originalAdapter = axios.defaults.adapter;
+    });
+
+    afterEach(function () {
+      axios.defaults.adapter = originalAdapter;
+    });
+
+    it("should not take the default instance method from Object.prototype", function () {
+      var store = {};
+      axios.defaults.adapter = stubAdapter(store);
+
+      Object.prototype.method = 'DELETE';
+
+      return axios.request({ url: 'http://example.com/resource' }).then(function () {
+        assert.strictEqual(store.config.method, 'get');
+      });
+    });
+
+    it("should not take the callable shorthand method from Object.prototype", function () {
+      var store = {};
+      axios.defaults.adapter = stubAdapter(store);
+
+      Object.prototype.method = 'DELETE';
+
+      return axios({ url: 'http://example.com/resource' }).then(function () {
+        assert.strictEqual(store.config.method, 'get');
+      });
+    });
+
+    it("should still honour an explicit request method", function () {
+      var store = {};
+      axios.defaults.adapter = stubAdapter(store);
+
+      Object.prototype.method = 'DELETE';
+
+      return axios.request({ url: 'http://example.com/resource', method: 'put' }).then(function () {
+        assert.strictEqual(store.config.method, 'put');
+      });
+    });
+
+    it("should still honour an instance default method", function () {
+      var store = {};
+
+      var instance = axios.create({ method: 'post', adapter: stubAdapter(store) });
+
+      return instance.request({ url: 'http://example.com/resource' }).then(function () {
+        assert.strictEqual(store.config.method, 'post');
+      });
+    });
+  });
+
+  describe("dispatchRequest headers", function () {
+    it("should not take request headers from Object.prototype", function () {
+      Object.prototype.headers = { 'X-Poisoned': 'yes' };
+
+      var store = {};
+
+      // A request interceptor may return a replacement config that is an
+      // ordinary object without an own headers property.
+      return dispatchRequest({
+        url: 'http://example.com/resource',
+        method: 'get',
+        adapter: stubAdapter(store)
+      }).then(function () {
+        assert.strictEqual(store.config.headers['X-Poisoned'], undefined);
+      });
+    });
+
+    it("should still use own request headers", function () {
+      Object.prototype.headers = { 'X-Poisoned': 'yes' };
+
+      var store = {};
+
+      return dispatchRequest({
+        url: 'http://example.com/resource',
+        method: 'get',
+        headers: { 'X-Wanted': 'yes' },
+        adapter: stubAdapter(store)
+      }).then(function () {
+        assert.strictEqual(store.config.headers['X-Wanted'], 'yes');
+        assert.strictEqual(store.config.headers['X-Poisoned'], undefined);
+      });
+    });
+  });
+
+  describe("utils.toFlatObject", function () {
+    it("should not copy __proto__ or constructor from the source object", function () {
+      var source = {};
+      Object.defineProperty(source, '__proto__', {
+        value: { polluted: 'yes' },
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+
+      source.constructor = function Evil() {};
+
+      var result = utils.toFlatObject(source, {});
+
+      assert.strictEqual(Object.getPrototypeOf(result), Object.prototype);
+      assert.strictEqual(result.polluted, undefined);
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(result, 'constructor'), false);
+    });
+
+    it("should keep AxiosError.from intact for an error carrying an own __proto__", function () {
+      var error = new Error('boom');
+      Object.defineProperty(error, '__proto__', {
+        value: { hijacked: true },
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+
+      var axiosError = AxiosError.from(error, 'ERR_TEST');
+
+      assert.ok(axiosError instanceof AxiosError);
+      assert.strictEqual(axiosError.message, 'boom');
+    });
+  });
+
+  describe("redirect hooks", function () {
+    function listen(handler) {
+      return new Promise(function (resolve) {
+        var server = http.createServer(handler);
+        server.listen(0, '127.0.0.1', function () {
+          resolve(server);
+        });
+      });
+    }
+
+    it("should not use an inherited redirect hook from Object.prototype", function () {
+      var legitHits = [];
+      var attackerHits = [];
+      var legit;
+      var attacker;
+      var redirector;
+
+      function closeAll() {
+        [legit, attacker, redirector].forEach(function closeServer(server) {
+          if (server) {
+            server.close();
+          }
+        });
+      }
+
+      // Servers are constructed before any pollution is applied.
+      return listen(function (req, res) {
+        legitHits.push(req.url);
+        res.end('LEGIT');
+      }).then(function (server) {
+        legit = server;
+
+        return listen(function (req, res) {
+          attackerHits.push(req.url);
+          res.end('ATTACKER');
+        });
+      }).then(function (server) {
+        attacker = server;
+
+        return listen(function (req, res) {
+          res.writeHead(302, { Location: 'http://127.0.0.1:' + legit.address().port + '/secret' });
+          res.end();
+        });
+      }).then(function (server) {
+        redirector = server;
+
+        var attackerPort = attacker.address().port;
+
+        // The adapter only populates its `config` redirect hook when the caller
+        // supplies beforeRedirect, so an inherited function used to be reachable
+        // and could repoint the redirect at another host.
+        Object.prototype.config = function pollutedHook(options) {
+          options.hostname = '127.0.0.1';
+          options.host = '127.0.0.1';
+          options.port = attackerPort;
+        };
+
+        return axios.get('http://127.0.0.1:' + redirector.address().port + '/start');
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'LEGIT');
+          assert.deepStrictEqual(legitHits, ['/secret']);
+          assert.deepStrictEqual(attackerHits, []);
+        } finally {
+          // Must run even when an assertion throws, or the open servers keep
+          // the test runner alive.
+          closeAll();
+        }
+      }, function (error) {
+        closeAll();
+        throw error;
       });
     });
   });

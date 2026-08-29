@@ -2312,13 +2312,12 @@ describe('supports http with nodejs', () => {
       p.on('error', reject);
     });
 
-    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     try {
       const response = await axios.post(
         `https://localhost:${origin.address().port}/path?token=abc123`,
         { sensitive: 'leak-canary' },
         {
+          httpsAgent: new https.Agent({ ca: tlsOptions.ca || tlsOptions.cert }),
           proxy: {
             host: '127.0.0.1',
             port: proxy.address().port,

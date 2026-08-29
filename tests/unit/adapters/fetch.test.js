@@ -1072,7 +1072,10 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   it('should support params', async () => {
-    const server = await startHTTPServer((req, res) => res.end(req.url), { port: SERVER_PORT });
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.end(req.url);
+    }, { port: SERVER_PORT });
     try {
       const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/?test=1`, {
         params: {

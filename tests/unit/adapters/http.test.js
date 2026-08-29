@@ -2838,20 +2838,19 @@ describe('supports http with nodejs', () => {
     process.env.no_proxy = '';
     process.env.NO_PROXY = '';
 
-    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const httpsAgent = new https.Agent({
+      ca: tlsOptions.ca,
+      rejectUnauthorized: true
+    });
     try {
-      const response = await axios.get(`https://localhost:${server.address().port}/`);
+      const response = await axios.get(`https://localhost:${server.address().port}/`, {
+        httpsAgent
+      });
 
       assert.strictEqual(Number(response.data), 12345, 'origin body should be received unmodified');
       assert.strictEqual(plaintextRequests, 0, 'proxy must not see plaintext requests');
       assert.strictEqual(connectTargets.length, 1, 'proxy should see exactly one CONNECT');
     } finally {
-      if (originalReject === undefined) {
-        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-      } else {
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
-      }
       for (const s of upstreamSockets) s.destroy();
       server.closeAllConnections?.();
       proxy.closeAllConnections?.();

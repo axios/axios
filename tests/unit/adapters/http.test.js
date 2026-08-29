@@ -2221,14 +2221,13 @@ describe('supports http with nodejs', () => {
       httpsProxy.on('error', reject);
     });
 
-    const originalReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     const tunnelingAgent = new HttpsProxyAgent({
       protocol: 'https:',
       host: '127.0.0.1',
       port: proxy.address().port,
       ALPNProtocols: ['http/1.1'],
-      rejectUnauthorized: false,
+      ca: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+      rejectUnauthorized: true,
     });
     try {
       const response = await axios.get(`https://localhost:${server.address().port}/`, {
@@ -2244,11 +2243,7 @@ describe('supports http with nodejs', () => {
         `CONNECT should target the origin: ${connectTargets[0]}`
       );
     } finally {
-      if (originalReject === undefined) {
-        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-      } else {
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalReject;
-      }
+
       tunnelingAgent.destroy();
       // Tear down everything synchronously. server.close() on tls.Server can hang
       // when CONNECT-tunneled sockets have been pumped through, even after

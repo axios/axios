@@ -3964,7 +3964,7 @@ describe('supports http with nodejs', () => {
     });
 
     it('still tunnels through the proxy when a non-proxy httpsAgent is supplied', () => {
-      const userAgent = new https.Agent({ rejectUnauthorized: false });
+      const userAgent = new https.Agent();
       const options = buildOptions();
       __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
       assert.ok(

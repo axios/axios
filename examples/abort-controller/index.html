@@ -112,7 +112,11 @@
         signal: searchController.signal
       })
         .then(function (response) {
-          searchStatus.innerHTML = '<span class="text-success">Result for "' + query + '": ' + response.data.message + '</span>';
+          const resultSpan = document.createElement('span');
+          resultSpan.className = 'text-success';
+          resultSpan.textContent = 'Result for "' + query + '": ' + response.data.message;
+          searchStatus.textContent = '';
+          searchStatus.appendChild(resultSpan);
           log('Success: ' + query);
         })
         .catch(function (err) {

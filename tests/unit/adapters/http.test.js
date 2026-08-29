@@ -4709,7 +4709,7 @@ describe('supports http with nodejs', () => {
       app.use(bodyParser.urlencoded({ extended: true }));
 
       app.post('/', (req, res) => {
-        res.send(JSON.stringify(req.body));
+        res.json(req.body);
       });
 
       const server = await new Promise(

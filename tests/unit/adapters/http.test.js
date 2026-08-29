@@ -2833,7 +2833,7 @@ describe('supports http with nodejs', () => {
     process.env.NO_PROXY = '';
 
     const httpsAgent = new https.Agent({
-      ca: tlsOptions.ca,
+      ca: tlsOptions.cert,
       rejectUnauthorized: true
     });
     try {

@@ -4789,12 +4789,10 @@ describe('supports http with nodejs', () => {
       app.post('/', (req, res) => {
         const parserRanBeforeHandler = Boolean(req.body && Object.keys(req.body).length);
 
-        res.send(
-          JSON.stringify({
-            parserRanBeforeHandler,
-            body: req.body,
-          })
-        );
+        res.json({
+          parserRanBeforeHandler,
+          body: req.body,
+        });
       });
 
       const server = await new Promise(

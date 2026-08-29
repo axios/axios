@@ -3980,11 +3980,11 @@ describe('supports http with nodejs', () => {
     });
 
     it('includes user httpsAgent options in the tunneling agent constructor options', () => {
-      const userAgent = new https.Agent({ rejectUnauthorized: false, ca: 'sentinel-ca' });
+      const userAgent = new https.Agent({ rejectUnauthorized: true, ca: 'sentinel-ca' });
       const options = buildOptions();
       __setProxy(options, proxyConfig, 'https://example.com/', false, userAgent);
       // Origin TLS behavior is covered by the issue #10953 integration test.
-      assert.strictEqual(options.agent.proxy.rejectUnauthorized, false);
+      assert.strictEqual(options.agent.proxy.rejectUnauthorized, true);
       assert.strictEqual(options.agent.proxy.ca, 'sentinel-ca');
     });
 

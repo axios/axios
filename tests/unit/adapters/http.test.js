@@ -3918,7 +3918,7 @@ describe('supports http with nodejs', () => {
     try {
       const response = await axios.get(`https://localhost:${server.address().port}`, {
         httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
+          ca: tlsOptions.cert,
         }),
       });
       assert.equal(response.request.agent.protocol, 'https:');

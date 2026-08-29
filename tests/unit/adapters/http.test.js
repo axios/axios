@@ -4624,7 +4624,7 @@ describe('supports http with nodejs', () => {
       const app = express();
 
       app.post('/', multer().none(), (req, res) => {
-        res.status(200).send(JSON.stringify({ route: 'root', body: req.body }));
+        res.status(200).json({ route: 'root', body: req.body });
       });
 
       app.post('/unexpected', multer().none(), (req, res) => {

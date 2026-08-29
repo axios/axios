@@ -11,6 +11,18 @@ let dirs;
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function resolveSafePath(root, requestPath) {
+  const cleanPath = requestPath.split('?')[0].split('#')[0];
+  const resolvedPath = path.resolve(root, '.' + cleanPath);
+  const relativePath = path.relative(root, resolvedPath);
+
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+    return null;
+  }
+
+  return resolvedPath;
+}
+
 function listDirs(root) {
   const files = fs.readdirSync(root);
   const dirs = [];
@@ -159,7 +171,8 @@ server = http.createServer(function (req, res) {
 
   // Process index.html request
   if (/index\.html$/.test(url)) {
-    if (fs.existsSync(path.join(__dirname, url))) {
+    const htmlPath = resolveSafePath(__dirname, url);
+    if (htmlPath && fs.existsSync(htmlPath)) {
       pipeFileToResponse(res, url, 'text/html');
     } else {
       send404(res);
@@ -169,8 +182,9 @@ server = http.createServer(function (req, res) {
 
   // Process server request
   else if (new RegExp('(' + dirs.join('|') + ')\/server').test(url)) {
-    if (fs.existsSync(path.join(__dirname, url + '.js'))) {
-      import('file://' + path.join(__dirname, url + '.js'))
+    const serverPath = resolveSafePath(__dirname, url + '.js');
+    if (serverPath && fs.existsSync(serverPath)) {
+      import(url.pathToFileURL(serverPath).href)
         .then((server) => {
           server.default(req, res);
         })

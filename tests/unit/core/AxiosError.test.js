@@ -217,6 +217,23 @@ describe('core::AxiosError', () => {
     expect(json.config.httpAgent).toBe('not-an-agent');
   });
 
+  it('skips a config key that a getter deletes while the snapshot is built', () => {
+    const config = { httpAgent: new http.Agent() };
+    Object.defineProperty(config, 'url', {
+      get() {
+        delete config.timeout;
+        return '/api';
+      },
+      enumerable: true,
+      configurable: true,
+    });
+    config.timeout = 1000;
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config).toEqual({ url: '/api', httpAgent: '[Agent]' });
+  });
+
   it('does not hang on a config whose prototype chain loops', () => {
     const first = new Proxy({}, { getPrototypeOf: () => second });
     const second = new Proxy({}, { getPrototypeOf: () => first });

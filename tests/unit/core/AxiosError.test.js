@@ -121,6 +121,40 @@ describe('core::AxiosError', () => {
     expect(config.httpsAgent).toBe(httpsAgent);
   });
 
+  it('does not invoke a throwing inherited agent getter', () => {
+    const prototype = {};
+    Object.defineProperty(prototype, 'httpAgent', {
+      get() {
+        throw new Error('inherited httpAgent getter should not run');
+      },
+      configurable: true,
+    });
+
+    const config = Object.create(prototype);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+  });
+
+  it('replaces a getter-only inherited agent without throwing', () => {
+    const prototype = {};
+    Object.defineProperty(prototype, 'httpAgent', {
+      get() {
+        return new http.Agent();
+      },
+      configurable: true,
+    });
+
+    const config = Object.create(prototype);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+  });
+
   it('ignores an agent coming from a polluted Object.prototype', () => {
     Object.prototype.httpAgent = new http.Agent();
 

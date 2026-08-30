@@ -155,6 +155,80 @@ describe('core::AxiosError', () => {
     expect(json.config.httpAgent).toBe('[Agent]');
   });
 
+  it('does not invoke a throwing own agent getter', () => {
+    const config = { url: '/api' };
+    Object.defineProperty(config, 'httpAgent', {
+      get() {
+        throw new Error('own httpAgent getter should not run');
+      },
+      enumerable: true,
+      configurable: true,
+    });
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+    expect(json.config.url).toBe('/api');
+  });
+
+  it('replaces a getter-only own agent without reading it', () => {
+    let reads = 0;
+    const config = { url: '/api' };
+    Object.defineProperty(config, 'httpsAgent', {
+      get() {
+        reads++;
+        return new http.Agent();
+      },
+      enumerable: true,
+      configurable: true,
+    });
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpsAgent).toBe('[Agent]');
+    expect(reads).toBe(0);
+  });
+
+  it('replaces agents when Object.prototype.get is polluted', () => {
+    const config = { url: '/api', httpAgent: new http.Agent() };
+    let json;
+
+    Object.prototype.get = 'not a function';
+    try {
+      json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+    } finally {
+      delete Object.prototype.get;
+    }
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+  });
+
+  it('keeps a primitive agent value when Object.prototype.get is polluted', () => {
+    const config = { url: '/api', httpAgent: 'not-an-agent' };
+    let json;
+
+    Object.prototype.get = function () {};
+    try {
+      json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+    } finally {
+      delete Object.prototype.get;
+    }
+
+    expect(json.config.httpAgent).toBe('not-an-agent');
+  });
+
+  it('does not hang on a config whose prototype chain loops', () => {
+    const first = new Proxy({}, { getPrototypeOf: () => second });
+    const second = new Proxy({}, { getPrototypeOf: () => first });
+
+    const config = Object.create(first);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.url).toBe('/api');
+  });
+
   it('ignores an agent coming from a polluted Object.prototype', () => {
     Object.prototype.httpAgent = new http.Agent();
 

@@ -2432,6 +2432,65 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should apply https.globalAgent TLS options to CONNECT-tunneled origins (issue #11176)', async () => {
+    const tlsOptions = {
+      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
+    };
+
+    const origin = await new Promise((resolve, reject) => {
+      const s = https.createServer(tlsOptions, (req, res) => {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.end('trusted-through-global-agent');
+      });
+      s.listen(0, 'localhost', () => resolve(s));
+      s.on('error', reject);
+    });
+
+    const upstreamSockets = [];
+    const proxy = await new Promise((resolve, reject) => {
+      const p = http.createServer();
+      p.on('connect', (req, clientSocket, head) => {
+        const [host, port] = req.url.split(':');
+        const upstream = net.connect(Number(port), host, () => {
+          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head && head.length) upstream.write(head);
+          upstream.pipe(clientSocket);
+          clientSocket.pipe(upstream);
+        });
+        upstreamSockets.push(upstream);
+        upstream.on('error', () => clientSocket.destroy());
+        clientSocket.on('error', () => upstream.destroy());
+      });
+      p.listen(0, '127.0.0.1', () => resolve(p));
+      p.on('error', reject);
+    });
+
+    const previousCa = https.globalAgent.options.ca;
+    https.globalAgent.options.ca = tlsOptions.cert;
+
+    try {
+      const response = await axios.get(`https://localhost:${origin.address().port}/`, {
+        proxy: {
+          host: '127.0.0.1',
+          port: proxy.address().port,
+          protocol: 'http',
+        },
+      });
+
+      assert.strictEqual(response.data, 'trusted-through-global-agent');
+    } finally {
+      https.globalAgent.options.ca = previousCa;
+      for (const s of upstreamSockets) s.destroy();
+      origin.closeAllConnections?.();
+      proxy.closeAllConnections?.();
+      origin.close();
+      proxy.close();
+      origin.unref?.();
+      proxy.unref?.();
+    }
+  });
+
   it('should surface a CONNECT 407 from the proxy as an AxiosError (issue #6320)', async () => {
     const proxy = await new Promise((resolve, reject) => {
       const p = http.createServer();

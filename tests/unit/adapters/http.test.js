@@ -2447,10 +2447,14 @@ describe('supports http with nodejs', () => {
       s.on('error', reject);
     });
 
+    const captured = { plaintext: 0, connectTargets: [] };
     const upstreamSockets = [];
     const proxy = await new Promise((resolve, reject) => {
-      const p = http.createServer();
+      const p = http.createServer(() => {
+        captured.plaintext += 1;
+      });
       p.on('connect', (req, clientSocket, head) => {
+        captured.connectTargets.push(req.url);
         const [host, port] = req.url.split(':');
         const upstream = net.connect(Number(port), host, () => {
           clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
@@ -2466,7 +2470,7 @@ describe('supports http with nodejs', () => {
       p.on('error', reject);
     });
 
-    const previousCa = https.globalAgent.options.ca;
+    const originalCa = https.globalAgent.options.ca;
     https.globalAgent.options.ca = tlsOptions.cert;
 
     try {
@@ -2479,8 +2483,18 @@ describe('supports http with nodejs', () => {
       });
 
       assert.strictEqual(response.data, 'trusted-through-global-agent');
+      assert.strictEqual(captured.plaintext, 0, 'proxy must not see plaintext HTTPS requests');
+      assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
+      assert.ok(
+        captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
+        `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
+      );
     } finally {
-      https.globalAgent.options.ca = previousCa;
+      if (originalCa === undefined) {
+        delete https.globalAgent.options.ca;
+      } else {
+        https.globalAgent.options.ca = originalCa;
+      }
       for (const s of upstreamSockets) s.destroy();
       origin.closeAllConnections?.();
       proxy.closeAllConnections?.();

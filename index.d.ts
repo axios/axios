@@ -569,9 +569,11 @@ export class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
   __CANCEL__?: boolean;
 }
 
-declare const axiosResponseDefault: unique symbol;
+// Both are exported so that a dependent forwarding an unresolved `R` can name them
+// during declaration emit. While they were internal, that emit failed with TS2527.
+export declare const axiosResponseDefault: unique symbol;
 
-type AxiosResponseDefault = typeof axiosResponseDefault;
+export type AxiosResponseDefault = typeof axiosResponseDefault;
 
 type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
   ? AxiosResponse<T, D, {}, P>

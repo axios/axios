@@ -468,6 +468,7 @@ export interface AxiosRequestConfig<D = any, P = any> {
         [address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress
       >);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig<D, P>) => boolean | undefined);
+  retry?: boolean | AxiosRetryConfig;
   parseReviver?: (this: any, key: string, value: any, context?: { source?: string }) => any;
   fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> | Record<string, any>;
   httpVersion?: 1 | 2;
@@ -479,7 +480,22 @@ export interface AxiosRequestConfig<D = any, P = any> {
   sensitiveHeaders?: string[];
 }
 
+export interface AxiosRetryConfig {
+  retries?: number;
+  retryDelay?: number | ((retryCount: number, response?: AxiosResponse) => number);
+  backoffFactor?: number;
+  maxDelay?: number;
+  jitter?: boolean;
+  respectRetryAfter?: boolean;
+  statusCodes?: number[];
+  retryMethods?: string[];
+  networkErrorCodes?: string[];
+  shouldRetry?: (error: any, retryCount: number) => boolean;
+  onRetry?: (retryCount: number, error: any, config: InternalAxiosRequestConfig, delay: number) => void;
+}
+
 // Alias
+
 export type RawAxiosRequestConfig<D = any, P = any> = AxiosRequestConfig<D, P>;
 
 export interface InternalAxiosRequestConfig<D = any, P = any> extends AxiosRequestConfig<D, P> {
@@ -780,7 +796,10 @@ export interface AxiosStatic extends AxiosInstance {
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
   mergeConfig: typeof mergeConfig;
+  retry: any;
+  attachRetry: (axiosInstance: AxiosInstance | AxiosStatic, defaultOptions?: AxiosRetryConfig) => number;
 }
+
 
 declare const axios: AxiosStatic;
 

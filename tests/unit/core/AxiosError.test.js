@@ -278,6 +278,21 @@ describe('core::AxiosError', () => {
       expect(() => serialize(config)).not.toThrow();
     });
 
+    it('does not let a throwing own agent accessor take down serialization', () => {
+      const config = { url: '/foo' };
+      // Non-enumerable, so the serializer would never have touched it. Reading it to
+      // label the agent must not be what breaks the error being reported.
+      Object.defineProperty(config, 'httpAgent', {
+        enumerable: false,
+        configurable: true,
+        get() {
+          throw new Error('own agent accessor should not break toJSON');
+        },
+      });
+
+      expect(() => serialize(config)).not.toThrow();
+    });
+
     it('labels a single agent serving both keys without picking a side', () => {
       const agent = buildAgentGraph(2);
       const json = serialize({ url: '/foo', httpAgent: agent, httpsAgent: agent });

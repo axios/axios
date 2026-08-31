@@ -445,7 +445,7 @@ export interface AxiosRequestConfig<D = any, P = any> {
     fetch?: (input: URL | Request | string, init?: RequestInit) => Promise<Response>;
     Request?: new (input: URL | Request | string, init?: RequestInit) => Request;
     Response?: new (
-      body?: ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParams | string | null,
+      body?: any,
       init?: ResponseInit
     ) => Response;
   };

@@ -1686,13 +1686,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.write(chunk, writeNext);
           };
           writeNext();
-        },
-        { port: SERVER_PORT }
+        }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+          fetchAxios.get(`http://localhost:${server.address().port}/`, {
             maxContentLength: 512,
           }),
           (err) => {

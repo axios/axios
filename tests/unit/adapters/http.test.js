@@ -5421,7 +5421,11 @@ describe('supports http with nodejs', () => {
     it('should handle errors', async () => {
       await assert.rejects(async () => {
         await axios.get('https://no-such-domain-987654.com', {
-          lookup,
+          lookup: (hostname, opt, cb) => {
+            const err = new Error('getaddrinfo ENOTFOUND ' + hostname);
+            err.code = 'ENOTFOUND';
+            cb(err);
+          },
         });
       }, /ENOTFOUND/);
     });

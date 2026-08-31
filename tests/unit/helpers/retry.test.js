@@ -1,0 +1,163 @@
+import assert from 'assert';
+import { describe, it } from 'vitest';
+import axios from '../../../lib/axios.js';
+
+import {
+  attachRetry,
+  calculateRetryDelay,
+  isRetryableError,
+  parseRetryAfter,
+} from '../../../lib/helpers/retry.js';
+
+describe('helpers:retry', function () {
+  describe('parseRetryAfter', function () {
+    it('should parse integer seconds correctly', function () {
+      const res = { headers: { 'retry-after': '5' } };
+      assert.strictEqual(parseRetryAfter(res), 5000);
+    });
+
+    it('should return null when header is missing', function () {
+      assert.strictEqual(parseRetryAfter({ headers: {} }), null);
+      assert.strictEqual(parseRetryAfter(null), null);
+    });
+
+    it('should parse HTTP-date format', function () {
+      const futureDate = new Date(Date.now() + 10000).toUTCString();
+      const res = { headers: { 'retry-after': futureDate } };
+      const delay = parseRetryAfter(res);
+      assert(delay > 0 && delay <= 10000);
+    });
+  });
+
+  describe('calculateRetryDelay', function () {
+    it('should compute exponential backoff', function () {
+      const delay0 = calculateRetryDelay(0, { retryDelay: 100, backoffFactor: 2, jitter: false });
+      const delay1 = calculateRetryDelay(1, { retryDelay: 100, backoffFactor: 2, jitter: false });
+      const delay2 = calculateRetryDelay(2, { retryDelay: 100, backoffFactor: 2, jitter: false });
+
+      assert.strictEqual(delay0, 100);
+      assert.strictEqual(delay1, 200);
+      assert.strictEqual(delay2, 400);
+    });
+
+    it('should respect maxDelay cap', function () {
+      const delay = calculateRetryDelay(10, { retryDelay: 1000, backoffFactor: 2, maxDelay: 5000, jitter: false });
+      assert.strictEqual(delay, 5000);
+    });
+
+    it('should respect Retry-After header on response', function () {
+      const res = { headers: { 'retry-after': '3' } };
+      const delay = calculateRetryDelay(0, { respectRetryAfter: true }, res);
+      assert.strictEqual(delay, 3000);
+    });
+
+    it('should call custom retryDelay function if provided', function () {
+      const customFn = (retryCount) => (retryCount + 1) * 50;
+      const delay = calculateRetryDelay(2, { retryDelay: customFn });
+      assert.strictEqual(delay, 150);
+    });
+  });
+
+  describe('isRetryableError', function () {
+    it('should identify 5xx and 429 status as retryable for GET', function () {
+      const err503 = { config: { method: 'get' }, response: { status: 503 } };
+      const err429 = { config: { method: 'get' }, response: { status: 429 } };
+      const err404 = { config: { method: 'get' }, response: { status: 404 } };
+
+      assert.strictEqual(isRetryableError(err503), true);
+      assert.strictEqual(isRetryableError(err429), true);
+      assert.strictEqual(isRetryableError(err404), false);
+    });
+
+    it('should not retry POST by default', function () {
+      const err500 = { config: { method: 'post' }, response: { status: 500 } };
+      assert.strictEqual(isRetryableError(err500), false);
+    });
+
+    it('should retry network errors with no response', function () {
+      const netErr = { config: { method: 'get' }, request: {}, code: 'ECONNRESET' };
+      assert.strictEqual(isRetryableError(netErr), true);
+    });
+
+    it('should not retry canceled errors', function () {
+      const cancelErr = { __CANCEL__: true, config: { method: 'get' } };
+      assert.strictEqual(isRetryableError(cancelErr), false);
+    });
+  });
+
+  describe('attachRetry interceptor integration', function () {
+    it('should retry failed requests and succeed when subsequent attempt passes', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 10, jitter: false });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts < 3) {
+          const err = new Error('Request failed with status code 503');
+          err.config = config;
+          err.response = { status: 503, headers: {} };
+          throw err;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const retriesLogged = [];
+      const res = await instance.get('http://test.local', {
+        retry: {
+          retries: 3,
+          onRetry: (count, err, cfg, delay) => {
+            retriesLogged.push(count);
+          },
+        },
+      });
+
+      assert.strictEqual(res.data, 'success');
+      assert.strictEqual(attempts, 3);
+      assert.deepStrictEqual(retriesLogged, [1, 2]);
+    });
+
+    it('should reject when retries are exhausted', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 10, jitter: false, retries: 2 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const err = new Error('Service Unavailable');
+        err.config = config;
+        err.response = { status: 503, headers: {} };
+        throw err;
+      };
+
+      try {
+        await instance.get('http://test.local');
+        assert.fail('Should have failed');
+      } catch (err) {
+        assert.strictEqual(err.response.status, 503);
+        assert.strictEqual(attempts, 3); // initial + 2 retries
+      }
+    });
+
+    it('should not retry if config.retry is false', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retries: 3 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const err = new Error('Internal Server Error');
+        err.config = config;
+        err.response = { status: 500, headers: {} };
+        throw err;
+      };
+
+      try {
+        await instance.get('http://test.local', { retry: false });
+        assert.fail('Should have failed');
+      } catch (err) {
+        assert.strictEqual(attempts, 1);
+      }
+    });
+  });
+});

@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { Readable } from 'stream';
 import { describe, it } from 'vitest';
 import axios from '../../../lib/axios.js';
 
@@ -157,6 +158,64 @@ describe('helpers:retry', function () {
         assert.fail('Should have failed');
       } catch (err) {
         assert.strictEqual(attempts, 1);
+      }
+    });
+
+    it('should not retry non-replayable stream bodies', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 10, jitter: false, retries: 3 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const err = new Error('Service Unavailable');
+        err.config = config;
+        err.response = { status: 503, headers: {} };
+        throw err;
+      };
+
+      try {
+        await instance.put('http://test.local', Readable.from(['payload']), {
+          retry: { retries: 3 },
+        });
+        assert.fail('Should have failed');
+      } catch (err) {
+        assert.strictEqual(attempts, 1);
+        assert.strictEqual(err.response.status, 503);
+      }
+    });
+
+    it('should stop waiting when aborted during backoff', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 250, jitter: false, retries: 1 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const err = new Error('Service Unavailable');
+        err.config = config;
+        err.response = { status: 503, headers: {} };
+        throw err;
+      };
+
+      const controller = new AbortController();
+      const startedAt = Date.now();
+      const request = instance.get('http://test.local', {
+        signal: controller.signal,
+        retry: { retries: 1, retryDelay: 250, jitter: false },
+      });
+
+      setTimeout(() => controller.abort(), 25);
+
+      try {
+        await request;
+        assert.fail('Should have failed');
+      } catch (err) {
+        const elapsed = Date.now() - startedAt;
+
+        assert.strictEqual(attempts, 1);
+        assert.strictEqual(err.code, 'ERR_CANCELED');
+        assert(elapsed < 200);
       }
     });
   });

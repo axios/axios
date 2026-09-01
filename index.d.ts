@@ -494,6 +494,20 @@ export interface AxiosRetryConfig {
   onRetry?: (retryCount: number, error: any, config: InternalAxiosRequestConfig, delay: number) => void;
 }
 
+export interface AxiosRetryHelper {
+  attachRetry: typeof attachRetry;
+  calculateRetryDelay: (
+    retryCount: number,
+    options?: AxiosRetryConfig,
+    response?: AxiosResponse
+  ) => number;
+  isRetryableError: (error: any, options?: AxiosRetryConfig) => boolean;
+  parseRetryAfter: (response?: AxiosResponse | null) => number | null;
+  DEFAULT_RETRY_STATUS_CODES: number[];
+  DEFAULT_RETRY_METHODS: string[];
+  DEFAULT_NETWORK_ERROR_CODES: string[];
+}
+
 // Alias
 
 export type RawAxiosRequestConfig<D = any, P = any> = AxiosRequestConfig<D, P>;
@@ -754,6 +768,13 @@ export function getAdapter(
   adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined
 ): AxiosAdapter;
 
+export function attachRetry(
+  axiosInstance: AxiosInstance | AxiosStatic,
+  defaultOptions?: AxiosRetryConfig
+): number;
+
+export const retry: AxiosRetryHelper;
+
 export function toFormData(
   sourceObj: object,
   targetFormData?: GenericFormData,
@@ -796,8 +817,8 @@ export interface AxiosStatic extends AxiosInstance {
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
   mergeConfig: typeof mergeConfig;
-  retry: any;
-  attachRetry: (axiosInstance: AxiosInstance | AxiosStatic, defaultOptions?: AxiosRetryConfig) => number;
+  retry: AxiosRetryHelper;
+  attachRetry: typeof attachRetry;
 }
 
 

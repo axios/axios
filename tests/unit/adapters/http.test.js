@@ -4074,6 +4074,67 @@ describe('supports http with nodejs', () => {
     });
   });
 
+  describe('additionalProtocols', () => {
+    const reachedTransport = 'reached transport';
+    const transport = {
+      request() {
+        throw new Error(reachedTransport);
+      },
+    };
+
+    it('accepts a scheme listed in additionalProtocols', async () => {
+      await assert.rejects(
+        axios.get('capacitor://localhost/app.js', {
+          additionalProtocols: ['capacitor'],
+          transport,
+        }),
+        (error) => {
+          assert.equal(error.message, reachedTransport);
+          return true;
+        }
+      );
+    });
+
+    it('still rejects a scheme that was not listed', async () => {
+      await assert.rejects(
+        axios.get('capacitor://localhost/app.js', { additionalProtocols: ['other'] }),
+        (error) => {
+          assert.equal(error.message, 'Unsupported protocol capacitor:');
+          return true;
+        }
+      );
+    });
+
+    it('rejects when the option is absent', async () => {
+      await assert.rejects(axios.get('capacitor://localhost/app.js'), (error) => {
+        assert.equal(error.message, 'Unsupported protocol capacitor:');
+        return true;
+      });
+    });
+
+    it('can be set on an instance', async () => {
+      const instance = axios.create({ additionalProtocols: ['capacitor'], transport });
+
+      await assert.rejects(instance.get('capacitor://localhost/app.js'), (error) => {
+        assert.equal(error.message, reachedTransport);
+        return true;
+      });
+    });
+
+    it('does not widen the accepted set from a polluted prototype', async () => {
+      Object.prototype.additionalProtocols = ['capacitor'];
+
+      try {
+        await assert.rejects(axios.get('capacitor://localhost/app.js'), (error) => {
+          assert.equal(error.message, 'Unsupported protocol capacitor:');
+          return true;
+        });
+      } finally {
+        delete Object.prototype.additionalProtocols;
+      }
+    });
+  });
+
   it('rejects malformed HTTP URLs before Node URL normalization and preserves config', async () => {
     for (const url of ['\u0000https:example.com/users', 'h\nttp:example.com/users']) {
       await assert.rejects(

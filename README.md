@@ -1168,6 +1168,14 @@ These config options are available for requests. Only `url` is required. Request
   // see also https://nodejs.org/en/blog/vulnerability/february-2020-security-releases/#strict-http-header-parsing-none
   insecureHTTPParser: undefined, // default
 
+  // `additionalProtocols` lists URL schemes to accept on top of the platform defaults
+  // (`http`, `https`, `file`, `data`, plus `blob` and `url` in browsers).
+  // Useful behind native shells such as Capacitor that serve local resources over a
+  // custom scheme. Entries may be written with or without a trailing colon, and the
+  // platform defaults are always kept, so this can widen the accepted set but never
+  // narrow it.
+  additionalProtocols: undefined, // default
+
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
     // silent JSON parsing mode

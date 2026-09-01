@@ -558,6 +558,24 @@ describe('requests (vitest browser)', () => {
     });
   });
 
+  it('accepts a scheme listed in additionalProtocols', async () => {
+    const { request, promise } = startRequest('capacitor://localhost/app.js', {
+      method: 'get',
+      additionalProtocols: ['capacitor'],
+    });
+
+    expect(request.url).toBe('capacitor://localhost/app.js');
+    await flushSuccess(request, promise);
+  });
+
+  it('still rejects a scheme that additionalProtocols does not list', async () => {
+    await expect(
+      axios.get('ftp:localhost', { adapter: 'xhr', additionalProtocols: ['capacitor'] })
+    ).rejects.toMatchObject({
+      message: 'Unsupported protocol ftp:',
+    });
+  });
+
   it('should clean up cancellation listeners after unsupported protocol rejection', async () => {
     const source = axios.CancelToken.source();
     const controller = new AbortController();

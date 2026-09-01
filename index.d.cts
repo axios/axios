@@ -557,6 +557,14 @@ declare namespace axios {
     transitional?: TransitionalOptions;
     signal?: GenericAbortSignal;
     insecureHTTPParser?: boolean;
+  /**
+   * URL schemes to accept in addition to the platform defaults
+   * (`http`, `https`, `file`, `data`, plus `blob` and `url` in browsers).
+   * Useful behind native shells such as Capacitor that serve local
+   * resources over a custom scheme. Entries may be written with or
+   * without a trailing colon; the platform defaults are always kept.
+   */
+  additionalProtocols?: string[];
     env?: {
       FormData?: new (...args: any[]) => object;
       fetch?: (input: URL | Request | string, init?: RequestInit) => Promise<Response>;

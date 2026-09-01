@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { isNativeError } from 'node:util/types';
-import AxiosError from '../../../lib/core/AxiosError.js';
+import AxiosError, { REDACTED } from '../../../lib/core/AxiosError.js';
+import axios from '../../../index.js';
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
+import http from 'node:http';
+import https from 'node:https';
+import stream from 'node:stream';
 
 describe('core::AxiosError', () => {
   it('creates an error with message, config, code, request, response, stack and isAxiosError', () => {
@@ -469,6 +473,100 @@ describe('core::AxiosError', () => {
 
       // Useful for debugging — operators can see what was being redacted.
       expect(error.toJSON().config.redact).toEqual(['password']);
+    });
+  });
+  describe('opaque platform handles in the config snapshot', () => {
+    it('does not walk http/https agents', () => {
+      const httpAgent = new http.Agent({ keepAlive: true });
+      const httpsAgent = new https.Agent({ keepAlive: true });
+      const error = new AxiosError('Boom', 'ECODE', { url: '/u', httpAgent, httpsAgent });
+
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(json.config.httpsAgent).toBe('[Agent]');
+    });
+
+    it('keeps the serialized error small and JSON-safe when an agent has live sockets', async () => {
+      const agent = new http.Agent({ keepAlive: true });
+      const server = http.createServer((req, res) => {
+        res.writeHead(500);
+        res.end('{}');
+      });
+
+      await new Promise((resolve) => server.listen(0, resolve));
+
+      try {
+        const instance = axios.create({ httpAgent: agent, validateStatus: () => false });
+        const base = `http://127.0.0.1:${server.address().port}/`;
+
+        const sizes = await Promise.all(
+          Array.from({ length: 10 }, () =>
+            instance.get(base).catch((err) => JSON.stringify(err.toJSON()).length)
+          )
+        );
+
+        // Walking the agent produced hundreds of kilobytes per error.
+        sizes.forEach((size) => expect(size).toBeLessThan(20000));
+      } finally {
+        server.close();
+        agent.destroy();
+      }
+    });
+
+    it('snapshots streams as a marker instead of walking them', () => {
+      const error = new AxiosError('Boom', 'ECODE', { url: '/u', data: new stream.Readable() });
+
+      expect(error.toJSON().config.data).toBe('[Readable]');
+    });
+
+    it('leaves a config without handles untouched', () => {
+      const config = { url: '/u', headers: { a: 'b' } };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config).toEqual(config);
+    });
+  });
+
+  describe('custom properties in the serialized error', () => {
+    it('includes properties attached through AxiosError.from', () => {
+      const error = AxiosError.from(new Error('boom'), 'ECODE', { url: '/u' }, null, null, {
+        traceId: 'abc-123',
+        attempt: 3,
+      });
+
+      const json = error.toJSON();
+
+      expect(json.traceId).toBe('abc-123');
+      expect(json.attempt).toBe(3);
+    });
+
+    it('does not leak the request or isAxiosError as custom properties', () => {
+      const request = { path: '/foo', circular: null };
+      request.circular = request;
+      const error = new AxiosError('Boom', 'ECODE', { url: '/u' }, request);
+
+      const json = error.toJSON();
+
+      expect(json).not.toHaveProperty('request');
+      expect(json).not.toHaveProperty('isAxiosError');
+      expect(() => JSON.stringify(json)).not.toThrow();
+    });
+
+    it('applies redaction to custom properties', () => {
+      const error = AxiosError.from(
+        new Error('boom'),
+        'ECODE',
+        { url: '/u', redact: ['token'] },
+        null,
+        null,
+        { context: { token: 'secret', id: 7 } }
+      );
+
+      const json = error.toJSON();
+
+      expect(json.context.token).toBe(REDACTED);
+      expect(json.context.id).toBe(7);
     });
   });
 });

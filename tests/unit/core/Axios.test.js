@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import axios from '../../../index.js';
+import assert from 'assert';
 
 describe('core::Axios', () => {
   describe('request error stack decoration', () => {
@@ -50,6 +51,61 @@ describe('core::Axios', () => {
         await expectAdapterFailurePreserved();
       } finally {
         Error.captureStackTrace = original;
+      }
+    });
+  });
+  describe('caller stack reconstruction', () => {
+    it('appends the caller stack when the reconstructed stack has fewer than three frames', async () => {
+      const original = Error.stackTraceLimit;
+      Error.stackTraceLimit = 2;
+
+      try {
+        async function requestFromNamedCaller() {
+          await axios.request({
+            url: 'http://localhost/test',
+            adapter: () =>
+              new Promise((resolve, reject) => {
+                setTimeout(() => reject(new Error('adapter failure')), 0);
+              }),
+          });
+        }
+
+        await expect(requestFromNamedCaller()).rejects.toSatisfy((err) =>
+          String(err.stack).includes('requestFromNamedCaller')
+        );
+      } finally {
+        Error.stackTraceLimit = original;
+      }
+    });
+
+    it('does not append a caller stack that is already present', async () => {
+      const original = Error.stackTraceLimit;
+      Error.stackTraceLimit = 2;
+
+      try {
+        async function repeatedCaller() {
+          await axios.request({
+            url: 'http://localhost/test',
+            adapter: () =>
+              new Promise((resolve, reject) => {
+                setTimeout(() => reject(new Error('adapter failure')), 0);
+              }),
+          });
+        }
+
+        let stack;
+        try {
+          await repeatedCaller();
+        } catch (err) {
+          stack = String(err.stack);
+        }
+
+        const frames = stack.split('\n').filter((line) => line.includes('at '));
+
+        // The appended stack must not be duplicated onto itself.
+        assert.strictEqual(new Set(frames).size, frames.length);
+      } finally {
+        Error.stackTraceLimit = original;
       }
     });
   });

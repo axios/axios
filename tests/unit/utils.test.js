@@ -288,4 +288,35 @@ describe('utils', () => {
       assert.strictEqual(utils.isReactNative({}), false);
     });
   });
+  describe('inherits', () => {
+    it('installs props as own writable, enumerable and configurable properties', () => {
+      function Child() {}
+      function Parent() {}
+
+      utils.inherits(Child, Parent, { toJSON() {} });
+
+      const descriptor = Object.getOwnPropertyDescriptor(Child.prototype, 'toJSON');
+
+      assert.strictEqual(descriptor.writable, true);
+      assert.strictEqual(descriptor.enumerable, true);
+      assert.strictEqual(descriptor.configurable, true);
+    });
+
+    it('works when the super prototype has a non-writable property of the same name', () => {
+      function Child() {}
+      function Parent() {}
+
+      Object.defineProperty(Parent.prototype, 'toJSON', {
+        configurable: true,
+        writable: false,
+        enumerable: false,
+        value: () => ({ from: 'parent' }),
+      });
+
+      const own = () => ({ from: 'child' });
+
+      assert.doesNotThrow(() => utils.inherits(Child, Parent, { toJSON: own }));
+      assert.strictEqual(Child.prototype.toJSON, own);
+    });
+  });
 });

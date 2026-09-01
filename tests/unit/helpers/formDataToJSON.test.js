@@ -54,6 +54,15 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it('should preserve an empty field name as an empty string key', () => {
+    const formData = new FormData();
+
+    formData.append('', 'value');
+    formData.append('', 'second');
+
+    expect(formDataToJSON(formData)).toEqual({ '': ['value', 'second'] });
+  });
+
   it('should convert props with empty brackets to arrays', () => {
     const formData = new FormData();
 

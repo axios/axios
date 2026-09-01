@@ -24,8 +24,9 @@ describe('core::AxiosError', () => {
   });
 
   it('serializes to JSON safely', () => {
-    // request/response are intentionally omitted from the serialized shape
-    // to avoid circular-reference problems.
+    // `request` is intentionally omitted from the serialized shape to avoid
+    // circular-reference problems; `response` is included as a bounded
+    // snapshot that carries neither `request` nor `config`.
     const request = { path: '/foo' };
     const response = { status: 200, data: { foo: 'bar' } };
     const error = new AxiosError('Boom!', 'ESOMETHING', { foo: 'bar' }, request, response);
@@ -36,7 +37,12 @@ describe('core::AxiosError', () => {
     expect(json.code).toBe('ESOMETHING');
     expect(json.status).toBe(200);
     expect(json.request).toBeUndefined();
-    expect(json.response).toBeUndefined();
+    expect(json.response).toEqual({
+      status: 200,
+      statusText: undefined,
+      headers: undefined,
+      data: { foo: 'bar' },
+    });
   });
 
   it('serializes Set values in config snapshots', () => {
@@ -567,6 +573,62 @@ describe('core::AxiosError', () => {
 
       expect(json.context.token).toBe(REDACTED);
       expect(json.context.id).toBe(7);
+    });
+  });
+  describe('response snapshot in toJSON', () => {
+    it('carries status, statusText, headers and data', async () => {
+      const server = http.createServer((req, res) => {
+        res.writeHead(500, { 'content-type': 'application/json', 'x-request-id': 'abc' });
+        res.end('{"message":"duplicate key error"}');
+      });
+
+      await new Promise((resolve) => server.listen(0, resolve));
+
+      try {
+        await axios.get(`http://127.0.0.1:${server.address().port}/`);
+        throw new Error('should have rejected');
+      } catch (err) {
+        const json = err.toJSON();
+
+        expect(json.response.status).toBe(500);
+        expect(json.response.statusText).toBe('Internal Server Error');
+        expect(json.response.headers['x-request-id']).toBe('abc');
+        expect(json.response.data).toEqual({ message: 'duplicate key error' });
+      } finally {
+        server.close();
+      }
+    });
+
+    it('does not carry the response request or config', () => {
+      const response = { status: 404, data: 'nope', request: {}, config: { url: '/u' } };
+      response.request.self = response.request;
+      const error = new AxiosError('Boom', 'ECODE', { url: '/u' }, {}, response);
+
+      const json = error.toJSON();
+
+      expect(json.response).not.toHaveProperty('request');
+      expect(json.response).not.toHaveProperty('config');
+      expect(() => JSON.stringify(json)).not.toThrow();
+    });
+
+    it('redacts response headers through config.redact', () => {
+      const response = { status: 401, statusText: 'Unauthorized', headers: { authorization: 'Bearer x' }, data: {} };
+      const error = new AxiosError('Boom', 'ECODE', { url: '/u', redact: ['authorization'] }, null, response);
+
+      expect(error.toJSON().response.headers.authorization).toBe(REDACTED);
+    });
+
+    it('snapshots a streamed response body as a marker', () => {
+      const response = { status: 200, data: new stream.Readable() };
+      const error = new AxiosError('Boom', 'ECODE', { url: '/u' }, null, response);
+
+      expect(error.toJSON().response.data).toBe('[Readable]');
+    });
+
+    it('omits response when the error has none', () => {
+      const error = new AxiosError('Boom', 'ECODE', { url: '/u' });
+
+      expect(error.toJSON().response).toBeUndefined();
     });
   });
 });

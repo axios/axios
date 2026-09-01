@@ -71,6 +71,12 @@ const paramsConfig: axios.AxiosRequestConfig<SearchBody, SearchParams> = {
 
 const customParamsSerializer: axios.CustomParamsSerializer<SearchParams> = (params) => params.query;
 const rawParamsConfig: axios.RawAxiosRequestConfig<SearchBody, SearchParams> = paramsConfig;
+const retryOptions: axios.AxiosRetryConfig = { retries: 1 };
+const retryConfig: axios.AxiosRequestConfig<SearchBody, SearchParams> = {
+  retry: retryOptions,
+};
+axios.attachRetry(axios.create(), retryOptions);
+const retryDelay: number = axios.retry.calculateRetryDelay(0, { retryDelay: 1, jitter: false });
 const internalParamsConfig = {
   ...paramsConfig,
   headers: new axios.AxiosHeaders(),
@@ -149,6 +155,8 @@ console.log(
   cancelFromAlias.message,
   status,
   customParamsSerializer,
+  retryConfig,
+  retryDelay,
   internalQuery,
   responseQuery,
   errorQuery,

@@ -1417,6 +1417,151 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  it("should support a proxy protocol without a trailing colon", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.setHeader("Content-Type", "text/html; charset=UTF-8");
+        res.end("12345");
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (request, response) {
+            var parsed = url.parse(request.url);
+
+            http.get(
+              {
+                host: parsed.hostname,
+                port: parsed.port,
+                path: parsed.path,
+              },
+              function (res) {
+                var body = "";
+                res.on("data", function (data) {
+                  body += data;
+                });
+                res.on("end", function () {
+                  response.setHeader(
+                    "Content-Type",
+                    "text/html; charset=UTF-8",
+                  );
+                  response.end(body + "6789");
+                });
+              },
+            );
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                  // Documented in the README as a bare scheme.
+                  protocol: "http",
+                },
+              })
+              .then(function (res) {
+                assert.equal(
+                  res.data,
+                  "123456789",
+                  "should pass through proxy",
+                );
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should normalize the proxy protocol case", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.end("12345");
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (request, response) {
+            var parsed = url.parse(request.url);
+
+            http.get(
+              {
+                host: parsed.hostname,
+                port: parsed.port,
+                path: parsed.path,
+              },
+              function (res) {
+                var body = "";
+                res.on("data", function (data) {
+                  body += data;
+                });
+                res.on("end", function () {
+                  response.end(body + "6789");
+                });
+              },
+            );
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                  protocol: "HTTP:",
+                },
+              })
+              .then(function (res) {
+                assert.equal(res.data, "123456789");
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should ignore a non-string proxy protocol", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.end("12345");
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (request, response) {
+            var parsed = url.parse(request.url);
+
+            http.get(
+              {
+                host: parsed.hostname,
+                port: parsed.port,
+                path: parsed.path,
+              },
+              function (res) {
+                var body = "";
+                res.on("data", function (data) {
+                  body += data;
+                });
+                res.on("end", function () {
+                  response.end(body + "6789");
+                });
+              },
+            );
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                  protocol: 1234,
+                },
+              })
+              .then(function (res) {
+                assert.equal(res.data, "123456789");
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
   it("should not pass through disabled proxy", function (done) {
     // set the env variable
     process.env.http_proxy = "http://does-not-exists.example.com:4242/";

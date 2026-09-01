@@ -138,6 +138,97 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should restore Symbol.iterator immediately so in-flight requests and never-settling fetches do not leave it deleted', async () => {
+    let customFetchCalled = false;
+    const customFetch = async () => {
+      customFetchCalled = true;
+      return new Promise(() => {});
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['X-Injected', 'yes'];
+      };
+
+      fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: customFetch,
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      assert.strictEqual(customFetchCalled, true);
+      // Verify that even though the fetch request is still in-flight / unsettled,
+      // Symbol.iterator has already been restored on Object.prototype.
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should restore Symbol.iterator when fetch rejects or throws', async () => {
+    const customFetch = async () => {
+      throw new Error('network failure');
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['X-Injected', 'yes'];
+      };
+
+      await assert.rejects(async () => {
+        await fetchAxios.get('http://localhost/', {
+          env: {
+            fetch: customFetch,
+          },
+        });
+      });
+
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should preserve Symbol.iterator across concurrent requests', async () => {
+    const server = await startHTTPServer((req, res) => {
+      setTimeout(() => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            auth: req.headers.authorization,
+          })
+        );
+      }, 50);
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['Authorization', 'Bearer INJECTED'];
+      };
+
+      const reqs = Array.from({ length: 5 }, (_, i) =>
+        fetchAxios.get(`http://localhost:${server.address().port}/`, {
+          headers: {
+            Authorization: `Bearer TOKEN_${i}`,
+          },
+        })
+      );
+
+      const responses = await Promise.all(reqs);
+
+      responses.forEach((res, i) => {
+        assert.strictEqual(res.data.auth, `Bearer TOKEN_${i}`);
+      });
+
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(
       (req, res) => {

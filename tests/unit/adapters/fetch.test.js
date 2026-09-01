@@ -229,6 +229,37 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should allow custom synchronous env.fetch to access Object.prototype[Symbol.iterator]', async () => {
+    let customFetchRan = false;
+    const customFetch = async () => {
+      customFetchRan = true;
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: customFetch,
+        },
+      });
+
+      assert.strictEqual(customFetchRan, true);
+      assert.deepStrictEqual(data, { ok: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(
       (req, res) => {

@@ -260,6 +260,63 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should restore Symbol.iterator when Request constructor throws under custom env.fetch', async () => {
+    const throwingRequest = function () {
+      throw new Error('Request constructor threw');
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['X-Injected', 'yes'];
+      };
+
+      await assert.rejects(async () => {
+        await fetchAxios.get('http://localhost/', {
+          env: {
+            Request: throwingRequest,
+            fetch: async () => new Response('ok'),
+          },
+        });
+      });
+
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should protect against prototype pollution when env.fetch is explicitly set to globalThis.fetch', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          authorization: req.headers.authorization,
+        })
+      );
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['Authorization', 'Bearer INJECTED'];
+      };
+
+      const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        env: {
+          fetch: globalThis.fetch,
+        },
+        headers: {
+          Authorization: 'Bearer VALID_TOKEN',
+        },
+      });
+
+      assert.strictEqual(data.authorization, 'Bearer VALID_TOKEN');
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(
       (req, res) => {

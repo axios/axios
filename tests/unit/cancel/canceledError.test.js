@@ -20,4 +20,23 @@ describe('cancel::CanceledError', () => {
   it('is recognized as a native error by Node util/types', () => {
     expect(isNativeError(new CanceledError('My Canceled Error'))).toBe(true);
   });
+  describe('cause', () => {
+    it('is absent when no cause is supplied', () => {
+      expect(new CanceledError('x')).not.toHaveProperty('cause');
+    });
+
+    it('is installed non-enumerable so it cannot break structured loggers', () => {
+      const reason = { self: null };
+      reason.self = reason;
+      const cancel = new CanceledError(null, undefined, undefined, reason);
+
+      expect(cancel.cause).toBe(reason);
+      expect(Object.keys(cancel)).not.toContain('cause');
+      expect(() => JSON.stringify(cancel.toJSON())).not.toThrow();
+    });
+
+    it('leaves the message alone', () => {
+      expect(new CanceledError(null, undefined, undefined, 'TimeoutError').message).toBe('canceled');
+    });
+  });
 });

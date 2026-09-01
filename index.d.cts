@@ -174,7 +174,7 @@ declare class AxiosError<T = unknown, D = any, P = any> extends Error {
 }
 
 declare class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
-  constructor(message?: string, config?: axios.InternalAxiosRequestConfig<D, P>, request?: any);
+  constructor(message?: string, config?: axios.InternalAxiosRequestConfig<D, P>, request?: any, cause?: unknown);
   readonly name: 'CanceledError';
   __CANCEL__?: boolean;
 }

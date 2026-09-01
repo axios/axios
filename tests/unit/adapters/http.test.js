@@ -7245,4 +7245,133 @@ describe('supports http with nodejs', () => {
       );
     });
   });
+  describe('abort reason propagation', () => {
+    let reasonServer;
+    let reasonBase;
+
+    const startServer = () =>
+      new Promise((resolve) => {
+        reasonServer = http.createServer((req, res) => {
+          // Hold the response open so the abort always wins.
+          setTimeout(() => {
+            res.writeHead(200);
+            res.end('ok');
+          }, 500);
+        });
+        reasonServer.listen(0, () => {
+          reasonBase = `http://127.0.0.1:${reasonServer.address().port}/`;
+          resolve();
+        });
+      });
+
+    const stopServer = () =>
+      new Promise((resolve) => {
+        if (!reasonServer) {
+          resolve();
+          return;
+        }
+        reasonServer.close(() => resolve());
+        reasonServer = null;
+      });
+
+    const abortWith = async (reason) => {
+      await startServer();
+      try {
+        const controller = new global.AbortController();
+        const request = axios.get(reasonBase, { signal: controller.signal });
+        controller.abort(reason);
+        return await request.then(
+          () => {
+            throw new Error('request should have been canceled');
+          },
+          (error) => error
+        );
+      } finally {
+        await stopServer();
+      }
+    };
+
+    it('carries a string abort reason as the error cause', async () => {
+      const error = await abortWith('TimeoutError');
+
+      assert.strictEqual(error.cause, 'TimeoutError');
+      // The message and the cancellation contract are unchanged.
+      assert.strictEqual(error.message, 'canceled');
+      assert.strictEqual(error.name, 'CanceledError');
+      assert.strictEqual(axios.isCancel(error), true);
+    });
+
+    it('carries an Error abort reason as the error cause', async () => {
+      const reason = new Error('user navigated away');
+      const error = await abortWith(reason);
+
+      assert.strictEqual(error.cause, reason);
+      assert.strictEqual(error.message, 'canceled');
+    });
+
+    it('carries the default reason for a bare abort', async () => {
+      const error = await abortWith(undefined);
+
+      assert.strictEqual(error.cause.name, 'AbortError');
+      assert.strictEqual(error.message, 'canceled');
+    });
+
+    it('carries the reason when the signal is already aborted before dispatch', async () => {
+      await startServer();
+      try {
+        const controller = new global.AbortController();
+        controller.abort('gone');
+
+        const error = await axios.get(reasonBase, { signal: controller.signal }).then(
+          () => {
+            throw new Error('request should have been canceled');
+          },
+          (err) => err
+        );
+
+        assert.strictEqual(error.cause, 'gone');
+        assert.strictEqual(error.message, 'canceled');
+      } finally {
+        await stopServer();
+      }
+    });
+
+    it('leaves CancelToken cancellations untouched', async () => {
+      await startServer();
+      try {
+        const source = axios.CancelToken.source();
+        const request = axios.get(reasonBase, { cancelToken: source.token });
+        source.cancel('operation cancelled');
+
+        const error = await request.then(
+          () => {
+            throw new Error('request should have been canceled');
+          },
+          (err) => err
+        );
+
+        assert.strictEqual(error.message, 'operation cancelled');
+        assert.strictEqual(error.cause, undefined);
+      } finally {
+        await stopServer();
+      }
+    });
+
+    it('does not attach a cause to a timeout error', async () => {
+      await startServer();
+      try {
+        const error = await axios.get(reasonBase, { timeout: 30 }).then(
+          () => {
+            throw new Error('request should have timed out');
+          },
+          (err) => err
+        );
+
+        assert.strictEqual(error.code, 'ECONNABORTED');
+        assert.strictEqual(axios.isCancel(error), false);
+      } finally {
+        await stopServer();
+      }
+    });
+  });
 });

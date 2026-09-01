@@ -419,7 +419,7 @@ Notez que l'option `insecureHTTPParser` n'est disponible que dans Node.js 12.10.
 
 La propriété `transitional` vous permet d'activer ou de désactiver certaines fonctionnalités de transition. Les options suivantes sont disponibles :
 
-- `silentJSONParsing` : Si défini à `true` _(par défaut)_, axios ignore silencieusement les erreurs d'analyse JSON et définit `response.data` à `null` lorsque l'analyse échoue. Définissez à `false` pour lever une `SyntaxError` à la place.
+- `silentJSONParsing` : Si défini à `true` _(par défaut)_, axios ignore silencieusement les erreurs d'analyse JSON et conserve la chaîne de réponse d'origine dans `response.data` lorsque l'analyse échoue. Définissez à `false` pour lever une `SyntaxError` à la place.
 
   ::: tip Important
   Cette option ne prend effet que lorsque `responseType` est **explicitement** défini à `'json'`. Lorsque `responseType` est omis, axios utilise `forcedJSONParsing` pour tenter l'analyse JSON et retourne silencieusement la chaîne brute en cas d'échec, indépendamment de ce paramètre. Pour qu'un JSON invalide lève une erreur, définissez les deux :

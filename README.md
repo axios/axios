@@ -1171,7 +1171,7 @@ These config options are available for requests. Only `url` is required. Request
   // transitional options for backward compatibility that may be removed in the newer versions
   transitional: {
     // silent JSON parsing mode
-    // `true`  - ignore JSON parsing errors and set response.data to null if parsing failed (old behaviour)
+    // `true`  - ignore JSON parsing errors and keep the original response string if parsing failed (old behaviour)
     // `false` - throw SyntaxError if JSON parsing failed
     // Important: this option only takes effect when `responseType` is explicitly set to 'json'.
     // When `responseType` is omitted (defaults to no value), axios uses `forcedJSONParsing`

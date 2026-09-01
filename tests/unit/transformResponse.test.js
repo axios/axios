@@ -38,6 +38,20 @@ describe('transformResponse', () => {
   });
 
   describe('malformed JSON with responseType: json', () => {
+    it('keeps the raw string when silentJSONParsing is enabled', () => {
+      const data = '{bad json';
+      const response = { status: 200, headers: {}, data };
+      const config = {
+        responseType: 'json',
+        transitional: { silentJSONParsing: true, forcedJSONParsing: true },
+        response,
+      };
+
+      const result = transformData.call(config, defaults.transformResponse, response);
+
+      assert.strictEqual(result, data);
+    });
+
     it('throws AxiosError with ERR_BAD_RESPONSE code', () => {
       const response = { status: 200, headers: {}, data: '{bad json' };
       const config = {

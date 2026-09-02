@@ -316,6 +316,40 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     assert.strictEqual(captured.redirect, 'follow');
   });
 
+  it('should omit the default cache mode when the rejected mode is also polluted', async () => {
+    let capturedCache = 'unset';
+
+    class RestrictedCacheRequest extends Request {
+      constructor(url, init) {
+        capturedCache = init && init.cache;
+
+        if (capturedCache !== undefined && capturedCache !== 'no-store') {
+          throw new TypeError(`Unsupported cache mode: ${capturedCache}`);
+        }
+
+        super(url, init);
+      }
+    }
+
+    Object.prototype.cache = 'default';
+
+    try {
+      const response = await fetchAxios.get('/polluted-cache', {
+        env: {
+          Request: RestrictedCacheRequest,
+          fetch() {
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.strictEqual(capturedCache, undefined);
+    } finally {
+      delete Object.prototype.cache;
+    }
+  });
+
   it('should keep the default cache mode when a polluted option breaks the probe', async () => {
     let captured;
 

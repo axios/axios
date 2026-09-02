@@ -284,6 +284,34 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should omit the default cache mode when the runtime rejects it', async () => {
+    let capturedCache = 'unset';
+
+    class RestrictedCacheRequest extends Request {
+      constructor(url, init) {
+        capturedCache = init && init.cache;
+
+        if (capturedCache !== undefined && capturedCache !== 'no-store') {
+          throw new TypeError(`Unsupported cache mode: ${capturedCache}`);
+        }
+
+        super(url, init);
+      }
+    }
+
+    const response = await fetchAxios.get('/restricted-cache', {
+      env: {
+        Request: RestrictedCacheRequest,
+        fetch() {
+          return Promise.resolve(new Response('ok'));
+        },
+      },
+    });
+
+    assert.strictEqual(response.data, 'ok');
+    assert.strictEqual(capturedCache, undefined);
+  });
+
   it('should expose an unfollowed redirect response in Node when maxRedirects is zero', async () => {
     let finalRequests = 0;
     const server = await startHTTPServer((req, res) => {

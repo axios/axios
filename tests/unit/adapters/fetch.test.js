@@ -299,10 +299,13 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       }
     }
 
+    let captured;
+
     const response = await fetchAxios.get('/restricted-cache', {
       env: {
         Request: RestrictedCacheRequest,
-        fetch() {
+        fetch(input) {
+          captured = input;
           return Promise.resolve(new Response('ok'));
         },
       },
@@ -310,6 +313,31 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
     assert.strictEqual(response.data, 'ok');
     assert.strictEqual(capturedCache, undefined);
+    assert.strictEqual(captured.redirect, 'follow');
+  });
+
+  it('should keep the default cache mode when a polluted option breaks the probe', async () => {
+    let captured;
+
+    Object.prototype.cache = 'no-store';
+    Object.prototype.mode = 'navigate';
+
+    try {
+      const response = await fetchAxios.get('/polluted-mode', {
+        env: {
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.strictEqual(captured.cache, 'default');
+    } finally {
+      delete Object.prototype.cache;
+      delete Object.prototype.mode;
+    }
   });
 
   it('should expose an unfollowed redirect response in Node when maxRedirects is zero', async () => {

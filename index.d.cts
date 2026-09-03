@@ -434,7 +434,7 @@ declare namespace axios {
 
   interface AxiosRetryConfig {
     retries?: number;
-    retryDelay?: number | ((retryCount: number, response?: AxiosResponse) => number);
+    retryDelay?: number | ((retryCount: number, response?: AxiosResponse | null) => number);
     backoffFactor?: number;
     maxDelay?: number;
     jitter?: boolean;
@@ -459,7 +459,7 @@ declare namespace axios {
     calculateRetryDelay: (
       retryCount: number,
       options?: AxiosRetryConfig,
-      response?: AxiosResponse
+      response?: AxiosResponse | null
     ) => number;
     isRetryableError: (error: any, options?: AxiosRetryConfig) => boolean;
     parseRetryAfter: (response?: AxiosResponse | null) => number | null;

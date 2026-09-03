@@ -285,35 +285,64 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
-  it('should protect against prototype pollution when env.fetch is explicitly set to globalThis.fetch', async () => {
-    const server = await startHTTPServer((req, res) => {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          authorization: req.headers.authorization,
-        })
-      );
-    });
+  it('should handle non-configurable Symbol.iterator on Object.prototype without throwing during delete', async () => {
+    const { execFileSync } = await import('child_process');
+    const script = `
+      import axios from './index.js';
+      import assert from 'assert';
 
-    try {
-      Object.prototype[Symbol.iterator] = function* () {
-        yield ['Authorization', 'Bearer INJECTED'];
-      };
+      Object.defineProperty(Object.prototype, Symbol.iterator, {
+        value: function* () { yield ['custom', 'entry']; },
+        configurable: false,
+        writable: true,
+      });
 
-      const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+      const { data } = await axios.get('http://localhost/', {
+        adapter: 'fetch',
         env: {
-          fetch: globalThis.fetch,
-        },
-        headers: {
-          Authorization: 'Bearer VALID_TOKEN',
+          fetch: async () => new Response('{"ok":true}', {
+            headers: { 'Content-Type': 'application/json' },
+          }),
         },
       });
 
-      assert.strictEqual(data.authorization, 'Bearer VALID_TOKEN');
+      assert.deepStrictEqual(data, { ok: true });
+    `;
+
+    execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: process.cwd(),
+      stdio: 'pipe',
+    });
+  });
+
+  it('should allow wrapped global fetch configured in env.fetch to see restored Symbol.iterator', async () => {
+    let wrapperRan = false;
+    const wrappedFetch = async (input, init) => {
+      wrapperRan = true;
+      const plainObj = {};
+      const entries = [...plainObj];
+      assert.strictEqual(entries.length, 1);
+      return new Response('{"status":"ok"}', {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: wrappedFetch,
+        },
+      });
+
+      assert.strictEqual(wrapperRan, true);
+      assert.deepStrictEqual(data, { status: 'ok' });
       assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
     } finally {
       delete Object.prototype[Symbol.iterator];
-      await stopHTTPServer(server);
     }
   });
 

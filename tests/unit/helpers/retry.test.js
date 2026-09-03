@@ -218,5 +218,40 @@ describe('helpers:retry', function () {
         assert(elapsed < 200);
       }
     });
+    it('should preserve an AxiosError abort reason during backoff', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 250, jitter: false, retries: 1 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const err = new Error('Service Unavailable');
+        err.config = config;
+        err.response = { status: 503, headers: {} };
+        throw err;
+      };
+
+      const controller = new AbortController();
+      const abortReason = new axios.AxiosError('abort reason', 'E_ABORT_REASON', null, null, {
+        status: 418,
+        headers: { 'x-reason-metadata': 'preserved' },
+      });
+      const request = instance.get('http://test.local', {
+        signal: controller.signal,
+        retry: { retries: 1, retryDelay: 250, jitter: false },
+      });
+
+      setTimeout(() => controller.abort(abortReason), 25);
+
+      try {
+        await request;
+        assert.fail('Should have failed');
+      } catch (err) {
+        assert.strictEqual(attempts, 1);
+        assert.strictEqual(err, abortReason);
+        assert.strictEqual(err.response.status, 418);
+        assert.strictEqual(err.response.headers['x-reason-metadata'], 'preserved');
+      }
+    });
   });
 });

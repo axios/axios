@@ -468,6 +468,7 @@ export interface AxiosRequestConfig<D = any, P = any> {
         [address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress
       >);
   withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig<D, P>) => boolean | undefined);
+  retry?: boolean | AxiosRetryConfig;
   parseReviver?: (this: any, key: string, value: any, context?: { source?: string }) => any;
   fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> | Record<string, any>;
   httpVersion?: 1 | 2;
@@ -479,7 +480,36 @@ export interface AxiosRequestConfig<D = any, P = any> {
   sensitiveHeaders?: string[];
 }
 
+export interface AxiosRetryConfig {
+  retries?: number;
+  retryDelay?: number | ((retryCount: number, response?: AxiosResponse | null) => number);
+  backoffFactor?: number;
+  maxDelay?: number;
+  jitter?: boolean;
+  respectRetryAfter?: boolean;
+  statusCodes?: number[];
+  retryMethods?: string[];
+  networkErrorCodes?: string[];
+  shouldRetry?: (error: any, retryCount: number) => boolean;
+  onRetry?: (retryCount: number, error: any, config: InternalAxiosRequestConfig, delay: number) => void;
+}
+
+export interface AxiosRetryHelper {
+  attachRetry: typeof attachRetry;
+  calculateRetryDelay: (
+    retryCount: number,
+    options?: AxiosRetryConfig,
+    response?: AxiosResponse | null
+  ) => number;
+  isRetryableError: (error: any, options?: AxiosRetryConfig) => boolean;
+  parseRetryAfter: (response?: AxiosResponse | null) => number | null;
+  DEFAULT_RETRY_STATUS_CODES: number[];
+  DEFAULT_RETRY_METHODS: string[];
+  DEFAULT_NETWORK_ERROR_CODES: string[];
+}
+
 // Alias
+
 export type RawAxiosRequestConfig<D = any, P = any> = AxiosRequestConfig<D, P>;
 
 export interface InternalAxiosRequestConfig<D = any, P = any> extends AxiosRequestConfig<D, P> {
@@ -738,6 +768,13 @@ export function getAdapter(
   adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined
 ): AxiosAdapter;
 
+export function attachRetry(
+  axiosInstance: AxiosInstance | AxiosStatic,
+  defaultOptions?: AxiosRetryConfig
+): number;
+
+export const retry: AxiosRetryHelper;
+
 export function toFormData(
   sourceObj: object,
   targetFormData?: GenericFormData,
@@ -780,7 +817,10 @@ export interface AxiosStatic extends AxiosInstance {
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
   mergeConfig: typeof mergeConfig;
+  retry: AxiosRetryHelper;
+  attachRetry: typeof attachRetry;
 }
+
 
 declare const axios: AxiosStatic;
 

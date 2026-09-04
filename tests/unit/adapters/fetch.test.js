@@ -1734,6 +1734,52 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
     });
 
+    it('should allow a spaced trailing base64 token at the decoded maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+      const { data } = await bareAxios.get('data:text/plain; base64,TQ==', {
+        maxContentLength: 1,
+      });
+
+      assert.strictEqual(data, 'M');
+    });
+
+    // The URL parser removes these before fetch decodes, so each is a 1-byte
+    // base64 body and must not be rejected at maxContentLength: 1.
+    it('should allow a base64 token split by tabs or newlines at the decoded maxContentLength', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+
+      for (const url of [
+        'data:text/plain;\tbase64,TQ==',
+        'data:text/plain;\nbase64,TQ==',
+        'data:text/plain;\rbase64,TQ==',
+        'data:text/plain;ba\tse64,TQ==',
+        'data:text/plain;base64,T\tQ==',
+      ]) {
+        const { data } = await bareAxios.get(url, { maxContentLength: 1 });
+        assert.strictEqual(data, 'M', JSON.stringify(url));
+      }
+    });
+
+    // A form feed is percent-encoded rather than removed, so fetch returns the raw
+    // 4-byte text body — sizing it as base64 would wave it past a 3-byte limit.
+    it('should reject a form-feed-terminated base64 token by its decoded text size', async () => {
+      const bareAxios = axios.create({ adapter: 'fetch' });
+
+      for (const url of [
+        'data:text/plain;base64\f,TQ==',
+        'data:text/plain;base64 \f,TQ==',
+      ]) {
+        await assert.rejects(bareAxios.get(url, { maxContentLength: 3 }), (err) => {
+          assert.strictEqual(err.code, axios.AxiosError.ERR_BAD_RESPONSE);
+          assert.match(err.message, /maxContentLength size of 3 exceeded/);
+          return true;
+        }, JSON.stringify(url));
+
+        const { data } = await bareAxios.get(url, { maxContentLength: 4 });
+        assert.strictEqual(data, 'TQ==', JSON.stringify(url));
+      }
+    });
+
     it('should allow percent-encoded base64 padding at the decoded maxContentLength', async () => {
       const bareAxios = axios.create({ adapter: 'fetch' });
       const { data } = await bareAxios.get('data:text/plain;base64,TQ%3D%3D', {

@@ -253,5 +253,35 @@ describe('helpers:retry', function () {
         assert.strictEqual(err.response.headers['x-reason-metadata'], 'preserved');
       }
     });
+
+    it.each([
+      ['an Error', new Error('plain abort reason'), 'plain abort reason'],
+      ['a string', 'string abort reason', 'string abort reason'],
+    ])('should preserve %s abort reasons during backoff', async (_label, abortReason, expectedMessage) => {
+      const instance = axios.create();
+      attachRetry(instance, {retryDelay: 250, jitter: false, retries: 1});
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const error = new Error('Service Unavailable');
+        error.config = config;
+        error.response = {status: 503, headers: {}};
+        throw error;
+      };
+
+      const controller = new AbortController();
+      const request = instance.get('http://test.local', {
+        signal: controller.signal,
+        retry: {retries: 1, retryDelay: 250, jitter: false},
+      });
+      setTimeout(() => controller.abort(abortReason), 25);
+
+      await assert.rejects(request, (error) => {
+        assert.strictEqual(attempts, 1);
+        assert.strictEqual(error.code, 'ERR_CANCELED');
+        assert.strictEqual(error.message, expectedMessage);
+        return true;
+      });
+    });
   });
 });

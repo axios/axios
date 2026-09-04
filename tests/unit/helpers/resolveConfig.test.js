@@ -41,6 +41,20 @@ describe('helpers::resolveConfig', () => {
     }
   });
 
+  it('rejects a null url with params instead of resolving to the current page', () => {
+    let error;
+
+    try {
+      resolveConfig({ url: null, params: { foo: 'bar' } });
+    } catch (err) {
+      error = err;
+    }
+
+    assert.ok(error instanceof AxiosError);
+    assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+    assert.strictEqual(error.message, 'Invalid URL: url must be a string when params are provided');
+  });
+
   it('clears Content-Type for React Native FormData', () => {
     const data = new ReactNativeFormData();
     const config = resolveConfig({

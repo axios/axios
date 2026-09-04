@@ -203,6 +203,119 @@ describe('core::AxiosError', () => {
     expect(error.status).toBe(400);
   });
 
+  describe('agent serialization (issue #11145)', () => {
+    // The shape that made this expensive: an agent pointing at its sockets
+    // while every socket points back at the agent and at its peers.
+    const buildAgentGraph = (socketCount) => {
+      const agent = { sockets: {}, freeSockets: {}, requests: {}, options: { keepAlive: true } };
+      const sockets = [];
+
+      for (let i = 0; i < socketCount; i++) {
+        const socket = { id: i, agent, _httpMessage: { agent }, peers: sockets };
+        socket._httpMessage.socket = socket;
+        sockets.push(socket);
+        agent.sockets['host:' + i] = [socket];
+      }
+
+      return agent;
+    };
+
+    const serialize = (config) => new AxiosError('Boom!', 'ESOMETHING', config).toJSON().config;
+
+    it('replaces agents with a label instead of walking them', () => {
+      const config = { url: '/foo', httpAgent: buildAgentGraph(2), httpsAgent: buildAgentGraph(2) };
+      const json = serialize(config);
+
+      expect(json.httpAgent).toBe('[http.Agent]');
+      expect(json.httpsAgent).toBe('[https.Agent]');
+      expect(json.url).toBe('/foo');
+      expect(JSON.stringify(json)).not.toContain('sockets');
+    });
+
+    it('replaces the agent wherever it is reached, not just under its own key', () => {
+      const agent = buildAgentGraph(4);
+      const config = { url: '/foo', httpAgent: agent, nested: { alias: agent } };
+      const json = serialize(config);
+
+      expect(json.nested.alias).toBe('[http.Agent]');
+      expect(JSON.stringify(json)).not.toContain('sockets');
+    });
+
+    it('does not expose the agent through a circular config reference', () => {
+      const config = { url: '/foo', httpAgent: buildAgentGraph(4) };
+      config.self = config;
+
+      expect(JSON.stringify(serialize(config))).not.toContain('sockets');
+    });
+
+    it('does not copy or mutate the config', () => {
+      const agent = buildAgentGraph(2);
+      const config = { url: '/foo', httpAgent: agent };
+
+      serialize(config);
+
+      expect(config.httpAgent).toBe(agent);
+    });
+
+    it('does not promote an inherited agent onto the serialized config', () => {
+      const config = Object.create({ httpAgent: buildAgentGraph(2) });
+      config.url = '/foo';
+
+      expect(serialize(config)).not.toHaveProperty('httpAgent');
+    });
+
+    it('does not read an inherited agent accessor', () => {
+      const proto = {};
+      Object.defineProperty(proto, 'httpAgent', {
+        enumerable: true,
+        get() {
+          throw new Error('inherited agent should not be read');
+        },
+      });
+      const config = Object.create(proto);
+      config.url = '/foo';
+
+      expect(() => serialize(config)).not.toThrow();
+    });
+
+    it('does not let a throwing own agent accessor take down serialization', () => {
+      const config = { url: '/foo' };
+      // Non-enumerable, so the serializer would never have touched it. Reading it to
+      // label the agent must not be what breaks the error being reported.
+      Object.defineProperty(config, 'httpAgent', {
+        enumerable: false,
+        configurable: true,
+        get() {
+          throw new Error('own agent accessor should not break toJSON');
+        },
+      });
+
+      expect(() => serialize(config)).not.toThrow();
+    });
+
+    it('labels a single agent serving both keys without picking a side', () => {
+      const agent = buildAgentGraph(2);
+      const json = serialize({ url: '/foo', httpAgent: agent, httpsAgent: agent });
+
+      expect(json.httpAgent).toBe('[Agent]');
+      expect(json.httpsAgent).toBe('[Agent]');
+    });
+
+    it('leaves non-object agent values alone', () => {
+      const json = serialize({ url: '/foo', httpAgent: false, httpsAgent: undefined });
+
+      expect(json.httpAgent).toBe(false);
+      expect(json).not.toHaveProperty('httpsAgent');
+    });
+
+    it('replaces agents on the redaction path too', () => {
+      const json = serialize({ url: '/foo', httpAgent: buildAgentGraph(2), token: 'secret', redact: ['token'] });
+
+      expect(json.httpAgent).toBe('[http.Agent]');
+      expect(json.token).not.toBe('secret');
+    });
+  });
+
   describe('status field behaviour (issue #5330)', () => {
     it('error.status equals response.status for 4xx errors', () => {
       // Regression test: error.status must be directly accessible without

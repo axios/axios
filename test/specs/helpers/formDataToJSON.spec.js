@@ -54,10 +54,11 @@ describe('formDataToJSON', function () {
     formData.append('foo[0]', '1');
     formData.append('foo[1]', '2');
     formData.append('__proto__.x', 'hack');
-    formData.append('constructor.prototype.y', 'value');
+    formData.append('constructor[prototype][y]', 'value');
 
     expect(formDataToJSON(formData)).toEqual({
       foo: ['1', '2'],
+      '__proto__.x': 'hack',
       constructor: {
         prototype: {
           y: 'value'
@@ -67,5 +68,35 @@ describe('formDataToJSON', function () {
 
     expect({}.x).toEqual(undefined);
     expect({}.y).toEqual(undefined);
+  });
+
+  it('should keep field names with hyphens, spaces, dots, and other punctuation literal', () => {
+    const formData = new FormData();
+
+    formData.append('user-name', 'foo');
+    formData.append('full name', 'bar');
+    formData.append('a.b.c', 'baz');
+    formData.append('a+b*c', 'qux');
+
+    expect(formDataToJSON(formData)).toEqual({
+      'user-name': 'foo',
+      'full name': 'bar',
+      'a.b.c': 'baz',
+      'a+b*c': 'qux'
+    });
+  });
+
+  it('should still support bracket notation for nested and array props with punctuation in the base key', () => {
+    const formData = new FormData();
+
+    formData.append('user-name[first]', 'John');
+    formData.append('user-name[last]', 'Doe');
+
+    expect(formDataToJSON(formData)).toEqual({
+      'user-name': {
+        first: 'John',
+        last: 'Doe'
+      }
+    });
   });
 });

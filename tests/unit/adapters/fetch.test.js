@@ -1120,6 +1120,30 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
   });
 
+  it('should not unwrap a foreign AxiosError from a fetch TypeError cause', async () => {
+    const foreignRequest = { foreign: true };
+    const foreignConfig = { url: 'http://foreign.test/' };
+    const foreignError = new AxiosError(
+      'Foreign Error',
+      'ERR_FOREIGN',
+      foreignConfig,
+      foreignRequest
+    );
+    const failingFetch = () =>
+      Promise.reject(Object.assign(new TypeError('fetch failed'), { cause: foreignError }));
+
+    const err = await fetchAxios
+      .get('/current', { env: { fetch: failingFetch } })
+      .catch((error) => error);
+
+    assert.notStrictEqual(err, foreignError);
+    assert.strictEqual(err.code, AxiosError.ERR_NETWORK);
+    assert.strictEqual(err.config.url, '/current');
+    assert.notStrictEqual(err.config, foreignConfig);
+    assert.notStrictEqual(err.request, foreignRequest);
+    assert.strictEqual(err.cause, foreignError);
+  });
+
   it('should get response headers', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -1686,13 +1710,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.write(chunk, writeNext);
           };
           writeNext();
-        },
-        { port: SERVER_PORT }
+        }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+          fetchAxios.get(`http://localhost:${server.address().port}/`, {
             maxContentLength: 512,
           }),
           (err) => {

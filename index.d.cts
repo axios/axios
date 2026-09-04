@@ -181,7 +181,7 @@ declare class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
 
 declare const axiosResponseDefault: unique symbol;
 
-type AxiosResponseDefault = typeof axiosResponseDefault;
+type AxiosResponseDefault = axios.AxiosResponseDefault;
 
 type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
   ? axios.AxiosResponse<T, D, {}, P>
@@ -331,6 +331,10 @@ declare enum HttpStatusCode {
 type InternalAxiosError<T = unknown, D = any, P = any> = AxiosError<T, D, P>;
 
 declare namespace axios {
+  interface AxiosResponseDefault {
+    readonly [axiosResponseDefault]: true;
+  }
+
   type AxiosHeaderParameters = Record<string, string>;
 
   type AxiosError<T = unknown, D = any, P = any> = InternalAxiosError<T, D, P>;

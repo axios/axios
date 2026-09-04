@@ -19,6 +19,16 @@ const tsconfig = {
   },
 };
 
+const declarationTsconfig = {
+  compilerOptions: {
+    module: 'node16',
+    strict: true,
+    skipLibCheck: true,
+    declaration: true,
+    emitDeclarationOnly: true,
+  },
+};
+
 describe('module ts compatibility', () => {
   it('compiles and executes import axios syntax', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-functions.ts');
@@ -32,5 +42,30 @@ describe('module ts compatibility', () => {
     } finally {
       cleanupTempFixture(fixturePath);
     }
+  });
+
+  [
+    ['ESM', 'module'],
+    ['CommonJS', 'commonjs'],
+  ].forEach(([name, packageType]) => {
+    it(`emits ${name} declarations for forwarded request response generics`, () => {
+      const sourcePath = path.join(
+        repoRoot,
+        'tests/module/esm/tests/helpers/declaration-emit.ts'
+      );
+      const fixturePath = createTempFixture(
+        suiteRoot,
+        `declaration-emit-${packageType}`,
+        sourcePath,
+        declarationTsconfig,
+        { type: packageType }
+      );
+
+      try {
+        runCommand('node', [tscBin, '-p', 'tsconfig.json'], { cwd: fixturePath });
+      } finally {
+        cleanupTempFixture(fixturePath);
+      }
+    });
   });
 });

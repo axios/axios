@@ -16,8 +16,10 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar');
   });
 
-  it('should support params with undefined url', () => {
-    expect(buildURL(undefined, { foo: 'bar' })).toEqual('?foo=bar');
+  it('should throw an error for non-string URL when params are provided', () => {
+    expect(() => buildURL(undefined, { foo: 'bar' })).toThrowError(/url must be a string/);
+    expect(() => buildURL(null, { foo: 'bar' })).toThrowError(/url must be a string/);
+    expect(() => buildURL(123, { foo: 'bar' })).toThrowError(/url must be a string/);
   });
 
   it('should support sending raw params to custom serializer func', () => {

@@ -809,7 +809,9 @@ describe('supports http with nodejs', function () {
           errorParam: new Date(undefined),
         },
       }).catch(function (err) {
-        assert.deepEqual(err.exists, true)
+        assert.deepEqual(err.exists, true);
+        assert.strictEqual(err.code, 'ERR_BAD_REQUEST');
+        assert.strictEqual(err.url, 'http://localhost:4444/');
         done();
       }).catch(done);
     });

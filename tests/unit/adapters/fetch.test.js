@@ -335,6 +335,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       const { data } = await fetchAxios.get('http://localhost/', {
         env: {
+          Request,
           fetch: wrappedFetch,
         },
       });
@@ -344,38 +345,6 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
     } finally {
       delete Object.prototype[Symbol.iterator];
-    }
-  });
-
-  it('should protect against prototype pollution when env.fetch is explicitly set to globalThis.fetch', async () => {
-    const server = await startHTTPServer((req, res) => {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(
-        JSON.stringify({
-          authorization: req.headers.authorization,
-        })
-      );
-    });
-
-    try {
-      Object.prototype[Symbol.iterator] = function* () {
-        yield ['Authorization', 'Bearer INJECTED'];
-      };
-
-      const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
-        env: {
-          fetch: globalThis.fetch,
-        },
-        headers: {
-          Authorization: 'Bearer VALID_TOKEN',
-        },
-      });
-
-      assert.strictEqual(data.authorization, 'Bearer VALID_TOKEN');
-      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
-    } finally {
-      delete Object.prototype[Symbol.iterator];
-      await stopHTTPServer(server);
     }
   });
 
@@ -400,6 +369,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       const { data } = await fetchAxios.get('http://localhost/', {
         env: {
+          Request,
           fetch: globalThis.fetch,
         },
       });

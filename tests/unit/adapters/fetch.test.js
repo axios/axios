@@ -382,6 +382,70 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should allow custom Request constructor to access Object.prototype[Symbol.iterator]', async () => {
+    let customRequestRan = false;
+    class CustomRequest {
+      constructor(url, init) {
+        customRequestRan = true;
+        const plainObj = {};
+        const entries = [...plainObj];
+        assert.strictEqual(entries.length, 1);
+        this.url = url;
+        this.headers = new Headers(init?.headers);
+      }
+    }
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          Request: CustomRequest,
+          fetch: async () => new Response('{"customReq":true}', {
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        },
+      });
+
+      assert.strictEqual(customRequestRan, true);
+      assert.deepStrictEqual(data, { customReq: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should restore Symbol.iterator before calling a wrapper that replaced globalThis.fetch without env', async () => {
+    let wrapperRan = false;
+    const originalFetch = globalThis.fetch;
+    const wrappedFetch = async () => {
+      wrapperRan = true;
+      const plainObj = {};
+      const entries = [...plainObj];
+      assert.strictEqual(entries.length, 1);
+      return new Response('{"globalWrapper":true}', {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      globalThis.fetch = wrappedFetch;
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/');
+
+      assert.strictEqual(wrapperRan, true);
+      assert.deepStrictEqual(data, { globalWrapper: true });
+    } finally {
+      globalThis.fetch = originalFetch;
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(
       (req, res) => {

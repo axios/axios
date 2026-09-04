@@ -60,6 +60,20 @@ describe('helpers::buildURL', function () {
     })).toEqual('/foo?foo=:$,+');
   });
 
+  it('should pass the params serializer instance as `this` to a custom encode', function () {
+    const capturedThis = [];
+
+    expect(buildURL('/foo', {foo: 'bar', baz: 'qux'}, {
+      encode: function (value, defaultEncode) {
+        capturedThis.push(this);
+        return defaultEncode(value);
+      }
+    })).toEqual('/foo?foo=bar&baz=qux');
+    expect(capturedThis.length).toEqual(4);
+    expect(new Set(capturedThis).size).toEqual(1);
+    expect(capturedThis[0]).not.toBeUndefined();
+  });
+
   it('should support existing params', function () {
     expect(buildURL('/foo?foo=bar', {
       bar: 'baz'

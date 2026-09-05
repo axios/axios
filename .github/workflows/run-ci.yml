@@ -91,7 +91,7 @@ jobs:
 
       # npm 8 supports Node 12, lockfile v3, and the fixture's dependency overrides.
       - name: Setup legacy-compatible npm
-        run: npm install --global npm@8.19.4 --ignore-scripts
+        run: bash .github/scripts/setup-legacy-npm.sh
 
       - name: Install CJS smoke test dependencies
         working-directory: tests/smoke/cjs
@@ -175,7 +175,7 @@ jobs:
 
       # npm 8 supports Node 12, lockfile v3, and the fixture's dependency overrides.
       - name: Setup legacy-compatible npm
-        run: npm install --global npm@8.19.4 --ignore-scripts
+        run: bash .github/scripts/setup-legacy-npm.sh
 
       - name: Install CJS module test dependencies
         working-directory: tests/module/cjs

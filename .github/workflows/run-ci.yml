@@ -25,7 +25,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26.x
-          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Install dependencies
@@ -64,6 +63,10 @@ jobs:
     name: CJS smoke tests (Node ${{ matrix.node-version }})
     needs: build-and-run-vitest
     runs-on: ubuntu-latest
+    env:
+      # Reject test dependencies that drop support for a legacy matrix runtime.
+      NPM_CONFIG_ENGINE_STRICT: 'true'
+      NPM_CONFIG_IGNORE_SCRIPTS: 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -78,7 +81,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Download npm pack artifact
@@ -87,9 +89,13 @@ jobs:
           name: axios-tarball
           path: artifacts
 
+      # npm 8 supports Node 12, lockfile v3, and the fixture's dependency overrides.
+      - name: Setup legacy-compatible npm
+        run: npm install --global npm@8.19.4 --ignore-scripts
+
       - name: Install CJS smoke test dependencies
         working-directory: tests/smoke/cjs
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Install packed axios
         working-directory: tests/smoke/cjs
@@ -117,7 +123,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Download npm pack artifact
@@ -142,6 +147,10 @@ jobs:
     name: CJS module tests (Node ${{ matrix.node-version }})
     needs: build-and-run-vitest
     runs-on: ubuntu-latest
+    env:
+      # Keep Mocha 9.2.2 in this fixture while Node 12 remains in the matrix.
+      NPM_CONFIG_ENGINE_STRICT: 'true'
+      NPM_CONFIG_IGNORE_SCRIPTS: 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -156,7 +165,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Download npm pack artifact
@@ -165,9 +173,13 @@ jobs:
           name: axios-tarball
           path: artifacts
 
+      # npm 8 supports Node 12, lockfile v3, and the fixture's dependency overrides.
+      - name: Setup legacy-compatible npm
+        run: npm install --global npm@8.19.4 --ignore-scripts
+
       - name: Install CJS module test dependencies
         working-directory: tests/module/cjs
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Install packed axios
         working-directory: tests/module/cjs
@@ -195,7 +207,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Download npm pack artifact

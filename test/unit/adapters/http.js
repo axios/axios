@@ -1365,8 +1365,6 @@ describe("supports http with nodejs", function () {
     {name: "colon HTTP", protocol: " HTTP: ", secure: false},
     {name: "bare HTTPS", protocol: "https", secure: true},
     {name: "colon HTTPS", protocol: " HTTPS: ", secure: true},
-    {name: "unsupported", protocol: "ftp", secure: true},
-    {name: "malformed", protocol: "http://", secure: true},
   ].forEach(function (protocolCase) {
     ["native", "follow", "redirect"].forEach(function (transportCase) {
       it("should use " + (protocolCase.secure ? "HTTPS" : "HTTP") + " for an HTTPS target with " + protocolCase.name + " proxy protocol (" + transportCase + ")", function (done) {
@@ -1438,7 +1436,7 @@ describe("supports http with nodejs", function () {
     });
   });
 
-  [undefined, null, false, 1234, {}, "", " ", "ftp", "ftp:", "http://", "https://", "http::", "https::", "https:invalid"].forEach(function (protocol) {
+  [undefined, null, false, 1234, {}, ""].forEach(function (protocol) {
     ["http:", "https:"].forEach(function (targetProtocol) {
       it("should preserve the " + targetProtocol + " target protocol for an unusable proxy protocol " + JSON.stringify(protocol), function () {
         var capturedOptions;
@@ -1458,6 +1456,94 @@ describe("supports http with nodejs", function () {
           assert.strictEqual(err, stopped);
           assert.equal(capturedOptions.protocol, targetProtocol);
         });
+      });
+    });
+  });
+
+  [" ", "ftp", "ftp:", "http://", "https://", "http::", "https::", "https:invalid", "https://user:secret@proxy"].forEach(function (protocol) {
+    ["http:", "https:"].forEach(function (targetProtocol) {
+      ["native", "follow"].forEach(function (transportCase) {
+        it("should reject invalid proxy protocol " + JSON.stringify(protocol) + " before connecting (" + targetProtocol + ", " + transportCase + ")", function (done) {
+          var connections = 0;
+          proxy = http.createServer(function (req, res) {
+            res.end("unexpected proxy request");
+          });
+          proxy.on("connection", function () {
+            connections++;
+          });
+          proxy.listen(0, "127.0.0.1", function () {
+            var config = {
+              proxy: {
+                host: "127.0.0.1",
+                port: proxy.address().port,
+                protocol: protocol,
+                auth: {username: "proxy-user", password: "proxy-pass"},
+              },
+              timeout: 1000,
+              httpAgent: new http.Agent({keepAlive: false}),
+              httpsAgent: new https.Agent({keepAlive: false}),
+            };
+            if (transportCase === "native") {
+              config.maxRedirects = 0;
+            }
+
+            axios.get(targetProtocol + "//target.example/private", config).then(function () {
+              assert.fail("invalid proxy protocol must reject");
+            }, function (err) {
+              assert(axios.isAxiosError(err));
+              assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+              // Do not echo malformed values that may contain credentials.
+              assert.equal(err.message, "proxy.protocol must be http or https");
+              assert.equal(connections, 0, "must reject before opening a proxy connection");
+            }).then(function () { done(); }, done);
+          });
+        });
+      });
+    });
+  });
+
+  [false, true].forEach(function (redirect) {
+    it("should reject an unsupported environment proxy protocol before connecting" + (redirect ? " on redirect" : ""), function (done) {
+      var connections = 0;
+      proxy = http.createServer(function (req, res) {
+        res.end("unexpected proxy request");
+      });
+      proxy.on("connection", function () {
+        connections++;
+      });
+      proxy.listen(0, "127.0.0.1", function () {
+        process.env.http_proxy = "socks5://proxy-user:proxy-pass@127.0.0.1:" + proxy.address().port;
+        process.env.no_proxy = "127.0.0.1";
+
+        function request(target) {
+          axios.get(target, {timeout: 1000, httpAgent: new http.Agent({keepAlive: false})}).then(function () {
+            assert.fail("unsupported environment proxy protocol must reject");
+          }, function (err) {
+            assert(axios.isAxiosError(err));
+            if (redirect) {
+              assert.equal(err.code, "ERR_FR_REDIRECTION_FAILURE");
+              var cause = err;
+              while (cause.cause) {
+                cause = cause.cause;
+              }
+              assert.equal(cause.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            } else {
+              assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            }
+            assert.equal(connections, 0, "must reject before opening a proxy connection");
+          }).then(function () { done(); }, done);
+        }
+
+        if (redirect) {
+          server = http.createServer(function (req, res) {
+            res.writeHead(302, {Location: "http://target.example/private"});
+            res.end();
+          }).listen(0, "127.0.0.1", function () {
+            request("http://127.0.0.1:" + server.address().port + "/");
+          });
+        } else {
+          request("http://target.example/private");
+        }
       });
     });
   });

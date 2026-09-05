@@ -497,6 +497,7 @@ These are the available config options for making requests. Only the `url` is re
   // Set the protocol to `http` for a plaintext proxy or `https` for a TLS proxy.
   // If omitted, the proxy connection inherits the target URL's protocol.
   // A plaintext proxy for an HTTPS target therefore requires explicit `http`.
+  // Unsupported non-empty protocol strings are rejected before connecting.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',

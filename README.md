@@ -494,8 +494,9 @@ These are the available config options for making requests. Only the `url` is re
   // supplies credentials.
   // This will set an `Proxy-Authorization` header, overwriting any existing
   // `Proxy-Authorization` custom headers you have set using `headers`.
-  // The proxy protocol defaults to `http` when omitted.
-  // If the proxy server uses HTTPS, then you must set the protocol to `https`.
+  // Set the protocol to `http` for a plaintext proxy or `https` for a TLS proxy.
+  // If omitted, the proxy connection inherits the target URL's protocol.
+  // A plaintext proxy for an HTTPS target therefore requires explicit `http`.
   proxy: {
     protocol: 'https',
     host: '127.0.0.1',

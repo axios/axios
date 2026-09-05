@@ -748,7 +748,17 @@ and when the response was fulfilled
 
 Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
 
+For synchronous request interceptors, a thrown error is passed to that interceptor's
+rejection handler, when supplied. If the handler is absent, throws, or returns a
+rejected promise, the request is rejected without being sent and response rejection
+interceptors can handle the failure. A promise returned by a recovery handler is
+awaited before dispatch. Successful synchronous interceptors still dispatch immediately.
+
 ## Handling Errors
+
+When an error is created asynchronously, Axios appends the captured request caller
+stack where the runtime supports textual stacks. The original error and its stack
+are preserved; the number of available frames depends on the runtime's stack settings.
 
 ```js
 axios.get('/user/12345')
@@ -807,6 +817,24 @@ axios.get('/foo/bar', {
 });
 // cancel the request
 controller.abort()
+```
+
+On runtimes that expose `AbortSignal.reason`, Axios preserves that value in
+`CanceledError.reason`, including objects and falsy values. Cancellation still uses
+the `canceled` message, `ERR_CANCELED` code, and `axios.isCancel()` detection. Signals
+without a reason continue to work and leave `error.reason` undefined.
+
+```js
+const controller = new AbortController();
+const reason = new Error('Replaced by a newer search');
+
+axios.get('/search', {signal: controller.signal}).catch(function (error) {
+  if (axios.isCancel(error) && error.reason === reason) {
+    // This request was superseded.
+  }
+});
+
+controller.abort(reason);
 ```
 
 ### CancelToken `👎deprecated`
@@ -1186,6 +1214,11 @@ axios depends on a native ES6 Promise implementation to be [supported](https://c
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
+
+Request header values are strings, string arrays, numbers, or booleans. The
+`common` and method-specific header groups accept maps of these values. Resolve
+asynchronous values in a request interceptor before assigning them to headers;
+Promise and function values are rejected by the TypeScript declarations.
 
 axios includes [TypeScript](https://typescriptlang.org) definitions and a type guard for axios errors.
 

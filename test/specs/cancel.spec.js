@@ -115,4 +115,52 @@ describe('cancel', function() {
       }, 0);
     });
   });
+
+  describe('abort reasons', function () {
+    function createController() {
+      return new (window.AbortController || _AbortController)();
+    }
+
+    function abortWithReason(controller, reason) {
+      if (!('reason' in controller.signal)) {
+        Object.defineProperty(controller.signal, 'reason', {value: reason});
+      }
+      controller.abort(reason);
+    }
+
+    function expectCancellation(error, reason) {
+      expect(axios.isCancel(error)).toBe(true);
+      expect(error.code).toBe('ERR_CANCELED');
+      expect(error.message).toBe('canceled');
+      expect(error.reason).toBe(reason);
+    }
+
+    [new Error('timeout'), 'superseded', {operation: 'search'}, null, false, 0, ''].forEach(function (reason, index) {
+      it('retains pre-aborted reason ' + index, function (done) {
+        var controller = createController();
+        abortWithReason(controller, reason);
+        axios.get('/foo', {signal: controller.signal}).then(function () {
+          done.fail('Expected cancellation');
+        }, function (error) {
+          expectCancellation(error, reason);
+          expect(jasmine.Ajax.requests.count()).toBe(0);
+          done();
+        });
+      });
+
+      it('retains in-flight reason ' + index, function (done) {
+        var controller = createController();
+        axios.get('/foo', {signal: controller.signal}).then(function () {
+          done.fail('Expected cancellation');
+        }, function (error) {
+          expectCancellation(error, reason);
+          done();
+        });
+        getAjaxRequest().then(function (request) {
+          abortWithReason(controller, reason);
+          expect(request.statusText).toBe('abort');
+        });
+      });
+    });
+  });
 });

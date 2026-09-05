@@ -1358,6 +1358,71 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  ["omitted", "undefined"].forEach(function (protocolCase) {
+    ["native", "follow", "redirect"].forEach(function (transportCase) {
+      it("should default an " + protocolCase + " proxy protocol to HTTP for an HTTPS target (" + transportCase + ")", function (done) {
+        var requests = [];
+        var target = "https://target.example/start";
+        var redirectedTarget = "https://redirected.example/finish";
+
+        // Respond as a plaintext forward proxy; no external target is contacted.
+        proxy = http.createServer(function (req, res) {
+          requests.push({url: req.url, host: req.headers.host});
+          if (transportCase === "redirect" && requests.length === 1) {
+            res.writeHead(302, {Location: redirectedTarget});
+            res.end();
+          } else {
+            res.end("proxied");
+          }
+        }).listen(0, "127.0.0.1", function () {
+          var proxyConfig = {
+            host: "127.0.0.1",
+            port: proxy.address().port,
+          };
+          if (protocolCase === "undefined") {
+            proxyConfig.protocol = undefined;
+          }
+          var config = {proxy: proxyConfig, timeout: 3000};
+          if (transportCase === "native") {
+            config.maxRedirects = 0;
+          }
+
+          axios.get(target, config).then(function (res) {
+            assert.equal(res.data, "proxied");
+            var expected = [{url: target, host: "target.example"}];
+            if (transportCase === "redirect") {
+              expected.push({url: redirectedTarget, host: "redirected.example"});
+            }
+            assert.deepStrictEqual(requests, expected);
+            done();
+          }).catch(done);
+        });
+      });
+    });
+  });
+
+  [null, false, 1234, {}, "", " "].forEach(function (protocol) {
+    it("should preserve the HTTPS target protocol for an unusable proxy protocol " + JSON.stringify(protocol), function () {
+      var capturedOptions;
+      var stopped = new Error("request inspected");
+
+      return axios.get("https://target.example/", {
+        proxy: {host: "127.0.0.1", port: 4000, protocol: protocol},
+        transport: {
+          request: function (options) {
+            capturedOptions = options;
+            throw stopped;
+          },
+        },
+      }).then(function () {
+        assert.fail("transport should stop the request");
+      }, function (err) {
+        assert.strictEqual(err, stopped);
+        assert.equal(capturedOptions.protocol, "https:");
+      });
+    });
+  });
+
   it("should support HTTPS proxies", function (done) {
     var options = {
       key: fs.readFileSync(path.join(__dirname, "key.pem")),

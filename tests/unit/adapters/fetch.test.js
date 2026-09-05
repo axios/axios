@@ -446,6 +446,70 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should guard against Object.prototype[Symbol.iterator] pollution when explicitly configured with env.fetch', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          auth: req.headers.authorization,
+        })
+      );
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['Authorization', 'Bearer INJECTED'];
+      };
+
+      const res = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          Authorization: 'Bearer VALID_TOKEN',
+        },
+        env: {
+          fetch: globalThis.fetch,
+        },
+      });
+
+      assert.strictEqual(res.data.auth, 'Bearer VALID_TOKEN');
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should allow bound custom fetch in env.fetch to access Object.prototype[Symbol.iterator]', async () => {
+    let boundFetchRan = false;
+    const customFetch = async function () {
+      boundFetchRan = true;
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ bound: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const boundFetch = customFetch.bind(null);
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: boundFetch,
+        },
+      });
+
+      assert.strictEqual(boundFetchRan, true);
+      assert.deepStrictEqual(data, { bound: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(
       (req, res) => {

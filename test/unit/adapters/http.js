@@ -1358,6 +1358,196 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  [
+    {name: "omitted", secure: true},
+    {name: "undefined", protocol: undefined, secure: true},
+    {name: "bare HTTP", protocol: "http", secure: false},
+    {name: "colon HTTP", protocol: " HTTP: ", secure: false},
+    {name: "bare HTTPS", protocol: "https", secure: true},
+    {name: "colon HTTPS", protocol: " HTTPS: ", secure: true},
+  ].forEach(function (protocolCase) {
+    ["native", "follow", "redirect"].forEach(function (transportCase) {
+      it("should use " + (protocolCase.secure ? "HTTPS" : "HTTP") + " for an HTTPS target with " + protocolCase.name + " proxy protocol (" + transportCase + ")", function (done) {
+        var requests = [];
+        var target = "https://target.example/start";
+        var redirectedTarget = "https://redirected.example/finish";
+        var proxyAuthorization = "Basic " + Buffer.from("proxy-user:proxy-pass").toString("base64");
+
+        // Respond as a forward proxy; no external target is contacted.
+        var handleProxyRequest = function (req, res) {
+          requests.push({
+            url: req.url,
+            host: req.headers.host,
+            encrypted: req.socket.encrypted === true,
+            authorization: req.headers["proxy-authorization"],
+          });
+          if (transportCase === "redirect" && requests.length === 1) {
+            res.writeHead(302, {Location: redirectedTarget});
+            res.end();
+          } else {
+            res.end("proxied");
+          }
+        };
+        proxy = protocolCase.secure ? https.createServer({
+          key: fs.readFileSync(path.join(__dirname, "key.pem")),
+          cert: fs.readFileSync(path.join(__dirname, "cert.pem")),
+        }, handleProxyRequest) : http.createServer(handleProxyRequest);
+
+        proxy.listen(0, "127.0.0.1", function () {
+          var proxyConfig = {
+            host: "127.0.0.1",
+            port: proxy.address().port,
+            auth: {username: "proxy-user", password: "proxy-pass"},
+          };
+          if (protocolCase.name !== "omitted") {
+            proxyConfig.protocol = protocolCase.protocol;
+          }
+          var config = {
+            proxy: proxyConfig,
+            timeout: 3000,
+            httpAgent: new http.Agent({keepAlive: false}),
+            httpsAgent: new https.Agent({rejectUnauthorized: false, keepAlive: false}),
+          };
+          if (transportCase === "native") {
+            config.maxRedirects = 0;
+          }
+
+          axios.get(target, config).then(function (res) {
+            assert.equal(res.data, "proxied");
+            var expected = [{
+              url: target,
+              host: "target.example",
+              encrypted: protocolCase.secure,
+              authorization: proxyAuthorization,
+            }];
+            if (transportCase === "redirect") {
+              expected.push({
+                url: redirectedTarget,
+                host: "redirected.example",
+                encrypted: protocolCase.secure,
+                authorization: proxyAuthorization,
+              });
+            }
+            assert.deepStrictEqual(requests, expected);
+            done();
+          }).catch(done);
+        });
+      });
+    });
+  });
+
+  [undefined, null, false, 1234, {}, ""].forEach(function (protocol) {
+    ["http:", "https:"].forEach(function (targetProtocol) {
+      it("should preserve the " + targetProtocol + " target protocol for an unusable proxy protocol " + JSON.stringify(protocol), function () {
+        var capturedOptions;
+        var stopped = new Error("request inspected");
+
+        return axios.get(targetProtocol + "//target.example/", {
+          proxy: {host: "127.0.0.1", port: 4000, protocol: protocol},
+          transport: {
+            request: function (options) {
+              capturedOptions = options;
+              throw stopped;
+            },
+          },
+        }).then(function () {
+          assert.fail("transport should stop the request");
+        }, function (err) {
+          assert.strictEqual(err, stopped);
+          assert.equal(capturedOptions.protocol, targetProtocol);
+        });
+      });
+    });
+  });
+
+  [" ", "ftp", "ftp:", "http://", "https://", "http::", "https::", "https:invalid", "https://user:secret@proxy"].forEach(function (protocol) {
+    ["http:", "https:"].forEach(function (targetProtocol) {
+      ["native", "follow"].forEach(function (transportCase) {
+        it("should reject invalid proxy protocol " + JSON.stringify(protocol) + " before connecting (" + targetProtocol + ", " + transportCase + ")", function (done) {
+          var connections = 0;
+          proxy = http.createServer(function (req, res) {
+            res.end("unexpected proxy request");
+          });
+          proxy.on("connection", function () {
+            connections++;
+          });
+          proxy.listen(0, "127.0.0.1", function () {
+            var config = {
+              proxy: {
+                host: "127.0.0.1",
+                port: proxy.address().port,
+                protocol: protocol,
+                auth: {username: "proxy-user", password: "proxy-pass"},
+              },
+              timeout: 1000,
+              httpAgent: new http.Agent({keepAlive: false}),
+              httpsAgent: new https.Agent({keepAlive: false}),
+            };
+            if (transportCase === "native") {
+              config.maxRedirects = 0;
+            }
+
+            axios.get(targetProtocol + "//target.example/private", config).then(function () {
+              assert.fail("invalid proxy protocol must reject");
+            }, function (err) {
+              assert(axios.isAxiosError(err));
+              assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+              // Do not echo malformed values that may contain credentials.
+              assert.equal(err.message, "proxy.protocol must be http or https");
+              assert.equal(connections, 0, "must reject before opening a proxy connection");
+            }).then(function () { done(); }, done);
+          });
+        });
+      });
+    });
+  });
+
+  [false, true].forEach(function (redirect) {
+    it("should reject an unsupported environment proxy protocol before connecting" + (redirect ? " on redirect" : ""), function (done) {
+      var connections = 0;
+      proxy = http.createServer(function (req, res) {
+        res.end("unexpected proxy request");
+      });
+      proxy.on("connection", function () {
+        connections++;
+      });
+      proxy.listen(0, "127.0.0.1", function () {
+        process.env.http_proxy = "socks5://proxy-user:proxy-pass@127.0.0.1:" + proxy.address().port;
+        process.env.no_proxy = "127.0.0.1";
+
+        function request(target) {
+          axios.get(target, {timeout: 1000, httpAgent: new http.Agent({keepAlive: false})}).then(function () {
+            assert.fail("unsupported environment proxy protocol must reject");
+          }, function (err) {
+            assert(axios.isAxiosError(err));
+            if (redirect) {
+              assert.equal(err.code, "ERR_FR_REDIRECTION_FAILURE");
+              var cause = err;
+              while (cause.cause) {
+                cause = cause.cause;
+              }
+              assert.equal(cause.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            } else {
+              assert.equal(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            }
+            assert.equal(connections, 0, "must reject before opening a proxy connection");
+          }).then(function () { done(); }, done);
+        }
+
+        if (redirect) {
+          server = http.createServer(function (req, res) {
+            res.writeHead(302, {Location: "http://target.example/private"});
+            res.end();
+          }).listen(0, "127.0.0.1", function () {
+            request("http://127.0.0.1:" + server.address().port + "/");
+          });
+        } else {
+          request("http://target.example/private");
+        }
+      });
+    });
+  });
+
   it("should support HTTPS proxies", function (done) {
     var options = {
       key: fs.readFileSync(path.join(__dirname, "key.pem")),
@@ -1410,6 +1600,151 @@ describe("supports http with nodejs", function () {
                   "123456789",
                   "should pass through proxy",
                 );
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should support a proxy protocol without a trailing colon", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.setHeader("Content-Type", "text/html; charset=UTF-8");
+        res.end("12345");
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (request, response) {
+            var parsed = url.parse(request.url);
+
+            http.get(
+              {
+                host: parsed.hostname,
+                port: parsed.port,
+                path: parsed.path,
+              },
+              function (res) {
+                var body = "";
+                res.on("data", function (data) {
+                  body += data;
+                });
+                res.on("end", function () {
+                  response.setHeader(
+                    "Content-Type",
+                    "text/html; charset=UTF-8",
+                  );
+                  response.end(body + "6789");
+                });
+              },
+            );
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                  // Documented in the README as a bare scheme.
+                  protocol: "http",
+                },
+              })
+              .then(function (res) {
+                assert.equal(
+                  res.data,
+                  "123456789",
+                  "should pass through proxy",
+                );
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should normalize the proxy protocol case", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.end("12345");
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (request, response) {
+            var parsed = url.parse(request.url);
+
+            http.get(
+              {
+                host: parsed.hostname,
+                port: parsed.port,
+                path: parsed.path,
+              },
+              function (res) {
+                var body = "";
+                res.on("data", function (data) {
+                  body += data;
+                });
+                res.on("end", function () {
+                  response.end(body + "6789");
+                });
+              },
+            );
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                  protocol: "HTTP:",
+                },
+              })
+              .then(function (res) {
+                assert.equal(res.data, "123456789");
+                done();
+              })
+              .catch(done);
+          });
+      });
+  });
+
+  it("should ignore a non-string proxy protocol", function (done) {
+    server = http
+      .createServer(function (req, res) {
+        res.end("12345");
+      })
+      .listen(4444, function () {
+        proxy = http
+          .createServer(function (request, response) {
+            var parsed = url.parse(request.url);
+
+            http.get(
+              {
+                host: parsed.hostname,
+                port: parsed.port,
+                path: parsed.path,
+              },
+              function (res) {
+                var body = "";
+                res.on("data", function (data) {
+                  body += data;
+                });
+                res.on("end", function () {
+                  response.end(body + "6789");
+                });
+              },
+            );
+          })
+          .listen(4000, function () {
+            axios
+              .get("http://localhost:4444/", {
+                proxy: {
+                  host: "localhost",
+                  port: 4000,
+                  protocol: 1234,
+                },
+              })
+              .then(function (res) {
+                assert.equal(res.data, "123456789");
                 done();
               })
               .catch(done);

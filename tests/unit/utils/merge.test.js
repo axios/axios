@@ -168,4 +168,56 @@ describe('utils::merge', () => {
 
     expect(merged[key]).toBe('first');
   });
+
+  it('should keep the first spelling of a caseless key across many sources', () => {
+    const merged = merge.call(
+      { caseless: true },
+      { 'Content-Type': 'a', Accept: 'x' },
+      { 'content-type': 'b' },
+      { 'CONTENT-TYPE': 'c', accept: 'y' }
+    );
+
+    expect(merged).toEqual({ 'Content-Type': 'c', Accept: 'y' });
+    expect(Object.keys(merged)).toEqual(['Content-Type', 'Accept']);
+  });
+
+  it('should keep caseless keys distinct from same-cased keys within one source', () => {
+    const merged = merge.call({ caseless: true }, { foo: 1, FOO: 2, bar: 3 });
+
+    expect(merged).toEqual({ foo: 2, bar: 3 });
+  });
+
+  it('should merge nested objects case-sensitively under a caseless top level', () => {
+    const merged = merge.call(
+      { caseless: true },
+      { headers: { Accept: 'a' } },
+      { HEADERS: { accept: 'b' } }
+    );
+
+    expect(merged).toEqual({ headers: { Accept: 'a', accept: 'b' } });
+  });
+
+  it('should let a later spelling win when skipUndefined dropped the earlier caseless key', () => {
+    const merged = merge.call(
+      { caseless: true, skipUndefined: true },
+      { 'X-Token': undefined },
+      { 'x-token': 'set' }
+    );
+
+    expect(merged).toEqual({ 'x-token': 'set' });
+    expect(merged['X-Token']).toBeUndefined();
+  });
+
+  it('should still filter unsafe keys in caseless mode regardless of casing', () => {
+    const merged = merge.call(
+      { caseless: true },
+      JSON.parse('{"__proto__": {"polluted": true}, "Constructor": 1, "PROTOTYPE": 2, "safe": 3}')
+    );
+
+    expect(merged.safe).toBe(3);
+    expect(merged.Constructor).toBe(1);
+    expect(merged.PROTOTYPE).toBe(2);
+    expect(Object.prototype.polluted).toBeUndefined();
+    expect(Object.getPrototypeOf(merged)).toBe(Object.prototype);
+  });
 });

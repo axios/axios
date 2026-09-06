@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Performance Improvements
+
+- **Request configuration:** Reduced config merge overhead by avoiding redundant plain-object prototype walks, indexing case-insensitive header keys, and reusing stateless merge strategies.
+
 ## Features
 
 - **Proxy bypass CIDR ranges:** Added IPv4 and IPv6 CIDR matching to `NO_PROXY`/`no_proxy`, including bracketed IPv6 and IPv4-mapped IPv6 normalization, while malformed ranges fail closed. A `/0` entry bypasses the proxy for its entire address family.

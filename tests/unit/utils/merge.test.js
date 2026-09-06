@@ -208,7 +208,7 @@ describe('utils::merge', () => {
     expect(merged['X-Token']).toBeUndefined();
   });
 
-  it('should still filter unsafe keys in caseless mode regardless of casing', () => {
+  it('should filter exact unsafe keys and preserve differently cased keys in caseless mode', () => {
     const merged = merge.call(
       { caseless: true },
       JSON.parse('{"__proto__": {"polluted": true}, "Constructor": 1, "PROTOTYPE": 2, "safe": 3}')

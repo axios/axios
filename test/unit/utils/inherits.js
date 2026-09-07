@@ -103,4 +103,109 @@ describe('utils.inherits', function () {
     assert.strictEqual(Child.prototype[visible], 42);
     assert.strictEqual(Object.prototype.hasOwnProperty.call(Child.prototype, hidden), false);
   });
+
+  it('updates a supplied writable constructor without changing its descriptor flags', function () {
+    function Parent() {}
+    function Child() {}
+
+    utils.inherits(Child, Parent, undefined, {
+      constructor: {value: Parent, writable: true}
+    });
+
+    assert.deepStrictEqual(Object.getOwnPropertyDescriptor(Child.prototype, 'constructor'), {
+      value: Child,
+      writable: true,
+      enumerable: false,
+      configurable: false
+    });
+  });
+
+  it('assigns the constructor through a supplied accessor', function () {
+    function Parent() {}
+    function Child() {}
+    var received;
+    var receiver;
+    var descriptor = {
+      set: function (value) {
+        received = value;
+        receiver = this;
+      },
+      get: undefined,
+      enumerable: false,
+      configurable: true
+    };
+
+    utils.inherits(Child, Parent, undefined, {constructor: descriptor});
+
+    assert.strictEqual(received, Child);
+    assert.strictEqual(receiver, Child.prototype);
+    assert.deepStrictEqual(Object.getOwnPropertyDescriptor(Child.prototype, 'constructor'), descriptor);
+  });
+
+  it('rejects assignment to a supplied read-only constructor', function () {
+    function Parent() {}
+    function Child() {}
+
+    assert.throws(function () {
+      utils.inherits(Child, Parent, undefined, {
+        constructor: {value: Parent, writable: false, configurable: true}
+      });
+    }, TypeError);
+  });
+
+  ['value', Symbol('value')].forEach(function (key) {
+    it('updates a writable own ' + typeof key + ' property without changing its descriptor flags', function () {
+      function Child() {}
+      var descriptors = {};
+      var props = {};
+      descriptors[key] = {value: 7, writable: true};
+      props[key] = 42;
+
+      utils.inherits(Child, Error, props, descriptors);
+
+      assert.deepStrictEqual(Object.getOwnPropertyDescriptor(Child.prototype, key), {
+        value: 42,
+        writable: true,
+        enumerable: false,
+        configurable: false
+      });
+    });
+
+    it('assigns a ' + typeof key + ' property through its own accessor', function () {
+      function Child() {}
+      var received;
+      var receiver;
+      var descriptors = {};
+      var props = {};
+      var descriptor = {
+        set: function (value) {
+          received = value;
+          receiver = this;
+        },
+        get: undefined,
+        enumerable: false,
+        configurable: true
+      };
+      descriptors[key] = descriptor;
+      props[key] = 42;
+
+      utils.inherits(Child, Error, props, descriptors);
+
+      assert.strictEqual(received, 42);
+      assert.strictEqual(receiver, Child.prototype);
+      assert.deepStrictEqual(Object.getOwnPropertyDescriptor(Child.prototype, key), descriptor);
+    });
+
+    it('rejects assignment to a read-only own ' + typeof key + ' property', function () {
+      function Child() {}
+      var descriptors = {};
+      var props = {};
+      descriptors[key] = {value: 7, writable: false, configurable: true};
+      props[key] = 42;
+
+      assert.throws(function () {
+        utils.inherits(Child, Error, props, descriptors);
+      }, TypeError);
+    });
+  });
 });

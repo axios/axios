@@ -150,16 +150,18 @@ describe('cancel', function() {
 
       it('retains in-flight reason ' + index, function (done) {
         var controller = createController();
-        axios.get('/foo', {signal: controller.signal}).then(function () {
-          done.fail('Expected cancellation');
+        var cancellation = axios.get('/foo', {signal: controller.signal}).then(function () {
+          throw new Error('Expected cancellation');
         }, function (error) {
           expectCancellation(error, reason);
-          done();
         });
-        getAjaxRequest().then(function (request) {
+        var requestPromise = getAjaxRequest().then(function (request) {
           abortWithReason(controller, reason);
-          expect(request.statusText).toBe('abort');
+          return request;
         });
+        Promise.all([cancellation, requestPromise]).then(function (results) {
+          expect(results[1].statusText).toBe('abort');
+        }).then(done, done.fail);
       });
     });
   });

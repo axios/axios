@@ -1,9 +1,12 @@
 import axios, {
   AxiosRequestConfig,
+  AxiosRequestHeaders,
   AxiosResponse,
   AxiosError,
   AxiosInstance,
   AxiosAdapter,
+  CanceledError,
+  GenericAbortSignal,
   Cancel,
   CancelToken,
   CancelTokenSource,
@@ -27,6 +30,7 @@ const config: AxiosRequestConfig = {
   },
   data: { foo: 'bar' },
   timeout: 10000,
+  captureCallerStack: true,
   withCredentials: true,
   auth: {
     username: 'janedoe',
@@ -287,6 +291,41 @@ instance1.defaults.timeout = 2500;
 
 axios.create({ headers: { foo: 'bar' } });
 axios.create({ headers: { common: { foo: 'bar' } } });
+
+const validHeaders: AxiosRequestHeaders = {
+  string: 'value',
+  strings: ['one', 'two'],
+  number: 42,
+  boolean: false,
+  optional: undefined,
+  common: {Authorization: 'token'},
+  get: {'X-Method': 'get'},
+  post: {'Content-Type': 'application/json'}
+};
+axios.create({headers: validHeaders});
+
+// $ExpectError
+const promiseHeaders: AxiosRequestHeaders = {'X-Invalid': Promise.resolve('value')};
+// $ExpectError
+const functionHeaders: AxiosRequestHeaders = {'X-Invalid': () => 'value'};
+// $ExpectError
+const nestedPromiseHeaders: AxiosRequestHeaders = {common: {'X-Invalid': Promise.resolve('value')}};
+// $ExpectError
+const methodPromiseHeaders: AxiosRequestHeaders = {post: {'X-Invalid': Promise.resolve('value')}};
+
+axios.interceptors.request.use(requestConfig => {
+  if (requestConfig.headers) {
+    // $ExpectError
+    requestConfig.headers.someCustomHeader = Promise.resolve('foo');
+  }
+  return requestConfig;
+});
+
+// $ExpectError
+axios.defaults.headers.common['X-Invalid'] = Promise.resolve('value');
+// $ExpectError
+instance1.defaults.headers.post['X-Invalid'] = () => 'value';
+
 axios.create({
   headers: {
     'Content-Type': 'application/json',
@@ -417,3 +456,24 @@ axios.toFormData({x: 1}, new FormData());
 // AbortSignal
 
 axios.get('/user', {signal: new AbortController().signal});
+
+axios.create({captureCallerStack: true}).get('/user', {captureCallerStack: false});
+// $ExpectError
+axios.get('/user', {captureCallerStack: 'true'});
+
+const reasonSignal: GenericAbortSignal = {
+  aborted: true,
+  reason: {operation: 'search'},
+  onabort: null,
+  addEventListener: () => {},
+  removeEventListener: () => {}
+};
+axios.get('/user', {signal: reasonSignal}).catch((error: unknown) => {
+  if (axios.isCancel(error)) {
+    const reason: unknown = error.reason;
+    console.log(reason);
+  }
+});
+
+const canceledError: CanceledError<unknown> = new CanceledError('canceled');
+const cancellationReason: unknown = canceledError.reason;

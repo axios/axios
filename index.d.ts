@@ -1,7 +1,7 @@
 // TypeScript Version: 4.1
 type HeaderValue = string | string[] | number | boolean;
 
-type AxiosHeaders = Record<string, HeaderValue | Record<Method & CommonHeaders, HeaderValue>>;
+type AxiosHeaders = Record<string, HeaderValue | Record<string, HeaderValue>>;
 
 type MethodsHeaders = {
   [Key in Method as Lowercase<Key>]: AxiosHeaders;
@@ -86,6 +86,7 @@ export interface TransitionalOptions {
 
 export interface GenericAbortSignal {
   aborted: boolean;
+  readonly reason?: unknown;
   onabort: ((...args: any) => any) | null;
   addEventListener: (...args: any) => any;
   removeEventListener: (...args: any) => any;
@@ -168,6 +169,7 @@ export interface AxiosRequestConfig<D = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions;
+  captureCallerStack?: boolean;
   signal?: GenericAbortSignal;
   insecureHTTPParser?: boolean;
   env?: {
@@ -241,6 +243,7 @@ export class AxiosError<T = unknown, D = any> extends Error {
 }
 
 export class CanceledError<T> extends AxiosError<T> {
+  reason?: unknown;
 }
 
 export type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
@@ -251,6 +254,7 @@ export interface CancelStatic {
 
 export interface Cancel {
   message: string | undefined;
+  reason?: unknown;
 }
 
 export interface Canceler {

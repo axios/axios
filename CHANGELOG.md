@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased — next v0 minor
+
+These changes improve error handling, cancellation context, and request header typing.
+
+### ⚠️ Breaking Changes & Deprecations
+
+* **Header types:** TypeScript now rejects header values that are Promises, functions, or objects with custom `toString()` methods. Resolve promises, call functions, or explicitly convert objects before assigning header values. This narrows previously accepted types and must ship in the next v0 minor release under the pre-1.0 compatibility policy. (__#11209__)
+
+### 🚀 New Features
+
+* **Caller diagnostics:** Opt in with `captureCallerStack: true` on a request or instance to append caller frames to asynchronous errors. The default is off so successful requests avoid the additional stack capture and Promise reaction. (__#11209__)
+* **Cancellation context:** `CanceledError.reason` preserves `AbortSignal.reason`, including object and falsy values. Native and structural signals retain their identity and live getters across config merging. (__#11209__)
+
+### 🐛 Bug Fixes
+
+* **Error inheritance:** Axios loads alongside read-only `Error.prototype.toJSON` properties while preserving supplied own descriptors and setters. (__#11209__)
+* **Request interceptors:** Synchronous interceptor and dispatch failures reach response interceptors. Rejected recovery promises prevent dispatch; fulfilled recovery values are ignored and the last request config is retained. (__#11209__)
+
+[Full Changelog](https://github.com/axios/axios/pull/11209/files)
+
 ## v0.32.0 — May 4, 2026
 
 This release backports a comprehensive set of security and hardening fixes from the v1.x branch into v0.x, covering prototype-pollution protections, default error redaction, stricter proxy/cookie/socket handling, and one breaking change to merged config and header object prototypes.

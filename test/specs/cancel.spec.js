@@ -115,4 +115,85 @@ describe('cancel', function() {
       }, 0);
     });
   });
+
+  describe('abort reasons', function () {
+    function createController() {
+      return new (window.AbortController || _AbortController)();
+    }
+
+    function abortWithReason(controller, reason) {
+      if (!('reason' in controller.signal)) {
+        Object.defineProperty(controller.signal, 'reason', {value: reason});
+      }
+      controller.abort(reason);
+    }
+
+    function expectCancellation(error, reason) {
+      expect(axios.isCancel(error)).toBe(true);
+      expect(error.code).toBe('ERR_CANCELED');
+      expect(error.message).toBe('canceled');
+      expect(error.reason).toBe(reason);
+    }
+
+    function wrapSignal(signal) {
+      return {
+        get aborted() { return signal.aborted; },
+        get reason() { return signal.reason; },
+        onabort: null,
+        addEventListener: function () { return signal.addEventListener.apply(signal, arguments); },
+        removeEventListener: function () { return signal.removeEventListener.apply(signal, arguments); }
+      };
+    }
+
+    [false, true].forEach(function (structural) {
+      [new Error('timeout'), 'superseded', {operation: 'search'}, null, false, 0, ''].forEach(function (reason, index) {
+        var kind = structural ? 'structural' : 'native';
+        it('retains pre-aborted reason ' + index + ' with a ' + kind + ' signal', function (done) {
+          var controller = createController();
+          var signal = structural ? wrapSignal(controller.signal) : controller.signal;
+          abortWithReason(controller, reason);
+          axios.get('/foo', {signal: signal}).then(function () {
+            done.fail('Expected cancellation');
+          }, function (error) {
+            expectCancellation(error, reason);
+            expect(jasmine.Ajax.requests.count()).toBe(0);
+            done();
+          });
+        });
+
+        it('retains in-flight reason ' + index + ' with a ' + kind + ' signal', function (done) {
+          var controller = createController();
+          var signal = structural ? wrapSignal(controller.signal) : controller.signal;
+          var cancellation = axios.get('/foo', {signal: signal}).then(function () {
+            throw new Error('Expected cancellation');
+          }, function (error) {
+            expectCancellation(error, reason);
+          });
+          var requestPromise = getAjaxRequest().then(function (request) {
+            abortWithReason(controller, reason);
+            return request;
+          });
+          Promise.all([cancellation, requestPromise]).then(function (results) {
+            expect(results[1].statusText).toBe('abort');
+          }).then(done, done.fail);
+        });
+      });
+    });
+
+    it('cancels a structural signal whose reason getter throws', function (done) {
+      var signal = {
+        aborted: true,
+        get reason() { throw new Error('custom reason getter'); },
+        onabort: null,
+        addEventListener: function () {},
+        removeEventListener: function () {}
+      };
+      axios.get('/foo', {signal: signal}).then(function () {
+        throw new Error('Expected cancellation');
+      }, function (error) {
+        expectCancellation(error, undefined);
+        expect(jasmine.Ajax.requests.count()).toBe(0);
+      }).then(done, done.fail);
+    });
+  });
 });

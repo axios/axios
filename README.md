@@ -519,6 +519,10 @@ These are the available config options for making requests. Only the `url` is re
   // an alternative way to cancel Axios requests using AbortController
   signal: new AbortController().signal,
 
+  // Capture the request caller for asynchronous error stacks (default: false).
+  // Enable on a request or instance when the extra diagnostics are needed.
+  captureCallerStack: false,
+
   // `decompress` indicates whether or not the response body should be decompressed
   // automatically. If set to `true` will also remove the 'content-encoding' header
   // from the responses objects of all decompressed responses
@@ -748,7 +752,30 @@ and when the response was fulfilled
 
 Read [the interceptor tests](./test/specs/interceptors.spec.js) for seeing all this in code.
 
+For synchronous request interceptors, a thrown error is passed to that interceptor's
+rejection handler, when supplied. If the handler is absent, throws, or returns a
+rejected promise, the request is rejected without being sent and response rejection
+interceptors can handle the failure. A promise returned by a recovery handler is
+awaited before dispatch. Recovery return values, including fulfilled promise values,
+do not replace the last request config; that config is used for dispatch.
+Successful synchronous interceptors still dispatch immediately.
+
 ## Handling Errors
+
+Set `captureCallerStack: true` on a request or instance to append the original caller
+to errors created asynchronously. Stack capture is disabled by default because it
+adds work to every enabled request, including successful requests. When disabled,
+Axios keeps the error's existing stack without capturing additional caller frames.
+
+```js
+const client = axios.create({captureCallerStack: true});
+client.get('/user/12345');
+// An individual request can override the instance setting.
+client.get('/status', {captureCallerStack: false});
+```
+
+The original error and its existing stack are preserved when caller frames are
+appended. Availability and frame counts depend on the runtime's stack support and settings.
 
 ```js
 axios.get('/user/12345')
@@ -807,6 +834,26 @@ axios.get('/foo/bar', {
 });
 // cancel the request
 controller.abort()
+```
+
+On runtimes that expose `AbortSignal.reason`, Axios preserves that value in
+`CanceledError.reason`, including objects and falsy values. Cancellation still uses
+the `canceled` message, `ERR_CANCELED` code, and `axios.isCancel()` detection. Signals
+without a reason continue to work and leave `error.reason` undefined.
+Native signals and plain objects implementing `GenericAbortSignal` are retained by
+reference when configurations are merged, preserving live getters and reason identity.
+
+```js
+const controller = new AbortController();
+const reason = new Error('Replaced by a newer search');
+
+axios.get('/search', {signal: controller.signal}).catch(function (error) {
+  if (axios.isCancel(error) && error.reason === reason) {
+    // This request was superseded.
+  }
+});
+
+controller.abort(reason);
 ```
 
 ### CancelToken `👎deprecated`
@@ -1186,6 +1233,22 @@ axios depends on a native ES6 Promise implementation to be [supported](https://c
 If your environment doesn't support ES6 Promises, you can [polyfill](https://github.com/jakearchibald/es6-promise).
 
 ## TypeScript
+
+Request header values are strings, string arrays, numbers, or booleans. The
+`common` and method-specific header groups accept maps of these values. Resolve
+asynchronous values in a request interceptor before assigning them to headers;
+Promise and function values are rejected by the TypeScript declarations.
+
+This is a TypeScript compatibility change for the next v0 minor release. Code that
+previously assigned a Promise, function, or object with a custom `toString()` method
+must first resolve the Promise, call the function, or explicitly convert the object
+to a supported header value. For example:
+
+```typescript
+async function requestWithToken(token: Promise<string>) {
+  return axios.get('/user', {headers: {Authorization: 'Bearer ' + await token}});
+}
+```
 
 axios includes [TypeScript](https://typescriptlang.org) definitions and a type guard for axios errors.
 

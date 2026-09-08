@@ -167,6 +167,60 @@ describe('interceptors', function () {
     });
   });
 
+  it('passes synchronous request failures to response interceptors without sending XHR', function (done) {
+    var failure = new Error('request interceptor failed');
+    axios.interceptors.request.use(function () { throw failure; }, undefined, {synchronous: true});
+    axios.interceptors.response.use(undefined, function (error) {
+      expect(error).toBe(failure);
+      return {data: 'recovered'};
+    });
+    axios.get('/foo').then(function (response) {
+      expect(response.data).toBe('recovered');
+      expect(jasmine.Ajax.requests.count()).toBe(0);
+      done();
+    }, done.fail);
+  });
+
+  it('does not send XHR when a synchronous rejection handler returns a rejected promise', function (done) {
+    var failure = new Error('request interceptor failed');
+    axios.interceptors.request.use(function () { throw failure; }, function (error) {
+      return Promise.reject(error);
+    }, {synchronous: true});
+    axios.get('/foo').then(function () { done.fail('Expected rejection'); }, function (error) {
+      expect(error).toBe(failure);
+      expect(jasmine.Ajax.requests.count()).toBe(0);
+      done();
+    });
+  });
+
+  it('routes pre-cancellation through response interceptors', function (done) {
+    var source = axios.CancelToken.source();
+    source.cancel('already canceled');
+    axios.interceptors.response.use(undefined, function (error) {
+      expect(error).toBe(source.token.reason);
+      return {data: 'canceled'};
+    });
+    axios.get('/foo', {cancelToken: source.token}).then(function (response) {
+      expect(response.data).toBe('canceled');
+      expect(jasmine.Ajax.requests.count()).toBe(0);
+      done();
+    }, done.fail);
+  });
+
+  it('appends the original caller to asynchronous adapter errors', function (done) {
+    function namedBrowserCaller() {
+      return axios.get('/foo', {captureCallerStack: true, adapter: function () {
+        return new Promise(function (resolve, reject) {
+          setTimeout(function () { reject(new Error('adapter failure')); }, 0);
+        });
+      }});
+    }
+    namedBrowserCaller().then(function () { done.fail('Expected rejection'); }, function (error) {
+      expect(error.stack).toContain('namedBrowserCaller');
+      done();
+    });
+  });
+
   it('should add a request interceptor that returns a new config object', function (done) {
     axios.interceptors.request.use(function () {
       return {

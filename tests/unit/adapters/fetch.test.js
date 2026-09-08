@@ -284,6 +284,35 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should fall back to a supported cache mode on runtimes that reject the spec default', async () => {
+    // Some runtimes (e.g. Cloudflare Workers) only support a subset of the
+    // Fetch spec's cache modes and throw at Request construction for the
+    // rest, even the spec's own default value ('default'). See GH #11192.
+    class RestrictedCacheModeRequest extends Request {
+      constructor(input, init) {
+        if (init && init.cache === 'default') {
+          throw new TypeError('Unsupported cache mode: default');
+        }
+        super(input, init);
+      }
+    }
+
+    let captured;
+    const response = await fetchAxios.get('/cache-fallback', {
+      env: {
+        Request: RestrictedCacheModeRequest,
+        fetch(input) {
+          captured = input;
+          return Promise.resolve(new Response('ok'));
+        },
+      },
+    });
+
+    assert.strictEqual(response.data, 'ok');
+    assert.ok(captured instanceof RestrictedCacheModeRequest);
+    assert.strictEqual(captured.cache, 'no-store');
+  });
+
   it('should expose an unfollowed redirect response in Node when maxRedirects is zero', async () => {
     let finalRequests = 0;
     const server = await startHTTPServer((req, res) => {

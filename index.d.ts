@@ -169,6 +169,7 @@ export interface AxiosRequestConfig<D = any> {
   cancelToken?: CancelToken;
   decompress?: boolean;
   transitional?: TransitionalOptions;
+  captureCallerStack?: boolean;
   signal?: GenericAbortSignal;
   insecureHTTPParser?: boolean;
   env?: {

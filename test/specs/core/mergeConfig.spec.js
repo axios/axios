@@ -16,6 +16,32 @@ describe('core::mergeConfig', function() {
     expect(merged.headers).not.toBe(defaults.headers);
   });
 
+  describe('signal references', function () {
+    it('preserves the selected signal instead of cloning or combining it', function () {
+      var original = {aborted: false, reason: {operation: 'original'}};
+      var replacement = {aborted: true, reason: {operation: 'replacement'}};
+      expect(mergeConfig({signal: original}, {}).signal).toBe(original);
+      expect(mergeConfig({signal: original}, {signal: undefined}).signal).toBe(original);
+      expect(mergeConfig({signal: original}, {signal: replacement}).signal).toBe(replacement);
+      expect(mergeConfig({signal: original}, {signal: null}).signal).toBe(null);
+    });
+
+    it('ignores inherited signals on defaults and requests', function () {
+      var original = {aborted: false};
+      var inherited = Object.create({signal: {aborted: true}});
+      expect(mergeConfig(inherited, {}).signal).toBeUndefined();
+      expect(mergeConfig({signal: original}, inherited).signal).toBe(original);
+    });
+
+    it('does not evaluate signal accessors during merging', function () {
+      var signal = {};
+      Object.defineProperty(signal, 'reason', {enumerable: true, get: function () {
+        throw new Error('reason must stay lazy');
+      }});
+      expect(mergeConfig({}, {signal: signal}).signal).toBe(signal);
+    });
+  });
+
   it('should allow setting request options', function() {
     var config = {
       url: '__sample url__',

@@ -209,7 +209,7 @@ describe('interceptors', function () {
 
   it('appends the original caller to asynchronous adapter errors', function (done) {
     function namedBrowserCaller() {
-      return axios.get('/foo', {adapter: function () {
+      return axios.get('/foo', {captureCallerStack: true, adapter: function () {
         return new Promise(function (resolve, reject) {
           setTimeout(function () { reject(new Error('adapter failure')); }, 0);
         });

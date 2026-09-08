@@ -149,7 +149,7 @@ describe('synchronous request interceptor chain', function () {
         return new Promise(function (resolve) {
           setTimeout(function () {
             recovered = true;
-            resolve();
+            resolve({url: '/replacement'});
           }, 10);
         });
       },
@@ -159,6 +159,7 @@ describe('synchronous request interceptor chain', function () {
     return instance.get('/foo').then(function (response) {
       assert.strictEqual(response.status, 200);
       assert.strictEqual(recovered, true, 'the request should wait for the recovery');
+      assert.strictEqual(response.config.url, '/foo', 'recovery values do not replace the last config');
       assert.strictEqual(store.calls, 1);
     });
   });

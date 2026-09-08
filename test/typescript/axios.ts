@@ -30,6 +30,7 @@ const config: AxiosRequestConfig = {
   },
   data: { foo: 'bar' },
   timeout: 10000,
+  captureCallerStack: true,
   withCredentials: true,
   auth: {
     username: 'janedoe',
@@ -455,6 +456,10 @@ axios.toFormData({x: 1}, new FormData());
 // AbortSignal
 
 axios.get('/user', {signal: new AbortController().signal});
+
+axios.create({captureCallerStack: true}).get('/user', {captureCallerStack: false});
+// $ExpectError
+axios.get('/user', {captureCallerStack: 'true'});
 
 const reasonSignal: GenericAbortSignal = {
   aborted: true,

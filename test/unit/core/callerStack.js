@@ -47,8 +47,49 @@ describe('caller stack reconstruction', function () {
     stacks = {};
   });
 
-  it('appends the caller stack to an error created inside an adapter', async function () {
+  it('avoids capture by default and honors instance and request overrides', function () {
+    var instance = axios.create({adapter: function (config) {
+      return Promise.resolve({data: 'ok', status: 200, statusText: 'OK', headers: {}, config: config});
+    }});
+    Object.setPrototypeOf(instance.defaults, {captureCallerStack: true});
+    var capture = Error.captureStackTrace;
+    var calls = 0;
+    var requests;
+    Error.captureStackTrace = function () {
+      calls++;
+      return capture.apply(Error, arguments);
+    };
+    try {
+      requests = [instance.get('/foo'), instance.get('/foo', {captureCallerStack: false})];
+      assert.strictEqual(calls, 0, 'default and inherited settings must not capture stacks');
+      instance.defaults.captureCallerStack = true;
+      requests.push(instance.get('/foo'));
+      assert.strictEqual(calls, 1);
+      requests.push(instance.get('/foo', {captureCallerStack: false}));
+      assert.strictEqual(calls, 1, 'an explicit request override disables capture');
+    } finally {
+      Error.captureStackTrace = capture;
+    }
+    return Promise.all(requests);
+  });
+
+  it('keeps the original error stack by default after asynchronous interceptors', function () {
     var instance = axios.create({adapter: rejectingAdapter});
+    instance.interceptors.request.use(function (config) { return Promise.resolve(config); });
+    return rejectionOf(requestFromNamedCaller(instance)).then(function (error) {
+      assert.strictEqual(error.stack, stacks.original);
+    });
+  });
+
+  it('can enable caller diagnostics for one request', function () {
+    var instance = axios.create({adapter: rejectingAdapter});
+    return rejectionOf(requestFromNamedCaller(instance, {captureCallerStack: true})).then(function (error) {
+      assert.notStrictEqual(error.stack.indexOf('requestFromNamedCaller'), -1);
+    });
+  });
+
+  it('appends the caller stack to an error created inside an adapter', async function () {
+    var instance = axios.create({captureCallerStack: true, adapter: rejectingAdapter});
 
     var error = await rejectionOf(requestFromNamedCaller(instance));
 
@@ -67,7 +108,7 @@ describe('caller stack reconstruction', function () {
   it('appends the caller stack when the reconstructed stack has fewer than three frames', async function () {
     // Regression guard for the sibling defect in the v1 implementation, where a
     // one or two frame caller stack was silently dropped (#11131).
-    var instance = axios.create({adapter: rejectingAdapter});
+    var instance = axios.create({captureCallerStack: true, adapter: rejectingAdapter});
     var originalLimit = Error.stackTraceLimit;
 
     Error.stackTraceLimit = 2;
@@ -86,7 +127,7 @@ describe('caller stack reconstruction', function () {
   });
 
   it('sets the stack when the rejected error has none', async function () {
-    var instance = axios.create({adapter: rejectingAdapter});
+    var instance = axios.create({captureCallerStack: true, adapter: rejectingAdapter});
 
     var error = await rejectionOf(requestFromNamedCaller(instance, {dropStack: true}));
 
@@ -96,7 +137,7 @@ describe('caller stack reconstruction', function () {
   });
 
   it('keeps synchronous failures synchronous', function () {
-    var instance = axios.create({adapter: rejectingAdapter});
+    var instance = axios.create({captureCallerStack: true, adapter: rejectingAdapter});
 
     assert.throws(function () {
       instance.get('/foo', {transitional: {silentJSONParsing: 'not a boolean'}});
@@ -104,7 +145,7 @@ describe('caller stack reconstruction', function () {
   });
 
   it('preserves callers that use promises without async/await, including method aliases', function () {
-    var instance = axios.create({adapter: rejectingAdapter});
+    var instance = axios.create({captureCallerStack: true, adapter: rejectingAdapter});
     function promiseOnlyCaller() {
       return instance.get('/foo');
     }
@@ -114,7 +155,7 @@ describe('caller stack reconstruction', function () {
   });
 
   it('also decorates failures after asynchronous request interceptors', function () {
-    var instance = axios.create({adapter: rejectingAdapter});
+    var instance = axios.create({captureCallerStack: true, adapter: rejectingAdapter});
     instance.interceptors.request.use(function (config) { return Promise.resolve(config); });
     return rejectionOf(requestFromNamedCaller(instance)).then(function (error) {
       assert.notStrictEqual(error.stack.indexOf('requestFromNamedCaller'), -1);
@@ -123,7 +164,7 @@ describe('caller stack reconstruction', function () {
 
   it('does not replace non-Error rejections', function () {
     var reason = {message: 'application rejection'};
-    var instance = axios.create({adapter: function () { return Promise.reject(reason); }});
+    var instance = axios.create({captureCallerStack: true, adapter: function () { return Promise.reject(reason); }});
     return rejectionOf(instance.get('/foo')).then(function (error) {
       assert.strictEqual(error, reason);
       assert.strictEqual(error.stack, undefined);
@@ -135,7 +176,7 @@ describe('caller stack reconstruction', function () {
     var accessor = new Error('accessor error');
     Object.defineProperty(accessor, 'stack', {get: function () { throw new Error('stack hook'); }});
     return Promise.all([frozen, accessor].map(function (reason) {
-      var instance = axios.create({adapter: function () { return Promise.reject(reason); }});
+      var instance = axios.create({captureCallerStack: true, adapter: function () { return Promise.reject(reason); }});
       return rejectionOf(instance.get('/foo')).then(function (error) { assert.strictEqual(error, reason); });
     }));
   });
@@ -143,7 +184,7 @@ describe('caller stack reconstruction', function () {
   it('does not fail requests when stack capture throws', function () {
     var capture = Error.captureStackTrace;
     var failure = new Error('adapter failure');
-    var instance = axios.create({adapter: function () { return Promise.reject(failure); }});
+    var instance = axios.create({captureCallerStack: true, adapter: function () { return Promise.reject(failure); }});
     var promise;
     Error.captureStackTrace = function () { throw new Error('capture hook'); };
     try {
@@ -156,6 +197,7 @@ describe('caller stack reconstruction', function () {
 
   it('leaves a resolved request untouched', function () {
     var instance = axios.create({
+      captureCallerStack: true,
       adapter: function (config) {
         return Promise.resolve({
           data: 'ok',

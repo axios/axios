@@ -412,7 +412,7 @@
                 <img
                     width="180px"
                     height="53px"
-                    src="https://axios.rest/sponsors/herodevs.svg"
+                    src="./docs/public/sponsors/herodevs.svg"
                     alt="HeroDevs"
                 />
             </a>

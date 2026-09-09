@@ -18,6 +18,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 
 - Build published artifacts: `npm run build` (the project-owned Node cleanup script deletes `dist/`, then Rolldown writes browser ESM/UMD/CJS and Node CJS bundles).
 - For a local version bump with release hooks enabled, use `npm version patch --ignore-scripts=false` (or `minor`/`major`). The post-bump `version` hook prepares metadata from the updated manifest, builds, and stages the manifest and generated version file. CI keeps automatic hooks disabled and explicitly runs `npm run prepare:version` after bumping, then builds and validates artifacts.
+- Contributor refresh during `prepare:version` is optional, with a 10-second timeout per GitHub request. A failed refresh warns and keeps the existing manifest contributor list. Release file write failures remain fatal and roll back prior replacements; if rollback fails, the error reports a retained recovery path.
 - Validate generated package contracts after a build: `npm run test:build:artifacts` (file inventory, ES2018 browser syntax, UMD global/AMD loaders, ESM/CJS export shapes, source maps, and platform separation).
 - Lint source only: `npm run lint`; focused lint: `npx eslint lib/path/to/file.js`.
 - Unit tests: `npm run test:vitest:unit`; focused unit test: `npm run test:vitest:unit -- tests/unit/path.test.js`.

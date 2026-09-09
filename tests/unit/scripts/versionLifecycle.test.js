@@ -54,13 +54,14 @@ afterEach(async () => {
 
 describe('npm version lifecycle', () => {
   it.each([
-    ['patch', '1.2.4'],
-    ['minor', '1.3.0'],
-    ['major', '2.0.0'],
-    ['prerelease', '1.2.4-rc.0'],
+    ['patch', '1.2.4', 'available'],
+    ['minor', '1.3.0', 'available'],
+    ['major', '2.0.0', 'available'],
+    ['prerelease', '1.2.4-rc.0', 'available'],
+    ['patch', '1.2.4', 'rate-limited'],
   ])(
-    'builds and commits the bumped %s version',
-    async (bump, expectedVersion) => {
+    'builds and commits %s %s (GitHub: %s)',
+    async (bump, expectedVersion, githubState) => {
       directory = await mkdtemp(join(tmpdir(), 'axios-version-lifecycle-'));
       const actualPackage = JSON.parse(await readFile(packageFile, 'utf8'));
       const scripts = { build: 'node scripts/build.js' };
@@ -99,6 +100,13 @@ prepareVersion({
   envFile: new URL('../lib/env/data.js', import.meta.url),
   client: {
     async get(url) {
+      if (${JSON.stringify(githubState)} === 'rate-limited') {
+        throw Object.assign(new Error('Request failed with status code 403'), {
+          isAxiosError: true,
+          response: { status: 403, data: { message: 'API rate limit exceeded' } },
+        });
+      }
+
       return {
         data: url.endsWith('/contributors')
           ? [{ login: 'release-contributor', type: 'User', contributions: 3 }]
@@ -143,6 +151,8 @@ writeFileSync(new URL('../dist/version.json', import.meta.url), JSON.stringify({
       if (bump === 'prerelease') args.push('--preid=rc');
       npm(...args);
 
+      const expectedContributors =
+        githubState === 'rate-limited' ? ['Original Contributor'] : [refreshedContributor];
       const bumpedPackage = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
       const expectedMetadata = `export const VERSION = "${expectedVersion}";`;
       expect(bumpedPackage.version).toBe(expectedVersion);
@@ -152,12 +162,12 @@ writeFileSync(new URL('../dist/version.json', import.meta.url), JSON.stringify({
       expect(JSON.parse(await readFile(join(directory, 'dist', 'version.json'), 'utf8'))).toEqual({
         VERSION: expectedVersion,
       });
-      expect(bumpedPackage.contributors).toEqual([refreshedContributor]);
+      expect(bumpedPackage.contributors).toEqual(expectedContributors);
       expect(git('show', 'HEAD:lib/env/data.js')).toBe(expectedMetadata);
       expect(git('show', `v${expectedVersion}:lib/env/data.js`)).toBe(expectedMetadata);
       expect(JSON.parse(git('show', `v${expectedVersion}:package.json`))).toMatchObject({
         version: expectedVersion,
-        contributors: [refreshedContributor],
+        contributors: expectedContributors,
       });
       expect(git('rev-parse', `v${expectedVersion}^{commit}`)).toBe(git('rev-parse', 'HEAD'));
       expect(git('status', '--porcelain')).toBe('');

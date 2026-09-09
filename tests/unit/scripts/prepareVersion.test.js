@@ -5,83 +5,99 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AxiosError } from '../../../index.js';
 import { prepareVersion } from '../../../scripts/prepare-version.js';
 
+const cachedContributors = ['Original contributor'];
 const originalPackage =
-  JSON.stringify(
-    { name: 'axios', version: '1.2.3', contributors: ['Original contributor'] },
-    null,
-    4
-  ) + '\n';
+  JSON.stringify({ name: 'axios', version: '1.2.3', contributors: cachedContributors }, null, 4) +
+  '\n';
 const originalEnv = 'export const VERSION = "1.0.0";\n';
 const alice = { login: 'alice', type: 'User', contributions: 4 };
+const bob = { login: 'bob', type: 'User', contributions: 3 };
 
 let directory;
 let packageFile;
 let envFile;
+let warning;
 
 beforeEach(async () => {
   directory = await mkdtemp(join(tmpdir(), 'axios-prepare-version-'));
   packageFile = join(directory, 'package.json');
   envFile = join(directory, 'data.js');
+  warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
   await Promise.all([writeFile(packageFile, originalPackage), writeFile(envFile, originalEnv)]);
 });
 
 afterEach(async () => {
+  warning.mockRestore();
   await rm(directory, { recursive: true, force: true });
 });
 
-async function expectOriginalFiles() {
-  expect(await readFile(packageFile)).toEqual(Buffer.from(originalPackage));
-  expect(await readFile(envFile)).toEqual(Buffer.from(originalEnv));
+async function expectPreparedFiles(version, contributors) {
+  const manifest = await readFile(packageFile, 'utf8');
+
+  expect(manifest.endsWith('}\n')).toBe(true);
+  expect(JSON.parse(manifest)).toEqual({ name: 'axios', version: '1.2.3', contributors });
+  expect(await readFile(envFile, 'utf8')).toBe(`export const VERSION = "${version}";`);
+}
+
+function expectContributorWarning() {
+  expect(warning).toHaveBeenCalledTimes(1);
+  const message = warning.mock.calls[0].map(String).join(' ');
+  expect(message).toMatch(/contributor/i);
+  return message;
 }
 
 describe('prepareVersion release file updates', () => {
-  it('leaves both files unchanged when the contributor request fails', async () => {
-    const error = new Error('GitHub request failed');
-    const client = { get: vi.fn().mockRejectedValue(error) };
+  it('uses cached contributors and the requested version when the request fails', async () => {
+    const client = { get: vi.fn().mockRejectedValue(new Error('GitHub request failed')) };
 
-    await expect(prepareVersion({ client, packageFile, envFile })).rejects.toBe(error);
-    await expectOriginalFiles();
+    await prepareVersion({ bump: 'v2.0.0', client, packageFile, envFile });
+
+    await expectPreparedFiles('2.0.0', cachedContributors);
+    expect(expectContributorWarning()).toContain('GitHub request failed');
   });
 
-  it('leaves both files unchanged when a contributor profile request fails', async () => {
-    const error = new Error('GitHub profile request failed');
+  it('keeps the complete cached list when a later contributor profile request fails', async () => {
     const client = {
       get: vi
         .fn()
-        .mockResolvedValueOnce({ data: [alice] })
-        .mockRejectedValue(error),
+        .mockResolvedValueOnce({ data: [alice, bob] })
+        .mockResolvedValueOnce({ data: { name: 'Refreshed Alice' } })
+        .mockRejectedValue(new Error('GitHub profile request failed')),
     };
 
-    await expect(prepareVersion({ client, packageFile, envFile })).rejects.toBe(error);
-    await expectOriginalFiles();
+    await prepareVersion({ client, packageFile, envFile });
+
+    await expectPreparedFiles('1.2.3', cachedContributors);
+    expect(expectContributorWarning()).toContain('GitHub profile request failed');
   });
 
-  it('preserves the GitHub 403 message without changing either file', async () => {
+  it('warns with the GitHub 403 detail and still prepares the release', async () => {
     const error = new AxiosError('Request failed with status code 403');
     error.response = { status: 403, data: { message: 'API rate limit exceeded' } };
     const client = { get: vi.fn().mockRejectedValue(error) };
 
-    await expect(prepareVersion({ client, packageFile, envFile })).rejects.toThrow(
-      'GitHub API Error: API rate limit exceeded'
-    );
-    await expectOriginalFiles();
+    await prepareVersion({ client, packageFile, envFile });
+
+    await expectPreparedFiles('1.2.3', cachedContributors);
+    expect(expectContributorWarning()).toContain('API rate limit exceeded');
   });
 
   it.each([
-    ['a non-array contributor list', { message: 'Invalid response' }, {}],
-    ['a malformed contributor profile', [alice], { type: null }],
-  ])('leaves both files unchanged for %s', async (_, contributors, profile) => {
-    const client = {
-      get: vi
-        .fn()
-        .mockResolvedValueOnce({ data: contributors })
-        .mockResolvedValue({ data: profile }),
-    };
+    ['a non-array contributor list', { message: 'Invalid response' }, [], /array|map|list/i],
+    [
+      'a malformed contributor profile',
+      [alice, bob],
+      [{ name: 'Refreshed Alice' }, { type: null }],
+      /null|type|profile/i,
+    ],
+  ])('uses cached contributors for %s', async (_, contributors, profiles, detail) => {
+    const client = { get: vi.fn().mockResolvedValueOnce({ data: contributors }) };
+    for (const profile of profiles) client.get.mockResolvedValueOnce({ data: profile });
 
-    await expect(prepareVersion({ client, packageFile, envFile })).rejects.toBeInstanceOf(
-      TypeError
-    );
-    await expectOriginalFiles();
+    await prepareVersion({ client, packageFile, envFile });
+
+    await expectPreparedFiles('1.2.3', cachedContributors);
+    expect(expectContributorWarning()).toMatch(detail);
   });
 
   it.each([
@@ -94,7 +110,7 @@ describe('prepareVersion release file updates', () => {
           return {
             data: [
               alice,
-              { login: 'bob', type: 'User', contributions: 3 },
+              bob,
               { login: 'low-count', type: 'User', contributions: 2 },
               { login: 'automation', type: 'Bot', contributions: 10 },
             ],
@@ -107,11 +123,10 @@ describe('prepareVersion release file updates', () => {
 
     await prepareVersion({ bump, client, packageFile, envFile });
 
-    expect(await readFile(envFile, 'utf8')).toBe(`export const VERSION = "${version}";`);
-    expect(JSON.parse(await readFile(packageFile, 'utf8'))).toEqual({
-      name: 'axios',
-      version: '1.2.3',
-      contributors: ['Alice Example (https://github.com/alice)', 'bob (https://github.com/bob)'],
-    });
+    await expectPreparedFiles(version, [
+      'Alice Example (https://github.com/alice)',
+      'bob (https://github.com/bob)',
+    ]);
+    expect(warning).not.toHaveBeenCalled();
   });
 });

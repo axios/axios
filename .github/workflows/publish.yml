@@ -32,5 +32,8 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Validate build artifacts
+        run: npm run test:build:artifacts
+
       - name: Publish to NPM
         run: npm stage publish --provenance --access public

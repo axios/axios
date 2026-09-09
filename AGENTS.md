@@ -22,7 +22,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Unit tests: `npm run test:vitest:unit`; focused unit test: `npm run test:vitest:unit -- tests/unit/path.test.js`.
 - Browser tests need Playwright installed first (`npx playwright install` locally; CI uses `npx playwright install --with-deps`); run `npm run test:vitest:browser:headless` for CI parity.
 - Smoke/module compatibility suites test the packed package, not the source tree: run `npm run build`, `npm pack`, install the tarball into the relevant `tests/smoke/*` or `tests/module/*` package, then run that suite's npm script.
-- CI order is install -> build -> artifact validation -> Playwright install -> unit -> browser headless -> pack -> CJS/ESM module and smoke tests -> Bun/Deno smoke tests.
+- The `build-and-run-vitest` job runs install -> lint (pull-request CI only) -> build -> artifact validation -> Playwright install -> unit -> browser headless -> pack. After that job succeeds, CJS/ESM module and smoke jobs, Bun, and Deno run in parallel; each depends on `build-and-run-vitest`.
 
 ## Package Shape
 

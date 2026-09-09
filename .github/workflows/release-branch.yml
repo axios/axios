@@ -339,10 +339,10 @@ jobs:
           echo "newTag=$VERSION" >> "$GITHUB_OUTPUT"
           echo "newBranch=release-v1x/version-$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Run preversion
+      - name: Prepare version metadata
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run preversion
+        run: npm run prepare:version
 
       - name: Build project
         run: npm run build

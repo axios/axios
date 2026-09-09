@@ -120,8 +120,8 @@
   ],
   "scripts": {
     "build": "node scripts/clear-dist.js && cross-env NODE_ENV=production rolldown -c",
-    "version": "npm run build && git add package.json",
-    "preversion": "node scripts/prepare-version.js",
+    "version": "npm run prepare:version && npm run build && git add package.json lib/env/data.js",
+    "prepare:version": "node scripts/prepare-version.js",
     "test": "npm run test:vitest",
     "test:vitest": "vitest run",
     "test:vitest:unit": "vitest run --project unit",

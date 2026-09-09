@@ -35,8 +35,6 @@ export async function prepareVersion({
   const version = (bump || packageJSON.version).replace(/^v/, '');
   const requestClient = client || (await import('./axios-build-instance.js')).default;
 
-  await writeFile(envFile, `export const VERSION = ${JSON.stringify(version)};`);
-
   try {
     const contributors = await getContributors(requestClient, 'axios', 'axios', 15);
 
@@ -47,6 +45,7 @@ export async function prepareVersion({
       )
       .map(({ login, name }) => `${name || login} (https://github.com/${login})`);
 
+    await writeFile(envFile, `export const VERSION = ${JSON.stringify(version)};`);
     await writeFile(packageFile, JSON.stringify(packageJSON, null, 2));
   } catch (err) {
     if (axios.isAxiosError(err) && err.response && err.response.status === 403) {

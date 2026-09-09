@@ -125,6 +125,7 @@
     "test": "npm run test:vitest",
     "test:vitest": "vitest run",
     "test:vitest:unit": "vitest run --project unit",
+    "test:build:artifacts": "vitest run --config vitest.build.config.js",
     "test:vitest:browser": "vitest run --project browser",
     "test:vitest:browser:headless": "vitest run --project browser-headless",
     "test:vitest:watch": "vitest",

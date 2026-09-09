@@ -7,7 +7,7 @@
 | Plan number     | `002`                                                                                                                                                                                            |
 | Status          | In progress                                                                                                                                                                                      |
 | Created         | 2026-08-22T18:40:30+02:00                                                                                                                                                                        |
-| Last updated    | 2026-08-22T19:27:36+02:00                                                                                                                                                                        |
+| Last updated    | 2026-09-09T08:15:47+02:00                                                                                                                                                                        |
 | Source revision | `9e51e031b453d7b766eaa9410b8b338f811e2cbf`                                                                                                                                                       |
 | Scope           | `package.json`, `package-lock.json`, the release bundler configuration, generated-artifact contract tests, build-related workflows, contributor/security guidance, and pre-release documentation |
 | Approval        | Approved for implementation by the maintainer on 2026-08-22                                                                                                                                      |
@@ -156,7 +156,7 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 
 **Likely areas:**
 
-- `tests/unit/` (new generated-artifact contract test)
+- `tests/build/` (generated-artifact contract test)
 - `package.json`
 - `rollup.config.js`
 - `.github/workflows/bundle-size.yml`
@@ -190,7 +190,7 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 - `rolldown.config.js` (new)
 - `rollup.config.js` (removed)
 - `package.json:scripts.build`
-- `tests/unit/` generated-artifact contract coverage
+- `tests/build/` generated-artifact contract coverage
 
 **Validation:**
 
@@ -395,6 +395,8 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 - 2026-08-22T19:05:55+02:00 — Two consecutive Rolldown builds produced identical SHA-256 hashes for all eight artifacts. Raw/gzip level-9 comparison against an isolated Rollup build at the source revision is recorded below; the only increase is 50 gzip bytes (+0.27%) for minified browser ESM, while that file is 493 raw bytes smaller.
 - 2026-08-22T19:27:36+02:00 — Removed the remaining Gulp task runner and now-unused `fs-extra`. `scripts/clear-dist.js` performs the pre-build cleanup with native Node.js APIs, while `scripts/prepare-version.js` preserves the release-time version file, contributor refresh, GitHub rate-limit error, and optional `--bump` behavior. Three focused script tests cover cleanup plus manifest-derived and overridden versions. The clean install falls again from 470 to 339 packages; the lockfile removes exactly 131 paths with no additions or version changes. The production build, 25 build/script tests, 1,062 unit tests, 615 browser tests, lockfile-lint, production audit, package dry run, and two-pass reproducibility all pass; the same two pre-existing development audit findings remain.
 
+- 2026-09-09T08:15:47+02:00 — Restored the generated-artifact suite, npm command, and post-build validation in the `build-and-run-vitest` jobs of `run-ci.yml` and `release-branch.yml`, following maintainer clarification after their removal in `d22870a`. A fresh `npm ci --ignore-scripts`, production build, and all 22 artifact checks pass on Node 24.18.0. The separate build-script tests remain removed. Threat-model wording now distinguishes these test jobs from the separate publish build.
+
 | Artifact                 | Rollup raw/gzip  | Rolldown raw/gzip | Raw delta         | Gzip delta        |
 | ------------------------ | ---------------- | ----------------- | ----------------- | ----------------- |
 | `dist/axios.js`          | 206,918 / 51,302 | 135,453 / 35,574  | -71,465 (-34.54%) | -15,728 (-30.66%) |
@@ -406,7 +408,7 @@ Keep UMD as a deliberate v2 CDN artifact, not as an accidental side effect of th
 
 ### Deviations
 
-- None.
+- The three build-script tests introduced during Gulp removal were removed at the maintainer's request in `d22870a`. Generated-artifact validation was restored after the maintainer clarified that it should remain; the earlier 25-test build/script results above are historical evidence, not the current suite size.
 
 ### Final outcome
 

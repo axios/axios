@@ -17,11 +17,12 @@ This file is the canonical contributor guide for both human and AI agents workin
 ## Commands
 
 - Build published artifacts: `npm run build` (the project-owned Node cleanup script deletes `dist/`, then Rolldown writes browser ESM/UMD/CJS and Node CJS bundles).
+- Validate generated package contracts after a build: `npm run test:build:artifacts` (file inventory, ES2018 browser syntax, UMD global/AMD loaders, ESM/CJS export shapes, source maps, and platform separation).
 - Lint source only: `npm run lint`; focused lint: `npx eslint lib/path/to/file.js`.
 - Unit tests: `npm run test:vitest:unit`; focused unit test: `npm run test:vitest:unit -- tests/unit/path.test.js`.
 - Browser tests need Playwright installed first (`npx playwright install` locally; CI uses `npx playwright install --with-deps`); run `npm run test:vitest:browser:headless` for CI parity.
 - Smoke/module compatibility suites test the packed package, not the source tree: run `npm run build`, `npm pack`, install the tarball into the relevant `tests/smoke/*` or `tests/module/*` package, then run that suite's npm script.
-- CI order is install -> build -> Playwright install -> unit -> browser headless -> pack -> CJS/ESM module and smoke tests -> Bun/Deno smoke tests.
+- CI order is install -> build -> artifact validation -> Playwright install -> unit -> browser headless -> pack -> CJS/ESM module and smoke tests -> Bun/Deno smoke tests.
 
 ## Package Shape
 
@@ -94,7 +95,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 
 ## Tests
 
-- Test layout is runtime-first: `tests/unit/**/*.test.js`, `tests/browser/**/*.browser.test.js`, `tests/smoke/esm/**/*.smoke.test.js`, `tests/smoke/cjs/**/*.smoke.test.cjs`.
+- Test layout is runtime-first: `tests/unit/**/*.test.js`, `tests/build/**/*.test.js`, `tests/browser/**/*.browser.test.js`, `tests/smoke/esm/**/*.smoke.test.js`, `tests/smoke/cjs/**/*.smoke.test.cjs`.
 - Use `tests/setup/server.js` for local HTTP servers and cleanup with `try/finally`; leaking servers causes Vitest hangs.
 - Keep CJS and ESM smoke coverage aligned when behavior is packaging/import related.
 - Type compatibility is exercised against Node 20 definitions through `tests/module/cjs` with TypeScript 4.9 and `tests/module/esm` with TypeScript 5.x; run the matching module suite for declaration changes.

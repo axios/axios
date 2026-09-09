@@ -4,6 +4,7 @@
 
 ## Breaking Changes
 
+- **Browser bundle syntax baseline:** Axios v2 keeps the existing browser ESM, CommonJS, and UMD artifact paths, including `dist/axios.js` and the jsDelivr/unpkg default `dist/axios.min.js`. The UMD files still support classic `<script>` loading, expose the global `axios`, and work with AMD/RequireJS, but all browser bundles now target ES2018 instead of transpiling UMD to ES5. Applications that require ES5 syntax should remain on the v1.x maintenance line or apply their own controlled transpilation and runtime polyfills. The release build now uses standalone Rolldown while the transitional CommonJS package surfaces remain available.
 - **Node.js runtime baseline:** Axios v2 now requires Node.js 20 or newer. Applications that must run on Node.js 12, 14, 16, or 18 should remain on the v1.x maintenance line or upgrade Node.js. This change aligns package metadata, the Node build target, type fixtures, and compatibility workflows; the existing CommonJS artifacts remain available on Node.js 20+ until the separately planned ESM-only migration.
 
 ## Features

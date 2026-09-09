@@ -4,13 +4,14 @@ const { GITHUB_TOKEN } = process.env;
 
 if (GITHUB_TOKEN) {
   console.log(`[GITHUB_TOKEN OK]`);
-} else { 
+} else {
   console.warn(`[GITHUB_TOKEN is not defined]`);
 }
 
 const defaultTransform = axios.defaults.transformRequest;
 
 export default axios.create({
+  timeout: 10000,
   transformRequest: [
     defaultTransform[0],
     function (data) {

@@ -37,6 +37,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Validate build artifacts
+        run: npm run test:build:artifacts
+
       - name: Install Playwright with deps
         run: npx playwright install --with-deps
 

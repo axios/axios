@@ -42,6 +42,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Validate build artifacts
+        run: npm run test:build:artifacts
+
       - name: Install Playwright with deps
         run: npx playwright install --with-deps
 
@@ -336,13 +339,16 @@ jobs:
           echo "newTag=$VERSION" >> "$GITHUB_OUTPUT"
           echo "newBranch=release-v1x/version-$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Run preversion
+      - name: Prepare version metadata
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run preversion
+        run: npm run prepare:version
 
       - name: Build project
         run: npm run build
+
+      - name: Validate build artifacts
+        run: npm run test:build:artifacts
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1

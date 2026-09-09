@@ -27,7 +27,7 @@ We keep the 7-day Dependabot delay for these updates unless a critical vulnerabi
 ## Developing
 
 - `npm run test` runs the Jasmine and Mocha tests
-- `npm run build` runs Rollup and bundles the source
+- `npm run build` clears generated artifacts and runs Rolldown
 - `npm run version` prepares the code for release
 
 ## Running examples

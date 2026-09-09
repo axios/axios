@@ -129,6 +129,39 @@ const invalidParamsConfig: axios.AxiosRequestConfig<unknown, SearchParams> = {
   params: { query: 1 },
 };
 
+const agentConfig: axios.AxiosRequestConfig = {
+  httpAgent: { addRequest() {} },
+  httpsAgent: { addRequest() {} },
+};
+
+const invalidHttpAgentConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- destroy alone does not make an object an agent instance
+  httpAgent: { destroy() {} },
+};
+
+const invalidHttpAgentOptionsConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- constructor options are not agent instances
+  httpAgent: { keepAlive: true },
+};
+
+const invalidHttpsAgentConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- destroy alone does not make an object an agent instance
+  httpsAgent: { destroy() {} },
+};
+
+const invalidStateOnlyAgentConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- socket-pool state without a dispatch lifecycle is not an agent
+  httpAgent: {
+    maxSockets: 1,
+    maxTotalSockets: 1,
+    maxFreeSockets: 1,
+    freeSockets: {},
+    requests: {},
+    sockets: {},
+    destroy() {},
+  },
+};
+
 axios.get<unknown, axios.AxiosResponse<unknown>, any, SearchParams>('/search', {
   // @ts-expect-error -- request aliases enforce their trailing params type
   params: { query: 1 },
@@ -154,5 +187,10 @@ console.log(
   errorQuery,
   legacyParamsConfig,
   mergedQuery,
-  invalidParamsConfig
+  invalidParamsConfig,
+  agentConfig,
+  invalidHttpAgentConfig,
+  invalidHttpAgentOptionsConfig,
+  invalidHttpsAgentConfig,
+  invalidStateOnlyAgentConfig
 );

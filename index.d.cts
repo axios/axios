@@ -432,6 +432,42 @@ declare namespace axios {
     validateStatusUndefinedResolves?: boolean;
   }
 
+  interface AxiosRetryConfig {
+    retries?: number;
+    retryDelay?: number | ((retryCount: number, response?: AxiosResponse | null) => number);
+    backoffFactor?: number;
+    maxDelay?: number;
+    jitter?: boolean;
+    respectRetryAfter?: boolean;
+    statusCodes?: number[];
+    retryMethods?: string[];
+    networkErrorCodes?: string[];
+    shouldRetry?: (error: any, retryCount: number) => boolean;
+    onRetry?: (
+      retryCount: number,
+      error: any,
+      config: InternalAxiosRequestConfig,
+      delay: number
+    ) => void;
+  }
+
+  interface AxiosRetryHelper {
+    attachRetry: (
+      axiosInstance: AxiosInstance | AxiosStatic,
+      defaultOptions?: AxiosRetryConfig
+    ) => number;
+    calculateRetryDelay: (
+      retryCount: number,
+      options?: AxiosRetryConfig,
+      response?: AxiosResponse | null
+    ) => number;
+    isRetryableError: (error: any, options?: AxiosRetryConfig) => boolean;
+    parseRetryAfter: (response?: AxiosResponse | null) => number | null;
+    DEFAULT_RETRY_STATUS_CODES: number[];
+    DEFAULT_RETRY_METHODS: string[];
+    DEFAULT_NETWORK_ERROR_CODES: string[];
+  }
+
   interface GenericAbortSignal {
     readonly aborted: boolean;
     onabort?: ((...args: any) => any) | null;
@@ -586,6 +622,7 @@ declare namespace axios {
           | LookupAddress
         >);
     withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig<D, P>) => boolean | undefined);
+    retry?: boolean | AxiosRetryConfig;
     parseReviver?: (this: any, key: string, value: any, context?: { source?: string }) => any;
     fetchOptions?:
       | Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'>
@@ -758,6 +795,11 @@ declare namespace axios {
       config1: AxiosRequestConfig<D, P>,
       config2: AxiosRequestConfig<D, P>
     ): AxiosRequestConfig<D, P>;
+    retry: AxiosRetryHelper;
+    attachRetry: (
+      axiosInstance: AxiosInstance | AxiosStatic,
+      defaultOptions?: AxiosRetryConfig
+    ) => number;
   }
 }
 

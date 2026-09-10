@@ -22,6 +22,8 @@ import axios, {
   isAxiosError,
   spread,
   AddressFamily,
+  retry,
+  attachRetry,
 } from 'axios';
 
 const config: AxiosRequestConfig = {
@@ -388,6 +390,10 @@ axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(res
 
 axios.interceptors.request.clear();
 axios.interceptors.response.clear();
+
+const retryInterceptorId = attachRetry(axios.create(), { retries: 0 });
+console.log(retryInterceptorId);
+console.log(retry.calculateRetryDelay(0, { retryDelay: 1, jitter: false }));
 
 // Adapters
 

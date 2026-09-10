@@ -10,7 +10,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Do not remove `ignore-scripts=true`; if git hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once.
 - Adding or updating dependencies is security-sensitive; `package-lock.json` is checked by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
 - Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.
-- Build/test/lint tools still execute dependency code despite `ignore-scripts`; avoid unnecessary full builds when a focused check proves the change.
+- Build/test/lint tools still execute dependency code despite `ignore-scripts`; run the validation required by the PR submission checklist below and avoid unrelated runtime checks for documentation-only changes.
 - Do not add new runtime dependencies without discussion; the dependency surface is intentionally tiny.
 
 ## Commands
@@ -20,7 +20,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Unit tests: `npm run test:vitest:unit`; focused unit test: `npm run test:vitest:unit -- tests/unit/path.test.js`.
 - Browser tests need Playwright installed first (`npx playwright install` locally; CI uses `npx playwright install --with-deps`); run `npm run test:vitest:browser:headless` for CI parity.
 - Smoke/module compatibility suites test the packed package, not the source tree: run `npm run build`, `npm pack`, install the tarball into the relevant `tests/smoke/*` or `tests/module/*` package, then run that suite's npm script.
-- CI order is install -> build -> Playwright install -> unit -> browser headless -> pack -> CJS/ESM module and smoke tests -> Bun/Deno smoke tests.
+- CI order is install -> lint -> build -> Playwright install -> unit -> browser headless -> pack -> CJS/ESM module and smoke tests -> Bun/Deno smoke tests.
 
 ## Package Shape
 
@@ -32,9 +32,25 @@ This file is the canonical contributor guide for both human and AI agents workin
 
 ## Pre-Release Notes
 
-- Add user-visible unreleased changes to `PRE_RELEASE_CHANGELOG.md`, not `CHANGELOG.md`. `CHANGELOG.md` is release-owned and should only be updated as part of preparing an actual release.
+- Every PR MUST add or update an entry in `PRE_RELEASE_CHANGELOG.md`. This includes runtime fixes, features, internal refactors, tests, documentation, tooling, and CI changes. An unchanged public API or a documentation-only diff is not a reason to omit the entry.
+- Put the entry in the appropriate section and explain the final change, why it matters, and any compatibility implications. Update the existing entry when revising the same PR instead of adding duplicates. Link the issue and PR when their numbers are known; never invent a reference.
+- `CHANGELOG.md` is release-owned and should only be updated as part of preparing an actual release. A PR body, commit message, or planned release note does not replace the committed prerelease entry.
 - Track deferred README, docs site, examples, migration guide, and translated docs updates in `PRE_RELEASE_DOCS.md`. Use enough context for release preparation; do not store brittle diffs or line-number-only notes.
 - Do not update `README.md` or the docs site for unreleased runtime/API changes unless the task is explicitly release preparation. During feature/fix work, record what docs need to say in `PRE_RELEASE_DOCS.md` so it can be applied during release work.
+
+## Before Opening Or Updating A Pull Request
+
+These requirements apply to human contributors and AI agents. Complete the applicable work before submitting a PR for maintainer review; a checked box must describe verified work, not an intention. Use `.github/PULL_REQUEST_TEMPLATE.md` and keep its answers accurate when the implementation changes.
+
+1. **Confirm scope and base.** Read this guide, `CONTRIBUTING.md`, and `SECURITY.md`; consult `THREATMODEL.md` for security-sensitive changes. Target the intended supported release branch, link the issue or explain the problem, and review the complete diff against that base. Keep unrelated changes out of the PR.
+2. **Commit the prerelease entry.** Follow the mandatory Pre-Release Notes rules above for every PR. Confirm that the entry describes the final implementation, including any limitations. Do not mark this requirement not applicable.
+3. **Prove the behavior.** Bug fixes need a regression test that fails before the fix and passes afterward. Cover relevant negative cases and preserve existing defensive tests. For adapter or platform changes, consider Node, browser, custom-environment, and affected-runtime behavior; a mock should reflect the capability being fixed. Use a safe local runtime reproduction when the ordinary suites cannot establish compatibility.
+4. **Run the required local checks.** Install with `npm ci --ignore-scripts`. For runtime changes, run `npm run lint`, `npm run build`, and `npm run test:vitest:unit`; adapter or browser changes also need `npm run test:vitest:browser:headless`. Public type changes require the matching CJS/ESM module tests. Packaging, exports, or build changes require building and testing the packed package with the affected module/smoke suites. Follow the supported runtimes in `.github/workflows/run-ci.yml`. For changes limited to documentation or contributor instructions, check formatting, links, and consistency; explain why runtime checks are not applicable instead of running unrelated suites.
+5. **Check compatibility and documentation.** State the semver impact and call out intentional breaking behavior. Keep runtime exports, `index.d.ts`, `index.d.cts`, and their tests aligned when the public API changes. Record deferred release documentation in `PRE_RELEASE_DOCS.md`, or explain why no docs/types update is needed. A bug fix without an API change still requires its prerelease changelog entry.
+6. **Review security and hygiene.** Preserve the guards and architecture boundaries below. Inspect the final diff for unrelated dependency or workflow changes, generated bundles, version churn, secrets, debug code, focused tests (`.only`, `fit`, `fdescribe`), and unexplained lint suppressions. Respect the maintainer-only dependency/workflow policy and never edit generated artifacts by hand.
+7. **Write an accurate submission.** Use Conventional Commits for the title and commits. Explain the concrete problem, resulting behavior, issue/rationale, and validation. List the commands actually run, their results, and relevant runtime versions. Give a specific reason for each genuinely inapplicable check; distinguish failed or blocked checks from checks that do not apply. Fill in the PR description yourself rather than relying on a bot to reconstruct it.
+
+CI runs after a PR is opened. Inspect the actual GitHub Actions checks for the latest commit before reporting the PR ready to merge; review/security bot approvals are not build, test, packaging, or runtime-matrix evidence. Resolve relevant failures and report pending or approval-required runs accurately. If required local checks are blocked, keep the PR as a draft and describe the blocker and remaining validation. After further code changes, rerun the affected checks and update the PR's evidence.
 
 ## Architecture Boundaries
 

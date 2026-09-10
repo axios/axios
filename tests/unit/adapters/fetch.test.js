@@ -350,7 +350,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
-  it('should keep the default cache mode when a polluted option breaks the probe', async () => {
+  it('should keep the default cache mode when other Request options are polluted', async () => {
     let captured;
 
     Object.prototype.cache = 'no-store';
@@ -372,6 +372,120 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       delete Object.prototype.cache;
       delete Object.prototype.mode;
     }
+  });
+
+  [false, true].forEach((polluted) => {
+    it(`should omit cache when every explicit mode is rejected${polluted ? ' with polluted options' : ''}`, async () => {
+      let capturedInit;
+
+      class CacheDisabledRequest extends Request {
+        constructor(input, init) {
+          if (init && init.cache !== undefined) {
+            throw new TypeError(
+              "The 'cache' field on 'RequestInitializerDict' is not implemented."
+            );
+          }
+
+          super(input, init);
+          capturedInit = init;
+        }
+      }
+
+      try {
+        if (polluted) {
+          Object.prototype.cache = 'default';
+          Object.prototype.mode = 'navigate';
+        }
+
+        const response = await fetchAxios.get('/cache-disabled', {
+          env: {
+            Request: CacheDisabledRequest,
+            fetch() {
+              return Promise.resolve(new Response('ok'));
+            },
+          },
+        });
+
+        assert.strictEqual(response.data, 'ok');
+        assert.strictEqual(Object.getPrototypeOf(capturedInit), null);
+        assert.strictEqual(Object.prototype.hasOwnProperty.call(capturedInit, 'cache'), false);
+        assert.strictEqual(capturedInit.mode, 'cors');
+        assert.strictEqual(capturedInit.redirect, 'follow');
+      } finally {
+        if (polluted) {
+          delete Object.prototype.cache;
+          delete Object.prototype.mode;
+        }
+      }
+    });
+  });
+
+  it('should keep the default cache mode when a polluted body prevents capability probes', async () => {
+    let captured;
+
+    Object.prototype.cache = 'no-store';
+    Object.prototype.body = 'unexpected GET body';
+
+    try {
+      const response = await fetchAxios.get('/polluted-body', {
+        env: {
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.strictEqual(captured.cache, 'default');
+      assert.strictEqual(captured.body, null);
+    } finally {
+      delete Object.prototype.cache;
+      delete Object.prototype.body;
+    }
+  });
+
+  ['no-store', 'no-cache', 'default'].forEach((cache) => {
+    it(`should preserve an explicit ${cache} cache option on a restricted runtime`, async () => {
+      class RestrictedCacheRequest extends Request {
+        constructor(input, init) {
+          if (
+            init &&
+            init.cache !== undefined &&
+            init.cache !== 'no-store' &&
+            init.cache !== 'no-cache'
+          ) {
+            throw new TypeError(`Unsupported cache mode: ${init.cache}`);
+          }
+
+          super(input, init);
+        }
+      }
+
+      const fetchOptions = Object.freeze({ cache });
+      const customFetch = vi.fn((input, init) => {
+        assert.strictEqual(input.cache, cache);
+        assert.strictEqual(init.cache, cache);
+        return Promise.resolve(new Response('ok'));
+      });
+      const response = fetchAxios.get('/explicit-cache', {
+        fetchOptions,
+        env: {
+          Request: RestrictedCacheRequest,
+          fetch: customFetch,
+        },
+      });
+
+      if (cache === 'default') {
+        await assert.rejects(response, { message: 'Unsupported cache mode: default' });
+        assert.strictEqual(customFetch.mock.calls.length, 0);
+      } else {
+        assert.strictEqual((await response).data, 'ok');
+        assert.strictEqual(customFetch.mock.calls.length, 1);
+      }
+
+      assert.strictEqual(fetchOptions.cache, cache);
+    });
   });
 
   it('should expose an unfollowed redirect response in Node when maxRedirects is zero', async () => {

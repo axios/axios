@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import axios from '../../../index.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('core::Axios', () => {
   describe('request error stack decoration', () => {
@@ -51,6 +52,30 @@ describe('core::Axios', () => {
       } finally {
         Error.captureStackTrace = original;
       }
+    });
+
+    it('keeps reconstructed caller frames ahead of the inlined cause stack', async () => {
+      const cause = new Error('socket hang up');
+
+      cause.stack = 'Error: socket hang up\n    at Socket.socketOnEnd (node:_http_client)';
+
+      const failure = AxiosError.from(cause, 'ECONNRESET');
+      const causeSection = '\nCaused by: ' + cause.stack;
+
+      const error = await axios
+        .request({
+          url: 'http://localhost/test',
+          adapter: () => Promise.reject(failure)
+        })
+        .catch((reason) => reason);
+
+      const stack = String(error.stack);
+      const causeIndex = stack.indexOf('\nCaused by: ');
+
+      expect(causeIndex).not.toBe(-1);
+      // Everything after the marker has to stay the wrapped error's own stack,
+      // so the frames rebuilt by `request()` belong ahead of it.
+      expect(stack.slice(causeIndex)).toBe(causeSection);
     });
   });
 });

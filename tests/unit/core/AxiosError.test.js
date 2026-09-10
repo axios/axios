@@ -138,6 +138,71 @@ describe('core::AxiosError', () => {
     });
   });
 
+  describe('AxiosError.from stack preservation (#6670)', () => {
+    const nativeStack = 'Error: Boom!\n    at somewhereDeepInNode (node:internal/x:1:1)';
+
+    it('appends the wrapped error stack to the AxiosError stack', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK', { foo: 'bar' });
+
+      expect(axiosError.stack).toContain('\nCaused by: Error: Boom!');
+      expect(axiosError.stack).toContain('at somewhereDeepInNode');
+    });
+
+    it('keeps the axios frames ahead of the cause section', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK');
+      const [head, tail] = axiosError.stack.split('\nCaused by: ');
+
+      expect(head).not.toContain('somewhereDeepInNode');
+      expect(tail).toBe(nativeStack);
+    });
+
+    it('still exposes the wrapped error through cause', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK');
+
+      expect(axiosError.cause).toBe(error);
+      expect(axiosError.cause.stack).toBe(nativeStack);
+    });
+
+    it('nests rather than repeats the cause section when an AxiosError is re-wrapped', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const inner = AxiosError.from(error, 'ERR_NETWORK');
+      const outer = AxiosError.from(inner, 'ERR_BAD_RESPONSE');
+
+      expect(outer.stack.split(nativeStack).length - 1).toBe(1);
+    });
+
+    it('leaves the stack alone when the wrapped error has no usable stack', () => {
+      const error = new Error('Boom!');
+      error.stack = undefined;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK');
+
+      expect(axiosError.stack).not.toContain('Caused by:');
+    });
+
+    it('does not throw when reading the wrapped stack throws', () => {
+      const error = new Error('Boom!');
+      Object.defineProperty(error, 'stack', {
+        get() {
+          throw new Error('stack hook exploded');
+        },
+      });
+
+      expect(() => AxiosError.from(error, 'ERR_NETWORK')).not.toThrow();
+    });
+  });
+
   describe('cause serialization (regression #7205)', () => {
     // A wrapped low-level error carrying a circular reference, like a Node
     // socket/request held by network errors.

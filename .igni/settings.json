@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": ".igni/hooks/pre-pr-review.sh",
+        "matcher": "Bash",
+        "timeout": 15000
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": ".igni/hooks/post-commit-todo.sh",
+        "matcher": "Bash",
+        "timeout": 15000,
+        "background": true
+      }
+    ]
+  }
+}

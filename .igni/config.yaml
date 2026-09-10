@@ -1,0 +1,23 @@
+# igni — project configuration
+# This file can be committed to git. Team members share these settings.
+# User-level overrides go in ~/.igni/config.yaml.
+# See https://docs.ignite-ember.sh/configuration for details.
+
+# models:
+#   default: MiniMax-M2.7        # Default model for this project
+
+guardrails:
+  pii_detection: true             # Warn on PII in user messages
+  # prompt_injection: false       # Warn on prompt injection patterns
+
+knowledge:
+  enabled: true                   # Weaviate-backed knowledge base
+  collection_name: ember_knowledge
+
+learning:
+  enabled: true                   # Learn user preferences, project context, entities across sessions
+
+# orchestration:
+#   max_nesting_depth: 5          # Max recursive sub-team levels
+#   max_total_agents: 20          # Max agents per request
+#   sub_team_timeout: 600         # Sub-team kill timeout (seconds)

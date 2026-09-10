@@ -76,6 +76,51 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
   });
 
+  it('should not treat a media type parameter named base64 as base64 encoding', () => {
+    const body = '一'.repeat(2000);
+    const url = 'data:text/plain;base64=x,' + body;
+
+    assert.strictEqual(estimateDataURLDecodedBytes(url), Buffer.byteLength(body, 'utf8'));
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'utf8'));
+  });
+
+  it('should not treat a non-trailing base64 token as base64 encoding', () => {
+    const body = 'A'.repeat(400);
+
+    assert.strictEqual(
+      estimateDataURLDecodedBytes('data:text/plain;base64;x=1,' + body),
+      body.length
+    );
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;name=base64,' + body), body.length);
+  });
+
+  it('should treat a trailing base64 token with spaces or mixed case as base64 encoding', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;   base64,TQ=='), 1);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;BASE64,TQ=='), 1);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64 ,TQ=='), 1);
+  });
+
+  // The URL parser strips every tab, LF and CR from the URL before fetch sees it,
+  // so these all reach the data: URL processor as 'data:text/plain;base64,TQ=='.
+  it('should ignore tabs and newlines anywhere in the url, as the URL parser does', () => {
+    for (const ws of ['\t', '\n', '\r', '\r\n']) {
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/plain;${ws}base64,TQ==`), 1, `before token: ${JSON.stringify(ws)}`);
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/plain;ba${ws}se64,TQ==`), 1, `inside token: ${JSON.stringify(ws)}`);
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/plain;base64,T${ws}Q==`), 1, `inside body: ${JSON.stringify(ws)}`);
+      assert.strictEqual(estimateDataURLDecodedBytes(`data:text/pl${ws}ain,abcd`), 4, `inside type: ${JSON.stringify(ws)}`);
+    }
+  });
+
+  // A form feed survives URL parsing as '%0C', so it is no longer whitespace when the
+  // media type is stripped and the token stops being a token: fetch decodes these as text.
+  it('should not treat a form feed around the base64 token as base64 encoding', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;\fbase64,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64\f,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64\f\f,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64 \f,TQ=='), 4);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:text/plain;base64%0C,TQ=='), 4);
+  });
+
   it('should include fragments in the raw Buffer allocation', () => {
     const body = 'TQ==#' + 'x'.repeat(4096);
     const url = 'data:application/octet-stream;base64,' + body;

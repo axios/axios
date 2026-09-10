@@ -4912,6 +4912,16 @@ describe('supports http with nodejs', () => {
       });
     });
 
+    it('should reject a media type parameter named base64 whose body exceeds the limit', async () => {
+      const dataURI = 'data:application/octet-stream;base64=x,' + '一'.repeat(2000);
+
+      await assert.rejects(axios.get(dataURI, { maxContentLength: 4000 }), (err) => {
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+        assert.match(err.message, /maxContentLength size of 4000 exceeded/);
+        return true;
+      });
+    });
+
     it('should count ignored input after base64 padding toward the Buffer allocation limit', async () => {
       const dataURI = 'data:application/octet-stream;base64,TQ==' + '%'.repeat(4096);
 

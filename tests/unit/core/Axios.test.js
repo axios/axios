@@ -3,6 +3,16 @@ import axios from '../../../index.js';
 
 describe('core::Axios', () => {
   describe('request error stack decoration', () => {
+    async function namedCaller() {
+      await axios.request({
+        url: 'http://localhost/test',
+        adapter: () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('adapter failure')), 0);
+          }),
+      });
+    }
+
     async function expectAdapterFailurePreserved() {
       const failure = new Error('adapter failure');
 
@@ -13,6 +23,60 @@ describe('core::Axios', () => {
         })
       ).rejects.toBe(failure);
     }
+
+    it('appends a caller stack of fewer than three frames', async () => {
+      const original = Error.stackTraceLimit;
+      Error.stackTraceLimit = 2;
+
+      try {
+        await namedCaller();
+        throw new Error('request should have rejected');
+      } catch (error) {
+        expect(error.stack).toContain('namedCaller');
+      } finally {
+        Error.stackTraceLimit = original;
+      }
+    });
+
+    // Both requests are made from the same line so the caller stack is
+    // identical, which is what the second one has to recognise.
+    async function stacksFromTwoRequests(failure) {
+      const stacks = [];
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        await expect(
+          axios.request({ url: 'http://localhost/test', adapter: () => Promise.reject(failure) })
+        ).rejects.toBe(failure);
+        stacks.push(failure.stack);
+      }
+
+      return stacks;
+    }
+
+    it('does not append a caller stack the error already ends with', async () => {
+      const failure = new Error('adapter failure');
+      const before = failure.stack;
+      const [first, second] = await stacksFromTwoRequests(failure);
+
+      expect(first).not.toBe(before);
+      expect(second).toBe(first);
+    });
+
+    it('does not append a caller stack of fewer than three frames twice', async () => {
+      const original = Error.stackTraceLimit;
+      Error.stackTraceLimit = 2;
+
+      try {
+        const failure = new Error('adapter failure');
+        const before = failure.stack;
+        const [first, second] = await stacksFromTwoRequests(failure);
+
+        expect(first).not.toBe(before);
+        expect(second).toBe(first);
+      } finally {
+        Error.stackTraceLimit = original;
+      }
+    });
 
     it('preserves the original error when Error.prepareStackTrace returns a non-string stack', async () => {
       const original = Error.prepareStackTrace;

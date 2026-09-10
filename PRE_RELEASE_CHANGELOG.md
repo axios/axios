@@ -23,5 +23,5 @@
 
 ## Documentation
 
-- **Contributor submission requirements:** Required a prerelease changelog entry for every PR, including documentation and test changes, and added a mandatory submission checklist covering regression tests, local validation, compatibility, docs/types, security, and accurate GitHub Actions status. Kept `AGENTS.md`, Copilot instructions, the contributor guide, and the PR template aligned.
+- **Contributor submission requirements:** Required a prerelease changelog entry for every PR, including documentation and test changes, and added a mandatory submission checklist covering regression tests, local validation, compatibility, docs/types, security, and accurate GitHub Actions status. Kept `AGENTS.md`, Copilot instructions, the contributor guide, and the PR template aligned. (**#11223**)
 - **Global search:** Added localized, private, in-browser full-text search for the active documentation language, with fuzzy and prefix matching.

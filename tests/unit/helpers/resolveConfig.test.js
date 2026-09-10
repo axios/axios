@@ -82,6 +82,35 @@ describe('helpers::resolveConfig', () => {
     }
   });
 
+  it('should UTF-8 encode a non-ASCII basic auth username, not just the password', () => {
+    const config = resolveConfig({
+      url: '/foo',
+      auth: { username: 'naïve', password: 'naïve' },
+    });
+
+    const decoded = Buffer.from(
+      config.headers.get('Authorization').replace(/^Basic /, ''),
+      'base64'
+    ).toString('utf8');
+    assert.strictEqual(decoded, 'naïve:naïve');
+  });
+
+  it('should not throw for a basic auth username outside Latin-1', () => {
+    let config;
+    assert.doesNotThrow(() => {
+      config = resolveConfig({
+        url: '/foo',
+        auth: { username: 'π', password: 'x' },
+      });
+    });
+
+    const decoded = Buffer.from(
+      config.headers.get('Authorization').replace(/^Basic /, ''),
+      'base64'
+    ).toString('utf8');
+    assert.strictEqual(decoded, 'π:x');
+  });
+
   it('should wrap invalid auth encoding as AxiosError', () => {
     assert.throws(
       () =>

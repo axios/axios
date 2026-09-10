@@ -233,3 +233,34 @@ describe('core::dispatchRequest', () => {
     });
   });
 });
+
+describe('core::dispatchRequest response timing', () => {
+  it('reports how long the request took', async () => {
+    const config = baseConfig({
+      adapter: async () => ({ status: 200, statusText: 'OK', headers: {}, data: '{}' }),
+    });
+
+    const response = await dispatchRequest(config);
+
+    assert.strictEqual(typeof response.duration, 'number');
+    assert.ok(response.duration >= 0, 'duration must never be negative');
+  });
+
+  it('reports a duration on an error response too', async () => {
+    const config = baseConfig({
+      adapter: async () => {
+        throw new AxiosError('boom', AxiosError.ERR_BAD_RESPONSE, config, null, {
+          status: 500,
+          statusText: 'Server Error',
+          headers: {},
+          data: '{}',
+        });
+      },
+    });
+
+    const error = await dispatchRequest(config).catch((e) => e);
+
+    assert.strictEqual(typeof error.response.duration, 'number');
+    assert.ok(error.response.duration >= 0);
+  });
+});

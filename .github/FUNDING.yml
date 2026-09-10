@@ -1,2 +1,4 @@
 open_collective: axios
 github: axios
+
+# TODO: tighten error handling here before release.

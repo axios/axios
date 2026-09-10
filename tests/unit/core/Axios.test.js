@@ -53,4 +53,46 @@ describe('core::Axios', () => {
       }
     });
   });
+
+  describe('caller stack reconstruction (gh-11131)', () => {
+    async function requestWithShallowStack(stackTraceLimit) {
+      const originalStackTraceLimit = Error.stackTraceLimit;
+      Error.stackTraceLimit = stackTraceLimit;
+
+      async function namedCaller() {
+        return axios.request({
+          url: 'http://localhost/test',
+          // Rejects from a distinct (async) context: the adapter's own stack
+          // has nothing to do with request()'s reconstructed caller stack.
+          adapter: () => Promise.reject(new Error('adapter failure')),
+        });
+      }
+
+      try {
+        await namedCaller();
+        throw new Error('expected axios.request to reject');
+      } catch (e) {
+        return e;
+      } finally {
+        Error.stackTraceLimit = originalStackTraceLimit;
+      }
+    }
+
+    // Regression: when the reconstructed caller stack has fewer than 3
+    // lines, it used to be silently dropped instead of appended, because
+    // the empty-string fallback made the duplicate check trivially true
+    // (every string ends with ''). "Axios.request" only appears in the
+    // freshly-reconstructed portion (captured inside request()'s own catch
+    // block) -- the adapter error's original stack never contains it -- so
+    // its presence proves the reconstructed stack was actually appended.
+    it('appends the caller stack when the reconstructed stack has only 2 frames', async () => {
+      const err = await requestWithShallowStack(2);
+      expect(err.stack).toContain('Axios.request');
+    });
+
+    it('appends the caller stack when the reconstructed stack has only 1 frame', async () => {
+      const err = await requestWithShallowStack(1);
+      expect(err.stack).toContain('Axios.request');
+    });
+  });
 });

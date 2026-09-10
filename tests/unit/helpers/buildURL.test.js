@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import buildURL, { encode } from '../../../lib/helpers/buildURL.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('helpers::buildURL', () => {
   it('should support null params', () => {
@@ -16,8 +17,30 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar');
   });
 
-  it('should support params with undefined url', () => {
-    expect(buildURL(undefined, { foo: 'bar' })).toEqual('?foo=bar');
+  it('should support params with an empty url', () => {
+    expect(buildURL('', { foo: 'bar' })).toEqual('?foo=bar');
+  });
+
+  it('should reject params with a non-string url', () => {
+    for (const url of [
+      null,
+      undefined,
+      0,
+      false,
+      new URL('https://example.com/foo'),
+      Object.create(null),
+    ]) {
+      let error;
+      try {
+        buildURL(url, { foo: 'bar' });
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).toBeInstanceOf(AxiosError);
+      expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+      expect(error.message).toBe('Invalid URL: url must be a string when params are provided');
+    }
   });
 
   it('should support sending raw params to custom serializer func', () => {

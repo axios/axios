@@ -510,6 +510,70 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should allow custom fetch named fetch mentioning undici to access Object.prototype[Symbol.iterator]', async () => {
+    let customRan = false;
+    const customFetchWithUndici = async function fetch() {
+      customRan = true;
+      // undici comment
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ customUndici: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: customFetchWithUndici,
+        },
+      });
+
+      assert.strictEqual(customRan, true);
+      assert.deepStrictEqual(data, { customUndici: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should allow proxied custom fetch named fetch to access Object.prototype[Symbol.iterator]', async () => {
+    let proxyRan = false;
+    const baseFetch = async function fetch() {
+      proxyRan = true;
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ proxyFetch: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const proxyFetch = new Proxy(baseFetch, {});
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: proxyFetch,
+        },
+      });
+
+      assert.strictEqual(proxyRan, true);
+      assert.deepStrictEqual(data, { proxyFetch: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
 
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(

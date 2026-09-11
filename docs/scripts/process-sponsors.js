@@ -15,6 +15,17 @@ const config = {
   },
   sponsorsToIgnore: ['axios'],
   additionalSponsors: [
+    // Permanent gold sponsorship, managed independently of Open Collective.
+    {
+      name: 'HeroDevs',
+      imageUrl: '/sponsors/herodevs.svg',
+      description: 'Security and long-term support for end-of-life open source software.',
+      tier: 'gold',
+      slug: 'herodevs',
+      website: 'https://www.herodevs.com/',
+      twitter: null,
+      active: true,
+    },
     {
       name: 'superluxuryreps',
       imageUrl: 'https://images.opencollective.com/superluxuryreps/378b62f/avatar.png',

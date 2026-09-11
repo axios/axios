@@ -405,10 +405,29 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opencollective.com/axios/contribute"
+                href="https://www.herodevs.com/"
+                style="padding: 10px; display: inline-block"
                 target="_blank"
-                >💜 Become a sponsor</a
             >
+                <img
+                    width="180px"
+                    height="53px"
+                    src="https://axios.rest/sponsors/herodevs.svg"
+                    alt="HeroDevs"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Security and long-term support for end-of-life open source software.
+            </p>
+            <p align="center">
+                <a
+                    href="https://www.herodevs.com/"
+                    target="_blank"
+                    ><b>herodevs.com</b></a
+                >
+            </p>
         </td>
         <td align="center" width="33.333333333333336%">
             <a

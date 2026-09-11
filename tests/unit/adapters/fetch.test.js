@@ -1695,23 +1695,21 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
 
     it('should reject a chunked response that exceeds maxContentLength during streaming', async () => {
-      const server = await startHTTPServer(
-        (req, res) => {
-          // Omit content-length so the cheap pre-check cannot fire; force
-          // the stream-based enforcement path.
-          res.setHeader('Transfer-Encoding', 'chunked');
-          const chunk = 'B'.repeat(1024);
-          let sent = 0;
-          const writeNext = () => {
-            if (sent >= 8) {
-              return res.end();
-            }
-            sent++;
-            res.write(chunk, writeNext);
-          };
-          writeNext();
-        }
-      );
+      const server = await startHTTPServer((req, res) => {
+        // Omit content-length so the cheap pre-check cannot fire; force
+        // the stream-based enforcement path.
+        res.setHeader('Transfer-Encoding', 'chunked');
+        const chunk = 'B'.repeat(1024);
+        let sent = 0;
+        const writeNext = () => {
+          if (sent >= 8) {
+            return res.end();
+          }
+          sent++;
+          res.write(chunk, writeNext);
+        };
+        writeNext();
+      });
 
       try {
         await assert.rejects(
@@ -1728,6 +1726,61 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await stopHTTPServer(server);
       }
     });
+
+    for (const preserveCause of [true, false]) {
+      it(`should preserve a response size error when the runtime wraps it ${preserveCause ? 'with' : 'without'} a cause`, async () => {
+        let originalError;
+        let wrappedError;
+        let dispatchedRequest;
+
+        class WrappedResponse extends Response {
+          async text() {
+            try {
+              return await super.text();
+            } catch (error) {
+              originalError = error;
+              wrappedError = new TypeError('fetch failed');
+              if (preserveCause) {
+                wrappedError.cause = error;
+              }
+              throw wrappedError;
+            }
+          }
+        }
+
+        await assert.rejects(
+          fetchAxios.get('/wrapped-response-limit', {
+            maxContentLength: 512,
+            env: {
+              Response: WrappedResponse,
+              async fetch(request) {
+                dispatchedRequest = request;
+                // No Content-Length: the actual body must cross the streaming limit.
+                return new Response(
+                  new ReadableStream({
+                    start(controller) {
+                      controller.enqueue(new Uint8Array(1024));
+                      controller.close();
+                    },
+                  })
+                );
+              },
+            },
+          }),
+          (error) => {
+            assert.ok(originalError instanceof AxiosError);
+            assert.ok(wrappedError instanceof TypeError);
+            assert.strictEqual(error, originalError);
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_RESPONSE);
+            assert.strictEqual(error.message, 'maxContentLength size of 512 exceeded');
+            assert.strictEqual(error.config.url, '/wrapped-response-limit');
+            assert.strictEqual(error.config.maxContentLength, 512);
+            assert.strictEqual(error.request, dispatchedRequest);
+            return true;
+          }
+        );
+      });
+    }
 
     it('should reject a data: URL whose decoded size exceeds maxContentLength (base64)', async () => {
       const payload = 'A'.repeat(4096);

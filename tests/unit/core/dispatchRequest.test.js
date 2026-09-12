@@ -175,6 +175,7 @@ describe('core::dispatchRequest', () => {
     it('keeps the caller-supplied request data on the exposed response config', async () => {
       const requestData = { startTime: 1, endTime: 2 };
       let transportData;
+      let transportConfig;
       const response = {
         data: '{"ok":true}',
         status: 200,
@@ -188,6 +189,7 @@ describe('core::dispatchRequest', () => {
         data: requestData,
         adapter: (adapterConfig) => {
           transportData = adapterConfig.data;
+          transportConfig = adapterConfig;
           return Promise.resolve({ ...response, config: adapterConfig });
         },
       });
@@ -196,6 +198,7 @@ describe('core::dispatchRequest', () => {
 
       assert.strictEqual(transportData, JSON.stringify(requestData), 'adapter must still receive the serialized body');
       assert.strictEqual(result.config.data, requestData, 'response.config.data must be the object the caller set');
+      assert.strictEqual(transportConfig.data, JSON.stringify(requestData), 'adapter-owned config must keep the transported body');
     });
 
     it('restores the caller-supplied data on the rejection-path response config', async () => {
@@ -219,6 +222,32 @@ describe('core::dispatchRequest', () => {
 
       assert.ok(thrown, 'must reject');
       assert.strictEqual(thrown.response.config.data, requestData, 'rejection response.config.data must be the object the caller set');
+    });
+
+    it('keeps the caller-supplied data when the response transform throws', async () => {
+      const requestData = { startTime: 1, endTime: 2 };
+      const config = baseConfig({
+        method: 'post',
+        data: requestData,
+        adapter: (adapterConfig) => Promise.resolve({
+          data: '{bad json',
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: adapterConfig,
+          request: {},
+        }),
+      });
+
+      let thrown;
+      try {
+        await dispatchRequest(config);
+      } catch (e) {
+        thrown = e;
+      }
+
+      assert.ok(thrown instanceof AxiosError, 'must be AxiosError');
+      assert.strictEqual(thrown.response.config.data, requestData, 'error response.config.data must be the object the caller set');
     });
 
     it('clears default Content-Type for React Native FormData before adapter headers are sent', async () => {

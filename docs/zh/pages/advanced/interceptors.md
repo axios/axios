@@ -183,5 +183,5 @@ instance.interceptors.response.use(interceptor("Response Interceptor 3"));
   - 一旦被捕获，后续的成功回调拦截器将再次被调用（与 Promise 链的行为一致）
 
 ::: tip
-要深入了解拦截器的工作原理，可以查阅[这里](https://github.com/axios/axios/blob/v1.x/test/specs/interceptors.spec.js)的测试用例。
+要深入了解拦截器的工作原理，可以查阅[这里](https://github.com/axios/axios/blob/v1.x/tests/browser/interceptors.browser.test.js)的测试用例。
 :::

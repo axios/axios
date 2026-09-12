@@ -250,6 +250,53 @@ describe('core::dispatchRequest', () => {
       assert.strictEqual(thrown.response.config.data, requestData, 'error response.config.data must be the object the caller set');
     });
 
+    it('keeps error.config and error.response.config consistent on rejection', async () => {
+      const requestData = { startTime: 1, endTime: 2 };
+      const reason = new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE);
+      const config = baseConfig({
+        method: 'post',
+        data: requestData,
+        adapter: (adapterConfig) => {
+          const shared = adapterConfig;
+          reason.config = shared;
+          reason.response = { data: '{}', status: 500, statusText: 'Error', headers: {}, config: shared, request: {} };
+          return Promise.reject(reason);
+        },
+      });
+
+      let thrown;
+      try {
+        await dispatchRequest(config);
+      } catch (e) {
+        thrown = e;
+      }
+
+      assert.ok(thrown, 'must reject');
+      assert.strictEqual(thrown.config, thrown.response.config, 'error.config and error.response.config must stay the same object');
+      assert.strictEqual(thrown.config.data, requestData, 'error.config.data must be the object the caller set');
+    });
+
+    it('does not copy unsafe keys from an adapter-supplied response config', async () => {
+      const requestData = { startTime: 1, endTime: 2 };
+      const evil = { method: 'post' };
+      Object.defineProperty(evil, '__proto__', { value: { polluted: true }, enumerable: true, writable: true, configurable: true });
+      const marker = Symbol('marker');
+      evil[marker] = 'kept';
+      const config = baseConfig({
+        method: 'post',
+        data: requestData,
+        adapter: () => Promise.resolve({ data: '{"ok":true}', status: 200, statusText: 'OK', headers: {}, config: evil, request: {} }),
+      });
+
+      const result = await dispatchRequest(config);
+
+      assert.strictEqual(result.config.data, requestData);
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(result.config, '__proto__'), false, 'must not copy __proto__');
+      assert.strictEqual(Object.getPrototypeOf(result.config), null);
+      assert.strictEqual(result.config[marker], 'kept', 'must preserve symbol-keyed fields');
+      assert.strictEqual({}.polluted, undefined, 'must not pollute Object.prototype');
+    });
+
     it('clears default Content-Type for React Native FormData before adapter headers are sent', async () => {
       const data = new ReactNativeFormData();
       const response = {

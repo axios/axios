@@ -54,6 +54,33 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it('should preserve the order of many repeated nested fields', () => {
+    const formData = new FormData();
+    const values = Array.from({ length: 10000 }, (_, i) => String(i));
+
+    for (const value of values) {
+      formData.append('items[id]', value);
+    }
+
+    expect(formDataToJSON(formData)).toEqual({ items: { id: values } });
+  });
+
+  it('should preserve repeated file values and interleaved fields', () => {
+    const formData = new FormData();
+    const first = new File(['first'], 'first.txt');
+    const second = new File(['second'], 'second.txt');
+    formData.append('files', first);
+    formData.append('label', 'upload');
+    formData.append('files', second);
+    formData.append('files', 'last');
+
+    const result = formDataToJSON(formData);
+    expect(result.label).toBe('upload');
+    expect(result.files).toEqual([first, second, 'last']);
+    expect(result.files[0]).toBe(first);
+    expect(result.files[1]).toBe(second);
+  });
+
   it('should convert props with empty brackets to arrays', () => {
     const formData = new FormData();
 

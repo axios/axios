@@ -172,6 +172,55 @@ describe('core::dispatchRequest', () => {
   });
 
   describe('happy path', () => {
+    it('keeps the caller-supplied request data on the exposed response config', async () => {
+      const requestData = { startTime: 1, endTime: 2 };
+      let transportData;
+      const response = {
+        data: '{"ok":true}',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: null,
+        request: {},
+      };
+      const config = baseConfig({
+        method: 'post',
+        data: requestData,
+        adapter: (adapterConfig) => {
+          transportData = adapterConfig.data;
+          return Promise.resolve({ ...response, config: adapterConfig });
+        },
+      });
+
+      const result = await dispatchRequest(config);
+
+      assert.strictEqual(transportData, JSON.stringify(requestData), 'adapter must still receive the serialized body');
+      assert.strictEqual(result.config.data, requestData, 'response.config.data must be the object the caller set');
+    });
+
+    it('restores the caller-supplied data on the rejection-path response config', async () => {
+      const requestData = { startTime: 1, endTime: 2 };
+      const reason = new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE);
+      const config = baseConfig({
+        method: 'post',
+        data: requestData,
+        adapter: (adapterConfig) => {
+          reason.response = { data: '{}', status: 500, statusText: 'Error', headers: {}, config: adapterConfig, request: {} };
+          return Promise.reject(reason);
+        },
+      });
+
+      let thrown;
+      try {
+        await dispatchRequest(config);
+      } catch (e) {
+        thrown = e;
+      }
+
+      assert.ok(thrown, 'must reject');
+      assert.strictEqual(thrown.response.config.data, requestData, 'rejection response.config.data must be the object the caller set');
+    });
+
     it('clears default Content-Type for React Native FormData before adapter headers are sent', async () => {
       const data = new ReactNativeFormData();
       const response = {

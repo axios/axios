@@ -21,6 +21,10 @@
 - **Request error stacks:** Preserved original request failures when custom `Error` stack instrumentation returns non-string data or throws during optional stack decoration. (**#11109**, closes **#11108**)
 - **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape, interceptor iteration behavior, and interceptor ID identity across registrations. (**#11070**)
 
+## Performance
+
+- **Repeated FormData fields:** Accumulate repeated values in place when converting FormData to JSON, avoiding repeated copies of the growing output array while preserving field order and file values.
+
 ## Documentation
 
 - **Global search:** Added localized, private, in-browser full-text search for the active documentation language, with fuzzy and prefix matching.

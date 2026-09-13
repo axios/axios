@@ -21,6 +21,7 @@
 - **Request error stacks:** Preserved original request failures when custom `Error` stack instrumentation returns non-string data or throws during optional stack decoration. (**#11109**, closes **#11108**)
 - **Fetch adapter - cache mode:** Omitted the implicit `cache: 'default'` when a runtime rejects it but accepts a request without a cache option, restoring requests on Cloudflare Workers, including older compatibility dates and `cache_option_disabled` configurations that reject every explicit cache mode. Supporting runtimes retain the explicit default to protect against `Object.prototype` pollution, and caller-supplied cache options remain unchanged. (**#11194**, closes **#11192**)
 - **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape, interceptor iteration behavior, and interceptor ID identity across registrations. (**#11070**)
+- **Proxy bypass with an explicit port 0:** `shouldBypassProxy` no longer treats an explicit port `0` as "unset". A request URL with `:0` is compared against its own port instead of silently falling back to the protocol's default port, and a `NO_PROXY`/`no_proxy` entry with an explicit `:0` now restricts the bypass to port `0` instead of matching every port.
 
 ## Documentation
 

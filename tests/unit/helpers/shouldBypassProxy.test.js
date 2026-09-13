@@ -188,6 +188,20 @@ describe('helpers::shouldBypassProxy', () => {
     expect(shouldBypassProxy('http://localhost:8081/')).toBe(false);
   });
 
+  it('should treat an explicit port 0 in the request URL as its own port, not the protocol default', () => {
+    setNoProxy('example.com:80');
+
+    expect(shouldBypassProxy('http://example.com:0/')).toBe(false);
+    expect(shouldBypassProxy('http://example.com/')).toBe(true);
+  });
+
+  it('should treat an explicit port 0 in a no_proxy entry as its own port, not "any port"', () => {
+    setNoProxy('example.com:0');
+
+    expect(shouldBypassProxy('http://example.com:9999/')).toBe(false);
+    expect(shouldBypassProxy('http://example.com:0/')).toBe(true);
+  });
+
   it('should bypass proxy for any host when no_proxy is *', () => {
     setNoProxy('*');
 

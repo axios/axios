@@ -22,12 +22,12 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ### Fetch response size errors
 
-- **Change:** Preserve fetch response-limit errors across runtime wrappers without changing constructor declarations.
+- **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.
 - **Source:** #11179; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch response size errors.
 - **Status:** Pending.
 - **Docs targets:** Fetch adapter and `maxContentLength` guidance; TypeScript/custom fetch examples.
-- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When download tracking is used, custom `env.Response` implementations must accept the tracked `ReadableStream` at runtime. The existing constructor declaration is preserved; it does not newly require stream or Node-specific iterable inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
-- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`.
+- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When response-body streaming is supported and the response has a body, custom `env.Response` implementations must accept a tracked `ReadableStream<Uint8Array>` if `maxContentLength` is enabled (a numeric value greater than `-1`), `onDownloadProgress` is set, or `responseType` is `'stream'` or `'response'` with cancellation/timeout tracking. An enabled size limit requires stream support even without a progress callback. The constructor signature retains its legacy body type for compatibility; assignability to `env.Response` alone does not establish support for these runtime stream inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
+- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`, and a custom Response wrapper that forwards tracked streams unchanged when used with `maxContentLength` or `onDownloadProgress`.
 - **Notes:** Do not imply the limit, default adapter, genuine network-error behavior, or accepted constructor types change. No migration is required.
 
 ### Runtime configuration prototype hardening

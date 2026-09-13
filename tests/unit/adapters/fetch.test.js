@@ -1991,6 +1991,54 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
     }
 
+    it('should keep response size errors local to each invocation of a cached adapter', async () => {
+      class WrappedResponse extends Response {
+        async text() {
+          try {
+            return await super.text();
+          } catch (error) {
+            throw new TypeError('fetch failed');
+          }
+        }
+      }
+
+      const client = axios.create({
+        adapter: 'fetch',
+        baseURL: LOCAL_SERVER_URL,
+        maxContentLength: 512,
+        env: {
+          Response: WrappedResponse,
+          async fetch(request) {
+            const path = new URL(request.url).pathname;
+            if (path === '/network-error') {
+              throw new TypeError('fetch failed');
+            }
+            const size = path === '/oversized' ? 1024 : path === '/empty' ? 0 : 512;
+            return new Response('A'.repeat(size));
+          },
+        },
+      });
+
+      const results = await Promise.all(
+        ['/oversized', '/exact', '/empty'].map((path) =>
+          client.get(path).catch((error) => error)
+        )
+      );
+
+      assert.ok(results[0] instanceof AxiosError);
+      assert.strictEqual(results[0].code, AxiosError.ERR_BAD_RESPONSE);
+      assert.strictEqual(results[0].config.url, '/oversized');
+      assert.strictEqual(results[1].data, 'A'.repeat(512));
+      assert.strictEqual(results[2].data, '');
+
+      await assert.rejects(client.get('/network-error'), (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_NETWORK);
+        assert.strictEqual(error.config.url, '/network-error');
+        return true;
+      });
+      assert.strictEqual((await client.get('/after')).data, 'A'.repeat(512));
+    });
+
     it('should reject a data: URL whose decoded size exceeds maxContentLength (base64)', async () => {
       const payload = 'A'.repeat(4096);
       const dataUrl =

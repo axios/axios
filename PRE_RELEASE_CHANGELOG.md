@@ -9,7 +9,7 @@
 
 ## Bug Fixes
 
-- **Fetch response size errors:** Preserve `ERR_BAD_RESPONSE` and the current request/config when a fetch response exceeds `maxContentLength` and the runtime wraps the stream failure, including when it drops the original cause. Response constructor overrides accept streamed bodies without requiring DOM declarations in Node-only TypeScript projects. (**#11179**)
+- **Fetch response size errors:** Preserve `ERR_BAD_RESPONSE` and the current request/config when a fetch response exceeds `maxContentLength` and the runtime wraps the stream failure, including when it drops the original cause. Existing response limits and custom `env.Response` constructor declarations remain unchanged. (**#11179**)
 
 - **Method-specific headers:** Added default header buckets for all supported methods and removed those structural buckets during request preparation, so `OPTIONS`, `PURGE`, `LINK`, `UNLINK`, and `QUERY` defaults apply only to matching requests instead of leaking as literal headers. (**#11096**)
 - **Node HTTP adapter option errors:** Invalid custom DNS lookup addresses and invalid or unsupported `httpVersion` values, including non-coercible JavaScript types, now reject with `AxiosError` and `ERR_BAD_OPTION_VALUE` while preserving the request config for diagnostics. (**#11096**)

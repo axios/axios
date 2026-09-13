@@ -20,15 +20,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
-### Fetch response size errors and constructor typing
+### Fetch response size errors
 
-- **Change:** Preserve fetch response-limit errors across runtime wrappers and keep custom Response constructor types portable.
+- **Change:** Preserve fetch response-limit errors across runtime wrappers without changing constructor declarations.
 - **Source:** #11179; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch response size errors.
 - **Status:** Pending.
 - **Docs targets:** Fetch adapter and `maxContentLength` guidance; TypeScript/custom fetch examples.
-- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. Custom `env.Response` constructors must accept the streamed body Axios supplies for response tracking. Node-only TypeScript consumers can keep DOM declarations excluded with declaration checking enabled.
-- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK` and passing the environment's native `Response` constructor through `env`.
-- **Notes:** Do not imply the limit, default adapter, or genuine network-error behavior changes. No migration or browser typings are required for Node-only consumers.
+- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When download tracking is used, custom `env.Response` implementations must accept the tracked `ReadableStream` at runtime. The existing constructor declaration is preserved; it does not newly require stream or Node-specific iterable inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
+- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`.
+- **Notes:** Do not imply the limit, default adapter, genuine network-error behavior, or accepted constructor types change. No migration is required.
 
 ### Runtime configuration prototype hardening
 

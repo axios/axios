@@ -47,4 +47,23 @@ describe('module cjs typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('type-checks fetch Response constructors with TypeScript 4.9', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-fetch-types.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'fetch-types-cjs', sourcePath, {
+      compilerOptions: {
+        module: 'node16',
+        lib: ['ES2022', 'DOM'],
+        types: ['node'],
+        strict: true,
+        skipLibCheck: false,
+      },
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
 });

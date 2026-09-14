@@ -26,12 +26,31 @@ describe('helpers::buildURL', () => {
   });
 
   it('should throw an AxiosError with ERR_INVALID_URL for null url', () => {
+    let error;
     try {
       buildURL(null, { foo: 'bar' });
-    } catch (error) {
-      expect(error).toBeInstanceOf(AxiosError);
-      expect(error.code).toEqual('ERR_INVALID_URL');
+      fail('Expected an error to be thrown');
+    } catch (err) {
+      error = err;
     }
+    expect(error).toBeInstanceOf(AxiosError);
+    expect(error.code).toEqual('ERR_INVALID_URL');
+  });
+
+  it('should throw an AxiosError for null url without params', () => {
+    expect(() => buildURL(null)).toThrow(AxiosError);
+  });
+
+  it('should throw an AxiosError with ERR_INVALID_URL for null url without params', () => {
+    let error;
+    try {
+      buildURL(null);
+      fail('Expected an error to be thrown');
+    } catch (err) {
+      error = err;
+    }
+    expect(error).toBeInstanceOf(AxiosError);
+    expect(error.code).toEqual('ERR_INVALID_URL');
   });
 
   it('should support sending raw params to custom serializer func', () => {

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isNativeError } from 'node:util/types';
+import http from 'node:http';
+import https from 'node:https';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 
@@ -49,6 +51,211 @@ describe('core::AxiosError', () => {
         ids: [1, 2],
       },
     });
+  });
+
+  it('replaces http agents with a marker in config snapshots', () => {
+    const httpAgent = new http.Agent();
+    const httpsAgent = new https.Agent();
+    const error = new AxiosError('Boom!', 'ESOMETHING', { url: '/api', httpAgent, httpsAgent });
+
+    const json = error.toJSON();
+
+    expect(json.config).toEqual({ url: '/api', httpAgent: '[Agent]', httpsAgent: '[Agent]' });
+    expect(error.config.httpAgent).toBe(httpAgent);
+    expect(error.config.httpsAgent).toBe(httpsAgent);
+  });
+
+  it('replaces http agents before redaction walks the config', () => {
+    const error = new AxiosError('Boom!', 'ESOMETHING', {
+      httpAgent: new http.Agent(),
+      auth: { password: 'secret' },
+      redact: ['password'],
+    });
+
+    const json = error.toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+    expect(json.config.auth.password).toBe('[REDACTED ****]');
+  });
+
+  it('keeps an inherited config toJSON when agents are replaced', () => {
+    class CustomConfig {
+      toJSON() {
+        return { url: this.url };
+      }
+    }
+
+    const config = new CustomConfig();
+    config.url = '/api';
+    config.secret = 'hunter2';
+    config.httpAgent = new http.Agent();
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(JSON.parse(JSON.stringify(json.config))).toEqual({ url: '/api' });
+  });
+
+  it('replaces agents inherited from the config prototype', () => {
+    const httpAgent = new http.Agent();
+    const httpsAgent = new https.Agent();
+    const prototype = {
+      httpAgent,
+      httpsAgent,
+      toJSON() {
+        return { url: this.url, httpAgent: this.httpAgent, httpsAgent: this.httpsAgent };
+      },
+    };
+
+    const config = Object.create(prototype);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(JSON.parse(JSON.stringify(json.config))).toEqual({
+      url: '/api',
+      httpAgent: '[Agent]',
+      httpsAgent: '[Agent]',
+    });
+    expect(Object.prototype.hasOwnProperty.call(config, 'httpAgent')).toBe(false);
+    expect(config.httpAgent).toBe(httpAgent);
+    expect(config.httpsAgent).toBe(httpsAgent);
+  });
+
+  it('does not invoke a throwing inherited agent getter', () => {
+    const prototype = {};
+    Object.defineProperty(prototype, 'httpAgent', {
+      get() {
+        throw new Error('inherited httpAgent getter should not run');
+      },
+      configurable: true,
+    });
+
+    const config = Object.create(prototype);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+  });
+
+  it('replaces a getter-only inherited agent without throwing', () => {
+    const prototype = {};
+    Object.defineProperty(prototype, 'httpAgent', {
+      get() {
+        return new http.Agent();
+      },
+      configurable: true,
+    });
+
+    const config = Object.create(prototype);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+  });
+
+  it('does not invoke a throwing own agent getter', () => {
+    const config = { url: '/api' };
+    Object.defineProperty(config, 'httpAgent', {
+      get() {
+        throw new Error('own httpAgent getter should not run');
+      },
+      enumerable: true,
+      configurable: true,
+    });
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+    expect(json.config.url).toBe('/api');
+  });
+
+  it('replaces a getter-only own agent without reading it', () => {
+    let reads = 0;
+    const config = { url: '/api' };
+    Object.defineProperty(config, 'httpsAgent', {
+      get() {
+        reads++;
+        return new http.Agent();
+      },
+      enumerable: true,
+      configurable: true,
+    });
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.httpsAgent).toBe('[Agent]');
+    expect(reads).toBe(0);
+  });
+
+  it('replaces agents when Object.prototype.get is polluted', () => {
+    const config = { url: '/api', httpAgent: new http.Agent() };
+    let json;
+
+    Object.prototype.get = 'not a function';
+    try {
+      json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+    } finally {
+      delete Object.prototype.get;
+    }
+
+    expect(json.config.httpAgent).toBe('[Agent]');
+  });
+
+  it('keeps a primitive agent value when Object.prototype.get is polluted', () => {
+    const config = { url: '/api', httpAgent: 'not-an-agent' };
+    let json;
+
+    Object.prototype.get = function () {};
+    try {
+      json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+    } finally {
+      delete Object.prototype.get;
+    }
+
+    expect(json.config.httpAgent).toBe('not-an-agent');
+  });
+
+  it('skips a config key that a getter deletes while the snapshot is built', () => {
+    const config = { httpAgent: new http.Agent() };
+    Object.defineProperty(config, 'url', {
+      get() {
+        delete config.timeout;
+        return '/api';
+      },
+      enumerable: true,
+      configurable: true,
+    });
+    config.timeout = 1000;
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config).toEqual({ url: '/api', httpAgent: '[Agent]' });
+  });
+
+  it('does not hang on a config whose prototype chain loops', () => {
+    const first = new Proxy({}, { getPrototypeOf: () => second });
+    const second = new Proxy({}, { getPrototypeOf: () => first });
+
+    const config = Object.create(first);
+    config.url = '/api';
+
+    const json = new AxiosError('Boom!', 'ESOMETHING', config).toJSON();
+
+    expect(json.config.url).toBe('/api');
+  });
+
+  it('ignores an agent coming from a polluted Object.prototype', () => {
+    Object.prototype.httpAgent = new http.Agent();
+
+    try {
+      const json = new AxiosError('Boom!', 'ESOMETHING', { url: '/api' }).toJSON();
+
+      expect(Object.prototype.hasOwnProperty.call(json.config, 'httpAgent')).toBe(false);
+    } finally {
+      delete Object.prototype.httpAgent;
+    }
   });
 
   describe('AxiosError.from', () => {

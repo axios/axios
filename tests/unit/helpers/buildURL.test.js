@@ -208,3 +208,6 @@ describe('helpers::encode', () => {
     expect(encode('a:b$c,d e')).toEqual('a:b$c,d+e');
   });
 });
+it('should throw an error for null url when params are provided', () => {
+  expect(() => buildURL(null, { foo: 'bar' })).toThrow(TypeError);
+});

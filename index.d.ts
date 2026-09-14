@@ -516,6 +516,8 @@ export interface AxiosResponse<T = any, D = any, H = {}, P = any> {
   data: T;
   status: number;
   statusText: string;
+  /** Milliseconds from dispatch to response. */
+  duration?: number;
   headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
   config: InternalAxiosRequestConfig<D, P>;
   request?: any;

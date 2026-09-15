@@ -1876,4 +1876,191 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       }
     });
   });
+
+  describe('runtime support for default Request options', () => {
+    // Simulates a host runtime (e.g. Cloudflare Workers / workerd) whose Request
+    // constructor throws for options it cannot honour. `rejectedKeys` are the
+    // option names that runtime refuses.
+    const createRuntimeRequest = (rejectedKeys = []) => {
+      const inits = [];
+
+      class RuntimeRequest extends Request {
+        constructor(input, init) {
+          if (init) {
+            for (const key of rejectedKeys) {
+              if (key in init) {
+                throw new TypeError(`Unsupported ${key} mode: ${init[key]}`);
+              }
+            }
+          }
+
+          super(input, init);
+
+          inits.push(init);
+        }
+      }
+
+      return {
+        Request: RuntimeRequest,
+        // The last recorded init is the outgoing request; earlier ones come from
+        // the adapter's capability probes.
+        lastInit: () => inits[inits.length - 1],
+      };
+    };
+
+    it('should not force a cache mode that the host runtime rejects', async () => {
+      const runtime = createRuntimeRequest(['cache']);
+      let captured;
+
+      const response = await fetchAxios.get('/workerd-cache', {
+        env: {
+          Request: runtime.Request,
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.ok(captured instanceof runtime.Request);
+
+      const init = runtime.lastInit();
+      assert.ok(init, 'the adapter should construct a Request for the outgoing call');
+      assert.strictEqual('cache' in init, false);
+      assert.strictEqual(init.redirect, 'follow');
+    });
+
+    it('should still back-fill the default cache mode on a compliant runtime', async () => {
+      const runtime = createRuntimeRequest();
+      let captured;
+
+      const response = await fetchAxios.get('/spec-default-cache', {
+        env: {
+          Request: runtime.Request,
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+
+      // The explicit back-fill is what shields the Request from a polluted
+      // Object.prototype, so it must survive on runtimes that accept it.
+      const init = runtime.lastInit();
+      assert.strictEqual(init.cache, 'default');
+      assert.strictEqual(captured.cache, 'default');
+      assert.strictEqual(captured.redirect, 'follow');
+    });
+
+    it('should omit only the defaults the runtime rejects and back-fill the rest', async () => {
+      const runtime = createRuntimeRequest(['priority']);
+
+      const response = await fetchAxios.get('/partial-support', {
+        env: {
+          Request: runtime.Request,
+          fetch() {
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+
+      const init = runtime.lastInit();
+      assert.strictEqual('priority' in init, false);
+      assert.strictEqual(init.redirect, 'follow');
+      assert.strictEqual(init.mode, 'cors');
+      assert.strictEqual(init.referrer, 'about:client');
+      assert.strictEqual(init.referrerPolicy, '');
+      assert.strictEqual(init.integrity, '');
+      assert.strictEqual(init.keepalive, false);
+    });
+
+    it('should back-fill no defaults when the runtime rejects every one of them', async () => {
+      const defaultKeys = [
+        'cache',
+        'redirect',
+        'referrer',
+        'referrerPolicy',
+        'mode',
+        'integrity',
+        'keepalive',
+        'priority',
+        'window',
+      ];
+      const runtime = createRuntimeRequest(defaultKeys);
+
+      const response = await fetchAxios.get('/no-default-support', {
+        env: {
+          Request: runtime.Request,
+          fetch() {
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+
+      const init = runtime.lastInit();
+      for (const key of defaultKeys) {
+        assert.strictEqual(key in init, false, `${key} should not be back-filled`);
+      }
+      assert.strictEqual(init.method, 'GET');
+    });
+
+    it('should let an explicit fetchOptions value win over a back-filled default', async () => {
+      const runtime = createRuntimeRequest();
+      let captured;
+
+      const response = await fetchAxios.get('/explicit-options', {
+        fetchOptions: {
+          cache: 'no-store',
+          redirect: 'error',
+        },
+        env: {
+          Request: runtime.Request,
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+
+      const init = runtime.lastInit();
+      assert.strictEqual(init.cache, 'no-store');
+      assert.strictEqual(init.redirect, 'error');
+      assert.strictEqual(captured.cache, 'no-store');
+      assert.strictEqual(captured.redirect, 'error');
+    });
+
+    it('should surface the runtime rejection when the caller explicitly asks for an unsupported option', async () => {
+      const runtime = createRuntimeRequest(['cache']);
+
+      await assert.rejects(
+        () =>
+          fetchAxios.get('/explicit-unsupported-cache', {
+            fetchOptions: {
+              cache: 'no-store',
+            },
+            env: {
+              Request: runtime.Request,
+              fetch() {
+                return Promise.resolve(new Response('ok'));
+              },
+            },
+          }),
+        (err) => {
+          assert.ok(err instanceof AxiosError);
+          assert.strictEqual(err.name, 'TypeError');
+          assert.match(err.message, /Unsupported cache mode: no-store/);
+          return true;
+        }
+      );
+    });
+  });
 });

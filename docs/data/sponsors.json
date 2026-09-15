@@ -3385,6 +3385,16 @@
       "website": "https://www.scrapingbee.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "twitter": "https://twitter.com/scrapingbee?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
       "active": true
+    },
+    {
+      "name": "HeroDevs",
+      "imageUrl": "/sponsors/herodevs.svg",
+      "description": "Security and long-term support for end-of-life open source software.",
+      "tier": "gold",
+      "slug": "herodevs",
+      "website": "https://www.herodevs.com/",
+      "twitter": null,
+      "active": true
     }
   ],
   "platinum": [

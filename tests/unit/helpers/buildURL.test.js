@@ -17,41 +17,39 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar');
   });
 
-  it('should support params with undefined url', () => {
-    expect(buildURL(undefined, { foo: 'bar' })).toEqual('?foo=bar');
-  });
-
-  it('should throw an AxiosError for null url when params are provided', () => {
-    expect(() => buildURL(null, { foo: 'bar' })).toThrow(AxiosError);
-  });
-
-  it('should throw an AxiosError with ERR_INVALID_URL for null url', () => {
-    let error;
+  // --- REFINED VALIDATION SUITE ---
+  const expectInvalidURLError = (url, params) => {
+    let thrown;
     try {
-      buildURL(null, { foo: 'bar' });
-      fail('Expected an error to be thrown');
-    } catch (err) {
-      error = err;
+      buildURL(url, params);
+    } catch (error) {
+      thrown = error;
     }
-    expect(error).toBeInstanceOf(AxiosError);
-    expect(error.code).toEqual('ERR_INVALID_URL');
+    expect(thrown).toBeInstanceOf(AxiosError);
+    expect(thrown.code).toEqual(AxiosError.ERR_INVALID_URL);
+  };
+
+  it('should reject null/undefined url when params are provided', () => {
+    expectInvalidURLError(null, { foo: 'bar' });
+    expectInvalidURLError(undefined, { foo: 'bar' });
   });
 
-  it('should throw an AxiosError for null url without params', () => {
-    expect(() => buildURL(null)).toThrow(AxiosError);
+  it('should reject non-string/non-URL url values when params are provided', () => {
+    expectInvalidURLError(0, { foo: 'bar' });
+    expectInvalidURLError(false, { foo: 'bar' });
+    expectInvalidURLError({}, { foo: 'bar' });
+    expectInvalidURLError([], { foo: 'bar' });
   });
 
-  it('should throw an AxiosError with ERR_INVALID_URL for null url without params', () => {
-    let error;
-    try {
-      buildURL(null);
-      fail('Expected an error to be thrown');
-    } catch (err) {
-      error = err;
-    }
-    expect(error).toBeInstanceOf(AxiosError);
-    expect(error.code).toEqual('ERR_INVALID_URL');
+  it('should support URL objects as urls', () => {
+    const urlObj = new URL('https://example.com/foo');
+    expect(buildURL(urlObj, { foo: 'bar' })).toEqual('https://example.com/foo?foo=bar');
   });
+
+  it('should support params with empty-string url', () => {
+    expect(buildURL('', { foo: 'bar' })).toEqual('?foo=bar');
+  });
+  // --------------------------------
 
   it('should support sending raw params to custom serializer func', () => {
     const serializer = vi.fn().mockReturnValue('foo=bar');
@@ -131,7 +129,7 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar&bar=baz');
   });
 
-  it('should support "length" parameter', () => {
+  it('should support \"length\" parameter', () => {
     expect(
       buildURL('/foo', {
         query: 'bar',
@@ -203,8 +201,7 @@ describe('helpers::buildURL', () => {
       delete Object.prototype.serialize;
       delete Object.prototype.encode;
     }
-  });
-});
+  });L});
 
 describe('helpers::encode', () => {
   it('should be exported as a named export', () => {
@@ -227,7 +224,7 @@ describe('helpers::encode', () => {
     expect(encode(',')).toEqual(',');
   });
 
-  it('should encode space as `+` (form-style) rather than `%20`', () => {
+  it('should encode space as `+` (form-style) rather than `%20', () => {
     expect(encode(' ')).toEqual('+');
   });
 

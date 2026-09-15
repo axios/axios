@@ -201,7 +201,8 @@ describe('helpers::buildURL', () => {
       delete Object.prototype.serialize;
       delete Object.prototype.encode;
     }
-  });L});
+  });
+});
 
 describe('helpers::encode', () => {
   it('should be exported as a named export', () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import buildURL, { encode } from '../../../lib/helpers/buildURL.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('helpers::buildURL', () => {
   it('should support null params', () => {
@@ -16,9 +17,39 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar');
   });
 
-  it('should support params with undefined url', () => {
-    expect(buildURL(undefined, { foo: 'bar' })).toEqual('?foo=bar');
+  // --- REFINED VALIDATION SUITE ---
+  const expectInvalidURLError = (url, params) => {
+    let thrown;
+    try {
+      buildURL(url, params);
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(AxiosError);
+    expect(thrown.code).toEqual(AxiosError.ERR_INVALID_URL);
+  };
+
+  it('should reject null/undefined url when params are provided', () => {
+    expectInvalidURLError(null, { foo: 'bar' });
+    expectInvalidURLError(undefined, { foo: 'bar' });
   });
+
+  it('should reject non-string/non-URL url values when params are provided', () => {
+    expectInvalidURLError(0, { foo: 'bar' });
+    expectInvalidURLError(false, { foo: 'bar' });
+    expectInvalidURLError({}, { foo: 'bar' });
+    expectInvalidURLError([], { foo: 'bar' });
+  });
+
+  it('should support URL objects as urls', () => {
+    const urlObj = new URL('https://example.com/foo');
+    expect(buildURL(urlObj, { foo: 'bar' })).toEqual('https://example.com/foo?foo=bar');
+  });
+
+  it('should support params with empty-string url', () => {
+    expect(buildURL('', { foo: 'bar' })).toEqual('?foo=bar');
+  });
+  // --------------------------------
 
   it('should support sending raw params to custom serializer func', () => {
     const serializer = vi.fn().mockReturnValue('foo=bar');
@@ -98,7 +129,7 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar&bar=baz');
   });
 
-  it('should support "length" parameter', () => {
+  it('should support \"length\" parameter', () => {
     expect(
       buildURL('/foo', {
         query: 'bar',
@@ -194,7 +225,7 @@ describe('helpers::encode', () => {
     expect(encode(',')).toEqual(',');
   });
 
-  it('should encode space as `+` (form-style) rather than `%20`', () => {
+  it('should encode space as `+` (form-style) rather than `%20', () => {
     expect(encode(' ')).toEqual('+');
   });
 

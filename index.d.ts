@@ -569,9 +569,9 @@ export class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
   __CANCEL__?: boolean;
 }
 
-declare const axiosResponseDefault: unique symbol;
-
-type AxiosResponseDefault = typeof axiosResponseDefault;
+export interface AxiosResponseDefault {
+  readonly __axiosResponseDefault__: true;
+}
 
 type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
   ? AxiosResponse<T, D, {}, P>

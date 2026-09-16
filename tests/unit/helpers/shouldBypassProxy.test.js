@@ -78,6 +78,12 @@ describe('helpers::shouldBypassProxy', () => {
     expect(shouldBypassProxy('http://example.com/')).toBe(false);
   }, 1000);
 
+  it('should handle a long non-matching dotted hostname within the test timeout', () => {
+    setNoProxy('example.com');
+
+    expect(shouldBypassProxy(`http://${'.'.repeat(100000)}invalid/`)).toBe(false);
+  }, 1000);
+
   it('should bypass proxy for localhost with a trailing dot', () => {
     setNoProxy('localhost,127.0.0.1,::1');
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import buildURL, { encode } from '../../../lib/helpers/buildURL.js';
+import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('helpers::buildURL', () => {
   it('should support null params', () => {
@@ -16,8 +17,40 @@ describe('helpers::buildURL', () => {
     ).toEqual('/foo?foo=bar');
   });
 
-  it('should support params with undefined url', () => {
-    expect(buildURL(undefined, { foo: 'bar' })).toEqual('?foo=bar');
+  it('should reject params with undefined url instead of building a relative url', () => {
+    let error;
+
+    try {
+      buildURL(undefined, { foo: 'bar' });
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+  });
+
+  it('should reject params with null url instead of building a relative url', () => {
+    let error;
+
+    try {
+      buildURL(null, { foo: 'bar' });
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+    expect(error.message).toBe('Invalid URL: the request url is missing');
+  });
+
+  it('should still append params to an empty string url', () => {
+    expect(buildURL('', { foo: 'bar' })).toEqual('?foo=bar');
+  });
+
+  it('should return a nullish url unchanged when there are no params', () => {
+    expect(buildURL(undefined)).toBeUndefined();
+    expect(buildURL(null, null)).toBeNull();
   });
 
   it('should support sending raw params to custom serializer func', () => {

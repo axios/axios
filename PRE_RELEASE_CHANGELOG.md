@@ -9,6 +9,7 @@
 
 ## Bug Fixes
 
+- **Fetch response size errors:** Preserve `ERR_BAD_RESPONSE` and the current request/config when a fetch response exceeds `maxContentLength` and the runtime wraps the stream failure, including when it drops the original cause. Clarify when custom `env.Response` constructors must accept tracked streams at runtime while preserving existing response limits and constructor signatures. (**#11179**)
 - **TypeScript declarations:** Exposed the branded response-default marker type so consumers can emit declarations for helpers that forward Axios request response generics. (**#11116**)
 - **Method-specific headers:** Added default header buckets for all supported methods and removed those structural buckets during request preparation, so `OPTIONS`, `PURGE`, `LINK`, `UNLINK`, and `QUERY` defaults apply only to matching requests instead of leaking as literal headers. (**#11096**)
 - **Node HTTP adapter option errors:** Invalid custom DNS lookup addresses and invalid or unsupported `httpVersion` values, including non-coercible JavaScript types, now reject with `AxiosError` and `ERR_BAD_OPTION_VALUE` while preserving the request config for diagnostics. (**#11096**)

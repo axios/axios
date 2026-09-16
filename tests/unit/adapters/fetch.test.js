@@ -1324,6 +1324,30 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
   });
 
+  it('should not unwrap a foreign AxiosError from a fetch TypeError cause', async () => {
+    const foreignRequest = { foreign: true };
+    const foreignConfig = { url: 'http://foreign.test/' };
+    const foreignError = new AxiosError(
+      'Foreign Error',
+      'ERR_FOREIGN',
+      foreignConfig,
+      foreignRequest
+    );
+    const failingFetch = () =>
+      Promise.reject(Object.assign(new TypeError('fetch failed'), { cause: foreignError }));
+
+    const err = await fetchAxios
+      .get('/current', { env: { fetch: failingFetch } })
+      .catch((error) => error);
+
+    assert.notStrictEqual(err, foreignError);
+    assert.strictEqual(err.code, AxiosError.ERR_NETWORK);
+    assert.strictEqual(err.config.url, '/current');
+    assert.notStrictEqual(err.config, foreignConfig);
+    assert.notStrictEqual(err.request, foreignRequest);
+    assert.strictEqual(err.cause, foreignError);
+  });
+
   it('should get response headers', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -1910,6 +1934,109 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       } finally {
         await stopHTTPServer(server);
       }
+    });
+
+    for (const preserveCause of [true, false]) {
+      it(`should preserve a response size error when the runtime wraps it ${preserveCause ? 'with' : 'without'} a cause`, async () => {
+        let originalError;
+        let wrappedError;
+        let dispatchedRequest;
+
+        class WrappedResponse extends Response {
+          async text() {
+            try {
+              return await super.text();
+            } catch (error) {
+              originalError = error;
+              wrappedError = new TypeError('fetch failed');
+              if (preserveCause) {
+                wrappedError.cause = error;
+              }
+              throw wrappedError;
+            }
+          }
+        }
+
+        await assert.rejects(
+          fetchAxios.get('/wrapped-response-limit', {
+            maxContentLength: 512,
+            env: {
+              Response: WrappedResponse,
+              async fetch(request) {
+                dispatchedRequest = request;
+                // No Content-Length: the actual body must cross the streaming limit.
+                return new Response(
+                  new ReadableStream({
+                    start(controller) {
+                      controller.enqueue(new Uint8Array(1024));
+                      controller.close();
+                    },
+                  })
+                );
+              },
+            },
+          }),
+          (error) => {
+            assert.ok(originalError instanceof AxiosError);
+            assert.ok(wrappedError instanceof TypeError);
+            assert.strictEqual(error, originalError);
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_RESPONSE);
+            assert.strictEqual(error.message, 'maxContentLength size of 512 exceeded');
+            assert.strictEqual(error.config.url, '/wrapped-response-limit');
+            assert.strictEqual(error.config.maxContentLength, 512);
+            assert.strictEqual(error.request, dispatchedRequest);
+            return true;
+          }
+        );
+      });
+    }
+
+    it('should keep response size errors local to each invocation of a cached adapter', async () => {
+      class WrappedResponse extends Response {
+        async text() {
+          try {
+            return await super.text();
+          } catch (error) {
+            throw new TypeError('fetch failed');
+          }
+        }
+      }
+
+      const client = axios.create({
+        adapter: 'fetch',
+        baseURL: LOCAL_SERVER_URL,
+        maxContentLength: 512,
+        env: {
+          Response: WrappedResponse,
+          async fetch(request) {
+            const path = new URL(request.url).pathname;
+            if (path === '/network-error') {
+              throw new TypeError('fetch failed');
+            }
+            const size = path === '/oversized' ? 1024 : path === '/empty' ? 0 : 512;
+            return new Response('A'.repeat(size));
+          },
+        },
+      });
+
+      const results = await Promise.all(
+        ['/oversized', '/exact', '/empty'].map((path) =>
+          client.get(path).catch((error) => error)
+        )
+      );
+
+      assert.ok(results[0] instanceof AxiosError);
+      assert.strictEqual(results[0].code, AxiosError.ERR_BAD_RESPONSE);
+      assert.strictEqual(results[0].config.url, '/oversized');
+      assert.strictEqual(results[1].data, 'A'.repeat(512));
+      assert.strictEqual(results[2].data, '');
+
+      await assert.rejects(client.get('/network-error'), (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_NETWORK);
+        assert.strictEqual(error.config.url, '/network-error');
+        return true;
+      });
+      assert.strictEqual((await client.get('/after')).data, 'A'.repeat(512));
     });
 
     it('should reject a data: URL whose decoded size exceeds maxContentLength (base64)', async () => {

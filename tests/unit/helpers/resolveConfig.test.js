@@ -116,6 +116,30 @@ describe('helpers::resolveConfig', () => {
     assert.strictEqual(config.headers.get('X-Test'), 'ok');
   });
 
+  it('should reject a nullish url before resolving the browser request config', () => {
+    for (const url of [undefined, null]) {
+      let error;
+
+      try {
+        resolveConfig({ url, params: { foo: 'bar' } });
+      } catch (err) {
+        error = err;
+      }
+
+      assert.ok(error instanceof AxiosError);
+      assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
+    }
+  });
+
+  it('should resolve the browser request url from baseURL alone', () => {
+    const config = resolveConfig({
+      baseURL: 'https://api.example.com',
+      params: { foo: 'bar' },
+    });
+
+    assert.strictEqual(config.url, 'https://api.example.com?foo=bar');
+  });
+
   it('should ignore inherited nested serializer fields', () => {
     let serializeInvoked = false;
     let encodeInvoked = false;

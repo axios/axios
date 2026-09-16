@@ -39,6 +39,29 @@ describe('core::buildFullPath', () => {
     expect(buildFullPath('/api', '/users')).toBe('/api/users');
   });
 
+  it('rejects a nullish requested URL when no baseURL is configured', () => {
+    for (const requestedURL of [undefined, null]) {
+      const config = { method: 'get', url: requestedURL };
+      let error;
+
+      try {
+        buildFullPath(undefined, requestedURL, true, config);
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).toBeInstanceOf(AxiosError);
+      expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+      expect(error.message).toBe('Invalid URL: the request `url` is missing');
+      expect(error.config).toBe(config);
+    }
+  });
+
+  it('still resolves a baseURL-only request when the requested URL is nullish', () => {
+    expect(buildFullPath('https://api.github.com', undefined)).toBe('https://api.github.com');
+    expect(buildFullPath('https://api.github.com', null)).toBe('https://api.github.com');
+  });
+
   it('rejects HTTP URLs missing slashes after the protocol', () => {
     for (const call of [
       () => buildFullPath(undefined, 'https:example.com/users'),

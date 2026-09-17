@@ -979,7 +979,7 @@ These config options are available for requests. Only `url` is required. Request
   },
 
   // `responseType` indicates the type of data that the server will respond with
-  // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
+  // options are: 'arraybuffer', 'document', 'json', 'text', 'stream', 'ndjson'
   //   browser only: 'blob'
   responseType: 'json', // default
 

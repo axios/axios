@@ -276,6 +276,7 @@ export type ResponseType =
   | 'json'
   | 'text'
   | 'stream'
+  | 'ndjson'
   | 'formdata';
 
 type UppercaseResponseEncoding =

@@ -30,6 +30,32 @@ const fetchAxios = axios.create({
 
 const getFetchSignal = (input, init) => (init && init.signal) || (input && input.signal);
 
+const createFallbackNdjsonResponse = (chunks) => ({
+  body: {
+    getReader() {
+      const pendingChunks = chunks.slice();
+      return {
+        read: async () => pendingChunks.length
+          ? {done: false, value: pendingChunks.shift()}
+          : {done: true},
+        cancel: async () => {},
+        releaseLock() {},
+      };
+    },
+  },
+  headers: new Headers(),
+  status: 200,
+  statusText: 'OK',
+});
+
+const createFallbackNdjsonEnvironment = (chunks) => ({
+  Request: null,
+  Response: null,
+  async fetch() {
+    return createFallbackNdjsonResponse(chunks);
+  },
+});
+
 const createBrokenDOMExceptionLikeError = () =>
   Object.defineProperties(
     {},
@@ -2055,33 +2081,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
     it('enforces maxContentLength before buffering a fallback ndjson response', async () => {
       const chunks = [new TextEncoder().encode('{"value":1}\n')];
-      const body = {
-        getReader() {
-          return {
-            read: async () => chunks.length
-              ? {done: false, value: chunks.shift()}
-              : {done: true},
-            cancel: async () => {},
-            releaseLock() {},
-          };
-        },
-      };
 
       const response = await fetchAxios.get('/fallback-ndjson', {
         responseType: 'ndjson',
         maxContentLength: 4,
-        env: {
-          Request: null,
-          Response: null,
-          async fetch() {
-            return {
-              body,
-              headers: new Headers(),
-              status: 200,
-              statusText: 'OK',
-            };
-          },
-        },
+        env: createFallbackNdjsonEnvironment(chunks),
       });
 
       await assert.rejects(
@@ -2094,33 +2098,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       const controller = new AbortController();
       const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
       const chunks = [new TextEncoder().encode('{"value":1}\n')];
-      const body = {
-        getReader() {
-          return {
-            read: async () => chunks.length
-              ? {done: false, value: chunks.shift()}
-              : {done: true},
-            cancel: async () => {},
-            releaseLock() {},
-          };
-        },
-      };
 
       const response = await fetchAxios.get('/fallback-ndjson-lifecycle', {
         responseType: 'ndjson',
         signal: controller.signal,
-        env: {
-          Request: null,
-          Response: null,
-          async fetch() {
-            return {
-              body,
-              headers: new Headers(),
-              status: 200,
-              statusText: 'OK',
-            };
-          },
-        },
+        env: createFallbackNdjsonEnvironment(chunks),
       });
 
       await new Promise(resolve => queueMicrotask(resolve));

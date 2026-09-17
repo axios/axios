@@ -2090,6 +2090,47 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       );
     });
 
+    it('keeps fallback ndjson cancellation active until iteration completes', async () => {
+      const controller = new AbortController();
+      const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
+      const chunks = [new TextEncoder().encode('{"value":1}\n')];
+      const body = {
+        getReader() {
+          return {
+            read: async () => chunks.length
+              ? {done: false, value: chunks.shift()}
+              : {done: true},
+            cancel: async () => {},
+            releaseLock() {},
+          };
+        },
+      };
+
+      const response = await fetchAxios.get('/fallback-ndjson-lifecycle', {
+        responseType: 'ndjson',
+        signal: controller.signal,
+        env: {
+          Request: null,
+          Response: null,
+          async fetch() {
+            return {
+              body,
+              headers: new Headers(),
+              status: 200,
+              statusText: 'OK',
+            };
+          },
+        },
+      });
+
+      await new Promise(resolve => queueMicrotask(resolve));
+      assert.strictEqual(removeAbortListener.mock.calls.length, 0);
+      assert.deepStrictEqual(await Array.fromAsync(response.data), [{value: 1}]);
+      await new Promise(resolve => queueMicrotask(resolve));
+      assert.ok(removeAbortListener.mock.calls.length > 0);
+      removeAbortListener.mockRestore();
+    });
+
     it('wraps fetch ndjson parse failures as AxiosErrors', async () => {
       const response = await fetchAxios.get('/invalid-ndjson', {
         responseType: 'ndjson',

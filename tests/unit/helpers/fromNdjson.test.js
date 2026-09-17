@@ -25,4 +25,24 @@ describe('fromNdjson', () => {
       {last: true}
     ]);
   });
+
+  it('treats a null body as an empty response', async () => {
+    await expect(Array.fromAsync(fromNdjson(null))).resolves.toEqual([]);
+  });
+
+  it('reads streams through getReader when async iteration is unavailable', async () => {
+    const chunks = [new TextEncoder().encode('{"value":1}\n')];
+    const stream = {
+      getReader() {
+        return {
+          read: async () => chunks.length
+            ? {done: false, value: chunks.shift()}
+            : {done: true},
+          releaseLock() {}
+        };
+      }
+    };
+
+    await expect(Array.fromAsync(fromNdjson(stream))).resolves.toEqual([{value: 1}]);
+  });
 });

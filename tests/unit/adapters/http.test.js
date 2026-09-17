@@ -1798,6 +1798,53 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should enforce maxContentLength while parsing ndjson responses', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        res.end('{"value":"a long record"}\n');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'ndjson',
+        maxContentLength: 8,
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => err.code === AxiosError.ERR_BAD_RESPONSE && /maxContentLength/.test(err.message)
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('wraps ndjson parse failures as AxiosErrors', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        res.end('{invalid}\n');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'ndjson',
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => !!(err.isAxiosError && err.code === AxiosError.ERR_BAD_RESPONSE && err.config)
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should enforce maxBodyLength for streamed uploads with maxRedirects: 0', async () => {
     let bytesReceived = 0;
     const server = await startHTTPServer(

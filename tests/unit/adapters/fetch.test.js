@@ -1990,6 +1990,48 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         );
       });
     }
+    it('parses ndjson responses and enforces maxContentLength during iteration', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.setHeader('Content-Type', 'application/x-ndjson');
+          res.setHeader('Transfer-Encoding', 'chunked');
+          res.write('{"value":"a long record"}\n');
+          res.end();
+        },
+        { port: 0 }
+      );
+
+      try {
+        const response = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+          responseType: 'ndjson',
+          maxContentLength: 8,
+        });
+
+        await assert.rejects(
+          Array.fromAsync(response.data),
+          (err) => err.code === AxiosError.ERR_BAD_RESPONSE && /maxContentLength/.test(err.message)
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('wraps fetch ndjson parse failures as AxiosErrors', async () => {
+      const response = await fetchAxios.get('/invalid-ndjson', {
+        responseType: 'ndjson',
+        env: {
+          async fetch() {
+            return new Response('{invalid}\n', {headers: {'Content-Type': 'application/x-ndjson'}});
+          },
+        },
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => !!(err.isAxiosError && err.code === AxiosError.ERR_BAD_RESPONSE && err.config)
+      );
+    });
+
 
     it('should keep response size errors local to each invocation of a cached adapter', async () => {
       class WrappedResponse extends Response {

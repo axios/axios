@@ -138,3 +138,13 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Explain that `.`, `[`, and `]` are structural path separators when converting FormData back to JSON, while other characters such as `-`, spaces, `+`, `*`, and `&` remain literal key characters. Mention that `foo[bar]`, `foo.bar`, and `foo[]` continue to create nested object/array paths.
 - **Examples:** Include a short example showing `form.append('user-name', 'johndoe')` converting to `{ 'user-name': 'johndoe' }`, and `form.append('user.name', 'john')` or `form.append('user[name]', 'john')` converting to `{ user: { name: 'john' } }`.
 - **Notes:** README, API/multipart/HTML-form docs, and Spanish, French, and Chinese translations now document dot/bracket path parsing and literal punctuation keys without presenting the previous splitting behavior as supported.
+
+### Streaming NDJSON responses
+
+- **Change:** Document the new `ndjson` response type for incremental newline-delimited JSON parsing.
+- **Source:** PR #11236.
+- **Status:** Pending.
+- **Docs targets:** README response configuration and adapter guidance; advanced API reference; translated docs after English documentation is finalized.
+- **Required content:** Explain that `responseType: 'ndjson'` returns an async iterable of parsed records and requires the `http` or `fetch` adapter; it is not supported by the default XHR adapter. Mention that response-size limits and cancellation apply while consuming the iterable.
+- **Examples:** Show selecting `adapter: 'fetch'` or `adapter: 'http'` and iterating over `response.data` with `for await...of`.
+- **Notes:** Apply the README and docs updates during release preparation, not in the feature PR.

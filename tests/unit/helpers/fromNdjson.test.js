@@ -30,19 +30,28 @@ describe('fromNdjson', () => {
     await expect(Array.fromAsync(fromNdjson(null))).resolves.toEqual([]);
   });
 
-  it('reads streams through getReader when async iteration is unavailable', async () => {
+  it('cancels and releases streams read through getReader', async () => {
     const chunks = [new TextEncoder().encode('{"value":1}\n')];
+    let canceled = false;
+    let released = false;
     const stream = {
       getReader() {
         return {
           read: async () => chunks.length
             ? {done: false, value: chunks.shift()}
             : {done: true},
-          releaseLock() {}
+          cancel: async () => {
+            canceled = true;
+          },
+          releaseLock() {
+            released = true;
+          }
         };
       }
     };
 
     await expect(Array.fromAsync(fromNdjson(stream))).resolves.toEqual([{value: 1}]);
+    expect(canceled).toBe(true);
+    expect(released).toBe(true);
   });
 });

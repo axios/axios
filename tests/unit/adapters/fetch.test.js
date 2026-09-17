@@ -1990,7 +1990,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         );
       });
     }
-    it('parses ndjson responses and enforces maxContentLength during iteration', async () => {
+    it('enforces maxContentLength during ndjson iteration', async () => {
       const server = await startHTTPServer(
         (req, res) => {
           res.setHeader('Content-Type', 'application/x-ndjson');
@@ -2014,6 +2014,80 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       } finally {
         await stopHTTPServer(server);
       }
+    });
+
+    it('parses fetch ndjson responses', async () => {
+      const response = await fetchAxios.get('/ndjson', {
+        responseType: 'ndjson',
+        maxContentLength: 1024,
+        env: {
+          async fetch() {
+            return new Response('{"value":1}\n{"value":2}\n', {
+              headers: {'Content-Type': 'application/x-ndjson'}
+            });
+          },
+        },
+      });
+
+      assert.deepStrictEqual(await Array.fromAsync(response.data), [
+        {value: 1},
+        {value: 2}
+      ]);
+    });
+
+    it('unsubscribes fetch ndjson responses with no body', async () => {
+      const controller = new AbortController();
+      const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
+      const response = await fetchAxios.get('/empty-ndjson', {
+        responseType: 'ndjson',
+        signal: controller.signal,
+        env: {
+          async fetch() {
+            return new Response(null, {status: 204});
+          },
+        },
+      });
+
+      assert.deepStrictEqual(await Array.fromAsync(response.data), []);
+      assert.ok(removeAbortListener.mock.calls.length > 0);
+      removeAbortListener.mockRestore();
+    });
+
+    it('enforces maxContentLength before buffering a fallback ndjson response', async () => {
+      const chunks = [new TextEncoder().encode('{"value":1}\n')];
+      const body = {
+        getReader() {
+          return {
+            read: async () => chunks.length
+              ? {done: false, value: chunks.shift()}
+              : {done: true},
+            cancel: async () => {},
+            releaseLock() {},
+          };
+        },
+      };
+
+      const response = await fetchAxios.get('/fallback-ndjson', {
+        responseType: 'ndjson',
+        maxContentLength: 4,
+        env: {
+          Request: null,
+          Response: null,
+          async fetch() {
+            return {
+              body,
+              headers: new Headers(),
+              status: 200,
+              statusText: 'OK',
+            };
+          },
+        },
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => err.code === AxiosError.ERR_BAD_RESPONSE && /maxContentLength/.test(err.message)
+      );
     });
 
     it('wraps fetch ndjson parse failures as AxiosErrors', async () => {

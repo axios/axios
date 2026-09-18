@@ -574,6 +574,36 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should not strip Symbol.iterator if a custom wrapper was installed on globalThis.fetch before adapter evaluation', async () => {
+    let wrapperRan = false;
+    const originalFetch = globalThis.fetch;
+    const customWrapper = async () => {
+      wrapperRan = true;
+      const plainObj = {};
+      const entries = [...plainObj];
+      assert.strictEqual(entries.length, 1);
+      return new Response('{"preImportWrapper":true}', {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      globalThis.fetch = customWrapper;
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const customFetchAxios = axios.create({ adapter: 'fetch' });
+      const { data } = await customFetchAxios.get('http://localhost/');
+
+      assert.strictEqual(wrapperRan, true);
+      assert.deepStrictEqual(data, { preImportWrapper: true });
+    } finally {
+      globalThis.fetch = originalFetch;
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
 
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(

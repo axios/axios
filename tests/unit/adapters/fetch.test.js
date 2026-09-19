@@ -11,6 +11,7 @@ import {
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import utils from '../../../lib/utils.js';
+import bind from '../../../lib/helpers/bind.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
@@ -489,7 +490,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         headers: { 'Content-Type': 'application/json' },
       });
     };
-    const boundFetch = customFetch.bind(null);
+    const boundFetch = bind(customFetch, null);
 
     try {
       Object.prototype[Symbol.iterator] = function* () {
@@ -576,6 +577,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
   it('should not strip Symbol.iterator if a custom wrapper was installed on globalThis.fetch before adapter evaluation', async () => {
     const { execFileSync } = await import('child_process');
+    const entryUrl = new URL('../../../index.js', import.meta.url).href;
     const script = `
       import assert from 'assert';
 
@@ -594,7 +596,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         yield ['custom', 'entry'];
       };
 
-      const { default: axios } = await import('./index.js');
+      const { default: axios } = await import(${JSON.stringify(entryUrl)});
       const { data } = await axios.get('http://localhost/', { adapter: 'fetch' });
 
       assert.strictEqual(wrapperRan, true);
@@ -602,7 +604,6 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     `;
 
     execFileSync(process.execPath, ['--input-type=module', '-e', script], {
-      cwd: process.cwd(),
       stdio: 'pipe',
       timeout: 10000,
     });
@@ -610,6 +611,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
   it('should not strip Symbol.iterator if a Proxy wrapper was installed on globalThis.fetch before adapter evaluation', async () => {
     const { execFileSync } = await import('child_process');
+    const entryUrl = new URL('../../../index.js', import.meta.url).href;
     const script = `
       import assert from 'assert';
 
@@ -633,7 +635,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         yield ['custom', 'entry'];
       };
 
-      const { default: axios } = await import('./index.js');
+      const { default: axios } = await import(${JSON.stringify(entryUrl)});
       const { data } = await axios.get('http://localhost/', { adapter: 'fetch' });
 
       assert.strictEqual(proxyRan, true);
@@ -641,7 +643,6 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     `;
 
     execFileSync(process.execPath, ['--input-type=module', '-e', script], {
-      cwd: process.cwd(),
       stdio: 'pipe',
       timeout: 10000,
     });

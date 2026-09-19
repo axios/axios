@@ -575,31 +575,108 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   it('should not strip Symbol.iterator if a custom wrapper was installed on globalThis.fetch before adapter evaluation', async () => {
-    let wrapperRan = false;
-    const originalFetch = globalThis.fetch;
-    const customWrapper = async () => {
-      wrapperRan = true;
-      const plainObj = {};
-      const entries = [...plainObj];
-      assert.strictEqual(entries.length, 1);
-      return new Response('{"preImportWrapper":true}', {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    };
+    const { execFileSync } = await import('child_process');
+    const script = `
+      import assert from 'assert';
 
-    try {
-      globalThis.fetch = customWrapper;
+      let wrapperRan = false;
+      globalThis.fetch = async () => {
+        wrapperRan = true;
+        const plainObj = {};
+        const entries = [...plainObj];
+        assert.strictEqual(entries.length, 1);
+        return new Response('{"preImportWrapper":true}', {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      };
+
       Object.prototype[Symbol.iterator] = function* () {
         yield ['custom', 'entry'];
       };
 
-      const customFetchAxios = axios.create({ adapter: 'fetch' });
-      const { data } = await customFetchAxios.get('http://localhost/');
+      const { default: axios } = await import('./index.js');
+      const { data } = await axios.get('http://localhost/', { adapter: 'fetch' });
 
       assert.strictEqual(wrapperRan, true);
       assert.deepStrictEqual(data, { preImportWrapper: true });
+    `;
+
+    execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: process.cwd(),
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+  });
+
+  it('should not strip Symbol.iterator if a Proxy wrapper was installed on globalThis.fetch before adapter evaluation', async () => {
+    const { execFileSync } = await import('child_process');
+    const script = `
+      import assert from 'assert';
+
+      let proxyRan = false;
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = new Proxy(originalFetch, {
+        apply() {
+          proxyRan = true;
+          const plainObj = {};
+          const entries = [...plainObj];
+          assert.strictEqual(entries.length, 1);
+          return Promise.resolve(
+            new Response('{"proxyPreImport":true}', {
+              headers: { 'Content-Type': 'application/json' },
+            })
+          );
+        },
+      });
+
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { default: axios } = await import('./index.js');
+      const { data } = await axios.get('http://localhost/', { adapter: 'fetch' });
+
+      assert.strictEqual(proxyRan, true);
+      assert.deepStrictEqual(data, { proxyPreImport: true });
+    `;
+
+    execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: process.cwd(),
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+  });
+
+  it('should not strip Symbol.iterator if a Proxy wrapper around fetch is passed via env.fetch', async () => {
+    let proxyRan = false;
+    const proxyFetch = new Proxy(globalThis.fetch, {
+      apply() {
+        proxyRan = true;
+        const plainObj = {};
+        const entries = [...plainObj];
+        assert.strictEqual(entries.length, 1);
+        return Promise.resolve(
+          new Response('{"proxyEnv":true}', {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      },
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: proxyFetch,
+        },
+      });
+
+      assert.strictEqual(proxyRan, true);
+      assert.deepStrictEqual(data, { proxyEnv: true });
     } finally {
-      globalThis.fetch = originalFetch;
       delete Object.prototype[Symbol.iterator];
     }
   });

@@ -2371,5 +2371,75 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       assert.strictEqual(response.data, 'ok');
     });
+
+    it('should cancel the probe body when the capability check itself throws', () => {
+      // `Object.prototype.toString` reads `Symbol.toStringTag`, so a custom
+      // `env.Response` can make the capability check throw before cleanup is
+      // reached.  The body still has to be cancelled.
+      let cancelled = false;
+
+      const probeBody = {
+        cancel() {
+          cancelled = true;
+
+          return Promise.resolve();
+        },
+        get [Symbol.toStringTag]() {
+          throw new TypeError('toStringTag unsupported');
+        },
+      };
+
+      const StubResponse = function () {};
+
+      Object.defineProperty(StubResponse.prototype, 'body', { get: () => probeBody });
+
+      getFetch({
+        env: {
+          fetch: async () => new Response('ok'),
+          Response: StubResponse,
+        },
+      });
+
+      assert.ok(cancelled, 'the probe body should be cancelled even when the check throws');
+    });
+
+    it('should not emit an unhandled rejection when the cancellation thenable is hostile', async () => {
+      // Cleanup reads `then` once and invokes that same reference, so a getter that
+      // misbehaves on a second read cannot strand the rejection it handles.
+      const rejected = Promise.reject(new Error('cancel failed'));
+      let thenReads = 0;
+
+      const hostileThenable = {
+        get then() {
+          thenReads++;
+
+          if (thenReads > 1) {
+            throw new TypeError('then is not reusable');
+          }
+
+          return rejected.then.bind(rejected);
+        },
+      };
+
+      const rejections = [];
+      const onUnhandledRejection = (reason) => rejections.push(reason);
+
+      process.on('unhandledRejection', onUnhandledRejection);
+
+      try {
+        getFetch({
+          env: {
+            fetch: async () => new Response('ok'),
+            Response: makeStubResponse(() => hostileThenable),
+          },
+        });
+
+        await setTimeoutAsync(50);
+
+        assert.deepStrictEqual(rejections, []);
+      } finally {
+        process.off('unhandledRejection', onUnhandledRejection);
+      }
+    });
   });
 });

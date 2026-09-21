@@ -1,3 +1,3 @@
-import formBodyLengthCases from '../helpers/formBodyLengthCases.js';
+import formBodyLengthCases from '../setup/formBodyLengthCases.js';
 
 formBodyLengthCases();

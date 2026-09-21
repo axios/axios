@@ -34,87 +34,87 @@ function nativeProxySupported() {
 }
 
 describe('HTTP routing consistency', function () {
-  it('honors direct HTTPS requests with native proxy agents', async function () {
-    if (!nativeProxySupported()) return;
-    var targets = [];
-    var sockets = [];
-    var port;
-    var origin = https.createServer(
-      {
-        key: fs.readFileSync(new URL('./key.pem', import.meta.url)),
-        cert: fs.readFileSync(new URL('./cert.pem', import.meta.url)),
-      },
-      function (req, res) {
-        res.end('direct');
-      }
-    );
-    var proxy = http.createServer();
-    proxy.on('connect', function (req, socket, head) {
-      targets.push(req.url);
-      var upstream = net.connect(port, '127.0.0.1', function () {
-        socket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-        if (head.length) upstream.write(head);
-        socket.pipe(upstream);
-        upstream.pipe(socket);
-      });
-      sockets.push(socket, upstream);
-      upstream.on('error', function () {
-        socket.destroy();
-      });
-      socket.on('error', function () {
-        upstream.destroy();
-      });
-    });
-    var agent;
-    try {
-      port = await listen(origin);
-      var proxyPort = await listen(proxy);
-      agent = new https.Agent({
-        rejectUnauthorized: false,
-        proxyEnv: { HTTPS_PROXY: 'http://127.0.0.1:' + proxyPort, NO_PROXY: '' },
-      });
-      var target = 'https://127.0.0.1:' + port + '/';
-      var control = await axios.get(target, { httpsAgent: agent, timeout: 2000 });
-      assert.strictEqual(control.data, 'direct');
-      assert.strictEqual(targets.length, 1);
-      for (var redirects = 0; redirects < 2; redirects++) {
-        var response = await axios.get(target, {
-          proxy: false,
-          httpsAgent: agent,
-          maxRedirects: redirects ? 5 : 0,
-          timeout: 2000,
+  it.skipIf(!nativeProxySupported())(
+    'honors direct HTTPS requests with native proxy agents',
+    async function () {
+      var targets = [];
+      var sockets = [];
+      var port;
+      var origin = https.createServer(
+        {
+          key: fs.readFileSync(new URL('./key.pem', import.meta.url)),
+          cert: fs.readFileSync(new URL('./cert.pem', import.meta.url)),
+        },
+        function (req, res) {
+          res.end('direct');
+        }
+      );
+      var proxy = http.createServer();
+      proxy.on('connect', function (req, socket, head) {
+        targets.push(req.url);
+        var upstream = net.connect(port, '127.0.0.1', function () {
+          socket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+          if (head.length) upstream.write(head);
+          socket.pipe(upstream);
+          upstream.pipe(socket);
         });
-        assert.strictEqual(response.data, 'direct');
-      }
-      assert.strictEqual(targets.length, 1);
-    } finally {
-      if (agent) {
-        getDirectAgent(agent, https).destroy();
-        agent.destroy();
-      }
-      sockets.forEach(function (socket) {
-        socket.destroy();
+        sockets.push(socket, upstream);
+        upstream.on('error', function () {
+          socket.destroy();
+        });
+        socket.on('error', function () {
+          upstream.destroy();
+        });
       });
-      await close(proxy);
-      await close(origin);
+      var agent;
+      try {
+        port = await listen(origin);
+        var proxyPort = await listen(proxy);
+        agent = new https.Agent({
+          rejectUnauthorized: false,
+          proxyEnv: { HTTPS_PROXY: 'http://127.0.0.1:' + proxyPort, NO_PROXY: '' },
+        });
+        var target = 'https://127.0.0.1:' + port + '/';
+        var control = await axios.get(target, { httpsAgent: agent, timeout: 2000 });
+        assert.strictEqual(control.data, 'direct');
+        assert.strictEqual(targets.length, 1);
+        for (var redirects = 0; redirects < 2; redirects++) {
+          var response = await axios.get(target, {
+            proxy: false,
+            httpsAgent: agent,
+            maxRedirects: redirects ? 5 : 0,
+            timeout: 2000,
+          });
+          assert.strictEqual(response.data, 'direct');
+        }
+        assert.strictEqual(targets.length, 1);
+      } finally {
+        if (agent) {
+          agent.destroy();
+        }
+        sockets.forEach(function (socket) {
+          socket.destroy();
+        });
+        await close(proxy);
+        await close(origin);
+      }
     }
-  });
+  );
 
-  it('requires an explicit direct configuration for custom native proxy agents', function () {
+  it('accepts subclasses with native proxy options for direct requests', function () {
     function CustomAgent() {
       http.Agent.call(this, { proxyEnv: { HTTP_PROXY: 'http://127.0.0.1:1' } });
     }
     Object.setPrototypeOf(CustomAgent.prototype, http.Agent.prototype);
     var agent = new CustomAgent();
     try {
-      assert.throws(
-        function () {
-          getDirectAgent(agent, http);
-        },
-        function (error) {
-          return error.code === 'ERR_BAD_OPTION_VALUE';
-        }
-      );
+      var direct = getDirectAgent(agent, http);
+      if (nativeProxySupported()) {
+        assert.notStrictEqual(direct, agent);
+        assert.strictEqual(direct.options.proxyEnv, undefined);
+      } else {
+        assert.strictEqual(direct, agent);
+      }
     } finally {
       agent.destroy();
     }
@@ -224,83 +224,87 @@ describe('HTTP routing consistency', function () {
     );
   });
 
-  it('honors direct requests with native proxy agents and redirects', async function () {
-    if (!nativeProxySupported()) return;
-    var proxyHits = 0;
-    var directHeaders;
-    var proxy = http.createServer(function (req, res) {
-      proxyHits++;
-      res.end('proxied');
-    });
-    var origin = http.createServer(function (req, res) {
-      if (req.url === '/start') {
-        res.writeHead(302, { Location: '/end' });
-        res.end();
-      } else {
-        directHeaders = req.headers;
-        res.end('direct');
-      }
-    });
-    var originalAgent = http.globalAgent;
-    var agent;
-    try {
-      var proxyPort = await listen(proxy);
-      var port = await listen(origin);
-      agent = new http.Agent({
-        keepAlive: true,
-        proxyEnv: { HTTP_PROXY: 'http://127.0.0.1:' + proxyPort, NO_PROXY: '' },
+  it.skipIf(!nativeProxySupported())(
+    'honors direct requests with native proxy agents and redirects',
+    async function () {
+      var proxyHits = 0;
+      var directHeaders;
+      var proxy = http.createServer(function (req, res) {
+        proxyHits++;
+        res.end('proxied');
       });
-      http.globalAgent = agent;
-      var url = 'http://127.0.0.1:' + port;
-      var control = await axios.get(url + '/end', { httpAgent: agent, timeout: 2000 });
-      assert.strictEqual(control.data, 'proxied');
-      assert.strictEqual(proxyHits, 1);
-      for (var supplied = 0; supplied < 2; supplied++) {
-        for (var redirects = 0; redirects < 2; redirects++) {
-          var response = await axios.get(url + (redirects ? '/start' : '/end'), {
-            proxy: false,
-            httpAgent: supplied ? agent : undefined,
-            maxRedirects: redirects ? 5 : 0,
-            headers: { Authorization: 'Bearer example' },
-            timeout: 2000,
-          });
-          assert.strictEqual(response.data, 'direct');
-          assert.strictEqual(directHeaders.authorization, 'Bearer example');
+      var origin = http.createServer(function (req, res) {
+        if (req.url === '/start') {
+          res.writeHead(302, { Location: '/end' });
+          res.end();
+        } else {
+          directHeaders = req.headers;
+          res.end('direct');
         }
+      });
+      var originalAgent = http.globalAgent;
+      var agent;
+      try {
+        var proxyPort = await listen(proxy);
+        var port = await listen(origin);
+        agent = new http.Agent({
+          keepAlive: true,
+          proxyEnv: { HTTP_PROXY: 'http://127.0.0.1:' + proxyPort, NO_PROXY: '' },
+        });
+        http.globalAgent = agent;
+        var url = 'http://127.0.0.1:' + port;
+        var control = await axios.get(url + '/end', { httpAgent: agent, timeout: 2000 });
+        assert.strictEqual(control.data, 'proxied');
+        assert.strictEqual(proxyHits, 1);
+        for (var supplied = 0; supplied < 2; supplied++) {
+          for (var redirects = 0; redirects < 2; redirects++) {
+            var response = await axios.get(url + (redirects ? '/start' : '/end'), {
+              proxy: false,
+              httpAgent: supplied ? agent : undefined,
+              maxRedirects: redirects ? 5 : 0,
+              headers: { Authorization: 'Bearer example' },
+              timeout: 2000,
+            });
+            assert.strictEqual(response.data, 'direct');
+            assert.strictEqual(directHeaders.authorization, 'Bearer example');
+          }
+        }
+        assert.strictEqual(proxyHits, 1);
+        assert.ok(agent.options.proxyEnv.HTTP_PROXY);
+      } finally {
+        http.globalAgent = originalAgent;
+        if (agent) {
+          agent.destroy();
+        }
+        await close(proxy);
+        await close(origin);
       }
-      assert.strictEqual(proxyHits, 1);
-      assert.ok(agent.options.proxyEnv.HTTP_PROXY);
-    } finally {
-      http.globalAgent = originalAgent;
-      if (agent) {
-        getDirectAgent(agent, http).destroy();
+    }
+  );
+
+  it.skipIf(!nativeProxySupported())(
+    'keeps direct agent options and reuses their connection pool',
+    function () {
+      var agent = new https.Agent({
+        ca: 'example-ca',
+        rejectUnauthorized: false,
+        maxSockets: 3,
+        proxyEnv: { HTTPS_PROXY: 'http://127.0.0.1:1' },
+      });
+      try {
+        var direct = getDirectAgent(agent, https);
+        assert.notStrictEqual(direct, agent);
+        assert.strictEqual(getDirectAgent(agent, https), direct);
+        assert.strictEqual(direct.options.ca, 'example-ca');
+        assert.strictEqual(direct.options.rejectUnauthorized, false);
+        assert.strictEqual(direct.maxSockets, 3);
+        assert.strictEqual(direct.options.proxyEnv, undefined);
+        direct.destroy();
+      } finally {
         agent.destroy();
       }
-      await close(proxy);
-      await close(origin);
     }
-  });
-
-  it('keeps direct agent options and reuses their connection pool', function () {
-    var agent = new https.Agent({
-      ca: 'example-ca',
-      rejectUnauthorized: false,
-      maxSockets: 3,
-      proxyEnv: { HTTPS_PROXY: 'http://127.0.0.1:1' },
-    });
-    try {
-      var direct = getDirectAgent(agent, https);
-      assert.notStrictEqual(direct, agent);
-      assert.strictEqual(getDirectAgent(agent, https), direct);
-      assert.strictEqual(direct.options.ca, 'example-ca');
-      assert.strictEqual(direct.options.rejectUnauthorized, false);
-      assert.strictEqual(direct.maxSockets, 3);
-      assert.strictEqual(direct.options.proxyEnv, undefined);
-      direct.destroy();
-    } finally {
-      agent.destroy();
-    }
-  });
+  );
 
   it('matches equivalent host spellings in bypass entries', function () {
     var original = {};

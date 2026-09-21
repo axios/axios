@@ -34,46 +34,53 @@ describe('runtime option consistency', function () {
     assert.strictEqual(estimateDataURLDecodedBytes('DaTa:text/plain,%41%42'), 2);
   });
 
-  it('retains a permitted case-variant data response', async function () {
-    if (typeof fetch !== 'function') return;
-    var response = await axios.get('DATA:text/plain,ok', { adapter: 'fetch', maxContentLength: 2 });
-    assert.strictEqual(response.data, 'ok');
-  });
-
-  it('selects fetch implementations only from own environment entries', async function () {
-    if (typeof fetch !== 'function' || typeof Response !== 'function') return;
-    var inheritedCalls = 0;
-    var ownCalls = 0;
-    var env = { Request: null, Response: null };
-    Object.defineProperty(Object.prototype, 'fetch', {
-      configurable: true,
-      writable: true,
-      value: function () {
-        inheritedCalls++;
-        return Promise.resolve(new Response('inherited'));
-      },
-    });
-    try {
-      var adapter = getFetch({ env: env });
-      var response = await axios.get('data:text/plain,ok', { adapter: adapter });
-      assert.strictEqual(response.data, 'ok');
-      assert.strictEqual(inheritedCalls, 0);
-      var ownResponse = await axios.get('data:text/plain,unused', {
+  it.skipIf(typeof fetch !== 'function')(
+    'retains a permitted case-variant data response',
+    async function () {
+      var response = await axios.get('DATA:text/plain,ok', {
         adapter: 'fetch',
-        env: {
-          fetch: function () {
-            ownCalls++;
-            return Promise.resolve(new Response('own'));
-          },
+        maxContentLength: 2,
+      });
+      assert.strictEqual(response.data, 'ok');
+    }
+  );
+
+  it.skipIf(typeof fetch !== 'function' || typeof Response !== 'function')(
+    'selects fetch implementations only from own environment entries',
+    async function () {
+      var inheritedCalls = 0;
+      var ownCalls = 0;
+      var env = { Request: null, Response: null };
+      Object.defineProperty(Object.prototype, 'fetch', {
+        configurable: true,
+        writable: true,
+        value: function () {
+          inheritedCalls++;
+          return Promise.resolve(new Response('inherited'));
         },
       });
-      assert.strictEqual(ownResponse.data, 'own');
-      assert.strictEqual(ownCalls, 1);
-    } finally {
-      delete Object.prototype.fetch;
+      try {
+        var adapter = getFetch({ env: env });
+        var response = await axios.get('data:text/plain,ok', { adapter: adapter });
+        assert.strictEqual(response.data, 'ok');
+        assert.strictEqual(inheritedCalls, 0);
+        var ownResponse = await axios.get('data:text/plain,unused', {
+          adapter: 'fetch',
+          env: {
+            fetch: function () {
+              ownCalls++;
+              return Promise.resolve(new Response('own'));
+            },
+          },
+        });
+        assert.strictEqual(ownResponse.data, 'own');
+        assert.strictEqual(ownCalls, 1);
+      } finally {
+        delete Object.prototype.fetch;
+      }
+      assert.strictEqual(getFetch({ env: env }), getFetch({ env: env }));
     }
-    assert.strictEqual(getFetch({ env: env }), getFetch({ env: env }));
-  });
+  );
 
   it('ignores a shared unsubscribe member during signal cleanup', async function () {
     var controller = new AbortController();
@@ -149,7 +156,9 @@ describe('runtime option consistency', function () {
   });
 
   [0.5, 1, 1.5].forEach(function (rate) {
-    it('continues servicing timers at a rate of ' + rate, function () {
+    it('services a timer after the leading byte at a rate of ' + rate, function () {
+      // This checks event-loop responsiveness before the first 500ms window
+      // rolls over. Only the leading byte should be emitted before cleanup.
       var moduleURL = new URL('../../../lib/helpers/AxiosTransformStream.js', import.meta.url).href;
       var source =
         'import Transform from ' +

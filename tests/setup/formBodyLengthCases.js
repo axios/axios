@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import platform from '../../lib/platform/index.js';
 import axios from '../../index.js';
 import formDataToBlob from '../../lib/helpers/formDataToBlob.js';
 import estimateDataURLDecodedBytes from '../../lib/helpers/estimateDataURLDecodedBytes.js';
@@ -48,6 +49,151 @@ export default function formBodyLengthCases() {
         });
       });
     });
+
+    [false, true].forEach((progress) => {
+      [undefined, 4096].forEach((limit) => {
+        ['BoundaryMiXeD42', 'MiXeD boundary,+42'].forEach((boundary) => {
+          it(`retains the explicit ${boundary} boundary with progress=${progress} and limit=${limit}`, async () => {
+            const contentType = `multipart/form-data; boundary="${boundary}"`;
+            const response = await axios.post('http://localhost/form', makeForm(), {
+              adapter: 'fetch',
+              headers: { 'Content-Type': contentType },
+              maxBodyLength: limit,
+              onUploadProgress: progress ? () => {} : undefined,
+              env: {
+                async fetch(request) {
+                  expect(request.headers.get('content-type')).toBe(contentType);
+                  const body = await request.text();
+                  expect(body).toBe(
+                    [
+                      '--' + boundary,
+                      'Content-Disposition: form-data; name="message"',
+                      '',
+                      'café',
+                      'second line',
+                      '--' + boundary,
+                      'Content-Disposition: form-data; name="file"; filename="note.txt"',
+                      'Content-Type: text/plain',
+                      '',
+                      'contents',
+                      '--' + boundary + '--',
+                      '',
+                    ].join('\r\n')
+                  );
+                  return new Response('ok');
+                },
+              },
+            });
+            expect(response.data).toBe('ok');
+          });
+        });
+      });
+    });
+
+    it('checks explicit boundary length as part of the exact body limit', async () => {
+      const form = makeForm();
+      const boundary = 'MiXeD-12345';
+      const size = formDataToBlob(form, Blob, Infinity, () => new Error('Too long'), boundary).size;
+      let calls = 0;
+      const options = {
+        adapter: 'fetch',
+        headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+        env: {
+          async fetch(request) {
+            calls++;
+            const decoded = await request.formData();
+            expect(await decoded.get('file').text()).toBe('contents');
+            return new Response('ok');
+          },
+        },
+      };
+      await expect(
+        axios.post(
+          'http://localhost/form',
+          form,
+          Object.assign({}, options, { maxBodyLength: size - 1 })
+        )
+      ).rejects.toMatchObject({ code: 'ERR_BAD_REQUEST' });
+      expect(calls).toBe(0);
+      expect(
+        (
+          await axios.post(
+            'http://localhost/form',
+            form,
+            Object.assign({}, options, { maxBodyLength: size })
+          )
+        ).data
+      ).toBe('ok');
+      expect(calls).toBe(1);
+    });
+
+    ['', 'a'.repeat(71), 'trailing ', 'line\nbreak'].forEach((boundary) => {
+      it('rejects invalid boundary ' + JSON.stringify(boundary), () => {
+        expect(() =>
+          formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'), boundary)
+        ).toThrowError(expect.objectContaining({ code: 'ERR_BAD_OPTION_VALUE' }));
+      });
+    });
+
+    const withoutPlatformRandom = (run) => {
+      const descriptor = Object.getOwnPropertyDescriptor(platform, 'generateString');
+      Object.defineProperty(platform, 'generateString', { value: undefined, configurable: true });
+      try {
+        run();
+      } finally {
+        if (descriptor) Object.defineProperty(platform, 'generateString', descriptor);
+        else delete platform.generateString;
+        vi.unstubAllGlobals();
+      }
+    };
+
+    it('uses Web Crypto for generated boundaries when no platform generator is present', () => {
+      withoutPlatformRandom(() => {
+        let calls = 0;
+        vi.stubGlobal('crypto', {
+          getRandomValues(bytes) {
+            calls++;
+            bytes.fill(17);
+            return bytes;
+          },
+        });
+        const body = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
+        expect(calls).toBe(1);
+        expect(body.type).toBe('multipart/form-data; boundary=axios-' + '11'.repeat(18));
+      });
+    });
+
+    it('reports unavailable random generation instead of choosing a fallback boundary', () => {
+      withoutPlatformRandom(() => {
+        vi.stubGlobal('crypto', undefined);
+        expect(() =>
+          formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'))
+        ).toThrowError(expect.objectContaining({ code: 'ERR_NOT_SUPPORT' }));
+        const explicit = formDataToBlob(
+          makeForm(),
+          Blob,
+          4096,
+          () => new Error('Too long'),
+          'caller-boundary'
+        );
+        expect(explicit.size).toBeGreaterThan(0);
+      });
+    });
+
+    it.skipIf(typeof platform.generateString !== 'function')(
+      'retains the Node random source without global Web Crypto',
+      () => {
+        vi.stubGlobal('crypto', undefined);
+        try {
+          const first = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
+          const second = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
+          expect(first.type).toMatch(/^multipart\/form-data; boundary=axios-[a-f0-9]{36}$/);
+          expect(second.type).not.toBe(first.type);
+        } finally {
+          vi.unstubAllGlobals();
+        }
+      }
+    );
 
     [0, 16, 256].forEach((limit) => {
       it(`rejects multipart data above a ${limit} byte limit before dispatch`, async () => {

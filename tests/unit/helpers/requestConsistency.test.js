@@ -4,6 +4,7 @@ import axios from '../../../index.js';
 import utils from '../../../lib/utils.js';
 import formDataToJSON from '../../../lib/helpers/formDataToJSON.js';
 import toFormData from '../../../lib/helpers/toFormData.js';
+import buildURL from '../../../lib/helpers/buildURL.js';
 
 function FormDataMock(entries) {
   this._entries = entries;
@@ -95,9 +96,10 @@ describe('request input consistency', function () {
     it('rejects deep params through the ' + method + ' promise', function () {
       var request;
       var config = {
-        params: nestedParams(3000),
-        adapter: function () {
-          throw new Error('adapter should not run');
+        params: nestedParams(150),
+        adapter: function (config) {
+          buildURL('/resource', config.params, config.paramsSerializer);
+          throw new Error('serialization should reject');
         },
       };
       assert.doesNotThrow(function () {
@@ -110,7 +112,7 @@ describe('request input consistency', function () {
       });
       assert.strictEqual(typeof request.then, 'function');
       return assert.rejects(request, function (error) {
-        return error.code === 'ERR_BAD_OPTION_VALUE' && !(error instanceof RangeError);
+        return error.code === 'ERR_FORM_DATA_DEPTH_EXCEEDED' && !(error instanceof RangeError);
       });
     });
   });

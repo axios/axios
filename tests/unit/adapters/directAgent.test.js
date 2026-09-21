@@ -81,6 +81,77 @@ describe('direct agent lifecycle', function () {
     }
   );
 
+  it.skipIf(!nativeProxySupported)(
+    'closes a held direct request when the configured agent is destroyed',
+    async function () {
+      var requestReceived;
+      var received = new Promise(function (resolve) {
+        requestReceived = resolve;
+      });
+      var origin = await startHTTPServer(function (req) {
+        req.resume();
+        requestReceived();
+        // Keep the response open until the application destroys its agent.
+      });
+      var agent = new http.Agent({
+        keepAlive: true,
+        proxyEnv: { HTTP_PROXY: 'http://127.0.0.1:1' },
+      });
+      var direct;
+      var closeTimer;
+      var pending = axios
+        .get('http://127.0.0.1:' + origin.address().port, {
+          httpAgent: agent,
+          proxy: false,
+          timeout: 2000,
+        })
+        .then(
+          function () {
+            return new Error('The held request should not complete successfully');
+          },
+          function (error) {
+            return error;
+          }
+        );
+      try {
+        await Promise.race([
+          received,
+          pending.then(function (error) {
+            throw error;
+          }),
+        ]);
+        direct = getDirectAgent(agent, http);
+        var sockets = Object.keys(direct.sockets).reduce(function (all, key) {
+          return all.concat(direct.sockets[key]);
+        }, []);
+        assert.strictEqual(sockets.length, 1);
+        var closed = new Promise(function (resolve) {
+          origin.close(resolve);
+        });
+
+        agent.destroy();
+
+        assert.ok(sockets[0].destroyed);
+        var error = await pending;
+        assert.strictEqual(error.code, 'ECONNRESET');
+        await Promise.race([
+          closed,
+          new Promise(function (resolve, reject) {
+            closeTimer = setTimeout(function () {
+              reject(new Error('Server shutdown is still waiting for the direct socket'));
+            }, 1000);
+          }),
+        ]);
+      } finally {
+        clearTimeout(closeTimer);
+        agent.destroy();
+        if (direct) direct.destroy();
+        await pending;
+        await stopHTTPServer(origin);
+      }
+    }
+  );
+
   ['own', 'prototype'].forEach(function (placement) {
     it.skipIf(!nativeProxySupported)(
       'preserves ' + placement + ' connection hooks and their configured receiver',

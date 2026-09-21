@@ -46,6 +46,18 @@ describe('indexed multipart fields', function () {
     ]);
   });
 
+  it('unwraps present sparse array values under an array key', function () {
+    var values = new Array(4);
+    values[1] = 'first';
+    values[3] = 'second';
+
+    assert.strictEqual(utils.toArray(values), values);
+    assert.deepStrictEqual(multipartEntries(values), [
+      ['items[]', 'first'],
+      ['items[]', 'second'],
+    ]);
+  });
+
   it('unwraps prototype-backed indexes without counting duplicates twice', function () {
     var prototype = {};
     Object.defineProperties(prototype, {

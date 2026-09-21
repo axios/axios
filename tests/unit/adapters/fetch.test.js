@@ -2208,5 +2208,168 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         cancelSpy.mockRestore();
       }
     });
+
+    it('should cancel the ReadableStream created during the response stream probe', () => {
+      // The factory also probes for response-stream support by reading the body of a
+      // throwaway `new Response('')`.  That body is a ReadableStream whose pull
+      // algorithm stays pending unless the stream is cancelled, so an uncancelled
+      // probe body is an async resource leak for the lifetime of the realm.
+      //
+      // Spying on ReadableStream.prototype.cancel is not enough here: the
+      // request-stream probe above already calls it, so such an assertion passes
+      // whether or not this probe cleans up.  Stub the `Response` global instead and
+      // track cancellation on the exact stream this probe creates.
+
+      const OriginalResponse = globalThis.Response;
+      const probes = [];
+
+      class ProbeResponse extends OriginalResponse {
+        get body() {
+          const body = super.body;
+
+          if (body && !probes.some((probe) => probe.stream === body)) {
+            const probe = { stream: body, cancelled: false };
+            const cancel = body.cancel;
+
+            body.cancel = function (...args) {
+              probe.cancelled = true;
+              return cancel.apply(this, args);
+            };
+
+            probes.push(probe);
+          }
+
+          return body;
+        }
+      }
+
+      globalThis.Response = ProbeResponse;
+
+      try {
+        // Unique fetch function ensures cache miss → factory() re-runs the probe.
+        const uniqueFetch = async () => new OriginalResponse('ok');
+        getFetch({ env: { fetch: uniqueFetch } });
+
+        assert.strictEqual(
+          probes.length,
+          1,
+          'the response stream probe should read exactly one Response body'
+        );
+        assert.ok(
+          probes[0].cancelled,
+          'the ReadableStream created by the response stream probe should be cancelled'
+        );
+      } finally {
+        globalThis.Response = OriginalResponse;
+      }
+    });
+
+    // `utils.isReadableStream` is a toStringTag check rather than a structural one,
+    // so a custom `env.Response` can expose a stream-like body whose `cancel` is
+    // missing or broken.  Probe cleanup runs after the capability has been read and
+    // must not downgrade it.
+    const makeStubResponse = (cancel) => {
+      const probeBody = { cancel };
+
+      Object.defineProperty(probeBody, Symbol.toStringTag, { value: 'ReadableStream' });
+
+      const StubResponse = function () {};
+
+      Object.defineProperty(StubResponse.prototype, 'body', { get: () => probeBody });
+
+      return StubResponse;
+    };
+
+    const asStream = (value) => {
+      Object.defineProperty(value, Symbol.toStringTag, { value: 'ReadableStream' });
+
+      return value;
+    };
+
+    it('should keep response stream support when the probe body refuses cancellation', async () => {
+      const responseBody = asStream({});
+
+      const { data } = await fetchAxios.get('/', {
+        responseType: 'stream',
+        env: {
+          fetch: async () => ({ status: 200, headers: {}, body: responseBody }),
+          Response: makeStubResponse(() => {
+            throw new TypeError('cancel unsupported');
+          }),
+        },
+      });
+
+      // A downgraded capability resolves `stream` through the generic resolver,
+      // which throws ERR_NOT_SUPPORT instead of handing back the body.
+      assert.strictEqual(data, responseBody);
+    });
+
+    it('should not emit an unhandled rejection when the probe body cancellation rejects', async () => {
+      const rejections = [];
+      const onUnhandledRejection = (reason) => rejections.push(reason);
+
+      process.on('unhandledRejection', onUnhandledRejection);
+
+      try {
+        getFetch({
+          env: {
+            fetch: async () => new Response('ok'),
+            Response: makeStubResponse(() => Promise.reject(new Error('cancel failed'))),
+          },
+        });
+
+        await setTimeoutAsync(50);
+
+        assert.deepStrictEqual(rejections, []);
+      } finally {
+        process.off('unhandledRejection', onUnhandledRejection);
+      }
+    });
+
+    it('should keep request stream support when the probe body refuses cancellation', async () => {
+      // Same contract on the request side.  The probe body is the only body this
+      // stub breaks; the request the adapter goes on to build keeps the real one.
+      const OriginalRequest = globalThis.Request;
+      const probeBody = asStream({
+        cancel() {
+          throw new TypeError('cancel unsupported');
+        },
+      });
+
+      // The stream probe builds the first Request the factory constructs.  Key off
+      // that instance so every read of its body is broken, including the null guard.
+      let probeRequest;
+
+      class ProbeRequest extends OriginalRequest {
+        constructor(...args) {
+          super(...args);
+
+          if (probeRequest === undefined) {
+            probeRequest = this;
+          }
+        }
+
+        get body() {
+          return this === probeRequest ? probeBody : super.body;
+        }
+      }
+
+      const data = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new Uint8Array([1]));
+          controller.close();
+        },
+      });
+
+      const response = await fetchAxios.post('/', data, {
+        maxBodyLength: 1000,
+        env: {
+          fetch: async () => ({ status: 200, headers: {}, text: async () => 'ok' }),
+          Request: ProbeRequest,
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+    });
   });
 });

@@ -22,15 +22,36 @@ function lookup(hostname, options, callback) {
   else callback(null, '127.0.0.1', 4);
 }
 function nativeProxySupported() {
-  var version = process.versions.node.split('.').map(Number);
-  return version[0] > 24 || version[0] === 24 && version[1] >= 5 ||
-    version[0] === 22 && version[1] >= 21;
+  return process.allowedNodeEnvironmentFlags &&
+    process.allowedNodeEnvironmentFlags.has('--use-env-proxy');
 }
 
 describe('HTTP routing consistency', function() {
+  var proxyKeys = [
+    'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy',
+    'npm_config_http_proxy', 'npm_config_https_proxy',
+    'npm_config_proxy', 'npm_config_no_proxy'
+  ];
+  proxyKeys = proxyKeys.concat(proxyKeys.map(function(key) { return key.toUpperCase(); }));
+  var savedProxyEnv;
+
+  beforeEach(function() {
+    savedProxyEnv = Object.create(null);
+    proxyKeys.forEach(function(key) {
+      savedProxyEnv[key] = process.env[key];
+      delete process.env[key];
+    });
+  });
+
+  afterEach(function() {
+    proxyKeys.forEach(function(key) {
+      if (savedProxyEnv[key] === undefined) delete process.env[key];
+      else process.env[key] = savedProxyEnv[key];
+    });
+  });
 
   it('honors direct HTTPS requests with native proxy agents', async function() {
-    if (!nativeProxySupported()) return;
+    if (!nativeProxySupported()) return this.skip();
     var targets = [];
     var sockets = [];
     var port;
@@ -74,7 +95,6 @@ describe('HTTP routing consistency', function() {
       assert.strictEqual(targets.length, 1);
     } finally {
       if (agent) {
-        getDirectAgent(agent, https).destroy();
         agent.destroy();
       }
       sockets.forEach(function(socket) { socket.destroy(); });
@@ -83,16 +103,20 @@ describe('HTTP routing consistency', function() {
     }
   });
 
-  it('requires an explicit direct configuration for custom native proxy agents', function() {
+  it('accepts subclasses with native proxy options for direct requests', function() {
     function CustomAgent() {
       http.Agent.call(this, {proxyEnv: {HTTP_PROXY: 'http://127.0.0.1:1'}});
     }
     Object.setPrototypeOf(CustomAgent.prototype, http.Agent.prototype);
     var agent = new CustomAgent();
     try {
-      assert.throws(function() { getDirectAgent(agent, http); }, function(error) {
-        return error.code === 'ERR_BAD_OPTION_VALUE';
-      });
+      var direct = getDirectAgent(agent, http);
+      if (nativeProxySupported()) {
+        assert.notStrictEqual(direct, agent);
+        assert.strictEqual(direct.options.proxyEnv, undefined);
+      } else {
+        assert.strictEqual(direct, agent);
+      }
     } finally {
       agent.destroy();
     }
@@ -173,7 +197,7 @@ describe('HTTP routing consistency', function() {
   });
 
   it('honors direct requests with native proxy agents and redirects', async function() {
-    if (!nativeProxySupported()) return;
+    if (!nativeProxySupported()) return this.skip();
     var proxyHits = 0;
     var directHeaders;
     var proxy = http.createServer(function(req, res) {
@@ -221,7 +245,6 @@ describe('HTTP routing consistency', function() {
     } finally {
       http.globalAgent = originalAgent;
       if (agent) {
-        getDirectAgent(agent, http).destroy();
         agent.destroy();
       }
       await close(proxy);
@@ -230,6 +253,7 @@ describe('HTTP routing consistency', function() {
   });
 
   it('keeps direct agent options and reuses their connection pool', function() {
+    if (!nativeProxySupported()) return this.skip();
     var agent = new https.Agent({
       ca: 'example-ca',
       rejectUnauthorized: false,

@@ -149,17 +149,26 @@ export default function formBodyLengthCases() {
 
     it('uses Web Crypto for generated boundaries when no platform generator is present', () => {
       withoutPlatformRandom(() => {
-        let calls = 0;
-        vi.stubGlobal('crypto', {
-          getRandomValues(bytes) {
-            calls++;
-            bytes.fill(17);
-            return bytes;
-          },
+        let entropy = 17;
+        const getRandomValues = vi.fn((bytes) => {
+          bytes.fill(entropy);
+          return bytes;
         });
-        const body = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
-        expect(calls).toBe(1);
-        expect(body.type).toBe('multipart/form-data; boundary=axios-' + '11'.repeat(18));
+        vi.stubGlobal('crypto', { getRandomValues });
+        const generateType = () => {
+          const body = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
+          const match = /^multipart\/form-data; boundary=(axios-[a-z0-9'()+_,./:=?-]+)$/.exec(
+            body.type
+          );
+          expect(match).not.toBeNull();
+          expect(match[1].length).toBeLessThanOrEqual(70);
+          return body.type;
+        };
+        const first = generateType();
+        expect(generateType()).toBe(first);
+        entropy = 34;
+        expect(generateType()).not.toBe(first);
+        expect(getRandomValues).toHaveBeenCalled();
       });
     });
 

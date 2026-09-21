@@ -7,6 +7,7 @@ import fs from 'fs';
 import axios from '../../../index.js';
 import getDirectAgent from '../../../lib/helpers/getDirectAgent.js';
 import shouldBypassProxy from '../../../lib/helpers/shouldBypassProxy.js';
+import { __isNodeNativeEnvProxySupported as nativeProxySupported } from '../../../lib/adapters/http.js';
 
 function listen(server) {
   return new Promise(function (resolve) {
@@ -23,14 +24,6 @@ function close(server) {
 function lookup(hostname, options, callback) {
   if (options && options.all) callback(null, [{ address: '127.0.0.1', family: 4 }]);
   else callback(null, '127.0.0.1', 4);
-}
-function nativeProxySupported() {
-  var version = process.versions.node.split('.').map(Number);
-  return (
-    version[0] > 24 ||
-    (version[0] === 24 && version[1] >= 5) ||
-    (version[0] === 22 && version[1] >= 21)
-  );
 }
 
 describe('HTTP routing consistency', function () {

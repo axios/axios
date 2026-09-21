@@ -6,10 +6,10 @@ import net from 'net';
 import fs from 'fs';
 import axios from '../../../index.js';
 import getDirectAgent from '../../../lib/helpers/getDirectAgent.js';
+import { __isNodeNativeEnvProxySupported } from '../../../lib/adapters/http.js';
 import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 
-const nativeProxySupported =
-  process.allowedNodeEnvironmentFlags && process.allowedNodeEnvironmentFlags.has('--use-env-proxy');
+const nativeProxySupported = __isNodeNativeEnvProxySupported();
 
 function pooledSockets(agent) {
   return Object.keys(agent.freeSockets).reduce(function (sockets, key) {

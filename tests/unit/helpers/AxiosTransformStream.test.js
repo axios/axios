@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
-import { execFile } from 'child_process';
+import { runModuleInChildProcess } from '../../setup/runModuleInChildProcess.js';
 import AxiosTransformStream from '../../../lib/helpers/AxiosTransformStream.js';
 
 function collectChunks(options, size) {
@@ -68,29 +68,16 @@ describe('AxiosTransformStream', function () {
         'stream.end(Buffer.alloc(5));',
       ].join('\n');
 
-      return new Promise(function (resolve, reject) {
-        execFile(
-          process.execPath,
-          ['--input-type=module', '-e', source],
-          { timeout: 3000, killSignal: 'SIGKILL' },
-          function (error, stdout) {
-            if (error) return reject(error);
-            try {
-              var chunks = JSON.parse(stdout);
-              assert.ok(chunks.length > 1);
-              assert.strictEqual(chunks[0].bytes, 1);
-              assert.ok(chunks[1].elapsed >= 20);
-              assert.strictEqual(
-                chunks.reduce(function (bytes, chunk) {
-                  return bytes + chunk.bytes;
-                }, 0),
-                5
-              );
-              resolve();
-            } catch (failure) {
-              reject(failure);
-            }
-          }
+      return runModuleInChildProcess(source).then(function (stdout) {
+        var chunks = JSON.parse(stdout);
+        assert.ok(chunks.length > 1);
+        assert.strictEqual(chunks[0].bytes, 1);
+        assert.ok(chunks[1].elapsed >= 20);
+        assert.strictEqual(
+          chunks.reduce(function (bytes, chunk) {
+            return bytes + chunk.bytes;
+          }, 0),
+          5
         );
       });
     });

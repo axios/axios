@@ -127,6 +127,68 @@ describe('params merge', function () {
     });
   });
 
+  ['constructor', 'prototype', '__proto__'].forEach(function (key) {
+    it('rejects retained ' + key + ' cycles before serializers or adapters run', async function () {
+      const element = {};
+      Object.defineProperty(element, key, { value: element, enumerable: true });
+      const params = { list: [element] };
+      let serializerCalls = 0;
+      let adapterCalls = 0;
+      const paramsSerializer = function () {
+        serializerCalls++;
+        return 'recorded=true';
+      };
+      const isCircularParamsError = function (error) {
+        return error.isAxiosError === true && error.code === 'ERR_BAD_OPTION_VALUE';
+      };
+
+      assert.throws(
+        () => axios.getUri({ url: '/resource', params, paramsSerializer }),
+        isCircularParamsError
+      );
+      await assert.rejects(
+        axios.get('/resource', {
+          params,
+          paramsSerializer,
+          adapter: function (config) {
+            adapterCalls++;
+            return Promise.resolve({ data: 'recorded', status: 200, headers: {}, config });
+          },
+        }),
+        isCircularParamsError
+      );
+      assert.strictEqual(serializerCalls, 0);
+      assert.strictEqual(adapterCalls, 0);
+      assert.strictEqual(params.list[0], element);
+      assert.strictEqual(Object.getOwnPropertyDescriptor(element, key).value, element);
+      assert.strictEqual(Object.getPrototypeOf(element), Object.prototype);
+    });
+
+    it('preserves acyclic ' + key + ' fields and shared array references', function () {
+      const shared = { leaf: 'value' };
+      const element = { other: shared };
+      Object.defineProperty(element, key, { value: shared, enumerable: true });
+      const params = { list: [element, element] };
+      let serializerCalls = 0;
+      const uri = axios.getUri({
+        url: '/resource',
+        params,
+        paramsSerializer: function (merged) {
+          serializerCalls++;
+          assert.notStrictEqual(merged.list, params.list);
+          assert.strictEqual(merged.list[0], element);
+          assert.strictEqual(merged.list[1], element);
+          assert.strictEqual(Object.getOwnPropertyDescriptor(merged.list[0], key).value, shared);
+          assert.strictEqual(merged.list[0].other, shared);
+          return 'recorded=true';
+        },
+      });
+      assert.strictEqual(uri, '/resource?recorded=true');
+      assert.strictEqual(serializerCalls, 1);
+      assert.strictEqual(Object.getPrototypeOf(element), Object.prototype);
+    });
+  });
+
   it('allows shared values that are not circular', function () {
     const shared = { leaf: 'value' };
     assert.deepStrictEqual(

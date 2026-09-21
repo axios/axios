@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
-import { execFile } from 'child_process';
+import { runModuleInChildProcess } from '../../setup/runModuleInChildProcess.js';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import axios from '../../../index.js';
 import composeSignals from '../../../lib/helpers/composeSignals.js';
@@ -170,24 +170,8 @@ describe('runtime option consistency', function () {
         'var bytes = 0; stream.on("data", function(chunk) {bytes += chunk.length;});' +
         'stream.end(Buffer.alloc(101));' +
         'setTimeout(function() { stream.destroy(); console.log(bytes); }, 30);';
-      return new Promise(function (resolve, reject) {
-        execFile(
-          process.execPath,
-          ['--input-type=module', '-e', source],
-          {
-            timeout: 3000,
-            killSignal: 'SIGKILL',
-          },
-          function (error, stdout) {
-            if (error) return reject(error);
-            try {
-              assert.strictEqual(Number(stdout.trim()), 1);
-              resolve();
-            } catch (failure) {
-              reject(failure);
-            }
-          }
-        );
+      return runModuleInChildProcess(source).then(function (stdout) {
+        assert.strictEqual(Number(stdout.trim()), 1);
       });
     });
   });

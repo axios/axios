@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Fetch capability probe cleanup
+
+- **Change:** Document that the fetch adapter cancels the throwaway bodies it creates while probing for request-stream and response-stream support, and what that requires of custom `env.Request`/`env.Response` implementations.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter - capability probe cleanup.
+- **Status:** Pending.
+- **Docs targets:** Custom fetch/`env` guidance alongside the existing custom `env.Response` stream notes; fetch adapter internals if capability detection is described.
+- **Required content:** Explain that the adapter probes stream support once per `env` combination, at adapter construction rather than per request, and that it now calls `cancel()` on the probe body it created so the probe does not leave a pending stream alive for the lifetime of the realm. A custom `env.Request` or `env.Response` should therefore tolerate `cancel()` being called on the body it exposes during probing. State that this cleanup is best-effort and never changes detected support: a probe body whose `cancel()` is missing, throws, or returns a rejecting thenable still reports the support the probe detected, and the rejection is absorbed rather than surfacing as an unhandled rejection. Cleanup also runs when the capability check itself throws.
+- **Examples:** None required; if custom `env.Response` examples are expanded, show a wrapper whose body forwards `cancel()` to the underlying stream.
+- **Notes:** Internal behavior only. No public API, option, or type changes, and no migration is required. Do not imply that applications need to change a correct custom `env.Response`; the tolerance notes exist for partial or polyfilled implementations.
+
 ### Fetch response size errors
 
 - **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.

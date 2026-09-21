@@ -2417,7 +2417,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             throw new TypeError('then is not reusable');
           }
 
-          return rejected.then.bind(rejected);
+          return (onFulfilled, onRejected) => rejected.then(onFulfilled, onRejected);
         },
       };
 

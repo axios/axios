@@ -162,6 +162,38 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should reject a negative timeout with an AxiosError instead of crashing', async () => {
+    let requests = 0;
+    const server = await startHTTPServer(
+      (req, res) => {
+        requests++;
+        res.end('ok');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      for (const maxRedirects of [undefined, 0]) {
+        await assert.rejects(
+          axios.get(`http://localhost:${server.address().port}`, {
+            timeout: -1,
+            maxRedirects,
+          }),
+          (error) => {
+            assert.ok(error instanceof AxiosError);
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            assert.strictEqual(error.message, '`config.timeout` must be a non-negative number');
+            return true;
+          }
+        );
+      }
+
+      assert.strictEqual(requests, 0);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

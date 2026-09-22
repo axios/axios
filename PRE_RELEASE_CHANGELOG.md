@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Node HTTP adapter - negative timeouts:** A negative `timeout` now rejects with `AxiosError` and `ERR_BAD_OPTION_VALUE` before any connection is opened. Previously Node's `ERR_OUT_OF_RANGE` was thrown from a follow-redirects socket callback as an uncaught exception that crashed the process, or surfaced as a raw `RangeError` with `maxRedirects: 0`. This commonly happens when a timeout is computed from a deadline that has already passed.
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

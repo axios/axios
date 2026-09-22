@@ -19,6 +19,88 @@ export default function formBodyLengthCases() {
       return form;
     };
 
+    it('uses each configured Blob constructor when reusing a fetch implementation', async () => {
+      const created = [];
+      class FirstBlob extends Blob {
+        constructor(parts, options) {
+          super(parts, options);
+          created.push(this);
+        }
+      }
+      class SecondBlob extends FirstBlob {}
+      const envFetch = async (request) => {
+        const form = await request.formData();
+        expect(form.get('message')).toBe('café\r\nsecond line');
+        expect(await form.get('file').text()).toBe('contents');
+        return new Response('ok');
+      };
+      for (const BlobConstructor of [FirstBlob, SecondBlob, FirstBlob]) {
+        const before = created.length;
+        const response = await axios.post('http://localhost/form', makeForm(), {
+          adapter: 'fetch',
+          maxBodyLength: 4096,
+          env: { fetch: envFetch, Blob: BlobConstructor },
+        });
+        expect(response.data).toBe('ok');
+        expect(created.length).toBeGreaterThan(before);
+        expect(created[created.length - 1].constructor).toBe(BlobConstructor);
+      }
+    });
+
+    [false, true].forEach((progress) => {
+      it(
+        'uses a configured Blob without the global constructor with progress=' + progress,
+        async () => {
+          const NativeBlob = Blob;
+          const form = makeForm();
+          let constructed = false;
+          class CustomBlob extends NativeBlob {
+            constructor(parts, options) {
+              super(parts, options);
+              constructed = true;
+            }
+          }
+          vi.stubGlobal('Blob', undefined);
+          try {
+            const response = await axios.post('http://localhost/form', form, {
+              adapter: 'fetch',
+              maxBodyLength: 4096,
+              onUploadProgress: progress ? () => {} : undefined,
+              env: {
+                Blob: CustomBlob,
+                async fetch(request) {
+                  const decoded = await request.formData();
+                  expect(decoded.get('message')).toBe('café\r\nsecond line');
+                  expect(await decoded.get('file').text()).toBe('contents');
+                  return new Response('ok');
+                },
+              },
+            });
+            expect(response.data).toBe('ok');
+            expect(constructed).toBe(true);
+          } finally {
+            vi.unstubAllGlobals();
+          }
+        }
+      );
+    });
+
+    it('falls back to the global Blob only when the configured value is undefined', async () => {
+      const env = {
+        Blob: undefined,
+        async fetch(request) {
+          expect((await request.formData()).get('message')).toBe('café\r\nsecond line');
+          return new Response('ok');
+        },
+      };
+      const config = { adapter: 'fetch', maxBodyLength: 4096, env };
+      expect((await axios.post('http://localhost/form', makeForm(), config)).data).toBe('ok');
+      env.Blob = null;
+      await expect(axios.post('http://localhost/form', makeForm(), config)).rejects.toMatchObject({
+        code: 'ERR_NOT_SUPPORT',
+      });
+    });
+
     [false, true].forEach((progress) => {
       [undefined, 4096].forEach((limit) => {
         it(`preserves multipart content with progress=${progress} and limit=${limit}`, async () => {
@@ -361,6 +443,39 @@ export default function formBodyLengthCases() {
         expect((await axios.get(url, { adapter: 'fetch', maxContentLength: 4 })).data).toBe('abcd');
       });
     });
+    ['\t', '\n', '\r', ' \t\r\n '].forEach((whitespace) => {
+      it('handles URL preprocessing before base64 for ' + JSON.stringify(whitespace), async () => {
+        const url = 'data:text/plain;' + whitespace + 'base64,TQ==';
+        // URL runtimes either remove these characters or percent-encode them.
+        // Match the resulting native Fetch body in either case.
+        const nativeBody = await (await fetch(url)).text();
+        expect(['M', 'TQ==']).toContain(nativeBody);
+        expect(estimateDataURLDecodedBytes(new URL(url).href)).toBe(nativeBody.length);
+        expect(
+          (await axios.get(url, { adapter: 'fetch', maxContentLength: nativeBody.length })).data
+        ).toBe(nativeBody);
+        await expect(
+          axios.get(url, { adapter: 'fetch', maxContentLength: nativeBody.length - 1 })
+        ).rejects.toMatchObject({ code: 'ERR_BAD_RESPONSE' });
+      });
+    });
+
+    ['\f', '\v', '\u00a0'].forEach((whitespace) => {
+      it(
+        'keeps non-marker whitespace as MIME metadata for ' + JSON.stringify(whitespace),
+        async () => {
+          const url = 'data:text/plain;' + whitespace + 'base64,TQ==';
+          expect(estimateDataURLDecodedBytes(new URL(url).href)).toBe(4);
+          expect((await axios.get(url, { adapter: 'fetch', maxContentLength: 4 })).data).toBe(
+            'TQ=='
+          );
+          await expect(
+            axios.get(url, { adapter: 'fetch', maxContentLength: 1 })
+          ).rejects.toMatchObject({ code: 'ERR_BAD_RESPONSE' });
+        }
+      );
+    });
+
     ['base64', 'BASE64', ' BaSe64 '].forEach((encoding) => {
       it('preserves the native ' + encoding + ' encoding suffix', async () => {
         const url = 'data:text/plain;' + encoding + ',TQ==';

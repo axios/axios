@@ -100,6 +100,29 @@ describe('params merge', function () {
     assert.deepStrictEqual(mergeConfig({}, { params }).params, { nested: { kept: 1 } });
   });
 
+  it('merges and validates string-keyed params without symbol reflection', function () {
+    const getOwnPropertySymbols = Object.getOwnPropertySymbols;
+    Object.getOwnPropertySymbols = undefined;
+    try {
+      const params = { filter: { active: true }, list: [{ field: 'value' }] };
+      const merged = mergeConfig({}, { params });
+      assert.deepStrictEqual(merged.params, params);
+      assert.notStrictEqual(merged.params, params);
+      assert.strictEqual(
+        axios.getUri({ url: '/resource', params: { field: 'value' } }),
+        '/resource?field=value'
+      );
+      const circular = {};
+      circular.next = circular;
+      assert.throws(
+        () => mergeConfig({}, { params: { list: [circular] } }),
+        (error) => error.isAxiosError === true && error.code === 'ERR_BAD_OPTION_VALUE'
+      );
+    } finally {
+      Object.getOwnPropertySymbols = getOwnPropertySymbols;
+    }
+  });
+
   it('ignores symbols whose proxy descriptor is absent', function () {
     const symbol = Symbol('absent');
     const params = new Proxy(

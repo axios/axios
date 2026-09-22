@@ -14,8 +14,10 @@ import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 const nativeProxySupported = __isNodeNativeEnvProxySupported();
 
 function pooledSockets(agent) {
-  return Object.keys(agent.freeSockets).reduce(function (sockets, key) {
-    return sockets.concat(agent.freeSockets[key]);
+  return [agent.sockets, agent.freeSockets].reduce(function (sockets, pool) {
+    return Object.keys(pool).reduce(function (all, key) {
+      return all.concat(pool[key]);
+    }, sockets);
   }, []);
 }
 
@@ -150,6 +152,158 @@ describe('direct agent lifecycle', function () {
         if (direct) direct.destroy();
         await pending;
         await stopHTTPServer(origin);
+      }
+    }
+  );
+
+  ['own', 'prototype'].forEach(function (placement) {
+    it.skipIf(!nativeProxySupported)(
+      'preserves ' + placement + ' pool keys and their configured receiver',
+      async function () {
+        var origin = await startHTTPServer(
+          function (req, res) {
+            res.end('origin');
+          },
+          { keepAlive: 60000 }
+        );
+        var states = new WeakMap();
+        function PartitionAgent(options) {
+          http.Agent.call(this, options);
+          states.set(this, { prefix: 'partition:', calls: 0 });
+        }
+        Object.setPrototypeOf(PartitionAgent.prototype, http.Agent.prototype);
+        var agent = new PartitionAgent({
+          keepAlive: true,
+          proxyEnv: { HTTP_PROXY: 'http://127.0.0.1:1' },
+        });
+        var owner = placement === 'own' ? agent : PartitionAgent.prototype;
+        owner.getName = function (options) {
+          var state = states.get(this);
+          assert.ok(state, 'pool naming must retain the configured receiver');
+          state.calls++;
+          return (
+            state.prefix +
+            options.headers['X-Pool'] +
+            ':' +
+            http.Agent.prototype.getName.call(this, options)
+          );
+        };
+        var target = 'http://127.0.0.1:' + origin.address().port;
+        try {
+          var first = await axios.get(target, {
+            httpAgent: agent,
+            proxy: false,
+            headers: { 'X-Pool': 'first' },
+          });
+          var second = await axios.get(target, {
+            httpAgent: agent,
+            proxy: false,
+            headers: { 'X-Pool': 'second' },
+          });
+          var again = await axios.get(target, {
+            httpAgent: agent,
+            proxy: false,
+            headers: { 'X-Pool': 'first' },
+          });
+          assert.strictEqual(first.data, 'origin');
+          assert.strictEqual(second.data, 'origin');
+          assert.strictEqual(again.data, 'origin');
+          assert.ok(
+            first.request.socket !== second.request.socket,
+            'different pool keys need separate sockets'
+          );
+          assert.ok(
+            first.request.socket === again.request.socket,
+            'matching pool keys should reuse their socket'
+          );
+          assert.ok(states.get(agent).calls > 0);
+        } finally {
+          agent.destroy();
+          await stopHTTPServer(origin);
+        }
+      }
+    );
+  });
+
+  [
+    {
+      transport: http,
+      slot: 'httpAgent',
+      hooks: ['addRequest', 'createSocket', 'removeSocket', 'reuseSocket', 'keepSocketAlive'],
+    },
+    {
+      transport: https,
+      slot: 'httpsAgent',
+      hooks: ['_getSession', '_cacheSession', '_evictSession'],
+    },
+  ].forEach(function (fixture) {
+    fixture.hooks.forEach(function (hook) {
+      ['own', 'prototype'].forEach(function (placement) {
+        it.skipIf(!nativeProxySupported)(
+          'rejects unsupported ' + placement + ' ' + hook + ' before dispatch',
+          async function () {
+            function PoolAgent(options) {
+              fixture.transport.Agent.call(this, options);
+            }
+            Object.setPrototypeOf(PoolAgent.prototype, fixture.transport.Agent.prototype);
+            var agent = new PoolAgent({
+              proxyEnv: { HTTP_PROXY: 'http://127.0.0.1:1', HTTPS_PROXY: 'http://127.0.0.1:1' },
+            });
+            var destroy = agent.destroy;
+            var calls = 0;
+            var owner = placement === 'own' ? agent : PoolAgent.prototype;
+            owner[hook] = function () {
+              throw new Error('Unsupported hook must not run');
+            };
+            var config = {
+              proxy: false,
+              transport: {
+                request: function () {
+                  calls++;
+                  throw new Error('Dispatch must not run');
+                },
+              },
+            };
+            config[fixture.slot] = agent;
+            try {
+              await assert.rejects(
+                axios.get(agent.protocol + '//127.0.0.1/resource', config),
+                function (error) {
+                  return (
+                    error.code === 'ERR_BAD_OPTION_VALUE' && error.message.indexOf(hook) !== -1
+                  );
+                }
+              );
+              assert.strictEqual(calls, 0);
+              assert.strictEqual(agent.destroy, destroy);
+            } finally {
+              agent.destroy();
+            }
+          }
+        );
+      });
+    });
+  });
+
+  it.skipIf(!nativeProxySupported)(
+    'checks lifecycle overrides again before reusing a cached pool',
+    function () {
+      var agent = new http.Agent({ proxyEnv: { HTTP_PROXY: 'http://127.0.0.1:1' } });
+      try {
+        getDirectAgent(agent, http);
+        agent.addRequest = function () {
+          throw new Error('Unsupported hook must not run');
+        };
+        assert.throws(
+          function () {
+            getDirectAgent(agent, http);
+          },
+          function (error) {
+            return error.code === 'ERR_BAD_OPTION_VALUE' && /addRequest/.test(error.message);
+          }
+        );
+      } finally {
+        agent.destroy();
       }
     }
   );

@@ -79,6 +79,71 @@ describe('indexed multipart fields', function () {
     ]);
   });
 
+  ['omitted', 'unsupported'].forEach(function(reflection) {
+    it('serializes FileList values when indexed reflection is ' + reflection, function() {
+      var files = Object.create({});
+      Object.defineProperty(files, Symbol.toStringTag, {value: 'FileList'});
+      Object.defineProperties(files, {
+        0: {value: 'first'},
+        1: {value: 'second'},
+        length: {value: 2}
+      });
+      var loaded = loadLegacyModule(path.resolve(__dirname, '../../../lib/utils.js'));
+      loaded.context.files = files;
+      vm.runInContext([
+        'var reflectionCalls = 0;',
+        'var nativeNames = Object.getOwnPropertyNames;',
+        'Object.getOwnPropertyNames = function(value) {',
+        '  if (value === files) {',
+        '    reflectionCalls++;',
+        reflection === 'omitted' ? '    return ["length"];' : '    throw new TypeError("Unsupported host object");',
+        '  }',
+        '  return nativeNames(value);',
+        '};'
+      ].join('\n'), loaded.context);
+      var legacyUtils = loaded.exports;
+      var legacyToFormData = loadLegacyModule(
+        path.resolve(__dirname, '../../../lib/helpers/toFormData.js'),
+        {'../utils': legacyUtils}
+      ).exports;
+      var legacyDefaults = loadLegacyModule(
+        path.resolve(__dirname, '../../../lib/defaults/index.js'),
+        {'../utils': legacyUtils, '../helpers/toFormData': legacyToFormData}
+      ).exports;
+      function FormRecorder() {
+        this.parts = [];
+      }
+      FormRecorder.prototype.append = function(name, value) {
+        this.parts.push([name, value]);
+      };
+
+      assert.deepStrictEqual(JSON.parse(JSON.stringify(legacyUtils.toArray(files))), ['first', 'second']);
+      ['uploads', 'uploads[]'].forEach(function(key) {
+        var fields = {};
+        fields[key] = files;
+        var form = legacyToFormData(fields, new FormRecorder());
+        assert.deepStrictEqual(form.parts, [['uploads[]', 'first'], ['uploads[]', 'second']]);
+      });
+      var transformed = legacyDefaults.transformRequest[0].call({env: {FormData: FormRecorder}}, files, {});
+      assert.deepStrictEqual(transformed.parts, [['files[]', 'first'], ['files[]', 'second']]);
+      assert.strictEqual(loaded.context.reflectionCalls, 0);
+    });
+  });
+
+  it('validates FileList lengths before reading their indexed values', function() {
+    [NaN, Infinity, -1, 1.5, '2', 4294967296].forEach(function(length) {
+      var reads = 0;
+      var files = {length: length};
+      Object.defineProperty(files, Symbol.toStringTag, {value: 'FileList'});
+      Object.defineProperty(files, '0', {
+        get: function() { reads++; return 'first'; }
+      });
+
+      assert.strictEqual(utils.toArray(files), null);
+      assert.strictEqual(reads, 0);
+    });
+  });
+
   it('unwraps present sparse array values under an array key', function () {
     var values = new Array(4);
     values[1] = 'first';

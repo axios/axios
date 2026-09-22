@@ -6,6 +6,7 @@ var vm = require('vm');
 var axios = require('../../../index');
 var utils = require('../../../lib/utils');
 var AxiosError = require('../../../lib/core/AxiosError');
+var assertParamsDepth = require('../../../lib/helpers/assertParamsDepth');
 
 function Params(value) {
   this.filter = value;
@@ -169,5 +170,114 @@ describe('parameter root shapes', function() {
     var opaque = new Params(nested(150));
     opaque.toString = function() { return 'opaque'; };
     assert.doesNotThrow(function() { legacyValidator()(new Params(opaque)); });
+  });
+});
+
+describe('parameter array fields', function() {
+  function validate(params) {
+    assertParamsDepth(params);
+    legacyValidator()(params);
+  }
+
+  it('ignores named and noncanonical metadata on root and nested arrays', function() {
+    var array = ['value'];
+    ['metadata', '01', '1.0', '1e0', '-1', '4294967295'].forEach(function(key) {
+      Object.defineProperty(array, key, {
+        enumerable: true,
+        get: function() { throw new Error('Array metadata should not be read'); }
+      });
+    });
+    array.deep = nested(150);
+    array.circular = array;
+    assert.doesNotThrow(function() { validate(array); validate(new Params(array)); });
+    assert.strictEqual(axios.getUri({url: '/resource', params: array}), '/resource?0=value');
+    assert.strictEqual(axios.getUri({url: '/resource', params: new Params(array)}),
+      '/resource?filter[]=value');
+  });
+
+  it('includes hidden numeric slots while preserving holes', function() {
+    var array = new Array(4);
+    Object.defineProperty(array, '2', {value: {name: 'value'}, enumerable: false});
+    assert.doesNotThrow(function() { validate(array); validate(new Params(array)); });
+    assert.strictEqual(axios.getUri({url: '/resource', params: array}), '/resource?2[name]=value');
+    assert.strictEqual(axios.getUri({url: '/resource', params: new Params(array)}),
+      '/resource?filter[2][name]=value');
+    assert.strictEqual(Object.prototype.hasOwnProperty.call(array, '0'), false);
+    assert.strictEqual(Object.getOwnPropertyDescriptor(array, '2').enumerable, false);
+  });
+
+  it('reads inherited numeric slots through the original array', function() {
+    var parent = Object.create(Array.prototype);
+    var array = new Array(3);
+    Object.defineProperty(parent, '1', {
+      get: function() {
+        assert.strictEqual(this, array);
+        return {name: 'value'};
+      }
+    });
+    Object.setPrototypeOf(array, parent);
+    assert.doesNotThrow(function() { validate(array); validate(new Params(array)); });
+    assert.strictEqual(axios.getUri({url: '/resource', params: array}), '/resource?1[name]=value');
+    assert.strictEqual(axios.getUri({url: '/resource', params: new Params(array)}),
+      '/resource?filter[1][name]=value');
+  });
+
+  it('honors own slots that shadow inherited values', function() {
+    var parent = Object.create(Array.prototype);
+    Object.defineProperty(parent, '0', {
+      get: function() { throw new Error('Shadowed array slot should not be read'); }
+    });
+    var array = new Array(2);
+    Object.setPrototypeOf(array, parent);
+    Object.defineProperty(array, '0', {value: undefined});
+    assert.doesNotThrow(function() { validate(array); validate(new Params(array)); });
+    assert.strictEqual(axios.getUri({url: '/resource', params: array}), '/resource');
+  });
+
+  ['hidden', 'inherited'].forEach(function(kind) {
+    it('checks depth and cycles in ' + kind + ' numeric slots', function() {
+      [assertParamsDepth, legacyValidator()].forEach(function(check) {
+        var array = new Array(2);
+        var owner = kind === 'hidden' ? array : Object.create(Array.prototype);
+        if (kind === 'inherited') Object.setPrototypeOf(array, owner);
+        Object.defineProperty(owner, '1', {value: nested(150), configurable: true});
+        [array, new Params(array)].forEach(function(params) {
+          assert.throws(function() { check(params); }, function(error) {
+            return error.code === 'ERR_BAD_OPTION_VALUE';
+          });
+        });
+        Object.defineProperty(owner, '1', {value: array, configurable: true});
+        assert.throws(function() { check(array); }, function(error) {
+          return error.code === 'ERR_BAD_OPTION_VALUE';
+        });
+      });
+    });
+  });
+
+  it('supports sparse arrays with a longer local prototype chain', function() {
+    var parent = Array.prototype;
+    for (var i = 0; i < 32; i++) parent = Object.create(parent);
+    Object.defineProperty(parent, '15', {value: {name: 'value'}});
+    var array = new Array(64);
+    Object.setPrototypeOf(array, parent);
+    Object.freeze(array);
+    assert.doesNotThrow(function() { validate(array); });
+    assert.strictEqual(Object.getPrototypeOf(array), parent);
+    assert.strictEqual(Object.getOwnPropertyNames(array).join(','), 'length');
+  });
+
+  it('stops a repeated virtual prototype without walking indefinitely', function() {
+    var calls = 0;
+    var array;
+    array = new Proxy([], {
+      getPrototypeOf: function() {
+        calls++;
+        return array;
+      }
+    });
+    assert.throws(function() { assertParamsDepth(array); }, function(error) {
+      return error.code === 'ERR_BAD_OPTION_VALUE';
+    });
+    assert.ok(calls < 10);
   });
 });

@@ -215,6 +215,56 @@ describe('direct agent lifecycle', function () {
     }
   );
 
+  [http, https].forEach(function(transport) {
+    (nativeProxySupported ? it : it.skip)(
+      'retains the cached ' + transport.globalAgent.protocol + ' pool after proxy option changes',
+      function() {
+        var agent = new transport.Agent({
+          proxyEnv: {HTTP_PROXY: 'http://127.0.0.1:1', HTTPS_PROXY: 'http://127.0.0.1:1'}
+        });
+        try {
+          var direct = getDirectAgent(agent, transport);
+          var destroy = agent.destroy;
+          assert.notStrictEqual(direct, agent);
+          [undefined, null, false, 1, 'disabled'].forEach(function(value, index) {
+            agent.options.proxyEnv = value;
+            agent.options.timeout = 100 + index;
+            agent.maxSockets = 2 + index;
+            assert.strictEqual(getDirectAgent(agent, transport), direct);
+            assert.strictEqual(direct.options.proxyEnv, undefined);
+            assert.strictEqual(direct.options.timeout, 100 + index);
+            assert.strictEqual(direct.maxSockets, 2 + index);
+          });
+          delete agent.options.proxyEnv;
+          assert.strictEqual(getDirectAgent(agent, transport), direct);
+          assert.strictEqual(agent.destroy, destroy);
+          agent.options = undefined;
+          assert.strictEqual(getDirectAgent(agent, transport), direct);
+          assert.strictEqual(direct.options.proxyEnv, undefined);
+        } finally {
+          agent.destroy();
+        }
+      }
+    );
+  });
+
+  (nativeProxySupported ? it : it.skip)(
+    'still checks cached pool hooks after proxy options are removed',
+    function() {
+      var agent = new http.Agent({proxyEnv: {}});
+      try {
+        getDirectAgent(agent, http);
+        delete agent.options.proxyEnv;
+        agent.addRequest = function() { throw new Error('Unsupported hook must not run'); };
+        assert.throws(function() { getDirectAgent(agent, http); }, function(error) {
+          return error.code === 'ERR_BAD_OPTION_VALUE' && /addRequest/.test(error.message);
+        });
+      } finally {
+        agent.destroy();
+      }
+    }
+  );
+
   (nativeProxySupported ? it : it.skip)(
     'applies a changed socket limit to cached direct requests',
     async function() {

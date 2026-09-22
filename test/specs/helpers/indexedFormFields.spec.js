@@ -1,3 +1,5 @@
+var utils = require('../../../lib/utils');
+var defaults = require('../../../lib/defaults');
 var toFormData = require('../../../lib/helpers/toFormData');
 var formDataToJSON = require('../../../lib/helpers/formDataToJSON');
 
@@ -40,6 +42,32 @@ describe('indexed multipart fields', function() {
 
     var form = toFormData({'items[]': values}, new FormData());
     expect(form.getAll('items[]')).toEqual(['first', 'second', 'third']);
+  });
+
+  it('unwraps native FileList values through direct and default multipart serialization', function() {
+    if (typeof DataTransfer !== 'function' || typeof File !== 'function') {
+      pending('Populating a FileList requires DataTransfer and File constructors');
+      return;
+    }
+    var transfer = new DataTransfer();
+    transfer.items.add(new File(['one'], 'first.txt', {type: 'text/plain'}));
+    transfer.items.add(new File(['two!'], 'second.txt', {type: 'text/plain'}));
+    var files = transfer.files;
+
+    expect(utils.toArray(files)).toEqual([files[0], files[1]]);
+    var form = toFormData({attachments: files}, new FormData());
+    var attachments = form.getAll('attachments[]');
+    expect(attachments.length).toBe(2);
+    expect(attachments[0].name).toBe('first.txt');
+    expect(attachments[0].size).toBe(3);
+    expect(attachments[1].name).toBe('second.txt');
+    expect(attachments[1].size).toBe(4);
+
+    var transformed = defaults.transformRequest[0].call({env: {FormData: FormData}}, files, {});
+    var uploads = transformed.getAll('files[]');
+    expect(uploads.length).toBe(2);
+    expect(uploads[0].name).toBe('first.txt');
+    expect(uploads[1].name).toBe('second.txt');
   });
 
   it('keeps unrelated fields instead of treating them as indexes', function() {

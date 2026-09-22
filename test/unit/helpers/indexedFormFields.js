@@ -44,7 +44,7 @@ function loadLegacyModule(filename, overrides, sharedContext) {
     return overrides && Object.prototype.hasOwnProperty.call(overrides, name) ?
       overrides[name] : localRequire(name);
   };
-  if (!sharedContext) {
+  if (!Object.prototype.hasOwnProperty.call(context, '__legacyPrepared') || context.__legacyPrepared !== true) {
     vm.runInContext([
       'Number.isSafeInteger = Number.isInteger = Number.isFinite = undefined;',
       'Set = WeakMap = undefined;',
@@ -58,6 +58,7 @@ function loadLegacyModule(filename, overrides, sharedContext) {
       'Object.getOwnPropertyNames = function(value) { assertObject(value); return getNames(value); };',
       'Object.getPrototypeOf = function(value) { assertObject(value); return getPrototype(value); };'
     ].join('\n'), context);
+    context.__legacyPrepared = true;
   }
   vm.runInContext([
     '(function(module, require) {',
@@ -66,6 +67,43 @@ function loadLegacyModule(filename, overrides, sharedContext) {
   ].join('\n'), context, {filename: filename});
   return {exports: context.module.exports, context: context};
 }
+
+describe('legacy module loader', function() {
+  it('prepares a supplied VM context before loading a module', function() {
+    var context = vm.createContext({});
+    var loaded = loadLegacyModule(path.resolve(__dirname, '../../../lib/utils.js'), null, context);
+
+    assert.strictEqual(loaded.context, context);
+    ['Number.isSafeInteger', 'Number.isInteger', 'Number.isFinite', 'Set', 'WeakMap'].forEach(function(name) {
+      assert.strictEqual(vm.runInContext(name, context), undefined, name);
+    });
+    ['Object.getOwnPropertyNames', 'Object.getPrototypeOf'].forEach(function(name) {
+      assert.throws(function() {
+        vm.runInContext(name + '(1)', context);
+      }, /Expected an object/);
+    });
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(loaded.exports.toArray({0: 'first', length: 1}))), ['first']);
+  });
+
+  it('preserves reflection wrappers when loading another module in a prepared context', function() {
+    var loaded = loadLegacyModule(path.resolve(__dirname, '../../../lib/utils.js'));
+    var getNames = vm.runInContext('Object.getOwnPropertyNames', loaded.context);
+    var getPrototype = vm.runInContext('Object.getPrototypeOf', loaded.context);
+    var legacyToFormData = loadLegacyModule(
+      path.resolve(__dirname, '../../../lib/helpers/toFormData.js'),
+      {'../utils': loaded.exports},
+      loaded.context
+    ).exports;
+
+    assert.strictEqual(vm.runInContext('Object.getOwnPropertyNames', loaded.context), getNames);
+    assert.strictEqual(vm.runInContext('Object.getPrototypeOf', loaded.context), getPrototype);
+    var entries = [];
+    legacyToFormData({'items[]': {0: 'first', length: 1}}, {
+      append: function(name, value) { entries.push([name, value]); }
+    });
+    assert.deepStrictEqual(entries, [['items[]', 'first']]);
+  });
+});
 
 describe('indexed multipart fields', function () {
   it('unwraps non-enumerable indexes', function () {

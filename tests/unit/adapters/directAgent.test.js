@@ -5,8 +5,10 @@ import https from 'https';
 import net from 'net';
 import fs from 'fs';
 import axios from '../../../index.js';
-import getDirectAgent from '../../../lib/helpers/getDirectAgent.js';
-import { __isNodeNativeEnvProxySupported } from '../../../lib/adapters/http.js';
+import {
+  __getDirectAgent as getDirectAgent,
+  __isNodeNativeEnvProxySupported,
+} from '../../../lib/adapters/http.js';
 import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 
 const nativeProxySupported = __isNodeNativeEnvProxySupported();

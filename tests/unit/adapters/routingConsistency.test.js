@@ -5,9 +5,11 @@ import https from 'https';
 import net from 'net';
 import fs from 'fs';
 import axios from '../../../index.js';
-import getDirectAgent from '../../../lib/helpers/getDirectAgent.js';
 import shouldBypassProxy from '../../../lib/helpers/shouldBypassProxy.js';
-import { __isNodeNativeEnvProxySupported as nativeProxySupported } from '../../../lib/adapters/http.js';
+import {
+  __getDirectAgent as getDirectAgent,
+  __isNodeNativeEnvProxySupported as nativeProxySupported,
+} from '../../../lib/adapters/http.js';
 
 function listen(server) {
   return new Promise(function (resolve) {

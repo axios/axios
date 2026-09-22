@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import platform from '../../lib/platform/index.js';
 import axios from '../../index.js';
+import createMultipartBody from '../../lib/core/createMultipartBody.js';
 import formDataToBlob from '../../lib/helpers/formDataToBlob.js';
 import estimateDataURLDecodedBytes from '../../lib/helpers/estimateDataURLDecodedBytes.js';
 
@@ -175,7 +176,13 @@ export default function formBodyLengthCases() {
     it('checks explicit boundary length as part of the exact body limit', async () => {
       const form = makeForm();
       const boundary = 'MiXeD-12345';
-      const size = formDataToBlob(form, Blob, Infinity, () => new Error('Too long'), boundary).size;
+      const size = createMultipartBody(
+        form,
+        Blob,
+        Infinity,
+        () => new Error('Too long'),
+        boundary
+      ).size;
       let calls = 0;
       const options = {
         adapter: 'fetch',
@@ -212,7 +219,7 @@ export default function formBodyLengthCases() {
     ['', 'a'.repeat(71), 'trailing ', 'line\nbreak'].forEach((boundary) => {
       it('rejects invalid boundary ' + JSON.stringify(boundary), () => {
         expect(() =>
-          formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'), boundary)
+          createMultipartBody(makeForm(), Blob, 4096, () => new Error('Too long'), boundary)
         ).toThrowError(expect.objectContaining({ code: 'ERR_BAD_OPTION_VALUE' }));
       });
     });
@@ -229,6 +236,47 @@ export default function formBodyLengthCases() {
       }
     };
 
+    it('serializes with supplied dependencies without selecting a random source', async () => {
+      let body;
+      withoutPlatformRandom(() => {
+        vi.stubGlobal('crypto', undefined);
+        const form = makeForm();
+        const limitError = new Error('Caller size limit');
+        body = formDataToBlob(form, Blob, Infinity, () => limitError, 'caller-boundary');
+        expect(() =>
+          formDataToBlob(form, Blob, body.size - 1, () => limitError, 'caller-boundary')
+        ).toThrow(limitError);
+      });
+      const decoded = await new Response(body).formData();
+      expect(decoded.get('message')).toBe('café\r\nsecond line');
+      expect(await decoded.get('file').text()).toBe('contents');
+    });
+
+    [
+      { input: 'Blob', code: 'ERR_NOT_SUPPORT' },
+      { input: 'boundary', code: 'ERR_BAD_OPTION_VALUE' },
+      { input: 'part size', code: 'ERR_BAD_REQUEST' },
+    ].forEach(({ input, code }) => {
+      it('maps generic ' + input + ' failures to request errors in core', () => {
+        const args = [makeForm(), Blob, Infinity, () => new Error('Too long'), 'caller-boundary'];
+        if (input === 'Blob') args[1] = null;
+        if (input === 'boundary') args[4] = '';
+        if (input === 'part size') args[0] = [['file', { size: NaN }]];
+        let error;
+        try {
+          formDataToBlob(...args);
+        } catch (caught) {
+          error = caught;
+        }
+        expect(error).toBeInstanceOf(TypeError);
+        expect(error.code).toBeUndefined();
+        expect(error.isAxiosError).toBeUndefined();
+        expect(() => createMultipartBody(...args)).toThrowError(
+          expect.objectContaining({ name: 'AxiosError', code, isAxiosError: true })
+        );
+      });
+    });
+
     it('uses Web Crypto for generated boundaries when no platform generator is present', () => {
       withoutPlatformRandom(() => {
         let entropy = 17;
@@ -238,7 +286,7 @@ export default function formBodyLengthCases() {
         });
         vi.stubGlobal('crypto', { getRandomValues });
         const generateType = () => {
-          const body = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
+          const body = createMultipartBody(makeForm(), Blob, 4096, () => new Error('Too long'));
           const match = /^multipart\/form-data; boundary=(axios-[a-z0-9'()+_,./:=?-]+)$/.exec(
             body.type
           );
@@ -258,9 +306,9 @@ export default function formBodyLengthCases() {
       withoutPlatformRandom(() => {
         vi.stubGlobal('crypto', undefined);
         expect(() =>
-          formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'))
+          createMultipartBody(makeForm(), Blob, 4096, () => new Error('Too long'))
         ).toThrowError(expect.objectContaining({ code: 'ERR_NOT_SUPPORT' }));
-        const explicit = formDataToBlob(
+        const explicit = createMultipartBody(
           makeForm(),
           Blob,
           4096,
@@ -276,8 +324,8 @@ export default function formBodyLengthCases() {
       () => {
         vi.stubGlobal('crypto', undefined);
         try {
-          const first = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
-          const second = formDataToBlob(makeForm(), Blob, 4096, () => new Error('Too long'));
+          const first = createMultipartBody(makeForm(), Blob, 4096, () => new Error('Too long'));
+          const second = createMultipartBody(makeForm(), Blob, 4096, () => new Error('Too long'));
           expect(first.type).toMatch(/^multipart\/form-data; boundary=axios-[a-f0-9]{36}$/);
           expect(second.type).not.toBe(first.type);
         } finally {
@@ -316,7 +364,7 @@ export default function formBodyLengthCases() {
             form.append('line\nname', 'café\n\r\r\n😀');
             form.append('upload', new Blob(['bytes']), '');
           }
-          const blob = formDataToBlob(form, Blob, Infinity, () => new Error('Too long'));
+          const blob = createMultipartBody(form, Blob, Infinity, () => new Error('Too long'));
           let constructions = 0;
           class CountedBlob extends Blob {
             constructor(parts, options) {
@@ -325,10 +373,15 @@ export default function formBodyLengthCases() {
             }
           }
           expect(() =>
-            formDataToBlob(form, CountedBlob, blob.size - 1, () => new Error('Too long'))
+            createMultipartBody(form, CountedBlob, blob.size - 1, () => new Error('Too long'))
           ).toThrow('Too long');
           expect(constructions).toBe(0);
-          const exact = formDataToBlob(form, CountedBlob, blob.size, () => new Error('Too long'));
+          const exact = createMultipartBody(
+            form,
+            CountedBlob,
+            blob.size,
+            () => new Error('Too long')
+          );
           expect(exact.size).toBe(blob.size);
           expect(constructions).toBe(1);
           const decoded = await new Response(exact).formData();

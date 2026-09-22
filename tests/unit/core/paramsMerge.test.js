@@ -102,25 +102,32 @@ describe('params merge', function () {
 
   it('merges and validates string-keyed params without symbol reflection', function () {
     const getOwnPropertySymbols = Object.getOwnPropertySymbols;
-    Object.getOwnPropertySymbols = undefined;
+    const params = { filter: { active: true }, list: [{ field: 'value' }] };
+    const circular = {};
+    circular.next = circular;
+    let merged;
+    let uri;
+    let circularError;
+
     try {
-      const params = { filter: { active: true }, list: [{ field: 'value' }] };
-      const merged = mergeConfig({}, { params });
-      assert.deepStrictEqual(merged.params, params);
-      assert.notStrictEqual(merged.params, params);
-      assert.strictEqual(
-        axios.getUri({ url: '/resource', params: { field: 'value' } }),
-        '/resource?field=value'
-      );
-      const circular = {};
-      circular.next = circular;
-      assert.throws(
-        () => mergeConfig({}, { params: { list: [circular] } }),
-        (error) => error.isAxiosError === true && error.code === 'ERR_BAD_OPTION_VALUE'
-      );
+      Object.getOwnPropertySymbols = undefined;
+      merged = mergeConfig({}, { params });
+      uri = axios.getUri({ url: '/resource', params: { field: 'value' } });
+      try {
+        mergeConfig({}, { params: { list: [circular] } });
+      } catch (error) {
+        circularError = error;
+      }
     } finally {
       Object.getOwnPropertySymbols = getOwnPropertySymbols;
     }
+
+    assert.deepStrictEqual(merged.params, params);
+    assert.notStrictEqual(merged.params, params);
+    assert.strictEqual(uri, '/resource?field=value');
+    assert.ok(circularError, 'Circular params should be rejected');
+    assert.strictEqual(circularError.isAxiosError, true);
+    assert.strictEqual(circularError.code, 'ERR_BAD_OPTION_VALUE');
   });
 
   it('ignores symbols whose proxy descriptor is absent', function () {

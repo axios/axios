@@ -31,6 +31,8 @@ function nativeGet(target, agent) {
   });
 }
 
+// Each test configures proxyEnv on its Agent, which works without enabling
+// --use-env-proxy at startup. Match the implementation's capability gate.
 var nativeProxySupported =
   process.allowedNodeEnvironmentFlags && process.allowedNodeEnvironmentFlags.has('--use-env-proxy');
 
@@ -541,6 +543,7 @@ describe('direct agent lifecycle', function () {
           proxy: false,
         });
         assert.strictEqual(response.data, 'origin');
+        assert.notStrictEqual(response.request.agent, agent);
       } finally {
         agent.destroy();
         await stopHTTPServer(origin);

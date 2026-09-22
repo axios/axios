@@ -36,27 +36,30 @@ function convertFields(entries) {
   return formDataToJSON(fields);
 }
 
-function loadLegacyModule(filename, overrides) {
+function loadLegacyModule(filename, overrides, sharedContext) {
   var localRequire = createRequire(filename);
-  var context = vm.createContext({
-    module: {exports: {}},
-    require: function(name) {
-      return overrides && Object.prototype.hasOwnProperty.call(overrides, name) ?
-        overrides[name] : localRequire(name);
-    }
-  });
+  var context = sharedContext || vm.createContext({});
+  context.module = {exports: {}};
+  context.require = function(name) {
+    return overrides && Object.prototype.hasOwnProperty.call(overrides, name) ?
+      overrides[name] : localRequire(name);
+  };
+  if (!sharedContext) {
+    vm.runInContext([
+      'Number.isSafeInteger = Number.isInteger = Number.isFinite = undefined;',
+      'Set = WeakMap = undefined;',
+      'var getNames = Object.getOwnPropertyNames;',
+      'var getPrototype = Object.getPrototypeOf;',
+      'function assertObject(value) {',
+      '  if (value === null || (typeof value !== "object" && typeof value !== "function")) {',
+      '    throw new TypeError("Expected an object");',
+      '  }',
+      '}',
+      'Object.getOwnPropertyNames = function(value) { assertObject(value); return getNames(value); };',
+      'Object.getPrototypeOf = function(value) { assertObject(value); return getPrototype(value); };'
+    ].join('\n'), context);
+  }
   vm.runInContext([
-    'Number.isSafeInteger = Number.isInteger = Number.isFinite = undefined;',
-    'Set = WeakMap = undefined;',
-    'var getNames = Object.getOwnPropertyNames;',
-    'var getPrototype = Object.getPrototypeOf;',
-    'function assertObject(value) {',
-    '  if (value === null || (typeof value !== "object" && typeof value !== "function")) {',
-    '    throw new TypeError("Expected an object");',
-    '  }',
-    '}',
-    'Object.getOwnPropertyNames = function(value) { assertObject(value); return getNames(value); };',
-    'Object.getPrototypeOf = function(value) { assertObject(value); return getPrototype(value); };',
     '(function(module, require) {',
     fs.readFileSync(filename, 'utf8'),
     '})(module, require);'
@@ -180,6 +183,56 @@ describe('indexed multipart fields', function () {
 
       assert.strictEqual(utils.toArray(files), null);
       assert.strictEqual(reads, 0);
+    });
+  });
+
+  [0, 1].forEach(function(index) {
+    it('serializes indexed values when inherited slot ' + index + ' is read-only', function() {
+      var loaded = loadLegacyModule(path.resolve(__dirname, '../../../lib/utils.js'));
+      vm.runInContext([
+        'var descriptor = Object.create(null);',
+        'descriptor.value = "shared"; descriptor.writable = false; descriptor.configurable = true;',
+        'Object.defineProperty(Object.prototype, ' + index + ', descriptor);',
+        'var getterDescriptor = Object.create(null);',
+        'getterDescriptor.value = "not an accessor"; getterDescriptor.configurable = true;',
+        'Object.defineProperty(Object.prototype, "get", getterDescriptor);'
+      ].join('\n'), loaded.context);
+      var legacyUtils = loaded.exports;
+      var legacyToFormData = loadLegacyModule(
+        path.resolve(__dirname, '../../../lib/helpers/toFormData.js'),
+        {'../utils': legacyUtils},
+        loaded.context
+      ).exports;
+      var prototype = Object.create(null);
+      Object.defineProperty(prototype, '1', {value: 'second'});
+      var values = Object.create(prototype);
+      values[0] = 'first';
+      values.length = 2;
+      var files = {0: 'first', 1: 'second', length: 2};
+      Object.defineProperty(files, Symbol.toStringTag, {value: 'FileList'});
+
+      [values, files].forEach(function(collection) {
+        var result = legacyUtils.toArray(collection);
+        assert.deepStrictEqual(JSON.parse(JSON.stringify(result)), ['first', 'second']);
+        assert.deepStrictEqual(Object.getOwnPropertyDescriptor(result, '0'), {
+          value: 'first', writable: true, enumerable: true, configurable: true
+        });
+        assert.deepStrictEqual(Object.getOwnPropertyDescriptor(result, '1'), {
+          value: 'second', writable: true, enumerable: true, configurable: true
+        });
+
+        // Both library modules share the affected realm; the recorder uses
+        // the clean host realm so its own storage does not mask a failure.
+        var entries = [];
+        legacyToFormData({'items[]': collection, 'metadata{}': {nested: {value: 'kept'}}}, {
+          append: function(name, value) { entries.push([name, value]); }
+        });
+        assert.deepStrictEqual(entries, [
+          ['items[]', 'first'], ['items[]', 'second'], ['metadata{}', '{"nested":{"value":"kept"}}']
+        ]);
+      });
+      assert.strictEqual(vm.runInContext('Object.prototype[' + index + ']', loaded.context), 'shared');
+      assert.strictEqual(legacyUtils.toArray(vm.runInContext('({length: 2})', loaded.context)), null);
     });
   });
 
@@ -329,7 +382,7 @@ describe('indexed multipart fields', function () {
     });
   });
 
-  it('rejects unsupported array lengths without reading indexed values', function () {
+  it('rejects incomplete or unrepresentable array-like inputs without reading indexes', function () {
     [100000, 4294967296, 9007199254740991].forEach(function (length) {
       var reads = 0;
       var values = { length: length, label: 'x' };

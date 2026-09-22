@@ -85,7 +85,7 @@ describe('indexed multipart fields', function () {
       Object.defineProperty(files, Symbol.toStringTag, {value: 'FileList'});
       Object.defineProperties(files, {
         0: {value: 'first'},
-        1: {value: 'second'},
+        1: {value: 'second', configurable: true},
         length: {value: 2}
       });
       var loaded = loadLegacyModule(path.resolve(__dirname, '../../../lib/utils.js'));
@@ -126,8 +126,47 @@ describe('indexed multipart fields', function () {
       });
       var transformed = legacyDefaults.transformRequest[0].call({env: {FormData: FormRecorder}}, files, {});
       assert.deepStrictEqual(transformed.parts, [['files[]', 'first'], ['files[]', 'second']]);
+      delete files[1];
+      assert.strictEqual(legacyUtils.toArray(files), null);
       assert.strictEqual(loaded.context.reflectionCalls, 0);
     });
+  });
+
+  ['first', 'last', 'undefined', 'null'].forEach(function(missing) {
+    it('does not unwrap incomplete FileList values (' + missing + ')', function() {
+      var files = {0: 'first', 1: 'second', length: 2};
+      Object.defineProperty(files, Symbol.toStringTag, {value: 'FileList'});
+      if (missing === 'first' || missing === 'last') {
+        delete files[missing === 'first' ? 0 : 1];
+      } else {
+        files[1] = missing === 'null' ? null : undefined;
+      }
+
+      assert.strictEqual(utils.toArray(files), null);
+      var entries = [];
+      toFormData({'files[]': files}, {
+        append: function(name, value) { entries.push([name, value]); }
+      });
+      // Keep the normal unconverted-value path instead of emitting a partial list.
+      assert.strictEqual(entries.length, 1);
+      assert.strictEqual(entries[0][0], 'files[]');
+      assert.strictEqual(entries[0][1], files);
+    });
+  });
+
+  it('reads each FileList entry once and accepts empty collections', function() {
+    var reads = 0;
+    var files = {length: 1};
+    Object.defineProperty(files, Symbol.toStringTag, {value: 'FileList'});
+    Object.defineProperty(files, '0', {
+      get: function() { reads++; return reads === 1 ? 'first' : undefined; }
+    });
+
+    assert.deepStrictEqual(utils.toArray(files), ['first']);
+    assert.strictEqual(reads, 1);
+    files.length = 0;
+    assert.deepStrictEqual(utils.toArray(files), []);
+    assert.strictEqual(reads, 1);
   });
 
   it('validates FileList lengths before reading their indexed values', function() {

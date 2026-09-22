@@ -6,8 +6,12 @@ export function runModuleInChildProcess(source, options) {
       process.execPath,
       ['--input-type=module', '-e', source],
       Object.assign({ timeout: 3000, killSignal: 'SIGKILL' }, options),
-      function (error, stdout) {
-        if (error) return reject(error);
+      function (error, stdout, stderr) {
+        if (error) {
+          error.stdout = stdout;
+          error.stderr = stderr;
+          return reject(error);
+        }
         resolve(stdout);
       }
     );

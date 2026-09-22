@@ -128,6 +128,46 @@ describe('params merge', function () {
   });
 
   ['constructor', 'prototype', '__proto__'].forEach(function (key) {
+    it('preserves retained ' + key + ' accessors without reading them', async function () {
+      const element = { field: 'value' };
+      let reads = 0;
+      const get = function () {
+        reads++;
+        throw new Error('Reserved accessor must not run during merging');
+      };
+      Object.defineProperty(element, key, { get, enumerable: true });
+      const params = { list: [element] };
+      let serializerCalls = 0;
+      const paramsSerializer = function (merged) {
+        serializerCalls++;
+        assert.strictEqual(merged.list[0], element);
+        assert.strictEqual(Object.getOwnPropertyDescriptor(merged.list[0], key).get, get);
+        assert.strictEqual(reads, 0);
+        return 'field=' + merged.list[0].field;
+      };
+
+      assert.strictEqual(
+        axios.getUri({ url: '/resource', params, paramsSerializer }),
+        '/resource?field=value'
+      );
+      const response = await axios.get('/resource', {
+        params,
+        paramsSerializer,
+        adapter: function (config) {
+          return Promise.resolve({
+            data: buildURL(config.url, config.params, config.paramsSerializer),
+            status: 200,
+            headers: {},
+            config,
+          });
+        },
+      });
+      assert.strictEqual(response.data, '/resource?field=value');
+      assert.strictEqual(serializerCalls, 2);
+      assert.strictEqual(reads, 0);
+      assert.strictEqual(Object.getOwnPropertyDescriptor(element, key).get, get);
+    });
+
     it('rejects retained ' + key + ' cycles before serializers or adapters run', async function () {
       const element = {};
       Object.defineProperty(element, key, { value: element, enumerable: true });

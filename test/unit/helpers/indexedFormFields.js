@@ -111,6 +111,69 @@ describe('indexed multipart fields', function () {
     assert.strictEqual(utils.toArray(values), null);
   });
 
+  it('unwraps own and hidden indexes inherited from a null-prototype parent', function() {
+    var prototype = Object.create(null);
+    Object.defineProperty(prototype, '1', {value: 'second'});
+    prototype[2] = 'third';
+    var values = Object.create(prototype);
+    values[0] = 'first';
+    values.length = 3;
+
+    assert.deepStrictEqual(utils.toArray(values), ['first', 'second', 'third']);
+    assert.deepStrictEqual(multipartEntries(values), [
+      ['items[]', 'first'], ['items[]', 'second'], ['items[]', 'third']
+    ]);
+  });
+
+  it('unwraps indexes across multiple levels ending in a null prototype', function() {
+    var terminal = Object.create(null);
+    Object.defineProperty(terminal, '2', {value: 'third'});
+    var middle = Object.create(terminal);
+    Object.defineProperty(middle, '1', {value: 'second'});
+    var values = Object.create(middle);
+    values[0] = 'first';
+    values.length = 3;
+
+    assert.deepStrictEqual(utils.toArray(values), ['first', 'second', 'third']);
+    assert.deepStrictEqual(multipartEntries(values), [
+      ['items[]', 'first'], ['items[]', 'second'], ['items[]', 'third']
+    ]);
+  });
+
+  it('does not invoke an inherited constructor accessor while collecting indexes', function() {
+    var reads = 0;
+    var prototype = Object.create(null);
+    Object.defineProperty(prototype, 'constructor', {
+      get: function() { reads++; return Object; }
+    });
+    prototype[0] = 'first';
+    var values = Object.create(prototype);
+    values.length = 1;
+
+    assert.deepStrictEqual(utils.toArray(values), ['first']);
+    assert.strictEqual(reads, 0);
+  });
+
+  it('unwraps indexes inherited from a foreign null-prototype parent', function() {
+    var values = vm.runInNewContext([
+      'var prototype = Object.create(null);',
+      'Object.defineProperty(prototype, "1", {value: "second"});',
+      'var values = Object.create(prototype);',
+      'values[0] = "first"; values.length = 2; values;'
+    ].join('\n'));
+
+    assert.deepStrictEqual(utils.toArray(values), ['first', 'second']);
+  });
+
+  it('does not count indexes inherited from a foreign Object.prototype', function() {
+    var values = vm.runInNewContext([
+      'Object.defineProperty(Object.prototype, "0", {value: "shared"});',
+      '({length: 1});'
+    ].join('\n'));
+
+    assert.strictEqual(utils.toArray(values), null);
+  });
+
   it('unwraps native array-like values and inherited length accessors', function () {
     assert.deepStrictEqual(utils.toArray(new Uint8Array([1, 2])), [1, 2]);
     assert.deepStrictEqual(

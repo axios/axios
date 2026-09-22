@@ -29,6 +29,19 @@ describe('indexed multipart fields', function() {
     expect(form.getAll('items[]')).toEqual(['first', 'second']);
   });
 
+  it('unwraps hidden indexes across a null-prototype chain', function() {
+    var terminal = Object.create(null);
+    Object.defineProperty(terminal, '2', {value: 'third'});
+    var middle = Object.create(terminal);
+    Object.defineProperty(middle, '1', {value: 'second'});
+    var values = Object.create(middle);
+    values[0] = 'first';
+    values.length = 3;
+
+    var form = toFormData({'items[]': values}, new FormData());
+    expect(form.getAll('items[]')).toEqual(['first', 'second', 'third']);
+  });
+
   it('keeps unrelated fields instead of treating them as indexes', function() {
     var form = toFormData({'items[]': {length: 1, label: 'x'}}, new FormData());
     expect(form.get('items[length]')).toBe('1');

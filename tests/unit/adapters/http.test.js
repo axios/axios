@@ -173,10 +173,16 @@ describe('supports http with nodejs', () => {
     );
 
     try {
-      for (const maxRedirects of [undefined, 0]) {
+      for (const [timeout, maxRedirects] of [
+        [-1, undefined],
+        [-1, 0],
+        [-0.5, undefined],
+        [-0.5, 0],
+        ['-1', undefined],
+      ]) {
         await assert.rejects(
           axios.get(`http://localhost:${server.address().port}`, {
-            timeout: -1,
+            timeout,
             maxRedirects,
           }),
           (error) => {

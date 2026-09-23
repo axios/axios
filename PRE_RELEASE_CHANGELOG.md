@@ -23,6 +23,7 @@
 - **Request error stacks:** Preserved original request failures when custom `Error` stack instrumentation returns non-string data or throws during optional stack decoration. (**#11109**, closes **#11108**)
 - **Fetch adapter - cache mode:** Omitted the implicit `cache: 'default'` when a runtime rejects it but accepts a request without a cache option, restoring requests on Cloudflare Workers, including older compatibility dates and `cache_option_disabled` configurations that reject every explicit cache mode. Supporting runtimes retain the explicit default to protect against `Object.prototype` pollution, and caller-supplied cache options remain unchanged. (**#11194**, closes **#11192**)
 - **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape, interceptor iteration behavior, and interceptor ID identity across registrations. (**#11070**)
+- **Header rewrite matchers:** `AxiosHeaders#set` and the `set<Header>` accessors now honor a function, string, or RegExp `rewrite` argument as documented, overwriting an existing header only when the matcher accepts its current value. Previously any such matcher was treated like `false`, so the header was never overwritten and a function was never called.
 
 ## Documentation
 

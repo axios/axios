@@ -11,6 +11,7 @@ import {
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import utils from '../../../lib/utils.js';
+import bind from '../../../lib/helpers/bind.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
@@ -137,6 +138,550 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       await stopHTTPServer(server);
     }
   });
+
+  it('should restore Symbol.iterator immediately so in-flight requests and never-settling fetches do not leave it deleted', async () => {
+    let customFetchCalled = false;
+    const customFetch = async () => {
+      customFetchCalled = true;
+      return new Promise(() => {});
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['X-Injected', 'yes'];
+      };
+
+      fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: customFetch,
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      assert.strictEqual(customFetchCalled, true);
+      // Verify that even though the fetch request is still in-flight / unsettled,
+      // Symbol.iterator has already been restored on Object.prototype.
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should restore Symbol.iterator when fetch rejects or throws', async () => {
+    const customFetch = async () => {
+      throw new Error('network failure');
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['X-Injected', 'yes'];
+      };
+
+      await assert.rejects(async () => {
+        await fetchAxios.get('http://localhost/', {
+          env: {
+            fetch: customFetch,
+          },
+        });
+      });
+
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should preserve Symbol.iterator across concurrent requests', async () => {
+    const server = await startHTTPServer((req, res) => {
+      setTimeout(() => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            auth: req.headers.authorization,
+          })
+        );
+      }, 50);
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['Authorization', 'Bearer INJECTED'];
+      };
+
+      const reqs = Array.from({ length: 5 }, (_, i) =>
+        fetchAxios.get(`http://localhost:${server.address().port}/`, {
+          headers: {
+            Authorization: `Bearer TOKEN_${i}`,
+          },
+        })
+      );
+
+      const responses = await Promise.all(reqs);
+
+      responses.forEach((res, i) => {
+        assert.strictEqual(res.data.auth, `Bearer TOKEN_${i}`);
+      });
+
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should allow custom synchronous env.fetch to access Object.prototype[Symbol.iterator]', async () => {
+    let customFetchRan = false;
+    const customFetch = async () => {
+      customFetchRan = true;
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: customFetch,
+        },
+      });
+
+      assert.strictEqual(customFetchRan, true);
+      assert.deepStrictEqual(data, { ok: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should restore Symbol.iterator when Request constructor throws under custom env.fetch', async () => {
+    const throwingRequest = function () {
+      throw new Error('Request constructor threw');
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['X-Injected', 'yes'];
+      };
+
+      await assert.rejects(async () => {
+        await fetchAxios.get('http://localhost/', {
+          env: {
+            Request: throwingRequest,
+            fetch: async () => new Response('ok'),
+          },
+        });
+      });
+
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should handle non-configurable Symbol.iterator on Object.prototype without throwing during delete', async () => {
+    const { execFileSync } = await import('child_process');
+    const script = `
+      import axios from './index.js';
+      import assert from 'assert';
+
+      Object.defineProperty(Object.prototype, Symbol.iterator, {
+        value: function* () { yield ['custom', 'entry']; },
+        configurable: false,
+        writable: true,
+      });
+
+      const { data } = await axios.get('http://localhost/', {
+        adapter: 'fetch',
+        env: {
+          fetch: async () => new Response('{"ok":true}', {
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        },
+      });
+
+      assert.deepStrictEqual(data, { ok: true });
+    `;
+
+    execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: process.cwd(),
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+  });
+
+  it('should allow wrapped global fetch configured in env.fetch to see restored Symbol.iterator', async () => {
+    let wrapperRan = false;
+    const wrappedFetch = async (input, init) => {
+      wrapperRan = true;
+      const plainObj = {};
+      const entries = [...plainObj];
+      assert.strictEqual(entries.length, 1);
+      return new Response('{"status":"ok"}', {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          Request,
+          fetch: wrappedFetch,
+        },
+      });
+
+      assert.strictEqual(wrapperRan, true);
+      assert.deepStrictEqual(data, { status: 'ok' });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should restore Symbol.iterator before calling a wrapper that replaced globalThis.fetch', async () => {
+    let wrapperRan = false;
+    const originalFetch = globalThis.fetch;
+    const wrappedFetch = async (input, init) => {
+      wrapperRan = true;
+      const plainObj = {};
+      const entries = [...plainObj];
+      assert.strictEqual(entries.length, 1);
+      return new Response('{"wrapper":true}', {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      globalThis.fetch = wrappedFetch;
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          Request,
+          fetch: globalThis.fetch,
+        },
+      });
+
+      assert.strictEqual(wrapperRan, true);
+      assert.deepStrictEqual(data, { wrapper: true });
+    } finally {
+      globalThis.fetch = originalFetch;
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should allow custom Request constructor to access Object.prototype[Symbol.iterator]', async () => {
+    let customRequestRan = false;
+    class CustomRequest {
+      constructor(url, init) {
+        customRequestRan = true;
+        const plainObj = {};
+        const entries = [...plainObj];
+        assert.strictEqual(entries.length, 1);
+        this.url = url;
+        this.headers = new Headers(init?.headers);
+      }
+    }
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          Request: CustomRequest,
+          fetch: async () => new Response('{"customReq":true}', {
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        },
+      });
+
+      assert.strictEqual(customRequestRan, true);
+      assert.deepStrictEqual(data, { customReq: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should restore Symbol.iterator before calling a wrapper that replaced globalThis.fetch without env', async () => {
+    let wrapperRan = false;
+    const originalFetch = globalThis.fetch;
+    const wrappedFetch = async () => {
+      wrapperRan = true;
+      const plainObj = {};
+      const entries = [...plainObj];
+      assert.strictEqual(entries.length, 1);
+      return new Response('{"globalWrapper":true}', {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      globalThis.fetch = wrappedFetch;
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/');
+
+      assert.strictEqual(wrapperRan, true);
+      assert.deepStrictEqual(data, { globalWrapper: true });
+    } finally {
+      globalThis.fetch = originalFetch;
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should guard against Object.prototype[Symbol.iterator] pollution when explicitly configured with env.fetch', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          auth: req.headers.authorization,
+        })
+      );
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['Authorization', 'Bearer INJECTED'];
+      };
+
+      const res = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+        headers: {
+          Authorization: 'Bearer VALID_TOKEN',
+        },
+        env: {
+          fetch: globalThis.fetch,
+        },
+      });
+
+      assert.strictEqual(res.data.auth, 'Bearer VALID_TOKEN');
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should allow bound custom fetch in env.fetch to access Object.prototype[Symbol.iterator]', async () => {
+    let boundFetchRan = false;
+    const customFetch = async function () {
+      boundFetchRan = true;
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ bound: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const boundFetch = bind(customFetch, null);
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: boundFetch,
+        },
+      });
+
+      assert.strictEqual(boundFetchRan, true);
+      assert.deepStrictEqual(data, { bound: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should allow custom fetch named fetch mentioning undici to access Object.prototype[Symbol.iterator]', async () => {
+    let customRan = false;
+    const customFetchWithUndici = async function fetch() {
+      customRan = true;
+      // undici comment
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ customUndici: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: customFetchWithUndici,
+        },
+      });
+
+      assert.strictEqual(customRan, true);
+      assert.deepStrictEqual(data, { customUndici: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should allow proxied custom fetch named fetch to access Object.prototype[Symbol.iterator]', async () => {
+    let proxyRan = false;
+    const baseFetch = async function fetch() {
+      proxyRan = true;
+      const plainObj = {};
+      const items = [...plainObj];
+      assert.strictEqual(items.length, 1);
+      return new Response(JSON.stringify({ proxyFetch: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const proxyFetch = new Proxy(baseFetch, {});
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: proxyFetch,
+        },
+      });
+
+      assert.strictEqual(proxyRan, true);
+      assert.deepStrictEqual(data, { proxyFetch: true });
+      assert.strictEqual(Object.prototype.hasOwnProperty(Symbol.iterator), true);
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
+  it('should not strip Symbol.iterator if a custom wrapper was installed on globalThis.fetch before adapter evaluation', async () => {
+    const { execFileSync } = await import('child_process');
+    const entryUrl = new URL('../../../index.js', import.meta.url).href;
+    const script = `
+      import assert from 'assert';
+
+      let wrapperRan = false;
+      globalThis.fetch = async () => {
+        wrapperRan = true;
+        const plainObj = {};
+        const entries = [...plainObj];
+        assert.strictEqual(entries.length, 1);
+        return new Response('{"preImportWrapper":true}', {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      };
+
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { default: axios } = await import(${JSON.stringify(entryUrl)});
+      const { data } = await axios.get('http://localhost/', { adapter: 'fetch' });
+
+      assert.strictEqual(wrapperRan, true);
+      assert.deepStrictEqual(data, { preImportWrapper: true });
+    `;
+
+    execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+  });
+
+  it('should not strip Symbol.iterator if a Proxy wrapper was installed on globalThis.fetch before adapter evaluation', async () => {
+    const { execFileSync } = await import('child_process');
+    const entryUrl = new URL('../../../index.js', import.meta.url).href;
+    const script = `
+      import assert from 'assert';
+
+      let proxyRan = false;
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = new Proxy(originalFetch, {
+        apply() {
+          proxyRan = true;
+          const plainObj = {};
+          const entries = [...plainObj];
+          assert.strictEqual(entries.length, 1);
+          return Promise.resolve(
+            new Response('{"proxyPreImport":true}', {
+              headers: { 'Content-Type': 'application/json' },
+            })
+          );
+        },
+      });
+
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { default: axios } = await import(${JSON.stringify(entryUrl)});
+      const { data } = await axios.get('http://localhost/', { adapter: 'fetch' });
+
+      assert.strictEqual(proxyRan, true);
+      assert.deepStrictEqual(data, { proxyPreImport: true });
+    `;
+
+    execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+  });
+
+  it('should not strip Symbol.iterator if a Proxy wrapper around fetch is passed via env.fetch', async () => {
+    let proxyRan = false;
+    const proxyFetch = new Proxy(globalThis.fetch, {
+      apply() {
+        proxyRan = true;
+        const plainObj = {};
+        const entries = [...plainObj];
+        assert.strictEqual(entries.length, 1);
+        return Promise.resolve(
+          new Response('{"proxyEnv":true}', {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      },
+    });
+
+    try {
+      Object.prototype[Symbol.iterator] = function* () {
+        yield ['custom', 'entry'];
+      };
+
+      const { data } = await fetchAxios.get('http://localhost/', {
+        env: {
+          fetch: proxyFetch,
+        },
+      });
+
+      assert.strictEqual(proxyRan, true);
+      assert.deepStrictEqual(data, { proxyEnv: true });
+    } finally {
+      delete Object.prototype[Symbol.iterator];
+    }
+  });
+
 
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(

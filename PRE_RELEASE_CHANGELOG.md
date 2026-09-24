@@ -9,6 +9,7 @@
 
 ## Bug Fixes
 
+- **Fetch adapter - prototype pollution header injection:** `Object.prototype[Symbol.iterator]` pollution can no longer inject or override request headers. Node.js/undici's internal dispatch creates a plain `{}` for the merged headers and iterates it with `for...of`; a polluted inherited iterator would replace user-supplied values such as `Authorization`. The fetch adapter now detects an own `Symbol.iterator` on `Object.prototype`, temporarily removes it during synchronous Request construction and fetch dispatch, and restores it immediately in a `finally` block so concurrent operations and long-running requests do not observe altered iteration.
 - **Fetch response size errors:** Preserve `ERR_BAD_RESPONSE` and the current request/config when a fetch response exceeds `maxContentLength` and the runtime wraps the stream failure, including when it drops the original cause. Clarify when custom `env.Response` constructors must accept tracked streams at runtime while preserving existing response limits and constructor signatures. (**#11179**)
 - **TypeScript declarations:** Exposed the branded response-default marker type so consumers can emit declarations for helpers that forward Axios request response generics. (**#11116**)
 - **Method-specific headers:** Added default header buckets for all supported methods and removed those structural buckets during request preparation, so `OPTIONS`, `PURGE`, `LINK`, `UNLINK`, and `QUERY` defaults apply only to matching requests instead of leaking as literal headers. (**#11096**)

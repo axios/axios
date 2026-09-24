@@ -280,6 +280,91 @@ describe('AxiosHeaders', () => {
     assert.strictEqual(headers.get('Get'), 'bar');
   });
 
+  describe('__proto__ as a header name', () => {
+    // `__proto__` is a valid field name, but it is the one name the uppercase
+    // mapping above cannot cover: it is inherited from Object.prototype rather
+    // than declared on AxiosHeaders.prototype, so a plain write reaches the
+    // Object.prototype setter instead of creating a header. It is stored under
+    // the same kind of case variant `set` and `constructor` already use.
+    it('should store it like any other header name', () => {
+      const headers = new AxiosHeaders(
+        new Map([
+          ['__proto__', 'foo'],
+          ['x-other', 'bar'],
+        ])
+      );
+
+      assert.strictEqual(headers.get('__proto__'), 'foo');
+      assert.strictEqual(headers.get('__PROTO__'), 'foo');
+      assert.strictEqual(headers.has('__proto__'), true);
+      assert.strictEqual(headers.get('x-other'), 'bar');
+      assert.deepStrictEqual(Object.keys(headers).sort(), ['__Proto__', 'x-other']);
+    });
+
+    it('should not create an own __proto__ slot for Object.assign to copy', () => {
+      const headers = new AxiosHeaders([
+        ['__proto__', 'a'],
+        ['__proto__', 'b'],
+        ['x-other', 'bar'],
+      ]);
+
+      const assigned = Object.assign({}, headers);
+      const spread = { ...headers };
+
+      assert.strictEqual(Object.getPrototypeOf(assigned), Object.prototype);
+      assert.strictEqual(Object.getPrototypeOf(spread), Object.prototype);
+      assert.strictEqual(assigned.length, undefined);
+    });
+
+    it('should accept a rewrite on a sealed instance', () => {
+      const headers = new AxiosHeaders({ 'x-other': 'bar' });
+
+      headers.set('__proto__', 'foo');
+      Object.seal(headers);
+
+      headers.set('__proto__', 'baz', true);
+
+      assert.strictEqual(headers.get('__proto__'), 'baz');
+    });
+
+    it('should keep the instance usable when the value is an array', () => {
+      const headers = new AxiosHeaders([
+        ['__proto__', 'a'],
+        ['__proto__', 'b'],
+        ['x-other', 'bar'],
+      ]);
+
+      assert.strictEqual(Object.getPrototypeOf(headers), AxiosHeaders.prototype);
+      assert.deepStrictEqual(headers.get('__proto__'), ['a', 'b']);
+      assert.strictEqual(headers.get('x-other'), 'bar');
+    });
+
+    it('should delete it', () => {
+      const headers = new AxiosHeaders(new Map([['__proto__', 'foo']]));
+
+      assert.strictEqual(headers.delete('__proto__'), true);
+      assert.strictEqual(headers.has('__proto__'), false);
+      assert.deepStrictEqual(Object.keys(headers.toJSON()), []);
+    });
+
+    it('should survive normalize()', () => {
+      const headers = new AxiosHeaders(new Map([['__proto__', 'foo']]));
+
+      headers.normalize();
+      assert.strictEqual(headers.get('__proto__'), 'foo');
+
+      headers.normalize(true);
+      assert.strictEqual(headers.get('__proto__'), 'foo');
+    });
+
+    it('should not leak into other instances', () => {
+      new AxiosHeaders(new Map([['__proto__', 'foo']]));
+
+      assert.strictEqual(new AxiosHeaders().get('__proto__'), undefined);
+      assert.strictEqual({}.foo, undefined);
+    });
+  });
+
   describe('get', () => {
     describe('filter', () => {
       it('should support RegExp', () => {

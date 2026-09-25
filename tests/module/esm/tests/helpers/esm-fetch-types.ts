@@ -27,6 +27,15 @@ class StreamCompatibleResponse extends Response {
 axios.create({ adapter: 'fetch', env: { Response: LegacyResponse } });
 axios.create({ env: { Response: StreamCompatibleResponse } });
 
+// Fetch environment constructors can be disabled explicitly.
+axios.create({
+  adapter: 'fetch',
+  env: {
+    Request: null,
+    Response: null,
+  },
+});
+
 type ResponseConstructor = NonNullable<NonNullable<AxiosRequestConfig['env']>['Response']>;
 const ResponseOverride: ResponseConstructor = LegacyResponse;
 

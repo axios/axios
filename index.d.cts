@@ -564,7 +564,7 @@ declare namespace axios {
     env?: {
       FormData?: new (...args: any[]) => object;
       fetch?: (input: URL | Request | string, init?: RequestInit) => Promise<Response>;
-      Request?: new (input: URL | Request | string, init?: RequestInit) => Request;
+      Request?: (new (input: URL | Request | string, init?: RequestInit) => Request) | null;
       /**
        * Custom Response constructor for the fetch adapter.
        * When response-body streaming is supported, must also accept
@@ -573,10 +573,10 @@ declare namespace axios {
        * `responseType: 'stream'` or `'response'`.
        * The body parameter retains its legacy type for compatibility.
        */
-      Response?: new (
+      Response?: (new (
         body?: ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParams | string | null,
         init?: ResponseInit
-      ) => Response;
+      ) => Response) | null;
     };
     formSerializer?: FormSerializerOptions;
     family?: AddressFamily;

@@ -208,3 +208,54 @@ describe('helpers::encode', () => {
     expect(encode('a:b$c,d e')).toEqual('a:b$c,d+e');
   });
 });
+describe('helpers::buildURL arrayFormat', () => {
+  const params = { id: [1, 2, 3] };
+
+  it('defaults to bracket form, unchanged from before the option existed', () => {
+    expect(buildURL('/x', params)).toEqual('/x?id%5B%5D=1&id%5B%5D=2&id%5B%5D=3');
+  });
+
+  it('serializes each named format', () => {
+    expect(buildURL('/x', params, { arrayFormat: 'brackets' })).toEqual(
+      '/x?id%5B%5D=1&id%5B%5D=2&id%5B%5D=3'
+    );
+    expect(buildURL('/x', params, { arrayFormat: 'indices' })).toEqual(
+      '/x?id%5B0%5D=1&id%5B1%5D=2&id%5B2%5D=3'
+    );
+    expect(buildURL('/x', params, { arrayFormat: 'repeat' })).toEqual('/x?id=1&id=2&id=3');
+    expect(buildURL('/x', params, { arrayFormat: 'comma' })).toEqual('/x?id=1,2,3');
+  });
+
+  it('keeps the legacy indexes option working identically', () => {
+    expect(buildURL('/x', params, { indexes: true })).toEqual(
+      buildURL('/x', params, { arrayFormat: 'indices' })
+    );
+    expect(buildURL('/x', params, { indexes: null })).toEqual(
+      buildURL('/x', params, { arrayFormat: 'repeat' })
+    );
+    expect(buildURL('/x', params, { indexes: false })).toEqual(
+      buildURL('/x', params, { arrayFormat: 'brackets' })
+    );
+  });
+
+  it('lets arrayFormat win over indexes when both are given', () => {
+    expect(buildURL('/x', params, { indexes: true, arrayFormat: 'comma' })).toEqual('/x?id=1,2,3');
+  });
+
+  it('omits an empty array and skips null members in comma form', () => {
+    expect(buildURL('/x', { id: [] }, { arrayFormat: 'comma' })).toEqual('/x');
+    expect(buildURL('/x', { id: [1, null, undefined, 3] }, { arrayFormat: 'comma' })).toEqual(
+      '/x?id=1,3'
+    );
+  });
+
+  it('leaves non-array params alone', () => {
+    expect(buildURL('/x', { a: 'b', id: [1, 2] }, { arrayFormat: 'comma' })).toEqual(
+      '/x?a=b&id=1,2'
+    );
+  });
+
+  it('rejects an unknown format rather than silently defaulting', () => {
+    expect(() => buildURL('/x', params, { arrayFormat: 'nope' })).toThrow(/arrayFormat must be one of/);
+  });
+});

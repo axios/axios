@@ -24,6 +24,10 @@
 - **Fetch adapter - cache mode:** Omitted the implicit `cache: 'default'` when a runtime rejects it but accepts a request without a cache option, restoring requests on Cloudflare Workers, including older compatibility dates and `cache_option_disabled` configurations that reject every explicit cache mode. Supporting runtimes retain the explicit default to protect against `Object.prototype` pollution, and caller-supplied cache options remain unchanged. (**#11194**, closes **#11192**)
 - **Interceptor storage:** Removed trailing interceptor tombstones after ejection so repeated register-then-eject cycles no longer grow the handlers array, while preserving its public array shape, interceptor iteration behavior, and interceptor ID identity across registrations. (**#11070**)
 
+## Performance
+
+- **Repeated FormData fields:** Accumulate repeated values in place when converting FormData to JSON, avoiding repeated copies of the growing output array while preserving field order and file values.
+
 ## Documentation
 
 - **Global search:** Added localized, private, in-browser full-text search for the active documentation language, with fuzzy and prefix matching.

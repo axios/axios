@@ -409,7 +409,7 @@ declare namespace axios {
 
   type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
-  type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata';
+  type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'ndjson' | 'formdata';
 
   type UppercaseResponseEncoding =
     | 'ASCII'

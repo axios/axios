@@ -30,6 +30,32 @@ const fetchAxios = axios.create({
 
 const getFetchSignal = (input, init) => (init && init.signal) || (input && input.signal);
 
+const createFallbackNdjsonResponse = (chunks) => ({
+  body: {
+    getReader() {
+      const pendingChunks = chunks.slice();
+      return {
+        read: async () => pendingChunks.length
+          ? {done: false, value: pendingChunks.shift()}
+          : {done: true},
+        cancel: async () => {},
+        releaseLock() {},
+      };
+    },
+  },
+  headers: new Headers(),
+  status: 200,
+  statusText: 'OK',
+});
+
+const createFallbackNdjsonEnvironment = (chunks) => ({
+  Request: null,
+  Response: null,
+  async fetch() {
+    return createFallbackNdjsonResponse(chunks);
+  },
+});
+
 const createBrokenDOMExceptionLikeError = () =>
   Object.defineProperties(
     {},
@@ -1990,6 +2016,119 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         );
       });
     }
+    it('enforces maxContentLength during ndjson iteration', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.setHeader('Content-Type', 'application/x-ndjson');
+          res.setHeader('Transfer-Encoding', 'chunked');
+          res.write('{"value":"a long record"}\n');
+          res.end();
+        },
+        { port: 0 }
+      );
+
+      try {
+        const response = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+          responseType: 'ndjson',
+          maxContentLength: 8,
+        });
+
+        await assert.rejects(
+          Array.fromAsync(response.data),
+          (err) => err.code === AxiosError.ERR_BAD_RESPONSE && /maxContentLength/.test(err.message)
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('parses fetch ndjson responses', async () => {
+      const response = await fetchAxios.get('/ndjson', {
+        responseType: 'ndjson',
+        maxContentLength: 1024,
+        env: {
+          async fetch() {
+            return new Response('{"value":1}\n{"value":2}\n', {
+              headers: {'Content-Type': 'application/x-ndjson'}
+            });
+          },
+        },
+      });
+
+      assert.deepStrictEqual(await Array.fromAsync(response.data), [
+        {value: 1},
+        {value: 2}
+      ]);
+    });
+
+    it('unsubscribes fetch ndjson responses with no body', async () => {
+      const controller = new AbortController();
+      const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
+      const response = await fetchAxios.get('/empty-ndjson', {
+        responseType: 'ndjson',
+        signal: controller.signal,
+        env: {
+          async fetch() {
+            return new Response(null, {status: 204});
+          },
+        },
+      });
+
+      assert.deepStrictEqual(await Array.fromAsync(response.data), []);
+      assert.ok(removeAbortListener.mock.calls.length > 0);
+      removeAbortListener.mockRestore();
+    });
+
+    it('enforces maxContentLength before buffering a fallback ndjson response', async () => {
+      const chunks = [new TextEncoder().encode('{"value":1}\n')];
+
+      const response = await fetchAxios.get('/fallback-ndjson', {
+        responseType: 'ndjson',
+        maxContentLength: 4,
+        env: createFallbackNdjsonEnvironment(chunks),
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => err.code === AxiosError.ERR_BAD_RESPONSE && /maxContentLength/.test(err.message)
+      );
+    });
+
+    it('keeps fallback ndjson cancellation active until iteration completes', async () => {
+      const controller = new AbortController();
+      const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
+      const chunks = [new TextEncoder().encode('{"value":1}\n')];
+
+      const response = await fetchAxios.get('/fallback-ndjson-lifecycle', {
+        responseType: 'ndjson',
+        signal: controller.signal,
+        env: createFallbackNdjsonEnvironment(chunks),
+      });
+
+      await new Promise(resolve => queueMicrotask(resolve));
+      assert.strictEqual(removeAbortListener.mock.calls.length, 0);
+      assert.deepStrictEqual(await Array.fromAsync(response.data), [{value: 1}]);
+      await new Promise(resolve => queueMicrotask(resolve));
+      assert.ok(removeAbortListener.mock.calls.length > 0);
+      removeAbortListener.mockRestore();
+    });
+
+    it('wraps fetch ndjson parse failures as AxiosErrors', async () => {
+      const response = await fetchAxios.get('/invalid-ndjson', {
+        responseType: 'ndjson',
+        env: {
+          async fetch() {
+            return new Response('{invalid}\n', {headers: {'Content-Type': 'application/x-ndjson'}});
+          },
+        },
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => !!(err.isAxiosError && err.code === AxiosError.ERR_BAD_RESPONSE && err.config)
+      );
+    });
+
 
     it('should keep response size errors local to each invocation of a cached adapter', async () => {
       class WrappedResponse extends Response {

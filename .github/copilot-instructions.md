@@ -51,5 +51,11 @@ The rules below are a Copilot-facing subset of the load-bearing safety guarantee
 
 ## Pre-release tracking
 
-- Add user-visible unreleased changes to `PRE_RELEASE_CHANGELOG.md`, not `CHANGELOG.md`.
+- Every PR MUST add or update `PRE_RELEASE_CHANGELOG.md`, including documentation, tests, internal refactors, tooling, and CI changes. An unchanged public API is not an exemption. Update the entry to match the final implementation; PR descriptions do not replace it. `CHANGELOG.md` remains release-owned.
 - Track deferred README, docs site, examples, migration guide, and translated docs updates in `PRE_RELEASE_DOCS.md`; do not update release docs for unreleased runtime/API changes unless explicitly doing release preparation.
+
+## Before submitting a pull request
+
+- Complete the mandatory [PR submission requirements in `AGENTS.md`](../AGENTS.md#before-opening-or-updating-a-pull-request) and the PR template before requesting maintainer review: scope/base, prerelease entry, regression coverage, applicable local checks, compatibility, docs/types, security, and final diff review.
+- Report the commands actually run, results, and runtime versions. Explain genuinely inapplicable checks; keep required-but-blocked local validation in a draft PR. Do not claim that planned checks passed.
+- After opening or updating the PR, inspect GitHub Actions for the latest commit. Review/security bots do not replace CI; report pending or approval-required runs accurately and resolve relevant failures before reporting the PR ready to merge.

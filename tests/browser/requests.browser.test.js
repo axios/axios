@@ -244,6 +244,25 @@ describe('requests (vitest browser)', () => {
     expect(requests).toHaveLength(0);
   });
 
+  it('rejects param serialization failures before opening an XHR request', async () => {
+    const openSpy = vi.spyOn(MockXMLHttpRequest.prototype, 'open');
+
+    const reason = await axios
+      .get('/foo', {
+        adapter: 'xhr',
+        params: {
+          value: '\uD800',
+        },
+      })
+      .catch((error) => error);
+
+    expect(reason).toBeInstanceOf(AxiosError);
+    expect(reason.code).toBe(AxiosError.ERR_BAD_REQUEST);
+    expect(reason.config.url).toBe('/foo');
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(requests).toHaveLength(0);
+  });
+
   it('should reject on abort', async () => {
     const { request, promise } = startRequest('/foo');
 

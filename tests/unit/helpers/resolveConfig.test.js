@@ -100,6 +100,42 @@ describe('helpers::resolveConfig', () => {
     );
   });
 
+  it('should wrap param serialization failures as AxiosError', () => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: {
+            value: '\uD800',
+          },
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_REQUEST);
+        return true;
+      }
+    );
+  });
+
+  it('should wrap paramsSerializer failures as AxiosError', () => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: { value: 1 },
+          paramsSerializer: () => {
+            throw new Error('serializer failed');
+          },
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_REQUEST);
+        assert.strictEqual(err.message, 'serializer failed');
+        return true;
+      }
+    );
+  });
+
   it('should ignore null form-data headers with content-only policy', () => {
     const data = new FormData();
     data.getHeaders = () => null;

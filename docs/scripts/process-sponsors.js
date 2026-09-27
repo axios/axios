@@ -27,6 +27,16 @@ const config = {
       active: true,
     },
     {
+      name: 'Code for Japan',
+      imageUrl: '/sponsors/code-for-japan.jpg',
+      description: null,
+      tier: 'silver',
+      slug: 'code-for-japan',
+      website: 'https://www.code4japan.org/',
+      twitter: 'https://x.com/CodeforJapan',
+      active: true,
+    },
+    {
       name: 'superluxuryreps',
       imageUrl: 'https://images.opencollective.com/superluxuryreps/378b62f/avatar.png',
       description: 'super luxury reps',

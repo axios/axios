@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Breaking Changes
+
+- **Node agent typings (v2):** Narrowed `httpAgent` and `httpsAgent` from `any` to Node 20+ agent instances or runtime-compatible agent dispatchers in both ESM and CommonJS declarations. TypeScript now rejects constructor-option, destroy-only, and state-only objects that Node cannot use as request agents. Runtime behavior is unchanged: `null` clears an instance's custom agent and selects Node's global agent, `false` selects a separate agent for the request, and `undefined` or omission preserves an instance default. (**#5492**)
+
 ## Features
 
 - **Proxy bypass CIDR ranges:** Added IPv4 and IPv6 CIDR matching to `NO_PROXY`/`no_proxy`, including bracketed IPv6 and IPv4-mapped IPv6 normalization, while malformed ranges fail closed. A `/0` entry bypasses the proxy for its entire address family.
@@ -9,7 +13,6 @@
 
 ## Bug Fixes
 
-- **Node agent typings:** Typed `httpAgent` and `httpsAgent` as Node 20+ agent instances or runtime-compatible agent dispatchers in both ESM and CommonJS declarations, rejecting constructor-option, destroy-only, and state-only objects that Node cannot use as request agents.
 - **Method-specific headers:** Added default header buckets for all supported methods and removed those structural buckets during request preparation, so `OPTIONS`, `PURGE`, `LINK`, `UNLINK`, and `QUERY` defaults apply only to matching requests instead of leaking as literal headers. (**#11096**)
 - **Node HTTP adapter option errors:** Invalid custom DNS lookup addresses and invalid or unsupported `httpVersion` values, including non-coercible JavaScript types, now reject with `AxiosError` and `ERR_BAD_OPTION_VALUE` while preserving the request config for diagnostics. (**#11096**)
 - **Runtime configuration hardening:** Prevented values inherited only from shared prototypes, including another JavaScript realm's `Object.prototype` even when its `constructor` is altered, from becoming request behavior after config merging or interceptor replacement. Methods, headers, adapters, transports, FormData hooks, serializer options, and Fetch `Request` options are protected. Already-safe writable merged configs retain their identity through dispatch, while frozen, sealed, accessor-based, otherwise restricted, or unsafe-key-bearing replacements become writable filtered snapshots. Interceptor replacements with non-terminal application-defined prototypes remain supported as normalized null-prototype snapshots, terminal null-prototype ancestors are treated as shared boundaries to fail closed, and own `__proto__`, `constructor`, and `prototype` keys remain excluded from materialized configs.

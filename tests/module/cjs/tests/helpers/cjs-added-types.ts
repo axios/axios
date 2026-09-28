@@ -134,6 +134,13 @@ const agentConfig: axios.AxiosRequestConfig = {
   httpsAgent: { addRequest() {} },
 };
 
+const agentOverrideConfigs: axios.AxiosRequestConfig[] = [
+  { httpAgent: null, httpsAgent: null },
+  { httpAgent: false, httpsAgent: false },
+  { httpAgent: undefined, httpsAgent: undefined },
+  {},
+];
+
 const invalidHttpAgentConfig: axios.AxiosRequestConfig = {
   // @ts-expect-error -- destroy alone does not make an object an agent instance
   httpAgent: { destroy() {} },
@@ -189,6 +196,7 @@ console.log(
   mergedQuery,
   invalidParamsConfig,
   agentConfig,
+  agentOverrideConfigs,
   invalidHttpAgentConfig,
   invalidHttpAgentOptionsConfig,
   invalidHttpsAgentConfig,

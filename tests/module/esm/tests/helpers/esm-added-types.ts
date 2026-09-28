@@ -173,6 +173,13 @@ const dispatcherAgentConfig: AxiosRequestConfig = {
   httpsAgent: { addRequest() {} },
 };
 
+const agentOverrideConfigs: AxiosRequestConfig[] = [
+  { httpAgent: null, httpsAgent: null },
+  { httpAgent: false, httpsAgent: false },
+  { httpAgent: undefined, httpsAgent: undefined },
+  {},
+];
+
 const proxyAgentConfig: AxiosRequestConfig = {
   httpsAgent: createHttpsProxyAgent('http://localhost:8080'),
 };
@@ -233,6 +240,7 @@ console.log(
   invalidParamsConfig,
   agentConfig,
   dispatcherAgentConfig,
+  agentOverrideConfigs,
   proxyAgentConfig,
   invalidHttpAgentConfig,
   invalidHttpAgentOptionsConfig,

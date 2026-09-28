@@ -430,8 +430,8 @@ export interface AxiosRequestConfig<D = any, P = any> {
     },
   ) => void;
   socketPath?: string | null;
-  httpAgent?: HttpAgent | false;
-  httpsAgent?: HttpsAgent | false;
+  httpAgent?: HttpAgent | false | null;
+  httpsAgent?: HttpsAgent | false | null;
   allowedSocketPaths?: string | string[] | null;
   transport?: any;
   proxy?: AxiosProxyConfig | false;

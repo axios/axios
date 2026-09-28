@@ -549,8 +549,8 @@ declare namespace axios {
     socketPath?: string | null;
     allowedSocketPaths?: string | string[] | null;
     transport?: any;
-    httpAgent?: HttpAgent | false;
-    httpsAgent?: HttpsAgent | false;
+    httpAgent?: HttpAgent | false | null;
+    httpsAgent?: HttpsAgent | false | null;
     proxy?: AxiosProxyConfig | false;
     cancelToken?: CancelToken | undefined;
     decompress?: boolean;

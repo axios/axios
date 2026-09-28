@@ -434,10 +434,29 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opencollective.com/axios/contribute"
+                href="https://opencollective.com/sweepico-promo-code"
+                style="padding: 10px; display: inline-block"
                 target="_blank"
-                >💜 Become a sponsor</a
             >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/sweepico-promo-code/4dd517a/logo.png"
+                    alt="Sweepico Promo Code"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Social Gaming Platform
+            </p>
+            <p align="center">
+                <a
+                    href="https://opencollective.com/sweepico-promo-code"
+                    target="_blank"
+                    ><b>Sweepico Promo Code</b></a
+                >
+            </p>
         </td>
     </tr>
 </table>

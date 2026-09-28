@@ -8,7 +8,7 @@ import {
   calculateRetryDelay,
   isRetryableError,
   parseRetryAfter,
-} from '../../../lib/helpers/retry.js';
+} from '../../../lib/core/retry.js';
 
 describe('helpers:retry', function () {
   describe('parseRetryAfter', function () {
@@ -87,6 +87,33 @@ describe('helpers:retry', function () {
   });
 
   describe('attachRetry interceptor integration', function () {
+    it('should ignore an inherited retry setting', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const errorConfig = Object.create({ retry: false });
+          Object.assign(errorConfig, config);
+          delete errorConfig.retry;
+
+          const error = new Error('Service Unavailable');
+          error.config = errorConfig;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local');
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 2);
+    });
+
     it('should retry failed requests and succeed when subsequent attempt passes', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 10, jitter: false });

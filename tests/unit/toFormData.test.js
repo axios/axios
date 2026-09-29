@@ -87,6 +87,49 @@ describe('helpers::toFormData', () => {
     }
   });
 
+  it('should trim surrounding whitespace from every key segment, nested ones included', () => {
+    // The same key must produce the same field name whether it names the leaf
+    // field or an intermediate path segment.
+    const leafFormData = createRNFormDataSpy();
+    const nestedFormData = createRNFormDataSpy();
+
+    toFormData({ a: { ' b ': 1 } }, leafFormData);
+    toFormData({ a: { ' b ': { c: 1 } } }, nestedFormData);
+
+    assert.deepStrictEqual(leafFormData.calls, [['a[b]', 1]]);
+    assert.deepStrictEqual(nestedFormData.calls, [['a[b][c]', 1]]);
+  });
+
+  it('should trim surrounding whitespace from nested path segments with dots enabled', () => {
+    const formData = createRNFormDataSpy();
+
+    toFormData({ a: { ' b ': { c: 1 } } }, formData, { dots: true });
+
+    assert.deepStrictEqual(formData.calls, [['a.b.c', 1]]);
+  });
+
+  it('should keep the source keys in the path handed to a custom visitor', () => {
+    // A custom visitor may use `path` to look values up in the original object,
+    // so the path has to keep the keys as they appear in the source, whitespace
+    // and all, even though the rendered field name is trimmed.
+    const source = { ' LineItems ': [{ amount: 1, currency: 'EUR' }] };
+    const formData = createRNFormDataSpy();
+    const seen = [];
+
+    toFormData(source, formData, {
+      visitor(value, key, path, helpers) {
+        if (key === 'amount') {
+          seen.push(path);
+          assert.strictEqual(path.reduce((acc, k) => acc[k], source).currency, 'EUR');
+        }
+
+        return helpers.isVisitable(value);
+      },
+    });
+
+    assert.deepStrictEqual(seen, [[' LineItems ', 0]]);
+  });
+
   it('should handle arrays', () => {
     const data = {
       arr: [1, 2, 3],

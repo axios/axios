@@ -75,10 +75,10 @@ describe('helpers:retry', function () {
       assert.strictEqual(isRetryableError(err500), false);
     });
 
-    it('should ignore an inherited method', function () {
+    it('should not retry when the request method is inherited', function () {
       const config = Object.create({ method: 'post' });
       const err500 = { config, response: { status: 500 } };
-      assert.strictEqual(isRetryableError(err500), true);
+      assert.strictEqual(isRetryableError(err500), false);
     });
 
     it('should retry network errors with no response', function () {
@@ -93,6 +93,27 @@ describe('helpers:retry', function () {
   });
 
   describe('attachRetry interceptor integration', function () {
+    it('should not retry an error whose config inherits its request method', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const errorConfig = Object.create({ method: 'post' });
+        Object.assign(errorConfig, config);
+        delete errorConfig.method;
+
+        const error = new Error('Service Unavailable');
+        error.config = errorConfig;
+        error.response = { status: 503, headers: {} };
+        throw error;
+      };
+
+      await assert.rejects(instance.post('http://test.local'), (error) => error.response.status === 503);
+      assert.strictEqual(attempts, 1);
+    });
+
     it('should ignore inherited request data when checking body replayability', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

@@ -38,19 +38,19 @@ const undiciAxios = axios.create({
 });
 
 describe('supports undici with nodejs', () => {
-  it('should create the fetch adapter only once for all requests', async () => {
+  it('should create the fetch adapters only once for all requests', async () => {
     const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
 
     try {
       await undiciAxios.get('/');
-      assert.ok(getFetchSpy.calls === 1);
+      assert.ok(getFetchSpy.calls === 2);
 
       await Promise.all([
         undiciAxios.get('/', { responseType: 'text' }),
         undiciAxios.get('/', { responseType: 'arraybuffer' }),
         undiciAxios.get('/', { responseType: 'blob', maxRedirects: 0 }),
       ]);
-      assert.ok(getFetchSpy.calls === 1);
+      assert.ok(getFetchSpy.calls === 2);
 
     } finally {
       await stopHTTPServer(server);

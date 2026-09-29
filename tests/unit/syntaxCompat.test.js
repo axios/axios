@@ -17,9 +17,15 @@ function walk(dir) {
   return out;
 }
 
+// Files excluded from the ES2018 check:
+// - platform/node/index.js uses dynamic `import()` (ES2020) to load the
+//   optional Undici peer dependency.
+const EXCLUDED_FILES = ['platform/node/index.js'];
+
 describe('lib/ source files parse as ES2018', () => {
   for (const file of walk(LIB_DIR)) {
     const rel = file.slice(LIB_DIR.length);
+    if (EXCLUDED_FILES.includes(rel)) continue;
     it(rel, () => {
       const src = readFileSync(file, 'utf8');
       expect(() =>

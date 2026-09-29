@@ -48,6 +48,14 @@ export default [
     }
   },
   {
+    // Dynamic `import()` (ES2020) loads the optional Undici peer dependency.
+    // It is also excluded in tests/unit/syntaxCompat.test.js.
+    files: ['lib/platform/node/index.js'],
+    languageOptions: {
+      ecmaVersion: 2020
+    }
+  },
+  {
     files: ['lib/adapters/xhr.js', 'lib/platform/browser/**/*.js'],
     languageOptions: {
       globals: {

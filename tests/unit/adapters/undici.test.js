@@ -1140,6 +1140,32 @@ describe('supports undici with nodejs', () => {
     });
   });
 
+  it('should follow redirects within the max redirects limit with undici.fetch', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        const hop = Number(req.url.slice(1)) || 0;
+        if (hop < 3) {
+          res.setHeader('Location', '/' + (hop + 1));
+          res.statusCode = 302;
+          res.end();
+          return;
+        }
+        res.end('done');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await undiciAxios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'blob',
+        maxRedirects: 3,
+      });
+      assert.equal(await response.data.text(), 'done');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should support max redirects', async () => {
     let i = 1;
     const server = await startHTTPServer(
@@ -1167,11 +1193,37 @@ describe('supports undici with nodejs', () => {
         i = 1;
       }
 
-      // option is ignored in undici.fetch
       try {
         await undiciAxios.get(`http://localhost:${server.address().port}/`, {
           responseType: 'stream',
           maxRedirects: 3,
+        });
+        assert.fail('should fail with too many redirects');
+      } catch (error) {
+        assert.equal(i, 5);
+        assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
+        assert.equal(error.message, 'Maximum number of redirects exceeded');
+        i = 1;
+      }
+
+      try {
+        await undiciAxios.get(`http://localhost:${server.address().port}/`, {
+          maxContentLength: 1024,
+          maxRedirects: 3,
+        });
+        assert.fail('should fail with too many redirects');
+      } catch (error) {
+        assert.equal(i, 5);
+        assert.equal(error.code, AxiosError.ERR_FR_TOO_MANY_REDIRECTS);
+        assert.equal(error.message, 'Maximum number of redirects exceeded');
+        i = 1;
+      }
+
+      // undici.fetch caps redirects at 20
+      try {
+        await undiciAxios.get(`http://localhost:${server.address().port}/`, {
+          responseType: 'stream',
+          maxRedirects: 50,
         });
         assert.fail('should fail with too many redirects');
       } catch (error) {

@@ -2641,6 +2641,23 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
     });
 
+    it('should reject a data: URL containing :// whose body size exceeds maxContentLength before dispatch', async () => {
+      let fetchCalled = false;
+      const customFetch = async () => {
+        fetchCalled = true;
+        return new Response('short');
+      };
+      const dataUrl = 'data:text/plain,hello://world' + 'X'.repeat(40);
+      const bareAxios = axios.create({ adapter: 'fetch', env: { fetch: customFetch } });
+
+      await assert.rejects(bareAxios.get(dataUrl, { maxContentLength: 8 }), (err) => {
+        assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
+        assert.match(err.message, /maxContentLength size of 8 exceeded/);
+        return true;
+      });
+      assert.strictEqual(fetchCalled, false);
+    });
+
     it('should allow a percent-encoded data: URL within decoded maxContentLength', async () => {
       const bareAxios = axios.create({ adapter: 'fetch' });
       const { data } = await bareAxios.get('data:text/plain,%E2%82%AC', {

@@ -212,6 +212,36 @@ describe('helpers:retry', function () {
       }
     });
 
+    it('should ignore inherited cancellation settings during backoff', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const inheritedSignal = new AbortController();
+          inheritedSignal.abort();
+          const errorConfig = Object.create({ signal: inheritedSignal.signal, cancelToken: { reason: true } });
+          Object.assign(errorConfig, config);
+          delete errorConfig.signal;
+          delete errorConfig.cancelToken;
+
+          const error = new Error('Service Unavailable');
+          error.config = errorConfig;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local');
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 2);
+    });
+
     it('should stop waiting when aborted during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 250, jitter: false, retries: 1 });

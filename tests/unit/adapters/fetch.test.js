@@ -1418,6 +1418,8 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('size limits', () => {
+    // Use a fresh port for each server so fetch cannot reuse connections from
+    // an earlier fixture after an upload or response was rejected.
     const makeUploadStream = (totalBytes, chunkSize = 512) => {
       let remaining = totalBytes;
 
@@ -1440,12 +1442,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         (req, res) => {
           res.end('ok');
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.post(`${LOCAL_SERVER_URL}/`, 'A'.repeat(2048), {
+          fetchAxios.post(`http://localhost:${server.address().port}/`, 'A'.repeat(2048), {
             maxBodyLength: 1024,
           }),
           (err) => {
@@ -1471,12 +1473,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end('ok');
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.post(`${LOCAL_SERVER_URL}/`, makeUploadStream(2048), {
+          fetchAxios.post(`http://localhost:${server.address().port}/`, makeUploadStream(2048), {
             maxBodyLength: 1024,
             headers: { 'Content-Type': 'application/octet-stream' },
           }),
@@ -1508,14 +1510,14 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end('ok');
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
           // A caller-declared Content-Length that under-reports the real body
           // must not let an oversized stream slip past the limit.
-          fetchAxios.post(`${LOCAL_SERVER_URL}/`, makeUploadStream(8192), {
+          fetchAxios.post(`http://localhost:${server.address().port}/`, makeUploadStream(8192), {
             maxBodyLength: 1024,
             headers: {
               'Content-Type': 'application/octet-stream',
@@ -1624,12 +1626,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           res.setHeader('Content-Length', Buffer.byteLength(payload));
           res.end(payload);
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+          fetchAxios.get(`http://localhost:${server.address().port}/`, {
             maxContentLength: 1024,
           }),
           (err) => {
@@ -1687,12 +1689,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           };
           writeNext();
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+          fetchAxios.get(`http://localhost:${server.address().port}/`, {
             maxContentLength: 512,
           }),
           (err) => {
@@ -1778,11 +1780,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         (req, res) => {
           res.end(payload);
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
-        const { data } = await fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
           maxContentLength: 1024,
         });
         assert.strictEqual(data, payload);
@@ -1804,12 +1806,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end(JSON.stringify({ received: bytesReceived }));
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         const { data } = await fetchAxios.post(
-          `${LOCAL_SERVER_URL}/`,
+          `http://localhost:${server.address().port}/`,
           makeUploadStream(payloadLength),
           {
             maxBodyLength: 1024,
@@ -1835,11 +1837,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end('ok');
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
-        await fetchAxios.post(`${LOCAL_SERVER_URL}/`, payload, {
+        await fetchAxios.post(`http://localhost:${server.address().port}/`, payload, {
           maxBodyLength: 1024,
         });
         assert.strictEqual(received, payload);

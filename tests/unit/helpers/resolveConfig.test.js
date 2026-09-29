@@ -100,6 +100,28 @@ describe('helpers::resolveConfig', () => {
     );
   });
 
+  it('should keep the code of param serialization failures that are already AxiosErrors', () => {
+    // Build params nested deeper than toFormData's default depth limit (100).
+    let params = {};
+    for (let i = 0; i < 105; i++) {
+      params = { nested: params };
+    }
+
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params,
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED);
+        assert.strictEqual(err.config.url, '/foo');
+        return true;
+      }
+    );
+  });
+
   it('should wrap param serialization failures as AxiosError', () => {
     assert.throws(
       () =>

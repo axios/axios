@@ -30,6 +30,26 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show `axios.create({ httpsAgent: new https.Agent({ keepAlive: true }) })` followed by a per-request `{ httpsAgent: null }` override. Contrast that override with `false` and `undefined`, and show migration from `{ httpAgent: { keepAlive: true } }` to `{ httpAgent: new http.Agent({ keepAlive: true }) }`.
 - **Notes:** Scope this breaking declaration change to v2's Node 20+ baseline; do not imply a v1 compatibility change or a runtime behavior change. The temporary CommonJS declaration mirror stays synchronized while v2's ESM-only transition is completed.
 
+### Axios v2 ES2018 browser bundles and retained UMD
+
+- **Change:** Document ES2018 as the Axios v2 browser-bundle syntax floor while retaining the existing UMD CDN and loader contract.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Breaking Changes, Browser bundle syntax baseline.
+- **Status:** Pending.
+- **Docs targets:** README browser support and CDN installation sections; the v2 migration guide; docs feature/support pages; classic-script and AMD examples; Spanish, French, and Chinese translations after the English wording is finalized.
+- **Required content:** State that browser ESM, browser CommonJS, and UMD bundles target ES2018. Keep the existing `dist/axios.js` and `dist/axios.min.js` paths, jsDelivr/unpkg defaults, classic `<script>` usage, global `axios`, and AMD/RequireJS behavior. Remove the “ES5 UMD” label and direct consumers that require ES5 parsing to Axios v1.x or a controlled downstream transpilation step. Explain that syntax lowering does not provide runtime polyfills for APIs such as `Promise`, `URL`, or `Symbol`. Do not present `<script type="module">` as a transparent replacement for UMD because module scripts have module scope, different loading/CORS behavior, and do not automatically create `window.axios`.
+- **Examples:** Keep the existing classic `<script src=".../dist/axios.min.js"></script>` and AMD examples, and verify they continue using the same global/default Axios instance. Add migration wording rather than replacing those examples with ESM.
+- **Notes:** Apply these updates during v2 release preparation, not to documentation presenting the current v1.x release. Treat a future package-manager CommonJS removal separately from the retained browser UMD delivery artifact, and update every maintained translation after the English wording is approved.
+
+### Axios v2 Node.js 20+ baseline
+
+- **Change:** Document Node.js 20 as the minimum supported runtime for Axios v2.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Breaking Changes, Node.js runtime baseline.
+- **Status:** Pending.
+- **Docs targets:** README runtime support and older-Node examples; `docs/pages/getting-started/features.md`; the v2 upgrade guide; Node-specific request-config, URL-encoded form, and file-posting guidance; Spanish, French, and Chinese translations after the English wording is finalized.
+- **Required content:** State that Axios v2 requires Node.js 20 or newer and that consumers on Node.js 12, 14, 16, or 18 must upgrade Node.js or remain on Axios v1.x. Remove active claims that the current v2 package supports or tests Node.js 12 and revise older-Node `querystring`, `URLSearchParams`, `insecureHTTPParser`, and native `FormData` guidance where the Node.js 20 floor makes it obsolete or misleading. Distinguish the runtime-floor change from the later ESM-only package migration: this preparatory change still ships CommonJS on Node.js 20+.
+- **Examples:** No new API example is required; update installation and migration snippets only where they select an Axios major or Node.js runtime.
+- **Notes:** Apply these updates during v2 release preparation, not to documentation presenting the current v1.x release. Preserve useful historical API facts when they are clearly historical rather than compatibility promises. Coordinate the final wording with the ESM-only migration notes and update all maintained translations.
+
 ### Runtime configuration prototype hardening
 
 - **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.

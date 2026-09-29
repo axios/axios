@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "ESM smoke tests for axios",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "test:smoke:esm:vitest": "vitest run --config vitest.config.js --project smoke"
   },

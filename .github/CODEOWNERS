@@ -18,7 +18,7 @@
 /index.d.cts               @jasonsaayman
 
 # Build / release infrastructure
-/rollup.config.js          @jasonsaayman
+/rolldown.config.js        @jasonsaayman
 /package.json              @jasonsaayman
 /package-lock.json         @jasonsaayman
 /.npmrc                    @jasonsaayman

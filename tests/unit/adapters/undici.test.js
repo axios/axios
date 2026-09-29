@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import assert from 'assert';
 import {
   startHTTPServer,
@@ -20,12 +20,43 @@ const LOCAL_SERVER_URL = `http://localhost:${SERVER_PORT}`;
 
 const pipelineAsync = util.promisify(stream.pipeline);
 
+const { getFetchSpy } = vi.hoisted(() => ({ getFetchSpy: { calls: 0 } }));
+vi.mock('../../../lib/adapters/fetch.js', async (importOriginal) => {
+  const original = await importOriginal();
+  return {
+    ...original,
+    getFetch: (...args) => {
+      getFetchSpy.calls++;
+      return original.getFetch(...args);
+    },
+  };
+});
+
 const undiciAxios = axios.create({
   baseURL: LOCAL_SERVER_URL,
   adapter: 'undici',
 });
 
 describe('supports undici with nodejs', () => {
+  it('should create the fetch adapter only once for all requests', async () => {
+    const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
+
+    try {
+      await undiciAxios.get('/');
+      assert.ok(getFetchSpy.calls === 1);
+
+      await Promise.all([
+        undiciAxios.get('/', { responseType: 'text' }),
+        undiciAxios.get('/', { responseType: 'arraybuffer' }),
+        undiciAxios.get('/', { responseType: 'blob', maxRedirects: 0 }),
+      ]);
+      assert.ok(getFetchSpy.calls === 1);
+
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

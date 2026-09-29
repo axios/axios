@@ -134,6 +134,37 @@ describe('helpers::toFormData', () => {
     assert.deepStrictEqual([...formData.calls[0][1]], [1, 2, 3]);
   });
 
+  describe('typed array multipart bytes', () => {
+    for (const ArrayType of [
+      Uint8Array,
+      Uint16Array,
+      Int32Array,
+      Float32Array,
+      Float64Array,
+      BigInt64Array,
+      BigUint64Array,
+    ]) {
+      for (const [name, offset, length] of [
+        ['full', 0, 4],
+        ['subarray', 1, 2],
+        ['empty', 2, 0],
+      ]) {
+        it(`should preserve ${name} ${ArrayType.name} bytes in Node FormData`, async () => {
+          const buffer = new ArrayBuffer(ArrayType.BYTES_PER_ELEMENT * 4);
+          new Uint8Array(buffer).set(Array.from({ length: buffer.byteLength }, (_, i) => i + 1));
+          const value = new ArrayType(buffer, offset * ArrayType.BYTES_PER_ELEMENT, length);
+          const formData = toFormData({ file: value }, new FormData());
+          const expected = new FormData();
+
+          expected.setBoundary(formData.getBoundary());
+          expected.append('file', Buffer.from(await new Blob([value]).arrayBuffer()));
+
+          assert.deepStrictEqual(formData.getBuffer(), expected.getBuffer());
+        });
+      }
+    }
+  });
+
   it('should throw AxiosError when typed array values require Buffer and Buffer is unavailable', () => {
     const originalBuffer = globalThis.Buffer;
     const formData = createRNFormDataSpy();

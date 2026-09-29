@@ -29,14 +29,16 @@ describe('module esm typings compatibility', () => {
     }
   });
 
-  it('type-checks additive esm public typings', () => {
+  it('type-checks additive esm public typings with strict null checks', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-added-types.ts');
     const fixturePath = createTempFixture(suiteRoot, 'typings-esm-added', sourcePath, tsconfig, {
       type: 'module',
     });
 
     try {
-      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+      runCommand('node', [tscBin, '--noEmit', '--strictNullChecks', '-p', 'tsconfig.json'], {
+        cwd: fixturePath,
+      });
     } finally {
       cleanupTempFixture(fixturePath);
     }

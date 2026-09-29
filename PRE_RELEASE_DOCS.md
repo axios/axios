@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Node request agent types for v2
+
+- **Change:** Document the breaking TypeScript narrowing of `httpAgent` and `httpsAgent` from `any` for v2.
+- **Source:** PR #5492; `PRE_RELEASE_CHANGELOG.md` Breaking Changes, Node agent typings (v2).
+- **Status:** Pending.
+- **Docs targets:** README and docs-site request configuration and TypeScript guidance; v2 migration guide; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the exported `HttpAgent` and `HttpsAgent` types accept Node 20+ built-in agent instances and custom dispatchers implementing `addRequest(request, options)`. Constructor-option objects such as `{ keepAlive: true }`, destroy-only objects, and socket-state-only objects are rejected. Consumers must construct an agent or supply a compatible dispatcher instead of passing constructor options as the agent itself. Preserve the distinct override semantics: `null` clears an instance's custom agent and selects Node's global agent, `false` selects a separate agent for the request, and `undefined` or omission preserves an instance default. No `@types/node` dependency is added to Axios's browser-neutral declarations.
+- **Examples:** Show `axios.create({ httpsAgent: new https.Agent({ keepAlive: true }) })` followed by a per-request `{ httpsAgent: null }` override. Contrast that override with `false` and `undefined`, and show migration from `{ httpAgent: { keepAlive: true } }` to `{ httpAgent: new http.Agent({ keepAlive: true }) }`.
+- **Notes:** Scope this breaking declaration change to v2's Node 20+ baseline; do not imply a v1 compatibility change or a runtime behavior change. The temporary CommonJS declaration mirror stays synchronized while v2's ESM-only transition is completed.
+
 ### Axios v2 ES2018 browser bundles and retained UMD
 
 - **Change:** Document ES2018 as the Axios v2 browser-bundle syntax floor while retaining the existing UMD CDN and loader contract.

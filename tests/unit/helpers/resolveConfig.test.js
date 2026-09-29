@@ -122,6 +122,26 @@ describe('helpers::resolveConfig', () => {
     );
   });
 
+  it('should assign ERR_BAD_REQUEST to uncoded AxiosErrors thrown by a custom paramsSerializer', () => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: { a: 1 },
+          paramsSerializer: () => {
+            throw new AxiosError('serializer failed');
+          },
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_REQUEST);
+        assert.strictEqual(err.message, 'serializer failed');
+        assert.strictEqual(err.config.url, '/foo');
+        return true;
+      }
+    );
+  });
+
   it('should wrap param serialization failures as AxiosError', () => {
     assert.throws(
       () =>

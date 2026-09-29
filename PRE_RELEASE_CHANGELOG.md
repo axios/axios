@@ -4,6 +4,7 @@
 
 ## Features
 
+- **Undici adapter:** Added a built-in `undici` adapter for Node.js, selected with `adapter: 'undici'`. It requires the optional `undici` peer dependency, is not part of the default adapter list, and rejects with `ERR_NOT_SUPPORT` when `undici` cannot be loaded. It supports `fetchOptions` (including a custom `dispatcher`), `maxRedirects`, `maxContentLength`, progress events, and stream, Blob, and FormData responses.
 - **Proxy bypass CIDR ranges:** Added IPv4 and IPv6 CIDR matching to `NO_PROXY`/`no_proxy`, including bracketed IPv6 and IPv4-mapped IPv6 normalization, while malformed ranges fail closed. A `/0` entry bypasses the proxy for its entire address family.
 - **HTTP status code names:** Added the RFC 9110 names `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 across the runtime API and ESM/CommonJS declarations. The existing `PayloadTooLarge` and `UnprocessableEntity` names remain as deprecated aliases, and numeric reverse lookups retain their existing v1.x names for compatibility. (**#11082**, closes **#11066**)
 

@@ -1474,6 +1474,29 @@ describe('Prototype Pollution Protection', () => {
       assert.strictEqual(response.data['X-Common'], 'common');
       assert.strictEqual(response.data['X-Method'], 'method');
     });
+
+    it('should still merge header buckets inherited from an application prototype', async () => {
+      // getSafeProp accepts members inherited from a prototype below the
+      // Object.prototype boundary, so header buckets an application shares
+      // through a template keep working. A bare own-property check would drop
+      // them, so this pins the distinction from the two cases above.
+      const template = { common: { 'X-From-Template': 'kept' } };
+      const headers = Object.assign(Object.create(template), { get: {} });
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: config.headers.toJSON(),
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      const response = await instance.request({ url: '/template-bucket', headers });
+
+      assert.strictEqual(response.data['X-From-Template'], 'kept');
+    });
   });
 
   // utils.merge previously read `result[targetKey]` directly, which walks the

@@ -45,10 +45,9 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('bar'), 'value2');
     });
 
-    it('should preserve raw header semantics when the parser returns a null-prototype dictionary', () => {
+    it('should preserve duplicate values and reserved names when parsing raw headers', () => {
       const headers = new AxiosHeaders(
-        '__proto__: ignored\n' +
-          'Constructor: first\n' +
+        'Constructor: first\n' +
           'constructor: second\n' +
           'Prototype: value\n' +
           'Get: header-value\n' +

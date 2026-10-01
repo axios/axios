@@ -45,6 +45,31 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('bar'), 'value2');
     });
 
+    it('should preserve raw header semantics when the parser returns a null-prototype dictionary', () => {
+      const headers = new AxiosHeaders(
+        '__proto__: ignored\n' +
+          'Constructor: first\n' +
+          'constructor: second\n' +
+          'Prototype: value\n' +
+          'Get: header-value\n' +
+          'Foo: first\n' +
+          'Foo: second\n' +
+          'Content-Type:\n' +
+          'Content-Type: application/json\n' +
+          'Set-Cookie: first=1\n' +
+          'Set-Cookie: second=2\n'
+      );
+
+      assert.strictEqual(Object.getPrototypeOf(headers), AxiosHeaders.prototype);
+      assert.strictEqual(typeof headers.get, 'function');
+      assert.strictEqual(headers.get('constructor'), 'first, second');
+      assert.strictEqual(headers.get('prototype'), 'value');
+      assert.strictEqual(headers.get('get'), 'header-value');
+      assert.strictEqual(headers.get('foo'), 'first, second');
+      assert.strictEqual(headers.get('content-type'), '');
+      assert.deepStrictEqual(headers.getSetCookie(), ['first=1', 'second=2']);
+    });
+
     it('should not rewrite header the header if the value is false', () => {
       const headers = new AxiosHeaders();
 

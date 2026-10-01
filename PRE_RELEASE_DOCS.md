@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Raw header parser dictionary for v2
+
+- **Change:** Document the null-prototype return value of `axios/unsafe/helpers/parseHeaders.js`.
+- **Source:** PR #7538; `PRE_RELEASE_CHANGELOG.md` Breaking Changes, Raw header parser dictionary (v2).
+- **Status:** Pending.
+- **Docs targets:** v2 migration guide and advanced header documentation; translated docs after the English wording is finalized.
+- **Required content:** Explain that the raw parser returns a dictionary with no inherited object methods, including for empty input. Direct helper consumers must use `Object.prototype.hasOwnProperty.call(headers, name)` and `Object.keys(headers)` rather than inherited methods, implicit object-to-string conversion, or `instanceof Object`. The parser retains `__proto__` as an own string-valued header and does not invoke inherited header accessors. Existing duplicate suppression, comma joining, and `set-cookie` arrays are preserved. Ordinary Axios responses continue exposing `AxiosHeaders` instances; this change does not make `response.headers` itself a null-prototype object or promise that `AxiosHeaders` retains a `__proto__` header.
+- **Examples:** Show `Object.prototype.hasOwnProperty.call(parsed, 'content-type')` and `Object.keys(parsed)` for direct helper consumers; continue recommending `response.headers.get('content-type')` for normal responses.
+- **Notes:** Scope this compatibility change to v2. Describe dictionary isolation and hardening beyond #11036's own-property checks; do not claim that string-valued response headers previously allowed mutation of `Object.prototype`, or that this makes all downstream consumers immune to pre-existing prototype pollution. No new runtime API or declaration is required.
+
 ### Node request agent types for v2
 
 - **Change:** Document the breaking TypeScript narrowing of `httpAgent` and `httpsAgent` from `any` for v2.

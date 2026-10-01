@@ -1,49 +1,49 @@
 # Ecosystem
 
-This is a list of axios related libraries and resources. If you have a suggestion on what to add, please don't hesitate to submit a PR.
+This is a list of axios-related libraries and resources. To add one, open a pull request.
 
 ## Libraries
 
 ### General
 
-- [axios-vcr](https://github.com/nettofarah/axios-vcr) - 📼 Record and Replay Axios requests
-- [@3846masa/axios-cookiejar-support](https://github.com/3846masa/axios-cookiejar-support) - Add tough-cookie support to axios
-- [axios-method-override](https://github.com/jacobbuck/axios-method-override) - Axios http request method override plugin
-- [axios-cache-plugin](https://github.com/jin5354/axios-cache-plugin) - Help you cache GET requests when using axios.
-- [axios-extensions](https://github.com/kuitos/axios-extensions) - A collection of axios extensions, including throttle and cache GET request plugin.
-- [axios-fetch](https://github.com/lifeomic/axios-fetch) - A WebAPI Fetch implementation backed by an Axios client
-- [axios-actions](https://github.com/davestewart/axios-actions) - Bundle endpoints as callable, reusable services
-- [axios-api-versioning](https://weffe.github.io/axios-api-versioning) - Add easy to manage api versioning to axios
-- [axios-data-unpacker](https://github.com/anubhavsrivastava/axios-data-unpacker) - Axios interceptor that unpacks HTTP responses so that you can focus on actual server data.
-- [r2curl](https://github.com/uyu423/r2curl) - Extracts the cURL command string from the Axios object. (AxiosResponse, AxiosRequestConfig)
-- [axios-endpoints](https://github.com/renancaraujo/axios-endpoints) - Axios endpoints help you to create a more concise endpoint mapping with axios.
-- [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Easy API handling whenever there are many endpoints to add. It helps to make Axios requests in an easy and declarative manner.
-- [axios-url-template](https://github.com/rafw87/axios-url-template) - Axios interceptor adding support for URL templates.
+- [axios-vcr](https://github.com/nettofarah/axios-vcr) - Records and replays axios requests
+- [@3846masa/axios-cookiejar-support](https://github.com/3846masa/axios-cookiejar-support) - Adds tough-cookie support to axios
+- [axios-method-override](https://github.com/jacobbuck/axios-method-override) - Overrides HTTP request methods in axios
+- [axios-cache-plugin](https://github.com/jin5354/axios-cache-plugin) - Caches GET requests made with axios
+- [axios-extensions](https://github.com/kuitos/axios-extensions) - Adds axios extensions, including throttling and GET request caching
+- [axios-fetch](https://github.com/lifeomic/axios-fetch) - Provides a Web API Fetch implementation backed by an axios client
+- [axios-actions](https://github.com/davestewart/axios-actions) - Bundles endpoints as callable, reusable services
+- [axios-api-versioning](https://weffe.github.io/axios-api-versioning) - Adds API version management to axios
+- [axios-data-unpacker](https://github.com/anubhavsrivastava/axios-data-unpacker) - Unpacks HTTP responses through an axios interceptor
+- [r2curl](https://github.com/uyu423/r2curl) - Extracts cURL command strings from axios objects. (AxiosResponse, AxiosRequestConfig)
+- [axios-endpoints](https://github.com/renancaraujo/axios-endpoints) - Defines concise endpoint mappings for axios
+- [axios-multi-api](https://github.com/MattCCC/axios-multi-api) - Handles multiple APIs with declarative axios request definitions
+- [axios-url-template](https://github.com/rafw87/axios-url-template) - Adds URL template support through an axios interceptor
 
 ### API clients
 
-- [@hey-api/openapi-ts](https://heyapi.dev/openapi-ts/clients/axios) - The OpenAPI to TypeScript codegen. Generate clients, SDKs, validators, and more.
-- [swagger-taxos-codegen](https://github.com/michalzaq12/swagger-taxos-codegen) - Axios based Swagger Codegen (tailored for typescript)
-- [zodios](https://www.zodios.org) - Typesafe API client based on axios
+- [@hey-api/openapi-ts](https://heyapi.dev/openapi-ts/clients/axios) - Generates TypeScript clients, SDKs, and validators from OpenAPI schemas
+- [swagger-taxos-codegen](https://github.com/michalzaq12/swagger-taxos-codegen) - Generates TypeScript Swagger clients that use axios
+- [zodios](https://www.zodios.org) - Type-safe API client based on axios
 
 ### Logging and debugging
 
-- [axios-response-logger](https://github.com/srph/axios-response-logger) - Axios interceptor which logs responses
-- [axios-debug-log](https://github.com/Gerhut/axios-debug-log) - Axios interceptor of logging requests & responses by debug.
-- [axios-curlirize](https://www.npmjs.com/package/axios-curlirize) - Logs axios requests as curl commands, also adds a property to the response object with the curl command as value.
+- [axios-response-logger](https://github.com/srph/axios-response-logger) - Logs responses through an axios interceptor
+- [axios-debug-log](https://github.com/Gerhut/axios-debug-log) - Logs axios requests and responses with debug
+- [axios-curlirize](https://www.npmjs.com/package/axios-curlirize) - Logs axios requests as cURL commands and attaches the command to the response object
 
 ### React and redux
 
-- [axios-hooks](https://github.com/simoneb/axios-hooks) - 🦆 React hooks for axios, with built-in support for server side rendering
-- [react-hooks-axios](https://github.com/use-hooks/react-hooks-axios) - Custom React Hooks for Axios.js
-- [redux-saga-requests](https://github.com/klis87/redux-saga-requests) - Redux-Saga addon to simplify handling of AJAX requests.
+- [axios-hooks](https://github.com/simoneb/axios-hooks) - React hooks for axios, with built-in support for server-side rendering
+- [react-hooks-axios](https://github.com/use-hooks/react-hooks-axios) - Custom React hooks for axios
+- [redux-saga-requests](https://github.com/klis87/redux-saga-requests) - Redux-Saga addon for AJAX request handling
 - [redux-axios-middleware](https://github.com/svrcekmichal/redux-axios-middleware) - Redux middleware for fetching data with axios HTTP client
-- [@react-cmpt/react-request-hook](https://github.com/react-cmpt/react-request-hook) - A React hook plugin for axios. Lightweight and less change.
+- [@react-cmpt/react-request-hook](https://github.com/react-cmpt/react-request-hook) - Lightweight React hook plugin for axios with minimal code changes
 
 ### Unit testing
 
-- [axiosist](https://github.com/Gerhut/axiosist) - Axios based supertest: convert node.js request handler to axios adapter, used for node.js server unit test.
-- [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) — Axios adapter that allows for easily mocking requests
-- [axios-test-instance](https://github.com/remcohaszing/axios-test-instance) — Test NodeJS backends using Axios
-- [moxios](https://github.com/axios/moxios) - Mock axios requests for testing
-- [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlined integration testing with Mocha & Axios
+- [axiosist](https://github.com/Gerhut/axiosist) - Converts Node.js request handlers into axios adapters for server unit tests
+- [axios-mock-adapter](https://github.com/ctimmerm/axios-mock-adapter) - Mocks axios requests through a custom adapter
+- [axios-test-instance](https://github.com/remcohaszing/axios-test-instance) - Tests Node.js backends with axios
+- [moxios](https://github.com/axios/moxios) - Mocks axios requests for testing
+- [mocha-axios](https://github.com/jdrydn/mocha-axios) - Streamlines integration testing with Mocha and axios

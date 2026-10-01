@@ -4,6 +4,9 @@
   "description": "ESM module compatibility tests for axios",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "test:module:esm": "vitest run --config vitest.config.js --project module"
   },
@@ -11,8 +14,9 @@
   "author": "axios team",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.9.3",
-    "vitest": "4.1.0"
+    "@types/node": "20.19.39",
+    "https-proxy-agent": "5.0.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.9"
   }
 }

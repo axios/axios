@@ -20,7 +20,7 @@ const tsconfig = {
 
 describe('module ts-require-default compatibility', () => {
   it('compiles and executes require("axios").default imports', () => {
-    const sourcePath = path.join(repoRoot, 'test/module/ts-require-default/index.ts');
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/ts-require-default.ts');
     const fixturePath = createTempFixture(suiteRoot, 'ts-require-default', sourcePath, tsconfig);
 
     try {

@@ -21,7 +21,7 @@ const tsconfig = {
 
 describe('module ts compatibility', () => {
   it('compiles and executes import axios syntax', () => {
-    const sourcePath = path.join(repoRoot, 'test/module/ts/index.ts');
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-functions.ts');
     const fixturePath = createTempFixture(suiteRoot, 'ts', sourcePath, tsconfig, {
       type: 'commonjs',
     });

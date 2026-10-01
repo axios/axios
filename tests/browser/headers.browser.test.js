@@ -118,6 +118,41 @@ describe('headers (vitest browser)', () => {
     await finishRequest(request, promise);
   });
 
+  it('should allow request interceptors to encode Unicode header values before XHR sends them', async () => {
+    const instance = axios.create({ adapter: 'xhr' });
+
+    instance.interceptors.request.use((config) => {
+      config.headers.oprtName = encodeURIComponent(config.headers.oprtName);
+      return config;
+    });
+
+    const promise = instance.get('/foo', {
+      headers: {
+        oprtName: '请求用户',
+      },
+    });
+    await new Promise((resolve) => setTimeout(resolve));
+    const request = getLastRequest();
+
+    expect(request.requestHeaders.oprtName).toBe(encodeURIComponent('请求用户'));
+
+    await finishRequest(request, promise);
+  });
+
+  it('should sanitize unencoded Unicode headers before passing them to XHR', async () => {
+    const promise = axios.get('/foo', {
+      adapter: 'xhr',
+      headers: {
+        oprtName: '请求用户',
+      },
+    });
+    const request = getLastRequest();
+
+    expect(request.requestHeaders.oprtName).toBe('');
+
+    await finishRequest(request, promise);
+  });
+
   it('should respect common Content-Type header', async () => {
     const instance = axios.create();
     instance.defaults.headers.common['Content-Type'] = 'application/custom';

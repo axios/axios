@@ -118,4 +118,12 @@ describe('helpers::toFormData (vitest browser)', () => {
     expect(Array.from(form.keys())).toHaveLength(1);
     expect(form.getAll('obj{}')).toEqual([serialized]);
   });
+
+  it('converts typed array values to Blob for browser FormData', async () => {
+    const form = toFormData({ file: new Uint8Array([1, 2, 3]) });
+    const value = form.get('file');
+
+    expect(value).toBeInstanceOf(Blob);
+    expect([...new Uint8Array(await value.arrayBuffer())]).toEqual([1, 2, 3]);
+  });
 });

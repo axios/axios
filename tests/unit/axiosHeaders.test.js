@@ -84,20 +84,188 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('x'), '123');
     });
 
-    const runIfNode18OrHigher = nodeMajorVersion >= 18 ? it : it.skip;
-    runIfNode18OrHigher('should support setting multiple header values from an iterable source', () => {
+    it('should not merge Object.prototype values into iterable headers', () => {
+      const descriptor = Object.getOwnPropertyDescriptor(Object.prototype, 'Authorization');
+      Object.prototype.Authorization = 'polluted';
+
+      try {
+        const headers = new AxiosHeaders(new Map([['Authorization', 'real']]));
+
+        assert.strictEqual(headers.get('authorization'), 'real');
+      } finally {
+        descriptor
+          ? Object.defineProperty(Object.prototype, 'Authorization', descriptor)
+          : delete Object.prototype.Authorization;
+      }
+    });
+
+    it('should support objects with an own iterator as a key-value source object', () => {
       const headers = new AxiosHeaders();
-      const nativeHeaders = new Headers();
 
-      nativeHeaders.append('set-cookie', 'foo');
-      nativeHeaders.append('set-cookie', 'bar');
-      nativeHeaders.append('set-cookie', 'baz');
-      nativeHeaders.append('y', 'qux');
+      headers.set({
+        *[Symbol.iterator]() {
+          yield ['x', '123'];
+        },
+      });
 
-      headers.set(nativeHeaders);
+      assert.strictEqual(headers.get('x'), '123');
+    });
 
-      assert.deepStrictEqual(headers.get('set-cookie'), ['foo', 'bar', 'baz']);
-      assert.strictEqual(headers.get('y'), 'qux');
+    it('should not use inherited Symbol.iterator as a key-value source object', () => {
+      try {
+        Object.prototype[Symbol.iterator] = function* () {
+          yield ['x-app', 'changed'];
+          yield ['x-injected', 'yes'];
+        };
+
+        const headers = new AxiosHeaders({
+          'x-app': 'safe',
+        });
+
+        assert.strictEqual(headers.get('x-app'), 'safe');
+        assert.strictEqual(headers.get('x-injected'), undefined);
+      } finally {
+        delete Object.prototype[Symbol.iterator];
+      }
+    });
+
+    it('should not read polluted Object.prototype Symbol.iterator accessors', () => {
+      let accessed = false;
+
+      try {
+        Object.defineProperty(Object.prototype, Symbol.iterator, {
+          configurable: true,
+          get() {
+            accessed = true;
+            throw new Error('polluted iterator accessor');
+          }
+        });
+
+        const headers = new AxiosHeaders({
+          'x-app': 'safe',
+        });
+
+        assert.strictEqual(headers.get('x-app'), 'safe');
+        assert.strictEqual(accessed, false);
+      } finally {
+        delete Object.prototype[Symbol.iterator];
+      }
+    });
+
+    it('should not consume an inherited Symbol.iterator for non-plain header sources', () => {
+      try {
+        Object.prototype[Symbol.iterator] = function* () {
+          yield ['x-injected', 'yes'];
+          yield ['authorization', 'Bearer CHANGED'];
+        };
+
+        // A class instance and an Object.create(...) object both have a direct
+        // prototype other than Object.prototype, yet their only iterator comes
+        // from the polluted Object.prototype — they must not be iterated.
+        class HeaderBag {
+          constructor() {
+            this['authorization'] = 'Bearer VALID';
+          }
+        }
+
+        const fromClass = new AxiosHeaders(new HeaderBag());
+        assert.strictEqual(fromClass.get('x-injected'), undefined);
+        assert.notStrictEqual(fromClass.get('authorization'), 'Bearer CHANGED');
+
+        const created = Object.create({ 'x-app': 'safe' });
+        created['authorization'] = 'Bearer VALID';
+        const fromCreate = new AxiosHeaders(created);
+        assert.strictEqual(fromCreate.get('x-injected'), undefined);
+        assert.notStrictEqual(fromCreate.get('authorization'), 'Bearer CHANGED');
+      } finally {
+        delete Object.prototype[Symbol.iterator];
+      }
+    });
+
+    const runIfNode18OrHigher = nodeMajorVersion >= 18 ? it : it.skip;
+    runIfNode18OrHigher(
+      'should support setting multiple header values from an iterable source',
+      () => {
+        const headers = new AxiosHeaders();
+        const nativeHeaders = new Headers();
+
+        nativeHeaders.append('set-cookie', 'foo');
+        nativeHeaders.append('set-cookie', 'bar');
+        nativeHeaders.append('set-cookie', 'baz');
+        nativeHeaders.append('y', 'qux');
+
+        headers.set(nativeHeaders);
+
+        assert.deepStrictEqual(headers.get('set-cookie'), ['foo', 'bar', 'baz']);
+        assert.strictEqual(headers.get('y'), 'qux');
+      }
+    );
+
+    it('should sanitize invalid characters in header value', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-test', '\t safe\r\nInjected: true \u0000');
+
+      assert.strictEqual(headers.get('x-test'), 'safeInjected: true');
+    });
+
+    it('should sanitize invalid characters in any array header value', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('set-cookie', ['safe=1', ' \tunsafe=1\nInjected: true\r\n ']);
+
+      assert.deepStrictEqual(headers.get('set-cookie'), ['safe=1', 'unsafe=1Injected: true']);
+    });
+
+    // Regression: https://github.com/axios/axios/issues/10849
+    // Non-control Unicode header values must round-trip through set/get so
+    // request interceptors can encode them (e.g. encodeURIComponent) before
+    // the adapter sanitizes to byte-safe values at send time.
+    it('should preserve non-control Unicode characters in header values', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-name', '请求用户');
+
+      assert.strictEqual(headers.get('x-name'), '请求用户');
+    });
+
+    it('should preserve non-control Unicode characters in array header values', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-names', ['请求用户', 'naïve', 'プロジェクト']);
+
+      assert.deepStrictEqual(headers.get('x-names'), ['请求用户', 'naïve', 'プロジェクト']);
+    });
+
+    it('should still strip CR/LF from Unicode header values to prevent header injection', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('x-name', '请求\r\nInjected: true用户');
+
+      assert.strictEqual(headers.get('x-name'), '请求Injected: true用户');
+    });
+
+    // Regression: https://github.com/axios/axios/issues/6959
+    it('should silently skip empty header names', () => {
+      const headers = new AxiosHeaders();
+
+      assert.doesNotThrow(() => headers.set('', 'a'));
+      assert.doesNotThrow(() => headers.set('   ', 'b'));
+      assert.doesNotThrow(() => headers.set({ '': 'c', '   ': 'd', foo: 'bar' }));
+      assert.doesNotThrow(() =>
+        headers.set(
+          new Map([
+            ['', 'e'],
+            ['   ', 'f'],
+            ['x', 'y'],
+          ])
+        )
+      );
+
+      assert.strictEqual(headers.has(''), false);
+      assert.strictEqual(headers.get('foo'), 'bar');
+      assert.strictEqual(headers.get('x'), 'y');
+      assert.strictEqual(Object.keys(headers).length, 2);
     });
   });
 
@@ -140,6 +308,110 @@ describe('AxiosHeaders', () => {
           headers.get('foo', () => false),
           false
         );
+      });
+    });
+    describe('parameter parsing', () => {
+      it('should preserve the legacy true parser behavior', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set(
+          'content-type',
+          'multipart/form-data; charset=utf-8   ; boundary="----=_Part_123"'
+        );
+
+        assert.deepStrictEqual({ ...headers.get('content-type', true) }, {
+          'multipart/form-data': undefined,
+          charset: 'utf-8   ',
+          boundary: '"----=_Part_123"',
+        });
+      });
+
+      it('should opt in to normalized parameter parsing', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set(
+          'content-type',
+          'multipart/form-data; charset=\t utf-8 \t ; boundary="----=_Part_123"'
+        );
+
+        assert.deepStrictEqual(
+          { ...headers.get('content-type', AxiosHeaders.parseParameters) },
+          {
+            charset: 'utf-8',
+            boundary: '----=_Part_123',
+          }
+        );
+      });
+
+      it('should keep commas and semicolons inside quoted parameter values', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set('content-type', 'multipart/form-data; boundary="a,b;c"; title="one; two, three"');
+
+        assert.deepStrictEqual(
+          { ...headers.get('content-type', AxiosHeaders.parseParameters) },
+          {
+            boundary: 'a,b;c',
+            title: 'one; two, three',
+          }
+        );
+      });
+
+      it('should decode quoted-pair DQUOTE and backslash characters', () => {
+        const headers = new AxiosHeaders();
+
+        headers.set('content-disposition', String.raw`attachment; filename="a\"b\\c.txt"`);
+
+        assert.deepStrictEqual(
+          { ...headers.get('content-disposition', AxiosHeaders.parseParameters) },
+          {
+            filename: 'a"b\\c.txt',
+          }
+        );
+      });
+
+      it('should preserve whitespace inside quotes and support empty quoted values', () => {
+        const parameters = AxiosHeaders.parseParameters('text/plain; empty=""; padded=" value "');
+
+        assert.deepStrictEqual({ ...parameters }, {
+          empty: '',
+          padded: ' value ',
+        });
+      });
+
+      it('should preserve malformed quoted values without creating spurious parameters', () => {
+        const unterminated = AxiosHeaders.parseParameters(
+          'text/plain; name="unterminated; charset=utf-8'
+        );
+        const trailingData = AxiosHeaders.parseParameters(
+          'text/plain; name="quoted"junk; charset=utf-8'
+        );
+
+        assert.deepStrictEqual({ ...unterminated }, {
+          name: '"unterminated; charset=utf-8',
+        });
+        assert.deepStrictEqual({ ...trailingData }, {
+          name: '"quoted"junk',
+          charset: 'utf-8',
+        });
+      });
+
+      it('should normalize names and safely ignore valueless or invalid parameters', () => {
+        const parameters = AxiosHeaders.parseParameters(
+          'text/plain; flag; BAD NAME=ignored; BOUNDARY=first; boundary=second; ' +
+            '__proto__=unsafe; Constructor=unsafe; PROTOTYPE=unsafe'
+        );
+
+        assert.strictEqual(Object.getPrototypeOf(parameters), null);
+        assert.deepStrictEqual({ ...parameters }, {
+          boundary: 'second',
+        });
+      });
+
+      it('should trim only RFC optional whitespace from unquoted values', () => {
+        const parameters = AxiosHeaders.parseParameters('text/plain; charset=utf-8\u00a0');
+
+        assert.strictEqual(parameters.charset, 'utf-8\u00a0');
       });
     });
   });
@@ -488,6 +760,22 @@ describe('AxiosHeaders', () => {
       const headers = new AxiosHeaders('Set-Cookie: key=val;\n' + 'Set-Cookie: key2=val2;\n');
 
       assert.deepStrictEqual(headers.getSetCookie(), ['key=val;', 'key2=val2;']);
+    });
+
+    it('should return programmatic set-cookie as an array', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('set-cookie', 'key=val;');
+
+      assert.deepStrictEqual(headers.getSetCookie(), ['key=val;']);
+    });
+
+    it('should return programmatic empty set-cookie as an array', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('set-cookie', '');
+
+      assert.deepStrictEqual(headers.getSetCookie(), ['']);
     });
 
     it('should return empty set-cookie', () => {

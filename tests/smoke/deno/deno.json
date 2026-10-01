@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1.0.19",
+    "axios": "../../../dist/esm/axios.js"
+  },
+  "tasks": {
+    "test": "deno test --allow-read tests/"
+  },
+  "test": {
+    "include": ["tests/**/*.smoke.test.ts"]
+  }
+}

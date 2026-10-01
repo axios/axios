@@ -1,4 +1,7 @@
 version: 2
+# Package and GitHub Actions update PRs are maintainer/bot-only.
+# Keep the 7-day cooldown unless a critical vulnerability requires a
+# maintainer-led manual update.
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
@@ -11,6 +14,8 @@ updates:
       - 'type::automated-pr'
     schedule:
       interval: 'weekly'
+    cooldown:
+      default-days: 7
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
@@ -33,3 +38,5 @@ updates:
     labels:
       - 'commit::chore'
       - 'type::automated-pr'
+    cooldown:
+      default-days: 7

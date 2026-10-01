@@ -20,10 +20,12 @@ const {
   formToJSON,
   getAdapter,
   mergeConfig,
+  create,
 } = axios;
 
 export {
   axios as default,
+  create,
   Axios,
   AxiosError,
   CanceledError,

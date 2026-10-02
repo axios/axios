@@ -49,4 +49,17 @@ describe('module cjs typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('checks fetch options while allowing provider extensions', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-fetch-options.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'fetch-options-cjs', sourcePath, {
+      compilerOptions: { ...tsconfig.compilerOptions, strict: true },
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
 });

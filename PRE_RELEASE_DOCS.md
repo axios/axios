@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Fetch options typing for v2
+
+- **Change:** Validate known `fetchOptions` fields consistently in ESM and CommonJS while retaining provider-specific extensions.
+- **Source:** PR #10961; issue #6869; `PRE_RELEASE_CHANGELOG.md` Breaking Changes, Types - Fetch Options.
+- **Status:** Pending.
+- **Docs targets:** README TypeScript and fetch-adapter sections; `docs/pages/advanced/type-script.md`; `docs/pages/advanced/fetch-adapter.md`; v2 migration guide; translated docs after the English wording is finalized.
+- **Required content:** Explain that standard `RequestInit` fields and globally augmented fields, such as Next.js `next`, retain their declared types. Invalid values formerly accepted through the `Record<string, any>` union now produce TypeScript errors. Correct those values or annotate reusable options with `RequestInit` to avoid overly broad inferred strings. Provider-specific options such as Node's `dispatcher` remain accepted without casts or global augmentation, including interfaces without index signatures. Unknown property names remain allowed intentionally; the type does not catch every misspelled key. The existing `body`, `headers`, `method`, and `signal` omission from standard-option checking remains unchanged.
+- **Examples:** Show `{ cache: 'no-store', dispatcher }` as a valid combination and contrast it with the rejected `{ cache: 123, dispatcher }`. Show `const options: RequestInit = { cache: 'no-store' }` for reusable standard options and a globally augmented `next: { revalidate: 60 }` field for framework integration.
+- **Notes:** Scope this breaking declaration change to v2. There is no new runtime validation or behavior change, and no migration is required for provider-specific fields that do not conflict with known option types.
+
 ### Raw header parser dictionary for v2
 
 - **Change:** Document the null-prototype return value of `axios/unsafe/helpers/parseHeaders.js`.

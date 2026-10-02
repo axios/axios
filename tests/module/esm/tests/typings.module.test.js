@@ -43,4 +43,21 @@ describe('module esm typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('checks fetch options while allowing provider extensions', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-fetch-options.ts');
+    const fixturePath = createTempFixture(
+      suiteRoot,
+      'fetch-options-esm',
+      sourcePath,
+      { compilerOptions: { ...tsconfig.compilerOptions, strict: true } },
+      { type: 'module' }
+    );
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
 });

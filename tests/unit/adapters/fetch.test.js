@@ -987,7 +987,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       assert.strictEqual(err.name, 'CanceledError');
       assert.strictEqual(err.code, 'ERR_CANCELED');
-      assert.strictEqual(err.cause, underlying);
+      assert.strictEqual(err.cause, controller.signal.reason);
       assert.strictEqual(Object.getOwnPropertyDescriptor(err, 'cause').enumerable, false);
       assert.ok(!Object.keys(err).includes('cause'));
       assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));

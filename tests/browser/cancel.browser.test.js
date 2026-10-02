@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import axios from '../../index.js';
 
@@ -92,6 +92,7 @@ describe('cancel (vitest browser)', () => {
 
   afterEach(() => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
+    vi.restoreAllMocks();
   });
 
   describe('when called before sending request', () => {
@@ -218,6 +219,102 @@ describe('cancel (vitest browser)', () => {
     expect(axios.isCancel(error)).toBe(true);
     expect(error.message).toBe('TimeoutError');
     expect(requests).toHaveLength(0);
+  });
+
+  it.each([
+    ['Symbol', Symbol('stop'), 'Symbol(stop)'],
+    ['BigInt', BigInt(1), '1'],
+    ['zero', 0, '0'],
+    ['false', false, 'false'],
+    ['empty string', '', ''],
+    ['null', null, 'canceled'],
+    ['object', { operation: 'stop' }, 'canceled'],
+    ['Error', new Error('stop'), 'stop'],
+    ['AxiosError', new axios.AxiosError('stop', 'ERR_BAD_REQUEST'), 'stop'],
+    [
+      'throwing message getter',
+      {
+        get message() {
+          throw new Error('unreadable');
+        },
+      },
+      'canceled',
+    ],
+  ])('cancels active XHR with %s and removes its listener', async (label, reason, message) => {
+    const controller = new AbortController();
+    const add = vi.spyOn(controller.signal, 'addEventListener');
+    const remove = vi.spyOn(controller.signal, 'removeEventListener');
+    const result = axios
+      .get('/foo/bar', { adapter: 'xhr', signal: controller.signal })
+      .catch((error) => error);
+    const request = await waitForRequest();
+
+    controller.abort(reason);
+    // Assert transport teardown before awaiting settlement: a regression must
+    // fail here instead of passing after a mocked response completes the request.
+    expect(request.statusText).toBe('abort');
+    const error = await result;
+    expect(axios.isCancel(error)).toBe(true);
+    expect(error.code).toBe('ERR_CANCELED');
+    expect(error.message).toBe(message);
+    expect(error.cause).toBe(reason);
+    expect(error.request).toBe(request);
+    expect(() => JSON.stringify(error.toJSON())).not.toThrow();
+    const listener = add.mock.calls.find((call) => call[0] === 'abort')[1];
+    expect(remove).toHaveBeenCalledWith('abort', listener);
+  });
+
+  it('rejects a pre-aborted Symbol without creating an XHR', async () => {
+    const controller = new AbortController();
+    const reason = Symbol('stop');
+    controller.abort(reason);
+    const error = await axios
+      .get('/foo', { adapter: 'xhr', signal: controller.signal })
+      .catch((error) => error);
+    expect(error.code).toBe('ERR_CANCELED');
+    expect(error.message).toBe('Symbol(stop)');
+    expect(error.cause).toBe(reason);
+    expect(requests).toHaveLength(0);
+  });
+
+  it('preserves the Symbol cause when Fetch rejects with a native abort error', async () => {
+    const controller = new AbortController();
+    const reason = Symbol('stop');
+    let started;
+    let fetchSignal;
+    const ready = new Promise((resolve) => {
+      started = resolve;
+    });
+    const result = axios
+      .get('/foo', {
+        adapter: 'fetch',
+        signal: controller.signal,
+        env: {
+          fetch: (request) =>
+            new Promise((resolve, reject) => {
+              fetchSignal = request.signal;
+              fetchSignal.addEventListener(
+                'abort',
+                () => {
+                  reject(new DOMException('The operation was aborted', 'AbortError'));
+                },
+                { once: true }
+              );
+              started();
+            }),
+        },
+      })
+      .catch((error) => error);
+
+    await ready;
+    controller.abort(reason);
+    expect(fetchSignal.aborted).toBe(true);
+    const error = await result;
+    expect(axios.isCancel(error)).toBe(true);
+    expect(error.code).toBe('ERR_CANCELED');
+    expect(error.message).toBe('Symbol(stop)');
+    expect(error.cause).toBe(reason);
+    expect(Object.getOwnPropertyDescriptor(error, 'cause').enumerable).toBe(false);
   });
 
   describe('listener cleanup on error paths', () => {

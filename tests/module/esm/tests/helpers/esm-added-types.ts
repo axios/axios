@@ -45,6 +45,17 @@ const cancel = new CanceledError<{ ok: true }>(
   {} as InternalAxiosRequestConfig,
   {}
 );
+// AbortSignal.reason can be any JavaScript value; message remains a string.
+const cancelMessage: string = cancel.message;
+const cancelCause: unknown = cancel.cause;
+cancel.cause = Symbol('stop');
+cancel.cause = 0;
+// @ts-expect-error -- inspect or narrow an unknown cancellation cause first
+const errorCause: Error | undefined = cancel.cause;
+void cancelMessage;
+void cancelCause;
+void errorCause;
+
 const cancelFlag: boolean | undefined = cancel.__CANCEL__;
 const cancelCtor: typeof CanceledError = axios.Cancel;
 const cancelFromAlias = new cancelCtor('from alias');

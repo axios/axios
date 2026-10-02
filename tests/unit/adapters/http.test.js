@@ -5346,7 +5346,8 @@ describe('supports http with nodejs', () => {
 
           await assert.rejects(request, (error) => {
             assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
-            assert.strictEqual(error.message, reason);
+            assert.strictEqual(error.message, String(reason));
+            assert.strictEqual(error.cause, reason);
             return true;
           });
         } finally {

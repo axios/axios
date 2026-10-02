@@ -10,6 +10,10 @@ The rules below are a Copilot-facing subset of the load-bearing safety guarantee
 - Do not add new runtime dependencies without discussion. `package-lock.json` is verified by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
 - Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.
 
+## Pull requests
+
+- Apply the existing `ai-assisted` repository label to pull requests created or updated with AI assistance, including AI-generated descriptions. Do not add a surfer emoji to PR titles or bodies. If you cannot apply labels, report that a maintainer needs to apply `ai-assisted`.
+
 ## Architecture in one screen
 
 - `lib/core/` — domain logic: `Axios`, `AxiosError`, `AxiosHeaders`, `InterceptorManager`, config merge, request dispatch.

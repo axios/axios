@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress';
+import { searchConfig } from './search.mts';
 
 // https://vitepress.dev/reference/site-config
 
@@ -352,6 +353,7 @@ export default defineConfig({
     },
   },
   themeConfig: {
+    search: searchConfig,
     logo: {
       dark: '/words.svg',
       light: '/words-light.svg',

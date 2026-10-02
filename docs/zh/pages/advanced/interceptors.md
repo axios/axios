@@ -79,6 +79,42 @@ axios.interceptors.request.use(
 );
 ```
 
+### 同步拦截器错误
+
+同步请求拦截器抛出错误时，axios 会调用与该拦截器配对的 `onRejected` 处理器，并停止运行其余请求拦截器。如果处理器正常返回（包括返回 `undefined` 或已兑现的 Promise），该错误会被视为已处理，axios 将使用最后一个有效配置发送请求。处理器的返回值不会替换该配置。
+
+若要阻止发送请求，请省略拒绝处理器，或让它抛出错误或返回已拒绝的 Promise。最终错误随后会继续传递给响应拒绝拦截器。
+
+```js
+axios.interceptors.request.use(
+  function validate(config) {
+    if (!config.headers.has("Authorization")) {
+      throw new Error("Authorization is required");
+    }
+    return config;
+  },
+  function rejectInvalidRequest(error) {
+    return Promise.reject(error);
+  },
+  { synchronous: true }
+);
+```
+
+仅记录错误的拒绝处理器可以正常返回，以保留现有的继续请求行为：
+
+```js
+axios.interceptors.request.use(
+  function prepare(config) {
+    throw new Error("Optional preparation failed");
+  },
+  function logPreparationFailure(error) {
+    console.warn(error);
+    // 正常返回将使用最后一个有效配置发送请求。
+  },
+  { synchronous: true }
+);
+```
+
 ## 使用 `runWhen` 的拦截器
 
 如果你希望根据运行时条件决定是否执行某个拦截器，可以在选项对象中添加 `runWhen` 函数。仅当 `runWhen` 返回 `false` 时，拦截器不会执行。该函数会以 config 对象作为参数调用（你也可以为其绑定自定义参数）。这对于只需在特定时机运行的异步请求拦截器非常实用。

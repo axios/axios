@@ -2,6 +2,13 @@ import { describe, it, expect } from 'vitest';
 import parseHeaders from '../../../lib/helpers/parseHeaders.js';
 
 describe('helpers::parseHeaders', () => {
+  it.each(['', undefined, null])('should return an empty dictionary for %s', (rawHeaders) => {
+    const parsed = parseHeaders(rawHeaders);
+
+    expect(Object.getPrototypeOf(parsed)).toBeNull();
+    expect(Object.keys(parsed)).toEqual([]);
+  });
+
   it('should parse headers', () => {
     const date = new Date();
     const parsed = parseHeaders(
@@ -39,5 +46,72 @@ describe('helpers::parseHeaders', () => {
 
     expect(parsed.age).toEqual('age-a');
     expect(parsed.foo).toEqual('foo-a, foo-b');
+  });
+
+  it('should retain prototype-like header names as own dictionary entries', () => {
+    const parsed = parseHeaders(
+      '__proto__: first\n' +
+        '__proto__: second\n' +
+        'Constructor: first\n' +
+        'constructor: second\n' +
+        'Prototype: value\n'
+    );
+
+    expect(Object.getPrototypeOf(parsed)).toBeNull();
+    expect(Object.prototype.hasOwnProperty.call(parsed, '__proto__')).toBe(true);
+    expect(parsed.__proto__).toBe('first, second');
+    expect(parsed.constructor).toBe('first, second');
+    expect(parsed.prototype).toBe('value');
+  });
+
+  it.each(['x-parseheaders-accessor', 'set-cookie'])(
+    'should not invoke inherited accessors while parsing %s',
+    (name) => {
+      const descriptor = Object.getOwnPropertyDescriptor(Object.prototype, name);
+
+      try {
+        Object.defineProperty(Object.prototype, name, {
+          configurable: true,
+          get() {
+            throw new Error('inherited header getter');
+          },
+          set() {
+            throw new Error('inherited header setter');
+          },
+        });
+
+        const parsed = parseHeaders(name + ': first\n' + name + ': second\n');
+
+        expect(Object.prototype.hasOwnProperty.call(parsed, name)).toBe(true);
+        expect(parsed[name]).toEqual(name === 'set-cookie' ? ['first', 'second'] : 'first, second');
+      } finally {
+        if (descriptor) {
+          Object.defineProperty(Object.prototype, name, descriptor);
+        } else {
+          delete Object.prototype[name];
+        }
+      }
+    }
+  );
+
+  it('should ignore duplicate node-style headers after an empty first value', () => {
+    const parsed = parseHeaders('Content-Length:\n' + 'Content-Length: 10\n');
+
+    expect(parsed['content-length']).toEqual('');
+  });
+
+  it('should ignore inherited parsed header values', () => {
+    Object.prototype['content-length'] = '';
+    Object.prototype.foo = true;
+
+    try {
+      const parsed = parseHeaders('Content-Length: 10\n' + 'Foo: foo\n' + 'Foo: bar\n');
+
+      expect(parsed['content-length']).toEqual('10');
+      expect(parsed.foo).toEqual('foo, bar');
+    } finally {
+      delete Object.prototype['content-length'];
+      delete Object.prototype.foo;
+    }
   });
 });

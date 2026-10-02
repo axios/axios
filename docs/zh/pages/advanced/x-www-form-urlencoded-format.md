@@ -87,6 +87,8 @@ await axios.postForm('https://postman-echo.com/post', data, {
 
 当 axios 通过 `AxiosURLSearchParams` 序列化 `params` 对象时，会调用与 FormData 序列化器相同的递归遍历器。`maxDepth` 选项（默认 `100`）限制递归的最大深度。超过限制的载荷会抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`，而不是导致调用栈溢出。
 
+共享类型成员 `SerializerOptions.Blob` 只影响序列化到符合规范的 `FormData`；序列化到 `URLSearchParams` 时没有效果。
+
 ```js
 // 如果你的 params 对象确实需要超过 100 层嵌套，可提高限制：
 axios.get('/api', { params: deepObject, paramsSerializer: { maxDepth: 200 } });

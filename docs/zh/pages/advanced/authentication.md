@@ -33,6 +33,8 @@ const response = await axios.get("https://api.example.com/data", {
 });
 ```
 
+如果未提供 `auth`，Node.js HTTP 和 fetch 适配器也可以从请求 URL 中提取 Basic 认证凭据，例如 `https://myUser:myPassword@api.example.com/data`。URL 中经过百分号编码的凭据会在生成 `Authorization` 请求头前解码。新代码建议优先使用显式的 `auth` 选项；它会优先于 URL 中的凭据。
+
 ::: tip
 对于 Bearer 令牌和 API 密钥，请使用自定义 `Authorization` 请求头，而非 `auth` 选项——`auth` 仅适用于 HTTP Basic 认证。
 :::

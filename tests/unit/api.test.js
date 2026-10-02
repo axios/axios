@@ -69,6 +69,66 @@ describe('static api', () => {
     assert.strictEqual(typeof axios.getUri, 'function');
   });
 
+  it('should ignore inherited data for bodyless method helpers', async () => {
+    Object.defineProperty(Object.prototype, 'data', {
+      value: 'inherited-body',
+      configurable: true,
+    });
+
+    try {
+      await Promise.all(
+        ['delete', 'get', 'head', 'options'].map(async (method) => {
+          let seenData = 'unset';
+
+          await axios[method]('/test', {
+            adapter(config) {
+              seenData = config.data;
+
+              return Promise.resolve({
+                data: null,
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                config,
+                request: {},
+              });
+            },
+          });
+
+          assert.strictEqual(seenData, undefined);
+        })
+      );
+    } finally {
+      delete Object.prototype.data;
+    }
+  });
+
+  it('should ignore inherited nested serializer fields in getUri', () => {
+    let serializeInvoked = false;
+
+    Object.defineProperty(Object.prototype, 'serialize', {
+      value() {
+        serializeInvoked = true;
+        return 'inherited=1';
+      },
+      configurable: true,
+    });
+
+    try {
+      assert.strictEqual(
+        axios.getUri({
+          url: '/foo',
+          params: { value: 'a b' },
+          paramsSerializer: {},
+        }),
+        '/foo?value=a+b'
+      );
+      assert.strictEqual(serializeInvoked, false);
+    } finally {
+      delete Object.prototype.serialize;
+    }
+  });
+
   it('should have isAxiosError properties', () => {
     assert.strictEqual(typeof axios.isAxiosError, 'function');
   });

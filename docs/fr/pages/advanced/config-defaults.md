@@ -31,6 +31,8 @@ instance.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 
 La configuration est fusionnée selon un ordre de priorité. L'ordre est le suivant : d'abord les valeurs par défaut de la bibliothèque, puis les propriétés par défaut de l'instance, et enfin l'argument de configuration de la requête. Voici un exemple de cet ordre de priorité :
 
+Certaines options sont propres à chaque requête et ne sont lues que depuis la configuration de la requête. `data` en fait partie : axios n'hérite pas des corps de requête depuis les valeurs par défaut globales ou d'instance et ne les fusionne pas en profondeur. Si chaque requête doit inclure des champs de corps communs, ajoutez-les avec un intercepteur de requête ou `transformRequest`, en limitant soigneusement cette logique pour éviter d'envoyer des valeurs sensibles au mauvais point de terminaison.
+
 Créons d'abord une instance avec les valeurs par défaut fournies par la bibliothèque. À ce stade, la valeur de configuration du timeout est `0`, valeur par défaut de la bibliothèque.
 
 ```js

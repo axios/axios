@@ -31,6 +31,43 @@ function baseConfig(overrides = {}) {
 }
 
 describe('core::dispatchRequest', () => {
+  describe('JSON FormData transform', () => {
+    it('rejects deeply nested field paths before adapter dispatch', async () => {
+      const data = new FormData();
+      let adapterCalled = false;
+
+      data.append('foo' + '[bar]'.repeat(101), '123');
+
+      const config = baseConfig({
+        data,
+        headers: { 'Content-Type': 'application/json' },
+        method: 'post',
+        adapter(adapterConfig) {
+          adapterCalled = true;
+          return Promise.resolve({
+            data: null,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config: adapterConfig,
+            request: {},
+          });
+        },
+      });
+
+      let thrown;
+      try {
+        await dispatchRequest(config);
+      } catch (e) {
+        thrown = e;
+      }
+
+      assert.ok(thrown instanceof AxiosError, 'must be AxiosError');
+      assert.strictEqual(thrown.code, AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED);
+      assert.strictEqual(adapterCalled, false);
+    });
+  });
+
   describe('JSON parse failure on adapter resolution', () => {
     it('rejects with AxiosError carrying response and status', async () => {
       const response = {

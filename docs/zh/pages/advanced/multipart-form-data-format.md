@@ -9,6 +9,8 @@ formData.append('foo', 'bar');
 axios.post('https://httpbin.org/post', formData);
 ```
 
+对于浏览器、Web Worker 或 React Native 的 `FormData`，不要手动设置 `Content-Type` 请求头；这些运行时会自行添加 multipart boundary。
+
 在 Node.js 中，可以使用 `form-data` 库，如下所示：
 
 ```js
@@ -68,10 +70,10 @@ axios
 设置 `formDataHeaderPolicy: 'content-only'` 可**只**从 `getHeaders()` 复制 `Content-Type` 和 `Content-Length`，再通过请求的 `headers` 配置显式设置其他请求头：
 
 ```js
-await axios.post("https://example.com/upload", form, {
-  formDataHeaderPolicy: "content-only",
+await axios.post('https://example.com/upload', form, {
+  formDataHeaderPolicy: 'content-only',
   headers: {
-    Authorization: "Bearer my-token",
+    Authorization: 'Bearer my-token',
   },
 });
 ```
@@ -101,6 +103,7 @@ FormData 序列化器通过 `config.formSerializer` 对象属性支持以下额�
   - `false`（默认）- 添加空方括号（`arr[]: 1`，`arr[]: 2`，`arr[]: 3`）
   - `true` - 添加带索引的方括号（`arr[0]: 1`，`arr[1]: 2`，`arr[2]: 3`）
 - `maxDepth: number = 100` - 序列化器递归的最大对象嵌套深度。如果输入超过此深度，将抛出 `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` 的 `AxiosError`。这可以保护服务端应用免受深层嵌套载荷的 DoS 攻击。设置为 `Infinity` 可禁用此限制。
+- `Blob: typeof Blob` - 在符合规范的 `FormData` 中转换类 ArrayBuffer 值时使用的 Blob 构造函数。只有当运行时以其他标识符提供兼容的 `Blob` 构造函数时，才需要覆盖它。
 
 ```js
 // 当 schema 确实需要超过 100 层嵌套时，可提高限制：
@@ -143,5 +146,23 @@ formData.append('users[1][name]', 'Thomas');
 formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
+
+## 将 FormData 转回 JSON
+
+`axios.formToJSON()` 会将字段名称中的点号和方括号表示法转换为嵌套对象和数组。只有 `.`、`[` 和 `]` 是结构分隔符。`-`、空格、`+`、`*` 和 `&` 等其他字符会保留为字面键的一部分。
+
+```js
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+console.log(axios.formToJSON(form));
+// {
+//   'user-name': 'johndoe',
+//   user: { name: 'john' }
+// }
+```
+
+`user[name]` 同样会创建嵌套对象路径，而 `items[]` 会创建数组。
 
 axios 支持以下快捷方法：`postForm`、`putForm`、`patchForm`，它们分别对应相应的 HTTP 方法，并预设 `Content-Type` 请求头为 `multipart/form-data`。

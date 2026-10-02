@@ -11,6 +11,22 @@ describe('helpers::fromDataURI', () => {
     assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
   });
 
+  it('should not call decodeURIComponent for base64 data', () => {
+    const buffer = Buffer.from('123');
+    const originalDecodeURIComponent = globalThis.decodeURIComponent;
+    globalThis.decodeURIComponent = () => {
+      throw new Error('base64 body should not be URL decoded');
+    };
+
+    try {
+      const dataURI = 'data:application/octet-stream;base64,' + buffer.toString('base64');
+
+      assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
+    } finally {
+      globalThis.decodeURIComponent = originalDecodeURIComponent;
+    }
+  });
+
   it('should parse data URI with no mediatype and base64', () => {
     const buffer = Buffer.from('123');
     const dataURI = 'data:;base64,' + buffer.toString('base64');
@@ -61,7 +77,8 @@ describe('helpers::fromDataURI', () => {
   });
 
   it('should preserve full content type with parameters in Blob', () => {
-    const dataURI = 'data:text/plain;charset=utf-8;base64,' + Buffer.from('hello').toString('base64');
+    const dataURI =
+      'data:text/plain;charset=utf-8;base64,' + Buffer.from('hello').toString('base64');
     const blob = fromDataURI(dataURI, true, { Blob });
 
     assert.strictEqual(blob.type, 'text/plain;charset=utf-8');
@@ -75,14 +92,38 @@ describe('helpers::fromDataURI', () => {
   });
 
   it('should reject data URI with unsupported protocol prefix', () => {
-    assert.throws(() => {
-      fromDataURI('datax:,hi', false);
-    }, (err) => err.code === 'ERR_NOT_SUPPORT' && err.message.includes('Unsupported protocol'));
+    assert.throws(
+      () => {
+        fromDataURI('datax:,hi', false);
+      },
+      (err) => err.code === 'ERR_NOT_SUPPORT' && err.message.includes('Unsupported protocol')
+    );
   });
 
   it('should reject data URI without comma separator', () => {
-    assert.throws(() => {
-      fromDataURI('data:hi', false);
-    }, (err) => err.code === 'ERR_INVALID_URL');
+    assert.throws(
+      () => {
+        fromDataURI('data:hi', false);
+      },
+      (err) => err.code === 'ERR_INVALID_URL'
+    );
   });
+
+  it('should reject a media type containing more than one slash', () => {
+    assert.throws(
+      () => {
+        fromDataURI('data:text/plain/extra,hello', false);
+      },
+      (err) => err.code === 'ERR_INVALID_URL'
+    );
+  });
+
+  it('should reject a long malformed media type within the test timeout', () => {
+    assert.throws(
+      () => {
+        fromDataURI(`data:${'a/'.repeat(50000)}invalid`, false);
+      },
+      (err) => err.code === 'ERR_INVALID_URL'
+    );
+  }, 1000);
 });

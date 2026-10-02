@@ -79,6 +79,42 @@ axios.interceptors.request.use(
 );
 ```
 
+### Erreurs des intercepteurs synchrones
+
+Lorsqu'un intercepteur de requête synchrone lève une erreur, axios appelle le gestionnaire `onRejected` associé à cet intercepteur et cesse d'exécuter les intercepteurs de requête restants. Si le gestionnaire retourne normalement —y compris `undefined` ou une Promise résolue— l'erreur est considérée comme gérée et axios envoie la requête avec la dernière configuration valide. La valeur retournée par le gestionnaire ne remplace pas cette configuration.
+
+Pour empêcher l'envoi, omettez le gestionnaire de rejet ou faites-lui lever une erreur ou retourner une Promise rejetée. L'erreur terminale continue alors à travers les intercepteurs de rejet de réponse.
+
+```js
+axios.interceptors.request.use(
+  function validate(config) {
+    if (!config.headers.has("Authorization")) {
+      throw new Error("Authorization is required");
+    }
+    return config;
+  },
+  function rejectInvalidRequest(error) {
+    return Promise.reject(error);
+  },
+  { synchronous: true }
+);
+```
+
+Un gestionnaire qui se contente de journaliser l'erreur peut retourner normalement pour conserver le comportement existant de poursuite :
+
+```js
+axios.interceptors.request.use(
+  function prepare(config) {
+    throw new Error("Optional preparation failed");
+  },
+  function logPreparationFailure(error) {
+    console.warn(error);
+    // Un retour normal envoie la requête avec la dernière configuration valide.
+  },
+  { synchronous: true }
+);
+```
+
 ## Intercepteurs avec `runWhen`
 
 Si vous souhaitez exécuter un intercepteur particulier en fonction d'une vérification au moment de l'exécution, vous pouvez ajouter une fonction `runWhen` à l'objet d'options. L'intercepteur ne sera pas exécuté si et seulement si le résultat de `runWhen` est `false`. La fonction sera appelée avec l'objet de configuration (n'oubliez pas que vous pouvez également y lier vos propres arguments). Cela peut être utile lorsque vous avez un intercepteur de requête asynchrone qui ne doit s'exécuter que dans certaines conditions.

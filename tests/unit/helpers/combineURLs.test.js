@@ -10,6 +10,10 @@ describe('helpers::combineURLs', () => {
     expect(combineURLs('https://api.github.com/', '/users')).toBe('https://api.github.com/users');
   });
 
+  it('should remove multiple trailing slashes from the base URL', () => {
+    expect(combineURLs('https://api.github.com///', '/users')).toBe('https://api.github.com/users');
+  });
+
   it('should insert missing slash', () => {
     expect(combineURLs('https://api.github.com', 'users')).toBe('https://api.github.com/users');
   });

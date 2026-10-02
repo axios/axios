@@ -2,11 +2,16 @@ import axios from '../index.js';
 
 const { GITHUB_TOKEN } = process.env;
 
-GITHUB_TOKEN ? console.log(`[GITHUB_TOKEN OK]`) : console.warn(`[GITHUB_TOKEN is not defined]`);
+if (GITHUB_TOKEN) {
+  console.log(`[GITHUB_TOKEN OK]`);
+} else {
+  console.warn(`[GITHUB_TOKEN is not defined]`);
+}
 
 const defaultTransform = axios.defaults.transformRequest;
 
 export default axios.create({
+  timeout: 10000,
   transformRequest: [
     defaultTransform[0],
     function (data) {
@@ -19,6 +24,6 @@ export default axios.create({
   ],
   baseURL: 'https://api.github.com/',
   headers: {
-    Authorization: GITHUB_TOKEN ? `token ${GITHUB_TOKEN}` : null,
+    ...(GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {}),
   },
 });

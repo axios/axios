@@ -1,6 +1,23 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
+import axios from '../../index.js';
 import Axios from '../../lib/core/Axios.js';
+import methodList from '../../lib/core/methodList.js';
+import defaults from '../../lib/defaults/index.js';
+
+const expectedMethodList = [
+  'get',
+  'delete',
+  'head',
+  'options',
+  'post',
+  'put',
+  'patch',
+  'purge',
+  'link',
+  'unlink',
+  'query',
+];
 
 describe('Axios', () => {
   describe('handle un-writable error stack', () => {
@@ -48,8 +65,52 @@ describe('Axios', () => {
   });
 
   it('should not throw if the config argument is omitted', () => {
-    const axios = new Axios();
+    const client = new Axios();
 
-    assert.deepStrictEqual(axios.defaults, {});
+    assert.deepStrictEqual(client.defaults, {});
+  });
+
+  it('should define default headers for every supported method', () => {
+    assert.deepStrictEqual(methodList, expectedMethodList);
+    assert.strictEqual(Object.isFrozen(methodList), true);
+
+    expectedMethodList.forEach((method) => {
+      assert.deepStrictEqual(defaults.headers[method], {});
+    });
+  });
+
+  it('should apply only the matching method header defaults', async () => {
+    const client = axios.create();
+
+    expectedMethodList.forEach((method) => {
+      client.defaults.headers[method][`X-Method-${method}`] = method;
+    });
+
+    for (const requestMethod of expectedMethodList) {
+      await client.request({
+        method: requestMethod,
+        url: '/method-headers',
+        adapter: async (config) => {
+          assert.strictEqual(config.headers.get(`X-Method-${requestMethod}`), requestMethod);
+
+          expectedMethodList.forEach((method) => {
+            assert.strictEqual(config.headers.has(method), false);
+
+            if (method !== requestMethod) {
+              assert.strictEqual(config.headers.has(`X-Method-${method}`), false);
+            }
+          });
+
+          return {
+            data: null,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config,
+            request: {},
+          };
+        },
+      });
+    }
   });
 });

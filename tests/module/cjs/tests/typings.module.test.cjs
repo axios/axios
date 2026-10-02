@@ -37,6 +37,19 @@ describe('module cjs typings compatibility', () => {
     }
   });
 
+  it('type-checks additive commonjs public typings with strict null checks', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-added-types.ts');
+    const fixturePath = createTempFixture(suiteRoot, 'typings-cjs-added', sourcePath, tsconfig);
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '--strictNullChecks', '-p', 'tsconfig.json'], {
+        cwd: fixturePath,
+      });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
   it('checks fetch options while allowing provider extensions', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-fetch-options.ts');
     const fixturePath = createTempFixture(suiteRoot, 'fetch-options-cjs', sourcePath, {

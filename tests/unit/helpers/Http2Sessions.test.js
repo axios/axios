@@ -87,6 +87,17 @@ describe('helpers::Http2Sessions', () => {
     expect(connectSpy).toHaveBeenCalledTimes(2);
   });
 
+  it('handles a session error and removes the failed session', () => {
+    const first = pool.getSession('https://example.test');
+
+    expect(() => first.emit('error', new Error('connection failed'))).not.toThrow();
+
+    const second = pool.getSession('https://example.test');
+
+    expect(second).not.toBe(first);
+    expect(connectSpy).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps unrelated authorities cached when one session closes', () => {
     const first = pool.getSession('https://example.test');
     const other = pool.getSession('https://other.test');

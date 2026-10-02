@@ -12,6 +12,8 @@ const instance = axios.create({
 
 L'adaptateur supporte les mêmes fonctionnalités que l'adaptateur `xhr`, notamment la capture de la progression des envois et téléchargements. Il supporte également des types de réponse supplémentaires tels que `stream` et `formdata` (si l'environnement les prend en charge).
 
+Lorsque `auth` est omis, l'adaptateur fetch peut lire les identifiants HTTP Basic depuis l'URL de requête, par exemple `https://user:pass@example.com`. Les identifiants d'URL encodés en pourcentage sont décodés avant la génération de l'en-tête `Authorization`, et `auth` prend le dessus sur les identifiants intégrés à l'URL.
+
 ## Fetch personnalisé <Badge type="tip" text="v1.12.0+" />
 
 À partir de `v1.12.0`, vous pouvez personnaliser l'adaptateur fetch pour utiliser une fonction `fetch` personnalisée au lieu de celle de l'environnement global. Vous pouvez passer une fonction `fetch`, ainsi que des constructeurs `Request` et `Response` personnalisés via l'option de configuration `env`. Cela est utile lorsque vous travaillez avec des environnements personnalisés ou des frameworks d'application qui fournissent leur propre implémentation de `fetch`.

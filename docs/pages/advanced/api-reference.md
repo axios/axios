@@ -6,6 +6,27 @@ Below is a list of all the available functions and classes in the axios package.
 
 The `axios` instance is the main object that you will use to make HTTP requests. It is a factory function that creates a new instance of the `Axios` class. The `axios` instance has a number of methods that you can use to make HTTP requests. These methods are documented in the [Request aliases section](/pages/advanced/request-method-aliases) of the documentation.
 
+## TypeScript request types
+
+The public request types use separate generics for request data and query params:
+
+```ts
+AxiosRequestConfig<D = any, P = any>
+RawAxiosRequestConfig<D = any, P = any>
+InternalAxiosRequestConfig<D = any, P = any>
+AxiosDefaults<D = any, P = any>
+CreateAxiosDefaults<D = any, P = any>
+
+AxiosResponse<T = any, D = any, H = {}, P = any>
+AxiosPromise<T = any, D = any, P = any>
+AxiosError<T = unknown, D = any, P = any>
+CanceledError<T, D = any, P = any>
+```
+
+`D` is the request body type and `P` is the query params type. `AxiosResponse`, `AxiosPromise`, errors, defaults, callable instances, request aliases, adapters, and `mergeConfig()` preserve both on the request config. Custom params serializers receive the same `P`.
+
+Request methods use the generic order `<T, R, D, P>`, with `P` added last so existing explicit generic arguments remain compatible. When no custom response type `R` is supplied, the resolved `AxiosResponse` keeps `D` and `P` on `response.config`; an explicitly supplied `R` continues to control the resolved value. All request-data and params generics default to `any` for backward compatibility.
+
 ## Classes
 
 ### `Axios`
@@ -25,7 +46,7 @@ constructor(instanceConfig?: AxiosRequestConfig);
 Handles request invocation and response resolution. This is the main method that you will use to make HTTP requests. It takes a configuration object as an argument and returns a promise that resolves to the response object.
 
 ```ts
-request(configOrUrl: string | AxiosRequestConfig<D>, config: AxiosRequestConfig<D>): Promise<AxiosResponse<T>>;
+request<T, R, D, P>(config: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `CancelToken` <Badge type="danger" text="Deprecated in favour of AbortController" />
@@ -34,7 +55,15 @@ The `CancelToken` class was based on the `tc39/proposal-cancelable-promises` pro
 
 As of version 0.22.0, the `CancelToken` class is deprecated and will be removed in a future release. It is recommended that you use the `AbortController` API instead.
 
-The class is exported mainly for backwards compatibility and will be removed in a future release. We also strongly discourage its use in new projects, we therefore are not documenting the API as use is discouraged.
+The class is exported mainly for backwards compatibility and will be removed in a future release. We strongly discourage its use in new projects; the legacy interop helpers below are listed only for existing code.
+
+The legacy methods remain typed for existing integrations:
+
+```ts
+subscribe(listener: (cancel: Cancel | any) => void): void;
+unsubscribe(listener: (cancel: Cancel | any) => void): void;
+toAbortSignal(): AbortSignal;
+```
 
 ## Functions
 
@@ -47,7 +76,7 @@ The `AxiosError` class is an error class that is thrown when an HTTP request fai
 Creates a new instance of the `AxiosError` class. The constructor takes an optional message, code, config, request, and response as arguments.
 
 ```ts
-constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D>, request?: any, response?: AxiosResponse<T, D>);
+constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any, response?: AxiosResponse<T, D, {}, P>);
 ```
 
 #### `properties`
@@ -56,7 +85,7 @@ The `AxiosError` class provides the following properties:
 
 ```ts
 // Config instance.
-config?: InternalAxiosRequestConfig<D>;
+config?: InternalAxiosRequestConfig<D, P>;
 
 // Error code.
 code?: string;
@@ -65,7 +94,7 @@ code?: string;
 request?: any;
 
 // Response instance.
-response?: AxiosResponse<T, D>;
+response?: AxiosResponse<T, D, {}, P>;
 
 // Boolean indicating if the error is an `AxiosError`.
 isAxiosError: boolean;
@@ -97,10 +126,12 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 #### `set`
 
 Adds a header to the headers object.
+Empty or whitespace-only header names are ignored.
 
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 ```
 
 #### `get`
@@ -108,9 +139,25 @@ set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): Axios
 Gets a header from the headers object.
 
 ```ts
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
+
+Pass `AxiosHeaders.parseParameters` to parse normalized HTTP parameters into a hardened null-prototype map:
+
+```js
+const headers = new AxiosHeaders({
+  "Content-Type": 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...headers.get("Content-Type", AxiosHeaders.parseParameters),
+});
+// { boundary: "a,b" }
+```
+
+Parameter names are case-insensitive. The parser removes quoted-string delimiters, decodes escaped quotes and backslashes, preserves commas and semicolons inside quoted values, and trims only RFC optional whitespace around unquoted values. It omits `__proto__`, `constructor`, and `prototype`. `get(name, true)` remains the legacy tokenizer.
 
 #### `has`
 
@@ -157,39 +204,57 @@ concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | n
 Converts the headers object to a JSON object.
 
 ```ts
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
+```
+
+#### `toString`
+
+Returns the headers as a CRLF-free HTTP header block, one `name: value` pair per line.
+
+```ts
+toString(): string;
 ```
 
 ### `CanceledError` <Badge type="tip" text="Extended AxiosError" />
 
 The `CanceledError` class is an error class that is thrown when an HTTP request is canceled. It extends the `AxiosError` class.
 
+```ts
+constructor(message?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any);
+__CANCEL__?: boolean;
+```
+
 ### `Cancel` <Badge type="tip" text="Alias for CanceledError" />
 
 The `Cancel` class is an alias for the `CanceledError` class. It is exported for backwards compatibility and will be removed in a future release.
+
+```ts
+Cancel: typeof CanceledError;
+```
 
 ### `isCancel`
 
 A function that checks if an error is a `CanceledError`. Useful for distinguishing intentional cancellations from unexpected errors.
 
 ```ts
-isCancel(value: any): boolean;
+isCancel<T = any, D = any, P = any>(value: any): value is CanceledError<T, D, P>;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 const controller = new AbortController();
 
-axios.get("/api/data", { signal: controller.signal }).catch((error) => {
+axios.get('/api/data', { signal: controller.signal }).catch((error) => {
   if (axios.isCancel(error)) {
-    console.log("Request was cancelled:", error.message);
+    console.log('Request was cancelled:', error.message);
   } else {
-    console.error("Unexpected error:", error);
+    console.error('Unexpected error:', error);
   }
 });
 
-controller.abort("User navigated away");
+controller.abort('User navigated away');
 ```
 
 ### `isAxiosError`
@@ -201,14 +266,14 @@ isAxiosError(value: any): value is AxiosError;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 try {
-  await axios.get("/api/resource");
+  await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     // error.response, error.config, error.code are all available
-    console.error("HTTP error", error.response?.status, error.message);
+    console.error('HTTP error', error.response?.status, error.message);
   } else {
     // A non-axios error (e.g. a programming mistake)
     throw error;
@@ -239,31 +304,34 @@ toFormData(sourceObj: object, formData?: FormData, options?: FormSerializerOptio
 ```
 
 ```js
-import { toFormData } from "axios";
+import { toFormData } from 'axios';
 
-const data = { name: "Jay", avatar: fileBlob };
+const data = { name: 'Jay', avatar: fileBlob };
 const form = toFormData(data);
 // form is now a FormData instance ready to post
-await axios.post("/api/users", form);
+await axios.post('/api/users', form);
 ```
 
 ### `formToJSON`
 
 Converts a `FormData` instance back to a plain JavaScript object. Useful for reading form data in a structured format.
 
+Only dot notation and bracket notation are structural: `.`, `[`, and `]` split paths, while `-`, spaces, `+`, `*`, and `&` stay in literal keys. `foo.bar` and `foo[bar]` create nested objects, and `foo[]` creates an array.
+
 ```ts
 formToJSON(form: FormData): object;
 ```
 
 ```js
-import { formToJSON } from "axios";
+import { formToJSON } from 'axios';
 
 const form = new FormData();
-form.append("name", "Jay");
-form.append("role", "admin");
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
 
 const obj = formToJSON(form);
-console.log(obj); // { name: "Jay", role: "admin" }
+console.log(obj);
+// { "user-name": "johndoe", user: { name: "john" } }
 ```
 
 ### `getAdapter`
@@ -275,13 +343,13 @@ getAdapter(adapters: string | string[]): AxiosAdapter;
 ```
 
 ```js
-import { getAdapter } from "axios";
+import { getAdapter } from 'axios';
 
 // Get the fetch adapter explicitly
-const fetchAdapter = getAdapter("fetch");
+const fetchAdapter = getAdapter('fetch');
 
 // Get the best available adapter from a priority list
-const adapter = getAdapter(["fetch", "xhr", "http"]);
+const adapter = getAdapter(['fetch', 'xhr', 'http']);
 ```
 
 ### `mergeConfig`
@@ -289,14 +357,17 @@ const adapter = getAdapter(["fetch", "xhr", "http"]);
 Merges two axios config objects together, applying the same deep-merge strategy that axios uses internally when combining defaults with per-request options. Later values take precedence.
 
 ```ts
-mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): AxiosRequestConfig<T>;
+mergeConfig<D = any, P = any>(
+  config1: AxiosRequestConfig<D, P>,
+  config2: AxiosRequestConfig<D, P>
+): AxiosRequestConfig<D, P>;
 ```
 
 ```js
-import { mergeConfig } from "axios";
+import { mergeConfig } from 'axios';
 
-const base = { baseURL: "https://api.example.com", timeout: 5000 };
-const override = { timeout: 10000, headers: { "X-Custom": "value" } };
+const base = { baseURL: 'https://api.example.com', timeout: 5000 };
+const override = { timeout: 10000, headers: { 'X-Custom': 'value' } };
 
 const merged = mergeConfig(base, override);
 // { baseURL: "https://api.example.com", timeout: 10000, headers: { "X-Custom": "value" } }
@@ -309,16 +380,16 @@ const merged = mergeConfig(base, override);
 An object that contains a list of HTTP status codes as named constants. Use this to write readable conditionals instead of bare numbers.
 
 ```js
-import axios, { HttpStatusCode } from "axios";
+import axios, { HttpStatusCode } from 'axios';
 
 try {
-  const response = await axios.get("/api/resource");
+  const response = await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === HttpStatusCode.NotFound) {
-      console.error("Resource not found");
+      console.error('Resource not found');
     } else if (error.response?.status === HttpStatusCode.Unauthorized) {
-      console.error("Authentication required");
+      console.error('Authentication required');
     }
   }
 }

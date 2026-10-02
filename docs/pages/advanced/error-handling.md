@@ -54,6 +54,18 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
+## Malformed HTTP(S) URLs
+
+axios rejects an `http:` or `https:` request `url` or `baseURL` that omits `//` after the protocol. For example, `https:example.com` and `https:/example.com` reject with an `AxiosError` whose code is `ERR_INVALID_URL`, instead of being silently normalized by the browser or Node.js URL parser. Use a well-formed URL such as `https://example.com`.
+
+The message names the offending URL, for example:
+
+```text
+Invalid URL "https:example.com": missing "//" after protocol
+```
+
+This behavior prevents malformed URLs from bypassing `baseURL` or URL allowlists. The reported URL is control-character-normalized and redacts credentials, query parameter values, and fragment contents. It retains the scheme, host, path, and query parameter names so the request remains identifiable. Message-level redaction is unconditional because `AxiosError.message` is always included by `toJSON()`; the request config's `redact` option cannot clean an already-created message.
+
 Using the `validateStatus` config option, you can override the default condition (status >= 200 && status < 300) and define HTTP code(s) that should throw an error.
 
 ```js

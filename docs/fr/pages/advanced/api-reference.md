@@ -6,6 +6,27 @@ Vous trouverez ci-dessous la liste de toutes les fonctions et classes disponible
 
 L'instance `axios` est l'objet principal que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. L'instance `axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/pages/advanced/request-method-aliases) de la documentation.
 
+## Types de requête TypeScript
+
+Les types de requête publics utilisent des génériques distincts pour les données de requête et les paramètres de requête :
+
+```ts
+AxiosRequestConfig<D = any, P = any>
+RawAxiosRequestConfig<D = any, P = any>
+InternalAxiosRequestConfig<D = any, P = any>
+AxiosDefaults<D = any, P = any>
+CreateAxiosDefaults<D = any, P = any>
+
+AxiosResponse<T = any, D = any, H = {}, P = any>
+AxiosPromise<T = any, D = any, P = any>
+AxiosError<T = unknown, D = any, P = any>
+CanceledError<T, D = any, P = any>
+```
+
+`D` est le type du corps de la requête et `P` celui des paramètres de requête. `AxiosResponse`, `AxiosPromise`, les erreurs, les valeurs par défaut, les instances appelables, les alias de requête, les adaptateurs et `mergeConfig()` conservent les deux dans la configuration. Les sérialiseurs de paramètres personnalisés reçoivent le même `P`.
+
+Les méthodes de requête utilisent l'ordre générique `<T, R, D, P>`, avec `P` ajouté en dernier afin que les arguments génériques explicites existants restent compatibles. Sans type de réponse personnalisé `R`, l'`AxiosResponse` par défaut conserve `D` et `P` dans `response.config` ; un `R` explicite continue de contrôler la valeur résolue. Les génériques des données et paramètres valent `any` par défaut pour préserver la compatibilité.
+
 ## Classes
 
 ### `Axios`
@@ -25,7 +46,7 @@ constructor(instanceConfig?: AxiosRequestConfig);
 Gère l'invocation de la requête et la résolution de la réponse. C'est la méthode principale pour effectuer des requêtes HTTP. Elle accepte un objet de configuration en argument et retourne une promise qui se résout vers l'objet de réponse.
 
 ```ts
-request(configOrUrl: string | AxiosRequestConfig<D>, config: AxiosRequestConfig<D>): Promise<AxiosResponse<T>>;
+request<T, R, D, P>(config: AxiosRequestConfig<D, P>): Promise<R>;
 ```
 
 ### `CancelToken` <Badge type="danger" text="Déprécié en faveur d'AbortController" />
@@ -34,7 +55,15 @@ La classe `CancelToken` était basée sur la proposition `tc39/proposal-cancelab
 
 Depuis la version 0.22.0, la classe `CancelToken` est dépréciée et sera supprimée dans une prochaine version. Il est recommandé d'utiliser l'API `AbortController` à la place.
 
-La classe est exportée principalement pour des raisons de rétrocompatibilité et sera supprimée dans une prochaine version. Nous déconseillons fortement son utilisation dans de nouveaux projets et ne documentons donc pas cette API.
+La classe est exportée principalement pour des raisons de rétrocompatibilité et sera supprimée dans une prochaine version. Nous déconseillons fortement son utilisation dans de nouveaux projets ; les helpers d'interopérabilité hérités ci-dessous ne sont listés que pour le code existant.
+
+Les méthodes héritées restent typées pour les intégrations existantes :
+
+```ts
+subscribe(listener: (cancel: Cancel | any) => void): void;
+unsubscribe(listener: (cancel: Cancel | any) => void): void;
+toAbortSignal(): AbortSignal;
+```
 
 ## Fonctions
 
@@ -47,7 +76,7 @@ La classe `AxiosError` est une classe d'erreur levée lorsqu'une requête HTTP �
 Crée une nouvelle instance de la classe `AxiosError`. Le constructeur accepte en argument un message, un code, une configuration, une requête et une réponse optionnels.
 
 ```ts
-constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D>, request?: any, response?: AxiosResponse<T, D>);
+constructor(message?: string, code?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any, response?: AxiosResponse<T, D, {}, P>);
 ```
 
 #### `properties`
@@ -56,7 +85,7 @@ La classe `AxiosError` fournit les propriétés suivantes :
 
 ```ts
 // Instance de config.
-config?: InternalAxiosRequestConfig<D>;
+config?: InternalAxiosRequestConfig<D, P>;
 
 // Code d'erreur.
 code?: string;
@@ -65,7 +94,7 @@ code?: string;
 request?: any;
 
 // Instance de réponse.
-response?: AxiosResponse<T, D>;
+response?: AxiosResponse<T, D, {}, P>;
 
 // Booléen indiquant si l'erreur est une `AxiosError`.
 isAxiosError: boolean;
@@ -97,10 +126,12 @@ constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
 #### `set`
 
 Ajoute un en-tête à l'objet d'en-têtes.
+Les noms d'en-têtes vides ou composés uniquement d'espaces sont ignorés.
 
 ```ts
 set(headerName?: string, value?: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 ```
 
 #### `get`
@@ -108,9 +139,25 @@ set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): Axios
 Récupère un en-tête depuis l'objet d'en-têtes.
 
 ```ts
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
 get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
+
+Passez `AxiosHeaders.parseParameters` pour analyser des paramètres HTTP normalisés dans une map renforcée à prototype nul :
+
+```js
+const headers = new AxiosHeaders({
+  "Content-Type": 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...headers.get("Content-Type", AxiosHeaders.parseParameters),
+});
+// { boundary: "a,b" }
+```
+
+Les noms de paramètres sont insensibles à la casse. L'analyseur retire les délimiteurs des chaînes entre guillemets, décode les guillemets et barres obliques inverses échappés, conserve les virgules et points-virgules dans les valeurs entre guillemets et ne retire que les espaces optionnels RFC autour des valeurs sans guillemets. Il omet `__proto__`, `constructor` et `prototype`. `get(name, true)` reste le tokenizer historique.
 
 #### `has`
 
@@ -157,39 +204,57 @@ concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | n
 Convertit l'objet d'en-têtes en objet JSON.
 
 ```ts
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
+```
+
+#### `toString`
+
+Retourne les en-têtes sous forme de bloc d'en-têtes HTTP sans CRLF, avec une paire `nom: valeur` par ligne.
+
+```ts
+toString(): string;
 ```
 
 ### `CanceledError` <Badge type="tip" text="Extension d'AxiosError" />
 
 La classe `CanceledError` est une classe d'erreur levée lorsqu'une requête HTTP est annulée. Elle étend la classe `AxiosError`.
 
+```ts
+constructor(message?: string, config?: InternalAxiosRequestConfig<D, P>, request?: any);
+__CANCEL__?: boolean;
+```
+
 ### `Cancel` <Badge type="tip" text="Alias de CanceledError" />
 
 La classe `Cancel` est un alias de la classe `CanceledError`. Elle est exportée pour des raisons de rétrocompatibilité et sera supprimée dans une prochaine version.
+
+```ts
+Cancel: typeof CanceledError;
+```
 
 ### `isCancel`
 
 Une fonction qui vérifie si une erreur est une `CanceledError`. Utile pour distinguer les annulations intentionnelles des erreurs inattendues.
 
 ```ts
-isCancel(value: any): boolean;
+isCancel<T = any, D = any, P = any>(value: any): value is CanceledError<T, D, P>;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 const controller = new AbortController();
 
-axios.get("/api/data", { signal: controller.signal }).catch((error) => {
+axios.get('/api/data', { signal: controller.signal }).catch((error) => {
   if (axios.isCancel(error)) {
-    console.log("Request was cancelled:", error.message);
+    console.log('Request was cancelled:', error.message);
   } else {
-    console.error("Unexpected error:", error);
+    console.error('Unexpected error:', error);
   }
 });
 
-controller.abort("User navigated away");
+controller.abort('User navigated away');
 ```
 
 ### `isAxiosError`
@@ -201,14 +266,14 @@ isAxiosError(value: any): value is AxiosError;
 ```
 
 ```js
-import axios from "axios";
+import axios from 'axios';
 
 try {
-  await axios.get("/api/resource");
+  await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     // error.response, error.config, error.code sont tous disponibles
-    console.error("HTTP error", error.response?.status, error.message);
+    console.error('HTTP error', error.response?.status, error.message);
   } else {
     // Une erreur non-axios (ex. une erreur de programmation)
     throw error;
@@ -239,31 +304,34 @@ toFormData(sourceObj: object, formData?: FormData, options?: FormSerializerOptio
 ```
 
 ```js
-import { toFormData } from "axios";
+import { toFormData } from 'axios';
 
-const data = { name: "Jay", avatar: fileBlob };
+const data = { name: 'Jay', avatar: fileBlob };
 const form = toFormData(data);
 // form est maintenant une instance FormData prête à être envoyée
-await axios.post("/api/users", form);
+await axios.post('/api/users', form);
 ```
 
 ### `formToJSON`
 
 Convertit une instance `FormData` en objet JavaScript simple. Utile pour lire les données d'un formulaire dans un format structuré.
 
+Seules les notations par points et crochets sont structurelles : `.`, `[` et `]` séparent les chemins, tandis que `-`, les espaces, `+`, `*` et `&` restent dans les clés littérales. `foo.bar` et `foo[bar]` créent des objets imbriqués, et `foo[]` crée un tableau.
+
 ```ts
 formToJSON(form: FormData): object;
 ```
 
 ```js
-import { formToJSON } from "axios";
+import { formToJSON } from 'axios';
 
 const form = new FormData();
-form.append("name", "Jay");
-form.append("role", "admin");
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
 
 const obj = formToJSON(form);
-console.log(obj); // { name: "Jay", role: "admin" }
+console.log(obj);
+// { "user-name": "johndoe", user: { name: "john" } }
 ```
 
 ### `getAdapter`
@@ -275,13 +343,13 @@ getAdapter(adapters: string | string[]): AxiosAdapter;
 ```
 
 ```js
-import { getAdapter } from "axios";
+import { getAdapter } from 'axios';
 
 // Obtenir explicitement l'adaptateur fetch
-const fetchAdapter = getAdapter("fetch");
+const fetchAdapter = getAdapter('fetch');
 
 // Obtenir le meilleur adaptateur disponible depuis une liste de priorité
-const adapter = getAdapter(["fetch", "xhr", "http"]);
+const adapter = getAdapter(['fetch', 'xhr', 'http']);
 ```
 
 ### `mergeConfig`
@@ -289,14 +357,17 @@ const adapter = getAdapter(["fetch", "xhr", "http"]);
 Fusionne deux objets de configuration axios, en appliquant la même stratégie de fusion profonde qu'axios utilise en interne lors de la combinaison des valeurs par défaut avec les options par requête. Les valeurs ultérieures ont la priorité.
 
 ```ts
-mergeConfig<T>(config1: AxiosRequestConfig<T>, config2: AxiosRequestConfig<T>): AxiosRequestConfig<T>;
+mergeConfig<D = any, P = any>(
+  config1: AxiosRequestConfig<D, P>,
+  config2: AxiosRequestConfig<D, P>
+): AxiosRequestConfig<D, P>;
 ```
 
 ```js
-import { mergeConfig } from "axios";
+import { mergeConfig } from 'axios';
 
-const base = { baseURL: "https://api.example.com", timeout: 5000 };
-const override = { timeout: 10000, headers: { "X-Custom": "value" } };
+const base = { baseURL: 'https://api.example.com', timeout: 5000 };
+const override = { timeout: 10000, headers: { 'X-Custom': 'value' } };
 
 const merged = mergeConfig(base, override);
 // { baseURL: "https://api.example.com", timeout: 10000, headers: { "X-Custom": "value" } }
@@ -309,16 +380,16 @@ const merged = mergeConfig(base, override);
 Un objet contenant une liste de codes de statut HTTP sous forme de constantes nommées. Utilisez-le pour écrire des conditions lisibles plutôt que des nombres bruts.
 
 ```js
-import axios, { HttpStatusCode } from "axios";
+import axios, { HttpStatusCode } from 'axios';
 
 try {
-  const response = await axios.get("/api/resource");
+  const response = await axios.get('/api/resource');
 } catch (error) {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === HttpStatusCode.NotFound) {
-      console.error("Resource not found");
+      console.error('Resource not found');
     } else if (error.response?.status === HttpStatusCode.Unauthorized) {
-      console.error("Authentication required");
+      console.error('Authentication required');
     }
   }
 }

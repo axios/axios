@@ -35,6 +35,7 @@ La méthode `set` est utilisée pour définir des en-têtes sur l'instance d'`Ax
 set(headerName, value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher);
 set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string) => boolean);
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean);
 ```
 
 L'argument `rewrite` contrôle le comportement d'écrasement :
@@ -45,6 +46,21 @@ L'argument `rewrite` contrôle le comportement d'écrasement :
 
 L'option peut également accepter une fonction définie par l'utilisateur qui détermine si la valeur doit être écrasée ou non. La fonction reçoit la valeur actuelle, le nom de l'en-tête et l'objet d'en-têtes comme arguments.
 
+Les noms d'en-têtes vides ou composés uniquement d'espaces sont ignorés.
+
+Les paires clé/valeur itérables, comme un `Map`, sont acceptées :
+
+```js
+const headers = new AxiosHeaders();
+
+headers.set(
+  new Map([
+    ['X-Trace-Id', 'abc123'],
+    ['Accept', 'application/json'],
+  ])
+);
+```
+
 `AxiosHeaders` conserve la casse de la première clé correspondante qu'il voit. Vous pouvez utiliser cela pour préserver la casse spécifique d'un en-tête en initialisant une clé avec `undefined` puis en définissant les valeurs ultérieurement. Voir [Préserver la casse d'un en-tête spécifique](/pages/advanced/headers#preserving-a-specific-header-case).
 
 ## Get
@@ -52,8 +68,9 @@ L'option peut également accepter une fonction définie par l'utilisateur qui d�
 La méthode `get` est utilisée pour récupérer la valeur d'un en-tête. La méthode peut être appelée avec un seul nom d'en-tête, un matcher optionnel ou un analyseur. Le matcher est par défaut `true`. L'analyseur peut être une expression régulière utilisée pour extraire la valeur de l'en-tête.
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 Voici un exemple de quelques-unes des utilisations possibles de la méthode `get` :
@@ -72,6 +89,15 @@ console.log(headers.get('Content-Type', true)); // analyser les paires clé-vale
 //    boundary: 'Asrf456BGe4h'
 // }
 
+const quotedHeaders = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...quotedHeaders.get('Content-Type', AxiosHeaders.parseParameters),
+});
+// { boundary: 'a,b' }
+
 console.log(
   headers.get('Content-Type', (value, name, headers) => {
     return String(value).replace(/a/g, 'ZZZ');
@@ -82,6 +108,10 @@ console.log(
 console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
+
+`AxiosHeaders.parseParameters` est un analyseur opt-in pour les valeurs normalisées des paramètres HTTP. Il retourne une map à prototype nul avec des noms de paramètres insensibles à la casse. Il retire les délimiteurs des chaînes entre guillemets, décode les guillemets doubles et barres obliques inverses échappés, et préserve les virgules ou points-virgules dans les valeurs entre guillemets. Pour les valeurs sans guillemets, seuls les espaces optionnels RFC (espace et tabulation horizontale) autour de la valeur sont retirés.
+
+L'analyseur omet les clés dangereuses lors de la matérialisation d'objets (`__proto__`, `constructor` et `prototype`). Passer `true` continue d'utiliser le tokenizer historique et conserve sa sortie pour la rétrocompatibilité.
 
 ## Has
 
@@ -166,7 +196,16 @@ Retourne une nouvelle instance AxiosHeaders.
 Résout toutes les valeurs d'en-têtes internes dans un nouvel objet à prototype null. Définissez `asStrings` à true pour résoudre les tableaux en une chaîne contenant tous les éléments, séparés par des virgules.
 
 ```js
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
+```
+
+## toString
+
+Retourne les en-têtes sous forme de bloc d'en-têtes HTTP sans CRLF, avec une paire `nom: valeur` par ligne.
+
+```js
+toString(): string;
 ```
 
 ## From

@@ -29,6 +29,19 @@ Chaque requête axios se résout vers un objet de réponse ayant la structure su
 }
 ```
 
+En TypeScript, `AxiosResponse<T, D, H, P>` type les données de réponse (`T`), les données de requête (`D`), les en-têtes de réponse (`H`) et les paramètres de requête (`P`). La configuration conserve les deux types liés à la requête :
+
+```ts
+interface AxiosResponse<T = any, D = any, H = {}, P = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
+  config: InternalAxiosRequestConfig<D, P>;
+  request?: any;
+}
+```
+
 ## Accéder aux champs de la réponse
 
 En pratique, vous déstructurerez généralement uniquement les parties dont vous avez besoin :

@@ -83,6 +83,38 @@ function myAdapter(config) {
 const instance = axios.create({ adapter: myAdapter });
 ```
 
+Los adaptadores TypeScript pueden conservar tanto los datos de solicitud como los parámetros de consulta en la configuración de la respuesta usando los genéricos correspondientes:
+
+```ts
+import type {
+  AxiosPromise,
+  InternalAxiosRequestConfig,
+} from "axios";
+
+interface RequestBody {
+  includeArchived: boolean;
+}
+
+interface SearchParams {
+  query: string;
+}
+
+interface SearchResponse {
+  results: string[];
+}
+
+const searchAdapter = (
+  config: InternalAxiosRequestConfig<RequestBody, SearchParams>
+): AxiosPromise<SearchResponse, RequestBody, SearchParams> =>
+  Promise.resolve({
+    data: { results: [] },
+    status: 200,
+    statusText: "OK",
+    headers: {},
+    config,
+  });
+```
+
 ::: tip
 El helper `settle` resuelve la Promise para códigos de estado 2xx y la rechaza para todo lo demás, siguiendo el comportamiento predeterminado de axios. Si deseas una validación de estado personalizada, usa la opción de configuración `validateStatus`.
 :::

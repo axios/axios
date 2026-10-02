@@ -3,7 +3,7 @@
 请求配置用于配置 HTTP 请求的各项参数。虽然有大量可用选项，但唯一必填的选项是 `url`。如果配置对象中没有 `method` 字段，默认使用 `GET` 方法。
 
 ::: warning 安全提示：解压炸弹防护是可选的
-默认情况下 `maxContentLength` 为 `-1`（不限制）。恶意或被攻陷的服务器可能返回一个很小的 gzip/deflate/brotli 响应，解压后可达数 GB，从而耗尽 Node.js 进程的内存。
+默认情况下 `maxContentLength` 和 `maxBodyLength` 均为 `-1`（不限制）。恶意或被攻陷的服务器可能返回一个很小的 gzip/deflate/brotli/zstd 响应，解压后可达数 GB，从而耗尽 Node.js 进程的内存。
 
 如果你向不完全可信的服务器发起请求，**请设置上限**：
 
@@ -19,6 +19,8 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 `url` 是请求的目标 URL，可以是字符串或 `URL` 实例。
 
+`http:` 或 `https:` URL 必须在协议后包含 `//`。`https:example.com` 和 `https:/example.com` 等格式错误的值会以 `ERR_INVALID_URL` 拒绝；请使用 `https://example.com` 等格式正确的 URL。
+
 ### `method`
 
 `method` 是请求使用的 HTTP 方法，默认为 `GET`。
@@ -26,6 +28,10 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ### `baseURL`
 
 `baseURL` 是拼接在 `url` 前面的基础 URL，除非 `url` 是绝对 URL。这对于向同一域名发起请求非常实用，无需在每次请求时重复写域名和 API 版本前缀。
+
+`baseURL` 只是构造 URL 的便利选项，并不是安全边界。如果请求的 `url` 来自不可信输入，应先校验再传给 axios。相对 `url` 可以包含 `..` 路径段；axios 将其与 `baseURL` 拼接后，运行平台的 URL 解析器会规范化路径，可能把请求解析到预期路径前缀之外。`allowAbsoluteUrls: false` 可以阻止绝对 URL 替换 `baseURL`，但不会校验或限制相对路径。
+
+同样的格式规则也适用于 `baseURL`：`http:` 和 `https:` 值必须在协议后包含 `//`。
 
 ### `allowAbsoluteUrls`
 
@@ -94,6 +100,20 @@ const client = axios.create({
 
 `paramsSerializer` 函数允许你在参数发送到服务器之前自定义 `params` 对象的序列化方式，有多个可用选项，详见本页末尾的完整请求配置示例。
 
+在 TypeScript 中，`AxiosRequestConfig<D, P>` 使用 `P` 表示 `params`，自定义 `paramsSerializer` 会接收同一个类型：
+
+```ts
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+const config: AxiosRequestConfig<unknown, SearchParams> = {
+  params: { query: "axios", page: 1 },
+  paramsSerializer: (params) => `${params.query}:${params.page ?? 1}`,
+};
+```
+
 #### 严格的 RFC 3986 百分号编码
 
 axios 默认会将 `%3A`、`%24`、`%2C` 和 `%20` 解码回 `:`、`$`、`,` 和 `+`，以提升可读性（其中 `+` 遵循查询字符串中表示空格的 `application/x-www-form-urlencoded` 约定）。这些字符在 [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4) 中对查询组件而言都是合法的，因此默认输出是正确的。但部分后端要求严格的百分号编码，会拒绝这种可读形式。
@@ -104,12 +124,12 @@ axios 默认会将 `%3A`、`%24`、`%2C` 和 `%20` 解码回 `:`、`$`、`,` 和
 // 单次请求：对查询值使用严格的 RFC 3986 百分号编码
 axios.get('/foo', {
   params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 
 // 也可在实例默认值中设置
 const client = axios.create({
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 ```
 
@@ -119,13 +139,20 @@ const client = axios.create({
 
 - string、普通对象、ArrayBuffer、ArrayBufferView、URLSearchParams
 - 仅浏览器：FormData、File、Blob
+- React Native：FormData
 - 仅 Node.js：Stream、Buffer、FormData（form-data 包）
+
+对于浏览器、Web Worker 和 React Native 的 `FormData`，不要手动设置 `Content-Type`；运行时会自行添加 multipart boundary。
 
 对于提供了 `getHeaders()` 方法的 Node.js `FormData` 对象，axios 默认会复制其返回的所有请求头，以保持 v1 兼容性。如果 `FormData` 对象是自定义的或不完全可信，可设置 `formDataHeaderPolicy: 'content-only'`，仅复制 `Content-Type` 和 `Content-Length`，其他请求头则通过请求 `headers` 配置显式设置。
 
 ### `formDataHeaderPolicy` <Badge type="warning" text="仅 Node.js" />
 
 控制 axios 如何复制 Node.js `FormData#getHeaders()` 返回的请求头。默认值为 `'legacy'`，即复制所有返回的请求头以保留现有的 v1 行为。设置为 `'content-only'` 时，仅从 `getHeaders()` 复制 `Content-Type` 和 `Content-Length`。
+
+### 使用 Symbol 键的自定义选项
+
+配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
 
 ### `timeout`
 
@@ -147,7 +174,7 @@ const client = axios.create({
 
 ### `auth`
 
-`auth` 表示使用 HTTP Basic 认证，并提供凭据。这将设置 `Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Authorization` 请求头。请注意，仅 HTTP Basic 认证可通过此参数配置，Bearer 令牌等请改用自定义 `Authorization` 请求头。
+`auth` 表示使用 HTTP Basic 认证，并提供凭据。这将设置 `Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Authorization` 请求头。如果省略 `auth`，Node.js HTTP 和 fetch 适配器可以从请求 URL 中提取 Basic 认证凭据，例如 `https://user:pass@example.com`；URL 中经过百分号编码的凭据会先解码，且 `auth` 始终优先于 URL 中的凭据。在 Node.js HTTP 适配器中，Basic 认证会在同源重定向时保留，并在跨源重定向时剥离。请注意，仅 HTTP Basic 认证可通过此参数配置，Bearer 令牌等请改用自定义 `Authorization` 请求头。
 
 ### `responseType`
 
@@ -221,6 +248,7 @@ withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => bo
 ```js
 axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ```
+
 :::
 
 ### `onUploadProgress`
@@ -231,16 +259,16 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 `onDownloadProgress` 函数允许你监听下载进度。
 
-### `maxContentLength` <Badge type="warning" text="仅 Node.js" />
+### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxContentLength` 属性定义服务器在响应中允许接收的最大字节数。
+`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。
 
-> ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli 解压，会带来解压炸弹导致的拒绝服务风险。
+> ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli/zstd 解压，会带来解压炸弹导致的拒绝服务风险。
 > 在访问不完全可信的服务器时，请显式设置该限制。
 
-### `maxBodyLength` <Badge type="warning" text="仅 Node.js" />
+### `maxBodyLength` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxBodyLength` 属性定义服务器在请求中允许接收的最大字节数。
+`maxBodyLength` 属性定义请求体允许的最大字节数。Node.js HTTP 适配器会执行该限制；fetch 适配器会在请求体长度可确定时执行该限制。
 
 ### `redact`
 
@@ -249,22 +277,48 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 `redact` 仅影响错误序列化，不会修改请求数据、请求头或原始配置对象。
 
 ```js
-axios.get('/user/12345', {
-  headers: { Authorization: 'Bearer token' },
-  auth: { username: 'me', password: 'secret' },
-  redact: ['authorization', 'password']
-}).catch((error) => {
-  console.log(error.toJSON().config);
-});
+axios
+  .get('/user/12345', {
+    headers: { Authorization: 'Bearer token' },
+    auth: { username: 'me', password: 'secret' },
+    redact: ['authorization', 'password'],
+  })
+  .catch((error) => {
+    console.log(error.toJSON().config);
+  });
 ```
 
 ### `validateStatus`
 
 `validateStatus` 函数允许你覆盖默认的状态码验证逻辑。默认情况下，axios 会在状态码不在 200-299 范围内时拒绝 Promise。你可以提供自定义的 `validateStatus` 函数来覆盖此行为，该函数应在状态码在你希望接受的范围内时返回 `true`。
 
+默认情况下，显式设置 `validateStatus: undefined` 会保留旧行为并 resolve 所有响应状态码，因为 `transitional.validateStatusUndefinedResolves` 默认值为 `true`。如果希望显式的 `validateStatus: undefined` 表现得像未设置 `validateStatus` 一样，请将 `transitional.validateStatusUndefinedResolves` 设置为 `false`；这样 axios 会使用已配置/默认的验证器，并默认拒绝非 2xx 响应。
+
+`validateStatus: null` 仍会接受所有响应状态码。如果你禁用了该过渡行为，但确实希望所有状态码都 resolve，请使用 `validateStatus: null` 或返回 `true` 的验证器。
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false,
+  },
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="仅 Node.js" />
 
 `maxRedirects` 属性定义最大重定向次数，设置为 0 时不跟随任何重定向。
+
+### `sensitiveHeaders` <Badge type="warning" text="仅 Node.js" />
+
+`sensitiveHeaders` 属性是一个可选数组，用于列出承载密钥的自定义请求头名称（例如 `X-API-Key`）。Node.js HTTP 适配器在跟随重定向到不同源时会移除这些请求头。匹配不区分大小写。同源重定向会保留这些请求头。如果 `maxRedirects` 为 `0`，axios 不会跟随重定向，`sensitiveHeaders` 也不会使用。
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key'],
+});
+```
 
 ### `beforeRedirect`
 
@@ -272,13 +326,10 @@ axios.get('/user/12345', {
 
 ```js
 beforeRedirect: (options, { headers }) => {
-  if (
-    options.hostname === "example.com" &&
-    options.protocol === "https:"
-  ) {
-    options.auth = "user:password";
+  if (options.hostname === 'example.com' && options.protocol === 'https:') {
+    options.auth = 'user:password';
   }
-}
+};
 ```
 
 ::: warning 安全提示：在重定向时重新注入凭据
@@ -299,7 +350,7 @@ beforeRedirect: (options, { headers }) => {
 
 ```js
 const client = axios.create({
-  allowedSocketPaths: ['/var/run/docker.sock']
+  allowedSocketPaths: ['/var/run/docker.sock'],
 });
 
 // 允许
@@ -325,9 +376,13 @@ await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' 
 
 如果你使用环境变量配置代理，还可以定义 `no_proxy` 环境变量，以逗号分隔的方式列出不需要代理的域名。
 
+在支持原生环境变量代理的 Node.js 版本中，当所选 `httpAgent` 或 `httpsAgent` 启用了 `proxyEnv` 时，axios 会将环境变量代理处理交给 Node，包括使用 `NODE_USE_ENV_PROXY=1`、`--use-env-proxy` 或 `NODE_OPTIONS=--use-env-proxy` 启动的进程。没有 `proxyEnv` 的自定义 agent 仍继续使用 axios 的环境变量代理解析。显式的 `proxy` 配置仍由 axios 处理。
+
 设置为 `false` 可禁用代理，忽略环境变量。`auth` 表示使用 HTTP Basic 认证连接代理并提供凭据，这将设置 `Proxy-Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Proxy-Authorization` 请求头。如果代理服务器使用 HTTPS，则必须将协议设置为 `https`。
 
 通过代理转发时，如果用户在 `headers` 中提供了 `Host` 请求头，axios 会保留它（不区分大小写匹配 `host` / `Host` / `HOST`）。这样你就可以指向一个与请求 URL 不同的虚拟主机——例如，访问 `127.0.0.1:4000`，但让代理将请求当作 `example.com` 处理。如果未提供 `Host` 请求头，axios 仍会像以前一样将其默认设为请求 URL 的 `hostname:port`。
+
+对于 `https://` 目标，axios 会通过代理建立 CONNECT 隧道，并与源站执行端到端 TLS。`Proxy-Authorization` 只会发送在 CONNECT 请求上，不会发送到被 TLS 包裹的源站请求中。`httpsAgent` 的 TLS 选项（如 `ca`、`cert`、`key` 和 `rejectUnauthorized`）会转发给生成的隧道代理，因此仍会应用到源站 TLS 连接。如果你提供的是 `HttpsProxyAgent`，axios 会让该代理自行处理隧道。
 
 ```js
 proxy: {
@@ -352,7 +407,7 @@ proxy: {
 
 ### `decompress` <Badge type="warning" text="仅 Node.js" />
 
-`decompress` 属性指示是否自动解压响应数据，默认值为 `true`。
+`decompress` 属性指示是否自动解压响应数据，默认值为 `true`。当当前 Node.js 运行时提供对应的 zlib 解压器时，Node.js HTTP 适配器支持 gzip、deflate、brotli 和 zstd。
 
 ### `insecureHTTPParser`
 
@@ -372,10 +427,13 @@ proxy: {
   ```js
   { responseType: 'json', transitional: { silentJSONParsing: false } }
   ```
+
   :::
 
 - `forcedJSONParsing`：强制 axios 将响应解析为 JSON，即使响应不是有效的 JSON。适用于返回无效 JSON 的 API。
 - `clarifyTimeoutError`：在请求超时时提供更清晰的错误信息，适用于调试超时问题。
+- `validateStatusUndefinedResolves`：若设置为 `true` _（默认）_，显式的 `validateStatus: undefined` 会出于兼容性 resolve 所有响应状态码。设置为 `false` 后，显式的 `undefined` 会像未设置 `validateStatus` 一样处理，axios 将使用已配置/默认的验证器。如果你确实希望所有状态码都 resolve，请使用 `validateStatus: null` 或返回 `true` 的验证器。
+- `advertiseZstdAcceptEncoding`：设为 `true` 时，如果当前 Node.js 运行时支持 zstd 解压，axios 会在默认 `Accept-Encoding` 请求头中加入 `zstd`。在受支持且 `decompress` 为 `true` 时，zstd 响应仍会自动解压。
 - `legacyInterceptorReqResOrdering`：设置为 true 时使用旧版拦截器请求/响应排序。
 
 ### `env`
@@ -393,6 +451,7 @@ proxy: {
 - `metaTokens` — 保留特殊的键后缀（如 `{}`）
 - `indexes` — 控制数组键的方括号格式（`null` / `false` / `true`）
 - `maxDepth` _（默认：`100`）_ — 抛出 `AxiosError`（错误码 `ERR_FORM_DATA_DEPTH_EXCEEDED`）前的最大嵌套深度。设置为 `Infinity` 可禁用。
+- `Blob` — 在符合规范的 `FormData` 中转换类 ArrayBuffer 值时使用的 Blob 构造函数。
 
 详见 [multipart/form-data](/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
 
@@ -440,6 +499,8 @@ proxy: {
   data: {
     firstName: "Fred"
   },
+  // `data` 是请求专属的：axios 不会从默认值继承或深度合并它。
+  // 如需添加共享请求体字段，请使用请求拦截器或 transformRequest。
   formDataHeaderPolicy: "legacy",
   // 另一种将数据发送到请求体的语法，仅适用于 POST 方法，只发送值，不发送键
   data: "Country=Brasil&City=Belo Horizonte",
@@ -471,6 +532,7 @@ proxy: {
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -501,6 +563,8 @@ proxy: {
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
+    advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },
   env: {

@@ -14,3 +14,7 @@ dist/
 .vscode/
 docs/.vitepress/dist
 docs/.vitepress/cache
+.claude/
+openspec/
+.opencode/
+.codex/

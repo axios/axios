@@ -35,6 +35,7 @@ The `set` method is used to set headers on the instance of `AxiosHeaders`. The m
 set(headerName, value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher);
 set(headerName, value, rewrite?: (this: AxiosHeaders, value: string, name: string) => boolean);
 set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean);
+set(headers?: Iterable<[string, AxiosHeaderValue]>, rewrite?: boolean);
 ```
 
 The rewrite argument controls the overwriting behaviour:
@@ -45,6 +46,21 @@ The rewrite argument controls the overwriting behaviour:
 
 The option can also accept a user-defined function that determines whether the value should be overwritten or not. The function receives the current value, header name, and the headers object as arguments.
 
+Empty or whitespace-only header names are ignored.
+
+Iterable key/value pairs, such as a `Map`, are accepted:
+
+```js
+const headers = new AxiosHeaders();
+
+headers.set(
+  new Map([
+    ['X-Trace-Id', 'abc123'],
+    ['Accept', 'application/json'],
+  ])
+);
+```
+
 `AxiosHeaders` keeps the case of the first matching key it sees. You can use this to preserve specific header casing by seeding a key with `undefined` and then setting values later. See [Preserving a specific header case](/pages/advanced/headers#preserving-a-specific-header-case).
 
 ## Get
@@ -52,8 +68,9 @@ The option can also accept a user-defined function that determines whether the v
 The `get` method is used to retrieve the value of a header. The method can be called with a single header name, an optional matcher, or a parser. The matcher is defaulted to `true`. The parser can be a regular expression that is used to extract the value from the header.
 
 ```js
-get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
 get(headerName: string, parser: RegExp): RegExpExecArray | null;
+get(headerName: string, matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
 ```
 
 An example of some of the possible usages of the `get` method is shown below:
@@ -72,6 +89,15 @@ console.log(headers.get('Content-Type', true)); // parse key-value pairs from a 
 //    boundary: 'Asrf456BGe4h'
 // }
 
+const quotedHeaders = new AxiosHeaders({
+  'Content-Type': 'multipart/form-data; boundary="a,b"',
+});
+
+console.log({
+  ...quotedHeaders.get('Content-Type', AxiosHeaders.parseParameters),
+});
+// { boundary: 'a,b' }
+
 console.log(
   headers.get('Content-Type', (value, name, headers) => {
     return String(value).replace(/a/g, 'ZZZ');
@@ -82,6 +108,10 @@ console.log(
 console.log(headers.get('Content-Type', /boundary=(\w+)/)?.[0]);
 // boundary=Asrf456BGe4h
 ```
+
+`AxiosHeaders.parseParameters` is an opt-in parser for normalized HTTP parameter values. It returns a null-prototype map with case-insensitive parameter names. Quoted-string delimiters are removed, escaped DQUOTE and backslash pairs are decoded, and commas or semicolons inside quoted values remain part of the value. For unquoted values, only RFC optional whitespace (space and horizontal tab) around the value is removed.
+
+The parser omits unsafe object-materialization keys (`__proto__`, `constructor`, and `prototype`). Passing `true` remains the legacy tokenizer and keeps its existing output for backward compatibility.
 
 ## Has
 
@@ -166,7 +196,16 @@ Returns a new AxiosHeaders instance.
 Resolve all internal headers values into a new null prototype object. Set `asStrings` to true to resolve arrays as a string containing all elements, separated by commas.
 
 ```js
-toJSON(asStrings?: boolean): RawAxiosHeaders;
+toJSON(asStrings: true): Record<string, string>;
+toJSON(asStrings?: false): Record<string, string | string[]>;
+```
+
+## toString
+
+Returns the headers as a CRLF-free HTTP header block, one `name: value` pair per line.
+
+```js
+toString(): string;
 ```
 
 ## From

@@ -3,7 +3,7 @@
 La configuration de requête est utilisée pour paramétrer la requête. Un large éventail d'options est disponible, mais la seule option obligatoire est `url`. Si l'objet de configuration ne contient pas de champ `method`, la méthode par défaut est `GET`.
 
 ::: warning Sécurité : la protection contre les bombes de décompression est optionnelle
-Par défaut, `maxContentLength` et `maxBodyLength` valent `-1` (illimité). Un serveur malveillant ou compromis peut renvoyer un petit corps compressé en gzip/deflate/brotli qui s'étend à plusieurs gigaoctets et épuise le processus Node.js.
+Par défaut, `maxContentLength` et `maxBodyLength` valent `-1` (illimité). Un serveur malveillant ou compromis peut renvoyer un petit corps compressé en gzip/deflate/brotli/zstd qui s'étend à plusieurs gigaoctets et épuise le processus Node.js.
 
 Si vous appelez des serveurs auxquels vous ne faites pas pleinement confiance, **définissez un plafond** :
 
@@ -19,6 +19,8 @@ Consultez le [guide de sécurité](/pages/misc/security) pour plus de détails.
 
 L'`url` est l'URL vers laquelle la requête est envoyée. Il peut s'agir d'une chaîne de caractères ou d'une instance de `URL`.
 
+Une URL `http:` ou `https:` doit inclure `//` après le protocole. Les valeurs mal formées telles que `https:example.com` et `https:/example.com` sont rejetées avec `ERR_INVALID_URL` ; utilisez une URL bien formée comme `https://example.com`.
+
 ### `method`
 
 La `method` est la méthode HTTP à utiliser pour la requête. La méthode par défaut est `GET`.
@@ -26,6 +28,10 @@ La `method` est la méthode HTTP à utiliser pour la requête. La méthode par d
 ### `baseURL`
 
 La `baseURL` est l'URL de base à ajouter en préfixe à l'`url`, sauf si celle-ci est une URL absolue. Utile pour effectuer des requêtes vers le même domaine sans avoir à répéter le nom de domaine et tout préfixe d'API ou de version.
+
+`baseURL` est une commodité de construction d'URL, pas une limite de sécurité. Si l'`url` d'une requête provient d'une entrée non fiable, validez-la avant de la transmettre à axios. Une `url` relative peut contenir des segments `..` ; après qu'axios l'a combinée avec `baseURL`, le parseur d'URL de la plateforme normalise le chemin et peut résoudre la requête en dehors du préfixe de chemin prévu. `allowAbsoluteUrls: false` empêche les URLs absolues de remplacer `baseURL`, mais ne valide ni ne limite les chemins relatifs.
+
+La même règle d'URL bien formée s'applique à `baseURL` : les valeurs `http:` et `https:` doivent inclure `//` après le protocole.
 
 ### `allowAbsoluteUrls`
 
@@ -94,6 +100,20 @@ Les `params` sont les paramètres d'URL à envoyer avec la requête. Il doit s'a
 
 La fonction `paramsSerializer` vous permet de sérialiser l'objet `params` avant son envoi au serveur. Plusieurs options sont disponibles pour cette fonction ; veuillez vous référer à l'exemple de configuration complète en bas de cette page.
 
+En TypeScript, `AxiosRequestConfig<D, P>` utilise `P` pour `params`, et un `paramsSerializer` personnalisé reçoit ce même type :
+
+```ts
+interface SearchParams {
+  query: string;
+  page?: number;
+}
+
+const config: AxiosRequestConfig<unknown, SearchParams> = {
+  params: { query: "axios", page: 1 },
+  paramsSerializer: (params) => `${params.query}:${params.page ?? 1}`,
+};
+```
+
 #### Encodage pour-cent strict RFC 3986
 
 Par défaut, axios redécode `%3A`, `%24`, `%2C` et `%20` vers `:`, `$`, `,` et `+` pour la lisibilité (le `+` suit la convention `application/x-www-form-urlencoded` pour représenter une espace dans une chaîne de requête). Ces caractères sont valides dans un composant de requête selon la [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986#section-3.4), donc la sortie par défaut est correcte. Cependant, certains backends exigent un encodage pour-cent strict et rejettent la forme lisible.
@@ -104,12 +124,12 @@ Utilisez l'option `encode` pour remplacer l'encodeur par défaut :
 // Par requête : émettre un encodage pour-cent strict RFC 3986 pour les valeurs de requête
 axios.get('/foo', {
   params: { filter: JSON.stringify({ startedAt: '2026-01-23' }) },
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 
 // Ou définir cela sur les valeurs par défaut de l'instance
 const client = axios.create({
-  paramsSerializer: { encode: encodeURIComponent }
+  paramsSerializer: { encode: encodeURIComponent },
 });
 ```
 
@@ -119,13 +139,20 @@ Les `data` sont les données à envoyer comme corps de la requête. Il peut s'ag
 
 - chaîne, objet simple, ArrayBuffer, ArrayBufferView, URLSearchParams
 - Navigateur uniquement : FormData, File, Blob
+- React Native : FormData
 - Node uniquement : Stream, Buffer, FormData (package form-data)
+
+Pour les objets `FormData` de navigateur, web worker et React Native, ne définissez pas manuellement `Content-Type` ; l'environnement ajoute lui-même la boundary multipart.
 
 Pour les objets `FormData` Node.js qui fournissent une méthode `getHeaders()`, axios copie tous les en-têtes retournés par défaut pour assurer la compatibilité avec la v1. Si l'objet `FormData` est personnalisé ou n'est pas pleinement de confiance, définissez `formDataHeaderPolicy: 'content-only'` pour ne copier que `Content-Type` et `Content-Length`, et définissez explicitement tout autre en-tête de requête via la configuration `headers` de la requête.
 
 ### `formDataHeaderPolicy` <Badge type="warning" text="Node.js uniquement" />
 
 Contrôle la manière dont axios copie les en-têtes retournés par `FormData#getHeaders()` de Node.js. La valeur par défaut est `'legacy'`, qui copie tous les en-têtes retournés afin de préserver le comportement existant de la v1. Définissez `'content-only'` pour ne copier que `Content-Type` et `Content-Length` depuis `getHeaders()`.
+
+### Options personnalisées avec des clés symboles
+
+La fusion des configurations préserve les propriétés symboles propres et énumérables. Les applications TypeScript peuvent augmenter `AxiosRequestConfig` avec une clé symbole précise, puis lire cette option depuis `InternalAxiosRequestConfig` dans un intercepteur de requête ou un adaptateur. Les propriétés symboles héritées ou non énumérables ne sont pas copiées. Consultez le [guide TypeScript](/pages/advanced/type-script#configuration-de-requete-personnalisee-avec-des-cles-symboles) pour un exemple.
 
 ### `timeout`
 
@@ -147,7 +174,7 @@ Vous pouvez également passer un tableau d'adaptateurs ; axios utilisera le prem
 
 ### `auth`
 
-`auth` indique que l'authentification HTTP Basic doit être utilisée, et fournit les identifiants. Cela définira un en-tête `Authorization`, en écrasant tout en-tête `Authorization` personnalisé que vous auriez défini via `headers`. Notez que seule l'authentification HTTP Basic est configurable via ce paramètre. Pour les tokens Bearer et similaires, utilisez plutôt des en-têtes `Authorization` personnalisés.
+`auth` indique que l'authentification HTTP Basic doit être utilisée, et fournit les identifiants. Cela définira un en-tête `Authorization`, en écrasant tout en-tête `Authorization` personnalisé que vous auriez défini via `headers`. Si `auth` est omis, les adaptateurs HTTP Node.js et fetch peuvent déduire les identifiants Basic depuis l'URL de requête, par exemple `https://user:pass@example.com` ; les identifiants encodés en pourcentage dans l'URL sont décodés, et `auth` prend toujours le dessus sur les identifiants intégrés à l'URL. Dans l'adaptateur HTTP Node.js, l'authentification Basic est conservée lors des redirections de même origine et supprimée lors des redirections cross-origin. Notez que seule l'authentification HTTP Basic est configurable via ce paramètre. Pour les tokens Bearer et similaires, utilisez plutôt des en-têtes `Authorization` personnalisés.
 
 ### `responseType`
 
@@ -221,6 +248,7 @@ withXSRFToken: boolean | undefined | ((config: InternalAxiosRequestConfig) => bo
 ```js
 axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ```
+
 :::
 
 ### `onUploadProgress`
@@ -231,16 +259,16 @@ La fonction `onUploadProgress` vous permet d'écouter la progression d'un envoi.
 
 La fonction `onDownloadProgress` vous permet d'écouter la progression d'un téléchargement.
 
-### `maxContentLength` <Badge type="warning" text="Node.js uniquement" />
+### `maxContentLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxContentLength` définit le nombre maximum d'octets que le serveur acceptera dans la réponse.
+La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée.
 
-> ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli rendent possible un déni de service par bombe de décompression.
+> ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli/zstd rendent possible un déni de service par bombe de décompression.
 > Définissez une limite explicite lorsque vous consommez des serveurs auxquels vous ne faites pas pleinement confiance.
 
-### `maxBodyLength` <Badge type="warning" text="Node.js uniquement" />
+### `maxBodyLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxBodyLength` définit le nombre maximum d'octets que le serveur acceptera dans la requête.
+La propriété `maxBodyLength` définit la taille maximale du corps de requête en octets. L'adaptateur HTTP Node.js l'applique, et l'adaptateur fetch l'applique lorsque la longueur du corps de requête peut être déterminée.
 
 ### `redact`
 
@@ -249,22 +277,48 @@ La propriété `redact` est un tableau optionnel de noms de clés de configurati
 `redact` n'affecte que la sérialisation des erreurs. Elle ne modifie ni les données de la requête, ni les en-têtes, ni l'objet de configuration original.
 
 ```js
-axios.get('/user/12345', {
-  headers: { Authorization: 'Bearer token' },
-  auth: { username: 'me', password: 'secret' },
-  redact: ['authorization', 'password']
-}).catch((error) => {
-  console.log(error.toJSON().config);
-});
+axios
+  .get('/user/12345', {
+    headers: { Authorization: 'Bearer token' },
+    auth: { username: 'me', password: 'secret' },
+    redact: ['authorization', 'password'],
+  })
+  .catch((error) => {
+    console.log(error.toJSON().config);
+  });
 ```
 
 ### `validateStatus`
 
 La fonction `validateStatus` vous permet de remplacer la validation du code de statut par défaut. Par défaut, axios rejette la promise si le code de statut n'est pas dans la plage 200-299. Vous pouvez remplacer ce comportement en fournissant une fonction `validateStatus` personnalisée. La fonction doit retourner `true` si le code de statut est dans la plage que vous souhaitez accepter.
 
+Par défaut, définir explicitement `validateStatus: undefined` conserve le comportement historique et résout tous les statuts de réponse, car `transitional.validateStatusUndefinedResolves` vaut `true` par défaut. Définissez `transitional.validateStatusUndefinedResolves` à `false` si vous voulez qu'un `validateStatus: undefined` explicite se comporte comme si `validateStatus` était omis : axios utilise alors le validateur configuré/par défaut et rejette les réponses non-2xx par défaut.
+
+`validateStatus: null` accepte toujours tous les statuts de réponse. Si vous désactivez le comportement de transition et souhaitez intentionnellement résoudre tous les statuts, utilisez `validateStatus: null` ou un validateur qui retourne `true`.
+
+```js
+axios.get('/user/12345', {
+  validateStatus: undefined,
+  transitional: {
+    validateStatusUndefinedResolves: false,
+  },
+});
+```
+
 ### `maxRedirects` <Badge type="warning" text="Node.js uniquement" />
 
 La propriété `maxRedirects` définit le nombre maximum de redirections à suivre. Si défini à 0, aucune redirection ne sera suivie.
+
+### `sensitiveHeaders` <Badge type="warning" text="Node.js uniquement" />
+
+La propriété `sensitiveHeaders` est un tableau optionnel de noms d'en-têtes personnalisés contenant des secrets, comme `X-API-Key`, que l'adaptateur HTTP Node.js retire lorsqu'il suit une redirection vers une origine différente. La correspondance est insensible à la casse. Les redirections same-origin conservent ces en-têtes. Si `maxRedirects` vaut `0`, axios ne suit pas les redirections et `sensitiveHeaders` n'est pas utilisée.
+
+```js
+axios.get('https://api.example.com/users', {
+  headers: { 'X-API-Key': 'secret' },
+  sensitiveHeaders: ['X-API-Key'],
+});
+```
 
 ### `beforeRedirect`
 
@@ -272,13 +326,10 @@ La fonction `beforeRedirect` vous permet de modifier la requête avant qu'elle n
 
 ```js
 beforeRedirect: (options, { headers }) => {
-  if (
-    options.hostname === "example.com" &&
-    options.protocol === "https:"
-  ) {
-    options.auth = "user:password";
+  if (options.hostname === 'example.com' && options.protocol === 'https:') {
+    options.auth = 'user:password';
   }
-}
+};
 ```
 
 ::: warning Sécurité : réinjection d'identifiants lors d'une redirection
@@ -299,7 +350,7 @@ Restreint les chemins de socket pouvant être utilisés via `socketPath`. Accept
 
 ```js
 const client = axios.create({
-  allowedSocketPaths: ['/var/run/docker.sock']
+  allowedSocketPaths: ['/var/run/docker.sock'],
 });
 
 // autorisé
@@ -325,9 +376,13 @@ Le `proxy` définit le nom d'hôte, le port et le protocole d'un serveur proxy q
 
 Si vous utilisez des variables d'environnement pour la configuration de votre proxy, vous pouvez également définir une variable d'environnement `no_proxy` sous la forme d'une liste de domaines séparés par des virgules qui ne doivent pas être mandatés.
 
+Dans les versions de Node.js avec prise en charge native des proxies d'environnement, axios délègue la gestion du proxy d'environnement à Node lorsque le `httpAgent` ou `httpsAgent` sélectionné a `proxyEnv` activé, y compris pour les processus démarrés avec `NODE_USE_ENV_PROXY=1`, `--use-env-proxy` ou `NODE_OPTIONS=--use-env-proxy`. Les agents personnalisés sans `proxyEnv` continuent d'utiliser la résolution de proxy d'environnement d'axios. La configuration explicite `proxy` reste gérée par axios.
+
 Utilisez `false` pour désactiver les proxies, en ignorant les variables d'environnement. `auth` indique que l'authentification HTTP Basic doit être utilisée pour se connecter au proxy, et fournit les identifiants. Cela définira un en-tête `Proxy-Authorization`, en écrasant tout en-tête `Proxy-Authorization` personnalisé que vous auriez défini via `headers`. Si le serveur proxy utilise HTTPS, vous devez définir le protocole à `https`.
 
 Un en-tête `Host` fourni par l'utilisateur dans `headers` est préservé lorsqu'il est transféré via un proxy (correspondance insensible à la casse sur `host` / `Host` / `HOST`). Cela vous permet de cibler un hôte virtuel différent de l'URL de la requête — par exemple, atteindre `127.0.0.1:4000` tout en faisant traiter la requête par le proxy comme provenant de `example.com`. Si aucun en-tête `Host` n'est fourni, axios utilise par défaut le `hostname:port` de l'URL de la requête comme auparavant.
+
+Pour les cibles `https://`, axios établit un tunnel CONNECT via le proxy et effectue TLS de bout en bout avec l'origine. `Proxy-Authorization` est envoyé uniquement sur la requête CONNECT, jamais sur la requête TLS encapsulée. Les options TLS de `httpsAgent`, comme `ca`, `cert`, `key` et `rejectUnauthorized`, sont transmises à l'agent de tunnel généré afin qu'elles continuent de s'appliquer à la connexion TLS avec l'origine. Si vous fournissez un `HttpsProxyAgent`, axios laisse cet agent gérer le tunnel.
 
 ```js
 proxy: {
@@ -352,7 +407,7 @@ La propriété `signal` vous permet de passer une instance d'`AbortSignal` à la
 
 ### `decompress` <Badge type="warning" text="Node.js uniquement" />
 
-La propriété `decompress` indique si les données de la réponse doivent être automatiquement décompressées. La valeur par défaut est `true`.
+La propriété `decompress` indique si les données de la réponse doivent être automatiquement décompressées. La valeur par défaut est `true`. L'adaptateur HTTP Node.js prend en charge gzip, deflate, brotli et zstd lorsque le runtime Node.js actuel fournit le décompresseur zlib correspondant.
 
 ### `insecureHTTPParser`
 
@@ -372,10 +427,13 @@ La propriété `transitional` vous permet d'activer ou de désactiver certaines 
   ```js
   { responseType: 'json', transitional: { silentJSONParsing: false } }
   ```
+
   :::
 
 - `forcedJSONParsing` : Force axios à analyser la chaîne de réponse comme du JSON même si `responseType` n'est pas `'json'`.
 - `clarifyTimeoutError` : Clarifie le message d'erreur lorsqu'une requête expire. Utile lors du débogage de problèmes de délai d'attente.
+- `validateStatusUndefinedResolves` : Si défini à `true` _(par défaut)_, un `validateStatus: undefined` explicite résout tous les statuts de réponse pour préserver la compatibilité. Définissez à `false` pour traiter `undefined` explicite comme si `validateStatus` était omis, afin qu'axios utilise le validateur configuré/par défaut. Utilisez `validateStatus: null` ou un validateur qui retourne `true` lorsque vous voulez intentionnellement résoudre tous les statuts.
+- `advertiseZstdAcceptEncoding` : Lorsqu'elle vaut `true`, axios ajoute `zstd` à l'en-tête `Accept-Encoding` par défaut lorsque le runtime Node.js actuel prend en charge la décompression zstd. Les réponses zstd sont tout de même décompressées automatiquement lorsqu'elles sont prises en charge et que `decompress` vaut `true`.
 - `legacyInterceptorReqResOrdering` : Lorsque défini à true, l'ordre hérité de traitement requête/réponse des intercepteurs sera utilisé.
 
 ### `env`
@@ -393,6 +451,7 @@ L'option `formSerializer` vous permet de configurer comment les objets simples s
 - `metaTokens` — conserver les terminaisons spéciales de clé telles que `{}`
 - `indexes` — contrôler le format des crochets pour les clés de tableau (`null` / `false` / `true`)
 - `maxDepth` _(par défaut : `100`)_ — profondeur maximale d'imbrication avant de lever une `AxiosError` avec le code `ERR_FORM_DATA_DEPTH_EXCEEDED`. Définir à `Infinity` pour désactiver.
+- `Blob` — constructeur Blob utilisé lors de la conversion de valeurs de type ArrayBuffer pour un `FormData` conforme à la spécification.
 
 Consultez la page [multipart/form-data](/pages/advanced/multipart-form-data-format) pour tous les détails, et l'exemple de configuration complète en bas de cette page.
 
@@ -440,6 +499,8 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
   data: {
     firstName: "Fred"
   },
+  // `data` est propre à chaque requête : axios ne l'hérite pas et ne le fusionne pas en profondeur depuis les valeurs par défaut.
+  // Pour ajouter des champs de corps communs, utilisez un intercepteur de requête ou transformRequest.
   formDataHeaderPolicy: "legacy",
   // Syntaxe alternative pour envoyer des données dans le corps de la méthode post : seule la valeur est envoyée, pas la clé
   data: "Country=Brasil&City=Belo Horizonte",
@@ -471,6 +532,7 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
     return status >= 200 && status < 300;
   },
   maxRedirects: 21,
+  sensitiveHeaders: ['X-API-Key'],
   beforeRedirect: (options, { headers }) => {
     if (options.hostname === "typicode.com") {
       options.auth = "user:password";
@@ -501,6 +563,8 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
     silentJSONParsing: true,
     forcedJSONParsing: true,
     clarifyTimeoutError: false,
+    validateStatusUndefinedResolves: true,
+    advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
   },
   env: {

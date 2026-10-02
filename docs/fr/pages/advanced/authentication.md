@@ -33,6 +33,8 @@ const response = await axios.get("https://api.example.com/data", {
 });
 ```
 
+Si `auth` n'est pas fourni, les adaptateurs HTTP Node.js et fetch peuvent aussi déduire les identifiants Basic depuis l'URL de requête, par exemple `https://myUser:myPassword@api.example.com/data`. Les identifiants encodés en pourcentage dans l'URL sont décodés avant la génération de l'en-tête `Authorization`. Pour le nouveau code, préférez l'option explicite `auth` ; elle prend le dessus sur les identifiants intégrés à l'URL.
+
 ::: tip
 Pour les tokens Bearer et les clés API, utilisez un en-tête `Authorization` personnalisé plutôt que l'option `auth` — `auth` est réservé à l'authentification HTTP Basic.
 :::

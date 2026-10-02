@@ -4,6 +4,10 @@ import mergeConfig from '../../../lib/core/mergeConfig.js';
 import { AxiosHeaders } from '../../../index.js';
 
 describe('core::mergeConfig', () => {
+  it('accepts null for first argument', () => {
+    expect(mergeConfig(null, { url: '/foo' })).toEqual({ url: '/foo' });
+  });
+
   it('accepts undefined for second argument', () => {
     expect(mergeConfig(defaults, undefined)).toEqual(defaults);
   });
@@ -352,6 +356,40 @@ describe('core::mergeConfig', () => {
       expect(mergeConfig({ validateStatus: 'str' }, {}).validateStatus).toBe('str');
       expect(mergeConfig({ validateStatus: obj }, {}).validateStatus).toBe(obj);
       expect(mergeConfig({ validateStatus: null }, {}).validateStatus).toBe(null);
+    });
+
+    it('keeps legacy undefined behavior by default', () => {
+      expect(mergeConfig(defaults, { validateStatus: undefined }).validateStatus).toBeUndefined();
+    });
+
+    it('keeps config1 value when the transitional option is disabled (issue #6688)', () => {
+      const validateStatus = () => false;
+
+      expect(
+        mergeConfig(
+          { validateStatus },
+          {
+            validateStatus: undefined,
+            transitional: { validateStatusUndefinedResolves: false },
+          }
+        ).validateStatus
+      ).toBe(validateStatus);
+
+      expect(mergeConfig(defaults, { validateStatus: null }).validateStatus).toBe(null);
+    });
+
+    it('supports symbol keys', () => {
+      const symbol = Symbol();
+      const config1 = { [symbol]: { a: 1, b: 2 } };
+      const config2 = { [symbol]: { b: 3, c: 4 } };
+      const merged = mergeConfig(config1, config2);
+      expect(merged[symbol]).toEqual({ a: 1, b: 3, c: 4 });
+    });
+
+    it('preserves request-only symbol keys', () => {
+      const symbol = Symbol('some flag used in request interceptor');
+      const merged = mergeConfig(defaults, { [symbol]: true });
+      expect(merged[symbol]).toBe(true);
     });
   });
 });

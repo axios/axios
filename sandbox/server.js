@@ -76,7 +76,7 @@ function requestHandler(req, res) {
   req.setEncoding('utf8');
 
   const parsed = new URL(req.url, 'http://localhost');
-  const pathname = parsed.pathname;
+  let pathname = parsed.pathname;
 
   console.log('[' + new Date() + ']', req.method, pathname);
 

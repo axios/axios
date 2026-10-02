@@ -104,6 +104,35 @@ describe('headers (vitest browser)', () => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
   });
 
+  it('should preserve response header semantics through the XHR raw-header parser', async () => {
+    const promise = axios.get('/foo', { adapter: 'xhr' });
+    const request = getLastRequest();
+
+    request.getAllResponseHeaders = () =>
+      '__proto__: ignored\n' +
+      'Constructor: first\n' +
+      'constructor: second\n' +
+      'Prototype: value\n' +
+      'Get: header-value\n' +
+      'X-Response: first\n' +
+      'X-Response: second\n' +
+      'Content-Type:\n' +
+      'Content-Type: application/json\n';
+
+    request.respondWith({ status: 200, responseText: 'ok' });
+
+    const response = await promise;
+
+    expect(response.data).toBe('ok');
+    expect(Object.getPrototypeOf(response.headers)).toBe(AxiosHeaders.prototype);
+    expect(typeof response.headers.get).toBe('function');
+    expect(response.headers.get('constructor')).toBe('first, second');
+    expect(response.headers.get('prototype')).toBe('value');
+    expect(response.headers.get('get')).toBe('header-value');
+    expect(response.headers.get('x-response')).toBe('first, second');
+    expect(response.headers.get('content-type')).toBe('');
+  });
+
   it('should default common headers', async () => {
     const headers = axios.defaults.headers.common;
     const promise = axios('/foo');

@@ -9,6 +9,8 @@ formData.append('foo', 'bar');
 axios.post('https://httpbin.org/post', formData);
 ```
 
+Ne définissez pas manuellement l'en-tête `Content-Type` pour les objets `FormData` de navigateur, web worker ou React Native ; ces environnements ajoutent eux-mêmes la boundary multipart.
+
 Dans Node.js, vous pouvez utiliser la bibliothèque `form-data` comme suit :
 
 ```js
@@ -68,10 +70,10 @@ Lorsque vous passez un objet `FormData` Node.js qui expose `getHeaders()` (comme
 Définissez `formDataHeaderPolicy: 'content-only'` pour copier **uniquement** `Content-Type` et `Content-Length` depuis `getHeaders()`, puis définissez tout autre en-tête explicitement via la configuration `headers` de la requête :
 
 ```js
-await axios.post("https://example.com/upload", form, {
-  formDataHeaderPolicy: "content-only",
+await axios.post('https://example.com/upload', form, {
+  formDataHeaderPolicy: 'content-only',
   headers: {
-    Authorization: "Bearer my-token",
+    Authorization: 'Bearer my-token',
   },
 });
 ```
@@ -101,6 +103,7 @@ Le sérialiseur FormData supporte des options supplémentaires via la propriét�
   - `false` (défaut) - ajouter des crochets vides (`arr[]: 1`, `arr[]: 2`, `arr[]: 3`)
   - `true` - ajouter des crochets avec index (`arr[0]: 1`, `arr[1]: 2`, `arr[2]: 3`)
 - `maxDepth: number = 100` - profondeur maximale d'imbrication des objets dans laquelle le sérialiseur va récurser. Si l'entrée dépasse cette profondeur, une `AxiosError` avec `code: 'ERR_FORM_DATA_DEPTH_EXCEEDED'` est levée. Cela protège les applications côté serveur contre les attaques DoS via des charges utiles profondément imbriquées. Définir à `Infinity` pour désactiver la limite.
+- `Blob: typeof Blob` - constructeur Blob utilisé lors de la conversion de valeurs de type ArrayBuffer pour un `FormData` conforme à la spécification. Ne le remplacez que dans les runtimes qui fournissent un constructeur `Blob` compatible sous un autre identifiant.
 
 ```js
 // Autoriser une imbrication plus profonde pour les schémas qui dépassent légitimement 100 niveaux :
@@ -143,5 +146,23 @@ formData.append('users[1][name]', 'Thomas');
 formData.append('users[1][surname]', 'Anderson');
 formData.append('obj2{}', '[{"x":1}]');
 ```
+
+## Reconvertir FormData en JSON
+
+`axios.formToJSON()` convertit la notation par points et crochets des noms de champs en objets et tableaux imbriqués. Seuls `.`, `[` et `]` sont des séparateurs structurels. Les caractères tels que `-`, les espaces, `+`, `*` et `&` restent dans les clés littérales.
+
+```js
+const form = new FormData();
+form.append('user-name', 'johndoe');
+form.append('user.name', 'john');
+
+console.log(axios.formToJSON(form));
+// {
+//   'user-name': 'johndoe',
+//   user: { name: 'john' }
+// }
+```
+
+`user[name]` crée également un chemin d'objet imbriqué, tandis que `items[]` crée un tableau.
 
 Axios supporte les méthodes raccourcies suivantes : `postForm`, `putForm`, `patchForm` qui sont simplement les méthodes HTTP correspondantes avec l'en-tête `Content-Type` prédéfini à `multipart/form-data`.

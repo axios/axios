@@ -2,7 +2,7 @@
 
 ## ⚠️ Decompression bomb / unbounded response buffering
 
-By default, `maxContentLength` and `maxBodyLength` are set to `-1` (unlimited). A malicious or compromised server can return a small gzip/deflate/brotli-compressed body that expands to gigabytes, exhausting memory in the Node.js process.
+By default, `maxContentLength` and `maxBodyLength` are set to `-1` (unlimited). A malicious or compromised server can return a small gzip/deflate/brotli/zstd-compressed body that expands to gigabytes, exhausting memory in the Node.js process.
 
 **If you make requests to servers you do not fully trust, you MUST set a `maxContentLength` (and `maxBodyLength`) suitable for your workload.** The limit is enforced chunk-by-chunk during streaming decompression, so setting it is sufficient to neutralize decompression-bomb attacks.
 
@@ -25,8 +25,10 @@ The following request-config options have direct security implications. They are
 
 | Option | Risk | Mitigation |
 | --- | --- | --- |
+| [`baseURL`](/pages/advanced/request-config#baseurl) | Applications sometimes treat a `baseURL` path prefix, such as `https://api.example.com/v1/`, as a request boundary. User-controlled relative `url` values can contain `..` segments that are normalized by the final URL parser and resolve outside that path prefix. | Do not rely on `baseURL` for path isolation. Validate untrusted request paths before passing them to axios; reject absolute or protocol-relative URLs and `..` segments, or check the resolved URL's origin and pathname against an allowlist. |
 | [`socketPath`](/pages/advanced/request-config#socketpath) | If derived from untrusted input, an attacker can redirect traffic to privileged local sockets like `/var/run/docker.sock`, bypassing hostname-based SSRF protections (CWE-918). | Strip or allowlist config keys from untrusted input. Use [`allowedSocketPaths`](/pages/advanced/request-config#allowedsocketpaths) to restrict accepted socket paths. |
 | [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | Runs after `follow-redirects` strips credentials on protocol downgrade. Re-injecting credentials without checking the destination protocol can leak them over plain HTTP. | Only re-add credentials for trusted HTTPS destinations. Check `options.protocol === "https:"` before assigning `auth`. |
+| [`sensitiveHeaders`](/pages/advanced/request-config#sensitiveheaders) | Custom secret headers such as `X-API-Key` can be forwarded by the Node.js HTTP adapter when following redirects to a different origin. | List custom secret-bearing header names in `sensitiveHeaders`; axios removes matching headers case-insensitively on cross-origin redirects. Same-origin redirects keep them. |
 | [`withXSRFToken`](/pages/advanced/request-config#withxsrftoken) | Setting `true` forces the XSRF header on cross-origin requests. Older axios versions implicitly enabled this with `withCredentials: true`; newer versions require both flags. | Leave at `undefined` (same-origin only) unless your backend explicitly validates XSRF on cross-origin requests. |
 | [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` includes the request config by default, which can leak `Authorization` headers or `auth` credentials into error logs and telemetry. | Pass a `redact` array with sensitive config key names. Matching is case-insensitive and recursive. |
 | [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) | A custom `FormData` whose `getHeaders()` returns attacker-controlled values can overwrite headers like `Authorization` or inject arbitrary ones in Node.js. | Set `'content-only'` to copy only `Content-Type` and `Content-Length`, then set other headers explicitly via the request `headers` config. |

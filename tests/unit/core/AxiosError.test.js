@@ -35,6 +35,22 @@ describe('core::AxiosError', () => {
     expect(json.response).toBeUndefined();
   });
 
+  it('serializes Set values in config snapshots', () => {
+    const error = new AxiosError('Boom!', 'ESOMETHING', {
+      tags: new Set(['a', 'b']),
+      nested: {
+        ids: new Set([1, 2]),
+      },
+    });
+
+    expect(error.toJSON().config).toEqual({
+      tags: ['a', 'b'],
+      nested: {
+        ids: [1, 2],
+      },
+    });
+  });
+
   describe('AxiosError.from', () => {
     it('adds config, code, request and response to the wrapped error', () => {
       const error = new Error('Boom!');
@@ -73,6 +89,101 @@ describe('core::AxiosError', () => {
       const axiosError = AxiosError.from(error, 'ERR_BAD_REQUEST', {}, null, response);
 
       expect(axiosError.status).toBe(404);
+    });
+
+    it('synthesizes a message from AggregateError.errors when the aggregate message is empty (#6721)', () => {
+      const timeout = Object.assign(new Error('connect ETIMEDOUT 1.2.3.4:443'), {
+        code: 'ETIMEDOUT',
+      });
+      const unreach = Object.assign(new Error('connect EHOSTUNREACH ::1:443'), {
+        code: 'EHOSTUNREACH',
+      });
+      const aggregate = new AggregateError([timeout, unreach]);
+      expect(aggregate.message).toBe('');
+
+      const axiosError = AxiosError.from(aggregate, 'ETIMEDOUT', { foo: 'bar' });
+
+      const expectedMessage = 'connect ETIMEDOUT 1.2.3.4:443; connect EHOSTUNREACH ::1:443';
+      expect(axiosError.message).toBe(expectedMessage);
+      expect(axiosError.toJSON().message).toBe(expectedMessage);
+    });
+
+    it('preserves an explicit AggregateError message', () => {
+      const aggregate = new AggregateError([new Error('inner failure')], 'outer failure');
+
+      const axiosError = AxiosError.from(aggregate, 'ETIMEDOUT', {});
+
+      expect(axiosError.message).toBe('outer failure');
+    });
+
+    it('ignores aggregate entries that cannot be converted to strings', () => {
+      const throwsOnCoercion = {
+        [Symbol.toPrimitive]() {
+          throw new Error('cannot convert');
+        },
+      };
+      const aggregate = new AggregateError([Object.create(null), throwsOnCoercion]);
+
+      const axiosError = AxiosError.from(aggregate, 'ETIMEDOUT', {});
+
+      expect(axiosError).toBeInstanceOf(AxiosError);
+      expect(axiosError.message).toBe('AggregateError');
+      expect(axiosError.cause).toBe(aggregate);
+    });
+
+    it('leaves a normal error message unchanged', () => {
+      const axiosError = AxiosError.from(new Error('Boom!'), 'ESOMETHING', {});
+
+      expect(axiosError.message).toBe('Boom!');
+    });
+  });
+
+  describe('cause serialization (regression #7205)', () => {
+    // A wrapped low-level error carrying a circular reference, like a Node
+    // socket/request held by network errors.
+    const makeCircularCause = () => {
+      const cause = new Error('socket hang up');
+      cause.code = 'ECONNRESET';
+      const socket = { name: 'Socket' };
+      socket.self = socket; // circular
+      cause.socket = socket;
+      return cause;
+    };
+
+    it('sets `cause` as a non-enumerable own property (native Error parity)', () => {
+      const axiosError = AxiosError.from(new Error('boom'), 'ERR_NETWORK', { url: '/x' });
+      const descriptor = Object.getOwnPropertyDescriptor(axiosError, 'cause');
+
+      expect(descriptor).toBeDefined();
+      expect(descriptor.enumerable).toBe(false);
+      expect(Object.keys(axiosError)).not.toContain('cause');
+      expect('cause' in axiosError).toBe(true); // still discoverable via `in`
+    });
+
+    it('keeps `cause` fully accessible for debugging', () => {
+      const original = makeCircularCause();
+      const axiosError = AxiosError.from(original, 'ERR_NETWORK', { url: '/x' });
+
+      expect(axiosError.cause).toBe(original);
+      expect(axiosError.cause.code).toBe('ECONNRESET');
+    });
+
+    it('does not break structured loggers / own-property serialization', () => {
+      const axiosError = AxiosError.from(makeCircularCause(), 'ERR_NETWORK', { url: '/x' });
+
+      // pino/winston-style: enumerate own enumerable props and serialize.
+      const loggerWalk = () =>
+        JSON.stringify(Object.fromEntries(Object.entries(axiosError)));
+
+      expect(loggerWalk).not.toThrow();
+      expect(() => JSON.stringify(axiosError)).not.toThrow();
+      expect(() => JSON.stringify({ wrapped: axiosError })).not.toThrow();
+    });
+
+    it('omits `cause` from toJSON() output', () => {
+      const axiosError = AxiosError.from(makeCircularCause(), 'ERR_NETWORK', { url: '/x' });
+
+      expect(axiosError.toJSON()).not.toHaveProperty('cause');
     });
   });
 

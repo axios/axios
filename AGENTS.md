@@ -13,6 +13,11 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Build/test/lint tools still execute dependency code despite `ignore-scripts`; avoid unnecessary full builds when a focused check proves the change.
 - Do not add new runtime dependencies without discussion; the dependency surface is intentionally tiny.
 
+## Pull Requests
+
+- Apply the existing `ai-assisted` repository label to pull requests created or updated with AI assistance, including AI-generated descriptions. Use `gh pr create --label ai-assisted` when opening a PR or `gh pr edit <number-or-url> --add-label ai-assisted` for an existing PR.
+- Do not add a surfer emoji to PR titles or bodies to indicate AI assistance. If you cannot apply labels, report that a maintainer needs to apply `ai-assisted`.
+
 ## Commands
 
 - Build published artifacts: `npm run build` (`gulp clear` deletes `dist/`, then Rollup writes browser ESM/UMD/CJS and Node CJS bundles).

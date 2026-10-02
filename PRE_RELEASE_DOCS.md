@@ -178,3 +178,27 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Explain that `.`, `[`, and `]` are structural path separators when converting FormData back to JSON, while other characters such as `-`, spaces, `+`, `*`, and `&` remain literal key characters. Mention that `foo[bar]`, `foo.bar`, and `foo[]` continue to create nested object/array paths.
 - **Examples:** Include a short example showing `form.append('user-name', 'johndoe')` converting to `{ 'user-name': 'johndoe' }`, and `form.append('user.name', 'john')` or `form.append('user[name]', 'john')` converting to `{ user: { name: 'john' } }`.
 - **Notes:** README, API/multipart/HTML-form docs, and Spanish, French, and Chinese translations now document dot/bracket path parsing and literal punctuation keys without presenting the previous splitting behavior as supported.
+
+### AbortSignal cancellation reasons
+
+- **Change:** Preserve arbitrary `AbortSignal.reason` values consistently across pre-dispatch cancellation and the HTTP, XHR, and Fetch adapters.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Breaking Changes, #10946, closes #7434.
+- **Status:** Pending.
+- **Docs targets:** README cancellation and error-handling sections; cancellation/API/error-handling pages; v2 migration guide; translated docs after English wording is finalized.
+- **Required content:** Cancellation still rejects with `CanceledError`, `ERR_CANCELED`, and `axios.isCancel(error) === true`. Its `message` is always a string: primitive reasons use explicit `String(reason)`, including empty strings, zero, false, Symbols, and BigInts; errors and error-like objects (including errors from other realms) use a string `message`; null, missing reasons, and other objects use `"canceled"`. Throwing getters or conversion hooks cannot prevent cancellation. The unmodified reason is available as non-enumerable `cause`, excluded from `toJSON()`. Cancellation creates a fresh error with the current request context and never mutates the supplied reason. This keeps diagnostics separate when requests share a signal and also supports frozen or otherwise restricted reasons. For a supplied `CanceledError` with a string message and `ERR_CANCELED`, an existing own cause is preserved; otherwise the original error becomes the cause. The resulting cause is always non-enumerable. Cancellation-shaped plain objects are normalized into real `CanceledError` instances with the object as their cause; other Axios errors supplied to `abort()` are wrapped as cancellation errors. This also applies after HTTP response-stream delivery. Request `timeout` errors keep their existing adapter-specific timeout codes; `AbortSignal.timeout()` is a signal cancellation and uses `ERR_CANCELED` with the original timeout reason in `cause`.
+- **Migration:** Stop matching `error.message === 'canceled'`: a bare `controller.abort()` supplies the runtime's default DOMException, whose message is now exposed. Prefer `axios.isCancel(error)` or `error.code === 'ERR_CANCELED'`. Use `cause` for identity/type checks on the original reason; when the reason is already a `CanceledError` with an own cause, that existing cause is carried forward. Do not compare the rejected error itself with the supplied cancellation reason: each request receives a separate error. Fetch cancellation cause now represents the supplied signal reason instead of an incidental native fetch abort exception. `AxiosError.cause` is typed as `unknown` in ESM and CommonJS declarations; narrow it (for example with `instanceof Error`) before accessing properties. Do not promise this behavior as a v1 patch.
+- **Example:** Start the request before aborting, and attach rejection handling before triggering cancellation:
+
+  ```js
+  const controller = new AbortController();
+  const reason = Symbol('navigation');
+  const request = axios.get('/profile', { signal: controller.signal });
+  const handled = request.catch((error) => {
+    if (axios.isCancel(error) && error.cause === reason) {
+      return; // The navigation canceled this request.
+    }
+    throw error;
+  });
+  controller.abort(reason);
+  await handled;
+  ```

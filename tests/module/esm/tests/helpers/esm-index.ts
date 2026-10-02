@@ -716,10 +716,10 @@ axios.get('/user', {
   },
 });
 
-// AxiosError.cause should be typed as Error to allow accessing .message
+// AxiosError.cause is unknown: narrow it before accessing Error properties
 axios.get('/user').catch((error: AxiosError) => {
-  if (error.cause) {
-    // This should not produce a type error - cause is typed as Error
+  if (error.cause instanceof Error) {
+    // instanceof narrows an arbitrary AbortSignal reason to Error
     const causeMessage: string | undefined = error.cause.message;
     console.log(causeMessage);
   }

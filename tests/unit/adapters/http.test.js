@@ -10,6 +10,7 @@ import {
 } from '../../setup/server.js';
 import axios from '../../../index.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
+import CanceledError from '../../../lib/cancel/CanceledError.js';
 import httpAdapter, {
   __isNodeEnvProxyEnabled,
   __isSameOriginRedirect,
@@ -1502,6 +1503,56 @@ describe('supports http with nodejs', () => {
       await stopHTTPServer(server);
     }
   });
+
+  it.each([
+    ['active signal', 'signal', false],
+    ['aborted signal', 'signal', true],
+    ['cancel token', 'cancelToken', false],
+  ])(
+    'should ignore a prototype-supplied %s in the direct http adapter',
+    async (label, key, aborted) => {
+      let subscriptions = 0;
+      let removals = 0;
+      const inherited =
+        key === 'signal'
+          ? {
+              aborted,
+              reason: 'inherited cancellation',
+              addEventListener() {
+                subscriptions++;
+              },
+              removeEventListener() {
+                removals++;
+              },
+            }
+          : {
+              subscribe() {
+                subscriptions++;
+              },
+              unsubscribe() {
+                removals++;
+              },
+            };
+
+      try {
+        Object.defineProperty(Object.prototype, key, { value: inherited, configurable: true });
+        // Exercise adapter subscription/cleanup without Node's own prototype
+        // reads in its network and stream internals obscuring the result.
+        const response = await httpAdapter({
+          method: 'get',
+          url: 'data:text/plain;base64,b2s=',
+          responseType: 'text',
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.data, 'ok');
+        assert.strictEqual(subscriptions, 0);
+        assert.strictEqual(removals, 0);
+      } finally {
+        delete Object.prototype[key];
+      }
+    }
+  );
 
   it('should preserve basic auth across same-origin 303 POST -> GET redirect', async () => {
     const server = await startHTTPServer(
@@ -5273,6 +5324,150 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
+
+    it('should preserve the AbortSignal reason on the rejected CanceledError', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          const timer = setTimeout(() => res.end('ok'), 1000);
+          res.once('close', () => clearTimeout(timer));
+        },
+        { port: 0 }
+      );
+
+      try {
+        const controller = new globalThis.AbortController();
+        const request = axios.get(`http://localhost:${server.address().port}`, {
+          signal: controller.signal,
+        });
+
+        setTimeout(() => controller.abort('TimeoutError'), 50);
+
+        await assert.rejects(request, (error) => {
+          assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+          assert.strictEqual(error.message, 'TimeoutError');
+          return true;
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should preserve a CanceledError abort reason as the cause', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          const timer = setTimeout(() => res.end('ok'), 1000);
+          res.once('close', () => clearTimeout(timer));
+        },
+        { port: 0 }
+      );
+
+      try {
+        const controller = new globalThis.AbortController();
+        const customReason = new CanceledError('custom cancel reason');
+        const request = axios.get(`http://localhost:${server.address().port}`, {
+          signal: controller.signal,
+        });
+
+        setTimeout(() => controller.abort(customReason), 50);
+
+        await assert.rejects(request, (error) => {
+          assert.notStrictEqual(error, customReason);
+          assert.strictEqual(error.cause, customReason);
+          return true;
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should preserve falsy primitive AbortSignal reasons', async () => {
+      for (const reason of ['', 0, false]) {
+        const server = await startHTTPServer(
+          (req, res) => {
+            const timer = setTimeout(() => res.end('ok'), 1000);
+            res.once('close', () => clearTimeout(timer));
+          },
+          { port: 0 }
+        );
+
+        try {
+          const controller = new globalThis.AbortController();
+          const request = axios.get(`http://localhost:${server.address().port}`, {
+            signal: controller.signal,
+          });
+
+          setTimeout(() => controller.abort(reason), 50);
+
+          await assert.rejects(request, (error) => {
+            assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+            assert.strictEqual(error.message, String(reason));
+            assert.strictEqual(error.cause, reason);
+            return true;
+          });
+        } finally {
+          await stopHTTPServer(server);
+        }
+      }
+    });
+
+    it('should preserve the reason when the signal is already aborted before dispatch', async () => {
+      let handlerCalls = 0;
+      const server = await startHTTPServer(
+        (req, res) => {
+          handlerCalls++;
+          res.end('ok');
+        },
+        { port: 0 }
+      );
+
+      try {
+        const controller = new globalThis.AbortController();
+        controller.abort('TimeoutError');
+
+        await assert.rejects(
+          axios.get(`http://localhost:${server.address().port}`, {
+            signal: controller.signal,
+          }),
+          (error) => {
+            assert.strictEqual(error.code, AxiosError.ERR_CANCELED);
+            assert.strictEqual(error.message, 'TimeoutError');
+            return true;
+          }
+        );
+
+        assert.strictEqual(handlerCalls, 0, 'no HTTP request should be dispatched');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should preserve a CanceledError cause when the signal is already aborted before dispatch', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('ok');
+        },
+        { port: 0 }
+      );
+
+      try {
+        const controller = new globalThis.AbortController();
+        const customReason = new CanceledError('already canceled');
+        controller.abort(customReason);
+
+        await assert.rejects(
+          axios.get(`http://localhost:${server.address().port}`, {
+            signal: controller.signal,
+          }),
+          (error) => {
+            assert.notStrictEqual(error, customReason);
+            assert.strictEqual(error.cause, customReason);
+            return true;
+          }
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
   });
 
   it('should properly handle synchronous errors inside the adapter', async () => {
@@ -5929,7 +6124,7 @@ describe('supports http with nodejs', () => {
           await http2Axios.get(localServerURL, {
             signal: AbortSignal.timeout(500),
           });
-        }, /CanceledError: canceled/);
+        }, /CanceledError: The operation was aborted due to timeout/);
 
         await promise;
         assert.ok(isAborted);

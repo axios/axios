@@ -566,7 +566,7 @@ export class AxiosError<T = unknown, D = any, P = any> extends Error {
   isAxiosError: boolean;
   status?: number;
   toJSON: () => object;
-  cause?: Error;
+  cause?: unknown;
   event?: BrowserProgressEvent;
   static from<T = unknown, D = any, P = any>(
     error: Error | unknown,

@@ -92,6 +92,17 @@ describe('formdata (vitest browser)', () => {
     expect(axios.formToJSON(formData)).toEqual(data);
   });
 
+  it('should retain the root array notation for an empty-name array', () => {
+    const data = { '': ['first', 'second'] };
+    const formData = axios.toFormData(data, new FormData());
+
+    expect([...formData.entries()]).toEqual([
+      ['[]', 'first'],
+      ['[]', 'second'],
+    ]);
+    expect(axios.formToJSON(formData)).toEqual(data);
+  });
+
   it('should allow FormData posting', async () => {
     const responsePromise = axios.postForm('/foo', {
       a: 'foo',

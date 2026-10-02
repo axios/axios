@@ -52,6 +52,18 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it('should treat root array notation as the same empty-name JSON field', () => {
+    const formData = new FormData();
+
+    formData.append('', 'scalar');
+    formData.append('[]', 'first-array-entry');
+    formData.append('[]', 'second-array-entry');
+
+    expect(formDataToJSON(formData)).toEqual({
+      '': ['scalar', 'first-array-entry', 'second-array-entry'],
+    });
+  });
+
   it.each(['.', '[', ']', '[[', ']['])(
     'should retain the existing conversion of the nonempty field name %s',
     (name) => {

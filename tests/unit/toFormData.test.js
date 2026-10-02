@@ -80,6 +80,7 @@ describe('helpers::toFormData', () => {
       outerFields: [
         ['numbers[0]', '1'],
         ['numbers[1]', '2'],
+        ['label', 'outer'],
       ],
       innerFields: [
         ['nested', '3'],
@@ -92,6 +93,7 @@ describe('helpers::toFormData', () => {
       outerFields: [
         ['numbers', '1'],
         ['numbers', '2'],
+        ['label', 'outer'],
       ],
       innerFields: [
         ['nested[0]', '3'],
@@ -103,11 +105,15 @@ describe('helpers::toFormData', () => {
     ({ outerIndexes, innerIndexes, outerFields, innerFields }) => {
       const outerForm = new globalThis.FormData();
       const innerForm = new globalThis.FormData();
+      let nestedSerialized = false;
 
-      toFormData({ numbers: [1, 2] }, outerForm, {
+      toFormData({ numbers: [1, 2], label: 'outer' }, outerForm, {
         indexes: outerIndexes,
         visitor(value, key, path, helpers) {
-          toFormData({ nested: [3, 4] }, innerForm, { indexes: innerIndexes });
+          if (!nestedSerialized) {
+            nestedSerialized = true;
+            toFormData({ nested: [3, 4] }, innerForm, { indexes: innerIndexes });
+          }
           return helpers.defaultVisitor.call(this, value, key, path);
         },
       });

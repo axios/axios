@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Breaking Changes
+
+- **Types - Fetch Options:** Validate known `RequestInit` fields in `fetchOptions` consistently for ESM and CommonJS consumers. Previously, the `Record<string, any>` union allowed invalid values such as `cache: 123` or `redirect: 'sideways'`. These now produce TypeScript errors; migrate to valid values such as `cache: 'no-store'` and `redirect: 'manual'`. Provider-specific fields such as Node's `dispatcher` and other custom fetch options remain accepted without casts or global augmentation. Fields added through global `RequestInit` augmentation, such as Next.js `next`, retain their declared types. Unknown property names remain allowed intentionally, so this does not catch every misspelled key. Runtime behavior is unchanged. (**#10961**)
+
 ## New Features
 
 - **HTTP Adapter - Zstandard:** Added automatic zstd decompression on Node.js versions that support it. `zstd` is only advertised in the default `Accept-Encoding` header when `transitional.advertiseZstdAcceptEncoding: true` is set. (**#6792**)
@@ -20,6 +24,7 @@
 
 ## Release Documentation TODO
 
+- Update the TypeScript and fetch-adapter sections of `README.md`, `docs/pages/advanced/type-script.md`, and `docs/pages/advanced/fetch-adapter.md` with the `fetchOptions` typing change in **#10961**: show valid standard options together with a provider-specific option (for example, `{ cache: 'no-store', dispatcher }`), explain that known fields and globally augmented fields are checked, and note that additional keys remain supported. Explain the migration from invalid standard values and that `body`, `headers`, `method`, and `signal` remain excluded from standard-option checking.
 - Update `README.md` request config docs for `transitional.advertiseZstdAcceptEncoding` and zstd decompression support.
 - Update `docs/pages/advanced/request-config.md` for `transitional.advertiseZstdAcceptEncoding` and zstd decompression support.
 - Update decompression-bomb security guidance in `README.md` and `docs/pages/misc/security.md` to mention zstd.

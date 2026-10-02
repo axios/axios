@@ -550,8 +550,8 @@ declare namespace axios {
         >);
     withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
     parseReviver?: (this: any, key: string, value: any, context?: { source?: string }) => any;
-    fetchOptions?:
-      | Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'>;
+    // Validate standard options while allowing custom fetch implementations to add their own.
+    fetchOptions?: Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'> & Record<string, any>;
     httpVersion?: 1 | 2;
     http2Options?: Record<string, any> & {
       sessionTimeout?: number;

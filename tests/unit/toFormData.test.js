@@ -73,6 +73,50 @@ describe('helpers::toFormData', () => {
     assert.ok(formData instanceof FormData);
   });
 
+  it.each([
+    {
+      outerIndexes: true,
+      innerIndexes: null,
+      outerFields: [
+        ['numbers[0]', '1'],
+        ['numbers[1]', '2'],
+      ],
+      innerFields: [
+        ['nested', '3'],
+        ['nested', '4'],
+      ],
+    },
+    {
+      outerIndexes: null,
+      innerIndexes: true,
+      outerFields: [
+        ['numbers', '1'],
+        ['numbers', '2'],
+      ],
+      innerFields: [
+        ['nested[0]', '3'],
+        ['nested[1]', '4'],
+      ],
+    },
+  ])(
+    'should preserve visitor helpers during nested serialization ($outerIndexes)',
+    ({ outerIndexes, innerIndexes, outerFields, innerFields }) => {
+      const outerForm = new globalThis.FormData();
+      const innerForm = new globalThis.FormData();
+
+      toFormData({ numbers: [1, 2] }, outerForm, {
+        indexes: outerIndexes,
+        visitor(value, key, path, helpers) {
+          toFormData({ nested: [3, 4] }, innerForm, { indexes: innerIndexes });
+          return helpers.defaultVisitor.call(this, value, key, path);
+        },
+      });
+
+      assert.deepStrictEqual([...outerForm], outerFields);
+      assert.deepStrictEqual([...innerForm], innerFields);
+    }
+  );
+
   it('should throw Error on circular reference', () => {
     const data = {
       foo: 'bar',

@@ -191,7 +191,7 @@ describe('cancel (vitest browser)', () => {
     expect(error.message).toBe('TimeoutError');
   });
 
-  it('preserves a CanceledError abort reason instance', async () => {
+  it('preserves a CanceledError abort reason as the cause', async () => {
     const controller = new AbortController();
     const customReason = new axios.CanceledError('custom cancel reason');
     const promise = axios.get('/foo/bar', {
@@ -206,9 +206,34 @@ describe('cancel (vitest browser)', () => {
     }, 0);
 
     const error = await promise.catch((thrown) => thrown);
-    expect(error).toBe(customReason);
+    expect(error).not.toBe(customReason);
+    expect(error.cause).toBe(customReason);
     expect(error.config.url).toBe('/foo/bar');
     expect(error.request).toBe(request);
+  });
+
+  it('keeps separate XHR contexts when requests share a cancellation reason', async () => {
+    const controller = new AbortController();
+    const reason = new axios.CanceledError('stop');
+    const urls = ['/first', '/second'];
+    const pending = urls.map((url) =>
+      axios.get(url, { adapter: 'xhr', signal: controller.signal }).catch((error) => error)
+    );
+    await waitForRequest();
+    expect(requests).toHaveLength(2);
+
+    controller.abort(reason);
+    const errors = await Promise.all(pending);
+    expect(errors[0]).not.toBe(errors[1]);
+    errors.forEach((error, index) => {
+      expect(error.config.url).toBe(urls[index]);
+      expect(error.request).toBe(requests[index]);
+      expect(error.cause).toBe(reason);
+      expect(requests[index].statusText).toBe('abort');
+    });
+    expect(reason).not.toHaveProperty('config');
+    expect(reason).not.toHaveProperty('request');
+    expect(reason).not.toHaveProperty('cause');
   });
 
   it.each([false, true])(
@@ -354,6 +379,40 @@ describe('cancel (vitest browser)', () => {
   });
 
   describe('listener cleanup on error paths', () => {
+    it.each([true, { capture: true }])(
+      'detects a listener left behind by mismatched capture: %j',
+      (options) => {
+        const controller = new AbortController();
+        const listenerCount = countSignalListeners(controller.signal);
+        const listener = vi.fn();
+
+        controller.signal.addEventListener('abort', listener, options);
+        controller.signal.removeEventListener('abort', listener, false);
+        expect(listenerCount()).toBe(1);
+        controller.abort();
+        expect(listener).toHaveBeenCalledOnce();
+        controller.signal.removeEventListener('abort', listener, { capture: true });
+        expect(listenerCount()).toBe(0);
+      }
+    );
+
+    it('counts capture and bubble registrations separately and ignores duplicates', () => {
+      const controller = new AbortController();
+      const listenerCount = countSignalListeners(controller.signal);
+      const listener = vi.fn();
+
+      controller.signal.addEventListener('abort', listener);
+      controller.signal.addEventListener('abort', listener, { capture: false });
+      controller.signal.addEventListener('abort', listener, true);
+      expect(listenerCount()).toBe(2);
+      controller.signal.removeEventListener('abort', listener, {});
+      expect(listenerCount()).toBe(1);
+      controller.abort();
+      expect(listener).toHaveBeenCalledOnce();
+      controller.signal.removeEventListener('abort', listener, true);
+      expect(listenerCount()).toBe(0);
+    });
+
     for (const { label, trigger } of [
       { label: 'network error', trigger: (r) => r.onerror(new Error('Network Error')) },
       { label: 'timeout', trigger: (r) => r.ontimeout() },

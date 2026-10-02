@@ -46,24 +46,54 @@ describe('cancel::createCanceledError', () => {
     expect(() => JSON.stringify(error.toJSON())).not.toThrow();
   });
 
-  it('keeps existing cancellation errors and their original cause', () => {
+  it('copies cancellation errors without changing their original cause descriptor', () => {
     const reason = new axios.CanceledError('already canceled');
     reason.cause = new Error('original');
-    expect(createCanceledError(reason)).toBe(reason);
-    expect(Object.getOwnPropertyDescriptor(reason, 'cause').enumerable).toBe(false);
+    const descriptor = Object.getOwnPropertyDescriptor(reason, 'cause');
+    const error = createCanceledError(reason);
+    expect(error).not.toBe(reason);
+    expect(error.cause).toBe(reason.cause);
+    expect(Object.getOwnPropertyDescriptor(error, 'cause').enumerable).toBe(false);
+    expect(Object.getOwnPropertyDescriptor(reason, 'cause')).toEqual(descriptor);
   });
 
-  it('updates the request context of a reusable cancellation error', () => {
+  it('attaches current context without changing the supplied cancellation error', () => {
     const reason = new axios.CanceledError('stop', { url: '/old' }, { old: true });
     const config = { url: '/current' };
     const request = { current: true };
 
     const error = createCanceledError(reason, config, request);
 
-    expect(error).toBe(reason);
+    expect(error).not.toBe(reason);
     expect(error.config).toBe(config);
     expect(error.request).toBe(request);
+    expect(error.cause).toBe(reason);
+    expect(reason.config).toEqual({ url: '/old' });
+    expect(reason.request).toEqual({ old: true });
   });
+
+  it.each(['non-extensible', 'read-only request'])(
+    'leaves a %s reason untouched when attaching context',
+    (restriction) => {
+      const reason = new axios.CanceledError('stop');
+      reason.cause = new Error('original');
+      if (restriction === 'non-extensible') {
+        Object.preventExtensions(reason);
+      } else {
+        Object.defineProperty(reason, 'request', { value: 'old', writable: false });
+      }
+      const descriptors = Object.getOwnPropertyDescriptors(reason);
+      const config = { url: '/current' };
+      const request = { current: true };
+
+      const error = createCanceledError(reason, config, request);
+
+      expect(error.config).toBe(config);
+      expect(error.request).toBe(request);
+      expect(error.cause).toBe(reason.cause);
+      expect(Object.getOwnPropertyDescriptors(reason)).toEqual(descriptors);
+    }
+  );
 
   it.each([false, true])('copies a frozen cancellation error (existing cause: %s)', (hasCause) => {
     const reason = new axios.CanceledError('stop', { url: '/old' }, { old: true });

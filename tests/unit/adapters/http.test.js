@@ -5281,7 +5281,7 @@ describe('supports http with nodejs', () => {
           const timer = setTimeout(() => res.end('ok'), 1000);
           res.once('close', () => clearTimeout(timer));
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
@@ -5302,13 +5302,13 @@ describe('supports http with nodejs', () => {
       }
     });
 
-    it('should preserve a CanceledError abort reason instance', async () => {
+    it('should preserve a CanceledError abort reason as the cause', async () => {
       const server = await startHTTPServer(
         (req, res) => {
           const timer = setTimeout(() => res.end('ok'), 1000);
           res.once('close', () => clearTimeout(timer));
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
@@ -5321,7 +5321,8 @@ describe('supports http with nodejs', () => {
         setTimeout(() => controller.abort(customReason), 50);
 
         await assert.rejects(request, (error) => {
-          assert.strictEqual(error, customReason);
+          assert.notStrictEqual(error, customReason);
+          assert.strictEqual(error.cause, customReason);
           return true;
         });
       } finally {
@@ -5336,7 +5337,7 @@ describe('supports http with nodejs', () => {
             const timer = setTimeout(() => res.end('ok'), 1000);
             res.once('close', () => clearTimeout(timer));
           },
-          { port: SERVER_PORT }
+          { port: 0 }
         );
 
         try {
@@ -5366,7 +5367,7 @@ describe('supports http with nodejs', () => {
           handlerCalls++;
           res.end('ok');
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
@@ -5390,12 +5391,12 @@ describe('supports http with nodejs', () => {
       }
     });
 
-    it('should preserve a CanceledError instance when the signal is already aborted before dispatch', async () => {
+    it('should preserve a CanceledError cause when the signal is already aborted before dispatch', async () => {
       const server = await startHTTPServer(
         (req, res) => {
           res.end('ok');
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
@@ -5408,7 +5409,8 @@ describe('supports http with nodejs', () => {
             signal: controller.signal,
           }),
           (error) => {
-            assert.strictEqual(error, customReason);
+            assert.notStrictEqual(error, customReason);
+            assert.strictEqual(error.cause, customReason);
             return true;
           }
         );

@@ -998,10 +998,46 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           underlying,
           'native fetch internals must not replace the supplied cause'
         );
-        if (type === 'CanceledError') assert.strictEqual(err, reason);
+        if (type === 'CanceledError') assert.notStrictEqual(err, reason);
         assert.strictEqual(Object.getOwnPropertyDescriptor(err, 'cause').enumerable, false);
         assert.ok(!Object.keys(err).includes('cause'));
         assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
+      }
+    );
+
+    it.each([true, false])(
+      'preserves a bare CanceledError cause (Request available: %s)',
+      async (hasRequest) => {
+        const controller = new globalThis.AbortController();
+        const reason = new axios.CanceledError('stop');
+        const nativeAbort = new DOMException('native abort', 'AbortError');
+        const config = {
+          url: 'http://localhost/current',
+          method: 'get',
+          signal: controller.signal,
+          env: {
+            Request: hasRequest ? Request : null,
+            fetch(input, init) {
+              const signal = getFetchSignal(input, init);
+              return new Promise((_resolve, reject) => {
+                signal.addEventListener('abort', () => reject(nativeAbort), { once: true });
+                controller.abort(reason);
+              });
+            },
+          },
+        };
+        const error = await getFetch(config)(config).catch((error) => error);
+
+        assert.ok(error instanceof axios.CanceledError);
+        assert.strictEqual(error.cause, reason);
+        assert.strictEqual(error.config, config);
+        assert.strictEqual(Object.getOwnPropertyDescriptor(error, 'cause').enumerable, false);
+        if (hasRequest) {
+          assert.ok(error.request instanceof Request);
+        } else {
+          assert.strictEqual(Object.hasOwn(error, 'request'), false);
+        }
+        assert.strictEqual(Object.hasOwn(reason, 'cause'), false);
       }
     );
 

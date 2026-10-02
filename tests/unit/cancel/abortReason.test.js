@@ -76,6 +76,45 @@ describe('AbortSignal before dispatch', () => {
 });
 
 describe.each(['http', 'fetch'])('%s AbortSignal reasons', (adapter) => {
+  it('keeps each request context when requests share a cancellation reason', async () => {
+    const controller = new AbortController();
+    const reason = new axios.CanceledError('stop');
+    let received;
+    let requestCount = 0;
+    const requestsReceived = new Promise((resolve) => {
+      received = resolve;
+    });
+    const server = await startHTTPServer(() => {
+      if (++requestCount === 2) received();
+    });
+
+    try {
+      const urls = ['/first', '/second'].map(
+        (path) => `http://localhost:${server.address().port}${path}`
+      );
+      const requests = urls.map((url) =>
+        axios.get(url, { adapter, signal: controller.signal }).catch((error) => error)
+      );
+      await withinDeadline(requestsReceived);
+      controller.abort(reason);
+      const errors = await withinDeadline(Promise.all(requests));
+
+      expect(errors[0]).not.toBe(errors[1]);
+      expect(errors[0].request).not.toBe(errors[1].request);
+      errors.forEach((error, index) => {
+        expectCancellation(error, reason, 'stop');
+        expect(error.config.url).toBe(urls[index]);
+        expect(error.request).toBeTruthy();
+      });
+      expect(reason).not.toHaveProperty('config');
+      expect(reason).not.toHaveProperty('request');
+      expect(reason).not.toHaveProperty('cause');
+    } finally {
+      controller.abort();
+      await stopHTTPServer(server);
+    }
+  });
+
   it.each([
     ['mutable', false, false],
     ['frozen', true, false],
@@ -113,14 +152,10 @@ describe.each(['http', 'fetch'])('%s AbortSignal reasons', (adapter) => {
         expect(error.config).toBe(config);
         expect(error.request).toBeTruthy();
         expect(error.request).not.toEqual({ old: true });
-        if (frozen) {
-          expect(error).not.toBe(reason);
-          expect(error.cause).toBe(hasCause ? cause : reason);
-          expect(Object.getOwnPropertyDescriptor(error, 'cause').enumerable).toBe(false);
-          expect(reason.config.url).toBe('/old');
-        } else {
-          expect(error).toBe(reason);
-        }
+        expect(error).not.toBe(reason);
+        expect(error.cause).toBe(hasCause ? cause : reason);
+        expect(Object.getOwnPropertyDescriptor(error, 'cause').enumerable).toBe(false);
+        expect(reason.config.url).toBe('/old');
       } finally {
         controller.abort();
         await stopHTTPServer(server);

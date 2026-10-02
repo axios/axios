@@ -85,15 +85,18 @@ describe('utils::isX', () => {
     }
   });
 
-  it('should treat an object with a genuinely inherited iterator as non-plain', () => {
-    // Iterator inherited from a custom (non-Object.prototype) source: this is a
-    // real iterable, not prototype pollution, so it must not be classified plain.
+  it('should ignore an iterator inherited from a terminal null-prototype boundary', () => {
+    // A terminal application template is indistinguishable from a mutated
+    // foreign Object.prototype, so its inherited members fail closed.
     const proto = Object.create(null);
     proto[Symbol.iterator] = function* () {
       yield ['x', '1'];
     };
 
-    expect(utils.isPlainObject(Object.create(proto))).toEqual(false);
+    const value = Object.create(proto);
+
+    expect(utils.isPlainObject(value)).toEqual(true);
+    expect(utils.isSafeIterable(value)).toEqual(false);
   });
 
   it('should not read polluted Object.prototype iterator accessors for safe iterable checks', () => {
@@ -131,6 +134,88 @@ describe('utils::isX', () => {
     expect(utils.hasOwnInPrototypeChain(proxy, 'missing')).toEqual(false);
     expect(utils.getSafeProp(proxy, 'missing')).toEqual(undefined);
     expect(calls).toBeLessThanOrEqual(2);
+  });
+
+  it('should stop safe prototype flattening on cyclic Proxy prototypes', () => {
+    let calls = 0;
+    let proxy;
+    proxy = new Proxy({}, {
+      getPrototypeOf() {
+        calls += 1;
+        if (calls > 1) {
+          throw new Error('cycled');
+        }
+        return proxy;
+      }
+    });
+
+    expect(Object.keys(utils.toSafeFlatObject(proxy))).toEqual([]);
+    expect(calls).toEqual(1);
+  });
+
+  it('should preserve null-prototype sources but exclude terminal templates', () => {
+    const root = Object.create(null);
+    root.own = 'preserved';
+
+    expect(utils.getSafeProp(root, 'own')).toEqual('preserved');
+    expect(utils.toSafeFlatObject(root)).toBe(root);
+
+    const template = Object.create(null);
+    template.inherited = 'excluded';
+
+    const source = Object.create(template);
+    source.own = 'preserved';
+
+    expect(utils.getSafeProp(source, 'own')).toEqual('preserved');
+    expect(utils.getSafeProp(source, 'inherited')).toEqual(undefined);
+
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(flattened.own).toEqual('preserved');
+    expect(Object.prototype.hasOwnProperty.call(flattened, 'inherited')).toEqual(false);
+  });
+
+  it('should materialize immutable null-prototype sources', () => {
+    const source = Object.freeze(Object.assign(Object.create(null), { own: 'preserved' }));
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(flattened).not.toBe(source);
+    expect(Object.getPrototypeOf(flattened)).toEqual(null);
+    expect(flattened.own).toEqual('preserved');
+    expect(Object.isFrozen(flattened)).toEqual(false);
+  });
+
+  it('should materialize and filter unsafe keys from null-prototype sources', () => {
+    const source = Object.create(null);
+    source.safe = 'preserved';
+    Object.defineProperty(source, '__proto__', {
+      value: 'excluded',
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+    source.constructor = 'excluded';
+    source.prototype = 'excluded';
+
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(flattened).not.toBe(source);
+    expect(flattened.safe).toEqual('preserved');
+    expect(Object.prototype.hasOwnProperty.call(flattened, '__proto__')).toEqual(false);
+    expect(Object.prototype.hasOwnProperty.call(flattened, 'constructor')).toEqual(false);
+    expect(Object.prototype.hasOwnProperty.call(flattened, 'prototype')).toEqual(false);
+  });
+
+  it('should exclude symbols inherited from terminal null-prototype templates', () => {
+    const behavior = Symbol('behavior');
+    const template = Object.create(null);
+    template[behavior] = () => 'excluded';
+
+    const source = Object.create(template);
+    const flattened = utils.toSafeFlatObject(source);
+
+    expect(utils.getSafeProp(source, behavior)).toEqual(undefined);
+    expect(Object.prototype.hasOwnProperty.call(flattened, behavior)).toEqual(false);
   });
 
   it('should validate Date', () => {

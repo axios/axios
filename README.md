@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> [**Get Security Updates for Axios v0 →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
+
 <h3 align="center">💎 Platinum sponsors <br /></h3>
 <table align="center">
     <tr>
@@ -372,6 +375,86 @@
                     href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
                     target="_blank"
                     ><b>kasyno.us.com</b></a
+                >
+            </p>
+        </td>
+    </tr>
+    <tr width="33.333333333333336%">
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://www.scrapingbee.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/scrapingbee/6d5dc95/logo.png"
+                    alt="ScrapingBee"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Scrape websites with a powerful web scraping API without managing proxies, browsers, or anti-bot defenses.
+            </p>
+            <p align="center">
+                <a
+                    href="https://www.scrapingbee.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+                    target="_blank"
+                    ><b>scrapingbee.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="180px"
+                    height="53px"
+                    src="https://axios.rest/sponsors/herodevs.svg"
+                    alt="HeroDevs"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Security and long-term support for end-of-life open source software.
+            </p>
+            <p align="center">
+                <a
+                    href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"
+                    target="_blank"
+                    ><b>herodevs.com</b></a
+                >
+            </p>
+        </td>
+        <td align="center" width="33.333333333333336%">
+            <a
+                href="https://opencollective.com/sweepico-promo-code"
+                style="padding: 10px; display: inline-block"
+                target="_blank"
+            >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/sweepico-promo-code/4dd517a/logo.png"
+                    alt="Sweepico Promo Code"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Social Gaming Platform
+            </p>
+            <p align="center">
+                <a
+                    href="https://opencollective.com/sweepico-promo-code"
+                    target="_blank"
+                    ><b>Sweepico Promo Code</b></a
                 >
             </p>
         </td>

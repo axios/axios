@@ -164,4 +164,56 @@ describe('core::InterceptorManager', () => {
     expect(visited).toEqual([first, second]);
     expect(manager.handlers).toHaveLength(0);
   });
+
+  // Regression for #11114: `handlers` is public and `clear()` has always
+  // tolerated a nullish value, but syncHandlerEntries read `.length` before
+  // checking it, so every later request threw.
+  describe.each([
+    ['null', null],
+    ['undefined', undefined],
+  ])('with handlers set to %s', (_label, value) => {
+    it('forEach is a no-op instead of throwing', () => {
+      const manager = new InterceptorManager();
+      manager.use(() => {});
+      manager.handlers = value;
+
+      const visited = [];
+      expect(() => manager.forEach((h) => visited.push(h))).not.toThrow();
+      expect(visited).toEqual([]);
+    });
+
+    it('stays usable across repeated forEach calls', () => {
+      const manager = new InterceptorManager();
+      manager.use(() => {});
+      manager.handlers = value;
+
+      // The second pass takes the `handlers === handlersRef` branch, which is
+      // where the original report's stack trace landed.
+      expect(() => {
+        manager.forEach(() => {});
+        manager.forEach(() => {});
+      }).not.toThrow();
+    });
+
+    it('eject does not throw', () => {
+      const manager = new InterceptorManager();
+      const id = manager.use(() => {});
+      manager.handlers = value;
+
+      expect(() => manager.eject(id)).not.toThrow();
+    });
+
+    it('accepts and invokes a new handler', () => {
+      const manager = new InterceptorManager();
+      manager.use(() => {});
+      manager.handlers = value;
+
+      const fulfilled = () => {};
+      manager.use(fulfilled);
+
+      const visited = [];
+      manager.forEach((h) => visited.push(h.fulfilled));
+      expect(visited).toEqual([fulfilled]);
+    });
+  });
 });

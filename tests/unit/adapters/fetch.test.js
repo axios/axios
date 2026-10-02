@@ -204,6 +204,318 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should pass a fully resolved Request and safe options to a custom fetch implementation', async () => {
+    let captured;
+    const fetchOptions = Object.create({
+      headers: {
+        'X-Injected': 'yes',
+      },
+    });
+    fetchOptions.cache = 'no-store';
+    fetchOptions.redirect = 'error';
+    fetchOptions.customOption = 'custom-value';
+    fetchOptions.credentials = 'omit';
+    fetchOptions.duplex = 'full';
+
+    const customFetch = function (input, init) {
+      captured = {
+        input,
+        init,
+        argumentCount: arguments.length,
+      };
+      return Promise.resolve(new Response('ok'));
+    };
+
+    const response = await fetchAxios.get('/custom-fetch', {
+      headers: {
+        'X-Safe': 'value',
+      },
+      withCredentials: true,
+      fetchOptions,
+      env: {
+        fetch: customFetch,
+      },
+    });
+
+    assert.strictEqual(response.data, 'ok');
+    assert.ok(captured.input instanceof Request);
+    assert.strictEqual(captured.input.headers.get('X-Safe'), 'value');
+    assert.strictEqual(captured.input.headers.get('X-Injected'), null);
+    assert.strictEqual(captured.input.cache, 'no-store');
+    assert.strictEqual(captured.input.redirect, 'error');
+    assert.strictEqual(captured.input.credentials, 'include');
+    assert.strictEqual(captured.input.duplex, 'half');
+    assert.strictEqual(Object.getPrototypeOf(captured.init), null);
+    assert.strictEqual(captured.init.cache, 'no-store');
+    assert.strictEqual(captured.init.redirect, 'error');
+    assert.strictEqual(captured.init.customOption, 'custom-value');
+    assert.strictEqual(captured.init.body, undefined);
+    assert.strictEqual(captured.init.headers, undefined);
+    assert.strictEqual(captured.init.method, undefined);
+    assert.strictEqual(captured.init.signal, undefined);
+    assert.strictEqual(captured.init.credentials, undefined);
+    assert.strictEqual(captured.init.duplex, undefined);
+    assert.strictEqual(captured.argumentCount, 2);
+  });
+
+  it('should ignore Request options inherited only from Object.prototype', async () => {
+    let captured;
+
+    Object.prototype.cache = 'no-store';
+    Object.prototype.redirect = 'manual';
+
+    try {
+      const response = await fetchAxios.get('/safe-request-options', {
+        env: {
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.ok(captured instanceof Request);
+      assert.strictEqual(captured.cache, 'default');
+      assert.strictEqual(captured.redirect, 'follow');
+    } finally {
+      delete Object.prototype.cache;
+      delete Object.prototype.redirect;
+    }
+  });
+
+  it('should omit the default cache mode when the runtime rejects it', async () => {
+    let capturedCache = 'unset';
+
+    class RestrictedCacheRequest extends Request {
+      constructor(url, init) {
+        capturedCache = init && init.cache;
+
+        if (capturedCache !== undefined && capturedCache !== 'no-store') {
+          throw new TypeError(`Unsupported cache mode: ${capturedCache}`);
+        }
+
+        super(url, init);
+      }
+    }
+
+    let captured;
+
+    const response = await fetchAxios.get('/restricted-cache', {
+      env: {
+        Request: RestrictedCacheRequest,
+        fetch(input) {
+          captured = input;
+          return Promise.resolve(new Response('ok'));
+        },
+      },
+    });
+
+    assert.strictEqual(response.data, 'ok');
+    assert.strictEqual(capturedCache, undefined);
+    assert.strictEqual(captured.redirect, 'follow');
+  });
+
+  it('should omit the default cache mode when the rejected mode is also polluted', async () => {
+    let capturedCache = 'unset';
+
+    class RestrictedCacheRequest extends Request {
+      constructor(url, init) {
+        capturedCache = init && init.cache;
+
+        if (capturedCache !== undefined && capturedCache !== 'no-store') {
+          throw new TypeError(`Unsupported cache mode: ${capturedCache}`);
+        }
+
+        super(url, init);
+      }
+    }
+
+    Object.prototype.cache = 'default';
+
+    try {
+      const response = await fetchAxios.get('/polluted-cache', {
+        env: {
+          Request: RestrictedCacheRequest,
+          fetch() {
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.strictEqual(capturedCache, undefined);
+    } finally {
+      delete Object.prototype.cache;
+    }
+  });
+
+  it('should keep the default cache mode when other Request options are polluted', async () => {
+    let captured;
+
+    Object.prototype.cache = 'no-store';
+    Object.prototype.mode = 'navigate';
+
+    try {
+      const response = await fetchAxios.get('/polluted-mode', {
+        env: {
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.strictEqual(captured.cache, 'default');
+    } finally {
+      delete Object.prototype.cache;
+      delete Object.prototype.mode;
+    }
+  });
+
+  [false, true].forEach((polluted) => {
+    it(`should omit cache when every explicit mode is rejected${polluted ? ' with polluted options' : ''}`, async () => {
+      let capturedInit;
+
+      class CacheDisabledRequest extends Request {
+        constructor(input, init) {
+          if (init && init.cache !== undefined) {
+            throw new TypeError(
+              "The 'cache' field on 'RequestInitializerDict' is not implemented."
+            );
+          }
+
+          super(input, init);
+          capturedInit = init;
+        }
+      }
+
+      try {
+        if (polluted) {
+          Object.prototype.cache = 'default';
+          Object.prototype.mode = 'navigate';
+        }
+
+        const response = await fetchAxios.get('/cache-disabled', {
+          env: {
+            Request: CacheDisabledRequest,
+            fetch() {
+              return Promise.resolve(new Response('ok'));
+            },
+          },
+        });
+
+        assert.strictEqual(response.data, 'ok');
+        assert.strictEqual(Object.getPrototypeOf(capturedInit), null);
+        assert.strictEqual(Object.prototype.hasOwnProperty.call(capturedInit, 'cache'), false);
+        assert.strictEqual(capturedInit.mode, 'cors');
+        assert.strictEqual(capturedInit.redirect, 'follow');
+      } finally {
+        if (polluted) {
+          delete Object.prototype.cache;
+          delete Object.prototype.mode;
+        }
+      }
+    });
+  });
+
+  it('should keep the default cache mode when a polluted body prevents capability probes', async () => {
+    let captured;
+
+    Object.prototype.cache = 'no-store';
+    Object.prototype.body = 'unexpected GET body';
+
+    try {
+      const response = await fetchAxios.get('/polluted-body', {
+        env: {
+          fetch(input) {
+            captured = input;
+            return Promise.resolve(new Response('ok'));
+          },
+        },
+      });
+
+      assert.strictEqual(response.data, 'ok');
+      assert.strictEqual(captured.cache, 'default');
+      assert.strictEqual(captured.body, null);
+    } finally {
+      delete Object.prototype.cache;
+      delete Object.prototype.body;
+    }
+  });
+
+  ['no-store', 'no-cache', 'default'].forEach((cache) => {
+    it(`should preserve an explicit ${cache} cache option on a restricted runtime`, async () => {
+      class RestrictedCacheRequest extends Request {
+        constructor(input, init) {
+          if (
+            init &&
+            init.cache !== undefined &&
+            init.cache !== 'no-store' &&
+            init.cache !== 'no-cache'
+          ) {
+            throw new TypeError(`Unsupported cache mode: ${init.cache}`);
+          }
+
+          super(input, init);
+        }
+      }
+
+      const fetchOptions = Object.freeze({ cache });
+      const customFetch = vi.fn((input, init) => {
+        assert.strictEqual(input.cache, cache);
+        assert.strictEqual(init.cache, cache);
+        return Promise.resolve(new Response('ok'));
+      });
+      const response = fetchAxios.get('/explicit-cache', {
+        fetchOptions,
+        env: {
+          Request: RestrictedCacheRequest,
+          fetch: customFetch,
+        },
+      });
+
+      if (cache === 'default') {
+        await assert.rejects(response, { message: 'Unsupported cache mode: default' });
+        assert.strictEqual(customFetch.mock.calls.length, 0);
+      } else {
+        assert.strictEqual((await response).data, 'ok');
+        assert.strictEqual(customFetch.mock.calls.length, 1);
+      }
+
+      assert.strictEqual(fetchOptions.cache, cache);
+    });
+  });
+
+  it('should expose an unfollowed redirect response in Node when maxRedirects is zero', async () => {
+    let finalRequests = 0;
+    const server = await startHTTPServer((req, res) => {
+      if (req.url === '/start') {
+        res.writeHead(302, { Location: '/final' });
+        res.end();
+        return;
+      }
+
+      finalRequests++;
+      res.end('followed');
+    });
+
+    try {
+      const response = await fetchAxios.get(`http://localhost:${server.address().port}/start`, {
+        maxRedirects: 0,
+        validateStatus: () => true,
+      });
+
+      // Node exposes manual redirect responses; browsers return an opaque
+      // redirect whose status and headers cannot be inspected.
+      assert.strictEqual(response.status, 302);
+      assert.strictEqual(finalRequests, 0);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   describe('responses', () => {
     it('should support text response type', async () => {
       const originalData = 'my data';
@@ -580,7 +892,9 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     );
 
     try {
-      const response = await fetchAxios.get(`http://user%:foo%zz@localhost:${server.address().port}/`);
+      const response = await fetchAxios.get(
+        `http://user%:foo%zz@localhost:${server.address().port}/`
+      );
       const base64 = Buffer.from('user%:foo%zz', 'utf8').toString('base64');
       assert.strictEqual(response.data, `Basic ${base64}`);
     } finally {
@@ -1010,6 +1324,30 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
   });
 
+  it('should not unwrap a foreign AxiosError from a fetch TypeError cause', async () => {
+    const foreignRequest = { foreign: true };
+    const foreignConfig = { url: 'http://foreign.test/' };
+    const foreignError = new AxiosError(
+      'Foreign Error',
+      'ERR_FOREIGN',
+      foreignConfig,
+      foreignRequest
+    );
+    const failingFetch = () =>
+      Promise.reject(Object.assign(new TypeError('fetch failed'), { cause: foreignError }));
+
+    const err = await fetchAxios
+      .get('/current', { env: { fetch: failingFetch } })
+      .catch((error) => error);
+
+    assert.notStrictEqual(err, foreignError);
+    assert.strictEqual(err.code, AxiosError.ERR_NETWORK);
+    assert.strictEqual(err.config.url, '/current');
+    assert.notStrictEqual(err.config, foreignConfig);
+    assert.notStrictEqual(err.request, foreignRequest);
+    assert.strictEqual(err.cause, foreignError);
+  });
+
   it('should get response headers', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -1209,6 +1547,36 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(data, 'test');
     });
 
+    it('should pass safe options when the Request object is unavailable', async () => {
+      let captured;
+
+      Object.prototype.cache = 'no-store';
+      Object.prototype.redirect = 'manual';
+
+      try {
+        const { data } = await fetchAxios.get('/', {
+          env: {
+            Request: null,
+            fetch(_url, init) {
+              captured = init;
+              return {
+                headers: {},
+                text: async () => 'test',
+              };
+            },
+          },
+        });
+
+        assert.strictEqual(data, 'test');
+        assert.strictEqual(Object.getPrototypeOf(captured), null);
+        assert.strictEqual(captured.cache, undefined);
+        assert.strictEqual(captured.redirect, undefined);
+      } finally {
+        delete Object.prototype.cache;
+        delete Object.prototype.redirect;
+      }
+    });
+
     it('should be able to handle response with lack of Response object', async () => {
       const { data, headers } = await fetchAxios.get('/', {
         onDownloadProgress() {
@@ -1278,6 +1646,8 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('size limits', () => {
+    // Give each server its own port so aborted uploads cannot reset later
+    // requests through a reused fetch connection pool.
     const makeUploadStream = (totalBytes, chunkSize = 512) => {
       let remaining = totalBytes;
 
@@ -1300,12 +1670,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         (req, res) => {
           res.end('ok');
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.post(`${LOCAL_SERVER_URL}/`, 'A'.repeat(2048), {
+          fetchAxios.post(`http://localhost:${server.address().port}/`, 'A'.repeat(2048), {
             maxBodyLength: 1024,
           }),
           (err) => {
@@ -1331,12 +1701,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end('ok');
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.post(`${LOCAL_SERVER_URL}/`, makeUploadStream(2048), {
+          fetchAxios.post(`http://localhost:${server.address().port}/`, makeUploadStream(2048), {
             maxBodyLength: 1024,
             headers: { 'Content-Type': 'application/octet-stream' },
           }),
@@ -1368,14 +1738,14 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end('ok');
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
           // A caller-declared Content-Length that under-reports the real body
           // must not let an oversized stream slip past the limit.
-          fetchAxios.post(`${LOCAL_SERVER_URL}/`, makeUploadStream(8192), {
+          fetchAxios.post(`http://localhost:${server.address().port}/`, makeUploadStream(8192), {
             maxBodyLength: 1024,
             headers: {
               'Content-Type': 'application/octet-stream',
@@ -1484,12 +1854,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           res.setHeader('Content-Length', Buffer.byteLength(payload));
           res.end(payload);
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+          fetchAxios.get(`http://localhost:${server.address().port}/`, {
             maxContentLength: 1024,
           }),
           (err) => {
@@ -1547,12 +1917,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           };
           writeNext();
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         await assert.rejects(
-          fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+          fetchAxios.get(`http://localhost:${server.address().port}/`, {
             maxContentLength: 512,
           }),
           (err) => {
@@ -1564,6 +1934,109 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       } finally {
         await stopHTTPServer(server);
       }
+    });
+
+    for (const preserveCause of [true, false]) {
+      it(`should preserve a response size error when the runtime wraps it ${preserveCause ? 'with' : 'without'} a cause`, async () => {
+        let originalError;
+        let wrappedError;
+        let dispatchedRequest;
+
+        class WrappedResponse extends Response {
+          async text() {
+            try {
+              return await super.text();
+            } catch (error) {
+              originalError = error;
+              wrappedError = new TypeError('fetch failed');
+              if (preserveCause) {
+                wrappedError.cause = error;
+              }
+              throw wrappedError;
+            }
+          }
+        }
+
+        await assert.rejects(
+          fetchAxios.get('/wrapped-response-limit', {
+            maxContentLength: 512,
+            env: {
+              Response: WrappedResponse,
+              async fetch(request) {
+                dispatchedRequest = request;
+                // No Content-Length: the actual body must cross the streaming limit.
+                return new Response(
+                  new ReadableStream({
+                    start(controller) {
+                      controller.enqueue(new Uint8Array(1024));
+                      controller.close();
+                    },
+                  })
+                );
+              },
+            },
+          }),
+          (error) => {
+            assert.ok(originalError instanceof AxiosError);
+            assert.ok(wrappedError instanceof TypeError);
+            assert.strictEqual(error, originalError);
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_RESPONSE);
+            assert.strictEqual(error.message, 'maxContentLength size of 512 exceeded');
+            assert.strictEqual(error.config.url, '/wrapped-response-limit');
+            assert.strictEqual(error.config.maxContentLength, 512);
+            assert.strictEqual(error.request, dispatchedRequest);
+            return true;
+          }
+        );
+      });
+    }
+
+    it('should keep response size errors local to each invocation of a cached adapter', async () => {
+      class WrappedResponse extends Response {
+        async text() {
+          try {
+            return await super.text();
+          } catch (error) {
+            throw new TypeError('fetch failed');
+          }
+        }
+      }
+
+      const client = axios.create({
+        adapter: 'fetch',
+        baseURL: LOCAL_SERVER_URL,
+        maxContentLength: 512,
+        env: {
+          Response: WrappedResponse,
+          async fetch(request) {
+            const path = new URL(request.url).pathname;
+            if (path === '/network-error') {
+              throw new TypeError('fetch failed');
+            }
+            const size = path === '/oversized' ? 1024 : path === '/empty' ? 0 : 512;
+            return new Response('A'.repeat(size));
+          },
+        },
+      });
+
+      const results = await Promise.all(
+        ['/oversized', '/exact', '/empty'].map((path) =>
+          client.get(path).catch((error) => error)
+        )
+      );
+
+      assert.ok(results[0] instanceof AxiosError);
+      assert.strictEqual(results[0].code, AxiosError.ERR_BAD_RESPONSE);
+      assert.strictEqual(results[0].config.url, '/oversized');
+      assert.strictEqual(results[1].data, 'A'.repeat(512));
+      assert.strictEqual(results[2].data, '');
+
+      await assert.rejects(client.get('/network-error'), (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_NETWORK);
+        assert.strictEqual(error.config.url, '/network-error');
+        return true;
+      });
+      assert.strictEqual((await client.get('/after')).data, 'A'.repeat(512));
     });
 
     it('should reject a data: URL whose decoded size exceeds maxContentLength (base64)', async () => {
@@ -1638,11 +2111,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         (req, res) => {
           res.end(payload);
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
-        const { data } = await fetchAxios.get(`${LOCAL_SERVER_URL}/`, {
+        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
           maxContentLength: 1024,
         });
         assert.strictEqual(data, payload);
@@ -1664,12 +2137,12 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end(JSON.stringify({ received: bytesReceived }));
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
         const { data } = await fetchAxios.post(
-          `${LOCAL_SERVER_URL}/`,
+          `http://localhost:${server.address().port}/`,
           makeUploadStream(payloadLength),
           {
             maxBodyLength: 1024,
@@ -1695,11 +2168,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             res.end('ok');
           });
         },
-        { port: SERVER_PORT }
+        { port: 0 }
       );
 
       try {
-        await fetchAxios.post(`${LOCAL_SERVER_URL}/`, payload, {
+        await fetchAxios.post(`http://localhost:${server.address().port}/`, payload, {
           maxBodyLength: 1024,
         });
         assert.strictEqual(received, payload);

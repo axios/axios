@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import axios from 'axios';
 import { printSuccessMessage, printErrorMessage, printInfoMessage } from './utils.js';
+import { selectLatestSponsorsBySlug } from './selectLatestSponsorsBySlug.js';
 
 /**
  * Special configuration for processing sponsor data.
@@ -14,6 +15,27 @@ const config = {
   },
   sponsorsToIgnore: ['axios'],
   additionalSponsors: [
+    // Permanent gold sponsorship, managed independently of Open Collective.
+    {
+      name: 'HeroDevs',
+      imageUrl: '/sponsors/herodevs.svg',
+      description: 'Security and long-term support for end-of-life open source software.',
+      tier: 'gold',
+      slug: 'herodevs',
+      website: 'https://www.herodevs.com/',
+      twitter: null,
+      active: true,
+    },
+    {
+      name: 'Code for Japan',
+      imageUrl: '/sponsors/code-for-japan.jpg',
+      description: null,
+      tier: 'silver',
+      slug: 'code-for-japan',
+      website: 'https://www.code4japan.org/',
+      twitter: 'https://x.com/CodeforJapan',
+      active: true,
+    },
     {
       name: 'superluxuryreps',
       imageUrl: 'https://images.opencollective.com/superluxuryreps/378b62f/avatar.png',
@@ -38,7 +60,7 @@ query Account {
   account(githubHandle: "https://github.com/axios") {
     name
     slug
-    members(role: BACKER) {
+    members(role: BACKER, limit: 1000) {
       totalCount
       nodes {
         account {
@@ -77,7 +99,7 @@ query Account {
 const getActiveSponsorsQuery = `
 query Account {
   account(githubHandle: "https://github.com/axios") {
-    orders(onlyActiveSubscriptions: true, onlySubscriptions: true, frequency: MONTHLY, status: ACTIVE) {
+    orders(onlyActiveSubscriptions: true, onlySubscriptions: true, frequency: MONTHLY, status: ACTIVE, limit: 1000) {
       totalCount
       nodes {
         tier {
@@ -224,7 +246,9 @@ const formatAllSponsorData = (sponsorsData) => {
     return sponsor.tier?.name.toLowerCase() || 'backer';
   };
 
-  const processedData = sponsorsData
+  const latestSponsorsBySlug = selectLatestSponsorsBySlug(sponsorsData);
+
+  const processedData = [...latestSponsorsBySlug.values()]
     .map((sponsor) => ({
       name: sponsor.account.name ?? 'Backer',
       imageUrl: sponsor.account.imageUrl ?? null,
@@ -251,10 +275,15 @@ const mainProcess = async () => {
   try {
     const allSponsors = await getAllSponsors();
     const activeSponsors = await getActiveSponsors();
-    const allSponsorsProcessedData = formatAllSponsorData(allSponsors.account.members.nodes);
+    const additionalSponsorSlugs = new Set(
+      config.additionalSponsors.map((sponsor) => sponsor.slug)
+    );
+    const allSponsorsProcessedData = formatAllSponsorData(
+      allSponsors.account.members.nodes
+    ).filter((sponsor) => !additionalSponsorSlugs.has(sponsor.slug));
     const activeSponsorsProcessedData = formatActiveSponsorData(
       activeSponsors.account.orders.nodes
-    );
+    ).filter((sponsor) => !additionalSponsorSlugs.has(sponsor.slug));
 
     const sponsorsByTier = {};
 

@@ -9,6 +9,14 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes('http://example.com'), 0);
   });
 
+  it('should follow the protocol case rules of each decoder', () => {
+    ['DATA:', 'DaTa:'].forEach((scheme) => {
+      assert.strictEqual(estimateDataURLBufferAllocation(scheme + 'text/plain,payload'), 0);
+      assert.strictEqual(estimateDataURLDecodedBytes(scheme + 'text/plain,payload'), 7);
+    });
+    assert.strictEqual(estimateDataURLBufferAllocation('data:text/plain,payload'), 7);
+  });
+
   it('should calculate length for simple non-base64 data URL', () => {
     const url = 'data:,Hello';
     assert.strictEqual(estimateDataURLDecodedBytes(url), Buffer.byteLength('Hello', 'utf8'));
@@ -58,10 +66,7 @@ describe('estimateDataURLDecodedBytes', () => {
     const body = 'QQ' + '%41'.repeat(4000);
     const url = 'data:application/octet-stream;base64,' + body;
 
-    assert.strictEqual(
-      estimateDataURLBufferAllocation(url),
-      Buffer.byteLength(body, 'base64')
-    );
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
     assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
   });
 
@@ -69,10 +74,7 @@ describe('estimateDataURLDecodedBytes', () => {
     const body = 'TQ==' + '%'.repeat(4096);
     const url = 'data:application/octet-stream;base64,' + body;
 
-    assert.strictEqual(
-      estimateDataURLBufferAllocation(url),
-      Buffer.byteLength(body, 'base64')
-    );
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
     assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
   });
 
@@ -80,9 +82,6 @@ describe('estimateDataURLDecodedBytes', () => {
     const body = 'TQ==#' + 'x'.repeat(4096);
     const url = 'data:application/octet-stream;base64,' + body;
 
-    assert.strictEqual(
-      estimateDataURLBufferAllocation(url),
-      Buffer.byteLength(body, 'base64')
-    );
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
   });
 });

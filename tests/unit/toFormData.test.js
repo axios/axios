@@ -19,6 +19,36 @@ describe('helpers::toFormData', () => {
     };
   };
 
+  it('should ignore a visitor inherited only from Object.prototype', () => {
+    let called = false;
+    Object.prototype.visitor = () => {
+      called = true;
+      return false;
+    };
+
+    try {
+      const formData = createRNFormDataSpy();
+      toFormData({ field: 'value' }, formData);
+
+      assert.strictEqual(called, false);
+      assert.deepStrictEqual(formData.calls, [['field', 'value']]);
+    } finally {
+      delete Object.prototype.visitor;
+    }
+  });
+
+  it('should ignore maxDepth inherited only from Object.prototype', () => {
+    Object.prototype.maxDepth = 0;
+
+    try {
+      const formData = createRNFormDataSpy();
+      assert.doesNotThrow(() => toFormData({ nested: { field: 'value' } }, formData));
+      assert.deepStrictEqual(formData.calls, [['nested[field]', 'value']]);
+    } finally {
+      delete Object.prototype.maxDepth;
+    }
+  });
+
   it('should convert a flat object to FormData', () => {
     const data = {
       foo: 'bar',
@@ -81,7 +111,7 @@ describe('helpers::toFormData', () => {
       get [Symbol.toStringTag]() {
         return 'FormData';
       },
-      *[Symbol.iterator]() {}
+      *[Symbol.iterator]() {},
     };
 
     const value = new Uint8Array([1, 2, 3]);

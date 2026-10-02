@@ -5278,13 +5278,14 @@ describe('supports http with nodejs', () => {
     it('should preserve the AbortSignal reason on the rejected CanceledError', async () => {
       const server = await startHTTPServer(
         (req, res) => {
-          setTimeout(() => res.end('ok'), 1000);
+          const timer = setTimeout(() => res.end('ok'), 1000);
+          res.once('close', () => clearTimeout(timer));
         },
         { port: SERVER_PORT }
       );
 
       try {
-        const controller = new AbortController();
+        const controller = new globalThis.AbortController();
         const request = axios.get(`http://localhost:${server.address().port}`, {
           signal: controller.signal,
         });
@@ -5304,13 +5305,14 @@ describe('supports http with nodejs', () => {
     it('should preserve a CanceledError abort reason instance', async () => {
       const server = await startHTTPServer(
         (req, res) => {
-          setTimeout(() => res.end('ok'), 1000);
+          const timer = setTimeout(() => res.end('ok'), 1000);
+          res.once('close', () => clearTimeout(timer));
         },
         { port: SERVER_PORT }
       );
 
       try {
-        const controller = new AbortController();
+        const controller = new globalThis.AbortController();
         const customReason = new CanceledError('custom cancel reason');
         const request = axios.get(`http://localhost:${server.address().port}`, {
           signal: controller.signal,
@@ -5331,13 +5333,14 @@ describe('supports http with nodejs', () => {
       for (const reason of ['', 0, false]) {
         const server = await startHTTPServer(
           (req, res) => {
-            setTimeout(() => res.end('ok'), 1000);
+            const timer = setTimeout(() => res.end('ok'), 1000);
+            res.once('close', () => clearTimeout(timer));
           },
           { port: SERVER_PORT }
         );
 
         try {
-          const controller = new AbortController();
+          const controller = new globalThis.AbortController();
           const request = axios.get(`http://localhost:${server.address().port}`, {
             signal: controller.signal,
           });
@@ -5367,7 +5370,7 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const controller = new AbortController();
+        const controller = new globalThis.AbortController();
         controller.abort('TimeoutError');
 
         await assert.rejects(
@@ -5396,7 +5399,7 @@ describe('supports http with nodejs', () => {
       );
 
       try {
-        const controller = new AbortController();
+        const controller = new globalThis.AbortController();
         const customReason = new CanceledError('already canceled');
         controller.abort(customReason);
 

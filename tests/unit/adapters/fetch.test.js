@@ -954,44 +954,56 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       );
     });
 
-    it('sets a non-enumerable cause on canceled fetch errors so loggers do not throw (#7205)', async () => {
-      const underlying = new Error('abort internals');
-      const socket = { name: 'Socket' };
-      socket.self = socket;
-      underlying.socket = socket;
+    it.each(['Error', 'CanceledError'])(
+      'keeps an explicit %s abort cause non-enumerable so loggers do not throw (#7205)',
+      async (type) => {
+        const underlying = new Error('abort internals');
+        const cause = new Error('user canceled');
+        const socket = { name: 'Socket' };
+        socket.self = socket;
+        cause.socket = socket;
+        const reason = type === 'CanceledError' ? new axios.CanceledError('user canceled') : cause;
+        if (type === 'CanceledError') reason.cause = cause;
 
-      const abortingFetch = (url, init) => {
-        const signal = getFetchSignal(url, init);
+        const abortingFetch = (url, init) => {
+          const signal = getFetchSignal(url, init);
 
-        return new Promise((_resolve, reject) => {
-          const onAbort = () => {
-            signal.removeEventListener('abort', onAbort);
-            reject(underlying);
-          };
+          return new Promise((_resolve, reject) => {
+            const onAbort = () => {
+              signal.removeEventListener('abort', onAbort);
+              reject(underlying);
+            };
 
-          if (signal.aborted) return onAbort();
-          signal.addEventListener('abort', onAbort);
+            if (signal.aborted) return onAbort();
+            signal.addEventListener('abort', onAbort);
+          });
+        };
+
+        const controller = new AbortController();
+
+        const request = fetchAxios.get('/', {
+          signal: controller.signal,
+          env: { fetch: abortingFetch },
         });
-      };
 
-      const controller = new AbortController();
+        controller.abort(reason);
 
-      const request = fetchAxios.get('/', {
-        signal: controller.signal,
-        env: { fetch: abortingFetch },
-      });
+        const err = await request.catch((e) => e);
 
-      controller.abort();
-
-      const err = await request.catch((e) => e);
-
-      assert.strictEqual(err.name, 'CanceledError');
-      assert.strictEqual(err.code, 'ERR_CANCELED');
-      assert.strictEqual(err.cause, controller.signal.reason);
-      assert.strictEqual(Object.getOwnPropertyDescriptor(err, 'cause').enumerable, false);
-      assert.ok(!Object.keys(err).includes('cause'));
-      assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
-    });
+        assert.strictEqual(err.name, 'CanceledError');
+        assert.strictEqual(err.code, 'ERR_CANCELED');
+        assert.strictEqual(err.cause, cause);
+        assert.notStrictEqual(
+          err.cause,
+          underlying,
+          'native fetch internals must not replace the supplied cause'
+        );
+        if (type === 'CanceledError') assert.strictEqual(err, reason);
+        assert.strictEqual(Object.getOwnPropertyDescriptor(err, 'cause').enumerable, false);
+        assert.ok(!Object.keys(err).includes('cause'));
+        assert.doesNotThrow(() => JSON.stringify(Object.fromEntries(Object.entries(err))));
+      }
+    );
 
     // Timing-sensitive: a 50ms abort race observed by a fake fetch can flake
     // under CI runner load even though the production code is fine. Retry as

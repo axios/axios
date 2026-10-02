@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import axios from '../../index.js';
+import { countSignalListeners } from '../setup/browser.setup.js';
 
 class MockXMLHttpRequest {
   constructor() {
@@ -206,7 +207,36 @@ describe('cancel (vitest browser)', () => {
 
     const error = await promise.catch((thrown) => thrown);
     expect(error).toBe(customReason);
+    expect(error.config.url).toBe('/foo/bar');
+    expect(error.request).toBe(request);
   });
+
+  it.each([false, true])(
+    'attaches XHR context to a frozen reason (existing cause: %s)',
+    async (hasCause) => {
+      const controller = new AbortController();
+      const reason = new axios.CanceledError('stop', { url: '/old' });
+      const cause = new Error('original');
+      if (hasCause) reason.cause = cause;
+      Object.freeze(reason);
+      const result = axios
+        .get('/foo/bar', { adapter: 'xhr', signal: controller.signal })
+        .catch((error) => error);
+      const request = await waitForRequest();
+
+      controller.abort(reason);
+      expect(request.statusText).toBe('abort');
+      const error = await result;
+      expect(error).toBeInstanceOf(axios.CanceledError);
+      expect(error.code).toBe('ERR_CANCELED');
+      expect(error.message).toBe('stop');
+      expect(error.config.url).toBe('/foo/bar');
+      expect(error.request).toBe(request);
+      expect(error.cause).toBe(hasCause ? cause : reason);
+      expect(Object.getOwnPropertyDescriptor(error, 'cause').enumerable).toBe(false);
+      expect(reason.config.url).toBe('/old');
+    }
+  );
 
   it('rejects immediately when the signal is already aborted with a reason', async () => {
     const controller = new AbortController();
@@ -232,6 +262,11 @@ describe('cancel (vitest browser)', () => {
     ['Error', new Error('stop'), 'stop'],
     ['AxiosError', new axios.AxiosError('stop', 'ERR_BAD_REQUEST'), 'stop'],
     [
+      'cancellation-shaped plain object',
+      { __CANCEL__: true, code: 'ERR_CANCELED', message: 'stop' },
+      'stop',
+    ],
+    [
       'throwing message getter',
       {
         get message() {
@@ -254,6 +289,7 @@ describe('cancel (vitest browser)', () => {
     // fail here instead of passing after a mocked response completes the request.
     expect(request.statusText).toBe('abort');
     const error = await result;
+    expect(error).toBeInstanceOf(axios.CanceledError);
     expect(axios.isCancel(error)).toBe(true);
     expect(error.code).toBe('ERR_CANCELED');
     expect(error.message).toBe(message);
@@ -339,73 +375,46 @@ describe('cancel (vitest browser)', () => {
 
     it('removes AbortSignal listener after network error', async () => {
       const controller = new AbortController();
-      let listenerCount = 0;
-      const nativeAdd = controller.signal.addEventListener.bind(controller.signal);
-      const nativeRemove = controller.signal.removeEventListener.bind(controller.signal);
-      controller.signal.addEventListener = (type, fn, options) => {
-        if (type === 'abort') listenerCount++;
-        return nativeAdd(type, fn, options);
-      };
-      controller.signal.removeEventListener = (type, fn, options) => {
-        if (type === 'abort') listenerCount--;
-        return nativeRemove(type, fn, options);
-      };
+      const listenerCount = countSignalListeners(controller.signal);
 
       const promise = axios
         .get('/foo/bar', { signal: controller.signal })
         .catch((thrown) => thrown);
 
       const request = await waitForRequest();
+      expect(listenerCount()).toBe(1);
       request.onerror(new Error('Network Error'));
       await promise;
 
-      expect(listenerCount).toBe(0);
+      expect(listenerCount()).toBe(0);
     });
 
     it('removes AbortSignal listener after the request settles successfully', async () => {
       const controller = new AbortController();
-      let listenerCount = 0;
-      const nativeAdd = controller.signal.addEventListener.bind(controller.signal);
-      const nativeRemove = controller.signal.removeEventListener.bind(controller.signal);
-      controller.signal.addEventListener = (type, fn, options) => {
-        if (type === 'abort') listenerCount++;
-        return nativeAdd(type, fn, options);
-      };
-      controller.signal.removeEventListener = (type, fn, options) => {
-        if (type === 'abort') listenerCount--;
-        return nativeRemove(type, fn, options);
-      };
+      const listenerCount = countSignalListeners(controller.signal);
 
       const promise = axios.get('/foo/bar', { signal: controller.signal });
 
       const request = await waitForRequest();
+      expect(listenerCount()).toBe(1);
       request.respondWith({ status: 200, responseText: 'OK' });
       await promise;
 
-      expect(listenerCount).toBe(0);
+      expect(listenerCount()).toBe(0);
     });
 
     it('removes the exact AbortSignal listener that was registered', async () => {
       const controller = new AbortController();
-      const registered = new Set();
-      const nativeAdd = controller.signal.addEventListener.bind(controller.signal);
-      const nativeRemove = controller.signal.removeEventListener.bind(controller.signal);
-      controller.signal.addEventListener = (type, fn, options) => {
-        if (type === 'abort') registered.add(fn);
-        return nativeAdd(type, fn, options);
-      };
-      controller.signal.removeEventListener = (type, fn, options) => {
-        if (type === 'abort' && registered.has(fn)) registered.delete(fn);
-        return nativeRemove(type, fn, options);
-      };
+      const listenerCount = countSignalListeners(controller.signal);
 
       const promise = axios.get('/foo/bar', { signal: controller.signal });
 
       const request = await waitForRequest();
+      expect(listenerCount()).toBe(1);
       request.respondWith({ status: 200, responseText: 'OK' });
       await promise;
 
-      expect(registered.size).toBe(0);
+      expect(listenerCount()).toBe(0);
     });
   });
 });

@@ -1504,6 +1504,56 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it.each([
+    ['active signal', 'signal', false],
+    ['aborted signal', 'signal', true],
+    ['cancel token', 'cancelToken', false],
+  ])(
+    'should ignore a prototype-supplied %s in the direct http adapter',
+    async (label, key, aborted) => {
+      let subscriptions = 0;
+      let removals = 0;
+      const inherited =
+        key === 'signal'
+          ? {
+              aborted,
+              reason: 'inherited cancellation',
+              addEventListener() {
+                subscriptions++;
+              },
+              removeEventListener() {
+                removals++;
+              },
+            }
+          : {
+              subscribe() {
+                subscriptions++;
+              },
+              unsubscribe() {
+                removals++;
+              },
+            };
+
+      try {
+        Object.defineProperty(Object.prototype, key, { value: inherited, configurable: true });
+        // Exercise adapter subscription/cleanup without Node's own prototype
+        // reads in its network and stream internals obscuring the result.
+        const response = await httpAdapter({
+          method: 'get',
+          url: 'data:text/plain;base64,b2s=',
+          responseType: 'text',
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.data, 'ok');
+        assert.strictEqual(subscriptions, 0);
+        assert.strictEqual(removals, 0);
+      } finally {
+        delete Object.prototype[key];
+      }
+    }
+  );
+
   it('should preserve basic auth across same-origin 303 POST -> GET redirect', async () => {
     const server = await startHTTPServer(
       (req, res) => {

@@ -213,6 +213,45 @@ describe.each(['http', 'fetch'])('%s AbortSignal reasons', (adapter) => {
 });
 
 describe('HTTP response stream abort reasons', () => {
+  it('uses and cleans up the original signal if the direct adapter config changes', async () => {
+    const controller = new AbortController();
+    const replacement = new AbortController();
+    replacement.abort('replacement reason');
+    const add = vi.spyOn(controller.signal, 'addEventListener');
+    const remove = vi.spyOn(controller.signal, 'removeEventListener');
+    const server = await startHTTPServer((req, res) => {
+      res.writeHead(200);
+      res.write('first chunk');
+    });
+
+    try {
+      const config = {
+        method: 'get',
+        url: `http://127.0.0.1:${server.address().port}/`,
+        responseType: 'stream',
+        signal: controller.signal,
+      };
+      const response = await axios.getAdapter('http')(config);
+      const failed = new Promise((resolve) => response.data.once('error', resolve));
+      config.signal = replacement.signal;
+      controller.abort('original reason');
+      const error = await withinDeadline(failed);
+      await withinDeadline(
+        new Promise((resolve) =>
+          response.data.closed ? resolve() : response.data.once('close', resolve)
+        )
+      );
+
+      expectCancellation(error, 'original reason', 'original reason');
+      const listener = add.mock.calls.find(([type]) => type === 'abort')[1];
+      expect(remove).toHaveBeenCalledWith('abort', listener);
+    } finally {
+      controller.abort();
+      await stopHTTPServer(server);
+      vi.restoreAllMocks();
+    }
+  });
+
   it.each(reasons)(
     'classifies %s as cancellation after response delivery',
     async (label, reason, message) => {

@@ -579,6 +579,47 @@ describe('AxiosHeaders', () => {
     });
   });
 
+  describe('stateful RegExp matchers', () => {
+    for (const flags of ['g', 'y']) {
+      for (const lastIndex of [0, 2]) {
+        it(`should consistently match values in has with /${flags} and lastIndex ${lastIndex}`, () => {
+          const headers = new AxiosHeaders({ foo: 'token', bar: 'other' });
+          const matcher = new RegExp('^token$', flags);
+          matcher.lastIndex = lastIndex;
+
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+          assert.strictEqual(headers.has('bar', matcher), false);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+        });
+
+        it(`should delete all matching values with /${flags} and lastIndex ${lastIndex}`, () => {
+          const headers = new AxiosHeaders({ foo: 'token', bar: 'token', baz: 'other' });
+          const matcher = new RegExp('^token$', flags);
+          matcher.lastIndex = lastIndex;
+
+          assert.strictEqual(headers.delete(['foo', 'bar', 'baz'], matcher), true);
+          assert.deepStrictEqual({ ...headers.toJSON() }, { baz: 'other' });
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+        });
+
+        it(`should clear all matching names with /${flags} and lastIndex ${lastIndex}`, () => {
+          const headers = new AxiosHeaders({ 'x-foo': '1', 'x-bar': '2', other: '3' });
+          const matcher = new RegExp('^x-', flags);
+          matcher.lastIndex = lastIndex;
+
+          assert.strictEqual(headers.clear(matcher), true);
+          assert.deepStrictEqual({ ...headers.toJSON() }, { other: '3' });
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+        });
+      }
+    }
+  });
+
   describe('toJSON', () => {
     it('should return headers object with original headers case', () => {
       const headers = new AxiosHeaders({

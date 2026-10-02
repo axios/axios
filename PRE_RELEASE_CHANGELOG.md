@@ -27,4 +27,9 @@
 
 ## Documentation
 
+- **Contributor submission requirements:** Required prerelease changelog entries and a submission checklist covering regression tests, local validation, compatibility, docs/types, security, and accurate GitHub Actions status so maintainers can trace all contributions and assess verified readiness before review. Defined Maintenance entry placement and a narrow exception for automated release-preparation PRs containing only generated release changes. Kept `AGENTS.md`, Copilot instructions, the contributor guide, and the PR template aligned. This changes the contribution process, with no runtime, public API, or type compatibility impact. (**#11223**)
 - **Global search:** Added localized, private, in-browser full-text search for the active documentation language, with fuzzy and prefix matching.
+
+## Maintenance
+
+<!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->

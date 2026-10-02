@@ -3,6 +3,7 @@ import assert from 'assert';
 import axios from '../../../index.js';
 import mergeConfig from '../../../lib/core/mergeConfig.js';
 import buildURL from '../../../lib/helpers/buildURL.js';
+import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 
 function nest(depth) {
   let result = { leaf: 'value' };
@@ -167,6 +168,8 @@ describe('params merge', function () {
       };
       Object.defineProperty(element, key, { get, enumerable: true });
       const params = { list: [element] };
+      assert.strictEqual(mergeConfig({}, { params }).params.list[0], element);
+      assert.strictEqual(reads, 0);
       let serializerCalls = 0;
       const paramsSerializer = function (merged) {
         serializerCalls++;
@@ -198,15 +201,17 @@ describe('params merge', function () {
       assert.strictEqual(Object.getOwnPropertyDescriptor(element, key).get, get);
     });
 
-    it('rejects retained ' + key + ' cycles before serializers or adapters run', async function () {
+    it('rejects retained ' + key + ' cycles with the built-in serializer', async function () {
       const element = {};
       Object.defineProperty(element, key, { value: element, enumerable: true });
       const params = { list: [element] };
-      let serializerCalls = 0;
+      let encodeCalls = 0;
       let adapterCalls = 0;
-      const paramsSerializer = function () {
-        serializerCalls++;
-        return 'recorded=true';
+      const paramsSerializer = {
+        encode: function (value) {
+          encodeCalls++;
+          return encodeURIComponent(value);
+        },
       };
       const isCircularParamsError = function (error) {
         return error.isAxiosError === true && error.code === 'ERR_BAD_OPTION_VALUE';
@@ -227,7 +232,7 @@ describe('params merge', function () {
         }),
         isCircularParamsError
       );
-      assert.strictEqual(serializerCalls, 0);
+      assert.strictEqual(encodeCalls, 0);
       assert.strictEqual(adapterCalls, 0);
       assert.strictEqual(params.list[0], element);
       assert.strictEqual(Object.getOwnPropertyDescriptor(element, key).value, element);
@@ -265,6 +270,103 @@ describe('params merge', function () {
       mergeConfig({}, { params: { first: shared, second: { child: shared } } }).params,
       { first: shared, second: { child: shared } }
     );
+  });
+});
+
+describe('custom params serializers with cycles', function () {
+  ['http', 'fetch'].forEach(function (adapter) {
+    it(
+      'sends cyclic array params using request and instance serializers with ' + adapter,
+      async function () {
+        const requests = [];
+        const server = await startHTTPServer(function (req, res) {
+          requests.push(req.url);
+          res.end(req.url);
+        });
+        const url = 'http://localhost:' + server.address().port + '/resource';
+
+        try {
+          for (const fromDefaults of [false, true]) {
+            for (const asObject of [false, true]) {
+              const params = ['value'];
+              params.push(params);
+              let calls = 0;
+              const serialize = function (merged) {
+                calls++;
+                assert.notStrictEqual(merged, params);
+                assert.strictEqual(merged[1], params);
+                return 'field=' + merged[0];
+              };
+              const paramsSerializer = asObject ? { serialize } : serialize;
+              const config = { params, paramsSerializer };
+              const instance = axios.create(fromDefaults ? config : {});
+              const request = fromDefaults ? {} : config;
+
+              assert.strictEqual(instance.getUri({ ...request, url }), url + '?field=value');
+              const response = await instance.get(url, { ...request, adapter, proxy: false });
+              assert.strictEqual(response.data, '/resource?field=value');
+              assert.strictEqual(calls, 2);
+              assert.strictEqual(params[1], params);
+            }
+          }
+          assert.deepStrictEqual(requests, Array(4).fill('/resource?field=value'));
+        } finally {
+          await stopHTTPServer(server);
+        }
+      }
+    );
+  });
+
+  it('leaves traversal of nested cycles to custom serializer methods', function () {
+    class Serializer {
+      serialize(params) {
+        return 'field=' + params.list[0].field;
+      }
+    }
+    for (const key of ['next', '__proto__', 'constructor', 'prototype', Symbol('cycle')]) {
+      const element = { field: 'value' };
+      Object.defineProperty(element, key, { value: element, enumerable: true });
+      const params = { list: [element] };
+      params.next = params;
+      assert.strictEqual(
+        axios.getUri({
+          url: '/resource',
+          params,
+          paramsSerializer: new Serializer(),
+        }),
+        '/resource?field=value'
+      );
+    }
+  });
+
+  it('rejects cycles when a request replaces its instance custom serializer', function () {
+    const instance = axios.create({ paramsSerializer: () => 'field=value' });
+    const params = [];
+    params.push(params);
+    for (const paramsSerializer of [null, {}, { encode: encodeURIComponent }]) {
+      assert.throws(
+        () => instance.getUri({ url: '/resource', params, paramsSerializer }),
+        (error) => error.isAxiosError === true && error.code === 'ERR_BAD_OPTION_VALUE'
+      );
+    }
+  });
+
+  it('does not bypass cycle validation using polluted serializer options', function () {
+    const params = [];
+    params.push(params);
+    for (const key of ['paramsSerializer', 'serialize']) {
+      try {
+        Object.prototype[key] = () => 'polluted=true';
+        const config = { url: '/resource', params };
+        if (key === 'serialize') config.paramsSerializer = {};
+        assert.throws(
+          () => axios.getUri(config),
+          (error) => error.isAxiosError === true && error.code === 'ERR_BAD_OPTION_VALUE'
+        );
+      } finally {
+        delete Object.prototype[key];
+      }
+    }
   });
 });
 

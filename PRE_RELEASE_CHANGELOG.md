@@ -6,7 +6,7 @@
 
 ## Bug Fixes
 
-- **Node HTTP adapter - empty Blob/File uploads:** Empty Blob and File bodies now get their declared content type, or the `application/octet-stream` fallback, like nonempty ones, instead of the `application/x-www-form-urlencoded` default. As for nonempty bodies, an explicit string or `null` Content-Type is replaced; `Content-Type: false` still suppresses the header. (**#11277**)
+- **Node HTTP adapter - empty Blob/File uploads:** Empty Blob and File bodies now get their declared content type, or the `application/octet-stream` fallback, like nonempty ones, instead of the `application/x-www-form-urlencoded` default. As for nonempty bodies, an explicit string or `null` Content-Type is replaced; `Content-Type: false` still suppresses the header. (**#11277**, see **#11258**)
 
 ## Documentation
 

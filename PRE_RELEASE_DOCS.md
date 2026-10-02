@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Empty FormData field names
+
+- **Change:** Preserve an actually empty FormData field name when converting to JSON.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Empty FormData field names; follow-up to #11191.
+- **Status:** Pending.
+- **Docs targets:** README Converting FormData to JSON section; `formToJSON` API reference; translated docs after English docs are finalized.
+- **Required content:** An empty field name becomes an empty-string object key, and repeated empty-name fields become an array under that key. It remains distinct from a literal field named `undefined`. Existing dot/bracket path parsing for nonempty names is unchanged.
+- **Examples:** `form.append('', 'value')` followed by `axios.formToJSON(form)` returns `{ '': 'value' }`.
+- **Notes:** This is a patch correction without new options or declaration changes.
+
 ### Fetch response size errors
 
 - **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.

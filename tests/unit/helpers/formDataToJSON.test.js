@@ -28,6 +28,41 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it('should preserve empty field names without merging them with undefined', () => {
+    const formData = new FormData();
+
+    formData.append('', 'empty-name');
+    formData.append('undefined', 'literal-name');
+
+    expect(formDataToJSON(formData)).toEqual({
+      '': 'empty-name',
+      undefined: 'literal-name',
+    });
+  });
+
+  it('should preserve repeated values for an empty field name', () => {
+    const formData = new FormData();
+
+    formData.append('', '1');
+    formData.append('', '2');
+    formData.append('', '3');
+
+    expect(formDataToJSON(formData)).toEqual({
+      '': ['1', '2', '3'],
+    });
+  });
+
+  it.each(['.', '[', ']', '[[', ']['])(
+    'should retain the existing conversion of the nonempty field name %s',
+    (name) => {
+      const formData = new FormData();
+
+      formData.append(name, 'separator-only');
+
+      expect(formDataToJSON(formData)).toEqual({ undefined: 'separator-only' });
+    }
+  );
+
   it('should keep repeatable values flat for 3+ entries', () => {
     const formData = new FormData();
 

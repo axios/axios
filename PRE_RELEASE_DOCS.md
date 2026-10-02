@@ -20,16 +20,6 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
-### Custom parameter serializers and circular parameters
-
-- **Change:** Preserve custom serializer handling of circular parameter graphs.
-- **Source:** #11223; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Custom parameter serializers.
-- **Status:** Pending.
-- **Docs targets:** Request-config `paramsSerializer` guidance and custom serializer examples.
-- **Required content:** Explain that custom `paramsSerializer` functions and `serialize` methods control how their parameters are traversed, including when configured on an instance. They may safely select usable fields from circular input. Built-in serialization, including an `encode`-only customization, continues to reject retained cycles with `ERR_BAD_OPTION_VALUE`.
-- **Examples:** A custom serializer selecting a scalar from an array that also contains a self-reference.
-- **Notes:** This restores custom serializer compatibility; no public types or defaults change. A custom serializer remains responsible for handling any cycles it traverses.
-
 ### Fetch response size errors
 
 - **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.

@@ -756,8 +756,21 @@ export function toFormData(
 
 export function formToJSON(form: GenericFormData | GenericHTMLFormElement): object;
 
+/**
+ * Determines whether the specified URL is absolute
+ *
+ * @param {string} url The URL to test
+ * @returns {boolean} True if the specified URL is absolute, otherwise false
+ */
 export function isAbsoluteURL(url: string): boolean;
 
+/**
+ * Creates a new URL by combining the specified URLs
+ *
+ * @param {string} baseURL The base URL
+ * @param {string} [relativeURL] The relative URL
+ * @returns {string} The combined URL
+ */
 export function combineURLs(baseURL: string, relativeURL?: string): string;
 
 export function isAxiosError<T = any, D = any, P = any>(

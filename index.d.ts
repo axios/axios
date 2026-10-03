@@ -334,6 +334,7 @@ export interface SerializerOptions {
   dots?: boolean;
   metaTokens?: boolean;
   indexes?: boolean | null;
+  arrayFormat?: 'brackets' | 'indices' | 'repeat' | 'comma';
   maxDepth?: number;
   Blob?: { new (...args: any[]): any };
 }

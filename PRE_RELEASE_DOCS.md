@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Undici adapter
+
+- **Change:** Document the new built-in `undici` adapter for Node.js.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, Undici adapter.
+- **Status:** Pending.
+- **Docs targets:** `README.md` request config `adapter` option comment (add `'undici'` to the list of built-in adapter names) and adapter guidance; `docs/pages/advanced/request-config.md` `adapter` entry; adapter docs page; TypeScript `AxiosAdapterName` references; translated docs after the English documentation is finalized.
+- **Required content:** Explain that `adapter: 'undici'` selects an adapter that sends requests through the `undici` package. `undici` (`^8.0.0`) is an optional peer dependency that the application must install; axios does not bundle it. The adapter is Node.js-only and is not part of the default adapter list (`['xhr', 'http', 'fetch']`), so it is used only when selected explicitly. When `undici` is not installed, the adapter is reported as unavailable during adapter selection, and a failed import rejects with `ERR_NOT_SUPPORT`. The adapter supports the Fetch adapter options (`fetchOptions`, including an Undici `dispatcher`), `maxRedirects` (exceeding it rejects with `ERR_FR_TOO_MANY_REDIRECTS`), `maxContentLength`, upload and download progress, and `responseType` values such as `stream`, `blob`, and `formdata`. FormData instances from other realms (for example the Node.js global `FormData`) are accepted.
+- **Examples:** Show `npm install undici` followed by `axios.get(url, { adapter: 'undici' })`, and an adapter fallback array such as `adapter: ['undici', 'http']`.
+- **Notes:** Do not imply that the default adapter selection changes. Keep ESM and CommonJS examples aligned.
+
 ### Fetch response size errors
 
 - **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.

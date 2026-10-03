@@ -4,6 +4,7 @@
 
 ## Features
 
+- **Adaptive request retries:** Added opt-in retry support with exponential backoff, jitter, `Retry-After` handling, retryable status/method configuration, cancellation-aware delays, and protection against replaying stream request bodies. Install the retry interceptor to enable retries, then configure them with the `retry` request option; retries are disabled unless configured.
 - **Proxy bypass CIDR ranges:** Added IPv4 and IPv6 CIDR matching to `NO_PROXY`/`no_proxy`, including bracketed IPv6 and IPv4-mapped IPv6 normalization, while malformed ranges fail closed. A `/0` entry bypasses the proxy for its entire address family.
 - **HTTP status code names:** Added the RFC 9110 names `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 across the runtime API and ESM/CommonJS declarations. The existing `PayloadTooLarge` and `UnprocessableEntity` names remain as deprecated aliases, and numeric reverse lookups retain their existing v1.x names for compatibility. (**#11082**, closes **#11066**)
 

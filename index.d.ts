@@ -756,6 +756,10 @@ export function toFormData(
 
 export function formToJSON(form: GenericFormData | GenericHTMLFormElement): object;
 
+export function isAbsoluteURL(url: string): boolean;
+
+export function combineURLs(baseURL: string, relativeURL?: string): string;
+
 export function isAxiosError<T = any, D = any, P = any>(
   payload: any
 ): payload is AxiosError<T, D, P>;
@@ -786,6 +790,8 @@ export interface AxiosStatic extends AxiosInstance {
   isAxiosError: typeof isAxiosError;
   toFormData: typeof toFormData;
   formToJSON: typeof formToJSON;
+  isAbsoluteURL: typeof isAbsoluteURL;
+  combineURLs: typeof combineURLs;
   getAdapter: typeof getAdapter;
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;

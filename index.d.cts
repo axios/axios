@@ -764,6 +764,8 @@ declare namespace axios {
       options?: FormSerializerOptions
     ): GenericFormData;
     formToJSON(form: GenericFormData | GenericHTMLFormElement): object;
+    isAbsoluteURL(url: string): boolean;
+    combineURLs(baseURL: string, relativeURL?: string): string;
     getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
     mergeConfig<D = any, P = any>(

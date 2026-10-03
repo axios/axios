@@ -250,7 +250,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     assert.strictEqual(captured.init.redirect, 'error');
     assert.strictEqual(captured.init.customOption, 'custom-value');
     assert.strictEqual(captured.init.body, undefined);
-    assert.strictEqual(captured.init.headers, undefined);
+    assert.strictEqual(captured.init.headers, captured.input.headers);
     assert.strictEqual(captured.init.method, undefined);
     assert.strictEqual(captured.init.signal, undefined);
     assert.strictEqual(captured.init.credentials, undefined);

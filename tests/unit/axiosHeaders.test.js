@@ -291,6 +291,20 @@ describe('AxiosHeaders', () => {
         assert.strictEqual(headers.get('foo', /^foo=/), null);
       });
 
+      for (const flags of ['g', 'y']) {
+        it(`should preserve the advancing index of a /${flags} RegExp parser`, () => {
+          const headers = new AxiosHeaders({ foo: 'abcabc' });
+          const parser = new RegExp('abc', flags);
+
+          assert.strictEqual(headers.get('foo', parser).index, 0);
+          assert.strictEqual(parser.lastIndex, 3);
+          assert.strictEqual(headers.get('foo', parser).index, 3);
+          assert.strictEqual(parser.lastIndex, 6);
+          assert.strictEqual(headers.get('foo', parser), null);
+          assert.strictEqual(parser.lastIndex, 0);
+        });
+      }
+
       it('should support function', () => {
         const headers = new AxiosHeaders();
 
@@ -577,6 +591,80 @@ describe('AxiosHeaders', () => {
 
       assert.deepStrictEqual({ ...headers.toJSON() }, { foo: '1', bar: '3' });
     });
+  });
+
+  describe('stateful RegExp matchers', () => {
+    class TestMatcher extends RegExp {
+      test(value) {
+        return value === 'token';
+      }
+    }
+
+    class ExecMatcher extends RegExp {
+      exec(value) {
+        return value === 'token' ? ['token'] : null;
+      }
+    }
+
+    for (const flags of ['g', 'y']) {
+      for (const Matcher of [TestMatcher, ExecMatcher]) {
+        it(`should support frozen /${flags} matchers with a custom ${Matcher.name}`, () => {
+          const headers = new AxiosHeaders({ foo: 'token', bar: 'other' });
+          const matcher = new Matcher('different source', flags);
+          matcher.lastIndex = 2;
+          Object.freeze(matcher);
+
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(headers.has('bar', matcher), false);
+          assert.strictEqual(matcher.lastIndex, 2);
+        });
+      }
+
+      it(`should preserve errors from native frozen /${flags} matchers`, () => {
+        const headers = new AxiosHeaders({ foo: 'token' });
+        const matcher = Object.freeze(new RegExp('token', flags));
+
+        assert.throws(() => headers.has('foo', matcher), TypeError);
+      });
+
+      for (const lastIndex of [0, 2]) {
+        it(`should consistently match values in has with /${flags} and lastIndex ${lastIndex}`, () => {
+          const headers = new AxiosHeaders({ foo: 'token', bar: 'other' });
+          const matcher = new RegExp('^token$', flags);
+          matcher.lastIndex = lastIndex;
+
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+          assert.strictEqual(headers.has('bar', matcher), false);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+          assert.strictEqual(headers.has('foo', matcher), true);
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+        });
+
+        it(`should delete all matching values with /${flags} and lastIndex ${lastIndex}`, () => {
+          const headers = new AxiosHeaders({ foo: 'token', bar: 'token', baz: 'other' });
+          const matcher = new RegExp('^token$', flags);
+          matcher.lastIndex = lastIndex;
+
+          assert.strictEqual(headers.delete(['foo', 'bar', 'baz'], matcher), true);
+          assert.deepStrictEqual({ ...headers.toJSON() }, { baz: 'other' });
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+        });
+
+        it(`should clear all matching names with /${flags} and lastIndex ${lastIndex}`, () => {
+          const headers = new AxiosHeaders({ 'x-foo': '1', 'x-bar': '2', other: '3' });
+          const matcher = new RegExp('^x-', flags);
+          matcher.lastIndex = lastIndex;
+
+          assert.strictEqual(headers.clear(matcher), true);
+          assert.deepStrictEqual({ ...headers.toJSON() }, { other: '3' });
+          assert.strictEqual(matcher.lastIndex, lastIndex);
+        });
+      }
+    }
   });
 
   describe('toJSON', () => {

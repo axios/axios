@@ -140,6 +140,12 @@ const mergedParamsConfig = axios.mergeConfig<SearchBody, SearchParams>(
 );
 const mergedQuery: string = mergedParamsConfig.params!.query;
 
+axios.interceptors.request.use((requestConfig) => {
+  // @ts-expect-error header values must be AxiosHeaderValue, not Promise
+  requestConfig.headers.someCustomHeader = Promise.resolve('foo');
+  return requestConfig;
+});
+
 console.log(
   serializedHeaders,
   parsedParameters,

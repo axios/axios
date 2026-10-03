@@ -29,4 +29,8 @@ describe('helpers::combineURLs', () => {
   it('should combine a root base URL with a relative URL', () => {
     expect(combineURLs('/', '/users')).toBe('/users');
   });
+
+  it('should return relativeURL if baseURL is undefined', () => {
+    expect(combineURLs(undefined, '/users')).toBe('/users');
+  });
 });

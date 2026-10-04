@@ -9,7 +9,7 @@
 
 ## Bug Fixes
 
-- **Node URL-encoded Buffer fields:** Preserve parent paths and configured dot notation when serializing nested Buffer values. Their existing base64 encoding and root-level field behavior are unchanged. (**#11289**, **#11290**)
+- **Node URL-encoded Buffer fields:** Preserve parent paths and configured dot notation when serializing nested Buffer values. Their existing base64 encoding and root-level field behavior are unchanged. (**#11290**, closes **#11289**)
 
 - **Request handling consistency:** Preserve explicit multipart boundaries, configured Blob constructors, and encoded body limits across Fetch uploads. Keep direct connection pools tied to the configured Node agent's cleanup, connection hooks, and pool keys; reject unsupported pool or TLS-session lifecycle overrides with `ERR_BAD_OPTION_VALUE` instead of discarding them. Parameter merging now handles deep objects without recursive copying, respects serializer depth options, ignores replaced defaults, supports runtimes without symbol reflection, avoids evaluating reserved-name accessors during validation, and reports circular parameters as `ERR_BAD_OPTION_VALUE`. Form serialization preserves hidden array-like indexes and numeric field names that cannot be array indexes. Data URL errors and upload chunking retain their runtime-specific behavior. (**#11242**)
 - **Fetch response size errors:** Preserve `ERR_BAD_RESPONSE` and the current request/config when a fetch response exceeds `maxContentLength` and the runtime wraps the stream failure, including when it drops the original cause. Clarify when custom `env.Response` constructors must accept tracked streams at runtime while preserving existing response limits and constructor signatures. (**#11179**)

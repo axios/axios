@@ -10,7 +10,7 @@
 
 ## Bug Fixes
 
-- **Node URL-encoded Buffer fields:** Preserve parent paths and configured dot notation when serializing nested Buffer values. Their existing base64 encoding and root-level field behavior are unchanged. (**#11289**, **#11290**)
+- **Node URL-encoded Buffer fields:** Preserve parent paths and configured dot notation when serializing nested Buffer values. Their existing base64 encoding and root-level field behavior are unchanged. (**#11290**, closes **#11289**)
 
 - **XHR adapter cookie access:** Read eligible XSRF cookies through the asynchronous Cookie Store API when supported, avoiding synchronous cookie access while preserving existing URI decoding, malformed-value handling, and fallback behavior. Cookie preparation shares the configured request timeout and cancellation lifecycle; late results cannot send canceled or expired requests. Fetch behavior, public options, and token values remain compatible. (**[#11166](https://github.com/axios/axios/pull/11166)**, closes **[#10826](https://github.com/axios/axios/issues/10826)**)
 - **Node HTTP adapter - proxy tunnel TLS options:** Apply `https.globalAgent` TLS options, including a custom `ca`, to HTTPS origins reached through CONNECT proxies when no per-request `httpsAgent` is supplied. Read origin TLS options for each request so cached tunneling agents pick up changes to the selected agent or a replacement global agent. Explicit agents retain precedence, and the HTTPS proxy connection retains its existing TLS configuration. No new API or type changes. (**#11178**, related to **#11176**; the reported explicit-agent failure remains unverified.)

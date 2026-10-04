@@ -82,4 +82,3 @@ for (const benchmark of cases) {
     ].join(',')
   );
 }
-

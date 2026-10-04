@@ -35,4 +35,3 @@ garbage collection, machine load, and case order can affect timings; repeat runs
 and compare their variability before attributing a difference to a code change.
 The nested cases also build more complex output objects, so their cost cannot be
 attributed solely to parsing depth. No runtime optimization is proposed here.
-

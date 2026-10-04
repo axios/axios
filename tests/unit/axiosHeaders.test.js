@@ -313,7 +313,25 @@ describe('AxiosHeaders', () => {
 
       assert.strictEqual(Object.getPrototypeOf(assigned), Object.prototype);
       assert.strictEqual(Object.getPrototypeOf(spread), Object.prototype);
-      assert.strictEqual(assigned.length, undefined);
+      assert.deepStrictEqual(assigned.__Proto__, ['a', 'b']);
+      assert.deepStrictEqual(spread.__Proto__, ['a', 'b']);
+    });
+
+    it('should preserve it when parsing raw headers', () => {
+      const headers = new AxiosHeaders(
+        ' __proto__ : first\r\n__PROTO__: second\r\nX-Other: other'
+      );
+
+      headers.normalize();
+      headers.normalize(true);
+
+      assert.strictEqual(Object.getPrototypeOf(headers), AxiosHeaders.prototype);
+      assert.strictEqual(headers.get('__proto__'), 'first, second');
+      assert.strictEqual(headers.get('__PROTO__'), 'first, second');
+      assert.strictEqual(headers.get('x-other'), 'other');
+      assert.strictEqual(headers.toJSON().__Proto__, 'first, second');
+      assert.strictEqual(headers.delete('__proto__'), true);
+      assert.strictEqual(headers.has('__proto__'), false);
     });
 
     it('should accept a rewrite on a sealed instance', () => {

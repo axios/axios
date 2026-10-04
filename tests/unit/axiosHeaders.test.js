@@ -357,6 +357,38 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('__proto__'), 'foo');
     });
 
+    describe.each([
+      ['plain object', (name, value) => ({ [name]: value })],
+      ['Map', (name, value) => new Map([[name, value]])],
+      [
+        'array of pairs',
+        (name, value) => (Array.isArray(value) ? value : [value]).map((entry) => [name, entry]),
+      ],
+    ])('normalizing a padded name from a %s', (_source, createHeaders) => {
+      for (const name of [' __proto__ ', '\t__proto__\t']) {
+        for (const value of ['foo', ['a', 'b']]) {
+          for (const format of [false, true]) {
+            it(`preserves ${JSON.stringify(name)} with value ${JSON.stringify(value)} and format=${format}`, () => {
+              const headers = new AxiosHeaders(createHeaders(name, value));
+
+              headers.normalize(format);
+              headers.normalize(format);
+
+              assert.strictEqual(Object.getPrototypeOf(headers), AxiosHeaders.prototype);
+              assert.deepStrictEqual(headers.get('__PROTO__'), value);
+              assert.deepStrictEqual(Object.keys(headers), ['__Proto__']);
+
+              const assigned = Object.assign({}, headers.toJSON());
+              assert.strictEqual(Object.getPrototypeOf(assigned), Object.prototype);
+              assert.deepStrictEqual(assigned.__Proto__, value);
+              assert.strictEqual(headers.delete('__proto__'), true);
+              assert.strictEqual(headers.has('__proto__'), false);
+            });
+          }
+        }
+      }
+    });
+
     it('should not leak into other instances', () => {
       new AxiosHeaders(new Map([['__proto__', 'foo']]));
 

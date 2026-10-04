@@ -30,7 +30,9 @@ const cases = [
 
 console.log(`# node=${process.version} v8=${process.versions.v8}`);
 console.log(`# platform=${process.platform} arch=${process.arch} cpu=${cpus()[0]?.model}`);
-console.log('# One warm conversion per case; input construction and assertions are not timed.');
+console.log(
+  '# One untimed warm-up batch per case; input construction and assertions are not timed.'
+);
 console.log(
   'case,fields,conversions_per_sample,samples,mean_ms,stdev_ms,mean_ms_per_conversion,' +
     Array.from({ length: samples }, (_, index) => `sample_${index + 1}_ms`).join(',')
@@ -41,8 +43,15 @@ for (const benchmark of cases) {
   values.forEach((value, index) => input.append(benchmark.key(index), value));
   const entries = Array.from(input.entries());
 
-  // Validate the complete shape and values while warming the conversion path.
+  // Validate the complete shape and values before warming the conversion path.
   assert.deepStrictEqual(formDataToJSON(input), benchmark.expected);
+
+  let warmResult;
+  for (let iteration = 0; iteration < conversions; iteration++) {
+    warmResult = formDataToJSON(input);
+  }
+  assert.deepStrictEqual(warmResult, benchmark.expected);
+  assert.deepStrictEqual(Array.from(input.entries()), entries);
 
   const timings = [];
   for (let sample = 0; sample < samples; sample++) {
@@ -73,3 +82,4 @@ for (const benchmark of cases) {
     ].join(',')
   );
 }
+

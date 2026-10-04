@@ -30,6 +30,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show `const response = await axios.get('/users'); console.log(response.duration);`. For errors, guard with `axios.isAxiosError(error)` and `error.response` before reading `error.response.duration`; do not imply that every error has a response.
 - **Notes:** Values use `Date.now()`, with two clock reads for a response receiving timing metadata. Backward clock adjustments clamp to zero; forward adjustments can inflate the value, so it is approximate wall-clock timing rather than a monotonic measurement. The field is enumerable and overwrites a custom adapter's existing `duration` property. Both declaration formats keep it optional for custom adapters and manually constructed responses. Semver impact is minor; no new option, dependency, or migration for built-in-adapter users. Apply published documentation only during release preparation.
 
+### Nested URL-encoded Buffer fields
+
+- **Change:** Preserve nested Buffer field names during automatic URL-encoded serialization in Node.
+- **Source:** Node URL-encoded Buffer fields entry in `PRE_RELEASE_CHANGELOG.md`.
+- **Status:** Pending.
+- **Docs targets:** README's automatic serialization to URLSearchParams section and the corresponding documentation page.
+- **Required content:** Explain that a Buffer value uses the existing base64 encoding and keeps its enclosing object or array path, including `formSerializer.dots` when enabled.
+- **Examples:** `{ user: { file: Buffer.from('abc') } }` produces `user[file]=YWJj`; with `dots: true`, the field name is `user.file`.
+- **Notes:** This corrects field names without changing the public API, top-level Buffer encoding, or browser behavior.
+
 ### Asynchronous XSRF cookie reads in the XHR adapter
 
 - **Change:** Document the XHR adapter's use of the Cookie Store API for XSRF token reads.

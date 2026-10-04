@@ -23,7 +23,7 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 ### Nested URL-encoded Buffer fields
 
 - **Change:** Preserve nested Buffer field names during automatic URL-encoded serialization in Node.
-- **Source:** Node URL-encoded Buffer fields entry in `PRE_RELEASE_CHANGELOG.md`.
+- **Source:** PR **#11290** and the Node URL-encoded Buffer fields entry in `PRE_RELEASE_CHANGELOG.md`.
 - **Status:** Pending.
 - **Docs targets:** README's automatic serialization to URLSearchParams section and the corresponding documentation page.
 - **Required content:** Explain that a Buffer value uses the existing base64 encoding and keeps its enclosing object or array path, including `formSerializer.dots` when enabled.

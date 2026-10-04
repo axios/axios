@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Node URL-encoded Buffer fields:** Preserve parent paths and configured dot notation when serializing nested Buffer values. Their existing base64 encoding and root-level field behavior are unchanged. (**#11290**, closes **#11289**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

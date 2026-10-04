@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Nested URL-encoded Buffer fields
+
+- **Change:** Preserve nested Buffer field names during automatic URL-encoded serialization in Node.
+- **Source:** Node URL-encoded Buffer fields entry in `PRE_RELEASE_CHANGELOG.md`.
+- **Status:** Pending.
+- **Docs targets:** README's automatic serialization to URLSearchParams section and the corresponding documentation page.
+- **Required content:** Explain that a Buffer value uses the existing base64 encoding and keeps its enclosing object or array path, including `formSerializer.dots` when enabled.
+- **Examples:** `{ user: { file: Buffer.from('abc') } }` produces `user[file]=YWJj`; with `dots: true`, the field name is `user.file`.
+- **Notes:** This corrects field names without changing the public API, top-level Buffer encoding, or browser behavior.
+
 ### Asynchronous XSRF cookie reads in the XHR adapter
 
 - **Change:** Document the XHR adapter's use of the Cookie Store API for XSRF token reads.

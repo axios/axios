@@ -2,6 +2,29 @@ import { describe, expect, it } from 'vitest';
 import axios from '../../index.js';
 
 describe('fetch response size errors', () => {
+  it('cancels the native response body when Content-Length exceeds the limit', async () => {
+    let canceled = false;
+    await expect(
+      axios.get('/oversized-response', {
+        adapter: 'fetch',
+        maxContentLength: 1,
+        env: {
+          async fetch() {
+            return new Response(
+              new ReadableStream({
+                cancel() {
+                  canceled = true;
+                },
+              }),
+              { headers: { 'Content-Length': '1000' } }
+            );
+          },
+        },
+      })
+    ).rejects.toMatchObject({ code: axios.AxiosError.ERR_BAD_RESPONSE });
+    expect(canceled).toBe(true);
+  });
+
   for (const responseType of ['text', 'arrayBuffer', 'blob']) {
     for (const preserveCause of [true, false]) {
       it(`preserves wrapped ${responseType} limit errors ${preserveCause ? 'with' : 'without'} a cause`, async () => {

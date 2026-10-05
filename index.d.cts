@@ -764,6 +764,21 @@ declare namespace axios {
       options?: FormSerializerOptions
     ): GenericFormData;
     formToJSON(form: GenericFormData | GenericHTMLFormElement): object;
+    /**
+     * Determines whether the specified URL is absolute
+     *
+     * @param {string} url The URL to test
+     * @returns {boolean} True if the specified URL is absolute, otherwise false
+     */
+    isAbsoluteURL(url: string): boolean;
+    /**
+     * Creates a new URL by combining the specified URLs
+     *
+     * @param {string} baseURL The base URL
+     * @param {string} [relativeURL] The relative URL
+     * @returns {string} The combined URL
+     */
+    combineURLs(baseURL: string, relativeURL?: string): string;
     getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
     mergeConfig<D = any, P = any>(

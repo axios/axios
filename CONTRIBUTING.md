@@ -29,6 +29,7 @@ We keep the 7-day Dependabot delay for these updates unless a critical vulnerabi
 ## Developing
 
 - `npm run lint` checks the library source
+- `npm test` runs the complete test suite (both unit and browser tests). **Note:** This requires Playwright browsers to be installed first (`npx playwright install`).
 - `npm run test:vitest:unit` runs the Node unit tests
 - `npm run test:vitest:browser:headless` runs the Chromium, Firefox, and WebKit browser tests; install the browsers first with `npx playwright install` (`npx playwright install --with-deps` also installs system dependencies on supported Linux hosts)
 - `npm run build` runs Rollup and bundles the source

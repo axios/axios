@@ -17,6 +17,10 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLBufferAllocation('data:text/plain,payload'), 7);
   });
 
+  it('should trim leading and trailing whitespace when estimating Fetch data URL payload', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('   data:text/plain,payload   '), 7);
+  });
+
   it('should calculate length for simple non-base64 data URL', () => {
     const url = 'data:,Hello';
     assert.strictEqual(estimateDataURLDecodedBytes(url), Buffer.byteLength('Hello', 'utf8'));

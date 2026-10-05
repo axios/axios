@@ -9,6 +9,7 @@ describe('HTTP data URL protocol handling', function () {
       const response = await axios.get('data:text/plain;base64,TQ%3D%3D', {
         adapter: 'http',
         responseType,
+        maxContentLength: 1,
       });
 
       let data = response.data;
@@ -24,6 +25,34 @@ describe('HTTP data URL protocol handling', function () {
       assert.deepStrictEqual(data, Buffer.from('M'));
     }
   );
+
+  it.each([0, 1])('rejects encoded data larger than a %s-byte limit', async (maxContentLength) => {
+    await assert.rejects(
+      axios.get('data:text/plain;base64,TWE%3D', { adapter: 'http', maxContentLength }),
+      (error) => error.code === 'ERR_BAD_RESPONSE'
+    );
+  });
+
+  it('rejects ignored encoded tails before allocating a Buffer', async () => {
+    const from = Buffer.from;
+    let base64Calls = 0;
+    Buffer.from = function (value, encoding, ...args) {
+      if (encoding === 'base64') base64Calls++;
+      return from(value, encoding, ...args);
+    };
+    try {
+      await assert.rejects(
+        axios.get('data:;base64,TQ%3D%3D' + '%25'.repeat(4096), {
+          adapter: 'http',
+          maxContentLength: 1,
+        }),
+        (error) => error.code === 'ERR_BAD_RESPONSE'
+      );
+      assert.strictEqual(base64Calls, 0);
+    } finally {
+      Buffer.from = from;
+    }
+  });
 
   ['DATA:', 'DaTa:'].forEach(function (scheme) {
     [0, 4, 16].forEach(function (maxContentLength) {

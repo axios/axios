@@ -62,12 +62,27 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes(url), 3001);
   });
 
-  it('should estimate the raw Buffer allocation for percent-embedded base64', () => {
+  it('should estimate the percent-decoded Buffer allocation for percent-embedded base64', () => {
     const body = 'QQ' + '%41'.repeat(4000);
     const url = 'data:application/octet-stream;base64,' + body;
 
-    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
-    assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
+    assert.strictEqual(
+      estimateDataURLBufferAllocation(url),
+      Buffer.byteLength('QQ' + 'A'.repeat(4000), 'base64')
+    );
+    assert.strictEqual(estimateDataURLBufferAllocation(url), 3001);
+  });
+
+  it.each([
+    ['padding', 'TQ%3d%3D', 'TQ=='],
+    ['fully encoded', '%54%51%3D%3D', 'TQ=='],
+    ['whitespace', 'T%0AQ%3D%3D', 'T\nQ=='],
+    ['ignored tail', 'TQ%3D%3D' + '%25'.repeat(4096), 'TQ==' + '%'.repeat(4096)],
+    ['incomplete escape', 'TQ%3D%3D%', 'TQ==%'],
+  ])('should bound Buffer allocation for encoded %s', (_name, encoded, decoded) => {
+    const estimate = estimateDataURLBufferAllocation('data:;base64,' + encoded);
+    assert.strictEqual(estimate, Buffer.byteLength(decoded, 'base64'));
+    assert.ok(estimate >= Buffer.from(decoded, 'base64').length);
   });
 
   it('should include ignored input after padding in the raw Buffer allocation', () => {

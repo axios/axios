@@ -3,6 +3,28 @@ import assert from 'assert';
 import axios from '../../../index.js';
 
 describe('HTTP data URL protocol handling', function () {
+  it.each(['text', 'arraybuffer', 'stream', 'blob'])(
+    'decodes URL-encoded base64 through the HTTP adapter as %s',
+    async function (responseType) {
+      const response = await axios.get('data:text/plain;base64,TQ%3D%3D', {
+        adapter: 'http',
+        responseType,
+      });
+
+      let data = response.data;
+      if (responseType === 'stream') {
+        const chunks = [];
+        for await (const chunk of data) chunks.push(chunk);
+        data = Buffer.concat(chunks);
+      } else if (responseType === 'blob') {
+        data = Buffer.from(await data.arrayBuffer());
+      } else if (responseType === 'text') {
+        data = Buffer.from(data);
+      }
+      assert.deepStrictEqual(data, Buffer.from('M'));
+    }
+  );
+
   ['DATA:', 'DaTa:'].forEach(function (scheme) {
     [0, 4, 16].forEach(function (maxContentLength) {
       it(

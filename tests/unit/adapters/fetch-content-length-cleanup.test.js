@@ -3,13 +3,14 @@ import axios from '../../../index.js';
 import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 
 describe('fetch Content-Length rejection cleanup', () => {
-  for (const cleanup of ['resolve', 'reject', 'pending']) {
+  for (const cleanup of ['resolve', 'reject', 'throw', 'pending']) {
     it(`cancels the body without replacing or delaying the size error when cleanup is ${cleanup}`, async () => {
       let canceled = false;
       const response = new Response(
         new ReadableStream({
           cancel() {
             canceled = true;
+            if (cleanup === 'throw') throw new Error('cleanup failed');
             if (cleanup === 'reject') return Promise.reject(new Error('cleanup failed'));
             if (cleanup === 'pending') return new Promise(() => {});
           },
@@ -28,6 +29,28 @@ describe('fetch Content-Length rejection cleanup', () => {
         message: 'maxContentLength size of 1 exceeded',
       });
       expect(canceled).toBe(true);
+    });
+  }
+
+  for (const property of ['body', 'cancel']) {
+    it(`preserves the size error when the ${property} getter throws`, async () => {
+      const response = { headers: { 'Content-Length': '1000' }, body: {} };
+      Object.defineProperty(property === 'body' ? response : response.body, property, {
+        get() {
+          throw new Error('cleanup getter failed');
+        },
+      });
+
+      await expect(
+        axios.get('http://localhost/oversized', {
+          adapter: 'fetch',
+          maxContentLength: 1,
+          env: { fetch: async () => response },
+        })
+      ).rejects.toMatchObject({
+        code: axios.AxiosError.ERR_BAD_RESPONSE,
+        message: 'maxContentLength size of 1 exceeded',
+      });
     });
   }
 
@@ -67,7 +90,11 @@ describe('fetch Content-Length rejection cleanup', () => {
       await Promise.race([
         closed,
         new Promise((resolve, reject) => {
-          closeTimeout = setTimeout(() => reject(new Error('response remained open')), 1000);
+          const responseCloseTimeout = 5000;
+          closeTimeout = setTimeout(
+            () => reject(new Error('response remained open')),
+            responseCloseTimeout
+          );
         }),
       ]);
     } finally {

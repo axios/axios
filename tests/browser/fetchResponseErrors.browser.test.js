@@ -12,6 +12,10 @@ describe('fetch response size errors', () => {
           async fetch() {
             return new Response(
               new ReadableStream({
+                start(controller) {
+                  controller.enqueue(new Uint8Array(1000));
+                  controller.close();
+                },
                 cancel() {
                   canceled = true;
                 },

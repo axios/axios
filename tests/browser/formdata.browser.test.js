@@ -81,6 +81,28 @@ describe('formdata (vitest browser)', () => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
   });
 
+  it('should preserve an empty field name when converting FormData back to JSON', () => {
+    const data = { '': 'empty-name', undefined: 'literal-name' };
+    const formData = axios.toFormData(data, new FormData());
+
+    expect([...formData.entries()]).toEqual([
+      ['', 'empty-name'],
+      ['undefined', 'literal-name'],
+    ]);
+    expect(axios.formToJSON(formData)).toEqual(data);
+  });
+
+  it('should retain the root array notation for an empty-name array', () => {
+    const data = { '': ['first', 'second'] };
+    const formData = axios.toFormData(data, new FormData());
+
+    expect([...formData.entries()]).toEqual([
+      ['[]', 'first'],
+      ['[]', 'second'],
+    ]);
+    expect(axios.formToJSON(formData)).toEqual(data);
+  });
+
   it('should allow FormData posting', async () => {
     const responsePromise = axios.postForm('/foo', {
       a: 'foo',

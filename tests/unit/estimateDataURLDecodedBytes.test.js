@@ -9,6 +9,14 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes('http://example.com'), 0);
   });
 
+  it('should follow the protocol case rules of each decoder', () => {
+    ['DATA:', 'DaTa:'].forEach((scheme) => {
+      assert.strictEqual(estimateDataURLBufferAllocation(scheme + 'text/plain,payload'), 0);
+      assert.strictEqual(estimateDataURLDecodedBytes(scheme + 'text/plain,payload'), 7);
+    });
+    assert.strictEqual(estimateDataURLBufferAllocation('data:text/plain,payload'), 7);
+  });
+
   it('should calculate length for simple non-base64 data URL', () => {
     const url = 'data:,Hello';
     assert.strictEqual(estimateDataURLDecodedBytes(url), Buffer.byteLength('Hello', 'utf8'));
@@ -36,6 +44,36 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes(url), 1);
   });
 
+  it.each(['base64', 'BASE64', 'bAsE64'])(
+    'should estimate the Buffer allocation for a %s marker',
+    (marker) => {
+      const url = 'data:text/plain;' + marker + ',SGVsbG8=';
+
+      assert.strictEqual(estimateDataURLBufferAllocation(url), 5);
+    }
+  );
+
+  it.each(['BASE64=x', 'name=BASE64'])(
+    'should estimate %s as a non-base64 media type parameter',
+    (parameter) => {
+      const body = '\u4e00'.repeat(4);
+      const url = 'data:text/plain;' + parameter + ',' + body;
+
+      assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body));
+    }
+  );
+
+  it.each(['base64', 'BASE64', 'bAsE64'])(
+    'should include percent escapes in the raw allocation for a %s marker',
+    (marker) => {
+      const body = '%41'.repeat(4096);
+      const url = 'data:text/plain;' + marker + ',' + body;
+
+      assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
+      assert.ok(estimateDataURLBufferAllocation(url) >= Buffer.from(body, 'base64').length);
+    }
+  );
+
   it('should handle base64 with %3D padding', () => {
     const url = 'data:text/plain;base64,TQ%3D%3D';
     assert.strictEqual(estimateDataURLDecodedBytes(url), 1);
@@ -58,10 +96,7 @@ describe('estimateDataURLDecodedBytes', () => {
     const body = 'QQ' + '%41'.repeat(4000);
     const url = 'data:application/octet-stream;base64,' + body;
 
-    assert.strictEqual(
-      estimateDataURLBufferAllocation(url),
-      Buffer.byteLength(body, 'base64')
-    );
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
     assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
   });
 
@@ -69,10 +104,7 @@ describe('estimateDataURLDecodedBytes', () => {
     const body = 'TQ==' + '%'.repeat(4096);
     const url = 'data:application/octet-stream;base64,' + body;
 
-    assert.strictEqual(
-      estimateDataURLBufferAllocation(url),
-      Buffer.byteLength(body, 'base64')
-    );
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
     assert.ok(estimateDataURLBufferAllocation(url) > Buffer.from(body, 'base64').length);
   });
 
@@ -80,9 +112,6 @@ describe('estimateDataURLDecodedBytes', () => {
     const body = 'TQ==#' + 'x'.repeat(4096);
     const url = 'data:application/octet-stream;base64,' + body;
 
-    assert.strictEqual(
-      estimateDataURLBufferAllocation(url),
-      Buffer.byteLength(body, 'base64')
-    );
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
   });
 });

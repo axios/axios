@@ -5421,7 +5421,11 @@ describe('supports http with nodejs', () => {
     it('should handle errors', async () => {
       await assert.rejects(async () => {
         await axios.get('https://no-such-domain-987654.com', {
-          lookup,
+          lookup: (hostname, opt, cb) => {
+            const err = new Error('getaddrinfo ENOTFOUND ' + hostname);
+            err.code = 'ENOTFOUND';
+            cb(err);
+          },
         });
       }, /ENOTFOUND/);
     });
@@ -6966,6 +6970,82 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     }, 30000);
+  });
+
+  describe('option validation', () => {
+    it('should reject invalid address with AxiosError', async () => {
+      const url = 'http://localhost:1/';
+      const lookup = (hostname, opt, cb) => {
+        cb(null, 12345, 4);
+      };
+
+      await assert.rejects(axios.get(url, { lookup }), (error) => {
+        assert.ok(error instanceof AxiosError);
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        assert.strictEqual(error.message, 'address must be a string');
+        assert.strictEqual(error.config.url, url);
+        assert.strictEqual(error.config.lookup, lookup);
+        return true;
+      });
+    });
+
+    it('should reject invalid httpVersion with AxiosError', async () => {
+      await assert.rejects(
+        axios.get('http://localhost:1/', {
+          httpVersion: 'abc',
+        }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+          assert.strictEqual(error.message, `Invalid protocol version: 'abc' is not a number`);
+          assert.strictEqual(error.config.httpVersion, 'abc');
+          return true;
+        }
+      );
+    });
+
+    for (const [type, httpVersion] of [
+      ['Symbol', Symbol('1')],
+      ['BigInt', 1n],
+      [
+        'object with throwing primitive conversion',
+        {
+          [Symbol.toPrimitive]() {
+            throw new TypeError('cannot convert');
+          },
+        },
+      ],
+    ]) {
+      it(`should reject ${type} httpVersion with AxiosError`, async () => {
+        await assert.rejects(
+          axios.get('http://localhost:1/', {
+            httpVersion,
+          }),
+          (error) => {
+            assert.ok(error instanceof AxiosError);
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+            assert.strictEqual(error.message, 'Invalid protocol version: value is not a number');
+            assert.deepStrictEqual(error.config.httpVersion, httpVersion);
+            return true;
+          }
+        );
+      });
+    }
+
+    it('should reject unsupported httpVersion with AxiosError', async () => {
+      await assert.rejects(
+        axios.get('http://localhost:1/', {
+          httpVersion: 3,
+        }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+          assert.strictEqual(error.message, "Unsupported protocol version '3'");
+          assert.strictEqual(error.config.httpVersion, 3);
+          return true;
+        }
+      );
+    });
   });
 
   describe('socketPath security', () => {

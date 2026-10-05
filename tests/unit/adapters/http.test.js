@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import assert from 'assert';
 import {
   startHTTPServer,
@@ -1817,6 +1817,35 @@ describe('supports http with nodejs', () => {
         Array.fromAsync(response.data),
         (err) => err.code === AxiosError.ERR_BAD_RESPONSE && /maxContentLength/.test(err.message)
       );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('releases the abort listener when an unread ndjson response closes', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        res.write('{"value":1}\n');
+        setTimeout(() => res.destroy(), 50);
+      },
+      { port: SERVER_PORT }
+    );
+
+    const controller = new AbortController();
+    const removeEventListener = vi.spyOn(controller.signal, 'removeEventListener');
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'ndjson',
+        signal: controller.signal,
+      });
+
+      assert.strictEqual(typeof response.data[Symbol.asyncIterator], 'function');
+
+      await vi.waitFor(() => {
+        assert.ok(removeEventListener.mock.calls.some(([type]) => type === 'abort'));
+      });
     } finally {
       await stopHTTPServer(server);
     }

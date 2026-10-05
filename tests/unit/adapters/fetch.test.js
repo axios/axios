@@ -2113,6 +2113,23 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       removeAbortListener.mockRestore();
     });
 
+    it('releases fallback ndjson cancellation when the response is closed unread', async () => {
+      const controller = new AbortController();
+      const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
+      const chunks = [new TextEncoder().encode('{"value":1}\n')];
+
+      const response = await fetchAxios.get('/fallback-ndjson-unread', {
+        responseType: 'ndjson',
+        signal: controller.signal,
+        env: createFallbackNdjsonEnvironment(chunks),
+      });
+
+      assert.strictEqual(removeAbortListener.mock.calls.length, 0);
+      await response.data.return();
+      assert.ok(removeAbortListener.mock.calls.length > 0);
+      removeAbortListener.mockRestore();
+    });
+
     it('wraps fetch ndjson parse failures as AxiosErrors', async () => {
       const response = await fetchAxios.get('/invalid-ndjson', {
         responseType: 'ndjson',

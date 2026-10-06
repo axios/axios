@@ -97,6 +97,19 @@ describe('formDataToJSON', () => {
     expect({}.y).toEqual(undefined);
   });
 
+  it('should not replace the prototype of the resulting object', () => {
+    const formData = new FormData();
+
+    formData.append('__proto__[isAdmin]', 'true');
+    formData.append('name', 'bob');
+
+    const result = formDataToJSON(formData);
+
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+    expect(result.isAdmin).toBeUndefined();
+    expect(result).toEqual({ name: 'bob' });
+  });
+
   it('should not write through to inherited objects on Object.prototype', () => {
     Object.defineProperty(Object.prototype, 'injected', {
       value: { hijack: true },

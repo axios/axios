@@ -197,4 +197,15 @@ describe('indexed multipart fields', function () {
 
     assert.deepStrictEqual(result, { items: ['first', 'second'] });
   });
+
+  it('normalizes sparse indexes in nested fields', function () {
+    var result = convertFields([
+      ['items[0][tags][1]', 'second'],
+      ['items[0][tags][3]', 'fourth'],
+    ]);
+    var expected = { items: [{ tags: { 1: 'second', 3: 'fourth' } }] };
+
+    assert.deepStrictEqual(result, expected);
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(result)), expected);
+  });
 });

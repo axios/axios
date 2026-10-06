@@ -39,3 +39,5 @@
 ## Maintenance
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
+
+- **Data contract tests:** Added a nested sparse-index case for FormData-to-JSON normalization, and checked `estimateDataURLDecodedBytes` against the byte length that `fetch()` actually decodes for percent-encoded, multi-byte, surrogate, and Base64 (whitespace, padding, encoded `+`/`/`/`=`) data URLs. Test-only; no runtime, public API, or type changes.

@@ -3,6 +3,42 @@ import formDataToJSON from '../../../lib/helpers/formDataToJSON.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 
 describe('formDataToJSON', () => {
+  it.each(['metadata[length]', 'metadata.length'])('should preserve the field %s', (name) => {
+    const formData = new FormData();
+    formData.append(name, 'long');
+
+    expect(formDataToJSON(formData)).toEqual({ metadata: { length: 'long' } });
+  });
+
+  it('should preserve repeated length fields', () => {
+    const formData = new FormData();
+    formData.append('metadata[length]', '10');
+    formData.append('metadata[length]', '20');
+
+    expect(formDataToJSON(formData)).toEqual({ metadata: { length: ['10', '20'] } });
+  });
+
+  it('should preserve nested fields below length', () => {
+    const formData = new FormData();
+    formData.append('metadata[length][unit]', 'cm');
+
+    expect(formDataToJSON(formData)).toEqual({ metadata: { length: { unit: 'cm' } } });
+  });
+
+  it.each([true, false])('should retain numeric siblings when length comes first: %s', (first) => {
+    const formData = new FormData();
+    const entries = [
+      ['items[length]', 'long'],
+      ['items[0]', 'first'],
+      ['items[1]', 'second'],
+    ];
+    (first ? entries : entries.reverse()).forEach(([key, value]) => formData.append(key, value));
+
+    expect(formDataToJSON(formData)).toEqual({
+      items: { 0: 'first', 1: 'second', length: 'long' },
+    });
+  });
+
   it('should convert a FormData Object to JSON Object', () => {
     const formData = new FormData();
 

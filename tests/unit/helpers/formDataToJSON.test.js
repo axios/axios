@@ -25,7 +25,7 @@ describe('formDataToJSON', () => {
     expect(formDataToJSON(formData)).toEqual({ metadata: { length: { unit: 'cm' } } });
   });
 
-  it.each([true, false])('should retain numeric siblings when length comes first: %s', (first) => {
+  it.each([true, false])('should retain numeric siblings in either order: %s', (first) => {
     const formData = new FormData();
     const entries = [
       ['items[length]', 'long'],

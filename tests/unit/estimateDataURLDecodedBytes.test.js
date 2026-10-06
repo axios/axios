@@ -9,13 +9,19 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes('http://example.com'), 0);
   });
 
-  it('should follow the protocol case rules of each decoder', () => {
-    ['DATA:', 'DaTa:'].forEach((scheme) => {
-      assert.strictEqual(estimateDataURLBufferAllocation(scheme + 'text/plain,payload'), 0);
+  it('should recognize case-insensitive data protocols for both decoders', () => {
+    ['data:', 'DATA:', 'DaTa:'].forEach((scheme) => {
+      assert.strictEqual(estimateDataURLBufferAllocation(scheme + 'text/plain,payload'), 7);
       assert.strictEqual(estimateDataURLDecodedBytes(scheme + 'text/plain,payload'), 7);
     });
-    assert.strictEqual(estimateDataURLBufferAllocation('data:text/plain,payload'), 7);
   });
+
+  it.each(['datax:,payload', 'DATAX:,payload', 'data-without-colon,payload', '', null])(
+    'should not estimate unsupported data protocol prefixes: %s',
+    (url) => {
+      assert.strictEqual(estimateDataURLBufferAllocation(url), 0);
+    }
+  );
 
   it('should calculate length for simple non-base64 data URL', () => {
     const url = 'data:,Hello';

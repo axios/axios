@@ -79,6 +79,48 @@ describe('request input consistency', function () {
     assert.deepStrictEqual(utils.toArray('abc'), ['a', 'b', 'c']);
   });
 
+  it('preserves nested paths for Buffer fields in URL-encoded requests', function () {
+    return axios
+      .post(
+        '/resource',
+        {
+          first: { file: Buffer.from('abc') },
+          second: { file: Buffer.from('xyz') },
+        },
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          adapter: function (config) {
+            assert.strictEqual(config.data, 'first%5Bfile%5D=YWJj&second%5Bfile%5D=eHl6');
+            return Promise.resolve({ data: 'ok', status: 200, headers: {}, config: config });
+          },
+        }
+      );
+  });
+
+  it('preserves dots notation for nested Buffer fields in URL-encoded requests', function () {
+    return axios
+      .post(
+        '/resource',
+        {
+          first: { file: Buffer.from('abc') },
+        },
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          formSerializer: {
+            dots: true,
+          },
+          adapter: function (config) {
+            assert.strictEqual(config.data, 'first.file=YWJj');
+            return Promise.resolve({ data: 'ok', status: 200, headers: {}, config: config });
+          },
+        }
+      );
+  });
+
   it('serializes an ordinary length property as a bounded multipart field', function () {
     var entries = [];
     toFormData(

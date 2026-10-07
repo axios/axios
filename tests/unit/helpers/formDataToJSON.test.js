@@ -17,6 +17,32 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it('should support nested fields named length', () => {
+    const formData = new FormData();
+
+    formData.append('metadata[length]', 'long');
+
+    expect(formDataToJSON(formData)).toEqual({
+      metadata: {
+        length: 'long',
+      },
+    });
+  });
+
+  it('should preserve numeric siblings when a nested field is named length', () => {
+    const formData = new FormData();
+
+    formData.append('items[0]', 'first');
+    formData.append('items[length]', 'count');
+
+    expect(formDataToJSON(formData)).toEqual({
+      items: {
+        0: 'first',
+        length: 'count',
+      },
+    });
+  });
+
   it('should convert repeatable values as an array', () => {
     const formData = new FormData();
 

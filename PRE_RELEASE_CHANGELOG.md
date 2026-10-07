@@ -9,6 +9,9 @@
 
 ## Bug Fixes
 
+- **FormData nested `length` fields:** Preserve object paths for non-numeric nested keys such as `length` during FormData serialization, preventing invalid array initialization while retaining numeric sibling fields. (**#11295**)
+- **URL-encoded nested Buffer fields:** Preserve nested paths, including `dots: true` notation, when serializing Node.js Buffer values in `application/x-www-form-urlencoded` requests. (**#11289**)
+- **Fetch response capability probe:** Cancel the response stream created during Fetch capability detection so the probe does not leave an uncancelled `ReadableStream` behind; rejected cancellation is handled safely. (**#11240**)
 - **Percent-encoded Base64 data URLs:** Decode URL-escaped Base64 alphabet, padding, and whitespace before converting the Node HTTP adapter's data URL response. Estimate the Buffer backing allocation after the same decoding so encoded alphabet and padding no longer inflate byte-limit checks, while avoiding the per-character decoding scan for unescaped Base64. Ordinary Base64 inputs, forgiving Buffer decoding, and case-insensitive URL schemes and Base64 markers are preserved; pre-allocation limits still count ignored characters and content after padding. (**[#11294](https://github.com/axios/axios/pull/11294)**)
 - **URL scheme casing:** Accept uppercase and mixed-case supported schemes in the XHR adapter and Node data URLs. Keep data URL allocation estimates aligned with decoding so configured limits reject oversized inputs before Buffer allocation, including ignored Base64 tails. URL paths, query values, payload casing, and unsupported-protocol rejection remain unchanged; no new API or type changes. (**[#11163](https://github.com/axios/axios/pull/11163)**)
 - **Request handling consistency:** Preserve explicit multipart boundaries, configured Blob constructors, and encoded body limits across Fetch uploads. Keep direct connection pools tied to the configured Node agent's cleanup, connection hooks, and pool keys; reject unsupported pool or TLS-session lifecycle overrides with `ERR_BAD_OPTION_VALUE` instead of discarding them. Parameter merging now handles deep objects without recursive copying, respects serializer depth options, ignores replaced defaults, supports runtimes without symbol reflection, avoids evaluating reserved-name accessors during validation, and reports circular parameters as `ERR_BAD_OPTION_VALUE`. Form serialization preserves hidden array-like indexes and numeric field names that cannot be array indexes. Data URL errors and upload chunking retain their runtime-specific behavior. (**#11242**)
@@ -37,5 +40,6 @@
 - **Global search:** Added localized, private, in-browser full-text search for the active documentation language, with fuzzy and prefix matching.
 
 ## Maintenance
+
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->

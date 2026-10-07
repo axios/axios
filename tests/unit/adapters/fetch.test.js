@@ -74,6 +74,35 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should cancel the response stream used by the capability probe', async () => {
+    let cancelCalls = 0;
+
+    class ProbeResponse {
+      constructor() {
+        this.body = {
+          [Symbol.toStringTag]: 'ReadableStream',
+          cancel() {
+            cancelCalls++;
+            return Promise.reject(new Error('probe cancellation failed'));
+          },
+        };
+      }
+    }
+
+    getFetch({
+      env: {
+        Response: ProbeResponse,
+        fetch() {
+          return Promise.resolve();
+        },
+      },
+    });
+
+    await Promise.resolve();
+
+    assert.strictEqual(cancelCalls, 1);
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

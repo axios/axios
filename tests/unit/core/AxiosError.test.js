@@ -246,12 +246,32 @@ describe('core::AxiosError', () => {
       expect(error.toJSON().status).toBe(401);
     });
 
-    it('custom properties are included in toJSON output', () => {
+it('custom properties are included in toJSON output', () => {
       const error = AxiosError.from(new Error('test'), 'ERR_TEST', {}, {}, {}, { customProp: 'customValue' });
 
       expect(error.toJSON().customProp).toBe('customValue');
       expect(error.toJSON().request).toBeUndefined();
       expect(error.toJSON().response).toBeUndefined();
+    });
+
+    it('redacts config.url if present in custom properties', () => {
+      const config = { url: 'http://user:pass@example.com', redact: ['url'] };
+      const error = AxiosError.from(new Error('test'), 'ERR_TEST', config, {}, {}, { url: 'http://user:pass@example.com' });
+
+      const json = error.toJSON();
+      expect(json.config.url).toBe('[REDACTED ****]');
+      expect(json.url).toBe('[REDACTED ****]');
+    });
+
+    it('safely handles circular custom metadata', () => {
+      const config = {};
+      const customProps = {};
+      customProps.circular = customProps;
+
+      const error = AxiosError.from(new Error('test'), 'ERR_TEST', config, {}, {}, customProps);
+
+      const json = error.toJSON();
+      expect(() => JSON.stringify(error)).not.toThrow();
     });
   });
 

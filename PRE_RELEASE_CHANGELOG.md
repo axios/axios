@@ -41,4 +41,6 @@
 
 ## Maintenance
 
+- **Fork Dependency Review:** Skip the Dependency Review step when CI runs in the contributor fork, where GitHub's dependency graph is unavailable, while retaining the check for the upstream Axios repository. This is a CI-only change with no runtime or public API impact.
+
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->

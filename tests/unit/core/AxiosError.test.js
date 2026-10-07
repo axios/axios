@@ -270,8 +270,16 @@ it('custom properties are included in toJSON output', () => {
 
       const error = AxiosError.from(new Error('test'), 'ERR_TEST', config, {}, {}, customProps);
 
-      const json = error.toJSON();
       expect(() => JSON.stringify(error)).not.toThrow();
+    });
+    
+    it('custom Set values are serialized as arrays', () => {
+      const config = { redact: ['auth'] };
+      const customProps = { mySet: new Set([1, 2]) };
+      const error = AxiosError.from(new Error('test'), 'ERR_TEST', config, {}, {}, customProps);
+      
+      const json = error.toJSON();
+      expect(json.mySet).toEqual([1, 2]);
     });
   });
 
@@ -407,7 +415,7 @@ it('custom properties are included in toJSON output', () => {
       expect(Object.prototype.hasOwnProperty.call(json.config, 'self')).toBe(false);
     });
 
-    it('preserves legacy toJSONObject handling for values with toJSON', () => {
+    it('serializes values with toJSON to safely apply redaction', () => {
       const issuedAt = new Date('2026-01-01T00:00:00.000Z');
       const endpoint = new URL('https://example.com/users');
       const config = {
@@ -420,8 +428,8 @@ it('custom properties are included in toJSON output', () => {
 
       const json = error.toJSON();
 
-      expect(json.config.issuedAt).toBe(issuedAt);
-      expect(json.config.endpoint).toBe(endpoint);
+      expect(json.config.issuedAt).toBe(issuedAt.toJSON());
+      expect(json.config.endpoint).toBe(endpoint.toJSON());
       expect(json.config.auth.password).toBe('[REDACTED ****]');
     });
 

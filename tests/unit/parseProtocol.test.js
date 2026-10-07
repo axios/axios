@@ -29,4 +29,11 @@ describe('helpers::parseProtocol', () => {
   it('should not match URLs without a colon separator', () => {
     assert.strictEqual(parseProtocol('http//example.com'), '');
   });
+
+  it('should normalize protocols to lowercase', () => {
+    assert.strictEqual(parseProtocol('HTTP://example.com'), 'http');
+    assert.strictEqual(parseProtocol('HtTpS://example.com/CaseSensitive?token=AbC'), 'https');
+    assert.strictEqual(parseProtocol('DATA:text/plain,hello'), 'data');
+    assert.strictEqual(parseProtocol('DaTa:text/plain,Hello'), 'data');
+  });
 });

@@ -6,6 +6,43 @@ describe('HTTP data URL protocol handling', function () {
   describe.each(['data:', 'DATA:', 'DaTa:'])('%s URLs', (scheme) => {
     describe.each(['base64', 'BASE64', 'bAsE64'])('base64 marker %s', (marker) => {
       it.each(['text', 'arraybuffer', 'stream', 'blob'])(
+        'decodes URL-encoded base64 through the HTTP adapter as %s',
+        async (responseType) => {
+          const response = await axios.get(scheme + 'text/plain;' + marker + ',TQ%3D%3D', {
+            adapter: 'http',
+            responseType,
+            maxContentLength: 1,
+          });
+
+          let data = response.data;
+          if (responseType === 'stream') {
+            const chunks = [];
+            for await (const chunk of data) chunks.push(chunk);
+            data = Buffer.concat(chunks);
+          } else if (responseType === 'blob') {
+            assert.strictEqual(data.type, 'text/plain');
+            data = Buffer.from(await data.arrayBuffer());
+          } else if (responseType === 'text') {
+            data = Buffer.from(data);
+          }
+          assert.deepStrictEqual(data, Buffer.from('M'));
+        }
+      );
+
+      it.each([0, 1])(
+        'rejects encoded data larger than a %s-byte limit',
+        async (maxContentLength) => {
+          await assert.rejects(
+            axios.get(scheme + 'text/plain;' + marker + ',TWE%3D', {
+              adapter: 'http',
+              maxContentLength,
+            }),
+            { code: 'ERR_BAD_RESPONSE' }
+          );
+        }
+      );
+
+      it.each(['text', 'arraybuffer', 'stream', 'blob'])(
         'decodes a %s response at maxContentLength',
         async (responseType) => {
           const response = await axios.get(scheme + 'text/plain;' + marker + ',SGVsbG8=', {
@@ -41,9 +78,10 @@ describe('HTTP data URL protocol handling', function () {
       });
 
       it.each([
-        ['percent-containing body', '%41'.repeat(4096), 4096],
-        ['ignored input after padding', 'TQ==' + '%41'.repeat(4096), 4100],
+        ['percent-containing body', '%41'.repeat(4096), 3071],
+        ['ignored input after padding', 'TQ==' + '%41'.repeat(4096), 3074],
         ['one-byte result with an ignored tail', 'TQ==' + 'A'.repeat(4096), 1],
+        ['encoded padding and ignored tail', 'TQ%3D%3D' + '%25'.repeat(4096), 1],
       ])('rejects an oversized allocation for %s before decoding', async (_name, body, limit) => {
         const from = vi.spyOn(Buffer, 'from');
 

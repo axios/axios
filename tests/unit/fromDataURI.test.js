@@ -27,6 +27,28 @@ describe('helpers::fromDataURI', () => {
     }
   });
 
+  it.each([
+    ['padding', 'TQ%3D%3D', Buffer.from('M')],
+    ['alphabet', '%2B%2F8%3D', Buffer.from([0xfb, 0xff])],
+    ['fully encoded', '%54%51%3D%3D', Buffer.from('M')],
+    ['whitespace', 'T%0AQ%3D%3D', Buffer.from('M')],
+  ])('should decode URL-encoded base64 %s', (_name, body, expected) => {
+    assert.deepStrictEqual(
+      fromDataURI('data:application/octet-stream;base64,' + body, false),
+      expected
+    );
+  });
+
+  it('should preserve Blob contents and media type for URL-encoded base64', async () => {
+    const blob = fromDataURI('data:text/plain;charset=utf-8;base64,TQ%3D%3D', true, { Blob });
+    assert.strictEqual(blob.type, 'text/plain;charset=utf-8');
+    assert.deepStrictEqual(Buffer.from(await blob.arrayBuffer()), Buffer.from('M'));
+  });
+
+  it('should retain forgiving base64 handling for an incomplete URL escape', () => {
+    assert.deepStrictEqual(fromDataURI('data:text/plain;base64,TQ==%', false), Buffer.from('M'));
+  });
+
   it('should parse data URI with no mediatype and base64', () => {
     const buffer = Buffer.from('123');
     const dataURI = 'data:;base64,' + buffer.toString('base64');

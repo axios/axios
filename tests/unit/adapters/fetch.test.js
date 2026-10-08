@@ -30,7 +30,7 @@ const fetchAxios = axios.create({
 
 const getFetchSignal = (input, init) => (init && init.signal) || (input && input.signal);
 
-const createFallbackNdjsonResponse = (chunks) => ({
+const createFallbackNdjsonResponse = (chunks, onCancel) => ({
   body: {
     getReader() {
       const pendingChunks = chunks.slice();
@@ -38,7 +38,7 @@ const createFallbackNdjsonResponse = (chunks) => ({
         read: async () => pendingChunks.length
           ? {done: false, value: pendingChunks.shift()}
           : {done: true},
-        cancel: async () => {},
+        cancel: async () => { onCancel && onCancel(); },
         releaseLock() {},
       };
     },
@@ -48,11 +48,11 @@ const createFallbackNdjsonResponse = (chunks) => ({
   statusText: 'OK',
 });
 
-const createFallbackNdjsonEnvironment = (chunks) => ({
+const createFallbackNdjsonEnvironment = (chunks, onCancel) => ({
   Request: null,
   Response: null,
   async fetch() {
-    return createFallbackNdjsonResponse(chunks);
+    return createFallbackNdjsonResponse(chunks, onCancel);
   },
 });
 
@@ -2138,15 +2138,17 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       const controller = new AbortController();
       const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
       const chunks = [new TextEncoder().encode('{"value":1}\n')];
+      let canceled = false;
 
       const response = await fetchAxios.get('/fallback-ndjson-unread', {
         responseType: 'ndjson',
         signal: controller.signal,
-        env: createFallbackNdjsonEnvironment(chunks),
+        env: createFallbackNdjsonEnvironment(chunks, () => { canceled = true; }),
       });
 
       assert.strictEqual(removeAbortListener.mock.calls.length, 0);
       await response.data.return();
+      assert.strictEqual(canceled, true);
       assert.ok(removeAbortListener.mock.calls.length > 0);
       removeAbortListener.mockRestore();
     });

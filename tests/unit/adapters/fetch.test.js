@@ -2151,6 +2151,35 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       removeAbortListener.mockRestore();
     });
 
+    it('releases modern fetch ndjson cancellation when returned unread', async () => {
+      const controller = new AbortController();
+      const removeAbortListener = vi.spyOn(controller.signal, 'removeEventListener');
+      let canceled = false;
+
+      const response = await fetchAxios.get('/ndjson-unread', {
+        responseType: 'ndjson',
+        signal: controller.signal,
+        env: {
+          async fetch() {
+            return new Response(new ReadableStream({
+              start(streamController) {
+                streamController.enqueue(new TextEncoder().encode('{"value":1}\n'));
+              },
+              cancel() {
+                canceled = true;
+              },
+            }));
+          },
+        },
+      });
+
+      assert.strictEqual(removeAbortListener.mock.calls.length, 0);
+      await response.data.return();
+      assert.strictEqual(canceled, true);
+      assert.ok(removeAbortListener.mock.calls.length > 0);
+      removeAbortListener.mockRestore();
+    });
+
     it('wraps fetch ndjson parse failures as AxiosErrors', async () => {
       const response = await fetchAxios.get('/invalid-ndjson', {
         responseType: 'ndjson',

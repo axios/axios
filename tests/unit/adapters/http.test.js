@@ -1823,11 +1823,12 @@ describe('supports http with nodejs', () => {
   });
 
   it('releases the abort listener when an unread ndjson response closes', async () => {
+    let serverResponse;
     const server = await startHTTPServer(
       (req, res) => {
         res.setHeader('Content-Type', 'application/x-ndjson');
+        serverResponse = res;
         res.write('{"value":1}\n');
-        setTimeout(() => res.destroy(), 50);
       },
       { port: SERVER_PORT }
     );
@@ -1842,6 +1843,8 @@ describe('supports http with nodejs', () => {
       });
 
       assert.strictEqual(typeof response.data[Symbol.asyncIterator], 'function');
+      assert.strictEqual(removeEventListener.mock.calls.filter(([type]) => type === 'abort').length, 0);
+      serverResponse.destroy();
 
       await vi.waitFor(() => {
         assert.ok(removeEventListener.mock.calls.some(([type]) => type === 'abort'));

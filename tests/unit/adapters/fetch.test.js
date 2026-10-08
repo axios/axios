@@ -1394,6 +1394,27 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should preserve a response header named __proto__', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('__proto__', 'server-value');
+      res.setHeader('x-other', 'other-value');
+      res.end('ok');
+    });
+
+    try {
+      const { data, headers } = await fetchAxios.get(`http://localhost:${server.address().port}/`);
+
+      assert.strictEqual(data, 'ok');
+      assert.strictEqual(Object.getPrototypeOf(headers), axios.AxiosHeaders.prototype);
+      assert.strictEqual(headers.get('__proto__'), 'server-value');
+      assert.strictEqual(headers.get('__PROTO__'), 'server-value');
+      assert.strictEqual(headers.get('x-other'), 'other-value');
+      assert.strictEqual(headers.toJSON().__Proto__, 'server-value');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   describe('fetch adapter - Content-Type handling', () => {
     it('should set correct Content-Type for FormData automatically', async () => {
       const form = new NodeFormData();

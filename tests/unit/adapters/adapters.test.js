@@ -2,6 +2,8 @@ import { beforeEach, describe, it } from 'vitest';
 import assert from 'assert';
 import adapters from '../../../lib/adapters/adapters.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
+import platform from '../../../lib/platform/index.js';
+import undiciAdapter from '../../../lib/adapters/undici.js';
 
 describe('adapters', () => {
   const store = { ...adapters.adapters };
@@ -53,5 +55,49 @@ describe('adapters', () => {
     });
 
     assert.strictEqual(adapters.getAdapter(['foo', 'bar', 'baz']), adapter);
+  });
+
+  describe('undici', () => {
+    it('should resolve the undici adapter lazily when the platform supports it', () => {
+      assert.strictEqual(typeof adapters.adapters.undici.get, 'function');
+      assert.strictEqual(platform.hasUndici(), true);
+      assert.strictEqual(adapters.getAdapter('undici'), undiciAdapter);
+    });
+
+    it('should fall back to the next adapter when the platform does not support undici', () => {
+      const adapter = () => {};
+      const { hasUndici } = platform;
+      adapters.adapters.testadapter = adapter;
+
+      delete platform.hasUndici;
+
+      try {
+        assert.strictEqual(adapters.getAdapter(['undici', 'testAdapter']), adapter);
+        assert.throws(
+          () => adapters.getAdapter('undici'),
+          /adapter undici is not supported by the environment/
+        );
+      } finally {
+        platform.hasUndici = hasUndici;
+      }
+    });
+
+    it('should fall back to the next adapter when the undici package is not installed', () => {
+      const adapter = () => {};
+      const { hasUndici } = platform;
+      adapters.adapters.testadapter = adapter;
+
+      platform.hasUndici = () => false;
+
+      try {
+        assert.strictEqual(adapters.getAdapter(['undici', 'testAdapter']), adapter);
+        assert.throws(
+          () => adapters.getAdapter('undici'),
+          /adapter undici is not supported by the environment/
+        );
+      } finally {
+        platform.hasUndici = hasUndici;
+      }
+    });
   });
 });

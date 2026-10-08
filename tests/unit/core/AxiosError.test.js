@@ -463,6 +463,22 @@ it('custom properties are included in toJSON output', () => {
       }
     });
 
+    it('does not throw when a nested object in config has a non-callable toJSON property', () => {
+      const config = {
+        data: {
+          toJSON: 'not a function',
+          password: 'secret'
+        },
+        redact: ['password']
+      };
+      
+      const error = new AxiosError('Boom', 'ECODE', config);
+      
+      const json = error.toJSON();
+      expect(json.config.data.toJSON).toBe('not a function');
+      expect(json.config.data.password).toBe('[REDACTED ****]');
+    });
+
     it('copies __proto__ as data without changing the redaction output prototype', () => {
       const config = { redact: ['password'] };
       Object.defineProperty(config, '__proto__', {

@@ -76,6 +76,73 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('foo'), 'value2');
     });
 
+    it('should rewrite the header only if the rewrite matcher accepts the current value', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('foo', 'value1');
+
+      headers.set('foo', 'value2', (value, header) => {
+        assert.strictEqual(value, 'value1');
+        assert.strictEqual(header, 'foo');
+        return true;
+      });
+
+      assert.strictEqual(headers.get('foo'), 'value2');
+
+      headers.set('foo', 'value3', () => false);
+
+      assert.strictEqual(headers.get('foo'), 'value2');
+
+      headers.set('foo', 'value3', /^value2$/);
+
+      assert.strictEqual(headers.get('foo'), 'value3');
+
+      headers.set('foo', 'value4', 'value2');
+
+      assert.strictEqual(headers.get('foo'), 'value3');
+
+      headers.set('foo', 'value4', 'value3');
+
+      assert.strictEqual(headers.get('foo'), 'value4');
+
+      headers.setContentType('text/plain');
+      headers.setContentType('application/json', (value) => value === 'text/plain');
+
+      assert.strictEqual(headers.getContentType(), 'application/json');
+    });
+
+    it('should match string and RegExp rewrite matchers against each value of a multi-value header', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('set-cookie', ['a=1', 'b=2']);
+
+      assert.strictEqual(headers.has('set-cookie', 'b=2'), true);
+      assert.strictEqual(headers.has('set-cookie', /^x=/), false);
+
+      headers.set('set-cookie', 'c=3', 'x=');
+
+      assert.deepStrictEqual(headers.get('set-cookie'), ['a=1', 'b=2']);
+
+      headers.set('set-cookie', 'c=3', 'b=2');
+
+      assert.strictEqual(headers.get('set-cookie'), 'c=3');
+
+      headers.set('set-cookie', ['a=1', 'b=2']);
+      headers.set('set-cookie', 'd=4', /^a=/);
+
+      assert.strictEqual(headers.get('set-cookie'), 'd=4');
+    });
+
+    it('should call function rewrite matchers with the headers instance as this', () => {
+      const headers = new AxiosHeaders({ foo: 'value1', bar: 'value2' });
+
+      headers.set('foo', 'value3', function () {
+        return this.has('bar');
+      });
+
+      assert.strictEqual(headers.get('foo'), 'value3');
+    });
+
     it('should support iterables as a key-value source object', () => {
       const headers = new AxiosHeaders();
 

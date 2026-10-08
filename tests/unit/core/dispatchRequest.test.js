@@ -172,7 +172,7 @@ describe('core::dispatchRequest', () => {
   });
 
   describe('happy path', () => {
-    it('keeps the caller-supplied request data on the exposed response config', async () => {
+    it('keeps the caller-supplied request data and config identity on the response', async () => {
       const requestData = { startTime: 1, endTime: 2 };
       let transportData;
       let transportConfig;
@@ -198,16 +198,19 @@ describe('core::dispatchRequest', () => {
 
       assert.strictEqual(transportData, JSON.stringify(requestData), 'adapter must still receive the serialized body');
       assert.strictEqual(result.config.data, requestData, 'response.config.data must be the object the caller set');
-      assert.strictEqual(transportConfig.data, JSON.stringify(requestData), 'adapter-owned config must keep the transported body');
+      assert.strictEqual(result.config, transportConfig, 'response.config must retain the adapter config identity');
+      assert.strictEqual(transportConfig.data, requestData, 'settled response config must expose the caller data');
     });
 
     it('restores the caller-supplied data on the rejection-path response config', async () => {
       const requestData = { startTime: 1, endTime: 2 };
       const reason = new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE);
+      let adapterConfig;
       const config = baseConfig({
         method: 'post',
         data: requestData,
-        adapter: (adapterConfig) => {
+        adapter: (config) => {
+          adapterConfig = config;
           reason.response = { data: '{}', status: 500, statusText: 'Error', headers: {}, config: adapterConfig, request: {} };
           return Promise.reject(reason);
         },
@@ -222,21 +225,26 @@ describe('core::dispatchRequest', () => {
 
       assert.ok(thrown, 'must reject');
       assert.strictEqual(thrown.response.config.data, requestData, 'rejection response.config.data must be the object the caller set');
+      assert.strictEqual(thrown.response.config, adapterConfig, 'rejection response.config must retain the adapter config identity');
     });
 
     it('keeps the caller-supplied data when the response transform throws', async () => {
       const requestData = { startTime: 1, endTime: 2 };
+      let adapterConfig;
       const config = baseConfig({
         method: 'post',
         data: requestData,
-        adapter: (adapterConfig) => Promise.resolve({
-          data: '{bad json',
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: adapterConfig,
-          request: {},
-        }),
+        adapter: (config) => {
+          adapterConfig = config;
+          return Promise.resolve({
+            data: '{bad json',
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config: adapterConfig,
+            request: {},
+          });
+        },
       });
 
       let thrown;
@@ -248,15 +256,18 @@ describe('core::dispatchRequest', () => {
 
       assert.ok(thrown instanceof AxiosError, 'must be AxiosError');
       assert.strictEqual(thrown.response.config.data, requestData, 'error response.config.data must be the object the caller set');
+      assert.strictEqual(thrown.response.config, adapterConfig, 'error response.config must retain the adapter config identity');
     });
 
     it('keeps error.config and error.response.config consistent on rejection', async () => {
       const requestData = { startTime: 1, endTime: 2 };
       const reason = new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE);
+      let adapterConfig;
       const config = baseConfig({
         method: 'post',
         data: requestData,
-        adapter: (adapterConfig) => {
+        adapter: (config) => {
+          adapterConfig = config;
           const shared = adapterConfig;
           reason.config = shared;
           reason.response = { data: '{}', status: 500, statusText: 'Error', headers: {}, config: shared, request: {} };
@@ -273,6 +284,7 @@ describe('core::dispatchRequest', () => {
 
       assert.ok(thrown, 'must reject');
       assert.strictEqual(thrown.config, thrown.response.config, 'error.config and error.response.config must stay the same object');
+      assert.strictEqual(thrown.config, adapterConfig, 'error config must retain the adapter config identity');
       assert.strictEqual(thrown.config.data, requestData, 'error.config.data must be the object the caller set');
     });
 

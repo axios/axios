@@ -101,6 +101,23 @@ describe('helpers:retry', function () {
   });
 
   describe('attachRetry interceptor integration', function () {
+    it('should replace the prior retry interceptor when attached again', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 2 });
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 0 });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const error = new Error('Service Unavailable');
+        error.config = config;
+        error.response = { status: 503, headers: {} };
+        throw error;
+      };
+
+      await assert.rejects(instance.get('http://test.local'));
+      assert.strictEqual(attempts, 1);
+    });
+
     it('should not transform an already-transformed request body again on retry', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
@@ -143,6 +160,27 @@ describe('helpers:retry', function () {
 
       await assert.rejects(instance.get('http://test.local'));
       assert.strictEqual(attempts, 4);
+    });
+
+    it('should preserve an adapter rejection that refuses method metadata', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      let rejectedError;
+      instance.defaults.adapter = async (config) => {
+        const error = new Error('Adapter failed');
+        error.config = config;
+        rejectedError = new Proxy(error, {
+          set(target, key, value) {
+            if (typeof key === 'symbol') {
+              throw new TypeError('Metadata refused');
+            }
+            return Reflect.set(target, key, value);
+          },
+        });
+        throw rejectedError;
+      };
+
+      await assert.rejects(instance.post('http://test.local'), (error) => error === rejectedError);
     });
 
     it('should retry a GET when a custom adapter omits method from the error config', async function () {

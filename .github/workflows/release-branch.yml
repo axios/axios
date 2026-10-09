@@ -356,5 +356,4 @@ jobs:
           draft: false
           labels: |
             type::automated-pr
-            priority::high
             commit::chore

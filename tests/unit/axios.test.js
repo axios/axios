@@ -2,8 +2,10 @@ import { describe, it } from 'vitest';
 import assert from 'assert';
 import axios from '../../index.js';
 import Axios from '../../lib/core/Axios.js';
+import AxiosHeaders from '../../lib/core/AxiosHeaders.js';
 import methodList from '../../lib/core/methodList.js';
 import defaults from '../../lib/defaults/index.js';
+import { echoHeaders } from '../setup/adapters.js';
 
 const expectedMethodList = [
   'get',
@@ -112,5 +114,246 @@ describe('Axios', () => {
         },
       });
     }
+  });
+
+  it('should send a literal header that shares its name with a method', async () => {
+    const client = axios.create();
+    const link = '<http://www.w3.org/ns/ldp#Resource>; rel="type"';
+
+    for (const headerName of ['link', 'Link']) {
+      const response = await client.post(
+        '/literal-method-header',
+        {},
+        {
+          headers: { [headerName]: link },
+          adapter: echoHeaders,
+        }
+      );
+
+      assert.strictEqual(response.config.headers.get('Link'), link);
+    }
+
+    const response = await client.post(
+      '/literal-method-header',
+      {},
+      {
+        headers: { options: 'a', purge: 'b', unlink: 'c', query: 'd' },
+        adapter: echoHeaders,
+      }
+    );
+
+    assert.strictEqual(response.config.headers.get('options'), 'a');
+    assert.strictEqual(response.config.headers.get('purge'), 'b');
+    assert.strictEqual(response.config.headers.get('unlink'), 'c');
+    assert.strictEqual(response.config.headers.get('query'), 'd');
+  });
+
+  it('should treat an AxiosHeaders instance under a method name as defaults', async () => {
+    const client = axios.create();
+
+    const response = await client.post(
+      '/axios-headers-bucket',
+      {},
+      {
+        headers: {
+          common: new AxiosHeaders({ 'X-Common': 'from-common' }),
+          post: new AxiosHeaders({ 'X-Post': 'from-post' }),
+        },
+        adapter: echoHeaders,
+      }
+    );
+
+    assert.strictEqual(response.config.headers.get('X-Common'), 'from-common');
+    assert.strictEqual(response.config.headers.get('X-Post'), 'from-post');
+    assert.strictEqual(response.config.headers.has('common'), false);
+    assert.strictEqual(response.config.headers.has('post'), false);
+  });
+
+  describe('method-named request headers', () => {
+    class HeaderValue {
+      constructor(value) {
+        this.value = value;
+      }
+
+      toString() {
+        return this.value;
+      }
+    }
+
+    for (const [shape, value] of Object.entries({
+      Date: new Date(0),
+      Buffer: Buffer.from('literal'),
+      Uint8Array: new Uint8Array([65, 66]),
+      'application class': new HeaderValue('<https://example.com/resource>; rel="type"'),
+    })) {
+      it(`should normalize ${shape} values as literal method-named headers`, async () => {
+        for (const name of [...expectedMethodList, 'common']) {
+          for (const headerName of [name, name.toUpperCase()]) {
+            for (const method of ['get', name === 'common' ? 'post' : name]) {
+              const { config } = await axios.request({
+                url: '/non-plain-literal-header',
+                method,
+                headers: { [headerName]: value, 'X-Reference': value },
+                adapter: echoHeaders,
+              });
+
+              assert.strictEqual(config.headers.get(name), String(value));
+              assert.strictEqual(config.headers.get(name), config.headers.get('X-Reference'));
+              assert.strictEqual(config.headers.has('0'), false);
+              assert.strictEqual(config.headers.has('1'), false);
+              assert.strictEqual(config.headers.has('value'), false);
+            }
+          }
+        }
+      });
+    }
+
+    for (const name of [...expectedMethodList, 'common']) {
+      it(`should preserve literal ${name} headers without merging them as defaults`, async () => {
+        const client = axios.create({ adapter: echoHeaders });
+
+        for (const headerName of [name, name.toUpperCase()]) {
+          for (const value of [
+            '<https://example.com/resource>; rel="type"',
+            '',
+            0,
+            true,
+            ['a', 'b'],
+          ]) {
+            const response = await client.request({
+              url: '/literal-method-header',
+              method: name === 'common' ? 'post' : name,
+              headers: { [headerName]: value },
+            });
+
+            assert.deepStrictEqual(
+              response.config.headers.get(name),
+              Array.isArray(value) ? value : String(value)
+            );
+            assert.strictEqual(response.config.headers.has('0'), false);
+            assert.strictEqual(response.config.headers.has('1'), false);
+          }
+        }
+      });
+    }
+
+    it('should omit disabled and nullish method-named headers', async () => {
+      for (const value of [false, null, undefined]) {
+        const response = await axios.request({
+          url: '/disabled-method-header',
+          method: 'link',
+          headers: { link: value, common: value },
+          adapter: echoHeaders,
+        });
+
+        assert.strictEqual(Object.hasOwn(response.config.headers.toJSON(), 'link'), false);
+        assert.strictEqual(Object.hasOwn(response.config.headers.toJSON(), 'common'), false);
+        assert.strictEqual(response.config.headers.has('0'), false);
+      }
+    });
+
+    const bucketFactories = {
+      'plain objects': (headers) => ({ ...headers }),
+      'null-prototype objects': (headers) => Object.assign(Object.create(null), headers),
+      AxiosHeaders: (headers) => new axios.AxiosHeaders(headers),
+      'AxiosHeaders subclasses': (headers) => {
+        class HeaderDefaults extends AxiosHeaders {}
+
+        return new HeaderDefaults(headers);
+      },
+    };
+
+    for (const [shape, createBucket] of Object.entries(bucketFactories)) {
+      it(`should preserve common and method defaults supplied as ${shape}`, async () => {
+        const client = axios.create({
+          adapter: echoHeaders,
+          headers: {
+            common: createBucket({ 'X-Common': 'common', 'X-Precedence': 'common' }),
+            post: createBucket({ Authorization: 'Bearer TEST_ONLY', 'X-Precedence': 'post' }),
+          },
+        });
+
+        for (const method of ['get', 'post']) {
+          const response = await client.request({ url: '/header-defaults', method });
+          const headers = response.config.headers;
+
+          assert.strictEqual(headers.get('X-Common'), 'common');
+          assert.strictEqual(headers.get('X-Precedence'), method === 'post' ? 'post' : 'common');
+          assert.strictEqual(
+            headers.get('Authorization'),
+            method === 'post' ? 'Bearer TEST_ONLY' : undefined
+          );
+          assert.strictEqual(headers.has('common'), false);
+          assert.strictEqual(headers.has('post'), false);
+        }
+
+        const response = await client.post('/header-override', null, {
+          headers: { 'X-Precedence': 'request' },
+        });
+        assert.strictEqual(response.config.headers.get('X-Precedence'), 'request');
+      });
+    }
+
+    it('should not recognize a shared-prototype brand as a header bucket', async () => {
+      let accessed = false;
+      const descriptor = Object.getOwnPropertyDescriptor(Object.prototype, Symbol.toStringTag);
+
+      Object.defineProperty(Object.prototype, Symbol.toStringTag, {
+        configurable: true,
+        get() {
+          accessed = true;
+          return 'AxiosHeaders';
+        },
+      });
+
+      try {
+        const value = new HeaderValue('literal');
+        value.toJSON = () => ({ Authorization: 'Bearer TEST_ONLY' });
+        const { config } = await axios.request({
+          url: '/shared-prototype-brand',
+          method: 'link',
+          headers: { link: value },
+          adapter: echoHeaders,
+        });
+
+        assert.strictEqual(config.headers.get('Link'), 'literal');
+        assert.strictEqual(config.headers.has('value'), false);
+        assert.strictEqual(config.headers.has('Authorization'), false);
+        assert.strictEqual(accessed, false);
+      } finally {
+        if (descriptor) {
+          Object.defineProperty(Object.prototype, Symbol.toStringTag, descriptor);
+        } else {
+          delete Object.prototype[Symbol.toStringTag];
+        }
+      }
+    });
+
+    it('should preserve application-prototype buckets without reading shared-prototype buckets', async () => {
+      const headers = Object.create({ common: { 'X-Template': 'kept' } });
+      let accessed = false;
+
+      Object.defineProperty(Object.prototype, 'propfind', {
+        configurable: true,
+        get() {
+          accessed = true;
+          throw new Error('Shared prototype bucket was read');
+        },
+      });
+
+      try {
+        const response = await axios.request({
+          url: '/inherited-buckets',
+          method: 'propfind',
+          headers,
+          adapter: echoHeaders,
+        });
+
+        assert.strictEqual(response.config.headers.get('X-Template'), 'kept');
+        assert.strictEqual(accessed, false);
+      } finally {
+        delete Object.prototype.propfind;
+      }
+    });
   });
 });

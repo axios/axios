@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Adaptive request retries
+
+- **Change:** Document the opt-in retry API and its request/instance configuration.
+- **Source:** Adaptive retry feature PR.
+- **Status:** Pending.
+- **Docs targets:** Retry API reference, request-config `retry` option, README retry guidance, and translated docs after the English documentation is finalized.
+- **Required content:** Explain how to use the `retry` request option and `attachRetry` interceptor; cover retry counts, eligible methods/status codes/network errors, exponential backoff, jitter, `Retry-After`, custom delay/retry predicates and callbacks, cancellation during waits, and why stream/readable request bodies are not replayed.
+- **Examples:** Show a bounded retry request and instance-level interceptor configuration with a custom retry delay.
+- **Notes:** Retries are opt-in. Keep examples aligned across ESM/CommonJS declarations and do not imply non-replayable request bodies are retried.
+
 ### Fetch response size errors
 
 - **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.

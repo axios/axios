@@ -34,6 +34,7 @@
 
 ## Documentation
 
+- **README CDN examples:** Updated the jsDelivr and unpkg script tags from Axios 1.13.2 to the published 1.20.0 browser bundle so readers copying the examples use the current release. Both examples remain explicitly version-pinned; this documentation change does not alter package APIs or existing installations. (**[#11149](https://github.com/axios/axios/pull/11149)**)
 - **Contributor test setup:** Clarified that `npm test` runs the unit and browser test suites and requires Playwright browsers to be installed first, helping contributors avoid missing-browser errors. No runtime, public API, or type compatibility changes. (**#11284**)
 - **Contributor submission requirements:** Required prerelease changelog entries and a submission checklist covering regression tests, local validation, compatibility, docs/types, security, and accurate GitHub Actions status so maintainers can trace all contributions and assess verified readiness before review. Defined Maintenance entry placement and a narrow exception for automated release-preparation PRs containing only generated release changes. Kept `AGENTS.md`, Copilot instructions, the contributor guide, and the PR template aligned. This changes the contribution process, with no runtime, public API, or type compatibility impact. (**#11223**)
 - **Global search:** Added localized, private, in-browser full-text search for the active documentation language, with fuzzy and prefix matching.

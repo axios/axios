@@ -22,13 +22,13 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ### Literal method-named request headers
 
-- **Change:** Restore literal headers such as `Link` while preserving object-valued common and method-specific defaults.
+- **Change:** Restore literal headers such as `Link`, including non-plain object values, and distinguish them from common and method-specific header maps.
 - **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Literal method-named headers; #11156 and #11096.
 - **Status:** Pending.
-- **Docs targets:** README and docs site request-header and configuration-defaults guidance.
-- **Required content:** Scalar and array values under `common` or a method name are literal headers. Object values remain defaults buckets, including class instances and `AxiosHeaders` from another package build. Only the matching method bucket applies; buckets are never transmitted as literal headers. Existing null/undefined/false header omission remains intact.
-- **Examples:** Show `headers: { Link: '<https://example.com/resource>; rel="type"' }`. When an object such as a Date or Buffer is intended as a literal value under a reserved name, explicitly convert it to a string first.
-- **Notes:** This is a compatibility-preserving fix with no new options or type declarations. Do not describe arbitrary object-valued method keys as literal headers.
+- **Docs targets:** README and docs site request-header and configuration-defaults guidance; migration guide for custom class defaults.
+- **Required content:** Plain objects, null-prototype maps, and compatible `AxiosHeaders` (including subclasses and instances from other package builds) remain defaults buckets. Only the matching method bucket applies; these buckets are never transmitted as literal headers. Scalars, arrays, and other objects such as Dates, Buffers, typed arrays, and application class instances use normal header-value serialization. Existing null/undefined/false header omission remains intact. Explain the breaking compatibility change for applications using arbitrary class instances as defaults buckets: convert those instances to plain maps or `AxiosHeaders` before assigning them under `common` or a method name. Otherwise their string representation becomes a literal header, including on nonmatching requests; this can expose contents included by a custom `toString()`.
+- **Examples:** Show `headers: { Link: '<https://example.com/resource>; rel="type"' }` and a JavaScript example passing `Buffer.from('literal')` directly. For a custom defaults class, migrate `headers: { post: customDefaults }` to `headers: { post: { ...customDefaults } }` or `headers: { post: new AxiosHeaders({ ...customDefaults }) }`; both retain its own enumerable header entries as method defaults.
+- **Notes:** No new options, exports, or type declarations. Document the class-defaults migration prominently; do not describe this as universally nonbreaking. Object-to-string normalization is existing JavaScript runtime behavior and does not expand the declared TypeScript header-value types.
 
 ### Interceptor IDs and nullish handler recovery
 

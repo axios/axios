@@ -19,7 +19,7 @@ describe('header buckets across package exports', () => {
       const { config } = await instance.request({
         url: '/header-buckets',
         method,
-        headers: { Link: '<https://example.com/resource>; rel="type"' },
+        headers: { Link: Buffer.from('<https://example.com/resource>; rel="type"') },
       });
 
       expect(config.headers.get('X-Common')).to.equal('common');

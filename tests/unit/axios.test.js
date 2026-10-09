@@ -169,23 +169,45 @@ describe('Axios', () => {
     assert.strictEqual(response.config.headers.has('post'), false);
   });
 
-  it('should send an explicitly stringified object as a literal method-named header', async () => {
-    const client = axios.create();
-    const date = new Date(0);
-
-    const response = await client.post(
-      '/non-plain-literal-header',
-      {},
-      {
-        headers: { link: String(date) },
-        adapter: echoHeaders,
-      }
-    );
-
-    assert.strictEqual(response.config.headers.get('Link'), date.toString());
-  });
-
   describe('method-named request headers', () => {
+    class HeaderValue {
+      constructor(value) {
+        this.value = value;
+      }
+
+      toString() {
+        return this.value;
+      }
+    }
+
+    for (const [shape, value] of Object.entries({
+      Date: new Date(0),
+      Buffer: Buffer.from('literal'),
+      Uint8Array: new Uint8Array([65, 66]),
+      'application class': new HeaderValue('<https://example.com/resource>; rel="type"'),
+    })) {
+      it(`should normalize ${shape} values as literal method-named headers`, async () => {
+        for (const name of [...expectedMethodList, 'common']) {
+          for (const headerName of [name, name.toUpperCase()]) {
+            for (const method of ['get', name === 'common' ? 'post' : name]) {
+              const { config } = await axios.request({
+                url: '/non-plain-literal-header',
+                method,
+                headers: { [headerName]: value, 'X-Reference': value },
+                adapter: echoHeaders,
+              });
+
+              assert.strictEqual(config.headers.get(name), String(value));
+              assert.strictEqual(config.headers.get(name), config.headers.get('X-Reference'));
+              assert.strictEqual(config.headers.has('0'), false);
+              assert.strictEqual(config.headers.has('1'), false);
+              assert.strictEqual(config.headers.has('value'), false);
+            }
+          }
+        }
+      });
+    }
+
     for (const name of [...expectedMethodList, 'common']) {
       it(`should preserve literal ${name} headers without merging them as defaults`, async () => {
         const client = axios.create({ adapter: echoHeaders });
@@ -234,18 +256,10 @@ describe('Axios', () => {
       'plain objects': (headers) => ({ ...headers }),
       'null-prototype objects': (headers) => Object.assign(Object.create(null), headers),
       AxiosHeaders: (headers) => new axios.AxiosHeaders(headers),
-      'class instances': (headers) => {
-        class HeaderDefaults {
-          constructor() {
-            Object.assign(this, headers);
-          }
+      'AxiosHeaders subclasses': (headers) => {
+        class HeaderDefaults extends AxiosHeaders {}
 
-          toString() {
-            throw new Error('A defaults bucket must never become a literal header');
-          }
-        }
-
-        return new HeaderDefaults();
+        return new HeaderDefaults(headers);
       },
     };
 
@@ -279,6 +293,41 @@ describe('Axios', () => {
         assert.strictEqual(response.config.headers.get('X-Precedence'), 'request');
       });
     }
+
+    it('should not recognize a shared-prototype brand as a header bucket', async () => {
+      let accessed = false;
+      const descriptor = Object.getOwnPropertyDescriptor(Object.prototype, Symbol.toStringTag);
+
+      Object.defineProperty(Object.prototype, Symbol.toStringTag, {
+        configurable: true,
+        get() {
+          accessed = true;
+          return 'AxiosHeaders';
+        },
+      });
+
+      try {
+        const value = new HeaderValue('literal');
+        value.toJSON = () => ({ Authorization: 'Bearer TEST_ONLY' });
+        const { config } = await axios.request({
+          url: '/shared-prototype-brand',
+          method: 'link',
+          headers: { link: value },
+          adapter: echoHeaders,
+        });
+
+        assert.strictEqual(config.headers.get('Link'), 'literal');
+        assert.strictEqual(config.headers.has('value'), false);
+        assert.strictEqual(config.headers.has('Authorization'), false);
+        assert.strictEqual(accessed, false);
+      } finally {
+        if (descriptor) {
+          Object.defineProperty(Object.prototype, Symbol.toStringTag, descriptor);
+        } else {
+          delete Object.prototype[Symbol.toStringTag];
+        }
+      }
+    });
 
     it('should preserve application-prototype buckets without reading shared-prototype buckets', async () => {
       const headers = Object.create({ common: { 'X-Template': 'kept' } });

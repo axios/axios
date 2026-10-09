@@ -205,26 +205,37 @@ describe('defaults (vitest browser)', () => {
     await finishRequest(request, promise);
   });
 
-  it('should send a literal Link header alongside method defaults', async () => {
-    const link = '<https://example.com/resource>; rel="type"';
-    const instance = axios.create({
-      headers: {
-        post: { 'X-Post': 'post' },
-        get: { Authorization: 'Bearer GET_ONLY' },
-      },
+  for (const [shape, link] of Object.entries({
+    string: '<https://example.com/resource>; rel="type"',
+    Date: new Date(0),
+    Uint8Array: new Uint8Array([65, 66]),
+    'application class': new (class {
+      toString() {
+        return '<https://example.com/resource>; rel="type"';
+      }
+    })(),
+  })) {
+    it(`should send a literal ${shape} Link header alongside method defaults`, async () => {
+      const instance = axios.create({
+        headers: {
+          post: { 'X-Post': 'post' },
+          get: { Authorization: 'Bearer GET_ONLY' },
+        },
+      });
+      const promise = instance.post('/foo', {}, { headers: { Link: link } });
+      const request = getLastRequest();
+      const headers = new AxiosHeaders(request.requestHeaders);
+
+      expect(headers.get('Link')).toBe(String(link));
+      expect(headers.get('X-Post')).toBe('post');
+      expect(headers.has('Authorization')).toBe(false);
+      expect(headers.has('post')).toBe(false);
+      expect(headers.has('get')).toBe(false);
+      expect(headers.has('0')).toBe(false);
+
+      await finishRequest(request, promise);
     });
-    const promise = instance.post('/foo', {}, { headers: { Link: link } });
-    const request = getLastRequest();
-    const headers = new AxiosHeaders(request.requestHeaders);
-
-    expect(headers.get('Link')).toBe(link);
-    expect(headers.get('X-Post')).toBe('post');
-    expect(headers.has('Authorization')).toBe(false);
-    expect(headers.has('post')).toBe(false);
-    expect(headers.has('get')).toBe(false);
-
-    await finishRequest(request, promise);
-  });
+  }
 
   it('should use header config', async () => {
     const instance = axios.create({

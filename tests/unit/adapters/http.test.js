@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import assert from 'assert';
 import {
   startHTTPServer,
@@ -1793,6 +1793,85 @@ describe('supports http with nodejs', () => {
       });
 
       assert.strictEqual(Buffer.concat(chunks).length, body.length);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should enforce maxContentLength while parsing ndjson responses', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        res.end('{"value":"a long record"}\n');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'ndjson',
+        maxContentLength: 8,
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => err.code === AxiosError.ERR_BAD_RESPONSE && /maxContentLength/.test(err.message)
+      );
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('releases the abort listener when an unread ndjson response closes', async () => {
+    let serverResponse;
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        serverResponse = res;
+        res.write('{"value":1}\n');
+      },
+      { port: SERVER_PORT }
+    );
+
+    const controller = new AbortController();
+    const removeEventListener = vi.spyOn(controller.signal, 'removeEventListener');
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'ndjson',
+        signal: controller.signal,
+      });
+
+      assert.strictEqual(typeof response.data[Symbol.asyncIterator], 'function');
+      assert.strictEqual(removeEventListener.mock.calls.filter(([type]) => type === 'abort').length, 0);
+      serverResponse.destroy();
+
+      await vi.waitFor(() => {
+        assert.ok(removeEventListener.mock.calls.some(([type]) => type === 'abort'));
+      });
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('wraps ndjson parse failures as AxiosErrors', async () => {
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        res.end('{invalid}\n');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`, {
+        responseType: 'ndjson',
+      });
+
+      await assert.rejects(
+        Array.fromAsync(response.data),
+        (err) => !!(err.isAxiosError && err.code === AxiosError.ERR_BAD_RESPONSE && err.config)
+      );
     } finally {
       await stopHTTPServer(server);
     }

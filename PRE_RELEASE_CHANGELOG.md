@@ -4,6 +4,7 @@
 
 ## Features
 
+- **Streaming NDJSON responses:** Added `responseType: 'ndjson'` for incremental newline-delimited JSON parsing through the HTTP and Fetch adapters. Responses expose an async iterable of parsed records; cancellation and response-size limits remain active while it is consumed, and closing a Fetch iterator cancels a pending body read. The XHR adapter does not support this response type. (**[#11236](https://github.com/axios/axios/pull/11236)**)
 - **Proxy bypass CIDR ranges:** Added IPv4 and IPv6 CIDR matching to `NO_PROXY`/`no_proxy`, including bracketed IPv6 and IPv4-mapped IPv6 normalization, while malformed ranges fail closed. A `/0` entry bypasses the proxy for its entire address family.
 - **HTTP status code names:** Added the RFC 9110 names `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 across the runtime API and ESM/CommonJS declarations. The existing `PayloadTooLarge` and `UnprocessableEntity` names remain as deprecated aliases, and numeric reverse lookups retain their existing v1.x names for compatibility. (**#11082**, closes **#11066**)
 

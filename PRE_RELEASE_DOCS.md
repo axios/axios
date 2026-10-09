@@ -20,6 +20,56 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Interceptor IDs and nullish handler recovery
+
+- **Change:** Restore numeric-string interceptor ID compatibility and clarify interceptor storage behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11139 and #11114; nullish handler recovery was implemented in #11118.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the numeric value returned by `use()` is an opaque interceptor ID that must be passed back to `eject()` unchanged, rather than used as an index into the handlers array. Recommend `clear()` and `eject()` for managing interceptors. If the handlers array is replaced with `null` or `undefined`, the chain is skipped and the next `use()` automatically restores an array. Unknown IDs and repeated ejections are no-ops; stale IDs cannot remove newly registered handlers after compaction or clearing.
+- **Examples:** Keep the existing `eject(myInterceptor)` example using the original numeric ID.
+- **Notes:** Canonical numeric-string IDs are accepted for historical runtime compatibility; this does not expand the documented numeric-ID API or TypeScript declarations. Interceptor execution order is unchanged.
+
+### Fetch response size errors
+
+- **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.
+- **Source:** #11179; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch response size errors.
+- **Status:** Pending.
+- **Docs targets:** Fetch adapter and `maxContentLength` guidance; TypeScript/custom fetch examples.
+- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When response-body streaming is supported and the response has a body, custom `env.Response` implementations must accept a tracked `ReadableStream<Uint8Array>` if `maxContentLength` is enabled (a numeric value greater than `-1`), `onDownloadProgress` is set, or `responseType` is `'stream'` or `'response'` with cancellation/timeout tracking. An enabled size limit requires stream support even without a progress callback. The constructor signature retains its legacy body type for compatibility; assignability to `env.Response` alone does not establish support for these runtime stream inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
+- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`, and a custom Response wrapper that forwards tracked streams unchanged when used with `maxContentLength` or `onDownloadProgress`.
+- **Notes:** Do not imply the limit, default adapter, genuine network-error behavior, or accepted constructor types change. No migration is required.
+
+### Runtime configuration prototype hardening
+
+- **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Runtime configuration hardening.
+- **Status:** Pending.
+- **Docs targets:** Request interceptor and custom adapter guidance; request-config security and migration notes; translated docs after the English documentation is finalized.
+- **Required content:** Explain that own request-config fields remain supported, including fields on a root null-prototype config, except that unsafe materialization keys (`__proto__`, `constructor`, and `prototype`) are always excluded. Values inherited only from a realm's shared `Object.prototype` are ignored even if that prototype's `constructor` is changed, deleted, or replaced by an accessor. An interceptor that returns the writable, already-merged null-prototype config preserves object identity through the adapter and `response.config`. A frozen, sealed, accessor-based, otherwise restricted, or unsafe-key-bearing null-prototype replacement is materialized into a writable filtered snapshot because dispatch updates fields such as headers, data, and temporary response state and must retain the dangerous-key filtering invariant. An interceptor replacement with a non-terminal application-defined prototype is likewise converted to a null-prototype normalized snapshot: safe inherited fields are materialized as own fields, but the original identity, prototype, `instanceof` branding, accessor placement, and property descriptor attributes are not preserved. Because a foreign shared `Object.prototype` is structurally indistinguishable from an application-created terminal null-prototype template once mutable properties are altered, inherited fields on terminal null-prototype ancestors are intentionally excluded as a fail-closed security boundary.
+- **Examples:** Show an unchanged merged config retaining identity between a request interceptor and custom adapter. Show a request interceptor returning an object with a non-terminal application prototype whose custom adapter field is materialized into the normalized snapshot, and contrast it with a terminal `Object.create(null)` prototype whose inherited behavior fields are ignored.
+- **Notes:** Present replacement normalization and the terminal null-prototype restriction as intentional security compatibility changes. Do not imply that mutating `Object.prototype` is supported or safe.
+
+### Proxy bypass CIDR ranges
+
+- **Change:** Document CIDR matching in `NO_PROXY` and `no_proxy`.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, Proxy bypass CIDR ranges.
+- **Status:** Pending.
+- **Docs targets:** Node proxy/environment-variable guidance and request-config proxy documentation; translated docs after the English documentation is finalized.
+- **Required content:** Explain that IPv4 and IPv6 CIDR entries are supported, bracketed IPv6 is accepted, IPv4-mapped IPv6 ranges are normalized to IPv4 when their prefix permits it, address families remain distinct, and malformed CIDR entries do not bypass the proxy. State explicitly that `0.0.0.0/0` bypasses the proxy for every IPv4 destination and `::/0` does the same for IPv6.
+- **Examples:** Show `NO_PROXY=10.0.0.0/8,2001:db8::/32` bypassing matching HTTP destinations and identify `/0` as the entire-family form.
+- **Notes:** Preserve the existing hostname, explicit-port, wildcard, loopback, and non-CIDR matching behavior.
+
+### Fetch and HTTP/2 adapter option consistency
+
+- **Change:** Document adapter-specific redirect, custom fetch, DNS lookup, and proxy behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter consistency and HTTP/2 adapter consistency.
+- **Status:** Pending.
+- **Docs targets:** Request-config entries for `fetchOptions`, `maxRedirects`, `lookup`, `httpVersion`, and `proxy`; custom adapter/fetch guidance; translated docs after the English documentation is finalized.
+- **Required content:** State that a custom fetch receives the fully resolved `Request` when `Request` is supported and continues to receive a second `fetchOptions` argument containing safe own custom fields; Axios-managed fields such as method, headers, body, signal, duplex, and credentials are represented by the `Request` and omitted from that second argument. Custom fetch implementations that previously inspected those fields on the second argument must migrate to the `Request`; identify this as an intentional compatibility change that prevents the second argument from overriding the authoritative request. Explain that `maxRedirects: 0` requests manual redirect handling in the Fetch adapter, but response visibility follows the Fetch runtime: Node may expose the 3xx status and `Location`, while browsers return an opaque redirect with status 0 and inaccessible headers. Custom DNS lookup applies to HTTP/2 connections and participates in session reuse. HTTP/2 ignores process-environment and HTTP/1-agent `proxyEnv` settings because `http2.connect()` cannot apply them, `proxy: false` remains direct, and an explicit Axios proxy object rejects with `ERR_NOT_SUPPORT`.
+- **Examples:** Include focused Fetch `maxRedirects: 0` and Node `httpVersion: 2` plus `lookup` examples.
+- **Notes:** Present the filtered custom-Fetch second argument, Fetch manual redirects, and explicit HTTP/2 proxy rejection as intentional compatibility changes. Do not imply that positive Fetch `maxRedirects` values enforce a redirect count; only zero maps to the platform's manual redirect mode. Do not present the Node-visible 3xx response as portable browser behavior. Keep the HTTP/2 environment-proxy direct-egress residual prominent for deployments that treat proxying as mandatory policy.
+
 ### RFC 9110 HTTP status code names
 
 - **Change:** Document the additive RFC 9110 names for HTTP statuses 413 and 422.
@@ -29,6 +79,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Introduce `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 as the preferred RFC 9110 names. Explain that `PayloadTooLarge` and `UnprocessableEntity` remain available as deprecated aliases throughout v1.x, and that numeric reverse lookups continue returning those legacy names for backward compatibility.
 - **Examples:** Show forward comparisons using `HttpStatusCode.ContentTooLarge` and `HttpStatusCode.UnprocessableContent`.
 - **Notes:** Removing the deprecated aliases or changing the numeric reverse-lookup strings is reserved for a future major release. Keep ESM and CommonJS examples aligned and update translated documentation after the English wording is finalized.
+
+### Streaming reads from download progress events
+
+- **Change:** Document how to read incremental response data from throttled download progress events, and the guaranteed final delivery on successful XHR `loadend`.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, closes #6796.
+- **Status:** Pending.
+- **Docs targets:** README request config reference for `onDownloadProgress`; any response streaming examples.
+- **Required content:** Progress callbacks are throttled, so intermediate deliveries can run after the originating browser event finished dispatching; in that case `event.currentTarget` is `null` per DOM semantics, while `event.target` still references the request. A final download delivery with the complete transfer state is guaranteed when a completed XHR download reaches its successful `loadend` handler and is dispatched live. Upload progress, stream-error or abort-reason flushes, and failed XHR downloads retain their prior pending-event behavior.
+- **Examples:** An incremental `responseText` reader that slices new data using `progressEvent.event.target` inside `onDownloadProgress`.
 
 ### Typed request params
 
@@ -92,10 +151,11 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ### Wrapped error stacks in `AxiosError`
 
-- **Change:** `AxiosError.from()` now appends the wrapped error's stack to `error.stack` after a `Caused by:` marker, in addition to the existing non-enumerable `error.cause`.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, closes #6670.
+- **Change:** `AxiosError.from()` appends an available wrapped error stack to `error.stack` after a `Caused by:` marker, in addition to the existing non-enumerable `error.cause`. Reconstructed request/caller frames precede that section, including when only one or two frames are available.
+- **Source:** [PR #11142](https://github.com/axios/axios/pull/11142), related to [issue #6670](https://github.com/axios/axios/issues/6670); `PRE_RELEASE_CHANGELOG.md` Bug Fixes.
 - **Status:** Pending.
-- **Docs targets:** `README.md` error-handling section and the `AxiosError` field reference in `docs/pages/` wherever `code`, `cause`, `status`, and `toJSON()` are described.
-- **Required content:** State that `error.cause` remains the canonical, unchanged reference to the original failure, and that `error.stack` now additionally carries a `Caused by:` section holding the wrapped error's stack. Explain who this is for: cause-aware tooling (modern Node `util.inspect`, the V8 default formatter, recent Sentry SDKs) already walks the `cause` chain and sees no change, while reporters that log only `error.stack` previously showed the axios frames that constructed the error instead of the underlying DNS, socket, or timeout failure. Describe the shape so consumers know what to expect: the axios stack comes first, then a line starting with `Caused by: `, then the wrapped error's stack verbatim. Cover the no-op cases too: a wrapped error whose `stack` is missing, non-string, or throws when read leaves `error.stack` untouched, and re-wrapping nests the section rather than repeating it. Also state that the caller frames axios rebuilds in `Axios.prototype.request` are spliced in before the `Caused by:` marker, so everything after the marker is the wrapped error stack and nothing else.
-- **Examples:** Show a trimmed `error.stack` for a DNS failure with the `Caused by:` section, and a short snippet reading `error.cause` for consumers who prefer the structured form over parsing text.
-- **Notes:** README plus the API error reference; keep the wording adapter-agnostic because `AxiosError.from()` is shared by the http, xhr, and fetch adapters. Do not present `Caused by:` as a stable parsing contract - it is a human-readable diagnostic aid, and `error.cause` is the supported programmatic path.
+- **Docs targets:** `README.md` error-handling section and the API error reference in `docs/pages/` describing `stack`, `cause`, and `toJSON()`.
+- **Required content:** Explain that reporters which read only `error.stack` can now see an existing wrapped stack. `error.cause` remains the same original object and the supported programmatic link; cause-aware tooling already has access to it and may display some stack content twice. The wrapper's stack and reconstructed caller frames come first, followed by the wrapped stack verbatim. Marker-like text inside a message or custom stack is preserved as text. Missing, empty, non-string, throwing, or unwritable stacks are skipped defensively. Re-wrapping adds one nested section per call and increases the string size; this is not a bounded or idempotent cause history. Explicit `customProps.stack` continues to override the generated stack.
+- **Examples:** Show a trimmed Node socket/DNS failure stack containing the `Caused by:` section, alongside a snippet reading `error.cause`. State that the diagnostic string is also exposed by `toJSON().stack`.
+- **Limitations:** Wrapping cannot recover details the platform never supplied. Browser XHR `Network Error` events generally have no underlying Error stack, and this change does not diagnose hidden CORS, DNS, or TLS causes. Only failures routed through `AxiosError.from()` with usable stacks gain a section. Appended stacks are verbatim diagnostics, not redacted metadata; existing `config.redact` rules do not sanitize stack strings.
+- **Notes:** Do not present the marker as a stable parsing contract. Preserve the structured cause reference for programmatic consumers; no public types or migration steps are needed.

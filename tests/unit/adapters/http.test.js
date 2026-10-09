@@ -27,7 +27,11 @@ import path from 'path';
 import devNull from 'dev-null';
 import FormDataLegacy from 'form-data';
 import { IncomingForm } from 'formidable';
-import { FormData as FormDataPolyfill, Blob as BlobPolyfill } from 'formdata-node';
+import {
+  FormData as FormDataPolyfill,
+  Blob as BlobPolyfill,
+  File as FilePolyfill,
+} from 'formdata-node';
 import express from 'express';
 import multer from 'multer';
 import getStream from 'get-stream';
@@ -4677,6 +4681,61 @@ describe('supports http with nodejs', () => {
   });
 
   describe('Blob', () => {
+    for (const [kind, createBody] of [
+      ['Blob', (parts, options) => new BlobSpecCompliant(parts, options)],
+      ['File', (parts, options) => new FilePolyfill(parts, 'upload.txt', options)],
+    ]) {
+      for (const content of ['', 'blob-content']) {
+        describe(`${kind} request content type with ${content.length} bytes`, () => {
+          it.each([
+            { label: 'declared type', type: 'text/plain', expected: 'text/plain' },
+            { label: 'fallback type', type: '', expected: 'application/octet-stream' },
+            {
+              label: 'explicit string header',
+              type: 'text/plain',
+              header: 'application/custom',
+              expected: 'text/plain',
+            },
+            { label: 'null header', type: 'text/plain', header: null, expected: 'text/plain' },
+            { label: 'false header opt-out', type: 'text/plain', header: false, expected: null },
+          ])('should handle $label', async ({ type, header, expected }) => {
+            const server = await startHTTPServer(async (req, res) => {
+              const body = await getStream(req);
+              res.setHeader('Content-Type', 'application/json');
+              res.end(
+                JSON.stringify({
+                  contentType: req.headers['content-type'] ?? null,
+                  contentLength: req.headers['content-length'],
+                  body,
+                })
+              );
+            });
+
+            try {
+              const { data } = await axios.post(
+                `http://127.0.0.1:${server.address().port}`,
+                createBody([content], { type }),
+                {
+                  adapter: 'http',
+                  maxRedirects: 0,
+                  proxy: false,
+                  headers: { 'Content-Type': header },
+                }
+              );
+
+              assert.deepStrictEqual(data, {
+                contentType: expected,
+                contentLength: String(Buffer.byteLength(content)),
+                body: content,
+              });
+            } finally {
+              await stopHTTPServer(server);
+            }
+          });
+        });
+      }
+    }
+
     it('should support Blob', async () => {
       const server = await startHTTPServer(
         async (req, res) => {

@@ -183,6 +183,58 @@ describe('helpers:retry', function () {
       await assert.rejects(instance.post('http://test.local'), (error) => error === rejectedError);
     });
 
+    it('should retry a dispatched GET with a frozen adapter error', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = { ...config };
+          delete error.config.method;
+          error.response = { status: 503, headers: {} };
+          throw Object.freeze(error);
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local');
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 2);
+    });
+
+    it('should transform raw data when retrying an error raised before dispatch', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      let interceptorCalls = 0;
+      instance.interceptors.request.use((config) => {
+        interceptorCalls++;
+        if (interceptorCalls === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+        return config;
+      });
+      let transforms = 0;
+      instance.defaults.adapter = async (config) => {
+        assert.strictEqual(config.data, 'payload!');
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.put('http://test.local', 'payload', {
+        transformRequest: [(data) => {
+          transforms++;
+          return `${data}!`;
+        }],
+      });
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(interceptorCalls, 2);
+      assert.strictEqual(transforms, 1);
+    });
+
     it('should retry a GET when a custom adapter omits method from the error config', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

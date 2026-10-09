@@ -57,6 +57,10 @@ describe('helpers:retry', function () {
       const delay = calculateRetryDelay(2, { retryDelay: customFn });
       assert.strictEqual(delay, 150);
     });
+
+    it('should cap a custom retryDelay at maxDelay', function () {
+      assert.strictEqual(calculateRetryDelay(0, { retryDelay: () => 100000, maxDelay: 5000 }), 5000);
+    });
   });
 
   describe('isRetryableError', function () {
@@ -73,6 +77,10 @@ describe('helpers:retry', function () {
     it('should not retry POST by default', function () {
       const err500 = { config: { method: 'post' }, response: { status: 500 } };
       assert.strictEqual(isRetryableError(err500), false);
+    });
+
+    it('should retry the supported QUERY method by default', function () {
+      assert.strictEqual(isRetryableError({ config: { method: 'query' }, response: { status: 503 } }), true);
     });
 
     it('should not retry when the request method is inherited', function () {
@@ -93,6 +101,50 @@ describe('helpers:retry', function () {
   });
 
   describe('attachRetry interceptor integration', function () {
+    it('should not transform an already-transformed request body again on retry', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      let transforms = 0;
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        assert.strictEqual(config.data, 'payload!');
+        if (attempts === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.put('http://test.local', 'payload', {
+        transformRequest: [(data) => {
+          transforms++;
+          return `${data}!`;
+        }],
+      });
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 2);
+      assert.strictEqual(transforms, 1);
+    });
+
+    it('should use finite default retries for an invalid retry count', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: Infinity });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const error = new Error('Service Unavailable');
+        error.config = config;
+        error.response = { status: 503, headers: {} };
+        throw error;
+      };
+
+      await assert.rejects(instance.get('http://test.local'));
+      assert.strictEqual(attempts, 4);
+    });
+
     it('should retry a GET when a custom adapter omits method from the error config', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
@@ -133,6 +185,24 @@ describe('helpers:retry', function () {
       const response = await instance.get('http://test.local');
       assert.strictEqual(response.data, 'success');
       assert.strictEqual(attempts, 2);
+    });
+
+    it('should not retry a POST produced by a later request interceptor', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      instance.interceptors.request.use((config) => ({ ...config, method: 'post' }));
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const error = new Error('Service Unavailable');
+        error.config = { ...config };
+        delete error.config.method;
+        error.response = { status: 503, headers: {} };
+        throw error;
+      };
+
+      await assert.rejects(instance.get('http://test.local'), (error) => error.response.status === 503);
+      assert.strictEqual(attempts, 1);
     });
 
     it('should not retry an error whose config inherits its request method', async function () {

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import axios from '../../../index.js';
+import AxiosError, { CAUSED_BY_SEPARATOR } from '../../../lib/core/AxiosError.js';
 
 describe('core::Axios', () => {
   describe('request error stack decoration', () => {
@@ -57,6 +58,97 @@ describe('core::Axios', () => {
       ['one frame', '    at requestCaller (caller.js:1:1)'],
       ['two frames', '    at Axios.request (Axios.js:1:1)\n    at requestCaller (caller.js:1:1)'],
     ];
+
+    it.each([
+      ...shortStacks,
+      [
+        'three frames',
+        '    at Axios.request (Axios.js:1:1)\n    at dispatch (caller.js:1:1)\n    at requestCaller (caller.js:2:1)',
+      ],
+    ])(
+      'keeps %s of caller context ahead of the cause without duplicating it',
+      async (_, callerStack) => {
+        const cause = new Error('socket hang up');
+        cause.stack = 'Error: socket hang up\n    at Socket.socketOnEnd (node:_http_client)';
+        const failure = AxiosError.from(cause, 'ECONNRESET');
+        const causeSection = CAUSED_BY_SEPARATOR + cause.stack;
+        const initialStack = failure.stack;
+        const causeIndex = initialStack.indexOf(CAUSED_BY_SEPARATOR);
+        const original = Error.captureStackTrace;
+        const rejections = [];
+
+        Error.captureStackTrace = (target) => {
+          target.stack = 'Error\n' + callerStack;
+        };
+
+        try {
+          for (let i = 0; i < 2; i++) {
+            rejections.push(
+              await axios
+                .request({ adapter: () => Promise.reject(failure) })
+                .catch((error) => error)
+            );
+          }
+        } finally {
+          Error.captureStackTrace = original;
+        }
+
+        expect(rejections).toEqual([failure, failure]);
+        expect(causeIndex).toBeGreaterThan(0);
+        expect(failure.stack).toBe(
+          initialStack.slice(0, causeIndex) + '\n' + callerStack + causeSection
+        );
+        expect(failure.cause).toBe(cause);
+      }
+    );
+
+    it.each(['unwrapped', 'wrapped', 'nested', 'custom stack'])(
+      'does not interpret marker text in a %s error as the appended cause',
+      async (kind) => {
+        const source = new Error('failure\nCaused by: message text');
+        source.stack = 'Error: failure\nCaused by: message text\n    at source (source.js:1:1)';
+        let failure = source;
+        let causeSection = '';
+
+        if (kind !== 'unwrapped') {
+          if (kind === 'nested') {
+            failure = AxiosError.from(failure);
+          }
+          causeSection = CAUSED_BY_SEPARATOR + failure.stack;
+          failure = AxiosError.from(failure);
+        }
+        if (kind === 'custom stack') {
+          failure = AxiosError.from(source, null, null, null, null, {
+            stack: 'Custom failure\nCaused by: custom message\n    at custom (custom.js:1:1)',
+          });
+          causeSection = '';
+        }
+
+        const initialStack = failure.stack;
+        const wrapperStack = initialStack.slice(0, initialStack.length - causeSection.length);
+        const callerStack = '    at caller (caller.js:1:1)';
+        const original = Error.captureStackTrace;
+        let rejection;
+        // The source may change after wrapping; preserve the captured section.
+        if (kind !== 'unwrapped') {
+          source.stack = 'changed source stack';
+        }
+        Error.captureStackTrace = (target) => {
+          target.stack = 'Error\n' + callerStack;
+        };
+
+        try {
+          rejection = await axios
+            .request({ adapter: () => Promise.reject(failure) })
+            .catch((error) => error);
+        } finally {
+          Error.captureStackTrace = original;
+        }
+
+        expect(rejection).toBe(failure);
+        expect(failure.stack).toBe(wrapperStack + '\n' + callerStack + causeSection);
+      }
+    );
 
     it.each(shortStacks)('appends a reconstructed stack with %s', async (_, stack) => {
       const failure = new Error('adapter failure');

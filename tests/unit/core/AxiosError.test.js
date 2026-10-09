@@ -138,6 +138,146 @@ describe('core::AxiosError', () => {
     });
   });
 
+  describe('AxiosError.from stack preservation (#6670)', () => {
+    const nativeStack = 'Error: Boom!\n    at somewhereDeepInNode (node:internal/x:1:1)';
+
+    it('appends the wrapped error stack to the AxiosError stack', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK', { foo: 'bar' });
+
+      expect(axiosError.stack).toContain('\nCaused by: Error: Boom!');
+      expect(axiosError.stack).toContain('at somewhereDeepInNode');
+    });
+
+    it('keeps the axios frames ahead of the cause section', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK');
+      const [head, tail] = axiosError.stack.split('\nCaused by: ');
+
+      expect(head).not.toContain('somewhereDeepInNode');
+      expect(tail).toBe(nativeStack);
+    });
+
+    it('still exposes the wrapped error through cause', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK');
+
+      expect(axiosError.cause).toBe(error);
+      expect(axiosError.cause.stack).toBe(nativeStack);
+    });
+
+    it('nests rather than repeats the cause section when an AxiosError is re-wrapped', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+
+      const inner = AxiosError.from(error, 'ERR_NETWORK');
+      const outer = AxiosError.from(inner, 'ERR_BAD_RESPONSE');
+
+      expect(outer.stack.split(nativeStack).length - 1).toBe(1);
+      expect(outer.stack.endsWith('\nCaused by: ' + inner.stack)).toBe(true);
+      expect(outer.stack.split('\nCaused by: ')).toHaveLength(3);
+      expect(outer.cause).toBe(inner);
+    });
+
+    it.each([undefined, null, '', 42, {}])('ignores an unusable wrapped stack: %s', (stack) => {
+      const error = new Error('Boom!');
+      error.stack = stack;
+
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK');
+
+      expect(axiosError.stack).not.toContain('Caused by:');
+    });
+
+    it('does not throw when reading the wrapped stack throws', () => {
+      const error = new Error('Boom!');
+      Object.defineProperty(error, 'stack', {
+        get() {
+          throw new Error('stack hook exploded');
+        },
+      });
+
+      expect(() => AxiosError.from(error, 'ERR_NETWORK')).not.toThrow();
+    });
+
+    it.each([undefined, null, '', 42, {}])('preserves a nonstandard target stack: %s', (stack) => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+      const original = Error.prepareStackTrace;
+      let axiosError;
+
+      Error.prepareStackTrace = () => stack;
+
+      try {
+        axiosError = AxiosError.from(error, 'ERR_NETWORK');
+        expect(axiosError.stack).toBe(stack);
+      } finally {
+        Error.prepareStackTrace = original;
+      }
+
+      expect(axiosError.cause).toBe(error);
+      expect(axiosError.code).toBe('ERR_NETWORK');
+    });
+
+    it('preserves the failure when formatting the target stack throws', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+      const original = Error.prepareStackTrace;
+      let axiosError;
+
+      Error.prepareStackTrace = () => {
+        throw new Error('stack hook exploded');
+      };
+
+      try {
+        axiosError = AxiosError.from(error, 'ERR_NETWORK');
+      } finally {
+        Error.prepareStackTrace = original;
+      }
+
+      expect(axiosError.cause).toBe(error);
+      expect(axiosError.message).toBe('Boom!');
+      expect(axiosError.code).toBe('ERR_NETWORK');
+    });
+
+    it('uses the wrapped error name in the materialized stack header', () => {
+      const error = new TypeError('Boom!');
+      const axiosError = AxiosError.from(error, 'ERR_NETWORK');
+
+      expect(axiosError.stack.startsWith('TypeError: Boom!\n')).toBe(true);
+    });
+
+    it('preserves a target stack made read-only by instrumentation', () => {
+      const error = new Error('Boom!');
+      error.stack = nativeStack;
+      const original = Error.prepareStackTrace;
+      let axiosError;
+
+      Error.prepareStackTrace = (target) => {
+        Object.defineProperty(target, 'stack', {
+          value: 'read-only stack',
+          writable: false,
+          configurable: true,
+        });
+        return 'read-only stack';
+      };
+
+      try {
+        axiosError = AxiosError.from(error, 'ERR_NETWORK');
+      } finally {
+        Error.prepareStackTrace = original;
+      }
+
+      expect(axiosError.stack).toBe('read-only stack');
+      expect(axiosError.cause).toBe(error);
+    });
+  });
+
   describe('cause serialization (regression #7205)', () => {
     // A wrapped low-level error carrying a circular reference, like a Node
     // socket/request held by network errors.

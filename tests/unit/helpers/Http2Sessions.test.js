@@ -87,6 +87,16 @@ describe('helpers::Http2Sessions', () => {
     expect(connectSpy).toHaveBeenCalledTimes(2);
   });
 
+  it('drops a session from the pool when it receives a GOAWAY event', () => {
+    const first = pool.getSession('https://example.test');
+    first.emit('goaway');
+
+    const second = pool.getSession('https://example.test');
+
+    expect(second).not.toBe(first);
+    expect(connectSpy).toHaveBeenCalledTimes(2);
+  });
+
   it('handles a session error and removes the failed session', () => {
     const first = pool.getSession('https://example.test');
 

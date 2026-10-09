@@ -30,6 +30,26 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show `headers: { Link: '<https://example.com/resource>; rel="type"' }`. When an object such as a Date or Buffer is intended as a literal value under a reserved name, explicitly convert it to a string first.
 - **Notes:** This is a compatibility-preserving fix with no new options or type declarations. Do not describe arbitrary object-valued method keys as literal headers.
 
+### Interceptor IDs and nullish handler recovery
+
+- **Change:** Restore numeric-string interceptor ID compatibility and clarify interceptor storage behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11139 and #11114; nullish handler recovery was implemented in #11118.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the numeric value returned by `use()` is an opaque interceptor ID that must be passed back to `eject()` unchanged, rather than used as an index into the handlers array. Recommend `clear()` and `eject()` for managing interceptors. If the handlers array is replaced with `null` or `undefined`, the chain is skipped and the next `use()` automatically restores an array. Unknown IDs and repeated ejections are no-ops; stale IDs cannot remove newly registered handlers after compaction or clearing.
+- **Examples:** Keep the existing `eject(myInterceptor)` example using the original numeric ID.
+- **Notes:** Canonical numeric-string IDs are accepted for historical runtime compatibility; this does not expand the documented numeric-ID API or TypeScript declarations. Interceptor execution order is unchanged.
+
+### Fetch response size errors
+
+- **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.
+- **Source:** #11179; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch response size errors.
+- **Status:** Pending.
+- **Docs targets:** Fetch adapter and `maxContentLength` guidance; TypeScript/custom fetch examples.
+- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When response-body streaming is supported and the response has a body, custom `env.Response` implementations must accept a tracked `ReadableStream<Uint8Array>` if `maxContentLength` is enabled (a numeric value greater than `-1`), `onDownloadProgress` is set, or `responseType` is `'stream'` or `'response'` with cancellation/timeout tracking. An enabled size limit requires stream support even without a progress callback. The constructor signature retains its legacy body type for compatibility; assignability to `env.Response` alone does not establish support for these runtime stream inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
+- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`, and a custom Response wrapper that forwards tracked streams unchanged when used with `maxContentLength` or `onDownloadProgress`.
+- **Notes:** Do not imply the limit, default adapter, genuine network-error behavior, or accepted constructor types change. No migration is required.
+
 ### Runtime configuration prototype hardening
 
 - **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.
@@ -138,3 +158,14 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Explain that `.`, `[`, and `]` are structural path separators when converting FormData back to JSON, while other characters such as `-`, spaces, `+`, `*`, and `&` remain literal key characters. Mention that `foo[bar]`, `foo.bar`, and `foo[]` continue to create nested object/array paths.
 - **Examples:** Include a short example showing `form.append('user-name', 'johndoe')` converting to `{ 'user-name': 'johndoe' }`, and `form.append('user.name', 'john')` or `form.append('user[name]', 'john')` converting to `{ user: { name: 'john' } }`.
 - **Notes:** README, API/multipart/HTML-form docs, and Spanish, French, and Chinese translations now document dot/bracket path parsing and literal punctuation keys without presenting the previous splitting behavior as supported.
+
+### Wrapped error stacks in `AxiosError`
+
+- **Change:** `AxiosError.from()` appends an available wrapped error stack to `error.stack` after a `Caused by:` marker, in addition to the existing non-enumerable `error.cause`. Reconstructed request/caller frames precede that section, including when only one or two frames are available.
+- **Source:** [PR #11142](https://github.com/axios/axios/pull/11142), related to [issue #6670](https://github.com/axios/axios/issues/6670); `PRE_RELEASE_CHANGELOG.md` Bug Fixes.
+- **Status:** Pending.
+- **Docs targets:** `README.md` error-handling section and the API error reference in `docs/pages/` describing `stack`, `cause`, and `toJSON()`.
+- **Required content:** Explain that reporters which read only `error.stack` can now see an existing wrapped stack. `error.cause` remains the same original object and the supported programmatic link; cause-aware tooling already has access to it and may display some stack content twice. The wrapper's stack and reconstructed caller frames come first, followed by the wrapped stack verbatim. Marker-like text inside a message or custom stack is preserved as text. Missing, empty, non-string, throwing, or unwritable stacks are skipped defensively. Re-wrapping adds one nested section per call and increases the string size; this is not a bounded or idempotent cause history. Explicit `customProps.stack` continues to override the generated stack.
+- **Examples:** Show a trimmed Node socket/DNS failure stack containing the `Caused by:` section, alongside a snippet reading `error.cause`. State that the diagnostic string is also exposed by `toJSON().stack`.
+- **Limitations:** Wrapping cannot recover details the platform never supplied. Browser XHR `Network Error` events generally have no underlying Error stack, and this change does not diagnose hidden CORS, DNS, or TLS causes. Only failures routed through `AxiosError.from()` with usable stacks gain a section. Appended stacks are verbatim diagnostics, not redacted metadata; existing `config.redact` rules do not sanitize stack strings.
+- **Notes:** Do not present the marker as a stable parsing contract. Preserve the structured cause reference for programmatic consumers; no public types or migration steps are needed.

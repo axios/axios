@@ -40,3 +40,5 @@
 ## Maintenance
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
+
+- **Security regression tests:** Added tests that fail if credential redaction in invalid-URL error messages stops covering `http:` URLs, or if `formDataToJSON` stops ignoring `__proto__` path segments (which would let a FormData field replace the prototype of the resulting object). Test-only; no runtime, public API, or type changes. (**#11299**)

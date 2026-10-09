@@ -57,4 +57,10 @@ describe('helpers::combineURLs', () => {
     expect(combineURLs(123, '')).toBe('');
     expect(combineURLs(true, null)).toBe('');
   });
+
+  it('should return relative URL for non-string baseURL with truthy relativeURL', () => {
+    expect(combineURLs(123, '/users')).toBe('users');
+    expect(combineURLs(true, '/api')).toBe('api');
+    expect(combineURLs({}, 'users')).toBe('users');
+  });
 });

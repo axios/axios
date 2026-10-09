@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Interceptor IDs and nullish handler recovery
+
+- **Change:** Restore numeric-string interceptor ID compatibility and clarify interceptor storage behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11139 and #11114; nullish handler recovery was implemented in #11118.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the numeric value returned by `use()` is an opaque interceptor ID that must be passed back to `eject()` unchanged, rather than used as an index into the handlers array. Recommend `clear()` and `eject()` for managing interceptors. If the handlers array is replaced with `null` or `undefined`, the chain is skipped and the next `use()` automatically restores an array. Unknown IDs and repeated ejections are no-ops; stale IDs cannot remove newly registered handlers after compaction or clearing.
+- **Examples:** Keep the existing `eject(myInterceptor)` example using the original numeric ID.
+- **Notes:** Canonical numeric-string IDs are accepted for historical runtime compatibility; this does not expand the documented numeric-ID API or TypeScript declarations. Interceptor execution order is unchanged.
+
 ### Fetch response size errors
 
 - **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.

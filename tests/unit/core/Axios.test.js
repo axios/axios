@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import axios from '../../../index.js';
 
 describe('core::Axios', () => {
@@ -134,4 +134,70 @@ describe('core::Axios', () => {
       }
     });
   });
+
+  describe.each(['request', 'response'])('nullish %s interceptor handlers', (kind) => {
+    it.each([null, undefined])('skips %s handlers and recovers on registration', async (value) => {
+      const adapter = vi.fn(async (config) => ({
+        data: 'ok',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      }));
+      const instance = axios.create({ adapter });
+      const removed = vi.fn((value) => value);
+      const retained = vi.fn((value) => value);
+      const manager = instance.interceptors[kind];
+
+      manager.use(removed);
+      instance.interceptors[kind === 'request' ? 'response' : 'request'].use(retained);
+      manager.handlers = value;
+
+      expect((await instance.get('http://localhost/test')).data).toBe('ok');
+      expect(adapter).toHaveBeenCalledTimes(1);
+      expect(removed).not.toHaveBeenCalled();
+      expect(retained).toHaveBeenCalledTimes(1);
+
+      const recovered = vi.fn((value) => value);
+      manager.use(recovered);
+
+      expect((await instance.get('http://localhost/test')).data).toBe('ok');
+      expect(adapter).toHaveBeenCalledTimes(2);
+      expect(removed).not.toHaveBeenCalled();
+      expect(retained).toHaveBeenCalledTimes(2);
+      expect(recovered).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it.each([false, true])(
+    'ejects string IDs with synchronous request handlers: %s',
+    async (synchronous) => {
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: 'ok',
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+      const removedRequest = vi.fn((config) => config);
+      const removedResponse = vi.fn((response) => response);
+      const retainedRequest = vi.fn((config) => config);
+      const retainedResponse = vi.fn((response) => response);
+      const requestId = instance.interceptors.request.use(removedRequest, null, { synchronous });
+      const responseId = instance.interceptors.response.use(removedResponse);
+
+      instance.interceptors.request.use(retainedRequest, null, { synchronous });
+      instance.interceptors.response.use(retainedResponse);
+      instance.interceptors.request.eject(String(requestId));
+      instance.interceptors.response.eject(String(responseId));
+
+      expect((await instance.get('http://localhost/test')).data).toBe('ok');
+      expect(removedRequest).not.toHaveBeenCalled();
+      expect(removedResponse).not.toHaveBeenCalled();
+      expect(retainedRequest).toHaveBeenCalledTimes(1);
+      expect(retainedResponse).toHaveBeenCalledTimes(1);
+    }
+  );
 });

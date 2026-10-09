@@ -41,4 +41,61 @@ describe('module esm typings compatibility', () => {
       cleanupTempFixture(fixturePath);
     }
   });
+
+  it('type-checks fetch Response constructors with browser declarations', () => {
+    const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-fetch-types.ts');
+    const fixturePath = createTempFixture(
+      suiteRoot,
+      'fetch-types-browser',
+      sourcePath,
+      {
+        compilerOptions: {
+          module: 'node16',
+          lib: ['ES2022', 'DOM'],
+          types: ['node'],
+          strict: true,
+          skipLibCheck: false,
+        },
+      },
+      { type: 'module' }
+    );
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
+  // Node 20 types provide fetch globals without DOM. Run both package export
+  // conditions here; the legacy CJS suite uses Node 12 types and DOM declarations.
+  for (const mode of ['esm', 'cjs']) {
+    it(`type-checks ${mode} imports and Response constructors without DOM declarations`, () => {
+      const sourcePath = path.join(
+        repoRoot,
+        `tests/module/${mode}/tests/helpers/${mode}-fetch-types.ts`
+      );
+      const fixturePath = createTempFixture(
+        suiteRoot,
+        `fetch-types-node-${mode}`,
+        sourcePath,
+        {
+          compilerOptions: {
+            module: 'node16',
+            lib: ['ES2022'],
+            types: ['node'],
+            strict: true,
+            skipLibCheck: false,
+          },
+        },
+        { type: mode === 'esm' ? 'module' : 'commonjs' }
+      );
+
+      try {
+        runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+      } finally {
+        cleanupTempFixture(fixturePath);
+      }
+    });
+  }
 });

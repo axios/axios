@@ -22,19 +22,89 @@ describe('core::InterceptorManager', () => {
 
   it('preserves interior tombstones until trailing handlers are removed', () => {
     const manager = new InterceptorManager();
-    const first = manager.use(() => {});
+    manager.use(() => {});
     const second = manager.use(() => {});
     const third = manager.use(() => {});
 
     manager.eject(second);
 
     expect(manager.handlers).toHaveLength(3);
-    expect(manager.handlers[second]).toBeNull();
+    expect(manager.handlers[1]).toBeNull();
 
     manager.eject(third);
 
     expect(manager.handlers).toHaveLength(1);
-    expect(manager.handlers[first]).not.toBeNull();
+    expect(manager.handlers[0]).not.toBeNull();
+  });
+
+  it('ejects an interceptor when its ID is passed as a numeric string', () => {
+    const manager = new InterceptorManager();
+    const id = manager.use(() => {});
+
+    manager.eject(String(id));
+
+    expect(manager.handlers).toHaveLength(0);
+  });
+
+  it('uses string IDs rather than array indices after compaction', () => {
+    const manager = new InterceptorManager();
+    const staleId = manager.use(() => {});
+
+    manager.eject(staleId);
+
+    const active = () => {};
+    const activeId = manager.use(active);
+
+    expect(activeId).not.toBe(0);
+    expect(manager.handlers[0].fulfilled).toBe(active);
+
+    manager.eject(String(staleId));
+
+    expect(manager.handlers[0].fulfilled).toBe(active);
+
+    manager.eject(String(activeId));
+    manager.eject(String(activeId));
+
+    expect(manager.handlers).toHaveLength(0);
+
+    const next = () => {};
+    manager.use(next);
+    manager.eject(String(activeId));
+
+    expect(manager.handlers).toHaveLength(1);
+    expect(manager.handlers[0].fulfilled).toBe(next);
+  });
+
+  it.each([
+    undefined,
+    null,
+    '',
+    '00',
+    ' 0',
+    '0 ',
+    '+0',
+    '-0',
+    '0.0',
+    '0e0',
+    '0x0',
+    'NaN',
+    'Infinity',
+    'not-an-id',
+    'constructor',
+    '__proto__',
+    '1',
+    1,
+    false,
+    true,
+  ])('ignores an unknown or noncanonical ID: %s', (id) => {
+    const manager = new InterceptorManager();
+    const handler = () => {};
+
+    manager.use(handler);
+    manager.eject(id);
+
+    expect(manager.handlers).toHaveLength(1);
+    expect(manager.handlers[0].fulfilled).toBe(handler);
   });
 
   it('does not reuse an ejected interceptor ID after trimming its handler', () => {

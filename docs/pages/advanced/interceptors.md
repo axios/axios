@@ -185,5 +185,5 @@ You may add multiple interceptors to the same request or response. The following
   - once caught, another following fulfil-interceptor is called again (just like in a promise chain).
 
 ::: tip
-To gain an in-depth understanding of how interceptors work, you can read the test cases over [here](https://github.com/axios/axios/blob/v1.x/test/specs/interceptors.spec.js).
+To gain an in-depth understanding of how interceptors work, you can read the test cases over [here](https://github.com/axios/axios/blob/v1.x/tests/browser/interceptors.browser.test.js).
 :::

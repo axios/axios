@@ -20,6 +20,26 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Interceptor IDs and nullish handler recovery
+
+- **Change:** Restore numeric-string interceptor ID compatibility and clarify interceptor storage behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11139 and #11114; nullish handler recovery was implemented in #11118.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the numeric value returned by `use()` is an opaque interceptor ID that must be passed back to `eject()` unchanged, rather than used as an index into the handlers array. Recommend `clear()` and `eject()` for managing interceptors. If the handlers array is replaced with `null` or `undefined`, the chain is skipped and the next `use()` automatically restores an array. Unknown IDs and repeated ejections are no-ops; stale IDs cannot remove newly registered handlers after compaction or clearing.
+- **Examples:** Keep the existing `eject(myInterceptor)` example using the original numeric ID.
+- **Notes:** Canonical numeric-string IDs are accepted for historical runtime compatibility; this does not expand the documented numeric-ID API or TypeScript declarations. Interceptor execution order is unchanged.
+
+### Fetch response size errors
+
+- **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.
+- **Source:** #11179; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch response size errors.
+- **Status:** Pending.
+- **Docs targets:** Fetch adapter and `maxContentLength` guidance; TypeScript/custom fetch examples.
+- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When response-body streaming is supported and the response has a body, custom `env.Response` implementations must accept a tracked `ReadableStream<Uint8Array>` if `maxContentLength` is enabled (a numeric value greater than `-1`), `onDownloadProgress` is set, or `responseType` is `'stream'` or `'response'` with cancellation/timeout tracking. An enabled size limit requires stream support even without a progress callback. The constructor signature retains its legacy body type for compatibility; assignability to `env.Response` alone does not establish support for these runtime stream inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
+- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`, and a custom Response wrapper that forwards tracked streams unchanged when used with `maxContentLength` or `onDownloadProgress`.
+- **Notes:** Do not imply the limit, default adapter, genuine network-error behavior, or accepted constructor types change. No migration is required.
+
 ### Runtime configuration prototype hardening
 
 - **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.

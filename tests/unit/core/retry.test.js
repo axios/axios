@@ -93,6 +93,48 @@ describe('helpers:retry', function () {
   });
 
   describe('attachRetry interceptor integration', function () {
+    it('should retry a GET when a custom adapter omits method from the error config', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = { ...config };
+          delete error.config.method;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local');
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 2);
+    });
+
+    it('should retry a dispatched GET despite an inherited method on the error config', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = Object.assign(Object.create({ method: 'post' }), config);
+          delete error.config.method;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local');
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 2);
+    });
+
     it('should not retry an error whose config inherits its request method', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

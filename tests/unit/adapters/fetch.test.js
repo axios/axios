@@ -2182,6 +2182,37 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       removeAbortListener.mockRestore();
     });
 
+    it('cancels a stalled fetch ndjson read when returned', async () => {
+      let canceled = false;
+      const response = await fetchAxios.get('/ndjson-stalled', {
+        responseType: 'ndjson',
+        env: {
+          async fetch() {
+            return new Response(new ReadableStream({
+              cancel() {
+                canceled = true;
+              },
+            }));
+          },
+        },
+      });
+
+      const pendingRead = response.data.next();
+      let timeout;
+      try {
+        await Promise.race([
+          response.data.return(),
+          new Promise((_, reject) => {
+            timeout = setTimeout(() => reject(new Error('NDJSON return stalled')), 1000);
+          }),
+        ]);
+        await pendingRead;
+        assert.strictEqual(canceled, true);
+      } finally {
+        clearTimeout(timeout);
+      }
+    });
+
     it('wraps fetch ndjson parse failures as AxiosErrors', async () => {
       const response = await fetchAxios.get('/invalid-ndjson', {
         responseType: 'ndjson',

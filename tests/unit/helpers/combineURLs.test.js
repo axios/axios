@@ -46,4 +46,15 @@ describe('helpers::combineURLs', () => {
   it('should preserve relative URL without leading slash when base is missing', () => {
     expect(combineURLs(undefined, 'users')).toBe('users');
   });
+
+  it('should return empty string for slash-only relative URL when base is missing', () => {
+    expect(combineURLs(undefined, '/')).toBe('');
+    expect(combineURLs(null, '//')).toBe('');
+    expect(combineURLs('', '///')).toBe('');
+  });
+
+  it('should return empty string for non-string baseURL with no relativeURL', () => {
+    expect(combineURLs(123, '')).toBe('');
+    expect(combineURLs(true, null)).toBe('');
+  });
 });

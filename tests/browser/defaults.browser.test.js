@@ -205,6 +205,27 @@ describe('defaults (vitest browser)', () => {
     await finishRequest(request, promise);
   });
 
+  it('should send a literal Link header alongside method defaults', async () => {
+    const link = '<https://example.com/resource>; rel="type"';
+    const instance = axios.create({
+      headers: {
+        post: { 'X-Post': 'post' },
+        get: { Authorization: 'Bearer GET_ONLY' },
+      },
+    });
+    const promise = instance.post('/foo', {}, { headers: { Link: link } });
+    const request = getLastRequest();
+    const headers = new AxiosHeaders(request.requestHeaders);
+
+    expect(headers.get('Link')).toBe(link);
+    expect(headers.get('X-Post')).toBe('post');
+    expect(headers.has('Authorization')).toBe(false);
+    expect(headers.has('post')).toBe(false);
+    expect(headers.has('get')).toBe(false);
+
+    await finishRequest(request, promise);
+  });
+
   it('should use header config', async () => {
     const instance = axios.create({
       headers: {

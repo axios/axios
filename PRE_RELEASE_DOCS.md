@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Literal method-named request headers
+
+- **Change:** Restore literal headers such as `Link` while preserving object-valued common and method-specific defaults.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Literal method-named headers; #11156 and #11096.
+- **Status:** Pending.
+- **Docs targets:** README and docs site request-header and configuration-defaults guidance.
+- **Required content:** Scalar and array values under `common` or a method name are literal headers. Object values remain defaults buckets, including class instances and `AxiosHeaders` from another package build. Only the matching method bucket applies; buckets are never transmitted as literal headers. Existing null/undefined/false header omission remains intact.
+- **Examples:** Show `headers: { Link: '<https://example.com/resource>; rel="type"' }`. When an object such as a Date or Buffer is intended as a literal value under a reserved name, explicitly convert it to a string first.
+- **Notes:** This is a compatibility-preserving fix with no new options or type declarations. Do not describe arbitrary object-valued method keys as literal headers.
+
 ### Runtime configuration prototype hardening
 
 - **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.

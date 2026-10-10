@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-## Performance Improvements
-
-- **Request configuration:** Reduced config merge overhead by avoiding redundant plain-object prototype walks, indexing case-insensitive header keys, and reusing stateless merge strategies.
-
 ## Features
 
 - **Proxy bypass CIDR ranges:** Added IPv4 and IPv6 CIDR matching to `NO_PROXY`/`no_proxy`, including bracketed IPv6 and IPv4-mapped IPv6 normalization, while malformed ranges fail closed. A `/0` entry bypasses the proxy for its entire address family.
@@ -46,3 +42,5 @@
 ## Maintenance
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
+
+- **Request configuration merge performance:** Reduced the CPU cost of `mergeConfig`, most noticeably for requests with many headers, by avoiding redundant plain-object prototype walks, indexing lowercase keys during case-insensitive header merges, and building the stateless merge-strategy table once at module load instead of on every call. Merge results, prototype-pollution guards, and the public API and types are unchanged. The returned config's non-enumerable `hasOwnProperty` is now captured at module load, and stateful Proxy traps on config objects observe fewer prototype lookups. (**[#11208](https://github.com/axios/axios/pull/11208)**, closes **[#11207](https://github.com/axios/axios/issues/11207)**)

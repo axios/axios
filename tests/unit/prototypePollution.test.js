@@ -63,6 +63,8 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.headers;
     delete Object.prototype.createConnection;
     delete Object.prototype.customNested;
+    delete Object.prototype.common;
+    delete Object.prototype.propfind;
   });
 
   describe('utils.merge', () => {
@@ -1409,6 +1411,92 @@ describe('Prototype Pollution Protection', () => {
         await stop(server);
       }
     }, 10000);
+
+    // Header flattening reads `headers.common` and `headers[config.method]`
+    // directly, which walks the prototype chain. A polluted
+    // Object.prototype.<method> object would surface as a method-scoped header
+    // bucket and be merged into the request headers.
+    it('should not merge a method-scoped headers bucket from Object.prototype', async () => {
+      Object.prototype.propfind = { 'X-Injected': 'yes' };
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: config.headers.get('X-Injected'),
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      const response = await instance.request({ url: '/method-bucket', method: 'propfind' });
+
+      assert.strictEqual(response.data, undefined);
+    });
+
+    it('should not merge a common headers bucket from Object.prototype', async () => {
+      Object.prototype.common = { 'X-Injected': 'yes' };
+
+      // An instance whose defaults carry no own `common` bucket, so the
+      // flattening read is not masked by a defaults entry.
+      const instance = new axios.Axios({
+        headers: { get: {} },
+        adapter: async (config) => ({
+          data: config.headers.get('X-Injected'),
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      const response = await instance.get('/common-bucket');
+
+      assert.strictEqual(response.data, undefined);
+    });
+
+    it('should still merge own method-scoped and common headers buckets', async () => {
+      const instance = axios.create({
+        headers: { common: { 'X-Common': 'common' } },
+        adapter: async (config) => ({
+          data: config.headers.toJSON(),
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      const response = await instance.get('/own-buckets', {
+        headers: { get: { 'X-Method': 'method' } },
+      });
+
+      assert.strictEqual(response.data['X-Common'], 'common');
+      assert.strictEqual(response.data['X-Method'], 'method');
+    });
+
+    it('should still merge header buckets inherited from an application prototype', async () => {
+      // getSafeProp accepts members inherited from a prototype below the
+      // Object.prototype boundary, so header buckets an application shares
+      // through a template keep working. A bare own-property check would drop
+      // them, so this pins the distinction from the two cases above.
+      const template = { common: { 'X-From-Template': 'kept' } };
+      const headers = Object.assign(Object.create(template), { get: {} });
+
+      const instance = axios.create({
+        adapter: async (config) => ({
+          data: config.headers.toJSON(),
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+      });
+
+      const response = await instance.request({ url: '/template-bucket', headers });
+
+      assert.strictEqual(response.data['X-From-Template'], 'kept');
+    });
   });
 
   // utils.merge previously read `result[targetKey]` directly, which walks the

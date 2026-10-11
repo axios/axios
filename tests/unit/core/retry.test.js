@@ -468,6 +468,67 @@ describe('helpers:retry', function () {
       }
     });
 
+    it('should not retry a dispatched stream when the error config omits data', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        for await (const _chunk of config.data) {
+          // Consume the one-shot body as a real adapter would.
+        }
+
+        const errorConfig = { ...config };
+        delete errorConfig.data;
+
+        const err = new Error('Service Unavailable');
+        err.config = errorConfig;
+        err.response = { status: 503, headers: {} };
+        throw err;
+      };
+
+      try {
+        await instance.put('http://test.local', Readable.from(['payload']));
+        assert.fail('Should have failed');
+      } catch (err) {
+        assert.strictEqual(attempts, 1);
+        assert.strictEqual(err.response.status, 503);
+      }
+    });
+
+    it('should honor the dispatched signal when the error config omits it', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 250, jitter: false, retries: 1 });
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        const errorConfig = { ...config };
+        delete errorConfig.signal;
+
+        const err = new Error('Service Unavailable');
+        err.config = errorConfig;
+        err.response = { status: 503, headers: {} };
+        throw err;
+      };
+
+      const controller = new AbortController();
+      const startedAt = Date.now();
+      const request = instance.get('http://test.local', { signal: controller.signal });
+
+      setTimeout(() => controller.abort(), 25);
+
+      try {
+        await request;
+        assert.fail('Should have failed');
+      } catch (err) {
+        assert.strictEqual(attempts, 1);
+        assert.strictEqual(err.code, 'ERR_CANCELED');
+        assert(Date.now() - startedAt < 200);
+      }
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

@@ -1,7 +1,35 @@
-import {describe, it, expect} from 'vitest';
+import {describe, it, expect, vi, afterEach} from 'vitest';
 import fromNdjson from '../../../lib/helpers/fromNdjson.js';
 
 describe('fromNdjson', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('parses string chunks without a global TextDecoder', async () => {
+    vi.stubGlobal('TextDecoder', undefined);
+
+    async function* chunks() {
+      yield '{"value":1}\n{"val';
+      yield 'ue":2}';
+    }
+
+    await expect(Array.fromAsync(fromNdjson(chunks()))).resolves.toEqual([{value: 1}, {value: 2}]);
+  });
+
+  it('rejects binary chunks with ERR_NOT_SUPPORT when TextDecoder is unavailable', async () => {
+    const chunk = new TextEncoder().encode('{"value":1}\n');
+    vi.stubGlobal('TextDecoder', undefined);
+
+    async function* chunks() {
+      yield chunk;
+    }
+
+    await expect(Array.fromAsync(fromNdjson(chunks()))).rejects.toMatchObject({
+      code: 'ERR_NOT_SUPPORT'
+    });
+  });
+
   it('parses records across chunks and supports UTF-8', async () => {
     async function* chunks() {
       yield new TextEncoder().encode('{"message":"caf');

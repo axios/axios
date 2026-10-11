@@ -17,7 +17,7 @@ describe('fromNdjson', () => {
     await expect(Array.fromAsync(fromNdjson(chunks()))).resolves.toEqual([{value: 1}, {value: 2}]);
   });
 
-  it('rejects binary chunks with ERR_NOT_SUPPORT when TextDecoder is unavailable', async () => {
+  it('rejects binary chunks with a TypeError when TextDecoder is unavailable', async () => {
     const chunk = new TextEncoder().encode('{"value":1}\n');
     vi.stubGlobal('TextDecoder', undefined);
 
@@ -25,9 +25,9 @@ describe('fromNdjson', () => {
       yield chunk;
     }
 
-    await expect(Array.fromAsync(fromNdjson(chunks()))).rejects.toMatchObject({
-      code: 'ERR_NOT_SUPPORT'
-    });
+    await expect(Array.fromAsync(fromNdjson(chunks()))).rejects.toThrow(
+      new TypeError('NDJSON responses with binary chunks require TextDecoder')
+    );
   });
 
   it('parses records across chunks and supports UTF-8', async () => {

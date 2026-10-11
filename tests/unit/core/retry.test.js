@@ -614,6 +614,68 @@ describe('helpers:retry', function () {
       assert.deepStrictEqual(calls, ['http://test.local/a', 'http://test.local/b']);
     });
 
+    it('should not retry when concurrent requests with different headers share an error object', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const shared = new Error('Service Unavailable');
+      shared.response = { status: 503, headers: {} };
+
+      const calls = [];
+      let releaseFirst;
+      const firstRejected = new Promise((resolve) => {
+        releaseFirst = resolve;
+      });
+
+      instance.defaults.adapter = async (config) => {
+        const authorization = config.headers.get('Authorization');
+        calls.push(authorization);
+        shared.config = config;
+
+        if (authorization === 'Bearer-A') {
+          await firstRejected;
+        } else {
+          releaseFirst();
+        }
+
+        throw shared;
+      };
+
+      const results = await Promise.allSettled([
+        instance.get('http://test.local', { headers: { Authorization: 'Bearer-A' } }),
+        instance.get('http://test.local', { headers: { Authorization: 'Bearer-B' } }),
+      ]);
+
+      assert.deepStrictEqual(results.map((result) => result.status), ['rejected', 'rejected']);
+      assert.deepStrictEqual(calls, ['Bearer-A', 'Bearer-B']);
+    });
+
+    it('should keep retrying when one request repeatedly rejects with the same error object', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 2 });
+
+      const shared = new Error('Service Unavailable');
+      shared.response = { status: 503, headers: {} };
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts < 3) {
+          shared.config = config;
+          throw shared;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local', {
+        headers: { Authorization: 'Bearer-A' },
+      });
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 3);
+    });
+
     it('should not retry when concurrent requests reject with the same error object', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

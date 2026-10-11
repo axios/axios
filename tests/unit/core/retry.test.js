@@ -553,6 +553,67 @@ describe('helpers:retry', function () {
       assert.strictEqual(attempts, 2);
     });
 
+    it('should retry with the dispatched method when the error config omits it', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const methods = [];
+      instance.defaults.adapter = async (config) => {
+        methods.push(config.method);
+        if (methods.length === 1) {
+          const errorConfig = { ...config };
+          delete errorConfig.method;
+
+          const err = new Error('Service Unavailable');
+          err.config = errorConfig;
+          err.response = { status: 503, headers: {} };
+          throw err;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.put('http://test.local', { value: 1 });
+
+      assert.strictEqual(response.data, 'success');
+      assert.deepStrictEqual(methods, ['put', 'put']);
+    });
+
+    it('should not retry when concurrent requests to different URLs share an error object', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const shared = new Error('Service Unavailable');
+      shared.response = { status: 503, headers: {} };
+
+      const calls = [];
+      let releaseFirst;
+      const firstRejected = new Promise((resolve) => {
+        releaseFirst = resolve;
+      });
+
+      instance.defaults.adapter = async (config) => {
+        calls.push(config.url);
+        shared.config = config;
+
+        if (config.url === 'http://test.local/a') {
+          await firstRejected;
+        } else {
+          releaseFirst();
+        }
+
+        throw shared;
+      };
+
+      const results = await Promise.allSettled([
+        instance.get('http://test.local/a'),
+        instance.get('http://test.local/b'),
+      ]);
+
+      assert.deepStrictEqual(results.map((result) => result.status), ['rejected', 'rejected']);
+      assert.deepStrictEqual(calls, ['http://test.local/a', 'http://test.local/b']);
+    });
+
     it('should not retry when concurrent requests reject with the same error object', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

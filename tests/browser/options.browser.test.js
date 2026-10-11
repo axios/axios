@@ -60,11 +60,26 @@ class MockXMLHttpRequest {
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const startRequest = (...args) => {
-  const promise = axios(...args);
-  const request = requests.at(-1);
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  expect(request).toBeDefined();
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const startRequest = async (...args) => {
+  const promise = axios(...args);
+  const request = await waitForRequest();
 
   return { request, promise };
 };
@@ -87,7 +102,7 @@ describe('options (vitest browser)', () => {
   });
 
   it('should default method to get', async () => {
-    const { request, promise } = startRequest('/foo');
+    const { request, promise } = await startRequest('/foo');
 
     expect(request.method).toBe('GET');
 
@@ -95,7 +110,7 @@ describe('options (vitest browser)', () => {
   });
 
   it('should accept headers', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
       },
@@ -107,7 +122,7 @@ describe('options (vitest browser)', () => {
   });
 
   it('should accept params', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       params: {
         foo: 123,
         bar: 456,
@@ -120,7 +135,7 @@ describe('options (vitest browser)', () => {
   });
 
   it('should allow overriding default headers', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       headers: {
         Accept: 'foo/bar',
       },
@@ -137,9 +152,7 @@ describe('options (vitest browser)', () => {
     });
 
     const promise = instance.get('/foo');
-    const request = requests.at(-1);
-
-    expect(request).toBeDefined();
+    const request = await waitForRequest();
     expect(request.url).toBe('http://test.com/foo');
 
     await flushSuccess(request, promise);
@@ -152,9 +165,7 @@ describe('options (vitest browser)', () => {
     });
 
     const promise = instance.get('/foo');
-    const request = requests.at(-1);
-
-    expect(request).toBeDefined();
+    const request = await waitForRequest();
     expect(warnSpy).toHaveBeenCalledWith('baseUrl is likely a misspelling of baseURL');
     expect(request.url).toBe('/foo');
 
@@ -167,9 +178,7 @@ describe('options (vitest browser)', () => {
     });
 
     const promise = instance.get('http://someotherurl.com/');
-    const request = requests.at(-1);
-
-    expect(request).toBeDefined();
+    const request = await waitForRequest();
     expect(request.url).toBe('http://someotherurl.com/');
 
     await flushSuccess(request, promise);
@@ -182,9 +191,7 @@ describe('options (vitest browser)', () => {
     });
 
     const promise = instance.get('http://someotherurl.com/');
-    const request = requests.at(-1);
-
-    expect(request).toBeDefined();
+    const request = await waitForRequest();
     expect(request.url).toBe('http://someurl.com/http://someotherurl.com/');
 
     await flushSuccess(request, promise);

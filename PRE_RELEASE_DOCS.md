@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### XHR adapter async XSRF cookie reads
+
+- **Change:** Read the XSRF cookie via the Cookie Store API when available, with `document.cookie` fallback.
+- **Source:** #10826; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, XHR adapter async XSRF cookie reads.
+- **Status:** Skipped.
+- **Docs targets:** None.
+- **Required content:** No user-facing documentation update needed. Detection is automatic with no new config option, request/response shapes are unchanged, and behavior in browsers without Cookie Store support is identical.
+- **Examples:** None.
+- **Notes:** Internal timing change only; XSRF header semantics preserved.
+
 ### Interceptor IDs and nullish handler recovery
 
 - **Change:** Restore numeric-string interceptor ID compatibility and clarify interceptor storage behavior.

@@ -60,12 +60,25 @@ class MockXMLHttpRequest {
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const getLastRequest = () => {
-  const request = requests.at(-1);
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  expect(request).toBeDefined();
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
 
-  return request;
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const getLastRequest = async () => {
+  return waitForRequest();
 };
 
 const finishRequest = async (request, promise) => {
@@ -107,7 +120,7 @@ describe('headers (vitest browser)', () => {
   it('should default common headers', async () => {
     const headers = axios.defaults.headers.common;
     const promise = axios('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     for (const key in headers) {
       if (Object.prototype.hasOwnProperty.call(headers, key)) {
@@ -120,7 +133,7 @@ describe('headers (vitest browser)', () => {
 
   it('should preserve __proto__ in raw XHR response headers', async () => {
     const promise = axios.get('/response-headers', { adapter: 'xhr' });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.getAllResponseHeaders = () =>
       '__proto__: first\r\n__PROTO__: second\r\nX-Other: other\r\n';
@@ -150,7 +163,7 @@ describe('headers (vitest browser)', () => {
       },
     });
     await new Promise((resolve) => setTimeout(resolve));
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders.oprtName).toBe(encodeURIComponent('请求用户'));
 
@@ -164,7 +177,7 @@ describe('headers (vitest browser)', () => {
         oprtName: '请求用户',
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders.oprtName).toBe('');
 
@@ -176,7 +189,7 @@ describe('headers (vitest browser)', () => {
     instance.defaults.headers.common['Content-Type'] = 'application/custom';
 
     const promise = instance.patch('/foo', '');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders['Content-Type']).toBe('application/custom');
 
@@ -186,7 +199,7 @@ describe('headers (vitest browser)', () => {
   it('should add extra headers for post', async () => {
     const headers = AxiosHeaders.from(axios.defaults.headers.common).toJSON();
     const promise = axios.post('/foo', 'fizz=buzz');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     for (const key in headers) {
       expect(request.requestHeaders[key]).toBe(headers[key]);
@@ -215,7 +228,7 @@ describe('headers (vitest browser)', () => {
         },
       }
     );
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
     testHeaderValue(request.requestHeaders, 'x-header-a', undefined);
@@ -230,7 +243,7 @@ describe('headers (vitest browser)', () => {
       firstName: 'foo',
       lastName: 'bar',
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     testHeaderValue(request.requestHeaders, 'Content-Type', 'application/json');
 
@@ -239,7 +252,7 @@ describe('headers (vitest browser)', () => {
 
   it('should remove content-type if data is empty', async () => {
     const promise = axios.post('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     testHeaderValue(request.requestHeaders, 'Content-Type', undefined);
 
@@ -248,7 +261,7 @@ describe('headers (vitest browser)', () => {
 
   it('should preserve content-type if data is false', async () => {
     const promise = axios.post('/foo', false);
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     testHeaderValue(request.requestHeaders, 'Content-Type', 'application/x-www-form-urlencoded');
 
@@ -269,7 +282,7 @@ describe('headers (vitest browser)', () => {
         xBaz: 'baz',
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders.xFoo).toBe('foo2');
     expect(request.requestHeaders.xBar).toBe('bar');

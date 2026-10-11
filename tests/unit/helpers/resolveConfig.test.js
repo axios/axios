@@ -17,7 +17,7 @@ class ReactNativeFormData {
 }
 
 describe('helpers::resolveConfig', () => {
-  it('should ignore FormData getHeaders inherited only from Object.prototype', () => {
+  it('should ignore FormData getHeaders inherited only from Object.prototype', async () => {
     if (typeof globalThis.FormData !== 'function') {
       return;
     }
@@ -29,7 +29,7 @@ describe('helpers::resolveConfig', () => {
     };
 
     try {
-      const config = resolveConfig({
+      const config = await resolveConfig({
         url: '/upload',
         data: new globalThis.FormData(),
       });
@@ -41,9 +41,9 @@ describe('helpers::resolveConfig', () => {
     }
   });
 
-  it('clears Content-Type for React Native FormData', () => {
+  it('clears Content-Type for React Native FormData', async () => {
     const data = new ReactNativeFormData();
-    const config = resolveConfig({
+    const config = await resolveConfig({
       url: '/upload',
       data,
       headers: {
@@ -59,7 +59,7 @@ describe('helpers::resolveConfig', () => {
     );
   });
 
-  it('should ignore inherited nested auth fields', () => {
+  it('should ignore inherited nested auth fields', async () => {
     Object.defineProperty(Object.prototype, 'username', {
       value: 'inherited-user',
       configurable: true,
@@ -70,7 +70,7 @@ describe('helpers::resolveConfig', () => {
     });
 
     try {
-      const config = resolveConfig({
+      const config = await resolveConfig({
         url: '/foo',
         auth: {},
       });
@@ -82,9 +82,9 @@ describe('helpers::resolveConfig', () => {
     }
   });
 
-  it('should wrap invalid auth encoding as AxiosError', () => {
-    assert.throws(
-      () =>
+  it('should wrap invalid auth encoding as AxiosError', async () => {
+    await assert.rejects(
+      async () =>
         resolveConfig({
           url: '/foo',
           auth: {
@@ -100,11 +100,11 @@ describe('helpers::resolveConfig', () => {
     );
   });
 
-  it('should ignore null form-data headers with content-only policy', () => {
+  it('should ignore null form-data headers with content-only policy', async () => {
     const data = new FormData();
     data.getHeaders = () => null;
 
-    const config = resolveConfig({
+    const config = await resolveConfig({
       url: '/upload',
       data,
       formDataHeaderPolicy: 'content-only',
@@ -116,7 +116,7 @@ describe('helpers::resolveConfig', () => {
     assert.strictEqual(config.headers.get('X-Test'), 'ok');
   });
 
-  it('should ignore inherited nested serializer fields', () => {
+  it('should ignore inherited nested serializer fields', async () => {
     let serializeInvoked = false;
     let encodeInvoked = false;
 
@@ -136,7 +136,7 @@ describe('helpers::resolveConfig', () => {
     });
 
     try {
-      const config = resolveConfig({
+      const config = await resolveConfig({
         url: '/foo',
         params: { value: 'a b' },
         paramsSerializer: {},

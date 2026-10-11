@@ -67,12 +67,25 @@ class MockXMLHttpRequest {
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const getLastRequest = () => {
-  const request = requests.at(-1);
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  expect(request).toBeDefined();
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
 
-  return request;
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const getLastRequest = async () => {
+  return waitForRequest();
 };
 
 describe('transform (vitest browser)', () => {
@@ -88,7 +101,7 @@ describe('transform (vitest browser)', () => {
 
   it('should transform JSON to string', async () => {
     const responsePromise = axios.post('/foo', { foo: 'bar' });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.params).toBe('{"foo":"bar"}');
 
@@ -98,7 +111,7 @@ describe('transform (vitest browser)', () => {
 
   it('should transform string to JSON', async () => {
     const responsePromise = axios('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.respondWith({
       status: 200,
@@ -117,7 +130,7 @@ describe('transform (vitest browser)', () => {
       responseType: 'json',
       transitional: { silentJSONParsing: false },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.respondWith({
       status: 200,
@@ -135,7 +148,7 @@ describe('transform (vitest browser)', () => {
     const responsePromise = axios.post('/foo', 123, {
       headers: { 'Content-Type': 'application/json' },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.respondWith({
       status: 200,
@@ -156,7 +169,7 @@ describe('transform (vitest browser)', () => {
         forcedJSONParsing: false,
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
     const rawData = '{"x":1}';
 
     request.respondWith({
@@ -180,7 +193,7 @@ describe('transform (vitest browser)', () => {
         },
       }
     );
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(typeof request.params).toBe('object');
 
@@ -198,7 +211,7 @@ describe('transform (vitest browser)', () => {
         }),
       }
     );
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.params).toBe('{"foo":"baz"}');
 
@@ -214,7 +227,7 @@ describe('transform (vitest browser)', () => {
         return data;
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders['X-Authorization']).toBe(token);
 
@@ -235,7 +248,7 @@ describe('transform (vitest browser)', () => {
         ],
       }
     );
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded');
 
@@ -249,7 +262,7 @@ describe('transform (vitest browser)', () => {
       responseType: 'json',
     });
     const responsePromise = instance.get('my/endpoint', { responseType: 'json' });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.respondWith({
       status: 200,

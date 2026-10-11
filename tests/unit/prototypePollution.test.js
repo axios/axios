@@ -751,11 +751,11 @@ describe('Prototype Pollution Protection', () => {
   });
 
   describe('resolveConfig params and paramsSerializer gadget', () => {
-    it('should not inherit polluted params via resolveConfig', () => {
+    it('should not inherit polluted params via resolveConfig', async () => {
       Object.prototype.params = { injected: 'yes' };
 
       try {
-        const resolved = resolveConfig({ url: '/api', method: 'get' });
+        const resolved = await resolveConfig({ url: '/api', method: 'get' });
 
         assert.ok(
           resolved.url.indexOf('injected') === -1,
@@ -767,7 +767,7 @@ describe('Prototype Pollution Protection', () => {
       }
     });
 
-    it('should not invoke polluted paramsSerializer via resolveConfig', () => {
+    it('should not invoke polluted paramsSerializer via resolveConfig', async () => {
       let serializerInvoked = false;
       Object.prototype.paramsSerializer = function polluted() {
         serializerInvoked = true;
@@ -775,7 +775,7 @@ describe('Prototype Pollution Protection', () => {
       };
 
       try {
-        const resolved = resolveConfig({ url: '/api', method: 'get', params: { legit: 'true' } });
+        const resolved = await resolveConfig({ url: '/api', method: 'get', params: { legit: 'true' } });
 
         assert.strictEqual(
           serializerInvoked,

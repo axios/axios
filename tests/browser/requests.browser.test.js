@@ -111,10 +111,26 @@ describe('native XHR scheme casing', () => {
   });
 });
 
-const startRequest = (...args) => {
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const startRequest = async (...args) => {
   const promise = axios(...args);
-  const request = requests.at(-1);
-  expect(request).toBeDefined();
+  const request = await waitForRequest();
 
   return { request, promise };
 };
@@ -137,7 +153,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should treat single string arg as url', async () => {
-    const { request, promise } = startRequest('/foo');
+    const { request, promise } = await startRequest('/foo');
 
     expect(request.url).toBe('/foo');
     expect(request.method).toBe('GET');
@@ -146,7 +162,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should treat method value as lowercase string', async () => {
-    const { request, promise } = startRequest({
+    const { request, promise } = await startRequest({
       url: '/foo',
       method: 'POST',
     });
@@ -158,7 +174,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should allow string arg as url, and config arg', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'post',
     });
 
@@ -169,7 +185,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should allow data', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'delete',
       data: { foo: 'bar' },
     });
@@ -180,7 +196,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should make an http request', async () => {
-    const { request, promise } = startRequest('/foo');
+    const { request, promise } = await startRequest('/foo');
 
     expect(request.url).toBe('/foo');
 
@@ -189,7 +205,7 @@ describe('requests (vitest browser)', () => {
 
   describe('timeouts', () => {
     it('should handle timeouts', async () => {
-      const { request, promise } = startRequest({
+      const { request, promise } = await startRequest({
         url: '/foo',
         timeout: 100,
       });
@@ -204,7 +220,7 @@ describe('requests (vitest browser)', () => {
 
     describe('transitional.clarifyTimeoutError', () => {
       it('should throw ETIMEDOUT instead of ECONNABORTED on request timeouts', async () => {
-        const { request, promise } = startRequest({
+        const { request, promise } = await startRequest({
           url: '/foo',
           timeout: 100,
           transitional: {
@@ -223,7 +239,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should reject on network errors', async () => {
-    const { request, promise } = startRequest('http://thisisnotaserver/foo');
+    const { request, promise } = await startRequest('http://thisisnotaserver/foo');
 
     request.failNetworkError();
 
@@ -259,7 +275,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should reject on abort', async () => {
-    const { request, promise } = startRequest('/foo');
+    const { request, promise } = await startRequest('/foo');
 
     request.abort();
 
@@ -272,7 +288,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should reject when validateStatus returns false', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       validateStatus(status) {
         return status !== 500;
       },
@@ -289,7 +305,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should resolve when validateStatus returns true', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       validateStatus(status) {
         return status === 500;
       },
@@ -301,7 +317,7 @@ describe('requests (vitest browser)', () => {
 
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1505389
   it('should reject when the response status is 0 (non-file protocol)', async () => {
-    const { request, promise } = startRequest('/foo');
+    const { request, promise } = await startRequest('/foo');
 
     request.respondWith({ status: 0 });
 
@@ -313,7 +329,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should resolve when the response status is 0 (file protocol)', async () => {
-    const { request, promise } = startRequest('file:///xxx');
+    const { request, promise } = await startRequest('file:///xxx');
 
     request.respondWith({
       status: 0,
@@ -324,7 +340,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should resolve when the response status is 0 for a relative file: read', async () => {
-    const { request, promise } = startRequest('data.json');
+    const { request, promise } = await startRequest('data.json');
 
     request.respondWith({
       status: 0,
@@ -335,7 +351,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should resolve when validateStatus is null', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       validateStatus: null,
     });
 
@@ -344,7 +360,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should resolve when validateStatus is undefined by default', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       validateStatus: undefined,
     });
 
@@ -354,7 +370,7 @@ describe('requests (vitest browser)', () => {
 
   // https://github.com/axios/axios/issues/6688
   it('should reject when validateStatus is undefined and the transitional option is disabled', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       validateStatus: undefined,
       transitional: { validateStatusUndefinedResolves: false },
     });
@@ -371,7 +387,7 @@ describe('requests (vitest browser)', () => {
 
   // https://github.com/axios/axios/issues/378
   it('should return JSON when rejecting', async () => {
-    const { request, promise } = startRequest(
+    const { request, promise } = await startRequest(
       '/api/account/signup',
       {
         username: null,
@@ -400,7 +416,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should make cross domain http request', async () => {
-    const { request, promise } = startRequest('www.someurl.com/foo', {
+    const { request, promise } = await startRequest('www.someurl.com/foo', {
       method: 'post',
     });
 
@@ -422,7 +438,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should supply correct response', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'post',
     });
 
@@ -444,7 +460,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should not modify the config url with relative baseURL', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       baseURL: '/api',
     });
 
@@ -463,7 +479,7 @@ describe('requests (vitest browser)', () => {
 
   it('should allow overriding Content-Type header case-insensitive', async () => {
     const contentType = 'application/vnd.myapp.type+json';
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'post',
       data: { prop: 'value' },
       headers: {
@@ -477,7 +493,7 @@ describe('requests (vitest browser)', () => {
 
   it('should support binary data as array buffer', async () => {
     const input = new Int8Array([1, 2]);
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'post',
       data: input.buffer,
     });
@@ -492,7 +508,7 @@ describe('requests (vitest browser)', () => {
 
   it('should support binary data as array buffer view', async () => {
     const input = new Int8Array([1, 2]);
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'post',
       data: input,
     });
@@ -517,7 +533,7 @@ describe('requests (vitest browser)', () => {
       return buff;
     };
 
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       responseType: 'arraybuffer',
     });
 
@@ -535,7 +551,7 @@ describe('requests (vitest browser)', () => {
     params.append('param1', 'value1');
     params.append('param2', 'value2');
 
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'post',
       data: params,
     });
@@ -549,7 +565,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should support HTTP protocol', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       method: 'get',
     });
 
@@ -558,7 +574,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it('should support HTTPS protocol', async () => {
-    const { request, promise } = startRequest('https://www.google.com', {
+    const { request, promise } = await startRequest('https://www.google.com', {
       method: 'get',
     });
 
@@ -581,7 +597,7 @@ describe('requests (vitest browser)', () => {
     'DaTa:text/plain,Hello',
   ])('should dispatch case-insensitive schemes without changing the URL: %s', async (url) => {
     const promise = axios.get(url, { adapter: 'xhr' });
-    const request = requests.at(-1);
+    const request = await waitForRequest();
 
     if (request) {
       request.respondWith({ status: 200, responseText: 'Hello' });

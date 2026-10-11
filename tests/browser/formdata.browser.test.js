@@ -62,12 +62,25 @@ class MockXMLHttpRequest {
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const getLastRequest = () => {
-  const request = requests.at(-1);
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  expect(request).toBeDefined();
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
 
-  return request;
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const getLastRequest = async () => {
+  return waitForRequest();
 };
 
 describe('formdata (vitest browser)', () => {
@@ -86,7 +99,7 @@ describe('formdata (vitest browser)', () => {
       a: 'foo',
       b: 'bar',
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.params).toBeInstanceOf(FormData);
     expect(Object.fromEntries(request.params.entries())).toEqual({

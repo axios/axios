@@ -66,12 +66,25 @@ const XSRF_COOKIE_NAME = 'CUSTOM-XSRF-TOKEN';
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const getLastRequest = () => {
-  const request = requests.at(-1);
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  expect(request).toBeDefined();
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
 
-  return request;
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const getLastRequest = async () => {
+  return waitForRequest();
 };
 
 const finishRequest = async (request, promise) => {
@@ -139,7 +152,7 @@ describe('defaults (vitest browser)', () => {
 
   it('should use global defaults config', async () => {
     const promise = axios('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('/foo');
 
@@ -150,7 +163,7 @@ describe('defaults (vitest browser)', () => {
     axios.defaults.baseURL = 'http://example.com/';
 
     const promise = axios('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('http://example.com/foo');
 
@@ -161,7 +174,7 @@ describe('defaults (vitest browser)', () => {
     const promise = axios('/foo', {
       baseURL: 'http://www.example.com',
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('http://www.example.com/foo');
 
@@ -176,7 +189,7 @@ describe('defaults (vitest browser)', () => {
     document.cookie = `${instance.defaults.xsrfCookieName}=foobarbaz`;
 
     const promise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders[instance.defaults.xsrfHeaderName]).toBe('foobarbaz');
 
@@ -187,7 +200,7 @@ describe('defaults (vitest browser)', () => {
     axios.defaults.headers.get['X-CUSTOM-HEADER'] = 'foo';
 
     const promise = axios.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders['X-CUSTOM-HEADER']).toBe('foo');
 
@@ -198,7 +211,7 @@ describe('defaults (vitest browser)', () => {
     axios.defaults.headers.post['X-CUSTOM-HEADER'] = 'foo';
 
     const promise = axios.post('/foo', {});
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders['X-CUSTOM-HEADER']).toBe('foo');
 
@@ -226,7 +239,7 @@ describe('defaults (vitest browser)', () => {
         'X-BAR-HEADER': 'barHeaderValue',
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.requestHeaders).toEqual(
       AxiosHeaders.concat(defaults.headers.common, defaults.headers.get, {
@@ -245,7 +258,7 @@ describe('defaults (vitest browser)', () => {
     const instance = axios.create();
 
     const promise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('http://example.org/foo');
 
@@ -257,7 +270,7 @@ describe('defaults (vitest browser)', () => {
     axios.defaults.baseURL = 'http://example.org/';
 
     const promise = instance.get('/foo/users');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('/foo/users');
 
@@ -271,7 +284,7 @@ describe('defaults (vitest browser)', () => {
     instance.defaults.baseURL = `/${slashes}bar/`;
 
     const promise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
     const elapsedTimeMs = performance.now() - start;
 
     expect(elapsedTimeMs).toBeLessThan(20);

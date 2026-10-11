@@ -77,7 +77,7 @@ const waitForRequest = async (timeoutMs = 1000) => {
       return request;
     }
 
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   throw new Error('Expected an XHR request to be sent');

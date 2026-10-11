@@ -62,11 +62,26 @@ class MockXMLHttpRequest {
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const startRequest = (...args) => {
-  const promise = axios(...args);
-  const request = requests.at(-1);
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  expect(request).toBeDefined();
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const startRequest = async (...args) => {
+  const promise = axios(...args);
+  const request = await waitForRequest();
 
   return { request, promise };
 };
@@ -88,7 +103,7 @@ describe('basicAuth (vitest browser)', () => {
   });
 
   it('should accept HTTP Basic auth with username/password', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       auth: {
         username: 'Aladdin',
         password: 'open sesame',
@@ -101,7 +116,7 @@ describe('basicAuth (vitest browser)', () => {
   });
 
   it('should accept HTTP Basic auth credentials without the password parameter', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       auth: {
         username: 'Aladdin',
       },
@@ -113,7 +128,7 @@ describe('basicAuth (vitest browser)', () => {
   });
 
   it('should accept HTTP Basic auth credentials with non-Latin1 characters in password', async () => {
-    const { request, promise } = startRequest('/foo', {
+    const { request, promise } = await startRequest('/foo', {
       auth: {
         username: 'Aladdin',
         password: 'open ßç£☃sesame',
@@ -136,7 +151,7 @@ describe('basicAuth (vitest browser)', () => {
     });
 
     try {
-      const { request, promise } = startRequest('/foo', {
+      const { request, promise } = await startRequest('/foo', {
         auth: {},
       });
 

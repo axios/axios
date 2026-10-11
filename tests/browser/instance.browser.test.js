@@ -60,12 +60,8 @@ class MockXMLHttpRequest {
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const getLastRequest = () => {
-  const request = requests.at(-1);
-
-  expect(request).toBeDefined();
-
-  return request;
+const getLastRequest = async () => {
+  return waitForRequest();
 };
 
 const flushSuccess = async (request, promise) => {
@@ -82,7 +78,7 @@ const waitForRequest = async (timeoutMs = 1000) => {
       return request;
     }
 
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   throw new Error('Expected an XHR request to be sent');
@@ -136,7 +132,7 @@ describe('instance (vitest browser)', () => {
   it('should make an http request without verb helper', async () => {
     const instance = axios.create();
     const promise = instance('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('/foo');
 
@@ -148,7 +144,7 @@ describe('instance (vitest browser)', () => {
       url: 'https://api.example.com',
     });
     const promise = instance('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('/foo');
 
@@ -158,7 +154,7 @@ describe('instance (vitest browser)', () => {
   it('should make an http request', async () => {
     const instance = axios.create();
     const promise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.url).toBe('/foo');
 
@@ -168,7 +164,7 @@ describe('instance (vitest browser)', () => {
   it('should use instance options', async () => {
     const instance = axios.create({ timeout: 1000 });
     const promise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.timeout).toBe(1000);
 

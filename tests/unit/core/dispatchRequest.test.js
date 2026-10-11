@@ -185,14 +185,14 @@ describe('core::dispatchRequest', () => {
       const config = baseConfig({
         method: 'post',
         data,
-        adapter: (adapterConfig) => {
+        adapter: async (adapterConfig) => {
           assert.strictEqual(
             adapterConfig.headers.getContentType(),
             'application/x-www-form-urlencoded',
             'dispatchRequest should apply the default POST Content-Type first'
           );
 
-          const resolvedConfig = resolveConfig(adapterConfig);
+          const resolvedConfig = await resolveConfig(adapterConfig);
 
           assert.strictEqual(resolvedConfig.data, data);
           assert.strictEqual(resolvedConfig.headers.getContentType(), undefined);

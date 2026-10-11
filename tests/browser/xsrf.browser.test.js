@@ -66,11 +66,27 @@ const clearXsrfCookie = () => {
   ).toUTCString()}; path=/`;
 };
 
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
 const sendRequest = async (url, config) => {
   const responsePromise = axios(url, config);
-  const request = requests.at(-1);
+  const request = await waitForRequest();
 
-  expect(request).toBeDefined();
   await responsePromise;
 
   return request;
@@ -115,12 +131,77 @@ describe('xsrf (vitest browser)', () => {
 
   it('should not read cookies at all if xsrfCookieName is null', async () => {
     const readSpy = vi.spyOn(cookies, 'read');
+    const readAsyncSpy = vi.spyOn(cookies, 'readAsync');
 
     await sendRequest('/foo', {
       xsrfCookieName: null,
     });
 
     expect(readSpy).not.toHaveBeenCalled();
+    expect(readAsyncSpy).not.toHaveBeenCalled();
+  });
+
+  describe('cookieStore', () => {
+    const COOKIE_STORE_VALUE = 'raw%2Fvalue+plus';
+    let originalDescriptor;
+
+    const mockCookieStore = (store) => {
+      Object.defineProperty(window, 'cookieStore', {
+        value: store,
+        configurable: true,
+      });
+    };
+
+    beforeEach(() => {
+      originalDescriptor = Object.getOwnPropertyDescriptor(window, 'cookieStore');
+    });
+
+    afterEach(() => {
+      if (originalDescriptor) {
+        Object.defineProperty(window, 'cookieStore', originalDescriptor);
+      } else {
+        delete window.cookieStore;
+      }
+    });
+
+    it('should read the xsrf value via cookieStore without decoding it', async () => {
+      // A distinct document.cookie value proves the async branch ran.
+      setXsrfCookie('fallback-value');
+
+      mockCookieStore({
+        get: (name) =>
+          Promise.resolve(
+            name === axios.defaults.xsrfCookieName
+              ? { name, value: COOKIE_STORE_VALUE }
+              : null
+          ),
+      });
+
+      const request = await sendRequest('/foo');
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe(COOKIE_STORE_VALUE);
+    });
+
+    it('should fall back to document.cookie when cookieStore.get rejects', async () => {
+      setXsrfCookie('fallback-value');
+
+      mockCookieStore({
+        get: () => Promise.reject(new Error('denied')),
+      });
+
+      const request = await sendRequest('/foo');
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('fallback-value');
+    });
+
+    it('should fall back to document.cookie when cookieStore is missing', async () => {
+      mockCookieStore(undefined);
+      setXsrfCookie('fallback-value');
+
+      const request = await sendRequest('/foo');
+
+      expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('fallback-value');
+    });
   });
 
   it('should not set xsrf header for cross origin', async () => {

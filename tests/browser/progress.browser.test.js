@@ -115,12 +115,25 @@ class MockXMLHttpRequest extends ProgressEventTarget {
 let requests = [];
 let OriginalXMLHttpRequest;
 
-const getLastRequest = () => {
-  const request = requests.at(-1);
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  expect(request).toBeDefined();
+const waitForRequest = async (timeoutMs = 5000) => {
+  const start = Date.now();
 
-  return request;
+  while (Date.now() - start < timeoutMs) {
+    const request = requests.at(-1);
+    if (request) {
+      return request;
+    }
+
+    await sleep(0);
+  }
+
+  throw new Error('Expected an XHR request to be sent');
+};
+
+const getLastRequest = async () => {
+  return waitForRequest();
 };
 
 describe('progress (vitest browser)', () => {
@@ -138,7 +151,7 @@ describe('progress (vitest browser)', () => {
   it('should add a download progress handler', async () => {
     const progressSpy = vi.fn();
     const responsePromise = axios('/foo', { onDownloadProgress: progressSpy });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.respondWith({
       status: 200,
@@ -152,7 +165,7 @@ describe('progress (vitest browser)', () => {
   it('should add an upload progress handler', async () => {
     const progressSpy = vi.fn();
     const responsePromise = axios('/foo', { onUploadProgress: progressSpy });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.getListenerCount('progress', 'upload')).toBe(1);
 
@@ -170,7 +183,7 @@ describe('progress (vitest browser)', () => {
       onDownloadProgress: downloadProgressSpy,
       onUploadProgress: uploadProgressSpy,
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(downloadProgressSpy).not.toHaveBeenCalled();
     expect(request.getListenerCount('progress', 'request')).toBe(1);
@@ -192,7 +205,7 @@ describe('progress (vitest browser)', () => {
     });
 
     const responsePromise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.respondWith({
       status: 200,
@@ -210,7 +223,7 @@ describe('progress (vitest browser)', () => {
     });
 
     const responsePromise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(request.getListenerCount('progress', 'upload')).toBe(1);
 
@@ -230,7 +243,7 @@ describe('progress (vitest browser)', () => {
     });
 
     const responsePromise = instance.get('/foo');
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     expect(downloadProgressSpy).not.toHaveBeenCalled();
     expect(request.getListenerCount('progress', 'request')).toBe(1);
@@ -258,7 +271,7 @@ describe('progress (vitest browser)', () => {
         lastLength = xhr.responseText.length;
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.responseText = 'AAAA';
     request.emit('progress', 'request', { loaded: 4 });
@@ -280,7 +293,7 @@ describe('progress (vitest browser)', () => {
         deliveries.push({ loaded, liveTarget: !!(event && event.currentTarget) });
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.responseText = 'AAAA';
     request.emit('progress', 'request', { loaded: 4 });
@@ -305,7 +318,7 @@ describe('progress (vitest browser)', () => {
     const responsePromise = axios('/foo', {
       onDownloadProgress: (event) => loaded.push(event.loaded),
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.responseText = 'AAAA';
     request.emit('progress', 'request', { loaded: 4 });
@@ -323,7 +336,7 @@ describe('progress (vitest browser)', () => {
         eventTypes.push(event.type);
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.respondWith({ status: 0 });
 
@@ -338,7 +351,7 @@ describe('progress (vitest browser)', () => {
         loaded.push(event.loaded);
       },
     });
-    const request = getLastRequest();
+    const request = await getLastRequest();
 
     request.emit('progress', 'upload', { loaded: 3, total: 7, lengthComputable: true });
     request.emit('progress', 'upload', { loaded: 5, total: 7, lengthComputable: true });
@@ -368,7 +381,7 @@ describe('progress (vitest browser)', () => {
           }
         },
       });
-      const request = getLastRequest();
+      const request = await getLastRequest();
 
       request.respondWith({ status: 200, responseText: 'complete' });
 
@@ -383,19 +396,21 @@ describe('progress (vitest browser)', () => {
   });
 
   it('should settle the request when the final progress listener throws', async () => {
-    // fake timers keep the rethrown listener error parked so it cannot fail the test run
+    // fake timers keep the rethrown listener error parked so it cannot fail the test run.
+    // They are enabled after the request is sent: getLastRequest polls with real timers.
+    let finalDeliveries = 0;
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ event }) => {
+        if (event && event.type === 'loadend') {
+          finalDeliveries += 1;
+          throw new Error('listener failure');
+        }
+      },
+    });
+    const request = await getLastRequest();
+
     vi.useFakeTimers();
     try {
-      let finalDeliveries = 0;
-      const responsePromise = axios('/foo', {
-        onDownloadProgress: ({ event }) => {
-          if (event && event.type === 'loadend') {
-            finalDeliveries += 1;
-            throw new Error('listener failure');
-          }
-        },
-      });
-      const request = getLastRequest();
 
       request.responseText = 'AAAA';
       request.emit('progress', 'request', { loaded: 4 });
@@ -411,15 +426,17 @@ describe('progress (vitest browser)', () => {
   });
 
   it('should keep the request reachable via event.target on throttle-deferred deliveries', async () => {
+    // Fake timers are enabled after the request is sent: getLastRequest polls with real timers.
+    const deliveries = [];
+    const responsePromise = axios('/foo', {
+      onDownloadProgress: ({ event }) => {
+        deliveries.push(event && event.target);
+      },
+    });
+    const request = await getLastRequest();
+
     vi.useFakeTimers();
     try {
-      const deliveries = [];
-      const responsePromise = axios('/foo', {
-        onDownloadProgress: ({ event }) => {
-          deliveries.push(event && event.target);
-        },
-      });
-      const request = getLastRequest();
 
       request.responseText = 'AAAA';
       request.emit('progress', 'request', { loaded: 4 });

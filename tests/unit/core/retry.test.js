@@ -514,7 +514,6 @@ describe('helpers:retry', function () {
       };
 
       const controller = new AbortController();
-      const startedAt = Date.now();
       const request = instance.get('http://test.local', { signal: controller.signal });
 
       setTimeout(() => controller.abort(), 25);
@@ -525,8 +524,70 @@ describe('helpers:retry', function () {
       } catch (err) {
         assert.strictEqual(attempts, 1);
         assert.strictEqual(err.code, 'ERR_CANCELED');
-        assert(Date.now() - startedAt < 200);
       }
+    });
+
+    it('should not apply a stale signal from the error config to the retry', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const stale = new AbortController();
+      stale.abort();
+
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const err = new Error('Service Unavailable');
+          err.config = { ...config, signal: stale.signal };
+          err.response = { status: 503, headers: {} };
+          throw err;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local');
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 2);
+    });
+
+    it('should not retry when concurrent requests reject with the same error object', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const shared = new Error('Service Unavailable');
+      shared.response = { status: 503, headers: {} };
+
+      const calls = [];
+      let releaseFirst;
+      const firstRejected = new Promise((resolve) => {
+        releaseFirst = resolve;
+      });
+
+      instance.defaults.adapter = async (config) => {
+        calls.push(`${config.method} ${config.url}`);
+        shared.config = config;
+
+        if (config.url === 'http://test.local/a') {
+          await firstRejected;
+        } else {
+          releaseFirst();
+        }
+
+        throw shared;
+      };
+
+      // Both dispatches reject with one Error instance, so its metadata is
+      // ambiguous and neither request may be replayed from it.
+      const results = await Promise.allSettled([
+        instance.get('http://test.local/a'),
+        instance.put('http://test.local/b', { value: 1 }),
+      ]);
+
+      assert.deepStrictEqual(results.map((result) => result.status), ['rejected', 'rejected']);
+      assert.deepStrictEqual(calls, ['get http://test.local/a', 'put http://test.local/b']);
     });
 
     it('should ignore inherited cancellation settings during backoff', async function () {

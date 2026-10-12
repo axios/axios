@@ -1,6 +1,7 @@
-import { createServer } from 'node:http';
-import axios from 'axios';
+import axios from '../index.js';
+import { startHTTPServer, stopHTTPServer } from '../tests/setup/server.js';
 
+const client = axios.create({ proxy: false });
 const responses = {
   '/latin1': {
     type: 'text/plain; charset=ISO-8859-1',
@@ -19,23 +20,24 @@ const responses = {
   }
 };
 
-const server = createServer((req, res) => {
-  const item = responses[req.url];
-  if (!item) {
-    res.writeHead(404);
-    res.end('not found');
-    return;
-  }
-  res.writeHead(200, { 'Content-Type': item.type });
-  res.end(item.body);
-});
+let server;
 
 try {
-  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  server = await startHTTPServer((req, res) => {
+    const item = responses[req.url];
+    if (!item) {
+      res.writeHead(404);
+      res.end('not found');
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': item.type });
+    res.end(item.body);
+  });
+
   const baseUrl = `http://127.0.0.1:${server.address().port}`;
 
   for (const [path, item] of Object.entries(responses)) {
-    const response = await axios.get(`${baseUrl}${path}`);
+    const response = await client.get(`${baseUrl}${path}`);
     console.log(`\nGET ${path}`);
     console.log(`  Content-Type: ${response.headers['content-type']}`);
     console.log(`  Expected:     ${item.expected}`);
@@ -43,17 +45,17 @@ try {
     console.log(`  Match:        ${response.data === item.expected}`);
   }
 
-  const manual = await axios.get(`${baseUrl}/latin1`, { responseEncoding: 'latin1' });
+  const manual = await client.get(`${baseUrl}/latin1`, { responseEncoding: 'latin1' });
   console.log('\nISO-8859-1 with responseEncoding: latin1');
   console.log(`  Actual:       ${manual.data}`);
   console.log(`  Match:        ${manual.data === responses['/latin1'].expected}`);
 
   try {
-    await axios.get(`${baseUrl}/euc-jp`, { responseEncoding: 'euc-jp' });
+    await client.get(`${baseUrl}/euc-jp`, { responseEncoding: 'euc-jp' });
   } catch (error) {
     console.log('\nEUC-JP with responseEncoding: euc-jp');
     console.log(`  Error:        ${error.code ?? error.message}`);
   }
 } finally {
-  await new Promise((resolve) => server.close(resolve));
+  await stopHTTPServer(server);
 }

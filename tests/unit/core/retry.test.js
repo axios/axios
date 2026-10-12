@@ -991,7 +991,11 @@ describe('helpers:retry', function () {
       const toText = (data) =>
         Buffer.from(data.buffer || data, data.byteOffset || 0, data.byteLength).toString();
       const backing = Buffer.from('xxorigxx');
-      const sliced = new Uint16Array(backing.buffer.slice(backing.byteOffset, backing.byteOffset + 8), 2, 2);
+      const sliced = new Uint16Array(
+        backing.buffer.slice(backing.byteOffset, backing.byteOffset + 8),
+        2,
+        2
+      );
       const shadowed = new Uint8Array(Buffer.from('orig'));
       Object.defineProperty(shadowed, 'constructor', { value: Object });
 

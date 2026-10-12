@@ -881,6 +881,38 @@ describe('helpers:retry', function () {
       assert.strictEqual(seen[1], seen[0]);
     });
 
+    it('should replay symbol-keyed params when retrying', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const extra = Symbol('extra');
+      const urls = [];
+      instance.defaults.adapter = async (config) => {
+        urls.push(instance.getUri(config));
+
+        if (urls.length === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local', {
+        params: { ordinary: 'kept', [extra]: 'kept-too' },
+        paramsSerializer: {
+          serialize: (params) => `ordinary=${params.ordinary}&extra=${params[extra]}`,
+        },
+      });
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(urls.length, 2);
+      assert.strictEqual(urls[1], urls[0]);
+      assert.ok(urls[1].includes('extra=kept-too'));
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

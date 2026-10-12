@@ -844,6 +844,43 @@ describe('helpers:retry', function () {
       assert.strictEqual(seen[1].authorization, 'Bearer A');
     });
 
+    it('should replay nested params and proxy values as sent when mutated during backoff', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 20, jitter: false, retries: 1 });
+
+      const seen = [];
+      let failed;
+      instance.defaults.adapter = async (config) => {
+        seen.push(JSON.stringify({ params: config.params, proxy: config.proxy }));
+
+        if (seen.length === 1) {
+          failed = config;
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const pending = instance.get('http://test.local', {
+        params: { filters: [{ tenant: 'A' }] },
+        proxy: { host: 'proxy-a', port: 8080, auth: { username: 'alice', password: 'a' } },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      failed.params.filters[0].tenant = 'MUTATED';
+      failed.proxy.host = 'MUTATED';
+      failed.proxy.auth.password = 'MUTATED';
+
+      const response = await pending;
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(seen.length, 2);
+      assert.strictEqual(seen[1], seen[0]);
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

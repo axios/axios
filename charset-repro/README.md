@@ -2,7 +2,7 @@
 
 Minimal, isolated reproduction for [axios/axios#5317](https://github.com/axios/axios/issues/5317).
 
-The local server sends **real bytes** with a declared `Content-Type` charset. The tests characterize the current Node.js adapter behavior; they do not modify Axios or propose a fix.
+The local server sends **real bytes** with a declared `Content-Type` charset. The tests characterize the current Node.js adapter behavior using this checkout's Axios source; they do not modify production code or propose a fix.
 
 ## Requirements
 
@@ -11,10 +11,12 @@ The local server sends **real bytes** with a declared `Content-Type` charset. Th
 
 ## Run
 
+From the repository root:
+
 ```sh
-npm install
-npm test
-npm run repro
+npm ci --ignore-scripts
+node --test charset-repro/repro.test.mjs
+node charset-repro/repro.mjs
 ```
 
 ## What it checks

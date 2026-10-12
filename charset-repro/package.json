@@ -1,0 +1,17 @@
+{
+  "name": "axios-charset-repro-5317",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal local reproduction for axios/axios#5317",
+  "scripts": {
+    "test": "node --test",
+    "repro": "node repro.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "axios": "^1.12.2"
+  }
+}

@@ -10,31 +10,36 @@ describe('header buckets across package exports', () => {
     ['ESM', axios, cjsAxios],
     ['CommonJS', cjsAxios, axios],
   ]) {
-    it(`should preserve foreign AxiosHeaders buckets in the ${name} client`, async () => {
-      expect(client.AxiosHeaders).not.toBe(otherClient.AxiosHeaders);
-      const instance = client.create({
-        adapter: echoHeaders,
-        headers: {
-          common: new otherClient.AxiosHeaders({ 'X-Common': 'common' }),
-          post: new otherClient.AxiosHeaders({ Authorization: 'Bearer TEST_ONLY' }),
-        },
-      });
-
-      for (const method of ['get', 'post']) {
-        const { config } = await instance.request({
-          url: '/header-buckets',
-          method,
-          headers: { Link: Buffer.from('<https://example.com/resource>; rel="type"') },
+    for (const [shape, Headers] of [
+      ['instances', otherClient.AxiosHeaders],
+      ['subclasses', class extends otherClient.AxiosHeaders {}],
+    ]) {
+      it(`should preserve foreign AxiosHeaders ${shape} as buckets in the ${name} client`, async () => {
+        expect(client.AxiosHeaders).not.toBe(otherClient.AxiosHeaders);
+        const instance = client.create({
+          adapter: echoHeaders,
+          headers: {
+            common: new Headers({ 'X-Common': 'common' }),
+            post: new Headers({ Authorization: 'Bearer TEST_ONLY' }),
+          },
         });
 
-        expect(config.headers.get('X-Common')).toBe('common');
-        expect(config.headers.get('Authorization')).toBe(
-          method === 'post' ? 'Bearer TEST_ONLY' : undefined
-        );
-        expect(config.headers.get('Link')).toBe('<https://example.com/resource>; rel="type"');
-        expect(config.headers.has('common')).toBe(false);
-        expect(config.headers.has('post')).toBe(false);
-      }
-    });
+        for (const method of ['get', 'post']) {
+          const { config } = await instance.request({
+            url: '/header-buckets',
+            method,
+            headers: { Link: Buffer.from('<https://example.com/resource>; rel="type"') },
+          });
+
+          expect(config.headers.get('X-Common')).toBe('common');
+          expect(config.headers.get('Authorization')).toBe(
+            method === 'post' ? 'Bearer TEST_ONLY' : undefined
+          );
+          expect(config.headers.get('Link')).toBe('<https://example.com/resource>; rel="type"');
+          expect(config.headers.has('common')).toBe(false);
+          expect(config.headers.has('post')).toBe(false);
+        }
+      });
+    }
   }
 });

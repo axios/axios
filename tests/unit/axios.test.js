@@ -180,11 +180,32 @@ describe('Axios', () => {
       }
     }
 
+    class TaggedHeaderValue extends HeaderValue {
+      get [Symbol.toStringTag]() {
+        return 'AxiosHeaders';
+      }
+
+      toJSON() {
+        throw new Error('A literal header value must not be serialized as a defaults bucket');
+      }
+    }
+
     for (const [shape, value] of Object.entries({
       Date: new Date(0),
       Buffer: Buffer.from('literal'),
       Uint8Array: new Uint8Array([65, 66]),
       'application class': new HeaderValue('<https://example.com/resource>; rel="type"'),
+      'tagged application class': new TaggedHeaderValue('literal'),
+      'tagged object': {
+        [Symbol.toStringTag]: 'AxiosHeaders',
+        value: 'literal',
+        toString() {
+          return this.value;
+        },
+        toJSON() {
+          throw new Error('A literal header value must not be serialized as a defaults bucket');
+        },
+      },
     })) {
       it(`should normalize ${shape} values as literal method-named headers`, async () => {
         for (const name of [...expectedMethodList, 'common']) {
@@ -208,20 +229,16 @@ describe('Axios', () => {
       });
     }
 
-    for (const property of [Symbol.toStringTag, 'toJSON']) {
+    for (const property of [Symbol.toStringTag, 'toJSON', 'set']) {
       for (const location of ['instance', 'prototype']) {
         it(`should preserve literal headers with a throwing ${String(property)} getter on the ${location}`, async () => {
-          class TaggedHeaderValue extends HeaderValue {
-            get [Symbol.toStringTag]() {
-              return 'AxiosHeaders';
-            }
-          }
+          class ThrowingHeaderValue extends TaggedHeaderValue {}
 
-          const value = new TaggedHeaderValue('<https://example.com/resource>; rel="type"');
+          const value = new ThrowingHeaderValue('<https://example.com/resource>; rel="type"');
           let probes = 0;
 
           Object.defineProperty(
-            location === 'instance' ? value : TaggedHeaderValue.prototype,
+            location === 'instance' ? value : ThrowingHeaderValue.prototype,
             property,
             {
               get() {

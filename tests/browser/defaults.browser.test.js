@@ -214,6 +214,19 @@ describe('defaults (vitest browser)', () => {
         return '<https://example.com/resource>; rel="type"';
       }
     })(),
+    'tagged application class': new (class {
+      get [Symbol.toStringTag]() {
+        return 'AxiosHeaders';
+      }
+
+      toString() {
+        return '<https://example.com/resource>; rel="type"';
+      }
+
+      toJSON() {
+        throw new Error('A literal header value must not be serialized as a defaults bucket');
+      }
+    })(),
   })) {
     it(`should send a literal ${shape} Link header alongside method defaults`, async () => {
       const instance = axios.create({

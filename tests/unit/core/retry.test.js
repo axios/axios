@@ -987,6 +987,53 @@ describe('helpers:retry', function () {
       assert.deepStrictEqual(sent, ['orig', 'orig']);
     });
 
+    it('should replay the original bytes for Buffer, sliced typed-array and DataView bodies', async function () {
+      const toText = (data) =>
+        Buffer.from(data.buffer || data, data.byteOffset || 0, data.byteLength).toString();
+      const backing = Buffer.from('xxorigxx');
+      const sliced = new Uint16Array(backing.buffer.slice(backing.byteOffset, backing.byteOffset + 8), 2, 2);
+      const shadowed = new Uint8Array(Buffer.from('orig'));
+      Object.defineProperty(shadowed, 'constructor', { value: Object });
+
+      const bodies = {
+        buffer: Buffer.from('orig'),
+        sliced,
+        dataView: new DataView(sliced.buffer, 2, 4),
+        shadowed,
+      };
+
+      for (const [name, body] of Object.entries(bodies)) {
+        const instance = axios.create();
+        attachRetry(instance, {
+          retryDelay: 0,
+          jitter: false,
+          retries: 1,
+          onRetry: (count, err, cfg) => {
+            new Uint8Array(cfg.data.buffer, cfg.data.byteOffset, cfg.data.byteLength)[0] = 109;
+          },
+        });
+
+        const sent = [];
+        instance.defaults.adapter = async (config) => {
+          sent.push(`${Object.prototype.toString.call(config.data)} ${toText(config.data)}`);
+
+          if (sent.length === 1) {
+            const error = new Error('Service Unavailable');
+            error.config = config;
+            error.response = { status: 503, headers: {} };
+            throw error;
+          }
+
+          return { data: 'success', status: 200, headers: {}, config };
+        };
+
+        await instance.put('http://test.local', body, { transformRequest: [(data) => data] });
+
+        const expected = `${Object.prototype.toString.call(body)} orig`;
+        assert.deepStrictEqual(sent, [expected, expected], name);
+      }
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

@@ -713,6 +713,93 @@ describe('helpers:retry', function () {
       assert.deepStrictEqual(calls, ['get http://test.local/a', 'put http://test.local/b']);
     });
 
+    it('should not retry when concurrent same-target requests with different params share an error object', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const shared = new Error('Service Unavailable');
+      shared.response = { status: 503, headers: {} };
+
+      const calls = [];
+      let releaseFirst;
+      const firstRejected = new Promise((resolve) => {
+        releaseFirst = resolve;
+      });
+
+      instance.defaults.adapter = async (config) => {
+        calls.push(config.params.request);
+        shared.config = config;
+
+        if (config.params.request === 'A') {
+          await firstRejected;
+        } else {
+          releaseFirst();
+        }
+
+        throw shared;
+      };
+
+      const results = await Promise.allSettled([
+        instance.get('http://test.local', {
+          params: { request: 'A' },
+          auth: { username: 'alice', password: 'a' },
+          timeout: 111,
+        }),
+        instance.get('http://test.local', {
+          params: { request: 'B' },
+          auth: { username: 'bob', password: 'b' },
+          timeout: 222,
+          responseType: 'json',
+        }),
+      ]);
+
+      assert.deepStrictEqual(results.map((result) => result.status), ['rejected', 'rejected']);
+      assert.deepStrictEqual(calls, ['A', 'B']);
+    });
+
+    it('should replay the dispatched request when the adapter error config belongs to another request', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+
+      const seen = [];
+      instance.defaults.adapter = async (config) => {
+        seen.push({
+          params: config.params,
+          auth: config.auth,
+          timeout: config.timeout,
+          authorization: config.headers.get('Authorization'),
+        });
+
+        if (seen.length === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = {
+            ...config,
+            params: { request: 'B' },
+            auth: { username: 'bob', password: 'b' },
+            timeout: 222,
+            headers: { Authorization: 'Bearer-B' },
+          };
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local', {
+        params: { request: 'A' },
+        auth: { username: 'alice', password: 'a' },
+        timeout: 111,
+        headers: { Authorization: 'Bearer-A' },
+      });
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(seen.length, 2);
+      assert.deepStrictEqual(seen[1], seen[0]);
+      assert.deepStrictEqual(seen[1].params, { request: 'A' });
+      assert.strictEqual(seen[1].authorization, 'Bearer-A');
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

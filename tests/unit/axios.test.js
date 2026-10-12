@@ -208,6 +208,72 @@ describe('Axios', () => {
       });
     }
 
+    for (const property of [Symbol.toStringTag, 'toJSON']) {
+      for (const location of ['instance', 'prototype']) {
+        it(`should preserve literal headers with a throwing ${String(property)} getter on the ${location}`, async () => {
+          class TaggedHeaderValue extends HeaderValue {
+            get [Symbol.toStringTag]() {
+              return 'AxiosHeaders';
+            }
+          }
+
+          const value = new TaggedHeaderValue('<https://example.com/resource>; rel="type"');
+          let probes = 0;
+
+          Object.defineProperty(
+            location === 'instance' ? value : TaggedHeaderValue.prototype,
+            property,
+            {
+              get() {
+                probes++;
+                throw new Error('Header bucket probe failed');
+              },
+            }
+          );
+
+          for (const headerName of ['link', 'Link', 'common']) {
+            for (const method of ['get', 'link']) {
+              const { config } = await axios.request({
+                url: '/throwing-header-bucket-probe',
+                method,
+                headers: { [headerName]: value, 'X-Reference': value },
+                adapter: echoHeaders,
+              });
+
+              assert.strictEqual(config.headers.get(headerName), String(value));
+              assert.strictEqual(config.headers.get(headerName), config.headers.get('X-Reference'));
+              assert.strictEqual(config.headers.has('value'), false);
+            }
+          }
+
+          assert.ok(probes > 0);
+        });
+      }
+    }
+
+    it('should still reject when a literal header cannot be serialized after a failed probe', async () => {
+      const serializationError = new Error('Header serialization failed');
+      const value = new (class {
+        get [Symbol.toStringTag]() {
+          throw new Error('Header bucket probe failed');
+        }
+
+        toString() {
+          throw serializationError;
+        }
+      })();
+
+      await assert.rejects(
+        axios.request({
+          url: '/invalid-literal-header',
+          method: 'link',
+          headers: { link: value },
+          adapter: echoHeaders,
+        }),
+        (error) => error === serializationError
+      );
+    });
+
     for (const name of [...expectedMethodList, 'common']) {
       it(`should preserve literal ${name} headers without merging them as defaults`, async () => {
         const client = axios.create({ adapter: echoHeaders });

@@ -913,6 +913,49 @@ describe('helpers:retry', function () {
       assert.ok(urls[1].includes('extra=kept-too'));
     });
 
+    it('should not let onRetry change the replayed request', async function () {
+      const instance = axios.create();
+      attachRetry(instance, {
+        retryDelay: 0,
+        jitter: false,
+        retries: 1,
+        onRetry: (count, err, cfg) => {
+          cfg.data = 'callback-body';
+          cfg.params.tenant = 'callback-tenant';
+          cfg.headers.set('Authorization', 'Bearer callback');
+        },
+      });
+
+      const seen = [];
+      instance.defaults.adapter = async (config) => {
+        seen.push({
+          data: config.data,
+          tenant: config.params.tenant,
+          authorization: config.headers.get('Authorization'),
+        });
+
+        if (seen.length === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.put(
+        'http://test.local',
+        { value: 1 },
+        { params: { tenant: 'original-tenant' }, headers: { Authorization: 'Bearer original' } }
+      );
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(seen.length, 2);
+      assert.deepStrictEqual(seen[1], seen[0]);
+      assert.strictEqual(seen[1].authorization, 'Bearer original');
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

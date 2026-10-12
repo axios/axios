@@ -25,4 +25,42 @@ describe('helpers::combineURLs', () => {
   it('should allow a single slash for relative url', () => {
     expect(combineURLs('https://api.github.com/users', '/')).toBe('https://api.github.com/users/');
   });
+
+  it('should return relative URL when baseURL is undefined', () => {
+    expect(combineURLs(undefined, '/users')).toBe('users');
+  });
+
+  it('should return relative URL when baseURL is null', () => {
+    expect(combineURLs(null, '/users')).toBe('users');
+  });
+
+  it('should return relative URL when baseURL is empty string', () => {
+    expect(combineURLs('', '/users')).toBe('users');
+  });
+
+  it('should return empty string when both are missing', () => {
+    expect(combineURLs(undefined, '')).toBe('');
+    expect(combineURLs(null, null)).toBe('');
+  });
+
+  it('should preserve relative URL without leading slash when base is missing', () => {
+    expect(combineURLs(undefined, 'users')).toBe('users');
+  });
+
+  it('should return empty string for slash-only relative URL when base is missing', () => {
+    expect(combineURLs(undefined, '/')).toBe('');
+    expect(combineURLs(null, '//')).toBe('');
+    expect(combineURLs('', '///')).toBe('');
+  });
+
+  it('should return empty string for non-string baseURL with no relativeURL', () => {
+    expect(combineURLs(123, '')).toBe('');
+    expect(combineURLs(true, null)).toBe('');
+  });
+
+  it('should return relative URL for non-string baseURL with truthy relativeURL', () => {
+    expect(combineURLs(123, '/users')).toBe('users');
+    expect(combineURLs(true, '/api')).toBe('api');
+    expect(combineURLs({}, 'users')).toBe('users');
+  });
 });

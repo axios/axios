@@ -956,6 +956,37 @@ describe('helpers:retry', function () {
       assert.strictEqual(seen[1].authorization, 'Bearer original');
     });
 
+    it('should replay the original bytes when a binary body is mutated in place', async function () {
+      const instance = axios.create();
+      attachRetry(instance, {
+        retryDelay: 0,
+        jitter: false,
+        retries: 1,
+        onRetry: (count, err, cfg) => {
+          new Uint8Array(cfg.data.buffer || cfg.data)[0] = 'm'.charCodeAt(0);
+        },
+      });
+
+      const sent = [];
+      instance.defaults.adapter = async (config) => {
+        sent.push(Buffer.from(config.data).toString());
+
+        if (sent.length === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.put('http://test.local', new TextEncoder().encode('orig'));
+
+      assert.strictEqual(response.data, 'success');
+      assert.deepStrictEqual(sent, ['orig', 'orig']);
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

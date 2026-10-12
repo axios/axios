@@ -1,9 +1,26 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import CancelToken from '../../lib/cancel/CancelToken.js';
 import CanceledError from '../../lib/cancel/CanceledError.js';
 
 describe('CancelToken (vitest browser)', () => {
+  it('notifies listeners once when cancellation cleanup unsubscribes another listener', async () => {
+    const { token, cancel } = CancelToken.source();
+    const removed = vi.fn();
+    const remaining = vi.fn();
+    const cleanup = vi.fn(() => token.unsubscribe(removed));
+
+    token.subscribe(removed);
+    token.subscribe(remaining);
+    token.subscribe(cleanup);
+    cancel('stop');
+    await Promise.resolve();
+
+    expect(cleanup).toHaveBeenCalledExactlyOnceWith(token.reason);
+    expect(remaining).toHaveBeenCalledExactlyOnceWith(token.reason);
+    expect(removed).not.toHaveBeenCalled();
+  });
+
   describe('constructor', () => {
     it('throws when executor is not specified', () => {
       expect(() => new CancelToken()).toThrowError(

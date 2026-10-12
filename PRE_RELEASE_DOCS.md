@@ -50,6 +50,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show an unchanged merged config retaining identity between a request interceptor and custom adapter. Show a request interceptor returning an object with a non-terminal application prototype whose custom adapter field is materialized into the normalized snapshot, and contrast it with a terminal `Object.create(null)` prototype whose inherited behavior fields are ignored.
 - **Notes:** Present replacement normalization and the terminal null-prototype restriction as intentional security compatibility changes. Do not imply that mutating `Object.prototype` is supported or safe.
 
+### Caller-supplied request data on response configs
+
+- **Change:** Preserve the request data value present immediately before `transformRequest` on the exposed response config, including when an object was assigned by a request interceptor. The adapter still receives the transformed payload.
+- **Source:** [PR #11227](https://github.com/axios/axios/pull/11227), closes [issue #4994](https://github.com/axios/axios/issues/4994); `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Response config request data.
+- **Status:** Pending.
+- **Docs targets:** README interceptor/response handling examples; `docs/pages/advanced/request-config.md`; `docs/pages/advanced/interceptors.md` or the current response interceptor guide; translated docs after the English wording is finalized.
+- **Required content:** Explain that `response.config.data` reflects the value axios received before request transformation, while the request adapter continues to send the transformed body. The same behavior applies to a response attached to a rejected HTTP request. This affects only the diagnostic config exposed to callers and does not change request serialization or the response body.
+- **Examples:** Show a request interceptor assigning an object to `config.data`, the adapter receiving its JSON string, and a response interceptor reading the original object from `response.config.data`.
+- **Notes:** This is a bug fix with no public API/type change or migration requirement. Keep the example scoped to request data and avoid implying that `response.config.data` is necessarily the exact value sent on the wire.
+
 ### Proxy bypass CIDR ranges
 
 - **Change:** Document CIDR matching in `NO_PROXY` and `no_proxy`.

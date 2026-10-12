@@ -800,6 +800,50 @@ describe('helpers:retry', function () {
       assert.strictEqual(seen[1].authorization, 'Bearer-A');
     });
 
+    it('should replay the request as sent when the adapter mutates nested config during backoff', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 20, jitter: false, retries: 1 });
+
+      const seen = [];
+      let failed;
+      instance.defaults.adapter = async (config) => {
+        seen.push({
+          params: { ...config.params },
+          auth: { ...config.auth },
+          authorization: config.headers.get('Authorization'),
+        });
+
+        if (seen.length === 1) {
+          failed = config;
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const pending = instance.get('http://test.local', {
+        params: { tenant: 'A' },
+        auth: { username: 'alice', password: 'a' },
+        headers: { Authorization: 'Bearer A' },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      failed.params.tenant = 'MUTATED';
+      failed.auth.username = 'MUTATED';
+      failed.headers.set('Authorization', 'MUTATED');
+
+      const response = await pending;
+
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(seen.length, 2);
+      assert.deepStrictEqual(seen[1], seen[0]);
+      assert.strictEqual(seen[1].params.tenant, 'A');
+      assert.strictEqual(seen[1].authorization, 'Bearer A');
+    });
+
     it('should ignore inherited cancellation settings during backoff', async function () {
       const instance = axios.create();
       attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });

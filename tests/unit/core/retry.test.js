@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { Readable } from 'stream';
+import vm from 'vm';
 import { describe, it } from 'vitest';
 import axios from '../../../lib/axios.js';
 
@@ -56,6 +57,12 @@ describe('helpers:retry', function () {
       const customFn = (retryCount) => (retryCount + 1) * 50;
       const delay = calculateRetryDelay(2, { retryDelay: customFn });
       assert.strictEqual(delay, 150);
+    });
+
+    it('should use the default maxDelay for a non-finite maxDelay', function () {
+      const options = { retryDelay: 1000, maxDelay: NaN, jitter: false };
+      assert.strictEqual(calculateRetryDelay(0, options), 1000);
+      assert.strictEqual(calculateRetryDelay(0, options, { headers: { 'retry-after': '2' } }), 2000);
     });
 
     it('should cap a custom retryDelay at maxDelay', function () {
@@ -1165,6 +1172,154 @@ describe('helpers:retry', function () {
         assert.strictEqual(error.message, expectedMessage);
         return true;
       });
+    });
+
+    it('should run response interceptors registered after attachRetry once per request', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 2 });
+      let laterCalls = 0;
+      instance.interceptors.response.use((response) => {
+        laterCalls++;
+        return response.data;
+      });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts < 3) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+        return { data: { nested: 'success' }, status: 200, headers: {}, config };
+      };
+
+      const data = await instance.get('http://test.local');
+      assert.deepStrictEqual(data, { nested: 'success' });
+      assert.strictEqual(attempts, 3);
+      assert.strictEqual(laterCalls, 1);
+    });
+
+    it('should release an unread response stream before retrying', async function () {
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      const failedBody = new Readable({ read() {} });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {}, data: failedBody };
+          throw error;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      const response = await instance.get('http://test.local', { responseType: 'stream' });
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(failedBody.destroyed, true);
+    });
+
+    it('should replay a DataView body from another realm', async function () {
+      const body = vm.runInNewContext('new DataView(new Uint8Array([111, 114, 105, 103]).buffer)');
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      const sent = [];
+      instance.defaults.adapter = async (config) => {
+        sent.push(Buffer.from(config.data.buffer, config.data.byteOffset, config.data.byteLength).toString());
+        if (sent.length === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      await instance.put('http://test.local', body, { transformRequest: [(data) => data] });
+      assert.deepStrictEqual(sent, ['orig', 'orig']);
+    });
+
+    it('should not track dispatches for instances without the retry interceptor', async function () {
+      const plain = axios.create();
+      const retrying = axios.create();
+      attachRetry(retrying, { retryDelay: 0, jitter: false, retries: 1 });
+      const sharedError = new Error('Service Unavailable');
+      sharedError.response = { status: 503, headers: {} };
+      let attempts = 0;
+      const adapter = async (config) => {
+        attempts++;
+        if (attempts <= 2) {
+          sharedError.config = config;
+          throw sharedError;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+      plain.defaults.adapter = adapter;
+      retrying.defaults.adapter = adapter;
+
+      await assert.rejects(plain.get('http://test.local'));
+      const response = await retrying.get('http://test.local');
+      assert.strictEqual(response.data, 'success');
+      assert.strictEqual(attempts, 3);
+    });
+
+    it('should not copy unsafe keys into the replay snapshot', async function () {
+      let snapshotParams;
+      const instance = axios.create();
+      attachRetry(instance, {
+        retryDelay: 0,
+        jitter: false,
+        retries: 1,
+        onRetry: (count, err, cfg) => {
+          snapshotParams = cfg.params;
+        },
+      });
+      instance.interceptors.request.use((config) => {
+        config.params = JSON.parse('{"__proto__": {"polluted": true}, "constructor": "c", "a": "1"}');
+        return config;
+      });
+      let attempts = 0;
+      instance.defaults.adapter = async (config) => {
+        attempts++;
+        if (attempts === 1) {
+          const error = new Error('Service Unavailable');
+          error.config = config;
+          error.response = { status: 503, headers: {} };
+          throw error;
+        }
+        return { data: 'success', status: 200, headers: {}, config };
+      };
+
+      await instance.get('http://test.local');
+      assert.deepStrictEqual(Object.keys(snapshotParams), ['a']);
+      assert.strictEqual(Object.getPrototypeOf(snapshotParams), Object.prototype);
+    });
+
+    it('should validate retry options', async function () {
+      assert.throws(
+        () => attachRetry(axios.create(), { retries: '3' }),
+        (error) => error.code === 'ERR_BAD_OPTION_VALUE'
+      );
+      assert.throws(
+        () => attachRetry(axios.create(), { retry: 3 }),
+        (error) => error.code === 'ERR_BAD_OPTION'
+      );
+
+      const instance = axios.create();
+      attachRetry(instance, { retryDelay: 0, jitter: false, retries: 1 });
+      instance.defaults.adapter = async (config) => {
+        const error = new Error('Service Unavailable');
+        error.config = config;
+        error.response = { status: 503, headers: {} };
+        throw error;
+      };
+
+      await assert.rejects(
+        instance.get('http://test.local', { retry: { statusCodes: 503 } }),
+        (error) => error.code === 'ERR_BAD_OPTION_VALUE'
+      );
     });
   });
 });

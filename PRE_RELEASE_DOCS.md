@@ -31,6 +31,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Compatibility:** No migration is required unless enabling the option. Remove manual UTF-8-to-byte-string username conversion when opting in to avoid double encoding. Do not enable it for XHR servers expecting legacy Latin-1 username bytes. RFC 7617 leaves the default encoding unspecified; this option does not negotiate server challenges or normalize Unicode. ASCII/empty credentials are unchanged and malformed UTF-16 continues to reject with `ERR_BAD_OPTION_VALUE` in XHR/Fetch.
 - **Types:** Both `index.d.ts` and `index.d.cts` expose the optional boolean in `TransitionalOptions`.
 
+### Global TLS options for CONNECT-tunneled origins
+
+- **Change:** Apply the current `https.globalAgent.options` to an HTTPS origin reached through an Axios-managed CONNECT tunnel when no per-request `httpsAgent` is configured.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11178; related to #11176, whose explicit-agent failure is not established as fixed by this change.
+- **Status:** Pending.
+- **Docs targets:** README request-config proxy/agent guidance and the Node proxy configuration docs; translated docs after the English documentation is finalized.
+- **Required content:** Explain that an explicit `httpsAgent` takes precedence over the global agent, without merging their trust settings. Origin TLS options are read for each request, including after the tunneling agent is cached; changes to either selected agent's options and replacement of `https.globalAgent` are observed by subsequent requests. Global TLS settings apply only to the tunneled origin, not to the HTTPS proxy's TLS connection. Existing explicit-agent handling for the proxy is unchanged.
+- **Examples:** Show a process-installed private CA with `https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem')` and `axios.get('https://internal-api.example.com/data', { proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 } })`, without an explicit `httpsAgent`. Explain that a request-specific agent must carry its own required CA.
+- **Notes:** Patch-level behavior correction with no new API, type, or migration requirements. Configured TLS options include `checkServerIdentity` and `rejectUnauthorized`; do not recommend disabling certificate validation. This forwards options, not arbitrary custom agent connection hooks. Browser adapters and HTTP/2 behavior are unchanged.
+
 ### Literal method-named request headers
 
 - **Change:** Restore literal headers such as `Link`, including non-plain object values, and distinguish them from common and method-specific header maps.

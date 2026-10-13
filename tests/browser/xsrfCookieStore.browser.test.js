@@ -141,7 +141,10 @@ describe('XHR Cookie Store compatibility', () => {
       vi.stubGlobal('cookieStore', nativeCookieStore);
       vi.stubGlobal('XMLHttpRequest', NativeXMLHttpRequest);
       const setHeader = vi.spyOn(NativeXMLHttpRequest.prototype, 'setRequestHeader');
-      const response = await axios.get('/', { adapter: 'xhr', timeout: 5000 });
+      const response = await axios.get(new URL('../../package.json', import.meta.url).href, {
+        adapter: 'xhr',
+        timeout: 5000,
+      });
       expect(response.status).toBe(200);
       expect(setHeader).toHaveBeenCalledWith('X-XSRF-TOKEN', 'abc/def=');
     }

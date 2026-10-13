@@ -2432,144 +2432,189 @@ describe('supports http with nodejs', () => {
     }
   });
 
-  it('should apply https.globalAgent TLS options to CONNECT-tunneled origins (issue #11176)', async () => {
+  describe('CONNECT origin TLS options', () => {
     const tlsOptions = {
       key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
       cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
     };
+    const untrustedCertificate = { code: 'DEPTH_ZERO_SELF_SIGNED_CERT' };
 
-    const origin = await new Promise((resolve, reject) => {
-      const s = https.createServer(tlsOptions, (req, res) => {
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.end('trusted-through-global-agent');
-      });
-      s.listen(0, 'localhost', () => resolve(s));
-      s.on('error', reject);
-    });
-
-    const captured = { plaintext: 0, connectTargets: [] };
-    const upstreamSockets = [];
-    const proxy = await new Promise((resolve, reject) => {
-      const p = http.createServer(() => {
-        captured.plaintext += 1;
-      });
-      p.on('connect', (req, clientSocket, head) => {
-        captured.connectTargets.push(req.url);
-        const [host, port] = req.url.split(':');
-        const upstream = net.connect(Number(port), host, () => {
-          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-          if (head && head.length) upstream.write(head);
-          upstream.pipe(clientSocket);
-          clientSocket.pipe(upstream);
+    async function withTunnel(test, secureProxy = false) {
+      const originalAgent = https.globalAgent;
+      const agents = [];
+      const servers = [];
+      const sockets = new Set();
+      const captured = { plaintext: 0, connectTargets: [], originRequests: 0 };
+      const createAgent = (options = {}) => {
+        const agent = new https.Agent({ rejectUnauthorized: true, ...options });
+        agents.push(agent);
+        return agent;
+      };
+      const trackSocket = (socket) => {
+        sockets.add(socket);
+        socket.on('close', () => sockets.delete(socket));
+      };
+      const startHTTPS = async (handler) => {
+        const server = https.createServer(tlsOptions, handler);
+        servers.push(server);
+        server.on('connection', trackSocket);
+        await new Promise((resolve, reject) => {
+          server.once('error', reject);
+          server.listen(0, 'localhost', resolve);
         });
-        upstreamSockets.push(upstream);
-        upstream.on('error', () => clientSocket.destroy());
-        clientSocket.on('error', () => upstream.destroy());
-      });
-      p.listen(0, '127.0.0.1', () => resolve(p));
-      p.on('error', reject);
-    });
+        return server;
+      };
 
-    const originalCa = https.globalAgent.options.ca;
-    https.globalAgent.options.ca = tlsOptions.cert;
-
-    try {
-      const response = await axios.get(`https://localhost:${origin.address().port}/`, {
-        proxy: {
-          host: '127.0.0.1',
-          port: proxy.address().port,
-          protocol: 'http',
-        },
-      });
-
-      assert.strictEqual(response.data, 'trusted-through-global-agent');
-      assert.strictEqual(captured.plaintext, 0, 'proxy must not see plaintext HTTPS requests');
-      assert.strictEqual(captured.connectTargets.length, 1, 'proxy should see exactly one CONNECT');
-      assert.ok(
-        captured.connectTargets[0].startsWith(`localhost:${origin.address().port}`),
-        `CONNECT should target the origin host:port, got ${captured.connectTargets[0]}`
-      );
-    } finally {
-      if (originalCa === undefined) {
-        delete https.globalAgent.options.ca;
-      } else {
-        https.globalAgent.options.ca = originalCa;
-      }
-      for (const s of upstreamSockets) s.destroy();
-      origin.closeAllConnections?.();
-      proxy.closeAllConnections?.();
-      origin.close();
-      proxy.close();
-      origin.unref?.();
-      proxy.unref?.();
-    }
-  });
-
-  it('should pick up https.globalAgent TLS options set after the tunneling agent was cached (issue #11176)', async () => {
-    const tlsOptions = {
-      key: fs.readFileSync(path.join(adaptersTestsDir, 'key.pem')),
-      cert: fs.readFileSync(path.join(adaptersTestsDir, 'cert.pem')),
-    };
-
-    const origin = await new Promise((resolve, reject) => {
-      const s = https.createServer(tlsOptions, (req, res) => {
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.end('trusted-after-cache');
-      });
-      s.listen(0, 'localhost', () => resolve(s));
-      s.on('error', reject);
-    });
-
-    const upstreamSockets = [];
-    const proxy = await new Promise((resolve, reject) => {
-      const p = http.createServer();
-      p.on('connect', (req, clientSocket, head) => {
-        const [host, port] = req.url.split(':');
-        const upstream = net.connect(Number(port), host, () => {
-          clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-          if (head && head.length) upstream.write(head);
-          upstream.pipe(clientSocket);
-          clientSocket.pipe(upstream);
+      try {
+        const origin = await startHTTPS((_req, res) => {
+          captured.originRequests += 1;
+          res.end('trusted-through-tunnel');
         });
-        upstreamSockets.push(upstream);
-        upstream.on('error', () => clientSocket.destroy());
-        clientSocket.on('error', () => upstream.destroy());
+        const onPlaintext = (_req, res) => {
+          captured.plaintext += 1;
+          res.writeHead(500).end('expected CONNECT');
+        };
+        const proxy = secureProxy
+          ? await startHTTPS(onPlaintext)
+          : await startHTTPServer(onPlaintext);
+        if (!secureProxy) {
+          servers.push(proxy);
+          proxy.on('connection', trackSocket);
+        }
+        proxy.on('connect', (req, clientSocket, head) => {
+          captured.connectTargets.push(req.url);
+          const upstream = net.connect(origin.address().port, 'localhost', () => {
+            clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+            if (head.length) upstream.write(head);
+            upstream.pipe(clientSocket);
+            clientSocket.pipe(upstream);
+          });
+          trackSocket(upstream);
+          trackSocket(clientSocket);
+          upstream.on('error', () => clientSocket.destroy());
+          clientSocket.on('error', () => upstream.destroy());
+          upstream.on('close', () => clientSocket.destroy());
+          clientSocket.on('close', () => upstream.destroy());
+        });
+
+        const globalAgent = (https.globalAgent = createAgent());
+        const target = `localhost:${origin.address().port}`;
+        const request = (config = {}) =>
+          axios.get(`https://${target}/`, {
+            proxy: {
+              protocol: secureProxy ? 'https' : 'http',
+              host: 'localhost',
+              port: proxy.address().port,
+            },
+            timeout: 2000,
+            ...config,
+          });
+
+        await test({ request, globalAgent, createAgent, captured, cert: tlsOptions.cert });
+        assert.strictEqual(
+          captured.plaintext,
+          0,
+          'proxy must not receive a plaintext origin request'
+        );
+        for (const connectTarget of captured.connectTargets) {
+          assert.strictEqual(connectTarget, target, 'CONNECT must target the origin');
+        }
+      } finally {
+        https.globalAgent = originalAgent;
+        for (const agent of agents) agent.destroy();
+        for (const socket of sockets) socket.destroy();
+        await Promise.all(servers.map((server) => stopHTTPServer(server)));
+      }
+    }
+
+    it('applies https.globalAgent TLS options to the tunneled origin', async () => {
+      await withTunnel(async ({ request, globalAgent, captured, cert }) => {
+        globalAgent.options.ca = cert;
+        assert.strictEqual((await request()).data, 'trusted-through-tunnel');
+        assert.strictEqual(captured.connectTargets.length, 1);
       });
-      p.listen(0, '127.0.0.1', () => resolve(p));
-      p.on('error', reject);
     });
 
-    const originalCa = https.globalAgent.options.ca;
-    const proxyConfig = { host: '127.0.0.1', port: proxy.address().port, protocol: 'http' };
-    const url = `https://localhost:${origin.address().port}/`;
-
-    try {
-      delete https.globalAgent.options.ca;
-
-      // caches the tunneling agent for this proxy while the CA is still missing
-      await assert.rejects(async () => {
-        await axios.get(url, { proxy: proxyConfig });
+    it('observes global CA installation and removal after tunnel caching', async () => {
+      await withTunnel(async ({ request, globalAgent, captured, cert }) => {
+        await assert.rejects(request(), untrustedCertificate);
+        globalAgent.options.ca = cert;
+        assert.strictEqual((await request()).status, 200);
+        delete globalAgent.options.ca;
+        await assert.rejects(request(), untrustedCertificate);
+        assert.strictEqual(captured.connectTargets.length, 3);
+        assert.strictEqual(captured.originRequests, 1);
       });
+    });
 
-      https.globalAgent.options.ca = tlsOptions.cert;
+    it('observes a replacement global agent after tunnel caching', async () => {
+      await withTunnel(async ({ request, createAgent, captured, cert }) => {
+        await assert.rejects(request(), untrustedCertificate);
+        https.globalAgent = createAgent({ ca: cert });
+        assert.strictEqual((await request()).status, 200);
+        assert.strictEqual(captured.connectTargets.length, 2);
+      });
+    });
 
-      const response = await axios.get(url, { proxy: proxyConfig });
+    it('preserves explicit CA arrays independently of global trust', async () => {
+      await withTunnel(async ({ request, createAgent, cert }) => {
+        assert.strictEqual(
+          (await request({ httpsAgent: createAgent({ ca: [cert] }) })).status,
+          200
+        );
+      });
+    });
 
-      assert.strictEqual(response.data, 'trusted-after-cache');
-    } finally {
-      if (originalCa === undefined) {
-        delete https.globalAgent.options.ca;
-      } else {
-        https.globalAgent.options.ca = originalCa;
-      }
-      for (const s of upstreamSockets) s.destroy();
-      origin.closeAllConnections?.();
-      proxy.closeAllConnections?.();
-      origin.close();
-      proxy.close();
-      origin.unref?.();
-      proxy.unref?.();
+    it('does not merge global trust into an explicit agent', async () => {
+      await withTunnel(async ({ request, globalAgent, createAgent, captured, cert }) => {
+        globalAgent.options.ca = cert;
+        const httpsAgent = createAgent();
+        await assert.rejects(request({ httpsAgent }), untrustedCertificate);
+        globalAgent.options.rejectUnauthorized = false;
+        await assert.rejects(request({ httpsAgent }), untrustedCertificate);
+        assert.strictEqual(captured.originRequests, 0);
+      });
+    });
+
+    it('observes explicit-agent CA changes after tunnel caching', async () => {
+      await withTunnel(async ({ request, createAgent, captured, cert }) => {
+        const httpsAgent = createAgent();
+        await assert.rejects(request({ httpsAgent }), untrustedCertificate);
+        httpsAgent.options.ca = cert;
+        assert.strictEqual((await request({ httpsAgent })).status, 200);
+        delete httpsAgent.options.ca;
+        await assert.rejects(request({ httpsAgent }), untrustedCertificate);
+        assert.strictEqual(captured.originRequests, 1);
+      });
+    });
+
+    it('preserves the global certificate identity check', async () => {
+      await withTunnel(async ({ request, globalAgent, captured, cert }) => {
+        globalAgent.options.ca = cert;
+        globalAgent.options.checkServerIdentity = () =>
+          Object.assign(new Error('test identity rejection'), { code: 'TEST_IDENTITY_REJECT' });
+        await assert.rejects(request(), { code: 'TEST_IDENTITY_REJECT' });
+        assert.strictEqual(captured.originRequests, 0);
+      });
+    });
+
+    for (const option of ['ca', 'rejectUnauthorized']) {
+      it(`does not apply global ${option} to the HTTPS proxy connection`, async () => {
+        await withTunnel(async ({ request, globalAgent, captured, cert }) => {
+          globalAgent.options[option] = option === 'ca' ? cert : false;
+          await assert.rejects(request(), untrustedCertificate);
+          assert.strictEqual(captured.connectTargets.length, 0);
+          assert.strictEqual(captured.originRequests, 0);
+        }, true);
+      });
     }
+
+    it('preserves explicit TLS options for an HTTPS proxy and its origin', async () => {
+      await withTunnel(async ({ request, createAgent, captured, cert }) => {
+        assert.strictEqual((await request({ httpsAgent: createAgent({ ca: cert }) })).status, 200);
+        assert.strictEqual(captured.connectTargets.length, 1);
+      }, true);
+    });
   });
 
   it('should surface a CONNECT 407 from the proxy as an AxiosError (issue #6320)', async () => {
@@ -5561,7 +5606,11 @@ describe('supports http with nodejs', () => {
     it('should handle errors', async () => {
       await assert.rejects(async () => {
         await axios.get('https://no-such-domain-987654.com', {
-          lookup,
+          lookup: (hostname, opt, cb) => {
+            const err = new Error('getaddrinfo ENOTFOUND ' + hostname);
+            err.code = 'ENOTFOUND';
+            cb(err);
+          },
         });
       }, /ENOTFOUND/);
     });

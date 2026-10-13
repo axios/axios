@@ -181,7 +181,7 @@ declare class CanceledError<T, D = any, P = any> extends AxiosError<T, D, P> {
 
 declare const axiosResponseDefault: unique symbol;
 
-type AxiosResponseDefault = typeof axiosResponseDefault;
+type AxiosResponseDefault = axios.AxiosResponseDefault;
 
 type AxiosResponseResult<T, R, D, P> = R extends AxiosResponseDefault
   ? axios.AxiosResponse<T, D, {}, P>
@@ -331,6 +331,10 @@ declare enum HttpStatusCode {
 type InternalAxiosError<T = unknown, D = any, P = any> = AxiosError<T, D, P>;
 
 declare namespace axios {
+  interface AxiosResponseDefault {
+    readonly [axiosResponseDefault]: true;
+  }
+
   type AxiosHeaderParameters = Record<string, string>;
 
   type AxiosError<T = unknown, D = any, P = any> = InternalAxiosError<T, D, P>;
@@ -561,6 +565,14 @@ declare namespace axios {
       FormData?: new (...args: any[]) => object;
       fetch?: (input: URL | Request | string, init?: RequestInit) => Promise<Response>;
       Request?: new (input: URL | Request | string, init?: RequestInit) => Request;
+      /**
+       * Custom Response constructor for the fetch adapter.
+       * When response-body streaming is supported, must also accept
+       * `ReadableStream<Uint8Array>` bodies at runtime for `onDownloadProgress`,
+       * enabled `maxContentLength` limits, or cancellation/timeout tracking with
+       * `responseType: 'stream'` or `'response'`.
+       * The body parameter retains its legacy type for compatibility.
+       */
       Response?: new (
         body?: ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParams | string | null,
         init?: ResponseInit

@@ -183,5 +183,5 @@ Puedes añadir múltiples interceptores a la misma solicitud o respuesta. Lo sig
   - Una vez capturado, el siguiente interceptor de cumplimiento es llamado nuevamente (igual que en una cadena de promises).
 
 ::: tip
-Para obtener una comprensión profunda de cómo funcionan los interceptores, puedes leer los casos de prueba [aquí](https://github.com/axios/axios/blob/v1.x/test/specs/interceptors.spec.js).
+Para obtener una comprensión profunda de cómo funcionan los interceptores, puedes leer los casos de prueba [aquí](https://github.com/axios/axios/blob/v1.x/tests/browser/interceptors.browser.test.js).
 :::

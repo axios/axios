@@ -16,6 +16,20 @@ import axios, {
   type RawAxiosRequestConfig,
 } from 'axios';
 
+const utf8AuthConfig: AxiosRequestConfig = {
+  auth: { username: 'π', password: 'x' },
+  transitional: { encodeBasicAuthUsername: true },
+};
+const legacyAuthConfig: AxiosRequestConfig = {
+  transitional: { encodeBasicAuthUsername: false },
+};
+const invalidAuthConfig: AxiosRequestConfig = {
+  transitional: {
+    // @ts-expect-error -- the encoding opt-in only accepts booleans
+    encodeBasicAuthUsername: 'true',
+  },
+};
+
 const headers = new AxiosHeaders();
 const iterableHeaders: Iterable<[string, AxiosHeaderValue]> = [['x-test', 'ok']];
 headers.set(iterableHeaders);

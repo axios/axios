@@ -530,6 +530,28 @@ describe('requests (vitest browser)', () => {
     expect(response.data.byteLength).toBe(22);
   });
 
+  it('should use the native responseType when reading the response', async () => {
+    const data = new Uint8Array([1, 2]).buffer;
+    const { request, promise } = startRequest('/foo', {
+      responseType: 'text',
+    });
+
+    request.responseType = 'arraybuffer';
+    request.response = data;
+    request.status = 200;
+    Object.defineProperty(request, 'responseText', {
+      get() {
+        throw new DOMException(
+          "Failed to read the 'responseText' property from 'XMLHttpRequest'",
+          'InvalidStateError'
+        );
+      },
+    });
+
+    expect(() => request.onloadend()).not.toThrow();
+    await expect(promise).resolves.toMatchObject({ data });
+  });
+
   it('should support URLSearchParams', async () => {
     const params = new URLSearchParams();
     params.append('param1', 'value1');

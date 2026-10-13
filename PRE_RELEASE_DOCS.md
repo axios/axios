@@ -51,6 +51,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show a process-installed private CA with `https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem')` and `axios.get('https://internal-api.example.com/data', { proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 } })`, without an explicit `httpsAgent`. Explain that a request-specific agent must carry its own required CA.
 - **Notes:** Patch-level behavior correction with no new API, type, or migration requirements. Configured TLS options include `checkServerIdentity` and `rejectUnauthorized`; do not recommend disabling certificate validation. This forwards options, not arbitrary custom agent connection hooks. Browser adapters and HTTP/2 behavior are unchanged.
 
+### Nested URL-encoded Buffer fields
+
+- **Change:** Preserve nested Buffer field names during automatic URL-encoded serialization in Node.
+- **Source:** [PR #11317](https://github.com/axios/axios/pull/11317) (related to #11290) and the Node URL-encoded Buffer fields entry in `PRE_RELEASE_CHANGELOG.md`.
+- **Status:** Pending.
+- **Docs targets:** README's automatic serialization to URLSearchParams section and the corresponding documentation page.
+- **Required content:** Explain that a Buffer value uses the existing base64 encoding and keeps its enclosing object or array path, including `formSerializer.dots` when enabled.
+- **Examples:** `{ user: { file: Buffer.from('abc') } }` produces `user[file]=YWJj`; with `dots: true`, the field name is `user.file`.
+- **Notes:** This corrects field names without changing the public API, top-level Buffer encoding, or browser behavior.
+
 ### Literal method-named request headers
 
 - **Change:** Restore literal headers such as `Link`, including non-plain object values, and distinguish them from common and method-specific header maps.

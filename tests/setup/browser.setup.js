@@ -1,7 +1,8 @@
 import { afterEach } from 'vitest';
+import './nativeCookieStore.js';
 
 // Keep the baseline browser suite on axios's synchronous document.cookie path.
-// Tests for the asynchronous branch opt in with an explicit cookieStore mock.
+// Async tests opt in with an explicit mock or the saved native Cookie Store.
 Object.defineProperty(window, 'cookieStore', {
   configurable: true,
   writable: true,

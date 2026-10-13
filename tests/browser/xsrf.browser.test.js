@@ -106,7 +106,7 @@ describe('xsrf (vitest browser)', () => {
     expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('12345');
   });
 
-  it('should read the raw xsrf value from cookieStore when available', async () => {
+  it('should decode the xsrf value from cookieStore when available', async () => {
     const get = vi.fn().mockResolvedValue({
       name: axios.defaults.xsrfCookieName,
       value: 'raw%2Fvalue',
@@ -119,7 +119,7 @@ describe('xsrf (vitest browser)', () => {
 
     expect(get).toHaveBeenCalledWith(axios.defaults.xsrfCookieName);
     expect(readSpy).not.toHaveBeenCalled();
-    expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('raw%2Fvalue');
+    expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBe('raw/value');
   });
 
   it('should fall back to document.cookie if cookieStore.get rejects', async () => {

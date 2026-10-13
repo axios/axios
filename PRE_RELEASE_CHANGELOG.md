@@ -46,3 +46,5 @@
 ## Maintenance
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
+
+- **Browser origin checks:** Removed obsolete Internet Explorer user-agent detection from `isURLSameOrigin`, retaining protocol, host, and port comparisons and document-base URL resolution. Native `URL.host` already includes non-default ports, so origin decisions and XSRF header behavior remain unchanged in supported environments. Added coverage for port and protocol boundaries, default-port normalization, legacy user-agent strings, relative URLs, and cross-port XSRF exclusion. No public API or type changes. (**[#11174](https://github.com/axios/axios/pull/11174)**)

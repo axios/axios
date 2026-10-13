@@ -20,6 +20,37 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Opt-in UTF-8 Basic auth usernames
+
+- **Change:** Added `transitional.encodeBasicAuthUsername`, a boolean defaulting to `false`, to opt into UTF-8 encoding of `auth.username` during XHR/Fetch config resolution.
+- **Source:** [PR #11159](https://github.com/axios/axios/pull/11159); `PRE_RELEASE_CHANGELOG.md` Features.
+- **Status:** Pending.
+- **Docs targets:** README request-config `auth` and transitional options; request-config and authentication documentation in the docs site and translations.
+- **Required content:** Explain that applications talking to UTF-8 Basic-auth servers can enable this option per request or with `axios.create`. Existing defaults remain compatible: XHR uses legacy single-byte username encoding and UTF-8 passwords, while Fetch already sends UTF-8 but its config resolution rejects usernames above U+00FF unless opted in. Node HTTP and Fetch URL-embedded credentials are unchanged. Setting the option to `false` on a request overrides an instance opt-in; it does not select Latin-1 for Fetch or Node HTTP.
+- **Examples:** `axios.get('/account', { auth: { username: 'π', password: 'secret' }, transitional: { encodeBasicAuthUsername: true } })`. Also show an instance opt-in with a request-level `false` override for a legacy XHR endpoint.
+- **Compatibility:** No migration is required unless enabling the option. Remove manual UTF-8-to-byte-string username conversion when opting in to avoid double encoding. Do not enable it for XHR servers expecting legacy Latin-1 username bytes. RFC 7617 leaves the default encoding unspecified; this option does not negotiate server challenges or normalize Unicode. ASCII/empty credentials are unchanged and malformed UTF-16 continues to reject with `ERR_BAD_OPTION_VALUE` in XHR/Fetch.
+- **Types:** Both `index.d.ts` and `index.d.cts` expose the optional boolean in `TransitionalOptions`.
+
+### Global TLS options for CONNECT-tunneled origins
+
+- **Change:** Apply the current `https.globalAgent.options` to an HTTPS origin reached through an Axios-managed CONNECT tunnel when no per-request `httpsAgent` is configured.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11178; related to #11176, whose explicit-agent failure is not established as fixed by this change.
+- **Status:** Pending.
+- **Docs targets:** README request-config proxy/agent guidance and the Node proxy configuration docs; translated docs after the English documentation is finalized.
+- **Required content:** Explain that an explicit `httpsAgent` takes precedence over the global agent, without merging their trust settings. Origin TLS options are read for each request, including after the tunneling agent is cached; changes to either selected agent's options and replacement of `https.globalAgent` are observed by subsequent requests. Global TLS settings apply only to the tunneled origin, not to the HTTPS proxy's TLS connection. Existing explicit-agent handling for the proxy is unchanged.
+- **Examples:** Show a process-installed private CA with `https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem')` and `axios.get('https://internal-api.example.com/data', { proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 } })`, without an explicit `httpsAgent`. Explain that a request-specific agent must carry its own required CA.
+- **Notes:** Patch-level behavior correction with no new API, type, or migration requirements. Configured TLS options include `checkServerIdentity` and `rejectUnauthorized`; do not recommend disabling certificate validation. This forwards options, not arbitrary custom agent connection hooks. Browser adapters and HTTP/2 behavior are unchanged.
+
+### Literal method-named request headers
+
+- **Change:** Restore literal headers such as `Link`, including non-plain object values, and distinguish them from common and method-specific header maps.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Literal method-named headers; #11156 and #11096.
+- **Status:** Pending.
+- **Docs targets:** README and docs site request-header and configuration-defaults guidance; migration guide for custom class defaults.
+- **Required content:** Plain objects, null-prototype maps, and compatible `AxiosHeaders` (including subclasses and instances from other package builds) remain defaults buckets. Compatible foreign instances must provide the header-container interface; application objects exposing only the `AxiosHeaders` tag and `toJSON` remain literal values. Only the matching method bucket applies; these buckets are never transmitted as literal headers. Scalars, arrays, and other objects such as Dates, Buffers, typed arrays, and application class instances use normal header-value serialization. Existing null/undefined/false header omission remains intact. Explain the breaking compatibility change for applications using arbitrary class instances as defaults buckets: convert those instances to plain maps or `AxiosHeaders` before assigning them under `common` or a method name. Otherwise their string representation becomes a literal header, including on nonmatching requests; this can expose contents included by a custom `toString()`.
+- **Examples:** Show `headers: { Link: '<https://example.com/resource>; rel="type"' }` and a JavaScript example passing `Buffer.from('literal')` directly. For a custom defaults class, migrate `headers: { post: customDefaults }` to `headers: { post: { ...customDefaults } }` or `headers: { post: new AxiosHeaders({ ...customDefaults }) }`; both retain its own enumerable header entries as method defaults.
+- **Notes:** No new options, exports, or type declarations. Document the class-defaults migration prominently; do not describe this as universally nonbreaking. Object-to-string normalization is existing JavaScript runtime behavior and does not expand the declared TypeScript header-value types.
+
 ### Interceptor IDs and nullish handler recovery
 
 - **Change:** Restore numeric-string interceptor ID compatibility and clarify interceptor storage behavior.

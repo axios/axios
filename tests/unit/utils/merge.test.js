@@ -181,7 +181,7 @@ describe('utils::merge', () => {
     expect(Object.keys(merged)).toEqual(['Content-Type', 'Accept']);
   });
 
-  it('should keep caseless keys distinct from same-cased keys within one source', () => {
+  it('should coalesce differently cased keys within one source', () => {
     const merged = merge.call({ caseless: true }, { foo: 1, FOO: 2, bar: 3 });
 
     expect(merged).toEqual({ foo: 2, bar: 3 });

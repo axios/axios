@@ -20,6 +20,17 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Opt-in UTF-8 Basic auth usernames
+
+- **Change:** Added `transitional.encodeBasicAuthUsername`, a boolean defaulting to `false`, to opt into UTF-8 encoding of `auth.username` during XHR/Fetch config resolution.
+- **Source:** [PR #11159](https://github.com/axios/axios/pull/11159); `PRE_RELEASE_CHANGELOG.md` Features.
+- **Status:** Pending.
+- **Docs targets:** README request-config `auth` and transitional options; request-config and authentication documentation in the docs site and translations.
+- **Required content:** Explain that applications talking to UTF-8 Basic-auth servers can enable this option per request or with `axios.create`. Existing defaults remain compatible: XHR uses legacy single-byte username encoding and UTF-8 passwords, while Fetch already sends UTF-8 but its config resolution rejects usernames above U+00FF unless opted in. Node HTTP and Fetch URL-embedded credentials are unchanged. Setting the option to `false` on a request overrides an instance opt-in; it does not select Latin-1 for Fetch or Node HTTP.
+- **Examples:** `axios.get('/account', { auth: { username: 'π', password: 'secret' }, transitional: { encodeBasicAuthUsername: true } })`. Also show an instance opt-in with a request-level `false` override for a legacy XHR endpoint.
+- **Compatibility:** No migration is required unless enabling the option. Remove manual UTF-8-to-byte-string username conversion when opting in to avoid double encoding. Do not enable it for XHR servers expecting legacy Latin-1 username bytes. RFC 7617 leaves the default encoding unspecified; this option does not negotiate server challenges or normalize Unicode. ASCII/empty credentials are unchanged and malformed UTF-16 continues to reject with `ERR_BAD_OPTION_VALUE` in XHR/Fetch.
+- **Types:** Both `index.d.ts` and `index.d.cts` expose the optional boolean in `TransitionalOptions`.
+
 ### Global TLS options for CONNECT-tunneled origins
 
 - **Change:** Apply the current `https.globalAgent.options` to an HTTPS origin reached through an Axios-managed CONNECT tunnel when no per-request `httpsAgent` is configured.

@@ -131,6 +131,16 @@ describe('xsrf (vitest browser)', () => {
     expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
   });
 
+  it('should not set xsrf header for a different port on the same hostname', async () => {
+    setXsrfCookie('12345');
+    const url = new URL(window.location.href);
+    url.port = url.port === '65535' ? '65534' : '65535';
+
+    const request = await sendRequest(url.href);
+
+    expect(request.requestHeaders[axios.defaults.xsrfHeaderName]).toBeUndefined();
+  });
+
   it('should not set xsrf header for cross origin when using withCredentials', async () => {
     setXsrfCookie('12345');
 

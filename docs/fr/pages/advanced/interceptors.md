@@ -183,5 +183,5 @@ Vous pouvez ajouter plusieurs intercepteurs à la même requête ou réponse. Le
   - Une fois capturée, un autre intercepteur de réussite suivant est à nouveau appelé (comme dans une chaîne de promises).
 
 ::: tip
-Pour une compréhension approfondie du fonctionnement des intercepteurs, vous pouvez lire les cas de test disponibles [ici](https://github.com/axios/axios/blob/v1.x/test/specs/interceptors.spec.js).
+Pour une compréhension approfondie du fonctionnement des intercepteurs, vous pouvez lire les cas de test disponibles [ici](https://github.com/axios/axios/blob/v1.x/tests/browser/interceptors.browser.test.js).
 :::

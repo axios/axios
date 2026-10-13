@@ -20,6 +20,57 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Opt-in UTF-8 Basic auth usernames
+
+- **Change:** Added `transitional.encodeBasicAuthUsername`, a boolean defaulting to `false`, to opt into UTF-8 encoding of `auth.username` during XHR/Fetch config resolution.
+- **Source:** [PR #11159](https://github.com/axios/axios/pull/11159); `PRE_RELEASE_CHANGELOG.md` Features.
+- **Status:** Pending.
+- **Docs targets:** README request-config `auth` and transitional options; request-config and authentication documentation in the docs site and translations.
+- **Required content:** Explain that applications talking to UTF-8 Basic-auth servers can enable this option per request or with `axios.create`. Existing defaults remain compatible: XHR uses legacy single-byte username encoding and UTF-8 passwords, while Fetch already sends UTF-8 but its config resolution rejects usernames above U+00FF unless opted in. Node HTTP and Fetch URL-embedded credentials are unchanged. Setting the option to `false` on a request overrides an instance opt-in; it does not select Latin-1 for Fetch or Node HTTP.
+- **Examples:** `axios.get('/account', { auth: { username: 'π', password: 'secret' }, transitional: { encodeBasicAuthUsername: true } })`. Also show an instance opt-in with a request-level `false` override for a legacy XHR endpoint.
+- **Compatibility:** No migration is required unless enabling the option. Remove manual UTF-8-to-byte-string username conversion when opting in to avoid double encoding. Do not enable it for XHR servers expecting legacy Latin-1 username bytes. RFC 7617 leaves the default encoding unspecified; this option does not negotiate server challenges or normalize Unicode. ASCII/empty credentials are unchanged and malformed UTF-16 continues to reject with `ERR_BAD_OPTION_VALUE` in XHR/Fetch.
+- **Types:** Both `index.d.ts` and `index.d.cts` expose the optional boolean in `TransitionalOptions`.
+
+### Global TLS options for CONNECT-tunneled origins
+
+- **Change:** Apply the current `https.globalAgent.options` to an HTTPS origin reached through an Axios-managed CONNECT tunnel when no per-request `httpsAgent` is configured.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11178; related to #11176, whose explicit-agent failure is not established as fixed by this change.
+- **Status:** Pending.
+- **Docs targets:** README request-config proxy/agent guidance and the Node proxy configuration docs; translated docs after the English documentation is finalized.
+- **Required content:** Explain that an explicit `httpsAgent` takes precedence over the global agent, without merging their trust settings. Origin TLS options are read for each request, including after the tunneling agent is cached; changes to either selected agent's options and replacement of `https.globalAgent` are observed by subsequent requests. Global TLS settings apply only to the tunneled origin, not to the HTTPS proxy's TLS connection. Existing explicit-agent handling for the proxy is unchanged.
+- **Examples:** Show a process-installed private CA with `https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem')` and `axios.get('https://internal-api.example.com/data', { proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 } })`, without an explicit `httpsAgent`. Explain that a request-specific agent must carry its own required CA.
+- **Notes:** Patch-level behavior correction with no new API, type, or migration requirements. Configured TLS options include `checkServerIdentity` and `rejectUnauthorized`; do not recommend disabling certificate validation. This forwards options, not arbitrary custom agent connection hooks. Browser adapters and HTTP/2 behavior are unchanged.
+
+### Literal method-named request headers
+
+- **Change:** Restore literal headers such as `Link`, including non-plain object values, and distinguish them from common and method-specific header maps.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Literal method-named headers; #11156 and #11096.
+- **Status:** Pending.
+- **Docs targets:** README and docs site request-header and configuration-defaults guidance; migration guide for custom class defaults.
+- **Required content:** Plain objects, null-prototype maps, and compatible `AxiosHeaders` (including subclasses and instances from other package builds) remain defaults buckets. Compatible foreign instances must provide the header-container interface; application objects exposing only the `AxiosHeaders` tag and `toJSON` remain literal values. Only the matching method bucket applies; these buckets are never transmitted as literal headers. Scalars, arrays, and other objects such as Dates, Buffers, typed arrays, and application class instances use normal header-value serialization. Existing null/undefined/false header omission remains intact. Explain the breaking compatibility change for applications using arbitrary class instances as defaults buckets: convert those instances to plain maps or `AxiosHeaders` before assigning them under `common` or a method name. Otherwise their string representation becomes a literal header, including on nonmatching requests; this can expose contents included by a custom `toString()`.
+- **Examples:** Show `headers: { Link: '<https://example.com/resource>; rel="type"' }` and a JavaScript example passing `Buffer.from('literal')` directly. For a custom defaults class, migrate `headers: { post: customDefaults }` to `headers: { post: { ...customDefaults } }` or `headers: { post: new AxiosHeaders({ ...customDefaults }) }`; both retain its own enumerable header entries as method defaults.
+- **Notes:** No new options, exports, or type declarations. Document the class-defaults migration prominently; do not describe this as universally nonbreaking. Object-to-string normalization is existing JavaScript runtime behavior and does not expand the declared TypeScript header-value types.
+
+### Interceptor IDs and nullish handler recovery
+
+- **Change:** Restore numeric-string interceptor ID compatibility and clarify interceptor storage behavior.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11139 and #11114; nullish handler recovery was implemented in #11118.
+- **Status:** Pending.
+- **Docs targets:** `README.md` Interceptors section; interceptor API reference; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the numeric value returned by `use()` is an opaque interceptor ID that must be passed back to `eject()` unchanged, rather than used as an index into the handlers array. Recommend `clear()` and `eject()` for managing interceptors. If the handlers array is replaced with `null` or `undefined`, the chain is skipped and the next `use()` automatically restores an array. Unknown IDs and repeated ejections are no-ops; stale IDs cannot remove newly registered handlers after compaction or clearing.
+- **Examples:** Keep the existing `eject(myInterceptor)` example using the original numeric ID.
+- **Notes:** Canonical numeric-string IDs are accepted for historical runtime compatibility; this does not expand the documented numeric-ID API or TypeScript declarations. Interceptor execution order is unchanged.
+
+### Fetch response size errors
+
+- **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.
+- **Source:** #11179; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch response size errors.
+- **Status:** Pending.
+- **Docs targets:** Fetch adapter and `maxContentLength` guidance; TypeScript/custom fetch examples.
+- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When response-body streaming is supported and the response has a body, custom `env.Response` implementations must accept a tracked `ReadableStream<Uint8Array>` if `maxContentLength` is enabled (a numeric value greater than `-1`), `onDownloadProgress` is set, or `responseType` is `'stream'` or `'response'` with cancellation/timeout tracking. An enabled size limit requires stream support even without a progress callback. The constructor signature retains its legacy body type for compatibility; assignability to `env.Response` alone does not establish support for these runtime stream inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
+- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`, and a custom Response wrapper that forwards tracked streams unchanged when used with `maxContentLength` or `onDownloadProgress`.
+- **Notes:** Do not imply the limit, default adapter, genuine network-error behavior, or accepted constructor types change. No migration is required.
+
 ### Runtime configuration prototype hardening
 
 - **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.
@@ -128,3 +179,14 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Explain that `.`, `[`, and `]` are structural path separators when converting FormData back to JSON, while other characters such as `-`, spaces, `+`, `*`, and `&` remain literal key characters. Mention that `foo[bar]`, `foo.bar`, and `foo[]` continue to create nested object/array paths.
 - **Examples:** Include a short example showing `form.append('user-name', 'johndoe')` converting to `{ 'user-name': 'johndoe' }`, and `form.append('user.name', 'john')` or `form.append('user[name]', 'john')` converting to `{ user: { name: 'john' } }`.
 - **Notes:** README, API/multipart/HTML-form docs, and Spanish, French, and Chinese translations now document dot/bracket path parsing and literal punctuation keys without presenting the previous splitting behavior as supported.
+
+### Wrapped error stacks in `AxiosError`
+
+- **Change:** `AxiosError.from()` appends an available wrapped error stack to `error.stack` after a `Caused by:` marker, in addition to the existing non-enumerable `error.cause`. Reconstructed request/caller frames precede that section, including when only one or two frames are available.
+- **Source:** [PR #11142](https://github.com/axios/axios/pull/11142), related to [issue #6670](https://github.com/axios/axios/issues/6670); `PRE_RELEASE_CHANGELOG.md` Bug Fixes.
+- **Status:** Pending.
+- **Docs targets:** `README.md` error-handling section and the API error reference in `docs/pages/` describing `stack`, `cause`, and `toJSON()`.
+- **Required content:** Explain that reporters which read only `error.stack` can now see an existing wrapped stack. `error.cause` remains the same original object and the supported programmatic link; cause-aware tooling already has access to it and may display some stack content twice. The wrapper's stack and reconstructed caller frames come first, followed by the wrapped stack verbatim. Marker-like text inside a message or custom stack is preserved as text. Missing, empty, non-string, throwing, or unwritable stacks are skipped defensively. Re-wrapping adds one nested section per call and increases the string size; this is not a bounded or idempotent cause history. Explicit `customProps.stack` continues to override the generated stack.
+- **Examples:** Show a trimmed Node socket/DNS failure stack containing the `Caused by:` section, alongside a snippet reading `error.cause`. State that the diagnostic string is also exposed by `toJSON().stack`.
+- **Limitations:** Wrapping cannot recover details the platform never supplied. Browser XHR `Network Error` events generally have no underlying Error stack, and this change does not diagnose hidden CORS, DNS, or TLS causes. Only failures routed through `AxiosError.from()` with usable stacks gain a section. Appended stacks are verbatim diagnostics, not redacted metadata; existing `config.redact` rules do not sanitize stack strings.
+- **Notes:** Do not present the marker as a stable parsing contract. Preserve the structured cause reference for programmatic consumers; no public types or migration steps are needed.

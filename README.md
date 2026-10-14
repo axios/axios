@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> [**Get Security Updates for Axios v0 →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
+
 <h3 align="center">💎 Platinum sponsors <br /></h3>
 <table align="center">
     <tr>
@@ -405,7 +408,7 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://www.herodevs.com/"
+                href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"
                 style="padding: 10px; display: inline-block"
                 target="_blank"
             >
@@ -423,7 +426,7 @@
             </p>
             <p align="center">
                 <a
-                    href="https://www.herodevs.com/"
+                    href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"
                     target="_blank"
                     ><b>herodevs.com</b></a
                 >
@@ -431,10 +434,29 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opencollective.com/axios/contribute"
+                href="https://opencollective.com/sweepico-promo-code"
+                style="padding: 10px; display: inline-block"
                 target="_blank"
-                >💜 Become a sponsor</a
             >
+                <img
+                    width="90px"
+                    height="90px"
+                    src="https://images.opencollective.com/sweepico-promo-code/4dd517a/logo.png"
+                    alt="Sweepico Promo Code"
+                />
+            </a>
+            <p
+                align="center"
+            >
+                Social Gaming Platform
+            </p>
+            <p align="center">
+                <a
+                    href="https://opencollective.com/sweepico-promo-code"
+                    target="_blank"
+                    ><b>Sweepico Promo Code</b></a
+                >
+            </p>
         </td>
     </tr>
 </table>
@@ -616,13 +638,13 @@ const axios = require('axios/dist/browser/axios.cjs'); // browser commonJS bundl
 Using jsDelivr CDN (ES5 UMD browser module):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/axios@1.13.2/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.20.0/dist/axios.min.js"></script>
 ```
 
 Using unpkg CDN:
 
 ```html
-<script src="https://unpkg.com/axios@1.13.2/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios@1.20.0/dist/axios.min.js"></script>
 ```
 
 ## Example

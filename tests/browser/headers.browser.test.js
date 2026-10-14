@@ -118,6 +118,24 @@ describe('headers (vitest browser)', () => {
     await finishRequest(request, promise);
   });
 
+  it('should preserve __proto__ in raw XHR response headers', async () => {
+    const promise = axios.get('/response-headers', { adapter: 'xhr' });
+    const request = getLastRequest();
+
+    request.getAllResponseHeaders = () =>
+      '__proto__: first\r\n__PROTO__: second\r\nX-Other: other\r\n';
+    request.respondWith({ responseText: 'ok' });
+
+    const { data, headers } = await promise;
+
+    expect(data).toBe('ok');
+    expect(Object.getPrototypeOf(headers)).toBe(AxiosHeaders.prototype);
+    expect(headers.get('__proto__')).toBe('first, second');
+    expect(headers.get('__PROTO__')).toBe('first, second');
+    expect(headers.get('x-other')).toBe('other');
+    expect(headers.toJSON().__Proto__).toBe('first, second');
+  });
+
   it('should allow request interceptors to encode Unicode header values before XHR sends them', async () => {
     const instance = axios.create({ adapter: 'xhr' });
 

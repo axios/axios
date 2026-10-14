@@ -7433,5 +7433,81 @@ describe('supports http with nodejs', () => {
         }
       );
     });
+
+    it('clears kAxiosCurrentReq on keep-alive sockets when following redirects (#11325)', async () => {
+      const server = await startHTTPServer((req, res) => {
+        res.end('ok');
+      });
+
+      const agent = new http.Agent({ keepAlive: true });
+
+      try {
+        const response = await axios.get(`http://127.0.0.1:${server.address().port}`, {
+          httpAgent: agent,
+        });
+
+        assert.strictEqual(response.status, 200);
+
+        const socket = response.request.socket;
+        assert.ok(socket, 'socket should exist on response request');
+
+        const currentReqSym = Object.getOwnPropertySymbols(socket).find(
+          (s) => s.description === 'axios.http.currentReq'
+        );
+        assert.ok(currentReqSym, 'kAxiosCurrentReq symbol should exist on socket');
+        assert.strictEqual(
+          socket[currentReqSym],
+          null,
+          'socket[kAxiosCurrentReq] must be cleared when response finishes'
+        );
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('clears kAxiosCurrentReq on all sockets when following multi-hop redirects (#11325)', async () => {
+      const server = await startHTTPServer((req, res) => {
+        if (req.url === '/redirect') {
+          res.writeHead(302, { Location: '/target' });
+          res.end();
+          return;
+        }
+        res.end('target reached');
+      });
+
+      const agent = new http.Agent({ keepAlive: true });
+      const capturedSockets = new Set();
+
+      try {
+        const response = await axios.get(`http://127.0.0.1:${server.address().port}/redirect`, {
+          httpAgent: agent,
+          beforeRedirect(options, { requestOptions }) {
+            // Observe redirect
+          },
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.data, 'target reached');
+
+        // Check all pooled sockets in agent.freeSockets
+        const sockets = Object.values(agent.freeSockets).flat();
+        for (const sock of sockets) {
+          const currentReqSym = Object.getOwnPropertySymbols(sock).find(
+            (s) => s.description === 'axios.http.currentReq'
+          );
+          if (currentReqSym) {
+            assert.strictEqual(
+              sock[currentReqSym],
+              null,
+              'every socket in pool must have kAxiosCurrentReq cleared'
+            );
+          }
+        }
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
   });
 });

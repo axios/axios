@@ -2,6 +2,7 @@ import { describe, it } from 'vitest';
 import assert from 'assert';
 import http from 'http';
 import { runModuleInChildProcess } from '../../setup/runModuleInChildProcess.js';
+import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import axios from '../../../index.js';
 import composeSignals from '../../../lib/helpers/composeSignals.js';
@@ -124,7 +125,7 @@ describe('runtime option consistency', function () {
   });
 
   it('sends primitive request bodies consistently across adapters', async function () {
-    var server = http.createServer(function (req, res) {
+    var server = await startHTTPServer(function (req, res) {
       var chunks = [];
       req.on('data', function (chunk) {
         chunks.push(chunk);
@@ -134,9 +135,6 @@ describe('runtime option consistency', function () {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ body: body, length: req.headers['content-length'] }));
       });
-    });
-    await new Promise(function (resolve) {
-      server.listen(0, '127.0.0.1', resolve);
     });
     var url = 'http://127.0.0.1:' + server.address().port;
     try {
@@ -161,11 +159,28 @@ describe('runtime option consistency', function () {
           c.expected,
           'fetch adapter failed for ' + c.value
         );
+
+        // Verify primitive length accounting in fetch when maxBodyLength is enforced
+        var expectedBytes = Buffer.byteLength(c.expected);
+        await assert.rejects(
+          axios.post(url, c.value, {
+            adapter: 'fetch',
+            maxBodyLength: expectedBytes - 1,
+          }),
+          function (err) {
+            return err && err.code === 'ERR_BAD_REQUEST';
+          },
+          'fetch adapter should reject primitive exceeding maxBodyLength'
+        );
+
+        var allowedFetch = await axios.post(url, c.value, {
+          adapter: 'fetch',
+          maxBodyLength: expectedBytes,
+        });
+        assert.strictEqual(allowedFetch.data.body, c.expected);
       }
     } finally {
-      await new Promise(function (resolve) {
-        server.close(resolve);
-      });
+      await stopHTTPServer(server);
     }
   });
 

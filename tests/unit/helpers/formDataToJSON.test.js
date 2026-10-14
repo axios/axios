@@ -54,6 +54,83 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it('should preserve the order of many repeated nested fields', () => {
+    const formData = new FormData();
+    const values = Array.from({ length: 10000 }, (_, i) => String(i));
+
+    for (const value of values) {
+      formData.append('items[id]', value);
+    }
+
+    expect(formDataToJSON(formData)).toEqual({ items: { id: values } });
+  });
+
+  it('should preserve repeated file values and interleaved fields', () => {
+    const formData = new FormData();
+    const first = new File(['first'], 'first.txt');
+    const second = new File(['second'], 'second.txt');
+    const third = new File(['third'], 'third.txt');
+    formData.append('files', first);
+    formData.append('label', 'upload');
+    formData.append('files', second);
+    formData.append('files', third);
+    formData.append('files', 'last');
+
+    const result = formDataToJSON(formData);
+    expect(result.label).toBe('upload');
+    expect(result.files).toEqual([first, second, third, 'last']);
+    expect(result.files[0]).toBe(first);
+    expect(result.files[1]).toBe(second);
+    expect(result.files[2]).toBe(third);
+  });
+
+  it('should keep repeated-value arrays isolated across conversions', () => {
+    const formData = new FormData();
+    ['first', 'second', 'third'].forEach((value) => formData.append('items', value));
+    const first = formDataToJSON(formData);
+    const second = formDataToJSON(formData);
+
+    first.items.push('extra');
+
+    expect(second).toEqual({ items: ['first', 'second', 'third'] });
+    expect(formDataToJSON(formData)).toEqual(second);
+    expect([...formData.values()]).toEqual(['first', 'second', 'third']);
+  });
+
+  it('should retain explicitly spreadable file values', () => {
+    const formData = new FormData();
+    const file = new File(['third'], 'third.txt');
+    file[Symbol.isConcatSpreadable] = true;
+    file[0] = 'third';
+    file.length = 1;
+    formData.append('items', 'first');
+    formData.append('items', 'second');
+    formData.append('items', file);
+    formData.append('items', 'fourth');
+
+    expect(formDataToJSON(formData)).toEqual({ items: ['first', 'second', 'third', 'fourth'] });
+  });
+
+  it('should read custom spreadability only when concat would read it', () => {
+    const formData = new FormData();
+    const file = new File(['file'], 'file.txt');
+    let reads = 0;
+    Object.defineProperty(file, Symbol.isConcatSpreadable, {
+      get() {
+        reads++;
+        return false;
+      },
+    });
+    formData.append('items', 'first');
+    formData.append('items', file);
+    formData.append('items', file);
+
+    const result = formDataToJSON(formData);
+
+    expect(reads).toBe(1);
+    expect(result.items).toEqual(['first', file, file]);
+  });
+
   it('should convert props with empty brackets to arrays', () => {
     const formData = new FormData();
 

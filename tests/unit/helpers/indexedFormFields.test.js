@@ -197,4 +197,75 @@ describe('indexed multipart fields', function () {
 
     assert.deepStrictEqual(result, { items: ['first', 'second'] });
   });
+
+  it.each(['4', '01', '-1', '4294967295'])(
+    'normalizes a repeated-value array after writing index %s',
+    function (key) {
+      var result = convertFields([
+        ['root[items]', 'first'],
+        ['root[items]', 'second'],
+        ['root[items][' + key + ']', 'indexed'],
+        ['root[items]', 'third'],
+        ['root[items]', 'fourth'],
+      ]);
+      var expected = {
+        root: { items: [{ 0: 'first', 1: 'second', [key]: 'indexed' }, 'third', 'fourth'] },
+      };
+
+      assert.deepStrictEqual(result, expected);
+      assert.deepStrictEqual(JSON.parse(JSON.stringify(result)), expected);
+    }
+  );
+
+  it('normalizes sparse indexes before accumulating repeated values', function () {
+    var result = convertFields([
+      ['items[1]', 'indexed'],
+      ['items', 'first'],
+      ['items', 'second'],
+      ['items', 'third'],
+    ]);
+
+    assert.deepStrictEqual(result, { items: [{ 1: 'indexed' }, 'first', 'second', 'third'] });
+  });
+
+  it('retains dense indexed writes interleaved with repeated fields', function () {
+    var result = convertFields([
+      ['items', 'first'],
+      ['items', 'second'],
+      ['items[]', 'third'],
+      ['items[0]', 'repeated first'],
+      ['items', 'fourth'],
+      ['items', 'fifth'],
+    ]);
+
+    assert.deepStrictEqual(result, {
+      items: [['first', 'repeated first'], 'second', 'third', 'fourth', 'fifth'],
+    });
+  });
+
+  it('retains concat behavior for array entries from custom FormData iterators', function () {
+    var result = convertFields([
+      ['items', 'first'],
+      ['items', 'second'],
+      ['items', ['third', 'fourth']],
+      ['items', 'fifth'],
+    ]);
+
+    assert.deepStrictEqual(result, { items: ['first', 'second', 'third', 'fourth', 'fifth'] });
+  });
+
+  it('normalizes sparse values introduced by custom FormData iterators', function () {
+    var sparse = [];
+    sparse[1] = 'fourth';
+    var result = convertFields([
+      ['items', 'first'],
+      ['items', 'second'],
+      ['items', sparse],
+      ['items', 'fifth'],
+    ]);
+
+    assert.deepStrictEqual(result, {
+      items: [{ 0: 'first', 1: 'second', 3: 'fourth' }, 'fifth'],
+    });
+  });
 });

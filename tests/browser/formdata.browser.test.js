@@ -81,6 +81,47 @@ describe('formdata (vitest browser)', () => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
   });
 
+  it('should preserve repeated values and files when converting a form to JSON', () => {
+    const form = document.createElement('form');
+    ['first', 'second', 'third'].forEach((value) => {
+      const input = document.createElement('input');
+      input.name = 'items[id]';
+      input.value = value;
+      form.append(input);
+    });
+
+    expect(axios.formToJSON(form)).toEqual({ items: { id: ['first', 'second', 'third'] } });
+
+    const data = new FormData(form);
+    const files = ['first', 'second', 'third'].map((name) => new File([name], name + '.txt'));
+    files.forEach((file) => data.append('files', file));
+    const result = axios.formToJSON(data);
+
+    expect(result.items).toEqual({ id: ['first', 'second', 'third'] });
+    files.forEach((file, index) => expect(result.files[index]).toBe(file));
+  });
+
+  it('should preserve indexed fields interleaved with repeated JSON request fields', async () => {
+    const data = new FormData();
+    data.append('items', 'first');
+    data.append('items', 'second');
+    data.append('items[01]', 'named');
+    data.append('items', 'third');
+    data.append('items', 'fourth');
+
+    const responsePromise = axios.post('/foo', data, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const request = getLastRequest();
+
+    expect(JSON.parse(request.params)).toEqual({
+      items: [{ 0: 'first', 1: 'second', '01': 'named' }, 'third', 'fourth'],
+    });
+
+    request.respondWith({ responseText: '{}' });
+    await responsePromise;
+  });
+
   it('should allow FormData posting', async () => {
     const responsePromise = axios.postForm('/foo', {
       a: 'foo',

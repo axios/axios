@@ -305,6 +305,8 @@ export interface TransitionalOptions {
   legacyInterceptorReqResOrdering?: boolean;
   advertiseZstdAcceptEncoding?: boolean;
   validateStatusUndefinedResolves?: boolean;
+  /** Opt in to UTF-8 Basic auth usernames in XHR/Fetch config resolution. Defaults to false. */
+  encodeBasicAuthUsername?: boolean;
 }
 
 export interface GenericAbortSignal {

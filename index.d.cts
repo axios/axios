@@ -42,8 +42,6 @@ type BrowserProgressEvent = any;
 declare class AxiosHeaders {
   constructor(headers?: axios.RawAxiosHeaders | AxiosHeaders | string);
 
-  [key: string]: any;
-
   set(
     headerName?: string,
     value?: axios.AxiosHeaderValue,

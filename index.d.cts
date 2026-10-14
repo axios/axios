@@ -7,7 +7,7 @@ type MethodsHeaders = Partial<
 type AxiosHeaderMatcher =
   | string
   | RegExp
-  | ((this: AxiosHeaders, value: string, name: string) => boolean);
+  | ((this: AxiosHeaders, value: string, name: string, headers: AxiosHeaders) => boolean);
 
 type AxiosHeaderParser = (this: AxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
 

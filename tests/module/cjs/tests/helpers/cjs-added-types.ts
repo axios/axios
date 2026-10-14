@@ -26,6 +26,7 @@ const parsedHeaderParameters: axios.AxiosHeaderParameters = headers.get(
   'content-type',
   axios.AxiosHeaders.parseParameters
 );
+headers.set('x-test', 'next', (value, name, instance) => instance.has(name));
 
 const source = axios.CancelToken.source();
 source.token.subscribe((cancel) => {

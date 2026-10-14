@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Response duration
+
+- **Change:** Expose elapsed adapter time as the optional numeric `AxiosResponse.duration` property in milliseconds, including on `error.response` when present.
+- **Source:** [PR #11214](https://github.com/axios/axios/pull/11214), related to [request/response timing #695](https://github.com/axios/axios/issues/695) and [feature suggestions #6984](https://github.com/axios/axios/issues/6984).
+- **Status:** Pending.
+- **Docs targets:** README response schema and error-handling examples; docs-site response schema and error handling; corresponding translations.
+- **Required content:** Timing starts immediately before adapter invocation, after request interceptors and request transforms. It ends in the adapter's settlement handler, before response transforms and response interceptors. Buffered responses include body reception; HTTP/Fetch streaming responses measure only the time until the stream becomes available, and consuming or failing that stream later does not update the value. This is not a DNS/TCP/TLS/TTFB breakdown or server-processing time. It includes adapter work such as connection queuing and redirects. Errors without a response, including ordinary network errors, timeouts, and cancellations, have no duration. Strict JSON parsing failures retain the duration on their attached response.
+- **Examples:** Show `const response = await axios.get('/users'); console.log(response.duration);`. For errors, guard with `axios.isAxiosError(error)` and `error.response` before reading `error.response.duration`; do not imply that every error has a response.
+- **Notes:** Values use `Date.now()`, with two clock reads for a response receiving timing metadata. Backward clock adjustments clamp to zero; forward adjustments can inflate the value, so it is approximate wall-clock timing rather than a monotonic measurement. The field is enumerable and overwrites a custom adapter's existing `duration` property. Both declaration formats keep it optional for custom adapters and manually constructed responses. Semver impact is minor; no new option, dependency, or migration for built-in-adapter users. Apply published documentation only during release preparation.
+
 ### Asynchronous XSRF cookie reads in the XHR adapter
 
 - **Change:** Document the XHR adapter's use of the Cookie Store API for XSRF token reads.

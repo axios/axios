@@ -1,5 +1,6 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
+import http from 'http';
 import { runModuleInChildProcess } from '../../setup/runModuleInChildProcess.js';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import axios from '../../../index.js';
@@ -120,6 +121,52 @@ describe('runtime option consistency', function () {
       setImmediate(resolve);
     });
     assert.strictEqual(calls, 1);
+  });
+
+  it('sends primitive request bodies consistently across adapters', async function () {
+    var server = http.createServer(function (req, res) {
+      var chunks = [];
+      req.on('data', function (chunk) {
+        chunks.push(chunk);
+      });
+      req.on('end', function () {
+        var body = Buffer.concat(chunks).toString('utf-8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ body: body, length: req.headers['content-length'] }));
+      });
+    });
+    await new Promise(function (resolve) {
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    var url = 'http://127.0.0.1:' + server.address().port;
+    try {
+      var cases = [
+        { value: 0, expected: '0' },
+        { value: false, expected: 'false' },
+        { value: 123, expected: '123' },
+        { value: true, expected: 'true' },
+      ];
+
+      for (var i = 0; i < cases.length; i++) {
+        var c = cases[i];
+        var resHttp = await axios.post(url, c.value, { adapter: 'http' });
+        assert.strictEqual(
+          resHttp.data.body,
+          c.expected,
+          'http adapter failed for ' + c.value
+        );
+        var resFetch = await axios.post(url, c.value, { adapter: 'fetch' });
+        assert.strictEqual(
+          resFetch.data.body,
+          c.expected,
+          'fetch adapter failed for ' + c.value
+        );
+      }
+    } finally {
+      await new Promise(function (resolve) {
+        server.close(resolve);
+      });
+    }
   });
 
   it('uses own absolute URL defaults', async function () {

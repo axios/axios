@@ -143,6 +143,21 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('foo'), 'value3');
     });
 
+    it('should pass the headers instance as the third argument to function rewrite matchers', () => {
+      const headers = new AxiosHeaders({ foo: 'value1', bar: 'value2' });
+
+      headers.set('foo', 'value3', (value, header, instance) => {
+        assert.strictEqual(instance, headers);
+        return instance.get('bar') === 'value2';
+      });
+
+      assert.strictEqual(headers.get('foo'), 'value3');
+
+      headers.set('foo', 'value4', (value, header, instance) => instance.has('baz'));
+
+      assert.strictEqual(headers.get('foo'), 'value3');
+    });
+
     it('should support iterables as a key-value source object', () => {
       const headers = new AxiosHeaders();
 

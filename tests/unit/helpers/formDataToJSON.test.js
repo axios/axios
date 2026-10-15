@@ -17,6 +17,46 @@ describe('formDataToJSON', () => {
     });
   });
 
+  it.each([
+    {
+      name: 'bracket notation',
+      entries: [['metadata[length]', 'long']],
+      expected: { metadata: { length: 'long' } },
+    },
+    {
+      name: 'dot notation',
+      entries: [['metadata.length', 'long']],
+      expected: { metadata: { length: 'long' } },
+    },
+    {
+      name: 'nested values below length',
+      entries: [['metadata[length][unit]', 'cm']],
+      expected: { metadata: { length: { unit: 'cm' } } },
+    },
+    {
+      name: 'repeated length values',
+      entries: [
+        ['metadata[length]', 'long'],
+        ['metadata[length]', 'wide'],
+      ],
+      expected: { metadata: { length: ['long', 'wide'] } },
+    },
+    {
+      name: 'numeric siblings',
+      entries: [
+        ['metadata[0]', 'first'],
+        ['metadata[length]', 'long'],
+      ],
+      expected: { metadata: { 0: 'first', length: 'long' } },
+    },
+  ])('should parse a nested field named length using $name', ({ entries, expected }) => {
+    const formData = new FormData();
+
+    entries.forEach(([name, value]) => formData.append(name, value));
+
+    expect(formDataToJSON(formData)).toEqual(expected);
+  });
+
   it('should convert repeatable values as an array', () => {
     const formData = new FormData();
 

@@ -526,6 +526,11 @@ export interface AxiosResponse<T = any, D = any, H = {}, P = any> {
   data: T;
   status: number;
   statusText: string;
+  /**
+   * Wall-clock milliseconds from adapter invocation to settlement, clamped at zero.
+   * Excludes interceptors and request/response transforms. Stream consumption is not included.
+   */
+  duration?: number;
   headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
   config: InternalAxiosRequestConfig<D, P>;
   request?: any;

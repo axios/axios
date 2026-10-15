@@ -162,6 +162,60 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should reject a negative timeout as an immediate timeout instead of crashing', async () => {
+    let requests = 0;
+    const server = await startHTTPServer(
+      (req, res) => {
+        requests++;
+        res.end('ok');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      for (const [timeout, maxRedirects] of [
+        [-1, undefined],
+        [-1, 0],
+        [-0.5, undefined],
+        [-0.5, 0],
+        ['-1', undefined],
+        ['-1', 0],
+        [-1n, undefined],
+        [-Infinity, undefined],
+        [-Infinity, 0],
+      ]) {
+        await assert.rejects(
+          axios.get(`http://localhost:${server.address().port}`, {
+            timeout,
+            maxRedirects,
+          }),
+          (error) => {
+            assert.ok(error instanceof AxiosError);
+            assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+            assert.strictEqual(error.message, `timeout of ${timeout}ms exceeded`);
+            return true;
+          }
+        );
+      }
+
+      await assert.rejects(
+        axios.get(`http://localhost:${server.address().port}`, {
+          timeout: -1,
+          transitional: { clarifyTimeoutError: true },
+        }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ETIMEDOUT);
+          return true;
+        }
+      );
+
+      assert.strictEqual(requests, 0);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

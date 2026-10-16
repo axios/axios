@@ -401,6 +401,29 @@ describe('core::mergeConfig', () => {
       expect(Object.getOwnPropertySymbols(merged)).toEqual([symbol]);
     });
 
+    it('reads each config getter once instead of copying both configs first', () => {
+      let defaultReads = 0;
+      let requestReads = 0;
+      const config1 = {
+        get timeout() {
+          defaultReads++;
+          return 1000;
+        },
+      };
+      const config2 = {
+        get url() {
+          requestReads++;
+          return '/foo';
+        },
+      };
+
+      const merged = mergeConfig(config1, config2);
+
+      expect(merged).toEqual({ timeout: 1000, url: '/foo' });
+      expect(defaultReads).toBe(1);
+      expect(requestReads).toBe(1);
+    });
+
     it('preserves request-only symbol keys', () => {
       const symbol = Symbol('some flag used in request interceptor');
       const merged = mergeConfig(defaults, { [symbol]: true });

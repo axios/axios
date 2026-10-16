@@ -386,6 +386,21 @@ describe('core::mergeConfig', () => {
       expect(merged[symbol]).toEqual({ a: 1, b: 3, c: 4 });
     });
 
+    it('visits enumerable keys of both configs once, in spread order', () => {
+      const symbol = Symbol('flag');
+      const config1 = { a: 1, b: 2, [symbol]: 'default' };
+      Object.defineProperty(config1, 'hidden', { value: 'default', enumerable: false });
+      Object.defineProperty(config1, 'shadowed', { value: 'default', enumerable: false });
+      const config2 = { c: 3, shadowed: 'request', a: 4 };
+      Object.defineProperty(config2, 'hiddenToo', { value: 'request', enumerable: false });
+
+      const merged = mergeConfig(config1, config2);
+
+      expect(Object.keys(merged)).toEqual(['a', 'b', 'c', 'shadowed']);
+      expect(merged).toEqual({ a: 4, b: 2, c: 3, shadowed: 'request', [symbol]: 'default' });
+      expect(Object.getOwnPropertySymbols(merged)).toEqual([symbol]);
+    });
+
     it('preserves request-only symbol keys', () => {
       const symbol = Symbol('some flag used in request interceptor');
       const merged = mergeConfig(defaults, { [symbol]: true });

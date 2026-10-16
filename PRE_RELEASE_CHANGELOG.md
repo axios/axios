@@ -49,6 +49,8 @@
 
 ## Maintenance
 
+- **Non-UTF-8 charset reproduction:** Added isolated tests documenting how Node.js responses declared as UTF-8, ISO-8859-1, and EUC-JP are decoded. The reproduction shows that the default UTF-8 decoding corrupts non-UTF-8 text, `responseEncoding: 'latin1'` handles ISO-8859-1, and Node.js `Buffer.toString()` does not support `euc-jp`. This is test-only and does not change Axios runtime behavior or its public API. (relates to [#5317](https://github.com/axios/axios/issues/5317), [#11312](https://github.com/axios/axios/pull/11312))
+
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 
 - **Proxy hostname regression coverage:** Added a long non-matching request-hostname test for `NO_PROXY` matching, complementing the existing long-entry test so regressions confined to request-hostname normalization exceed the test's time budget. This protects coverage of the previously fixed trailing-dot normalization denial of service; runtime behavior, public APIs, and types are unchanged. (**[#11235](https://github.com/axios/axios/pull/11235)**)

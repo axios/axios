@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import http from 'http';
 import axios from '../../../index.js';
 import formDataToStream from '../../../lib/helpers/formDataToStream.js';
+import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 
 class SpecFormData {
   constructor() {
@@ -148,7 +148,7 @@ describe('formDataToStream', () => {
 
   it('should send a file with an empty name as a file through the http adapter', async () => {
     let received;
-    const server = http.createServer((req, res) => {
+    const server = await startHTTPServer((req, res) => {
       const chunks = [];
       req.on('data', (chunk) => chunks.push(chunk));
       req.on('end', () => {
@@ -156,7 +156,6 @@ describe('formDataToStream', () => {
         res.end('ok');
       });
     });
-    await new Promise((resolve) => server.listen(0, resolve));
 
     try {
       const form = new FormData();
@@ -164,7 +163,7 @@ describe('formDataToStream', () => {
 
       await axios.post(`http://localhost:${server.address().port}/`, form, { adapter: 'http' });
     } finally {
-      await new Promise((resolve) => server.close(resolve));
+      await stopHTTPServer(server);
     }
 
     const decoded = await new Response(received.body, {

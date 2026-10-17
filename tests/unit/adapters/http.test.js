@@ -1061,9 +1061,9 @@ describe('supports http with nodejs', () => {
           });
         });
 
-      const deflate = (value) =>
+      const deflate = (value, options = {}) =>
         new Promise((resolve, reject) => {
-          zlib.deflate(value, (error, compressed) => {
+          zlib.deflate(value, options, (error, compressed) => {
             if (error) {
               reject(error);
               return;
@@ -1114,6 +1114,7 @@ describe('supports http with nodejs', () => {
         GZIP: gzip(responseBody),
         compress: gzip(responseBody),
         deflate: deflate(responseBody),
+        'deflate-small-window': deflate(responseBody, { windowBits: 9 }),
         'deflate-raw': deflateRaw(responseBody),
         br: brotliCompress(responseBody),
         ...(isZstdSupported ? { zstd: zstdCompress(responseBody) } : {}),

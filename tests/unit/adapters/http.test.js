@@ -1235,14 +1235,11 @@ describe('supports http with nodejs', () => {
         });
       }
 
-      it('should decode a raw deflate stored block whose first bytes also pass the zlib header check', async () => {
-        const payload = 'a'.repeat(29);
-        // 08 1d is a valid RFC 1950 header, but here it starts a non-final stored block with LEN 29
-        const body = Buffer.concat([
-          Buffer.from([0x08, 0x1d, 0x00, 0xe2, 0xff]),
-          Buffer.from(payload),
-          Buffer.from([0x01, 0x00, 0x00, 0xff, 0xff]),
-        ]);
+      it('should decode a small-window zlib stream whose first bytes also look like a stored block header', async () => {
+        const payload = 'a'.repeat(65254);
+        // 18 19 01 e6 fe: the zlib header, then a final stored block that bytes 1-4 mimic as LEN/NLEN
+        const body = zlib.deflateSync(payload, { level: 0, windowBits: 9, chunkSize: 128 * 1024 });
+        assert.strictEqual(body.subarray(0, 5).toString('hex'), '181901e6fe');
         const server = await startHTTPServer(
           (req, res) => {
             res.setHeader('Content-Encoding', 'deflate');
@@ -1254,6 +1251,25 @@ describe('supports http with nodejs', () => {
         try {
           const { data } = await axios.get(`http://localhost:${server.address().port}`);
           assert.strictEqual(data, payload);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should decode a small-window zlib stream whose header bytes arrive in separate chunks', async () => {
+        const body = await deflate(responseBody, { windowBits: 9 });
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.write(body.subarray(0, 1));
+            setTimeout(() => res.end(body.subarray(1)), 50);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
         } finally {
           await stopHTTPServer(server);
         }

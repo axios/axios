@@ -1234,6 +1234,30 @@ describe('supports http with nodejs', () => {
           });
         });
       }
+
+      it('should decode a raw deflate stored block whose first bytes also pass the zlib header check', async () => {
+        const payload = 'a'.repeat(29);
+        // 08 1d is a valid RFC 1950 header, but here it starts a non-final stored block with LEN 29
+        const body = Buffer.concat([
+          Buffer.from([0x08, 0x1d, 0x00, 0xe2, 0xff]),
+          Buffer.from(payload),
+          Buffer.from([0x01, 0x00, 0x00, 0xff, 0xff]),
+        ]);
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(body);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, payload);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
     });
   });
 

@@ -1234,6 +1234,109 @@ describe('supports http with nodejs', () => {
         });
       }
     });
+
+    describe('multiple content codings', () => {
+      const responseBody = 'str';
+
+      const serve = (contentEncoding, body) =>
+        startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', contentEncoding);
+            res.end(body);
+          },
+          { port: SERVER_PORT }
+        );
+
+      it('should decode every listed coding, last applied first', async () => {
+        const server = await serve(
+          'gzip, br',
+          zlib.brotliCompressSync(zlib.gzipSync(responseBody))
+        );
+
+        try {
+          const { data, headers } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+          assert.strictEqual(headers['content-encoding'], undefined);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should accept a list without whitespace and in any case', async () => {
+        const server = await serve('Deflate,GZIP', zlib.gzipSync(zlib.deflateSync(responseBody)));
+
+        try {
+          const { data, headers } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+          assert.strictEqual(headers['content-encoding'], undefined);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should apply maxContentLength to the fully decoded body', async () => {
+        const server = await serve(
+          'gzip, br',
+          zlib.brotliCompressSync(zlib.gzipSync(Buffer.alloc(100000, 'a')))
+        );
+
+        try {
+          await assert.rejects(
+            axios.get(`http://localhost:${server.address().port}`, { maxContentLength: 1000 }),
+            (err) =>
+              err.code === AxiosError.ERR_BAD_RESPONSE &&
+              err.message === 'maxContentLength size of 1000 exceeded'
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should ignore identity in the list', async () => {
+        const server = await serve('gzip, identity', zlib.gzipSync(responseBody));
+
+        try {
+          const { data, headers } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+          assert.strictEqual(headers['content-encoding'], undefined);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should leave the body encoded when any listed coding is unsupported', async () => {
+        const body = zlib.gzipSync(responseBody);
+        const server = await serve('x-unknown, gzip', body);
+
+        try {
+          const { data, headers } = await axios.get(`http://localhost:${server.address().port}`, {
+            responseType: 'arraybuffer',
+          });
+          assert.strictEqual(data.toString('base64'), body.toString('base64'));
+          assert.strictEqual(headers['content-encoding'], 'x-unknown, gzip');
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should leave the body encoded when more than five codings are listed', async () => {
+        let body = Buffer.from(responseBody);
+        for (let i = 0; i < 6; i++) {
+          body = zlib.gzipSync(body);
+        }
+        const server = await serve(new Array(6).fill('gzip').join(', '), body);
+
+        try {
+          const { data, headers } = await axios.get(`http://localhost:${server.address().port}`, {
+            responseType: 'arraybuffer',
+          });
+          assert.strictEqual(data.toString('base64'), body.toString('base64'));
+          assert.strictEqual(headers['content-encoding'], 'gzip, gzip, gzip, gzip, gzip, gzip');
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+    });
   });
 
   it('should support UTF8', async () => {

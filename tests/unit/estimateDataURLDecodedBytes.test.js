@@ -28,8 +28,16 @@ describe('estimateDataURLDecodedBytes', () => {
     assert.strictEqual(estimateDataURLDecodedBytes('data:,a://\t\r\nb'), 5);
   });
 
-  it('should trim leading and trailing whitespace when estimating Fetch data URL payload', () => {
+  it('should trim leading and trailing C0 control and space characters when estimating Fetch data URL payload', () => {
     assert.strictEqual(estimateDataURLDecodedBytes('   data:text/plain,payload   '), 7);
+    assert.strictEqual(estimateDataURLDecodedBytes('\u0001\u001fdata:text/plain,payload\u0020\u0000'), 7);
+  });
+
+  it('should preserve non-breaking space (NBSP) and BOM in data URL payload', () => {
+    // \u00a0 is 2 bytes in UTF-8
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,a://' + '\u00a0'.repeat(10)), 4 + 20);
+    // \ufeff is 3 bytes in UTF-8
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,\ufeffhello'), 3 + 5);
   });
 
   it('should calculate length for simple non-base64 data URL', () => {

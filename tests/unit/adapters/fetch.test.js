@@ -2151,6 +2151,40 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(fetchCalled, false);
     });
 
+    it('should reject a data: URL containing :// and trailing NBSP whose body size exceeds maxContentLength before dispatch', async () => {
+      let fetchCalled = false;
+      const customFetch = async () => {
+        fetchCalled = true;
+        return new Response('short');
+      };
+      const dataUrl = 'data:,a://' + '\u00a0'.repeat(1024);
+      const bareAxios = axios.create({ adapter: 'fetch', env: { fetch: customFetch } });
+
+      await assert.rejects(bareAxios.get(dataUrl, { maxContentLength: 16 }), (err) => {
+        assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
+        assert.match(err.message, /maxContentLength size of 16 exceeded/);
+        return true;
+      });
+      assert.strictEqual(fetchCalled, false);
+    });
+
+    it('should reject a data: URL with leading C0 control characters whose body size exceeds maxContentLength before dispatch', async () => {
+      let fetchCalled = false;
+      const customFetch = async () => {
+        fetchCalled = true;
+        return new Response('short');
+      };
+      const dataUrl = '\u0001data:,a://' + 'x'.repeat(2048);
+      const bareAxios = axios.create({ adapter: 'fetch', env: { fetch: customFetch } });
+
+      await assert.rejects(bareAxios.get(dataUrl, { maxContentLength: 16 }), (err) => {
+        assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
+        assert.match(err.message, /maxContentLength size of 16 exceeded/);
+        return true;
+      });
+      assert.strictEqual(fetchCalled, false);
+    });
+
     it('should allow a data: URL with newlines within decoded maxContentLength', async () => {
       const bareAxios = axios.create({ adapter: 'fetch' });
       const { data } = await bareAxios.get('data:,a://\n\nb', {

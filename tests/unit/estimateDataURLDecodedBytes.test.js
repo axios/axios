@@ -23,6 +23,15 @@ describe('estimateDataURLDecodedBytes', () => {
     }
   );
 
+  it('should strip ASCII tab and newline characters when estimating Fetch data URL payload', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,a://\n\nb'), 5);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,a://\t\r\nb'), 5);
+  });
+
+  it('should trim leading and trailing whitespace when estimating Fetch data URL payload', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('   data:text/plain,payload   '), 7);
+  });
+
   it('should calculate length for simple non-base64 data URL', () => {
     const url = 'data:,Hello';
     assert.strictEqual(estimateDataURLDecodedBytes(url), Buffer.byteLength('Hello', 'utf8'));

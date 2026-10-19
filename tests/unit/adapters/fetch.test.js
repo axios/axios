@@ -2185,6 +2185,26 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(fetchCalled, false);
     });
 
+    it('should reject a data: URL with large interior spaces without blocking', async () => {
+      let fetchCalled = false;
+      const customFetch = async () => {
+        fetchCalled = true;
+        return new Response('short');
+      };
+      const dataUrl = 'data:,a://' + ' '.repeat(65536) + 'x';
+      const bareAxios = axios.create({ adapter: 'fetch', env: { fetch: customFetch } });
+
+      const start = Date.now();
+      await assert.rejects(bareAxios.get(dataUrl, { maxContentLength: 16 }), (err) => {
+        assert.strictEqual(err.code, 'ERR_BAD_RESPONSE');
+        assert.match(err.message, /maxContentLength size of 16 exceeded/);
+        return true;
+      });
+      const duration = Date.now() - start;
+      assert.strictEqual(fetchCalled, false);
+      assert.ok(duration < 1000, `Expected duration under 1000ms, took ${duration}ms`);
+    });
+
     it('should allow a data: URL with newlines within decoded maxContentLength', async () => {
       const bareAxios = axios.create({ adapter: 'fetch' });
       const { data } = await bareAxios.get('data:,a://\n\nb', {

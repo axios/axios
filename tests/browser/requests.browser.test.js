@@ -136,6 +136,19 @@ describe('requests (vitest browser)', () => {
     vi.restoreAllMocks();
   });
 
+  it.each([200, 500])('reports elapsed adapter time for XHR status %s', async (status) => {
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(1000);
+    const { request, promise } = startRequest('/timing', { adapter: 'xhr' });
+    clock.mockReturnValue(1025);
+    request.respondWith({ status, responseText: '{"ok":true}' });
+    const result = await promise.catch((error) => error);
+
+    expect(axios.isAxiosError(result)).toBe(status === 500);
+    const response = status === 500 ? result.response : result;
+    expect(response.duration).toBe(25);
+    expect(response.data).toEqual({ ok: true });
+  });
+
   it('should treat single string arg as url', async () => {
     const { request, promise } = startRequest('/foo');
 

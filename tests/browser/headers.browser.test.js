@@ -279,3 +279,10 @@ describe('headers (vitest browser)', () => {
     await finishRequest(request, promise);
   });
 });
+
+it('combines iterable header values across different name casing', () => {
+  const headers = new AxiosHeaders();
+  headers.set(new Map([['X-Item', 'first'], ['x-item', 'second']]));
+  expect(headers.get('x-item')).toEqual(['first', 'second']);
+  expect(Object.keys(headers.toJSON())).toEqual(['X-Item']);
+});

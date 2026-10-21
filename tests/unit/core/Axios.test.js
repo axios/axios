@@ -3,6 +3,24 @@ import axios from '../../../index.js';
 import AxiosError, { CAUSED_BY_SEPARATOR } from '../../../lib/core/AxiosError.js';
 
 describe('core::Axios', () => {
+  it.each([1, 'true', 'false', null, {}])(
+    'rejects non-boolean encodeBasicAuthUsername option %j before dispatch',
+    async (value) => {
+      const adapter = vi.fn();
+
+      await expect(
+        axios({
+          url: '/foo',
+          adapter,
+          transitional: { encodeBasicAuthUsername: value },
+        })
+      ).rejects.toMatchObject({
+        code: AxiosError.ERR_BAD_OPTION_VALUE,
+      });
+      expect(adapter).not.toHaveBeenCalled();
+    }
+  );
+
   describe('request error stack decoration', () => {
     async function expectAdapterFailurePreserved() {
       const failure = new Error('adapter failure');

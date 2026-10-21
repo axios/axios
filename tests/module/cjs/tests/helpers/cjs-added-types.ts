@@ -1,5 +1,19 @@
 import axios = require('axios');
 
+const utf8AuthConfig: axios.AxiosRequestConfig = {
+  auth: { username: 'π', password: 'x' },
+  transitional: { encodeBasicAuthUsername: true },
+};
+const legacyAuthConfig: axios.AxiosRequestConfig = {
+  transitional: { encodeBasicAuthUsername: false },
+};
+const invalidAuthConfig: axios.AxiosRequestConfig = {
+  transitional: {
+    // @ts-expect-error -- the encoding opt-in only accepts booleans
+    encodeBasicAuthUsername: 'true',
+  },
+};
+
 const headers = new axios.AxiosHeaders();
 const iterableHeaders: Iterable<[string, axios.AxiosHeaderValue]> = [['x-test', 'ok']];
 headers.set(iterableHeaders);
@@ -79,6 +93,21 @@ const paramsResponse = {} as axios.AxiosResponse<unknown, SearchBody, {}, Search
 const paramsError = {} as axios.AxiosError<unknown, SearchBody, SearchParams>;
 declare const paramsPromise: axios.AxiosPromise<unknown, SearchBody, SearchParams>;
 
+const responseDuration: number | undefined = paramsResponse.duration;
+const errorResponseDuration: number | undefined = paramsError.response?.duration;
+paramsResponse.duration = 25;
+paramsResponse.duration = undefined;
+// @ts-expect-error -- response duration is numeric when present
+paramsResponse.duration = '25';
+// Custom adapters can still return a response without timing metadata.
+const untimedResponse: axios.AxiosResponse = {
+  data: null,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: internalParamsConfig,
+};
+
 const internalQuery: string = internalParamsConfig.params!.query;
 const responseQuery: string = paramsResponse.config.params!.query;
 const errorQuery: string = paramsError.config!.params!.query;
@@ -97,6 +126,11 @@ paramsPromise.then((response) => {
 });
 
 axios.get('/search', paramsConfig).then((response) => {
+  const duration: number | undefined = response.duration;
+  // @ts-expect-error -- inferred response duration is not a string
+  const invalidDuration: string = response.duration;
+  void duration;
+  void invalidDuration;
   const aliasData: SearchBody | undefined = response.config.data;
   const aliasParams: SearchParams | undefined = response.config.params;
   // @ts-expect-error -- default alias responses preserve the request data type

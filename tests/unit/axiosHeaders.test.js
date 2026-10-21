@@ -158,6 +158,66 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.get('foo'), 'value3');
     });
 
+    it('should treat null and false rewrite arguments like false', () => {
+      const headers = new AxiosHeaders({ foo: 'value1' });
+
+      headers.set('foo', 'value2', null);
+      headers.set('foo', 'value2', false);
+
+      assert.strictEqual(headers.get('foo'), 'value1');
+    });
+
+    it('should pass null, false and array header values to function rewrite matchers as stored', () => {
+      [false, null, ['a=1', 'b=2']].forEach((stored) => {
+        const headers = new AxiosHeaders();
+        const seen = [];
+
+        headers.set('foo', stored);
+        headers.set('foo', 'value', (value) => {
+          seen.push(value);
+          return true;
+        });
+
+        assert.deepStrictEqual(seen, [stored]);
+        assert.strictEqual(headers.get('foo'), 'value');
+      });
+    });
+
+    it('should not match string and RegExp rewrite matchers against null or false header values', () => {
+      [false, null].forEach((stored) => {
+        const headers = new AxiosHeaders();
+
+        headers.set('foo', stored);
+        headers.set('foo', 'value', String(stored));
+        headers.set('foo', 'value', /.*/);
+
+        assert.strictEqual(headers.get('foo'), stored);
+      });
+    });
+
+    it('should apply global RegExp rewrite matchers the same way as has()', () => {
+      const headers = new AxiosHeaders({ foo: 'value1' });
+      const hasRegExp = /value/g;
+      const setRegExp = /value/g;
+
+      [true, false, true].forEach((expected, i) => {
+        const current = headers.get('foo');
+        const next = `value${i + 2}`;
+
+        assert.strictEqual(headers.has('foo', hasRegExp), expected);
+
+        headers.set('foo', next, setRegExp);
+
+        assert.strictEqual(headers.get('foo'), expected ? next : current);
+        assert.strictEqual(setRegExp.lastIndex, hasRegExp.lastIndex);
+      });
+
+      headers.set('foo', ['b=2', 'a=1']);
+      headers.set('foo', 'c=3', /a=/g);
+
+      assert.strictEqual(headers.get('foo'), 'c=3');
+    });
+
     it('should support iterables as a key-value source object', () => {
       const headers = new AxiosHeaders();
 

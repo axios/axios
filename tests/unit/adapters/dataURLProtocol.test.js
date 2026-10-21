@@ -115,6 +115,21 @@ describe('HTTP data URL protocol handling', function () {
       assert.strictEqual(response.data, expected);
     });
 
+    it.each([
+      ['a stray percent sign', '100%', Buffer.from('100%')],
+      ['a truncated escape', '%4', Buffer.from('%4')],
+      ['a non-UTF-8 byte', 'caf%E9', Buffer.from([0x63, 0x61, 0x66, 0xe9])],
+      ['binary bytes', '%00%FF', Buffer.from([0x00, 0xff])],
+      ['unescaped non-ASCII text', '€%20', Buffer.from('€ ')],
+    ])('percent-decodes non-base64 %s to bytes', async (_name, body, expected) => {
+      const response = await axios.get(scheme + 'application/octet-stream,' + body, {
+        adapter: 'http',
+        responseType: 'arraybuffer',
+        maxContentLength: expected.length,
+      });
+      assert.deepStrictEqual(response.data, expected);
+    });
+
     it.each([0, 4])(
       'rejects non-base64 input above a %s-byte limit before decoding',
       async (limit) => {

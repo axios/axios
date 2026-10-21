@@ -98,6 +98,13 @@ describe('helpers::fromDataURI', () => {
     assert.deepStrictEqual(fromDataURI(dataURI, false), buffer);
   });
 
+  it('should not retain the encoded body for a percent-heavy URL-encoded body', () => {
+    const buffer = fromDataURI('data:application/octet-stream,' + '%41'.repeat(65536), false);
+
+    assert.strictEqual(buffer.length, 65536);
+    assert.strictEqual(buffer.buffer.byteLength, 65536);
+  });
+
   it('should preserve full content type with parameters in Blob', () => {
     const dataURI =
       'data:text/plain;charset=utf-8;base64,' + Buffer.from('hello').toString('base64');

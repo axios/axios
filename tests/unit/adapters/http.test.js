@@ -1233,6 +1233,36 @@ describe('supports http with nodejs', () => {
           });
         });
       }
+
+      it('should decompress a deflate body written with a window smaller than 32K', async () => {
+        // a zlib stream written with windowBits < 15 has a CMF byte of 0x08-0x68,
+        // not the 0x78 the header detection used to require
+        const zipped = new Promise((resolve, reject) => {
+          zlib.deflate(responseBody, { windowBits: 9 }, (error, compressed) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(compressed);
+          });
+        });
+
+        const server = await startHTTPServer(
+          async (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(await zipped);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
     });
   });
 

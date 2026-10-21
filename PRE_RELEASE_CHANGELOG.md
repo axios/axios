@@ -60,7 +60,7 @@
 
 ## Maintenance
 
-- **v1.x parity for v2:** Merge v1.x through `e6b79d9c` (1.21.0) from the shared ancestor `84a9f3b9`, including its runtime fixes, response duration and UTF-8 auth options, declarations, regression coverage, documentation, and maintenance updates. Preserve v2's Node 20 baseline, Rolldown/ES2018 bundles, stricter agent and Fetch option types, null-prototype header parsing, and arbitrary cancellation reasons. Apply the incoming safe signal-unsubscribe lookup in v2's relocated cancellation helper and retain both XHR cancellation diagnostics and progress/XSRF cleanup. No additional runtime API or compatibility changes beyond the two branches.
+- **v1.x parity for v2:** Merge v1.x through `e6b79d9c` (1.21.0) from the shared ancestor `84a9f3b9`, including its runtime fixes, response duration and UTF-8 auth options, declarations, regression coverage, documentation, and maintenance updates. Preserve v2's Node 20 baseline, Rolldown/ES2018 bundles, stricter agent and Fetch option types, null-prototype header parsing, and arbitrary cancellation reasons. Apply the incoming safe signal-unsubscribe lookup in v2's relocated cancellation helper and retain both XHR cancellation diagnostics and progress/XSRF cleanup. No additional runtime API or compatibility changes beyond the two branches. ([#11352](https://github.com/axios/axios/pull/11352))
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 

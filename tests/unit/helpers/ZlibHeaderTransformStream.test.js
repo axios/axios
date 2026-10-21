@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import assert from 'assert';
 import zlib from 'node:zlib';
 import ZlibHeaderTransformStream from '../../../lib/helpers/ZlibHeaderTransformStream.js';
@@ -157,5 +157,70 @@ describe('probe scheduling', () => {
     // Byte-at-a-time delivery of 302 bytes would be 302 probes if every
     // chunk re-inflated the prefix; doubling keeps it near log2(302).
     assert.ok(probes <= 16, `expected sparse probing, got ${probes} probes`);
+  });
+});
+
+describe('probe cap enforcement', () => {
+  it('passes an output cap to the probe decoder', async () => {
+    const inflateSpy = vi.spyOn(zlib, 'inflateSync');
+    try {
+      const body = zlib.deflateSync('capped probe body', { windowBits: 9 });
+      const out = await transform(body);
+      assert.ok(out.equals(body));
+      const probeCalls = inflateSpy.mock.calls.filter(
+        ([, options]) => options && options.flush === zlib.constants.Z_SYNC_FLUSH
+      );
+      assert.ok(probeCalls.length > 0, 'probe never ran');
+      for (const [, options] of probeCalls) {
+        assert.strictEqual(
+          options.maxOutputLength,
+          1024,
+          'probe must bound decoded output so a highly compressed response cannot expand unchecked'
+        );
+      }
+    } finally {
+      inflateSpy.mockRestore();
+    }
+  });
+
+  it('settles a still-ambiguous stream at the probe buffer cap, mid-stream', async () => {
+    // 78 9c + a long run of empty sync-flush stored blocks: a valid wrapped
+    // stream that produces no output, so only the buffer cap can settle it.
+    const emptyBlock = Buffer.from([0x00, 0x00, 0x00, 0xff, 0xff]);
+    const body = Buffer.concat([
+      Buffer.from([0x78, 0x9c]),
+      ...Array.from({ length: Math.ceil((64 * 1024 + 2048) / 5) }, () => emptyBlock)
+    ]);
+    let probes = 0;
+    class CountingHeader extends ZlibHeaderTransformStream {
+      _probe(prefix) {
+        probes++;
+        return super._probe(prefix);
+      }
+    }
+    const stream = new CountingHeader();
+    let earlyBytes = 0;
+    let totalBytes = 0;
+    let writesDone = false;
+    stream.on('data', (chunk) => {
+      totalBytes += chunk.length;
+      if (!writesDone) earlyBytes += chunk.length;
+    });
+    for (let off = 0; off < body.length; off += 997) {
+      stream.write(body.subarray(off, off + 997));
+    }
+    writesDone = true;
+    assert.ok(
+      earlyBytes > 0,
+      'nothing was emitted before stream end: the probe buffer cap never settled the stream'
+    );
+    stream.end();
+    await new Promise((resolve, reject) => {
+      stream.on('end', resolve);
+      stream.on('error', reject);
+    });
+    assert.strictEqual(totalBytes, body.length, 'cap settlement must pass bytes through unchanged');
+    // Doubling probes over ~68 KB of ambiguity: ~18, not one per write.
+    assert.ok(probes <= 40, `expected bounded probing across the cap, got ${probes}`);
   });
 });

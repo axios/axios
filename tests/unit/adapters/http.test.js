@@ -1292,6 +1292,36 @@ describe('supports http with nodejs', () => {
         }
       });
 
+      it('should apply maxContentLength to a decoded stream and tear it down', async () => {
+        const server = await serve(
+          'gzip, br',
+          zlib.brotliCompressSync(zlib.gzipSync(Buffer.alloc(2 * 1024 * 1024, 'a')))
+        );
+
+        try {
+          const response = await axios.get(`http://localhost:${server.address().port}`, {
+            responseType: 'stream',
+            maxContentLength: 1024,
+          });
+
+          let bytesRead = 0;
+          const err = await new Promise((resolve) => {
+            response.data.on('data', (chunk) => {
+              bytesRead += chunk.length;
+            });
+            response.data.on('error', resolve);
+            response.data.on('end', () => resolve(null));
+          });
+
+          assert.ok(err, 'stream should emit an error');
+          assert.strictEqual(err.message, 'maxContentLength size of 1024 exceeded');
+          assert.ok(bytesRead <= 1024 * 64, `stream should not deliver full payload; got ${bytesRead}`);
+          assert.strictEqual(response.data.destroyed, true);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
       it('should ignore identity in the list', async () => {
         const server = await serve('gzip, identity', zlib.gzipSync(responseBody));
 

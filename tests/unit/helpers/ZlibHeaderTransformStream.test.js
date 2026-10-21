@@ -15,6 +15,16 @@ const collect = (stream, chunks) => new Promise((resolve, reject) => {
 
 const ZLIB_HEADER = Buffer.from([0x78, 0x9c]);
 
+const adler32 = (buf) => {
+  let a = 1;
+  let b = 0;
+  for (const byte of buf) {
+    a = (a + byte) % 65521;
+    b = (b + a) % 65521;
+  }
+  return ((b << 16) | a) >>> 0;
+};
+
 // the adapter decodes with finishFlush: Z_SYNC_FLUSH, which tolerates the
 // missing adler trailer on streams the helper prepends a header to
 const unzip = (buf) => new Promise((resolve, reject) => {
@@ -121,6 +131,37 @@ describe('ZlibHeaderTransformStream', () => {
     const body = Buffer.concat([Buffer.from([0x78, 0xbb]), Buffer.alloc(64, 0x01)]);
     const out = await collect(new ZlibHeaderTransformStream(), [body]);
     expect(out).toEqual(body);
+  });
+
+  it('finishes when a probe ends before the input does', async () => {
+    // a valid zlib stream whose bytes also decode as a short raw stream:
+    // read as zlib it is a 65506-byte stored block plus a final empty one;
+    // read as raw the same bytes end after a 29-byte stored block, so the
+    // raw probe emits 'end' while input is still flowing and _flush must
+    // count that recorded result instead of awaiting 'end' it missed
+    const payload = Buffer.alloc(65506, 0x62);
+    payload.set([0x01, 0x00, 0x00, 0xff, 0xff], 27);
+    const tail = Buffer.alloc(4);
+    tail.writeUInt32BE(adler32(payload));
+    const body = Buffer.concat([
+      Buffer.from([0x08, 0x1d, 0x00, 0xe2, 0xff, 0x1d, 0x00]),
+      payload,
+      Buffer.from([0x01, 0x00, 0x00, 0xff, 0xff]),
+      tail
+    ]);
+    const transform = new ZlibHeaderTransformStream();
+    const out = [];
+    const ended = new Promise((resolve, reject) => {
+      transform.on('data', (c) => out.push(c));
+      transform.on('end', resolve);
+      transform.on('error', reject);
+    });
+    transform.write(body);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    transform.end();
+    await ended;
+    expect(Buffer.concat(out)).toEqual(body);
+    expect((await unzip(Buffer.concat(out))).equals(payload)).toBe(true);
   });
 
   it('closes cleanly when destroyed while the prefix is undecided', async () => {

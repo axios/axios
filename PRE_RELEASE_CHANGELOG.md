@@ -6,6 +6,7 @@
 
 ## Bug Fixes
 
+- **FormData empty filenames:** Preserve the `filename=""` parameter in multipart serialization when a File or Blob carries an empty name so the part reaches the server as a file part instead of a text field. The Node `formDataToStream` serializer keeps emitting a filename for every named non-string form value exactly as before; only the empty-string name that the truthiness check used to drop is now kept. Parts without a name still serialize without a filename. (**[#11355](https://github.com/axios/axios/pull/11355)**, closes **[#11331](https://github.com/axios/axios/issues/11331)**)
 - **FormData empty filenames:** Preserve the `filename=""` parameter in multipart serialization when a File or Blob carries an empty name so the part reaches the server as a file part instead of a text field. The Node `formDataToStream` serializer now emits a filename for every non-string form value, matching the `formDataToBlob` path, and keeps the Blob default `"blob"` name when none is provided. (**[#11355](https://github.com/axios/axios/pull/11355)**, closes **[#11331](https://github.com/axios/axios/issues/11331)**)
 ## Documentation
 

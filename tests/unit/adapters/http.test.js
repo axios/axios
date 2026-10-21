@@ -1264,6 +1264,26 @@ describe('supports http with nodejs', () => {
         }
       });
 
+      it('should decompress a deflate body when the zlib header arrives split across chunks', async () => {
+        const zipped = zlib.deflateSync(responseBody, { windowBits: 9 });
+
+        const server = await startHTTPServer(
+          async (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.write(zipped.subarray(0, 1));
+            res.end(zipped.subarray(1));
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
       it('should decompress a raw deflate body that starts with zlib-shaped bytes', async () => {
         // a raw stored block can open with bytes that satisfy the RFC 1950
         // header constraints: 0x08 is CM=8/CINFO=0 and 0x081d % 31 == 0.

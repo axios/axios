@@ -6,6 +6,7 @@
 
 ## Bug Fixes
 
+- **Node HTTP adapter - deflate window sizes:** Recognize every RFC 1950 zlib header when deciding whether a `Content-Encoding: deflate` body already carries zlib framing, not just the 0x78 CMF byte written with a full 32K window. Streams compressed with `windowBits` 9-14 (CMF `0x18`-`0x68`) previously had a second zlib header prepended and failed with `Z_DATA_ERROR`; they now decode like their 0x78 counterparts, while raw deflate bodies still receive the synthetic header. (**#11333**)
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

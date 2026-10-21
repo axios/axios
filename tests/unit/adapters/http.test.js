@@ -4509,6 +4509,39 @@ describe('supports http with nodejs', () => {
           await stopHTTPServer(server);
         }
       });
+
+      it('should send a filename parameter for a file with an empty name', async () => {
+        const server = await startHTTPServer(
+          async (req, res) => {
+            const { fields, files } = await handleFormData(req);
+
+            res.end(JSON.stringify({ fields, files }));
+          },
+          { port: 0 }
+        );
+
+        const oneShotAgent = new http.Agent({ keepAlive: false });
+
+        try {
+          const form = new FormDataSpecCompliant();
+          form.append('upload', new BlobSpecCompliant([new Uint8Array([0xff, 0x00])]), '');
+
+          const { data } = await axios.post(`http://localhost:${server.address().port}`, form, {
+            maxRedirects: 0,
+            httpAgent: oneShotAgent,
+            headers: { Connection: 'close' },
+          });
+
+          // Without a filename the part is parsed as a text field and binary
+          // bytes are decoded as UTF-8, so the upload must land under files.
+          assert.deepStrictEqual(data.fields, {});
+          assert.strictEqual(data.files.upload[0].originalFilename, '');
+          assert.strictEqual(data.files.upload[0].size, 2);
+        } finally {
+          oneShotAgent.destroy();
+          await stopHTTPServer(server);
+        }
+      });
     });
 
     describe('prototype pollution', () => {

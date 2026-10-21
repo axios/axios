@@ -68,6 +68,19 @@ describe('ZlibHeaderTransformStream', () => {
     expect((await unzip(out)).toString()).toBe('A'.repeat(29));
   });
 
+  it('detects raw deflate under every first-chunk layout', async () => {
+    // the first chunk must not commit the format before enough payload is
+    // available to probe it
+    for (const n of [2, 3, 4, 5, 10, 20, 34]) {
+      const out = await collect(new ZlibHeaderTransformStream(), [
+        rawDeflateBody.subarray(0, n),
+        rawDeflateBody.subarray(n)
+      ]);
+      expect(out.subarray(0, 2)).toEqual(ZLIB_HEADER);
+      expect((await unzip(out)).toString()).toBe('A'.repeat(29));
+    }
+  });
+
   it('ignores empty chunks between header bytes', async () => {
     const body = zlib.deflateSync('hello world', { windowBits: 9 });
     const out = await collect(new ZlibHeaderTransformStream(), [

@@ -1274,6 +1274,37 @@ describe('supports http with nodejs', () => {
           await stopHTTPServer(server);
         }
       });
+
+      for (const split of [0, 1, 2, 5]) {
+        it(`should decode a raw stored block whose first bytes also pass the zlib header check (first chunk: ${split || 'whole body'})`, async () => {
+          // 08 1d: a valid RFC 1950 header, and also a non-final stored block of 29 bytes with a padding bit set
+          const body = Buffer.concat([
+            Buffer.from([8, 29, 0, 226, 255]),
+            Buffer.alloc(29, 120),
+            Buffer.from([1, 0, 0, 255, 255]),
+          ]);
+          assert.strictEqual(zlib.inflateRawSync(body).toString(), 'x'.repeat(29));
+          const server = await startHTTPServer(
+            (req, res) => {
+              res.setHeader('Content-Encoding', 'deflate');
+              if (!split) {
+                res.end(body);
+                return;
+              }
+              res.write(body.subarray(0, split));
+              setTimeout(() => res.end(body.subarray(split)), 50);
+            },
+            { port: SERVER_PORT }
+          );
+
+          try {
+            const { data } = await axios.get(`http://localhost:${server.address().port}`);
+            assert.strictEqual(data, 'x'.repeat(29));
+          } finally {
+            await stopHTTPServer(server);
+          }
+        });
+      }
     });
   });
 

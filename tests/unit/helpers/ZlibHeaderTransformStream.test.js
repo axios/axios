@@ -89,6 +89,16 @@ describe('raw streams whose prefix passes the zlib header checks', () => {
     });
   }
 
+  it('decodes an ambiguous raw stream whose tail misses the doubling probe schedule', async () => {
+    // Greptile on gh-11339: 78 01 opens a valid raw stored block that also
+    // satisfies FCHECK. Delivered as 6 + 5 bytes, the first probe returns
+    // 'more' and the doubled threshold of 12 is never reached, so the tail
+    // must be probed when the stream ends instead of trusting the header.
+    const tailMissed = Buffer.from([0x78, 0x01, 0x00, 0xfe, 0xff, 0x41, 0x01, 0x00, 0x00, 0xff, 0xff]);
+    const decoded = await decodeThrough(splits(tailMissed, [6]));
+    assert.ok(decoded.equals(Buffer.from('A')), `expected one stored byte, got ${decoded.length}`);
+  });
+
   it('rejects when the header transform errors instead of hanging', async () => {
     class ExplodingHeader extends ZlibHeaderTransformStream {
       _settle() {

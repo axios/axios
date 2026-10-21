@@ -4561,7 +4561,7 @@ describe('supports http with nodejs', () => {
           // a FormData implementation may yield a bare Blob, which carries
           // no name; the part must keep the same no-filename disposition it
           // had before the empty-name fix
-          class RawEntryFormData extends FormData {
+          class RawEntryFormData extends FormDataSpecCompliant {
             *entries() { yield ['note', new BlobSpecCompliant(['abc'])]; }
           }
           const form = new RawEntryFormData();

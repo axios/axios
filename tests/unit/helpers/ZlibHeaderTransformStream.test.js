@@ -51,9 +51,9 @@ describe('raw streams whose prefix passes the zlib header checks', () => {
   ]);
   const expected = Buffer.alloc(29, 120);
 
-  const decodeThrough = (pieces) =>
+  const decodeThrough = (pieces, createHeader = () => new ZlibHeaderTransformStream()) =>
     new Promise((resolve, reject) => {
-      const header = new ZlibHeaderTransformStream();
+      const header = createHeader();
       const unzip = zlib.createUnzip({
         flush: zlib.constants.Z_SYNC_FLUSH,
         finishFlush: zlib.constants.Z_SYNC_FLUSH
@@ -61,6 +61,7 @@ describe('raw streams whose prefix passes the zlib header checks', () => {
       const chunks = [];
       unzip.on('data', (chunk) => chunks.push(chunk));
       unzip.on('error', reject);
+      header.on('error', reject);
       unzip.on('end', () => resolve(Buffer.concat(chunks)));
       header.pipe(unzip);
       for (const piece of pieces) header.write(piece);
@@ -87,6 +88,18 @@ describe('raw streams whose prefix passes the zlib header checks', () => {
       );
     });
   }
+
+  it('rejects when the header transform errors instead of hanging', async () => {
+    class ExplodingHeader extends ZlibHeaderTransformStream {
+      _settle() {
+        this.destroy(new Error('settle failed'));
+      }
+    }
+    await assert.rejects(
+      decodeThrough([Buffer.from([0x78, 0x9c, 0x03, 0x00])], () => new ExplodingHeader()),
+      /settle failed/
+    );
+  });
 });
 
 describe('chunked delivery', () => {
@@ -115,5 +128,34 @@ describe('probe bounds', () => {
     const transformed = await transform(body);
     assert.ok(transformed.equals(body), 'wrapped stream must pass through unchanged');
     assert.strictEqual(zlib.inflateSync(transformed).length, 100 * 1024);
+  });
+});
+
+describe('probe scheduling', () => {
+  it('probes at doubling intervals while the stream stays ambiguous', async () => {
+    let probes = 0;
+    class CountingHeader extends ZlibHeaderTransformStream {
+      _probe(prefix) {
+        probes++;
+        return super._probe(prefix);
+      }
+    }
+    // Empty deflate sync-flush blocks: inflate yields no output and no
+    // error, so the stream stays unclassified until the buffer cap.
+    const body = Buffer.concat([Buffer.from([0x78, 0x9c]), ...Array.from(
+      { length: 60 },
+      () => Buffer.from([0x00, 0x00, 0x00, 0xff, 0xff])
+    )]);
+    const stream = new CountingHeader();
+    for (const byte of body) stream.write(Buffer.from([byte]));
+    stream.end();
+    await new Promise((resolve, reject) => {
+      stream.on('end', resolve);
+      stream.on('error', reject);
+      stream.resume();
+    });
+    // Byte-at-a-time delivery of 302 bytes would be 302 probes if every
+    // chunk re-inflated the prefix; doubling keeps it near log2(302).
+    assert.ok(probes <= 16, `expected sparse probing, got ${probes} probes`);
   });
 });

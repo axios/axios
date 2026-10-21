@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import zlib from 'zlib';
 import ZlibHeaderTransformStream from '../../../lib/helpers/ZlibHeaderTransformStream.js';
+import { setTimeoutAsync } from '../../setup/server.js';
 
 const collect = (stream, chunks) => new Promise((resolve, reject) => {
   const out = [];
@@ -157,7 +158,7 @@ describe('ZlibHeaderTransformStream', () => {
       transform.on('error', reject);
     });
     transform.write(body);
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    await setTimeoutAsync(400);
     transform.end();
     await ended;
     expect(Buffer.concat(out)).toEqual(body);

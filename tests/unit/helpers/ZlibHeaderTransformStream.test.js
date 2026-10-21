@@ -105,3 +105,15 @@ describe('chunked delivery', () => {
     assert.ok(Buffer.concat(chunks).equals(body), 'wrapped stream must pass through unchanged');
   });
 });
+
+describe('probe bounds', () => {
+  it('classifies a wrapped stream whose output exceeds the probe cap without expanding it', async () => {
+    // 100 KB of highly compressible data: the probe must stop at its output
+    // cap and still classify the stream as wrapped, passing bytes through
+    // untouched for the downstream decoder.
+    const body = zlib.deflateSync(Buffer.alloc(100 * 1024, 65), { windowBits: 9 });
+    const transformed = await transform(body);
+    assert.ok(transformed.equals(body), 'wrapped stream must pass through unchanged');
+    assert.strictEqual(zlib.inflateSync(transformed).length, 100 * 1024);
+  });
+});

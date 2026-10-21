@@ -4542,6 +4542,43 @@ describe('supports http with nodejs', () => {
           await stopHTTPServer(server);
         }
       });
+
+      it('should not emit a filename for a non-string part without a name', async () => {
+        let rawBody = '';
+        const server = await startHTTPServer(
+          async (req, res) => {
+            for await (const chunk of req) {
+              rawBody += chunk;
+            }
+            res.end('ok');
+          },
+          { port: 0 }
+        );
+
+        const oneShotAgent = new http.Agent({ keepAlive: false });
+
+        try {
+          // a FormData implementation may yield a bare Blob, which carries
+          // no name; the part must keep the same no-filename disposition it
+          // had before the empty-name fix
+          class RawEntryFormData extends FormData {
+            *entries() { yield ['note', new BlobSpecCompliant(['abc'])]; }
+          }
+          const form = new RawEntryFormData();
+
+          await axios.post(`http://localhost:${server.address().port}`, form, {
+            maxRedirects: 0,
+            httpAgent: oneShotAgent,
+            headers: { Connection: 'close' },
+          });
+
+          assert.match(rawBody, /Content-Disposition: form-data; name="note"\r?\n/);
+          assert.doesNotMatch(rawBody, /filename=/);
+        } finally {
+          oneShotAgent.destroy();
+          await stopHTTPServer(server);
+        }
+      });
     });
 
     describe('prototype pollution', () => {

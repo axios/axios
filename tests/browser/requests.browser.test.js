@@ -99,6 +99,18 @@ class MockXMLHttpRequest {
 let requests = [];
 let OriginalXMLHttpRequest;
 
+describe('native XHR scheme casing', () => {
+  it.each(['data:', 'DATA:', 'DaTa:'])('decodes a %s URL', async (scheme) => {
+    const response = await axios.get(scheme + 'text/plain,Hello%20World', {
+      adapter: 'xhr',
+      responseType: 'text',
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.data).toBe('Hello World');
+  });
+});
+
 const startRequest = (...args) => {
   const promise = axios(...args);
   const request = requests.at(-1);
@@ -122,6 +134,19 @@ describe('requests (vitest browser)', () => {
   afterEach(() => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
     vi.restoreAllMocks();
+  });
+
+  it.each([200, 500])('reports elapsed adapter time for XHR status %s', async (status) => {
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(1000);
+    const { request, promise } = startRequest('/timing', { adapter: 'xhr' });
+    clock.mockReturnValue(1025);
+    request.respondWith({ status, responseText: '{"ok":true}' });
+    const result = await promise.catch((error) => error);
+
+    expect(axios.isAxiosError(result)).toBe(status === 500);
+    const response = status === 500 ? result.response : result;
+    expect(response.duration).toBe(25);
+    expect(response.data).toEqual({ ok: true });
   });
 
   it('should treat single string arg as url', async () => {
@@ -237,7 +262,9 @@ describe('requests (vitest browser)', () => {
 
     expect(reason).toBeInstanceOf(AxiosError);
     expect(reason.code).toBe(AxiosError.ERR_INVALID_URL);
-    expect(reason.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
+    expect(reason.message).toBe(
+      'Invalid URL "https:example.com/users": missing "//" after protocol'
+    );
     expect(reason.config.url).toBe('\u0000https:example.com/users');
     expect(reason.config.headers.get('X-Test')).toBe('yes');
     expect(openSpy).not.toHaveBeenCalled();
@@ -557,6 +584,36 @@ describe('requests (vitest browser)', () => {
       message: 'Unsupported protocol ftp:',
     });
   });
+
+  it.each([
+    'HTTP://example.com/CaseSensitive?token=AbC',
+    'HtTp://example.com/CaseSensitive?token=AbC',
+    'HTTPS://example.com/CaseSensitive?token=AbC',
+    'HtTpS://example.com/CaseSensitive?token=AbC',
+    'DATA:text/plain,Hello',
+    'DaTa:text/plain,Hello',
+  ])('should dispatch case-insensitive schemes without changing the URL: %s', async (url) => {
+    const promise = axios.get(url, { adapter: 'xhr' });
+    const request = requests.at(-1);
+
+    if (request) {
+      request.respondWith({ status: 200, responseText: 'Hello' });
+    }
+
+    const response = await promise;
+    expect(request.url).toBe(url);
+    expect(response.data).toBe('Hello');
+  });
+
+  it.each(['FTP://example.com', 'FtP://example.com', 'DATAX:text/plain,Hello'])(
+    'should reject unsupported case-variant schemes before sending: %s',
+    async (url) => {
+      await expect(axios.get(url, { adapter: 'xhr' })).rejects.toMatchObject({
+        code: AxiosError.ERR_BAD_REQUEST,
+      });
+      expect(requests).toHaveLength(0);
+    }
+  );
 
   it('should clean up cancellation listeners after unsupported protocol rejection', async () => {
     const source = axios.CancelToken.source();

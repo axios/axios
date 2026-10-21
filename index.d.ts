@@ -304,6 +304,8 @@ export interface TransitionalOptions {
   legacyInterceptorReqResOrdering?: boolean;
   advertiseZstdAcceptEncoding?: boolean;
   validateStatusUndefinedResolves?: boolean;
+  /** Opt in to UTF-8 Basic auth usernames in XHR/Fetch config resolution. Defaults to false. */
+  encodeBasicAuthUsername?: boolean;
 }
 
 export interface GenericAbortSignal {
@@ -524,6 +526,11 @@ export interface AxiosResponse<T = any, D = any, H = {}, P = any> {
   data: T;
   status: number;
   statusText: string;
+  /**
+   * Wall-clock milliseconds from adapter invocation to settlement, clamped at zero.
+   * Excludes interceptors and request/response transforms. Stream consumption is not included.
+   */
+  duration?: number;
   headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
   config: InternalAxiosRequestConfig<D, P>;
   request?: any;

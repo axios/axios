@@ -1305,6 +1305,30 @@ describe('supports http with nodejs', () => {
           }
         });
       }
+
+      it('should decode a raw stored block whose first bytes pass the zlib header check with FDICT set', async () => {
+        // 08 3c: a valid RFC 1950 header with FDICT set, and also a non-final stored block of 60 bytes
+        const body = Buffer.concat([
+          Buffer.from([8, 60, 0, 195, 255]),
+          Buffer.alloc(60, 120),
+          Buffer.from([1, 0, 0, 255, 255]),
+        ]);
+        assert.strictEqual(zlib.inflateRawSync(body).toString(), 'x'.repeat(60));
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(body);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, 'x'.repeat(60));
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
     });
   });
 

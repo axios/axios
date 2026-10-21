@@ -160,6 +160,32 @@ describe('xhr adapter status 0 handling', () => {
       expect(reason.code).toBe(axios.AxiosError.ECONNABORTED);
     }
   );
+
+  it.each([
+    [0, '0'],
+    [false, 'false'],
+    [123, '123'],
+    [true, 'true'],
+  ])('should send primitive payload %s as string in xhr adapter', async (payload, expected) => {
+    let sentData;
+    class CapturingXMLHttpRequest extends StubXMLHttpRequest {
+      constructor() {
+        super();
+        this.status = 200;
+      }
+      send(data) {
+        sentData = data;
+        super.send(data);
+      }
+    }
+    vi.resetModules();
+    vi.stubGlobal('window', { location: { href: 'http://localhost/' } });
+    vi.stubGlobal('document', { cookie: '' });
+    vi.stubGlobal('XMLHttpRequest', CapturingXMLHttpRequest);
+    const { default: localAxios } = await import('../../../index.js');
+    await localAxios.post('http://localhost/api', payload, { adapter: 'xhr' });
+    expect(sentData).toBe(expected);
+  });
 });
 
 describe('xhr adapter progress listener cleanup', () => {

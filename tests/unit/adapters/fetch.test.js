@@ -1459,9 +1459,19 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
 
     it('should send native FormData as multipart/form-data when no Content-Type is set', async () => {
-      const server = await startHTTPServer((req, res) => {
-        req.resume();
-        req.on('end', () => res.end(req.headers['content-type'] || ''));
+      const server = await startHTTPServer(async (req, res) => {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const contentType = req.headers['content-type'] || '';
+        const foo = await new Response(Buffer.concat(chunks), {
+          headers: { 'Content-Type': contentType },
+        })
+          .formData()
+          .then(
+            (form) => form.get('foo'),
+            (err) => err.message
+          );
+        res.end(JSON.stringify({ contentType, foo }));
       });
 
       try {
@@ -1474,7 +1484,8 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
             form
           );
 
-          assert.match(data, /^multipart\/form-data; boundary=/i, method);
+          assert.match(data.contentType, /^multipart\/form-data; boundary=/i, method);
+          assert.strictEqual(data.foo, 'bar', method);
         }
       } finally {
         await stopHTTPServer(server);
@@ -1485,9 +1496,19 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       const form = new FormData();
       form.append('foo', 'bar');
 
-      const server = await startHTTPServer((req, res) => {
-        req.resume();
-        req.on('end', () => res.end(req.headers['content-type'] || ''));
+      const server = await startHTTPServer(async (req, res) => {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const contentType = req.headers['content-type'] || '';
+        const foo = await new Response(Buffer.concat(chunks), {
+          headers: { 'Content-Type': contentType },
+        })
+          .formData()
+          .then(
+            (form) => form.get('foo'),
+            (err) => err.message
+          );
+        res.end(JSON.stringify({ contentType, foo }));
       });
 
       try {
@@ -1497,7 +1518,8 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
 
-        assert.match(data, /^multipart\/form-data; boundary=/i);
+        assert.match(data.contentType, /^multipart\/form-data; boundary=/i);
+        assert.strictEqual(data.foo, 'bar');
       } finally {
         await stopHTTPServer(server);
       }

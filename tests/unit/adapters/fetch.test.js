@@ -2326,15 +2326,17 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
 
     it('should not emit an unhandled rejection when the probe body cancellation rejects', async () => {
+      const responseBody = asStream({});
       const rejections = [];
       const onUnhandledRejection = (reason) => rejections.push(reason);
 
       process.on('unhandledRejection', onUnhandledRejection);
 
       try {
-        getFetch({
+        const { data } = await fetchAxios.get('/', {
+          responseType: 'stream',
           env: {
-            fetch: async () => new Response('ok'),
+            fetch: async () => ({ status: 200, headers: {}, body: responseBody }),
             Response: makeStubResponse(() => Promise.reject(new Error('cancel failed'))),
           },
         });
@@ -2342,6 +2344,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await setTimeoutAsync(50);
 
         assert.deepStrictEqual(rejections, []);
+        assert.strictEqual(data, responseBody);
       } finally {
         process.off('unhandledRejection', onUnhandledRejection);
       }
@@ -2442,15 +2445,17 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         },
       };
 
+      const responseBody = asStream({});
       const rejections = [];
       const onUnhandledRejection = (reason) => rejections.push(reason);
 
       process.on('unhandledRejection', onUnhandledRejection);
 
       try {
-        getFetch({
+        const { data } = await fetchAxios.get('/', {
+          responseType: 'stream',
           env: {
-            fetch: async () => new Response('ok'),
+            fetch: async () => ({ status: 200, headers: {}, body: responseBody }),
             Response: makeStubResponse(() => hostileThenable),
           },
         });
@@ -2458,6 +2463,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await setTimeoutAsync(50);
 
         assert.deepStrictEqual(rejections, []);
+        assert.strictEqual(data, responseBody);
       } finally {
         process.off('unhandledRejection', onUnhandledRejection);
       }

@@ -99,9 +99,11 @@ describe('ZlibHeaderTransformStream', () => {
     expect(out).toEqual(Buffer.concat([ZLIB_HEADER, Buffer.from([0x03])]));
   });
 
-  it('keeps a zlib stream whose early bytes form a complete raw stream', async () => {
-    // a stored-block zlib body lets a raw decode of an early prefix finish
-    // cleanly; surviving as raw is not evidence, only a zlib failure is
+  it('keeps a zlib stream when the raw probe rejects it at any split', async () => {
+    // a valid zlib CMF always reads as a non-final stored block to a raw
+    // inflate, whose LEN/NLEN check then fails outright - a raw decode can
+    // never finish cleanly on zlib bytes, so the probes must not settle on
+    // raw merely surviving; the zlib verdict has to hold at every split
     const body = zlib.deflateSync(Buffer.alloc(65379, 0x61), { level: 0 });
     for (const n of [2, 5, 50, 166, 1024]) {
       const out = await collect(new ZlibHeaderTransformStream(), [
@@ -119,5 +121,17 @@ describe('ZlibHeaderTransformStream', () => {
     const body = Buffer.concat([Buffer.from([0x78, 0xbb]), Buffer.alloc(64, 0x01)]);
     const out = await collect(new ZlibHeaderTransformStream(), [body]);
     expect(out).toEqual(body);
+  });
+
+  it('closes cleanly when destroyed while the prefix is undecided', async () => {
+    const transform = new ZlibHeaderTransformStream();
+    const closed = new Promise((resolve) => transform.once('close', resolve));
+    const errors = [];
+    transform.on('error', (e) => errors.push(e));
+    transform.write(zlib.deflateSync('hello world').subarray(0, 5));
+    transform.destroy();
+    await closed;
+    expect(transform.destroyed).toBe(true);
+    expect(errors).toEqual([]);
   });
 });

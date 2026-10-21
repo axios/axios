@@ -213,4 +213,21 @@ describe('formDataToJSON', () => {
 
     expect(formDataToJSON(formData)).toEqual({ a: 'x' });
   });
+
+  it('should support `length` as a field name', () => {
+    const formData = new FormData();
+
+    // `length` is an own property of the intermediate arrays the parser
+    // builds, so a field named `length` previously hit RangeError.
+    formData.append('metadata[length]', 'long');
+    formData.append('metadata[0]', 'a');
+    formData.append('size[length][unit]', 'cm');
+    formData.append('dims.length', 'w');
+
+    expect(formDataToJSON(formData)).toEqual({
+      metadata: { 0: 'a', length: 'long' },
+      size: { length: { unit: 'cm' } },
+      dims: { length: 'w' },
+    });
+  });
 });

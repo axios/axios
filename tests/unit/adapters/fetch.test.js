@@ -1457,6 +1457,51 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await stopHTTPServer(server);
       }
     });
+
+    it('should send native FormData as multipart/form-data when no Content-Type is set', async () => {
+      const server = await startHTTPServer((req, res) => {
+        req.resume();
+        req.on('end', () => res.end(req.headers['content-type'] || ''));
+      });
+
+      try {
+        for (const method of ['post', 'put', 'patch']) {
+          const form = new FormData();
+          form.append('foo', 'bar');
+
+          const { data } = await fetchAxios[method](
+            `http://localhost:${server.address().port}/form`,
+            form
+          );
+
+          assert.match(data, /^multipart\/form-data; boundary=/i, method);
+        }
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should replace a non-multipart Content-Type for native FormData', async () => {
+      const form = new FormData();
+      form.append('foo', 'bar');
+
+      const server = await startHTTPServer((req, res) => {
+        req.resume();
+        req.on('end', () => res.end(req.headers['content-type'] || ''));
+      });
+
+      try {
+        const { data } = await fetchAxios.post(
+          `http://localhost:${server.address().port}/form`,
+          form,
+          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        assert.match(data, /^multipart\/form-data; boundary=/i);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
   });
 
   describe('fetch adapter - User-Agent header', () => {

@@ -98,4 +98,26 @@ describe('ZlibHeaderTransformStream', () => {
     const out = await collect(new ZlibHeaderTransformStream(), [Buffer.from([0x03])]);
     expect(out).toEqual(Buffer.concat([ZLIB_HEADER, Buffer.from([0x03])]));
   });
+
+  it('keeps a zlib stream whose early bytes form a complete raw stream', async () => {
+    // a stored-block zlib body lets a raw decode of an early prefix finish
+    // cleanly; surviving as raw is not evidence, only a zlib failure is
+    const body = zlib.deflateSync(Buffer.alloc(65379, 0x61), { level: 0 });
+    for (const n of [2, 5, 50, 166, 1024]) {
+      const out = await collect(new ZlibHeaderTransformStream(), [
+        body.subarray(0, n),
+        body.subarray(n)
+      ]);
+      expect(out).toEqual(body);
+      expect((await unzip(out)).equals(Buffer.alloc(65379, 0x61))).toBe(true);
+    }
+  });
+
+  it('keeps the zlib decision when the stream needs a preset dictionary', async () => {
+    // 0x78 0xbb satisfies FCHECK with FDICT set; the probe reports Z_NEED_DICT
+    // and the bytes must still reach unzip so it can surface the same error
+    const body = Buffer.concat([Buffer.from([0x78, 0xbb]), Buffer.alloc(64, 0x01)]);
+    const out = await collect(new ZlibHeaderTransformStream(), [body]);
+    expect(out).toEqual(body);
+  });
 });

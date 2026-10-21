@@ -1329,6 +1329,35 @@ describe('supports http with nodejs', () => {
           await stopHTTPServer(server);
         }
       });
+
+      it('should decode a small-window zlib stream whose probe stops at the 64K output limit', async () => {
+        const payload = '*Ip' + 'a'.repeat(128 * 1024);
+        // 48 0d d3 f2 2c: bytes 1-4 also read as a stored block of 54,029 bytes, longer than
+        // the body, so the whole body is probed and its zlib reading passes 64K of output
+        const body = zlib.deflateSync(payload, {
+          windowBits: 12,
+          strategy: zlib.constants.Z_FIXED,
+        });
+        assert.strictEqual(body.subarray(0, 5).toString('hex'), '480dd3f22c');
+        assert.throws(
+          () => zlib.inflateSync(body, { maxOutputLength: 64 * 1024 }),
+          (err) => err.code === 'ERR_BUFFER_TOO_LARGE'
+        );
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(body);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, payload);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
     });
   });
 

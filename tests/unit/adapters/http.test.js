@@ -7217,6 +7217,65 @@ describe('supports http with nodejs', () => {
       });
     }
 
+    describe('validateStatus that cannot validate the status', () => {
+      const invalidValidators = [
+        [
+          'a non-function value',
+          'x',
+          (error) => {
+            assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+          },
+        ],
+        [
+          'a function that throws',
+          () => {
+            throw new Error('boom');
+          },
+          (error) => {
+            assert.strictEqual(error.message, 'boom');
+          },
+        ],
+      ];
+
+      for (const [name, validateStatus, assertError] of invalidValidators) {
+        for (const responseType of ['json', 'stream']) {
+          for (const maxRedirects of [undefined, 0]) {
+            it(`should reject with AxiosError for ${name} (responseType: ${responseType}, maxRedirects: ${maxRedirects})`, async () => {
+              const server = await startHTTPServer((req, res) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.end('{}');
+              });
+
+              const uncaught = [];
+              const onUncaught = (err) => uncaught.push(err);
+              process.on('uncaughtException', onUncaught);
+
+              try {
+                await assert.rejects(
+                  axios.get(`http://localhost:${server.address().port}/`, {
+                    adapter: 'http',
+                    responseType,
+                    validateStatus,
+                    ...(maxRedirects === undefined ? {} : { maxRedirects }),
+                  }),
+                  (error) => {
+                    assert.ok(error instanceof AxiosError);
+                    assertError(error);
+                    return true;
+                  }
+                );
+                await setTimeoutAsync(20);
+                assert.deepStrictEqual(uncaught, []);
+              } finally {
+                process.off('uncaughtException', onUncaught);
+                await stopHTTPServer(server);
+              }
+            });
+          }
+        }
+      }
+    });
+
     it('should reject unsupported httpVersion with AxiosError', async () => {
       await assert.rejects(
         axios.get('http://localhost:1/', {

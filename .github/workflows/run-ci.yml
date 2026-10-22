@@ -69,4 +69,4 @@ jobs:
   e2e:
     name: Packaged consumer e2e
     needs: build-and-run-vitest
-    uses: ./.github/workflows/e2e.yml
+    uses: $/.github/workflows/e2e.yml

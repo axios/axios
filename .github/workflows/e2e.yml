@@ -22,7 +22,14 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           package-manager-cache: false
-      - run: npm install --global pnpm@10.34.7 --ignore-scripts
+      - name: Install verified pnpm
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          mkdir "$RUNNER_TEMP/pnpm"
+          tar -xzf "$RUNNER_TEMP/pnpm.tgz" -C "$RUNNER_TEMP/pnpm" --strip-components=1
+          ln -s "$RUNNER_TEMP/pnpm/bin/pnpm.cjs" "$RUNNER_TEMP/pnpm/bin/pnpm"
+          printf '%s\n' "$RUNNER_TEMP/pnpm/bin" >> "$GITHUB_PATH"
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -41,7 +48,14 @@ jobs:
         with:
           node-version: 26.x
           package-manager-cache: false
-      - run: npm install --global pnpm@10.34.7 --ignore-scripts
+      - name: Install verified pnpm
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          mkdir "$RUNNER_TEMP/pnpm"
+          tar -xzf "$RUNNER_TEMP/pnpm.tgz" -C "$RUNNER_TEMP/pnpm" --strip-components=1
+          ln -s "$RUNNER_TEMP/pnpm/bin/pnpm.cjs" "$RUNNER_TEMP/pnpm/bin/pnpm"
+          printf '%s\n' "$RUNNER_TEMP/pnpm/bin" >> "$GITHUB_PATH"
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -80,7 +94,14 @@ jobs:
         if: matrix.runtime == 'deno'
         with:
           cache: false
-      - run: npm install --global pnpm@10.34.7 --ignore-scripts
+      - name: Install verified pnpm
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          mkdir "$RUNNER_TEMP/pnpm"
+          tar -xzf "$RUNNER_TEMP/pnpm.tgz" -C "$RUNNER_TEMP/pnpm" --strip-components=1
+          ln -s "$RUNNER_TEMP/pnpm/bin/pnpm.cjs" "$RUNNER_TEMP/pnpm/bin/pnpm"
+          printf '%s\n' "$RUNNER_TEMP/pnpm/bin" >> "$GITHUB_PATH"
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:

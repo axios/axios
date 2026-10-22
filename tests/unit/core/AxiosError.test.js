@@ -803,5 +803,51 @@ describe('core::AxiosError', () => {
       expect(json.config.auth.username).toBe('user');
       expect(typeof json.config.handler).toBe('function');
     });
+
+    it('runs custom config toJSON hooks against the real config', () => {
+      const agent = new http.Agent({ keepAlive: true });
+      const config = {
+        httpAgent: agent,
+        toJSON() {
+          return { name: this.httpAgent.getName(), ka: this.httpAgent.keepAlive };
+        },
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(JSON.parse(JSON.stringify(error)).config).toEqual({ name: agent.getName(), ka: true });
+    });
+
+    it('does not invoke non-enumerable accessors', () => {
+      const config = { visible: 1 };
+      Object.defineProperty(config, 'hidden', {
+        enumerable: false,
+        get() {
+          throw new Error('must not be invoked');
+        },
+      });
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config).toEqual({ visible: 1 });
+    });
+
+    it('does not evaluate children under redact-matched keys', () => {
+      const config = { redact: ['secret'] };
+      Object.defineProperty(config, 'secret', {
+        enumerable: true,
+        get() {
+          throw new Error('must not be invoked');
+        },
+      });
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config.secret).toBe('[REDACTED ****]');
+    });
+
+    it('serializes subclasses of builtin containers', () => {
+      class Tags extends Set {}
+      const error = new AxiosError('Boom', 'ECODE', { tags: new Tags(['a', 'b']) });
+
+      expect(error.toJSON().config.tags).toEqual(['a', 'b']);
+    });
   });
 });

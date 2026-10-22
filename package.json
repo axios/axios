@@ -23,7 +23,6 @@
     "docs:dev": "pnpm --filter @axios/docs run docs:dev",
     "docs:build": "pnpm --filter @axios/docs run docs:build",
     "start": "pnpm --filter @axios/sandbox start",
-    "examples": "pnpm --filter @axios/examples start",
     "prepare": "husky",
     "test:module:cjs": "pnpm --dir tests/compatibility/module/cjs run test:module:cjs",
     "test:module:esm": "pnpm --dir tests/compatibility/module/esm run test:module:esm",

@@ -53,7 +53,7 @@ jobs:
 
       - name: Clean and reinstall (pass 2)
         run: |
-          rm -rf node_modules packages/axios/node_modules apps/*/node_modules examples/node_modules
+          rm -rf node_modules packages/axios/node_modules apps/*/node_modules
           pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build (pass 2)

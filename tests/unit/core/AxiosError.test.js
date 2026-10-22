@@ -688,6 +688,64 @@ describe('core::AxiosError', () => {
       expect(config.httpAgent).toBe(httpAgent);
     });
 
+    it('labels agents inside a frozen config', () => {
+      const httpAgent = new http.Agent();
+      const config = Object.freeze({ url: '/api', httpAgent });
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // an in-place swap cannot redefine a frozen slot; reads through the
+      // labeling proxy bound the agent without touching the config
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+      expect(config.httpAgent).toBe(httpAgent);
+      expect(Object.isFrozen(config)).toBe(true);
+    });
+
+    it('labels agents exposed through an own accessor', () => {
+      const httpAgent = new http.Agent();
+      const config = {
+        url: '/api',
+        get httpAgent() {
+          return httpAgent;
+        },
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+    });
+
+    it('keeps getter values derived from the real agent', () => {
+      const config = {
+        httpAgent: new http.Agent({ keepAlive: true }),
+        get agentMode() {
+          return this.httpAgent.keepAlive ? 'keep-alive' : 'closed';
+        },
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // getters run against the real config, so derived scalars survive while
+      // the agent itself still serializes as the bounded label
+      expect(json.config.agentMode).toBe('keep-alive');
+      expect(json.config.httpAgent).toBe('[Agent]');
+    });
+
+    it('labels agents reachable through a deeper circular reference', () => {
+      const httpAgent = new http.Agent();
+      const config = { url: '/api', httpAgent, inner: {} };
+      config.inner.cfg = config;
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // config -> inner -> cfg resolves back through the same proxy, so the
+      // visited check still drops it instead of walking the raw config
+      expect(json.config.inner).toEqual({});
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+    });
+
     it('keeps an inherited toJSON hook on the config when an agent is present', () => {
       const config = Object.create({
         toJSON() {
@@ -700,9 +758,10 @@ describe('core::AxiosError', () => {
       const json = error.toJSON();
 
       // toJSONObject returns toJSON-bearing sources untouched, so the hook
-      // keeps deciding the snapshot; a copied config would lose it
-      expect(json.config).toBe(config);
+      // keeps deciding the snapshot; the hook is bound to the real config so
+      // its `this` behaves exactly as it did before labeling
       expect(JSON.stringify(json.config)).toBe('{"snapshot":true}');
+      expect(config.httpAgent).toBeInstanceOf(http.Agent);
     });
 
     it('labels agents on the redact path too', () => {

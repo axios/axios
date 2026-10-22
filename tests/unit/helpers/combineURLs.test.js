@@ -30,4 +30,9 @@ describe('helpers::combineURLs', () => {
     expect(combineURLs(undefined, '/users')).toBe('/users');
     expect(combineURLs(null, 'users')).toBe('users');
   });
+
+  it('should keep the empty-string base behavior unchanged', () => {
+    expect(combineURLs('', 'users')).toBe('/users');
+    expect(combineURLs('', undefined)).toBe('');
+  });
 });

@@ -12,9 +12,12 @@ backup/
 .env
 dist/
 .vscode/
-docs/.vitepress/dist
-docs/.vitepress/cache
+apps/docs/.vitepress/dist
+apps/docs/.vitepress/cache
 .claude/
 openspec/
 .opencode/
 .codex/
+
+artifacts/
+*.tgz

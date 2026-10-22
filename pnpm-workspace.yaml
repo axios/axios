@@ -1,0 +1,16 @@
+packages:
+  - packages/*
+  - apps/*
+  - examples
+
+# Consumer fixtures deliberately install tarballs outside this workspace.
+ignoreScripts: true
+linkWorkspacePackages: false
+saveWorkspaceProtocol: true
+
+patchedDependencies:
+  '@splidejs/splide@4.1.4': apps/docs/patches/@splidejs+splide+4.1.4.patch
+
+overrides:
+  'vitepress>vite': ^6.4.5
+  'vite@6>esbuild': ^0.25.12

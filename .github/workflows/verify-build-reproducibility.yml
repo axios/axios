@@ -3,13 +3,13 @@ name: Verify build reproducibility
 on:
   pull_request:
     paths:
-      - 'lib/**'
-      - 'rolldown.config.js'
+      - 'packages/axios/**'
       - 'package.json'
-      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - '.github/workflows/verify-build-reproducibility.yml'
   push:
-    branches: [v1.x]
+    branches: [v2.x]
 
 permissions:
   contents: read
@@ -35,30 +35,33 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@10.34.7 --ignore-scripts
+
       - name: Install (pass 1)
-        run: npm ci --ignore-scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build (pass 1)
-        run: npm run build
+        run: pnpm run build
 
       - name: Snapshot pass 1
         run: |
-          mv dist dist-pass1
+          mv packages/axios/dist dist-pass1
           find dist-pass1 -type f -exec sha256sum {} + | sort -k2 > pass1.sha256
           echo "--- pass 1 hashes ---"
           cat pass1.sha256
 
       - name: Clean and reinstall (pass 2)
         run: |
-          rm -rf node_modules
-          npm ci --ignore-scripts
+          rm -rf node_modules packages/axios/node_modules apps/*/node_modules examples/node_modules
+          pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build (pass 2)
-        run: npm run build
+        run: pnpm run build
 
       - name: Snapshot pass 2 and diff
         run: |
-          find dist -type f -exec sha256sum {} + | sort -k2 | sed 's| dist/| dist-pass1/|' > pass2.sha256
+          find packages/axios/dist -type f -exec sha256sum {} + | sort -k2 | sed 's| packages/axios/dist/| dist-pass1/|' > pass2.sha256
           echo "--- pass 2 hashes (path-normalised) ---"
           cat pass2.sha256
           if ! diff -u pass1.sha256 pass2.sha256; then
@@ -78,5 +81,5 @@ jobs:
             pass1.sha256
             pass2.sha256
             dist-pass1
-            dist
+            packages/axios/dist
           retention-days: 7

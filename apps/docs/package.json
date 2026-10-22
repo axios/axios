@@ -1,0 +1,28 @@
+{
+  "name": "@axios/docs",
+  "version": "1.0.0",
+  "description": "Documentation for the Axios HTTP client",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "pnpm run test:search && vitepress build",
+    "docs:preview": "vitepress preview",
+    "docs:update:sponsors": "node ./scripts/process-sponsors.js",
+    "prod:build": "pnpm run docs:update:sponsors && pnpm run docs:build",
+    "test:search": "node --test .vitepress/tokenizeSearchText.test.js"
+  },
+  "dependencies": {
+    "@splidejs/splide": "^4.1.4",
+    "axios": "workspace:*",
+    "vitepress": "^1.6.4"
+  },
+  "devDependencies": {
+    "chalk": "^5.3.0",
+    "vue": "^3.5.43"
+  }
+}

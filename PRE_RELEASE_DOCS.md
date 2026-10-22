@@ -284,3 +284,12 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show a trimmed Node socket/DNS failure stack containing the `Caused by:` section, alongside a snippet reading `error.cause`. State that the diagnostic string is also exposed by `toJSON().stack`.
 - **Limitations:** Wrapping cannot recover details the platform never supplied. Browser XHR `Network Error` events generally have no underlying Error stack, and this change does not diagnose hidden CORS, DNS, or TLS causes. Only failures routed through `AxiosError.from()` with usable stacks gain a section. Appended stacks are verbatim diagnostics, not redacted metadata; existing `config.redact` rules do not sanitize stack strings.
 - **Notes:** Do not present the marker as a stable parsing contract. Preserve the structured cause reference for programmatic consumers; no public types or migration steps are needed.
+
+### v2 monorepo contributor and release paths
+
+- **Change:** The repository root is private; the published library lives in `packages/axios/`. Supporting apps live in `apps/`, repository tools in `tooling/`, and isolated packed-package consumers in `tests/compatibility/`.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Maintenance, v2 monorepo and pnpm.
+- **Status:** Pending.
+- **Docs targets:** Published package README development links, migration guide, contributor-facing docs site pages and translations, external repository source links, and release procedures.
+- **Required content:** Use pnpm 10.34.7 and frozen installs with scripts disabled; explain workspace filters and `pnpm run pack:axios`. Update source links to `packages/axios/lib/`, app links to `apps/`, and release-history links to `packages/axios/CHANGELOG.md`. Keep consumer-facing `import axios from 'axios'`, npm installation examples, public exports, and the Node.js 20 runtime floor unchanged. The root README and contributor guides already describe the new layout.
+- **Notes:** Docs and sandbox use `workspace:*`; compatibility fixtures must install tarballs independently. Release preparation targets the `v2.x` branch, and publishing triggers on `v2.*.*` tags and publishes from `packages/axios` using npm's staged publishing with provenance. No public declaration changes are needed. Keep bundle-size comparisons on the v1 baseline until the first stable v2 release exists, then switch the release stream to 2.

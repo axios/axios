@@ -1,0 +1,19 @@
+{
+  "name": "@axios/esm-smoke-tests",
+  "version": "1.0.0",
+  "description": "ESM smoke tests for axios",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test:smoke:esm:vitest": "vitest run --config vitest.config.js --project smoke"
+  },
+  "keywords": [],
+  "author": "axios team",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "8.1.6",
+    "vitest": "4.1.12"
+  }
+}

@@ -1,0 +1,225 @@
+import { execFileSync } from 'node:child_process';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
+
+const packageFile = new URL('../../../package.json', import.meta.url);
+const preparationScript = new URL('../../../scripts/prepare-version.js', import.meta.url).href;
+const initialVersion = '1.2.3';
+const refreshedContributor = 'Release Contributor (https://github.com/release-contributor)';
+let directory;
+let repositoryDirectory;
+
+function run(command, args, options = {}) {
+  const env = { ...process.env };
+
+  // Prevent an outer Git command from redirecting fixture operations to another repository.
+  for (const key of Object.keys(env)) {
+    if (key.startsWith('GIT_')) delete env[key];
+  }
+
+  return execFileSync(command, args, {
+    cwd: directory,
+    encoding: 'utf8',
+    timeout: 30000,
+    env: {
+      ...env,
+      npm_config_cache: join(directory, '.npm-cache'),
+      npm_config_offline: 'true',
+      npm_config_update_notifier: 'false',
+    },
+    ...options,
+  }).trim();
+}
+
+function git(...args) {
+  return run('git', args);
+}
+
+function npm(args, options = {}) {
+  if (process.env.npm_execpath && /npm-cli\.js$/.test(process.env.npm_execpath)) {
+    return run(process.execPath, [process.env.npm_execpath, ...args], options);
+  }
+
+  const windows = process.platform === 'win32';
+  return run(windows ? 'npm.cmd' : 'npm', args, { shell: windows, ...options });
+}
+
+afterEach(async () => {
+  if (directory) {
+    await rm(repositoryDirectory, { recursive: true, force: true, maxRetries: 3 });
+    repositoryDirectory = undefined;
+    directory = undefined;
+  }
+});
+
+describe('npm version lifecycle', () => {
+  it.each([
+    ['patch', '1.2.4', 'available', 'standalone'],
+    ['minor', '1.3.0', 'available', 'standalone'],
+    ['major', '2.0.0', 'available', 'standalone'],
+    ['prerelease', '1.2.4-rc.0', 'available', 'standalone'],
+    ['patch', '1.2.4', 'rate-limited', 'standalone'],
+    ['patch', '1.2.4', 'available', 'workspace'],
+  ])(
+    'prepares %s %s (GitHub: %s; layout: %s)',
+    async (bump, expectedVersion, githubState, layout) => {
+      repositoryDirectory = await mkdtemp(join(tmpdir(), 'axios-version-lifecycle-'));
+      directory =
+        layout === 'workspace'
+          ? join(repositoryDirectory, 'packages', 'axios')
+          : repositoryDirectory;
+      await mkdir(directory, { recursive: true });
+      if (layout === 'workspace') {
+        const rootPackage = JSON.parse(
+          await readFile(new URL('../../../../../package.json', import.meta.url), 'utf8')
+        );
+        await writeFile(
+          join(repositoryDirectory, 'package.json'),
+          JSON.stringify({
+            name: 'axios-monorepo-fixture',
+            private: true,
+            scripts: { 'version:axios': rootPackage.scripts['version:axios'] },
+          })
+        );
+      }
+      const actualPackage = JSON.parse(await readFile(packageFile, 'utf8'));
+      const scripts = { build: 'node scripts/build.js' };
+
+      for (const name of ['preversion', 'version', 'postversion', 'prepare:version']) {
+        if (actualPackage.scripts[name]) scripts[name] = actualPackage.scripts[name];
+      }
+
+      await mkdir(join(directory, 'scripts'));
+      await mkdir(join(directory, 'lib', 'env'), { recursive: true });
+      await writeFile(
+        join(directory, 'package.json'),
+        JSON.stringify({
+          name: 'axios-version-lifecycle-fixture',
+          private: true,
+          type: 'module',
+          version: initialVersion,
+          contributors: ['Original Contributor'],
+          scripts,
+        })
+      );
+      await writeFile(
+        join(directory, 'lib', 'env', 'data.js'),
+        `export const VERSION = "${initialVersion}";`
+      );
+      await writeFile(join(directory, '.gitignore'), 'dist/\n.npm-cache/\n');
+      await writeFile(
+        join(directory, '.npmrc'),
+        await readFile(new URL('../../../../../.npmrc', import.meta.url))
+      );
+      await writeFile(
+        join(directory, 'scripts', 'prepare-version.js'),
+        `import { prepareVersion } from ${JSON.stringify(preparationScript)};
+prepareVersion({
+  packageFile: new URL('../package.json', import.meta.url),
+  envFile: new URL('../lib/env/data.js', import.meta.url),
+  client: {
+    async get(url) {
+      if (${JSON.stringify(githubState)} === 'rate-limited') {
+        throw Object.assign(new Error('Request failed with status code 403'), {
+          isAxiosError: true,
+          response: { status: 403, data: { message: 'API rate limit exceeded' } },
+        });
+      }
+
+      return {
+        data: url.endsWith('/contributors')
+          ? [{ login: 'release-contributor', type: 'User', contributions: 3 }]
+          : { name: 'Release Contributor' },
+      };
+    },
+  },
+}).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+`
+      );
+      await writeFile(
+        join(directory, 'scripts', 'build.js'),
+        `import { mkdirSync, writeFileSync } from 'node:fs';
+import { VERSION } from '../lib/env/data.js';
+mkdirSync(new URL('../dist/', import.meta.url), { recursive: true });
+writeFileSync(new URL('../dist/version.json', import.meta.url), JSON.stringify({ VERSION }));
+`
+      );
+
+      run('git', ['init', '--quiet'], { cwd: repositoryDirectory });
+      git('config', 'user.name', 'Axios Lifecycle Test');
+      git('config', 'user.email', 'axios-lifecycle-test@example.invalid');
+      git('config', 'commit.gpgsign', 'false');
+      git('config', 'tag.gpgsign', 'false');
+      git('config', 'core.hooksPath', '.git/disabled-hooks');
+      git('config', 'core.autocrlf', 'false');
+      git('add', '--all');
+      git('commit', '--quiet', '-m', 'Initial fixture');
+
+      const args = [
+        'version',
+        bump,
+        '--ignore-scripts=false',
+        '--git-tag-version=true',
+        '--sign-git-tag=false',
+        '--commit-hooks=false',
+        '--tag-version-prefix=v',
+      ];
+      if (bump === 'prerelease') args.push('--preid=rc');
+      if (layout === 'workspace') {
+        // The root command leaves commits/tags to review while still preparing and staging files.
+        npm(
+          [
+            'run',
+            'version:axios',
+            '--',
+            ...args.slice(1).filter((arg) => arg !== '--git-tag-version=true'),
+          ],
+          { cwd: repositoryDirectory }
+        );
+      } else {
+        npm(args);
+      }
+
+      const expectedContributors =
+        githubState === 'rate-limited' ? ['Original Contributor'] : [refreshedContributor];
+      const bumpedPackage = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
+      const expectedMetadata = `export const VERSION = "${expectedVersion}";`;
+      expect(bumpedPackage.version).toBe(expectedVersion);
+      expect(await readFile(join(directory, 'lib', 'env', 'data.js'), 'utf8')).toBe(
+        expectedMetadata
+      );
+      expect(JSON.parse(await readFile(join(directory, 'dist', 'version.json'), 'utf8'))).toEqual({
+        VERSION: expectedVersion,
+      });
+      expect(bumpedPackage.contributors).toEqual(expectedContributors);
+      if (layout === 'workspace') {
+        expect(git('show', ':packages/axios/lib/env/data.js')).toBe(expectedMetadata);
+        expect(JSON.parse(git('show', ':packages/axios/package.json'))).toMatchObject({
+          version: expectedVersion,
+        });
+        expect(JSON.parse(git('show', 'HEAD:packages/axios/package.json')).version).toBe(
+          initialVersion
+        );
+        expect(git('tag', '--list')).toBe('');
+        expect(
+          JSON.parse(await readFile(join(repositoryDirectory, 'package.json'), 'utf8')).version
+        ).toBeUndefined();
+        return;
+      }
+      expect(git('show', 'HEAD:lib/env/data.js')).toBe(expectedMetadata);
+      expect(git('show', `v${expectedVersion}:lib/env/data.js`)).toBe(expectedMetadata);
+      expect(JSON.parse(git('show', `v${expectedVersion}:package.json`))).toMatchObject({
+        version: expectedVersion,
+        contributors: expectedContributors,
+      });
+      expect(git('rev-parse', `v${expectedVersion}^{commit}`)).toBe(git('rev-parse', 'HEAD'));
+      expect(git('status', '--porcelain')).toBe('');
+    },
+    30000
+  );
+});

@@ -27,7 +27,7 @@ When opening a PR, make sure:
 - Make axios-originated failures throw `AxiosError` with an appropriate code, never raw `Error`. Wrap third-party errors with `AxiosError.from`.
 - Cover the change with unit tests. Update browser, smoke, or module suites when packaging or runtime surface is affected.
 - Lint and tests pass before review. Do not merge red PRs.
-- Do not add runtime dependencies without discussion. `package-lock.json` changes must keep `lockfile-lint` happy (npm HTTPS hosts, integrity hashes).
+- Do not add runtime dependencies without discussion. For dependency and `pnpm-lock.yaml` changes, review new package names and dependency sources, require HTTPS npm-registry URLs for explicit registry tarballs, and inspect missing or changed integrity hashes for registry packages. Check any new Git, file, or link sources against the intended first-party workspace links.
 - Package and GitHub Actions update PRs are maintainer/bot-only. Close PRs from outside collaborators that only update npm packages, lockfiles, or GitHub Actions versions.
 - Keep the 7-day Dependabot delay for these updates. Bypass it only when a critical vulnerability requires a maintainer-led manual update.
 - Security-sensitive changes get extra scrutiny and focused regression tests. This includes URL construction, redirects, proxy/env handling, XSRF, socket paths, decompression limits, prototype walking, and adapters. Consult [THREATMODEL.md](./THREATMODEL.md).

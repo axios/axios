@@ -18,7 +18,7 @@ Update tests for your changes. Pull requests must pass GitHub Actions.
 
 ## Documentation
 
-Keep the API and documentation in sync. For unreleased runtime/API changes, record the required documentation updates in `PRE_RELEASE_DOCS.md` so they can be applied during release preparation. Follow the [prerelease notes rules](AGENTS.md#pre-release-notes); `CHANGELOG.md` is reserved for release preparation.
+Keep the API and documentation in sync. For unreleased runtime/API changes, record the required documentation updates in `PRE_RELEASE_DOCS.md` so they can be applied during release preparation. Follow the [prerelease notes rules](AGENTS.md#pre-release-notes); `packages/axios/CHANGELOG.md` is reserved for release preparation.
 
 ## Dependency and GitHub Actions updates
 
@@ -26,14 +26,22 @@ Please do not open pull requests that only update npm packages, lockfiles, or Gi
 
 We keep the 7-day Dependabot delay for these updates unless a critical vulnerability requires a maintainer-led manual update.
 
+## Workspace setup
+
+The root is a private pnpm workspace. Install pnpm 10.34.7 (`npm install --global pnpm@10.34.7 --ignore-scripts`, or Corepack if available), then run `pnpm install --frozen-lockfile --ignore-scripts` from the repository root. Keep install scripts disabled.
+
+Axios source and its tests live in `packages/axios/`. Documentation and the sandbox are in `apps/`; shared tools are in `tooling/`. Root commands forward to these workspaces. For example, run a focused unit test with `pnpm --filter axios run test:vitest:unit tests/unit/core/Axios.test.js`.
+
+Consumer projects in `tests/compatibility/` are intentionally outside the workspace and install the tarball produced by `pnpm run pack:axios`. Follow [AGENTS.md](AGENTS.md#monorepo-layout) for isolated installation instructions.
+
 ## Developing
 
-- `npm run lint` checks the library source
-- `npm test` runs the unit and browser test suites; install the browsers first with `npx playwright install`
-- `npm run test:vitest:unit` runs the Node unit tests
-- `npm run test:vitest:browser:headless` runs the Chromium, Firefox, and WebKit browser tests; install the browsers first with `npx playwright install` (`npx playwright install --with-deps` also installs system dependencies on supported Linux hosts)
-- `npm run build` clears generated artifacts and runs Rolldown
-- `npm run version` prepares the code for release
+- `pnpm run lint` checks the library source
+- `pnpm test` runs the unit and browser test suites; install the browsers first with `pnpm --filter axios exec playwright install`
+- `pnpm run test:vitest:unit` runs the Node unit tests
+- `pnpm run test:vitest:browser:headless` runs the Chromium, Firefox, and WebKit browser tests; install the browsers first with `pnpm --filter axios exec playwright install` (`pnpm --filter axios exec playwright install --with-deps` also installs system dependencies on supported Linux hosts)
+- `pnpm run build` clears generated artifacts and runs Rolldown
+- Maintainers can run `pnpm run version:axios patch --ignore-scripts=false` for a local version bump with release hooks. This explicit exception to disabled install scripts bumps `packages/axios/package.json`, prepares and stages `packages/axios/lib/env/data.js`, and builds Axios. It does not create a commit or tag; review and commit the staged files separately. The release workflow requires a major bump from v1 and keeps release PRs on major 2.
 
 ## Running examples
 
@@ -42,20 +50,20 @@ Use the examples for manual testing.
 Run the examples:
 
 ```bash
-> npm run examples
+> pnpm run examples
 # Open 127.0.0.1:3000
 ```
 
 Run the browser sandbox:
 
 ```bash
-> npm start
+> pnpm start
 # Open 127.0.0.1:3000
 ```
 
 Run the terminal sandbox:
 
 ```bash
-> npm start
-> node ./sandbox/client
+> pnpm start
+> node ./apps/sandbox/client.js
 ```

@@ -35,6 +35,28 @@ updates:
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
+      # These docs dependencies share the root workspace lockfile. Disable only
+      # version updates for them; security updates remain eligible.
+      - dependency-name: '@splidejs/splide'
+        update-types:
+          - 'version-update:semver-major'
+          - 'version-update:semver-minor'
+          - 'version-update:semver-patch'
+      - dependency-name: 'chalk'
+        update-types:
+          - 'version-update:semver-major'
+          - 'version-update:semver-minor'
+          - 'version-update:semver-patch'
+      - dependency-name: 'vitepress'
+        update-types:
+          - 'version-update:semver-major'
+          - 'version-update:semver-minor'
+          - 'version-update:semver-patch'
+      - dependency-name: 'vue'
+        update-types:
+          - 'version-update:semver-major'
+          - 'version-update:semver-minor'
+          - 'version-update:semver-patch'
     labels:
       - 'commit::chore'
       - 'type::automated-pr'
@@ -44,9 +66,8 @@ updates:
   # Keep these packages limited to security updates.
   - package-ecosystem: 'npm'
     directories:
-      - '/docs'
-      - '/tests/module/*'
-      - '/tests/smoke/*'
+      - '/tests/compatibility/module/*'
+      - '/tests/compatibility/smoke/*'
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 0

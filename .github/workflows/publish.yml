@@ -3,7 +3,7 @@ name: Publish package to NPM
 on:
   push:
     tags:
-      - 'v1.*.*'
+      - 'v2.*.*'
 
 permissions:
   contents: read
@@ -26,14 +26,21 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
+      - name: Install pinned pnpm
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          npm install --global "$RUNNER_TEMP/pnpm.tgz" --ignore-scripts
+
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build project
-        run: npm run build
+        run: pnpm run build
 
       - name: Validate build artifacts
-        run: npm run test:build:artifacts
+        run: pnpm run test:build:artifacts
 
       - name: Publish to NPM
+        working-directory: packages/axios
         run: npm stage publish --provenance --access public

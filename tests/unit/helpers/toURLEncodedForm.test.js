@@ -266,4 +266,23 @@ describe('helpers::toURLEncodedForm', () => {
       ['user[name]', 'Ada'],
     ]);
   });
+
+  it('should preserve a custom form visitor in an end-to-end Axios request', async () => {
+    // End-to-end custom-visitor override regression test adapted from PR #11290 by @imharjot
+    const fields = await postForm(
+      { user: { file: Buffer.from('abc') } },
+      {
+        visitor(value, key, path, helpers) {
+          if (Buffer.isBuffer(value)) {
+            this.append(path.concat(key).join('.'), value.toString('hex'));
+            return false;
+          }
+
+          return helpers.defaultVisitor.apply(this, arguments);
+        },
+      }
+    );
+
+    assert.deepStrictEqual(fields, [['user.file', '616263']]);
+  });
 });

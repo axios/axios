@@ -673,6 +673,38 @@ describe('core::AxiosError', () => {
       expect(error.toJSON().config).not.toHaveProperty('httpAgent');
     });
 
+    it('labels agents reachable through a circular config reference', () => {
+      const httpAgent = new http.Agent();
+      const config = { url: '/api', httpAgent };
+      config.self = config;
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // the circular key is dropped by the visited check, and every path into
+      // the config sees the label rather than the live agent
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(json.config).not.toHaveProperty('self');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+      expect(config.httpAgent).toBe(httpAgent);
+    });
+
+    it('keeps an inherited toJSON hook on the config when an agent is present', () => {
+      const config = Object.create({
+        toJSON() {
+          return { snapshot: true };
+        },
+      });
+      config.url = '/api';
+      config.httpAgent = new http.Agent();
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // toJSONObject returns toJSON-bearing sources untouched, so the hook
+      // keeps deciding the snapshot; a copied config would lose it
+      expect(json.config).toBe(config);
+      expect(JSON.stringify(json.config)).toBe('{"snapshot":true}');
+    });
+
     it('labels agents on the redact path too', () => {
       const config = {
         httpAgent: new http.Agent(),

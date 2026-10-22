@@ -69,6 +69,22 @@ describe('static api', () => {
     assert.strictEqual(typeof axios.getUri, 'function');
   });
 
+  it('should build a query-only uri without a destination', () => {
+    // `getUri` only builds a query string; it never dispatches a request, so
+    // it must keep supporting a missing url.
+    assert.strictEqual(axios.getUri({ params: { foo: 'bar' } }), '?foo=bar');
+    assert.strictEqual(axios.getUri({ url: null, params: { foo: 'bar' } }), '?foo=bar');
+    assert.strictEqual(
+      axios.getUri({ url: undefined, params: { foo: 'bar' } }),
+      '?foo=bar'
+    );
+    assert.strictEqual(axios.getUri({ url: '', params: { foo: 'bar' } }), '?foo=bar');
+    assert.strictEqual(
+      axios.getUri({ url: '/foo', params: { foo: 'bar' } }),
+      '/foo?foo=bar'
+    );
+  });
+
   it('should ignore inherited data for bodyless method helpers', async () => {
     Object.defineProperty(Object.prototype, 'data', {
       value: 'inherited-body',

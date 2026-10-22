@@ -140,6 +140,24 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12(@types/node@26.0.1)(@vitest/browser-playwright@4.1.12)(vite@8.1.6(@types/node@26.0.1)(jiti@2.6.1)(yaml@2.9.1))
 
+  tests:
+    devDependencies:
+      '@playwright/test':
+        specifier: 1.64.0
+        version: 1.64.0
+      '@types/node':
+        specifier: 20.19.39
+        version: 20.19.39
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      typescript-legacy:
+        specifier: npm:typescript@4.9.5
+        version: typescript@4.9.5
+      vite:
+        specifier: 8.1.6
+        version: 8.1.6(@types/node@20.19.39)(jiti@2.6.1)(yaml@2.9.1)
+
 packages:
 
   '@algolia/abtesting@1.26.0':
@@ -669,6 +687,11 @@ packages:
     resolution: {integrity: sha512-C2Xj8FZ0uHWeCXXqX5B4/gVFQmtSkiuOolzAgutjTfseNOHT3pUjljDZsTSxXFGgio54bCzVFqmEOUrIVk8RDA==}
     engines: {node: '>=20.0.0'}
 
+  '@playwright/test@1.64.0':
+    resolution: {integrity: sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
@@ -1071,6 +1094,9 @@ packages:
 
   '@types/mdurl@2.0.0':
     resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
+
+  '@types/node@20.19.39':
+    resolution: {integrity: sha512-orrrD74MBUyK8jOAD/r0+lfa1I2MO6I+vAkmAWzMYbCcgrN4lCrmK52gRFQq/JRxfYPfonkr4b0jcY7Olqdqbw==}
 
   '@types/node@26.0.1':
     resolution: {integrity: sha512-fc3KiUoBt6kie0N9bIW3E47vZsuaMf0PM2AaUpLCLT0s/LvX1nxAim6Fc049cNxODPpGm6qRAuUOB86SkRuPQw==}
@@ -2351,10 +2377,18 @@ packages:
     resolution: {integrity: sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA==}
     engines: {node: '>= 18'}
 
+  typescript@4.9.5:
+    resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
@@ -3161,6 +3195,10 @@ snapshots:
       tslib: 2.8.1
       tsyringe: 4.10.0
 
+  '@playwright/test@1.64.0':
+    dependencies:
+      playwright: 1.64.0
+
   '@polka/url@1.0.0-next.29': {}
 
   '@rolldown/binding-android-arm64@1.1.5':
@@ -3417,6 +3455,10 @@ snapshots:
       '@types/unist': 3.0.3
 
   '@types/mdurl@2.0.0': {}
+
+  '@types/node@20.19.39':
+    dependencies:
+      undici-types: 6.21.0
 
   '@types/node@26.0.1':
     dependencies:
@@ -4787,7 +4829,11 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.2
 
+  typescript@4.9.5: {}
+
   typescript@5.9.3: {}
+
+  undici-types@6.21.0: {}
 
   undici-types@8.3.0: {}
 
@@ -4845,6 +4891,19 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.6.1
       lightningcss: 1.33.0
+      yaml: 2.9.1
+
+  vite@8.1.6(@types/node@20.19.39)(jiti@2.6.1)(yaml@2.9.1):
+    dependencies:
+      lightningcss: 1.33.0
+      picomatch: 4.0.7
+      postcss: 8.5.31
+      rolldown: 1.1.5
+      tinyglobby: 0.2.17
+    optionalDependencies:
+      '@types/node': 20.19.39
+      fsevents: 2.3.3
+      jiti: 2.6.1
       yaml: 2.9.1
 
   vite@8.1.6(@types/node@26.0.1)(jiti@2.6.1)(yaml@2.9.1):

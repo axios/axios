@@ -1,0 +1,20 @@
+{
+  "name": "@axios/e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run.mjs all",
+    "test:node": "node run.mjs node",
+    "test:browser": "node run.mjs browser",
+    "test:bun": "node run.mjs bun",
+    "test:deno": "node run.mjs deno",
+    "pack": "node run.mjs pack"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "20.19.39",
+    "typescript": "5.9.3",
+    "typescript-legacy": "npm:typescript@4.9.5",
+    "vite": "8.1.6"
+  }
+}

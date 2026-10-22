@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - apps/*
+  - tests
 
 # Consumer fixtures deliberately install tarballs outside this workspace.
 ignoreScripts: true

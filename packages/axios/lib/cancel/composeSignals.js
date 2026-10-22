@@ -4,7 +4,7 @@ import createCanceledError from './createCanceledError.js';
 import AxiosError from '../core/AxiosError.js';
 import utils from '../utils.js';
 
-const composeSignals = (signals, timeout) => {
+const composeSignals = (signals, timeout, timeoutError) => {
   signals = signals ? signals.filter(Boolean) : [];
 
   if (!timeout && !signals.length) {
@@ -31,7 +31,9 @@ const composeSignals = (signals, timeout) => {
     timeout &&
     setTimeout(() => {
       timer = null;
-      abort(new AxiosError(`timeout of ${timeout}ms exceeded`, AxiosError.ETIMEDOUT));
+      abort(
+        timeoutError || new AxiosError(`timeout of ${timeout}ms exceeded`, AxiosError.ETIMEDOUT)
+      );
     }, timeout);
 
   const unsubscribe = () => {

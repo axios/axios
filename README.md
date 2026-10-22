@@ -7,7 +7,7 @@ Axios is a promise-based HTTP client for the browser and Node.js. This repositor
 - [`packages/axios`](packages/axios) contains the library, public declarations, build configuration, and unit, browser, and artifact tests.
 - [`apps/docs`](apps/docs) contains the documentation site and translations.
 - [`apps/sandbox`](apps/sandbox) provides the local browser and terminal sandbox.
-- [`tests/compatibility`](tests/compatibility) tests packed Axios releases in independent consumer projects, including CommonJS, ESM, Bun, and Deno.
+- [`tests`](tests) exercises freshly packed Axios in real browser applications and native Node.js, Bun, and Deno consumers, using local HTTP services.
 - [`tooling`](tooling) contains shared lint configuration.
 
 ## Development
@@ -27,6 +27,6 @@ pnpm run pack:axios
 
 The root manifest is private. `pnpm run pack:axios` writes only the Axios package to `artifacts/`; the library's public exports and installed directory structure are unchanged. Root commands delegate to the appropriate workspace; package-specific commands can also run with `pnpm --filter axios run <command>`.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for contributor requirements, isolated consumer tests, and release instructions. Usage documentation is in the [Axios package README](packages/axios/README.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for contributor requirements, packaged e2e tests, and release instructions. Usage documentation is in the [Axios package README](packages/axios/README.md).
 
 For AI-assisted PR review, advisory triage and remediation, vulnerability impact assessment, and release notes, use the [repository OSS skills](CONTRIBUTING.md#ai-assisted-workflows).

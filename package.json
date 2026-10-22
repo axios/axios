@@ -24,12 +24,12 @@
     "docs:build": "pnpm --filter @axios/docs run docs:build",
     "start": "pnpm --filter @axios/sandbox start",
     "prepare": "husky",
-    "test:module:cjs": "pnpm --dir tests/compatibility/module/cjs run test:module:cjs",
-    "test:module:esm": "pnpm --dir tests/compatibility/module/esm run test:module:esm",
-    "test:smoke:cjs": "pnpm --dir tests/compatibility/smoke/cjs run test:smoke:cjs:mocha",
-    "test:smoke:esm": "pnpm --dir tests/compatibility/smoke/esm run test:smoke:esm:vitest",
-    "test:smoke:bun": "bun test --cwd tests/compatibility/smoke/bun",
-    "test:smoke:deno": "deno task --cwd tests/compatibility/smoke/deno test"
+    "test:e2e": "pnpm --filter @axios/e2e test",
+    "test:e2e:node": "pnpm --filter @axios/e2e run test:node",
+    "test:e2e:browser": "pnpm --filter @axios/e2e run test:browser",
+    "test:e2e:bun": "pnpm --filter @axios/e2e run test:bun",
+    "test:e2e:deno": "pnpm --filter @axios/e2e run test:deno",
+    "test:e2e:pack": "pnpm --filter @axios/e2e run pack"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.0",

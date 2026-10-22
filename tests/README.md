@@ -1,113 +1,55 @@
-# Test Contribution Guide
+# Packaged Axios end-to-end tests
 
-This guide covers Axios source tests and independent packed-package consumer suites.
+This private workspace tests what an application installs. Existing unit, source-browser, and artifact tests remain under `packages/axios/tests/`.
 
-## Tests Directory Layout
+## Run
 
-```text
-packages/axios/tests/
-  browser/   # browser runtime tests
-  build/     # generated artifact contracts
-  setup/     # shared source-test helpers
-  unit/      # focused unit and behavior tests
+Use the repository's pinned pnpm and supported development Node version. Install dependencies with `pnpm install --frozen-lockfile --ignore-scripts`, install Bun and Deno, and install browsers with `pnpm --filter @axios/e2e exec playwright install` (`--with-deps` also installs supported Linux system libraries).
 
-tests/compatibility/
-  module/    # packed CJS/ESM imports and TypeScript declarations
-  setup/     # consumer-test helpers
-  smoke/     # packed CJS/ESM, Bun, and Deno behavior
+```sh
+pnpm run test:e2e          # fresh build, pack, isolated install, all runtimes
+pnpm run test:e2e:node     # ESM/CJS, HTTP/Fetch, types and compiled applications
+pnpm run test:e2e:browser  # Chromium, Firefox, WebKit
+pnpm run test:e2e:bun      # actual Bun runner, ESM/CJS, HTTP/Fetch
+pnpm run test:e2e:deno     # actual Deno runner, ESM/CJS, HTTP/Fetch
 ```
 
-- Put browser behavior in `packages/axios/tests/browser` and Node behavior in `packages/axios/tests/unit`.
-- Put generated artifact checks in `packages/axios/tests/build`.
-- Put packed consumer tests in `tests/compatibility/smoke` or `tests/compatibility/module`.
-- Reuse source-test helpers from `packages/axios/tests/setup` and keep consumer helpers independent of library source.
-- Run `pnpm run test:vitest:unit`, `pnpm run test:vitest:browser:headless`, or the matching `pnpm run test:smoke:cjs` / `pnpm run test:smoke:esm` command from the root. Consumer fixtures must install the tarball first; see [AGENTS.md](../AGENTS.md#monorepo-layout) for CJS, ESM, Bun, and Deno setup.
+Every command builds and packs freshly by default. Missing runtimes fail; coverage is never silently skipped. Optional `AXIOS_E2E_NODE`, `AXIOS_E2E_BUN`, and `AXIOS_E2E_DENO` variables select executable paths for local runtime-matrix checks. They are not required with runtimes on `PATH`.
 
-## File Naming Conventions
+CI produces a single package artifact and checksum manifest. For explicit artifact reuse:
 
-Follow the existing file patterns:
+```sh
+pnpm run test:e2e:pack
+pnpm run test:e2e:node -- --artifact-dir artifacts/e2e
+```
 
-- Unit tests: `*.test.js`
-- Browser tests: `*.browser.test.js`
-- ESM smoke tests: `*.smoke.test.js`
-- CJS smoke tests: `*.smoke.test.cjs`
+Artifact paths are repository-relative. The manifest selects one exact tarball and verifies its SHA-256; a changed archive fails before installation. The default commands never fall back to a previously generated tarball.
 
-When adding a new test, match the nearest existing file name pattern in the same subdirectory.
+## Layout and isolation
 
-## Suite-Specific Authoring Patterns
+- `run.mjs` builds/packs or verifies a CI artifact, installs it into a temporary consumer outside this repository using pnpm with install scripts disabled, runs the selected suites, and cleans up.
+- `fixtures/service.mjs` provides real HTTP origins, HTTPS, HTTP/2, CORS, cookies, redirects, streamed responses, faults, multipart parsing, and a loopback-only forward/CONNECT proxy. `fixtures/tls/` contains public test-only credentials copied from the existing test fixture.
+- `runtime/scenarios.mjs` defines shared user workflows. Native `node:test`, `bun:test`, and `Deno.test` entry points execute these inside the installed consumer; they import the bare `axios` package.
+- `browser/app/` is a tiny consumer application built with Vite from its installed `axios` dependency. Playwright tests real user interactions and browser requests through XHR and Fetch, plus the installed classic-script UMD bundle.
+- `types/` retains the useful declaration fixtures from the old module suites. The Node e2e command checks TypeScript 4.9 CJS, TypeScript 5.x ESM, DOM and Node-only fetch types, emitted declaration consumers, and compiled HTTP applications.
+- `COVERAGE.md` records the migration and historical regression audit.
 
-### Unit (`packages/axios/tests/unit`)
+Axios is never a dependency of this workspace. The temporary consumer gets a regular package directory installed from the tarball, not a workspace link. Package-resolution tests assert its real path and version. Browser builds disable repository Vite configuration and resolve from that same isolated consumer. Do not import `packages/axios`, use source-test adapters, replace `fetch`/XHR/HTTP transports, or assert only a fabricated adapter response in e2e tests.
 
-- Keep tests focused on one behavior or API surface.
-- For adapter/network behavior, prefer local test servers using utilities from `packages/axios/tests/setup/server.js`.
-- Ensure server cleanup with `try/finally` so tests do not leak resources.
-- Keep fixtures close to the tests that use them (see `packages/axios/tests/unit/adapters` for examples).
+The local services replace remote applications, proxies, and failure conditions. No public test services or real credentials are needed. Requests under test use Axios; fixture-control requests may inspect the local server's records. Proxy forwarding is restricted to fixture destinations.
 
-Representative files:
+## Framework choice
 
-- `packages/axios/tests/unit/adapters/http.test.js`
-- `packages/axios/tests/unit/adapters/fetch.test.js`
-- `packages/axios/tests/unit/axios.test.js`
+Playwright supplies real Chromium, Firefox, and WebKit contexts, user actions, browser isolation, and failure traces. Its API request client would send requests itself, so it cannot establish Axios transport behavior. The native runtime runners execute the same Axios scenarios in actual Node, Bun, and Deno processes; no browser emulator substitutes for a server runtime.
 
-### Browser (`packages/axios/tests/browser`)
+Playwright runs on the browser job's Node host; it does not claim to run server code inside Bun or Deno. This also keeps browser-tooling Node requirements separate from the Node 20 runtime matrix.
 
-- Use local in-file `MockXMLHttpRequest` style mocks when testing request behavior.
-- Replace global XHR in `beforeEach` and restore it in `afterEach`.
-- Reset spies/mocks in cleanup hooks to keep tests isolated.
-- Keep assertions centered on observable request/response behavior.
+References: [Playwright projects](https://playwright.dev/docs/test-projects), [API testing](https://playwright.dev/docs/api-testing), [Node test runner](https://nodejs.org/api/test.html), [Bun test runner](https://bun.sh/docs/test), and [Deno testing](https://docs.deno.com/runtime/test/).
 
-Representative files:
+## Adding scenarios
 
-- `packages/axios/tests/browser/requests.browser.test.js`
-- `packages/axios/tests/browser/adapter.browser.test.js`
-- `packages/axios/tests/browser/defaults.browser.test.js`
+Use real observable requests, payloads, response headers, and resource cleanup. Add common behavior to the runtime scenario list, and browser-specific behavior to Playwright specs. Keep CJS/ESM scenarios aligned. Assert rejection explicitly so an unexpected resolution cannot pass. Restore mutated environment variables and destroy agents/streams in `finally` blocks.
 
-### Smoke (`tests/compatibility/smoke`)
+Node-only agent, proxy, DNS, HTTP/2 and stream behavior belongs in the Node section. Bun and Deno still run HTTP and Fetch network tests. Fetch upload progress currently requires a Request implementation exposing the duplex capability used by Axios; HTTP upload progress and all runtimes' Fetch download progress are asserted. Add an explicit matrix expansion when a runtime gains another capability.
 
-- Keep ESM and CJS smoke coverage aligned for compatibility-sensitive behavior.
-- If you add a new smoke scenario in one format, add the equivalent in the other format.
-- Keep smoke tests small and focused on import/runtime behavior and critical request flows.
-
-Representative files:
-
-- `tests/compatibility/smoke/esm/tests/fetch.smoke.test.js`
-- `tests/compatibility/smoke/cjs/tests/fetch.smoke.test.cjs`
-- `tests/compatibility/smoke/esm/tests/basic.smoke.test.js`
-- `tests/compatibility/smoke/cjs/tests/basic.smoke.test.cjs`
-
-## Shared Setup Utilities (`packages/axios/tests/setup`)
-
-Use shared helpers before introducing new setup code:
-
-- `packages/axios/tests/setup/server.js`
-  - Server lifecycle helpers: `startHTTPServer`, `stopHTTPServer`, `stopAllTrackedHTTPServers`
-  - Timing helpers: `setTimeoutAsync`
-  - Data/stream helpers used by adapter tests
-- `packages/axios/tests/setup/browser.setup.js`
-  - Browser cleanup hook (`afterEach`) for clearing test DOM state
-
-General expectation: if a helper can be reused by multiple tests under `packages/axios/tests`, add or extend it in `packages/axios/tests/setup` instead of copying setup code between test files.
-
-## Fixtures and Test Data
-
-- Prefer colocated fixtures near the test files that need them.
-- Keep fixture names explicit and stable.
-- For matrix-like scenarios, prefer concise table-driven cases inside the test file when practical.
-
-Examples of colocated fixtures:
-
-- `packages/axios/tests/unit/adapters/cert.pem`
-- `packages/axios/tests/unit/adapters/key.pem`
-- `packages/axios/tests/unit/adapters/axios.png`
-
-## Contributor Checklist
-
-Before opening a PR that changes any of these suites:
-
-- File is placed in the correct package or consumer suite (`unit`, `browser`, `build`, `module`, or `smoke`).
-- File name matches the local pattern (`*.test.js`, `*.browser.test.js`, `*.smoke.test.js`, `*.smoke.test.cjs`).
-- Test setup/teardown is explicit and leaves no global/server state behind.
-- Shared setup logic uses `packages/axios/tests/setup` helpers where possible.
-- Smoke tests remain ESM/CJS consistent when behavior is format-sensitive.
-- Fixtures are colocated and minimal.
-- Assertions are deterministic and avoid unnecessary timing/network flakiness.
+CI uses the same packed artifact for Node 20/22/24/26, Bun, Deno, and all three browsers. `release-branch.yml` waits for every e2e lane before preparing a release PR. Playwright reports and failure traces are uploaded from ignored `tests/results/`.

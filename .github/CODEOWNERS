@@ -36,4 +36,4 @@
 /apps/*/package.json        @jasonsaayman
 /pnpm-workspace.yaml        @jasonsaayman
 /tooling/                   @jasonsaayman
-/tests/compatibility/       @jasonsaayman
+/tests/                     @jasonsaayman

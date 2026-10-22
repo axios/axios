@@ -102,7 +102,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/smoke/cjs
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run CJS smoke tests
         working-directory: tests/compatibility/smoke/cjs
@@ -144,7 +144,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/smoke/esm
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run ESM smoke tests
         working-directory: tests/compatibility/smoke/esm
@@ -186,7 +186,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/module/cjs
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run CJS module tests
         working-directory: tests/compatibility/module/cjs
@@ -228,7 +228,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/module/esm
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run ESM module tests
         working-directory: tests/compatibility/module/esm

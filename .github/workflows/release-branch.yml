@@ -5,7 +5,7 @@ on:
     inputs:
       type:
         type: choice
-        description: Choose release type
+        description: Choose release type (first v2 release requires major)
         options:
           - patch
           - minor
@@ -104,7 +104,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/smoke/cjs
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run CJS smoke tests
         working-directory: tests/compatibility/smoke/cjs
@@ -146,7 +146,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/smoke/esm
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run ESM smoke tests
         working-directory: tests/compatibility/smoke/esm
@@ -188,7 +188,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/module/cjs
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run CJS module tests
         working-directory: tests/compatibility/module/cjs
@@ -230,7 +230,7 @@ jobs:
 
       - name: Install packed axios
         working-directory: tests/compatibility/module/esm
-        run: pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev ../../../../artifacts/axios-*.tgz
+        run: pnpm add --ignore-workspace --ignore-scripts --save-dev ../../../../artifacts/axios-*.tgz
 
       - name: Run ESM module tests
         working-directory: tests/compatibility/module/esm
@@ -333,7 +333,10 @@ jobs:
           package-manager-cache: false
 
       - name: Install pinned pnpm
-        run: npm install --global pnpm@10.34.7 --ignore-scripts
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          npm install --global "$RUNNER_TEMP/pnpm.tgz" --ignore-scripts
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -349,11 +352,30 @@ jobs:
           INPUT_BETA: ${{ github.event.inputs.beta }}
         id: bump-version
         run: |
+          node --input-type=module <<'CHECK_RELEASE_INPUT'
+          import { readFileSync } from 'node:fs';
+          const { version } = JSON.parse(readFileSync('packages/axios/package.json', 'utf8'));
+          const major = Number(version.split('.')[0]);
+          const type = process.env.INPUT_TYPE;
+          if (!['patch', 'minor', 'major'].includes(type)) {
+            throw new Error('Choose patch, minor, or major for the release type.');
+          }
+          if (major !== 2 && !(major === 1 && type === 'major')) {
+            throw new Error('The v2.x release workflow requires a major bump from v1, or an existing v2 version.');
+          }
+          CHECK_RELEASE_INPUT
           TYPE="${INPUT_TYPE}"
           if [ "$INPUT_BETA" = "true" ]; then
             TYPE="pre${TYPE}"
           fi
           pnpm run version:axios "$TYPE" --preid=beta --no-git-tag-version --ignore-scripts
+          node --input-type=module <<'CHECK_RELEASE_VERSION'
+          import { readFileSync } from 'node:fs';
+          const { version } = JSON.parse(readFileSync('packages/axios/package.json', 'utf8'));
+          if (!version.startsWith('2.')) {
+            throw new Error(`The v2.x release workflow cannot prepare ${version}; releases must stay on major 2.`);
+          }
+          CHECK_RELEASE_VERSION
           pnpm install --lockfile-only --offline --ignore-scripts
           VERSION=$(node -p "require('./packages/axios/package.json').version")
           echo "newTag=$VERSION" >> "$GITHUB_OUTPUT"

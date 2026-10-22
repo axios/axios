@@ -37,13 +37,13 @@ function git(...args) {
   return run('git', args);
 }
 
-function npm(...args) {
+function npm(args, options = {}) {
   if (process.env.npm_execpath && /npm-cli\.js$/.test(process.env.npm_execpath)) {
-    return run(process.execPath, [process.env.npm_execpath, ...args]);
+    return run(process.execPath, [process.env.npm_execpath, ...args], options);
   }
 
   const windows = process.platform === 'win32';
-  return run(windows ? 'npm.cmd' : 'npm', args, { shell: windows });
+  return run(windows ? 'npm.cmd' : 'npm', args, { shell: windows, ...options });
 }
 
 afterEach(async () => {
@@ -56,14 +56,14 @@ afterEach(async () => {
 
 describe('npm version lifecycle', () => {
   it.each([
-    ['patch', '1.2.4', 'available'],
-    ['minor', '1.3.0', 'available'],
-    ['major', '2.0.0', 'available'],
-    ['prerelease', '1.2.4-rc.0', 'available'],
-    ['patch', '1.2.4', 'rate-limited'],
+    ['patch', '1.2.4', 'available', 'standalone'],
+    ['minor', '1.3.0', 'available', 'standalone'],
+    ['major', '2.0.0', 'available', 'standalone'],
+    ['prerelease', '1.2.4-rc.0', 'available', 'standalone'],
+    ['patch', '1.2.4', 'rate-limited', 'standalone'],
     ['patch', '1.2.4', 'available', 'workspace'],
   ])(
-    'builds and commits %s %s (GitHub: %s)',
+    'prepares %s %s (GitHub: %s; layout: %s)',
     async (bump, expectedVersion, githubState, layout) => {
       repositoryDirectory = await mkdtemp(join(tmpdir(), 'axios-version-lifecycle-'));
       directory =
@@ -172,8 +172,7 @@ writeFileSync(new URL('../dist/version.json', import.meta.url), JSON.stringify({
       if (bump === 'prerelease') args.push('--preid=rc');
       if (layout === 'workspace') {
         // The root command leaves commits/tags to review while still preparing and staging files.
-        run(
-          'npm',
+        npm(
           [
             'run',
             'version:axios',
@@ -183,7 +182,7 @@ writeFileSync(new URL('../dist/version.json', import.meta.url), JSON.stringify({
           { cwd: repositoryDirectory }
         );
       } else {
-        npm(...args);
+        npm(args);
       }
 
       const expectedContributors =

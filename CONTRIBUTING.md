@@ -41,7 +41,7 @@ Consumer projects in `tests/compatibility/` are intentionally outside the worksp
 - `pnpm run test:vitest:unit` runs the Node unit tests
 - `pnpm run test:vitest:browser:headless` runs the Chromium, Firefox, and WebKit browser tests; install the browsers first with `pnpm --filter axios exec playwright install` (`pnpm --filter axios exec playwright install --with-deps` also installs system dependencies on supported Linux hosts)
 - `pnpm run build` clears generated artifacts and runs Rolldown
-- `pnpm run version:axios patch --ignore-scripts=false` prepares the code for release
+- Maintainers can run `pnpm run version:axios patch --ignore-scripts=false` for a local version bump with release hooks. This explicit exception to disabled install scripts bumps `packages/axios/package.json`, prepares and stages `packages/axios/lib/env/data.js`, and builds Axios. It does not create a commit or tag; review and commit the staged files separately. The release workflow requires a major bump from v1 and keeps release PRs on major 2.
 
 ## Running examples
 
@@ -57,13 +57,13 @@ Run the examples:
 Run the browser sandbox:
 
 ```bash
-> npm start
+> pnpm start
 # Open 127.0.0.1:3000
 ```
 
 Run the terminal sandbox:
 
 ```bash
-> npm start
+> pnpm start
 > node ./apps/sandbox/client.js
 ```

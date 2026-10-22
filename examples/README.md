@@ -1,5 +1,7 @@
 # axios examples
 
+Use Node.js and pnpm 10.34.7 as described in the [repository setup instructions](../README.md#development).
+
 To run the examples:
 
 1. `git clone https://github.com/axios/axios.git`

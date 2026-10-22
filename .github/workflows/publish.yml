@@ -27,7 +27,10 @@ jobs:
           package-manager-cache: false
 
       - name: Install pinned pnpm
-        run: npm install --global pnpm@10.34.7 --ignore-scripts
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          npm install --global "$RUNNER_TEMP/pnpm.tgz" --ignore-scripts
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts

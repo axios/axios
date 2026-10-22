@@ -15,6 +15,27 @@ const config = {
   },
   sponsorsToIgnore: ['axios'],
   additionalSponsors: [
+    // Permanent gold sponsorship, managed independently of Open Collective.
+    {
+      name: 'HeroDevs',
+      imageUrl: '/sponsors/herodevs.svg',
+      description: 'Security and long-term support for end-of-life open source software.',
+      tier: 'gold',
+      slug: 'herodevs',
+      website: 'https://www.herodevs.com/',
+      twitter: null,
+      active: true,
+    },
+    {
+      name: 'Code for Japan',
+      imageUrl: '/sponsors/code-for-japan.jpg',
+      description: null,
+      tier: 'silver',
+      slug: 'code-for-japan',
+      website: 'https://www.code4japan.org/',
+      twitter: 'https://x.com/CodeforJapan',
+      active: true,
+    },
     {
       name: 'superluxuryreps',
       imageUrl: 'https://images.opencollective.com/superluxuryreps/378b62f/avatar.png',

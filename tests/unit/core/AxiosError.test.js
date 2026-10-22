@@ -776,5 +776,32 @@ describe('core::AxiosError', () => {
       expect(json.config.httpAgent).toBe('[Agent]');
       expect(json.config.auth.password).toBe('[REDACTED ****]');
     });
+
+    it('bounds agent references held through arrays and class instances', () => {
+      const config = { httpAgent: new http.Agent(), items: null, holder: null };
+      class Holder {}
+      config.items = [config];
+      config.holder = new Holder();
+      config.holder.config = config;
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      // the back-references hit toJSONObject's visited set and are dropped
+      expect(json.config.items).toEqual([]);
+      expect(json.config.holder.config).toBeUndefined();
+    });
+
+    it('serializes frozen configs that have no agent', () => {
+      const config = Object.freeze({
+        auth: Object.freeze({ username: 'user', password: 'secret' }),
+        handler: Object.freeze(function handler() {}),
+      });
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.auth.username).toBe('user');
+      expect(typeof json.config.handler).toBe('function');
+    });
   });
 });

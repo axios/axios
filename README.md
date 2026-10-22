@@ -7,7 +7,6 @@ Axios is a promise-based HTTP client for the browser and Node.js. This repositor
 - [`packages/axios`](packages/axios) contains the library, public declarations, build configuration, and unit, browser, and artifact tests.
 - [`apps/docs`](apps/docs) contains the documentation site and translations.
 - [`apps/sandbox`](apps/sandbox) provides the local browser and terminal sandbox.
-- [`examples`](examples) contains a private workspace for usage examples.
 - [`tests/compatibility`](tests/compatibility) tests packed Axios releases in independent consumer projects, including CommonJS, ESM, Bun, and Deno.
 - [`tooling`](tooling) contains shared lint configuration.
 

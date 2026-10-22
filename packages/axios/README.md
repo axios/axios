@@ -2853,12 +2853,6 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 });
 ```
 
-## Online one-click setup
-
-You can use Gitpod, a free online IDE for open source projects, to contribute or run the examples online.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/axios/axios/blob/main/examples/server.js)
-
 ## Contributing
 
 ### Local setup

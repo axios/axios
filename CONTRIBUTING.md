@@ -43,16 +43,7 @@ Consumer projects in `tests/compatibility/` are intentionally outside the worksp
 - `pnpm run build` clears generated artifacts and runs Rolldown
 - Maintainers can run `pnpm run version:axios patch --ignore-scripts=false` for a local version bump with release hooks. This explicit exception to disabled install scripts bumps `packages/axios/package.json`, prepares and stages `packages/axios/lib/env/data.js`, and builds Axios. It does not create a commit or tag; review and commit the staged files separately. The release workflow requires a major bump from v1 and keeps release PRs on major 2.
 
-## Running examples
-
-Use the examples for manual testing.
-
-Run the examples:
-
-```bash
-> pnpm run examples
-# Open 127.0.0.1:3000
-```
+## Running the sandbox
 
 Run the browser sandbox:
 

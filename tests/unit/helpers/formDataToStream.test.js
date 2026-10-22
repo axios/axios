@@ -143,4 +143,37 @@ describe('formDataToStream', () => {
 
     expect(Buffer.byteLength(body, 'utf8')).toBe(reportedLength);
   });
+
+  it('should keep an empty blob name as an empty filename parameter', async () => {
+    const fd = new SpecFormData();
+    fd.append(
+      'upload',
+      makeBlobLike({
+        type: 'application/octet-stream',
+        name: '',
+        payload: Buffer.from([0xff, 0x00]),
+      })
+    );
+
+    const body = await collect(formDataToStream(fd, () => {}));
+
+    // A part without filename is parsed as a text field, corrupting binary data.
+    expect(body).toContain('Content-Disposition: form-data; name="upload"; filename=""');
+  });
+
+  it('should default a missing blob name to "blob", matching formDataToBlob', async () => {
+    const fd = new SpecFormData();
+    fd.append(
+      'upload',
+      makeBlobLike({
+        type: 'application/octet-stream',
+        name: undefined,
+        payload: Buffer.from('x'),
+      })
+    );
+
+    const body = await collect(formDataToStream(fd, () => {}));
+
+    expect(body).toContain('filename="blob"');
+  });
 });

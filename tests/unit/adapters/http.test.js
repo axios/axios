@@ -5306,6 +5306,61 @@ describe('supports http with nodejs', () => {
   });
 
   describe('Rate limit', () => {
+    for (const maxRate of [-1, '-1', -0.5, [-1], [-1, 0], [0, -1], [-1, -1]]) {
+      for (const method of ['get', 'post']) {
+        it(`should reject a negative maxRate ${JSON.stringify(maxRate)} for ${method.toUpperCase()} before sending the request`, async () => {
+          let requests = 0;
+          const server = await startHTTPServer((req, res) => {
+            requests++;
+            req.resume();
+            res.end('ok');
+          });
+
+          try {
+            await assert.rejects(
+              axios.request({
+                url: `http://localhost:${server.address().port}/`,
+                method,
+                data: method === 'post' ? 'payload' : undefined,
+                adapter: 'http',
+                maxRate,
+              }),
+              (error) => {
+                assert.ok(error instanceof AxiosError);
+                assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+                assert.strictEqual(error.message, '`config.maxRate` must be a non-negative number');
+                assert.deepStrictEqual(error.config.maxRate, maxRate);
+                return true;
+              }
+            );
+            assert.strictEqual(requests, 0);
+          } finally {
+            await stopHTTPServer(server);
+          }
+        });
+      }
+    }
+
+    it('should still accept zero and unset rates', async () => {
+      const server = await startHTTPServer((req, res) => {
+        req.resume();
+        res.end('ok');
+      });
+
+      try {
+        for (const maxRate of [undefined, 0, [0, 0], [undefined, 0]]) {
+          const { data } = await axios.post(`http://localhost:${server.address().port}/`, 'payload', {
+            adapter: 'http',
+            maxRate,
+            responseType: 'text',
+          });
+          assert.strictEqual(data, 'ok');
+        }
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
     it('should support upload rate limit', async () => {
       const secs = 10;
       const configRate = 100000;

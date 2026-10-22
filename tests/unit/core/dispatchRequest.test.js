@@ -123,6 +123,99 @@ describe('core::dispatchRequest', () => {
       }
     );
 
+    it.each([null, undefined])(
+      'accepts a %s url for a caller-supplied adapter inside an array',
+      async (url) => {
+        let adapterCalled = false;
+
+        const config = baseConfig({
+          url,
+          adapter: [
+            (adapterConfig) => {
+              adapterCalled = true;
+              return Promise.resolve({
+                data: null,
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                config: adapterConfig,
+                request: {},
+              });
+            },
+          ],
+        });
+
+        await dispatchRequest(config);
+
+        assert.strictEqual(adapterCalled, true, 'adapter must be called');
+      }
+    );
+
+    it.each([null, undefined])(
+      'accepts a %s url for a caller-supplied adapter listed before a built-in name',
+      async (url) => {
+        let adapterCalled = false;
+
+        const config = baseConfig({
+          url,
+          adapter: [
+            (adapterConfig) => {
+              adapterCalled = true;
+              return Promise.resolve({
+                data: null,
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                config: adapterConfig,
+                request: {},
+              });
+            },
+            'xhr',
+            'http',
+            'fetch',
+          ],
+        });
+
+        await dispatchRequest(config);
+
+        assert.strictEqual(adapterCalled, true, 'adapter must be called');
+      }
+    );
+
+    it.each([null, undefined])(
+      'rejects a %s url when a built-in adapter wins the resolution',
+      async (url) => {
+        let thrown;
+
+        // `getAdapter` resolves the first suitable adapter, so the built-in
+        // name wins here and the request would use the built-in transport.
+        try {
+          await dispatchRequest(baseConfig({ url, adapter: ['xhr', 'http', 'fetch'] }));
+        } catch (e) {
+          thrown = e;
+        }
+
+        assert.ok(thrown instanceof AxiosError, 'must be AxiosError');
+        assert.strictEqual(thrown.code, AxiosError.ERR_INVALID_URL);
+      }
+    );
+
+    it.each([null, undefined])(
+      'rejects a %s url when a built-in adapter is selected by name',
+      async (url) => {
+        let thrown;
+
+        try {
+          await dispatchRequest(baseConfig({ url, adapter: 'http' }));
+        } catch (e) {
+          thrown = e;
+        }
+
+        assert.ok(thrown instanceof AxiosError, 'must be AxiosError');
+        assert.strictEqual(thrown.code, AxiosError.ERR_INVALID_URL);
+      }
+    );
+
     it('accepts an empty string url, which is a valid relative url', async () => {
       let adapterCalled = false;
 

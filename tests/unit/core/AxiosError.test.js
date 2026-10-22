@@ -856,6 +856,22 @@ describe('core::AxiosError', () => {
       expect(json.config.items[0].httpAgent).toBe('[Agent]');
     });
 
+    it('does not evaluate named properties on arrays', () => {
+      // forEach-based serializers only visit index elements, so a named
+      // accessor on an array must never run, even when redact lists its name
+      const items = [{ httpAgent: new http.Agent() }];
+      Object.defineProperty(items, 'secret', {
+        enumerable: true,
+        get() {
+          throw new Error('must not be invoked');
+        },
+      });
+      const config = { items, redact: ['secret'] };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config.items[0].httpAgent).toBe('[Agent]');
+    });
+
     it('serializes subclasses of builtin containers', () => {
       class Tags extends Set {}
       const error = new AxiosError('Boom', 'ECODE', { tags: new Tags(['a', 'b']) });

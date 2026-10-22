@@ -14,7 +14,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "20.19.39",
-    "mocha": "11.8.0",
+    "mocha": "12.0.3",
     "typescript": "4.9.5"
   }
 }

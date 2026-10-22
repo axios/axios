@@ -13,7 +13,7 @@
   "author": "axios team",
   "license": "MIT",
   "devDependencies": {
-    "mocha": "11.8.0",
+    "mocha": "12.0.3",
     "chai": "4.5.0"
   }
 }

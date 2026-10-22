@@ -6,6 +6,7 @@
 
 ## Bug Fixes
 
+- **AxiosError toJSON agent serialization:** Replace `httpAgent` and `httpsAgent` values in error snapshots with a bounded `[ClassName]` label instead of serializing the live agent. Node agents pin socket, request, and response maps whose shared subgraphs were re-serialized once per reference path, so `error.toJSON()` or `JSON.stringify(error)` could grow without bound and exhaust memory for keep-alive pools. The original config object is not mutated, non-agent values like `true` pass through unchanged, and inherited agent accessors are not invoked. The label applies on both the default and `redact` serialization paths. (**[#11145](https://github.com/axios/axios/issues/11145)**)
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

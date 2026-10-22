@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isNativeError } from 'node:util/types';
+import http from 'http';
+import https from 'https';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 
@@ -609,6 +611,79 @@ describe('core::AxiosError', () => {
 
       // Useful for debugging — operators can see what was being redacted.
       expect(error.toJSON().config.redact).toEqual(['password']);
+    });
+  });
+
+  describe('toJSON agent serialization', () => {
+    it('replaces agent instances with a label instead of walking the socket pool', () => {
+      const httpAgent = new http.Agent({ keepAlive: true });
+      const httpsAgent = new https.Agent({ keepAlive: true });
+
+      // a populated pool is the OOM trigger: every host key shares the same
+      // request/response subgraphs, and the per-path walk re-serializes them
+      // for each path (#11145)
+      const shared = { remote: {}, queue: [] };
+      for (let i = 0; i < 8; i++) {
+        const socket = { req: { shared, socket: null }, res: { shared } };
+        socket.req.socket = socket;
+        httpAgent.sockets[`host${i}:80:`] = [socket];
+        httpAgent.requests[`host${i}:80:`] = [{ shared }];
+      }
+
+      const config = { url: '/api', httpAgent, httpsAgent };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(json.config.httpsAgent).toBe('[Agent]');
+      expect(json.config.url).toBe('/api');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+
+      // the live config is not mutated by serialization
+      expect(config.httpAgent).toBe(httpAgent);
+    });
+
+    it('labels third-party agent classes by their constructor name', () => {
+      class AgentkeepAlive {}
+      const config = { httpAgent: new AgentkeepAlive() };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config.httpAgent).toBe('[AgentkeepAlive]');
+    });
+
+    it('leaves non-agent agent values untouched', () => {
+      const config = { httpAgent: true, httpsAgent: { keepAlive: true } };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe(true);
+      expect(json.config.httpsAgent).toEqual({ keepAlive: true });
+    });
+
+    it('does not invoke inherited agent accessors', () => {
+      const config = Object.create({
+        get httpAgent() {
+          throw new Error('inherited accessor invoked');
+        },
+      });
+      config.url = '/api';
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(() => error.toJSON()).not.toThrow();
+      expect(error.toJSON().config).not.toHaveProperty('httpAgent');
+    });
+
+    it('labels agents on the redact path too', () => {
+      const config = {
+        httpAgent: new http.Agent(),
+        auth: { password: 'secret' },
+        redact: ['password'],
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(json.config.auth.password).toBe('[REDACTED ****]');
     });
   });
 });

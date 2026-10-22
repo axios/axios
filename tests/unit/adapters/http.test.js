@@ -4537,6 +4537,10 @@ describe('supports http with nodejs', () => {
           assert.deepStrictEqual(data.fields, {});
           assert.strictEqual(data.files.upload[0].originalFilename, '');
           assert.strictEqual(data.files.upload[0].size, 2);
+          assert.deepStrictEqual(
+            fs.readFileSync(data.files.upload[0].filepath),
+            Buffer.from([0xff, 0x00])
+          );
         } finally {
           oneShotAgent.destroy();
           await stopHTTPServer(server);

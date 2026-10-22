@@ -86,7 +86,7 @@ Use shared helpers before introducing new setup code:
 - `packages/axios/tests/setup/browser.setup.js`
   - Browser cleanup hook (`afterEach`) for clearing test DOM state
 
-General expectation: if a helper can be reused by multiple tests in this directory, add or extend it in `packages/axios/tests/setup` instead of copying setup code between test files.
+General expectation: if a helper can be reused by multiple tests under `packages/axios/tests`, add or extend it in `packages/axios/tests/setup` instead of copying setup code between test files.
 
 ## Fixtures and Test Data
 
@@ -102,7 +102,7 @@ Examples of colocated fixtures:
 
 ## Contributor Checklist
 
-Before opening a PR for tests in this directory:
+Before opening a PR that changes any of these suites:
 
 - File is placed in the correct package or consumer suite (`unit`, `browser`, `build`, `module`, or `smoke`).
 - File name matches the local pattern (`*.test.js`, `*.browser.test.js`, `*.smoke.test.js`, `*.smoke.test.cjs`).

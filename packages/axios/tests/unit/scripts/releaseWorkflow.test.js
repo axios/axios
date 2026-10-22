@@ -27,7 +27,9 @@ async function checkRelease(tag, version, type) {
       });
       return '';
     } catch (error) {
-      return error.stderr.toString();
+      return (
+        error.stderr?.toString() || error.message || `Process exited with status ${error.status}`
+      );
     }
   } finally {
     await rm(directory, { recursive: true, force: true });

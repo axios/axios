@@ -12,4 +12,5 @@ patchedDependencies:
   '@splidejs/splide@4.1.4': apps/docs/patches/@splidejs+splide+4.1.4.patch
 
 overrides:
-  'vite@5>esbuild': ^0.25.12
+  'vitepress>vite': ^6.4.5
+  'vite@6>esbuild': ^0.25.12

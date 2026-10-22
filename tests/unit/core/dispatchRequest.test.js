@@ -32,6 +32,121 @@ function baseConfig(overrides = {}) {
 }
 
 describe('core::dispatchRequest', () => {
+  describe('request url validation', () => {
+    // The default adapter path is used here so the check applies to a request
+    // that would otherwise be resolved against the current page.
+    const defaultAdapterConfig = (overrides = {}) =>
+      baseConfig({
+        adapter: undefined,
+        ...overrides,
+      });
+
+    it.each([null, undefined])('rejects a %s url before adapter dispatch', async (url) => {
+      let thrown;
+
+      try {
+        await dispatchRequest(defaultAdapterConfig({ url }));
+      } catch (e) {
+        thrown = e;
+      }
+
+      assert.ok(thrown instanceof AxiosError, 'must be AxiosError');
+      assert.strictEqual(thrown.code, AxiosError.ERR_INVALID_URL);
+    });
+
+    it.each([null, undefined])(
+      'rejects a %s url with params before adapter dispatch',
+      async (url) => {
+        let thrown;
+
+        try {
+          await dispatchRequest(defaultAdapterConfig({ url, params: { foo: 'bar' } }));
+        } catch (e) {
+          thrown = e;
+        }
+
+        assert.ok(thrown instanceof AxiosError, 'must be AxiosError');
+        assert.strictEqual(thrown.code, AxiosError.ERR_INVALID_URL);
+      }
+    );
+
+    it.each([null, undefined])(
+      'accepts a %s url when a baseURL supplies the destination',
+      async (url) => {
+        let adapterCalled = false;
+
+        const config = baseConfig({
+          url,
+          baseURL: 'https://example.com',
+          adapter(adapterConfig) {
+            adapterCalled = true;
+            return Promise.resolve({
+              data: null,
+              status: 200,
+              statusText: 'OK',
+              headers: {},
+              config: adapterConfig,
+              request: {},
+            });
+          },
+        });
+
+        await dispatchRequest(config);
+
+        assert.strictEqual(adapterCalled, true, 'adapter must be called');
+      }
+    );
+
+    it.each([null, undefined])(
+      'accepts a %s url for a caller-supplied adapter',
+      async (url) => {
+        let adapterCalled = false;
+
+        const config = baseConfig({
+          url,
+          adapter(adapterConfig) {
+            adapterCalled = true;
+            return Promise.resolve({
+              data: null,
+              status: 200,
+              statusText: 'OK',
+              headers: {},
+              config: adapterConfig,
+              request: {},
+            });
+          },
+        });
+
+        await dispatchRequest(config);
+
+        assert.strictEqual(adapterCalled, true, 'adapter must be called');
+      }
+    );
+
+    it('accepts an empty string url, which is a valid relative url', async () => {
+      let adapterCalled = false;
+
+      const config = baseConfig({
+        url: '',
+        adapter(adapterConfig) {
+          adapterCalled = true;
+          return Promise.resolve({
+            data: null,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config: adapterConfig,
+            request: {},
+          });
+        },
+      });
+
+      await dispatchRequest(config);
+
+      assert.strictEqual(adapterCalled, true, 'adapter must be called');
+    });
+  });
+
   describe('JSON FormData transform', () => {
     it('rejects deeply nested field paths before adapter dispatch', async () => {
       const data = new FormData();

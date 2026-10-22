@@ -20,8 +20,6 @@
     "test:build:artifacts": "pnpm --filter axios run test:build:artifacts",
     "pack:axios": "pnpm --dir packages/axios pack --pack-destination ../../artifacts",
     "version:axios": "pnpm --dir packages/axios exec npm version --no-git-tag-version",
-    "lint:lockfiles": "node tooling/scripts/check-lockfiles.js",
-    "test:tooling": "node --test tooling/tests/*.test.js",
     "docs:dev": "pnpm --filter @axios/docs run docs:dev",
     "docs:build": "pnpm --filter @axios/docs run docs:build",
     "start": "pnpm --filter @axios/sandbox start",
@@ -42,8 +40,7 @@
     "globals": "^17.7.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
-    "prettier": "^3.9.4",
-    "yaml": "2.9.1"
+    "prettier": "^3.9.4"
   },
   "commitlint": {
     "rules": {

@@ -283,7 +283,7 @@ This model protects what gets published as `axios` on npm. A successful attack h
                                                   + provenance attestation
 ```
 
-The v2 repository uses a private pnpm workspace. Axios is published only from `packages/axios/`; docs, sandbox, and examples are private consumers. Both `.npmrc` (`ignore-scripts=true`) and `pnpm-workspace.yaml` (`ignoreScripts: true`) prohibit install lifecycle scripts. CI validates all committed pnpm lockfiles for registry-only dependencies and SHA-512 integrity, allowing only declared first-party workspace links. Compatibility suites are excluded from the workspace and install the built tarball. The docs Splide patch uses pnpm's native patch mechanism rather than an install script. On v2, release preparation targets `v2.x`, and publishing is triggered by `v2.*.*` tags with npm staged publishing and provenance from the Axios package directory. Historical v1 references below describe the existing release line.
+The v2 repository uses a private pnpm workspace. Axios is published only from `packages/axios/`; docs, sandbox, and examples are private consumers. Both `.npmrc` (`ignore-scripts=true`) and `pnpm-workspace.yaml` (`ignoreScripts: true`) prohibit install lifecycle scripts. Compatibility suites are excluded from the workspace and install the built tarball. The docs Splide patch uses pnpm's native patch mechanism rather than an install script. On v2, release preparation targets `v2.x`, and publishing is triggered by `v2.*.*` tags with npm staged publishing and provenance from the Axios package directory. Historical v1 references below describe the existing release line.
 
 ### 3.2 Assets
 
@@ -369,7 +369,7 @@ Mitigations adopted and recommended. Adopted items are enforced via the repo; ot
    All maintainers use FIDO2/WebAuthn for GitHub auth and `sk-ssh-ed25519@openssh.com` for git push. A stolen `~/.ssh/id_ed25519_sk` is useless without the physical key. This converts "steal a file" into "steal a file and a physical object." Each maintainer should keep a backup key registered and stored separately.
 
 5. Audit lockfile diffs on dependency-update PRs as carefully as code.
-   A 4000-line `pnpm-lock.yaml` diff hides a lot. Tooling: `npm diff`, `pnpm run lint:lockfiles`, Socket.dev's PR integration. Pay particular attention to new packages with install scripts (`hasInstallScript: true` in the lockfile).
+   A 4000-line `pnpm-lock.yaml` diff hides a lot. Tooling: `npm diff`, Socket.dev's PR integration. Pay particular attention to new packages with install scripts (`hasInstallScript: true` in the lockfile).
 
 6. Don't add dev dependencies casually.
    Each one is a recurring trust decision delegated to a stranger. Prefer tools that can run via `npx` on demand (not in `node_modules`) or that are already in the tree.

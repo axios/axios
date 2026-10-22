@@ -17,7 +17,7 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Use Node.js 20.19 or newer for v2 development and validation. Rolldown currently requires `^20.19.0 || >=22.12.0`; the published Axios runtime floor remains Node.js 20.0.
 - Use `pnpm install --frozen-lockfile --ignore-scripts`; repo `.npmrc` sets `ignore-scripts=true`, and CI also uses `pnpm install --frozen-lockfile --ignore-scripts`.
 - Do not remove `ignore-scripts=true`; if git hooks are needed after a fresh install, run `pnpm exec husky` once.
-- Adding or updating dependencies is security-sensitive; committed `pnpm-lock.yaml` files are checked by `pnpm run lint:lockfiles` for npm HTTPS hosts and integrity hashes.
+- Adding or updating dependencies is security-sensitive; review dependency and lockfile changes carefully.
 - Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.
 - Build/test/lint tools still execute dependency code despite `ignore-scripts`; run the validation required by the PR submission checklist below and avoid unrelated runtime checks for documentation-only changes.
 - Do not add new runtime dependencies without discussion; the dependency surface is intentionally tiny.

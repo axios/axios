@@ -10,7 +10,7 @@ The root is private; the published package is `packages/axios/`, supporting apps
 
 - Use Node.js 20.19 or newer for v2 development and validation. Rolldown currently requires `^20.19.0 || >=22.12.0`; the published Axios runtime floor remains Node.js 20.0.
 - Install with `pnpm install --frozen-lockfile --ignore-scripts`; the repo's `.npmrc` sets `ignore-scripts=true`. Do not remove that flag. If husky hooks are needed after a fresh install, run `pnpm exec husky` once.
-- Do not add new runtime dependencies without discussion. Committed `pnpm-lock.yaml` files are verified by `pnpm run lint:lockfiles` for npm HTTPS hosts and integrity hashes.
+- Do not add new runtime dependencies without discussion. Review dependency and lockfile changes carefully.
 - Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.
 
 ## Pull requests

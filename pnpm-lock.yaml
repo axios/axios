@@ -40,9 +40,6 @@ importers:
       prettier:
         specifier: ^3.9.4
         version: 3.9.10
-      yaml:
-        specifier: 2.9.1
-        version: 2.9.1
 
   apps/docs:
     dependencies:
@@ -4990,7 +4987,8 @@ snapshots:
 
   y18n@5.0.8: {}
 
-  yaml@2.9.1: {}
+  yaml@2.9.1:
+    optional: true
 
   yargs-parser@22.0.0: {}
 

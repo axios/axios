@@ -85,4 +85,33 @@ describe('helpers::toURLEncodedForm', () => {
 
     assert.deepStrictEqual(fields, [['user.file', '616263']]);
   });
+
+  it('should preserve empty and binary Buffers alongside ordinary and nullish values', async () => {
+    const fields = await postForm({
+      empty: { file: Buffer.alloc(0) },
+      binary: { file: Buffer.from([0, 255, 254, 16, 128]) },
+      details: { name: 'report', count: 2, active: true, omitted: undefined, absent: null },
+    });
+
+    assert.deepStrictEqual(fields, [
+      ['empty[file]', ''],
+      ['binary[file]', 'AP/+EIA='],
+      ['details[name]', 'report'],
+      ['details[count]', '2'],
+      ['details[active]', 'true'],
+    ]);
+  });
+
+  it('should preserve nested arrays of Buffers with bracket and dot notation', async () => {
+    const data = { files: { attachments: [Buffer.from('first'), Buffer.from('second')] } };
+
+    assert.deepStrictEqual(await postForm(data), [
+      ['files[attachments][0]', 'Zmlyc3Q='],
+      ['files[attachments][1]', 'c2Vjb25k'],
+    ]);
+    assert.deepStrictEqual(await postForm(data, { dots: true }), [
+      ['files.attachments.0', 'Zmlyc3Q='],
+      ['files.attachments.1', 'c2Vjb25k'],
+    ]);
+  });
 });

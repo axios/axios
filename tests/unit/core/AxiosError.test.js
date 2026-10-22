@@ -843,6 +843,19 @@ describe('core::AxiosError', () => {
       expect(error.toJSON().config.secret).toBe('[REDACTED ****]');
     });
 
+    it('still bounds agents inside arrays when a redact key matches the index', () => {
+      // redactConfig only matches keys on non-array objects, so a numeric
+      // redact entry must not stop the snapshot from bounding array elements.
+      const config = {
+        items: [{ httpAgent: new http.Agent() }],
+        redact: ['0'],
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.items[0].httpAgent).toBe('[Agent]');
+    });
+
     it('serializes subclasses of builtin containers', () => {
       class Tags extends Set {}
       const error = new AxiosError('Boom', 'ECODE', { tags: new Tags(['a', 'b']) });

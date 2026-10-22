@@ -28,3 +28,5 @@ pnpm run pack:axios
 The root manifest is private. `pnpm run pack:axios` writes only the Axios package to `artifacts/`; the library's public exports and installed directory structure are unchanged. Root commands delegate to the appropriate workspace; package-specific commands can also run with `pnpm --filter axios run <command>`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for contributor requirements, isolated consumer tests, and release instructions. Usage documentation is in the [Axios package README](packages/axios/README.md).
+
+For AI-assisted PR review, advisory triage and remediation, vulnerability impact assessment, and release notes, use the [repository OSS skills](CONTRIBUTING.md#ai-assisted-workflows).

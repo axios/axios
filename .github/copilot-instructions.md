@@ -4,6 +4,8 @@ The canonical contributor guide for this repo is [`AGENTS.md`](../AGENTS.md). It
 
 The rules below are a Copilot-facing subset of the load-bearing safety guarantees from `AGENTS.md`. If they ever drift, `AGENTS.md` is authoritative — update both.
 
+Repository OSS skills live in [`.agents/skills/`](../.agents/skills/); see [AI-assisted workflows](../CONTRIBUTING.md#ai-assisted-workflows) for the catalog and prerequisites. Read the relevant `SKILL.md` when using a workflow. Skills supplement `AGENTS.md` and do not override its security, prerelease, validation, or AI-labeling requirements or authorize external actions. Keep unpublished advisory work private and preserve the remediation skill's plan-approval step.
+
 The root is private; the published package is `packages/axios/`, supporting apps are in `apps/`, and packed-package consumer tests are isolated under `tests/compatibility/`. Use pnpm 10.34.7 pinned by the root manifest. Keep `pnpm-workspace.yaml`'s `ignoreScripts: true` enabled as well as `.npmrc`'s safety flag.
 
 ## Setup safety

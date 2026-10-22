@@ -13,6 +13,12 @@ This file is the canonical contributor guide for both human and AI agents workin
 - Bun uses its own fixture: from `tests/compatibility/smoke/bun`, run `bun add file:../../../../artifacts/axios-<version>.tgz` and `bun test`; restore its manifest and lockfile afterward. Deno imports the extracted browser ESM bundle: from the repository root run `tar -xzf artifacts/axios-<version>.tgz -C artifacts`, then `deno install --config tests/compatibility/smoke/deno/deno.json` and `pnpm run test:smoke:deno`. Replace `<version>` with the packed Axios version. These Bun and Deno fixtures are not installed with pnpm.
 - Repository policy and prerelease tracking stay at the root. Release history and migration guidance live in `packages/axios/`; the package owns its usage README, and its LICENSE must stay synchronized with the root LICENSE.
 
+## Repository skills
+
+The repository maintains its OSS workflows in [`.agents/skills/`](.agents/skills/): `oss-pr-review`, `oss-ghsa-review`, `oss-ghsa-fix`, `oss-vulnerability-impact-assessment`, and `oss-release-notes`. Read the matching `SKILL.md` when using a workflow; see [CONTRIBUTING.md](CONTRIBUTING.md#ai-assisted-workflows) for invocation examples and prerequisites. Use these repository copies when a global skill has the same name.
+
+Skills supplement this guide; they do not override repository security, prerelease, validation, or AI-labeling requirements, or authorize posting reviews, publishing releases, or disclosing confidential advisory material. Keep unpublished advisory work private and retain the remediation skill's plan-approval step. Complete this guide's submission requirements before opening or updating a public PR.
+
 ## Setup And Safety
 
 - Use Node.js 20.19 or newer for v2 development and validation. Rolldown currently requires `^20.19.0 || >=22.12.0`; the published Axios runtime floor remains Node.js 20.0.

@@ -28,7 +28,10 @@ test('a user selects and submits a real binary file', async ({ page }) => {
 });
 
 test('the installed classic-script UMD release makes a real request', async ({ page }) => {
+  // The bundled app must not provide a fallback when the UMD artifact is broken.
+  await page.evaluate(() => delete window.axios);
   await page.addScriptTag({ url: services.origin + '/axios.umd.js' });
+  expect(await page.evaluate(() => typeof window.axios)).toBe('function');
   const result = await page.evaluate(async () => ({
     version: window.axios.VERSION,
     data: (await window.axios.get('/echo')).data,

@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
@@ -6,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startServices } from './fixtures/service.mjs';
+import { run } from './helpers/run.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, '..');
@@ -22,23 +22,6 @@ if (args.length && (args.length !== 2 || args[0] !== '--artifact-dir'))
     'Expected --artifact-dir <directory>, or no arguments to build and pack freshly.'
   );
 
-async function run(command, argv, options = {}) {
-  await new Promise((ok, fail) => {
-    const child = spawn(command, argv, { stdio: 'inherit', ...options });
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      fail(new Error(`${command} timed out`));
-    }, options.timeout || 180000);
-    child.once('error', (error) => {
-      clearTimeout(timer);
-      fail(error);
-    });
-    child.once('exit', (code, signal) => {
-      clearTimeout(timer);
-      code === 0 ? ok() : fail(new Error(`${command} exited ${code ?? signal}`));
-    });
-  });
-}
 const pnpmRun = (argv, options) => run(process.execPath, [pnpm, ...argv], options);
 const hash = async (path) =>
   createHash('sha256')
@@ -46,6 +29,7 @@ const hash = async (path) =>
     .digest('hex');
 
 async function pack(directory) {
+  await run(process.execPath, ['--test', join(here, 'harness/run.test.mjs')]);
   await mkdir(directory, { recursive: true });
   const staging = await mkdtemp(join(tmpdir(), 'axios-pack-'));
   try {
@@ -164,7 +148,7 @@ async function checkTypes(consumer, env) {
   }
 }
 
-const temporary = await mkdtemp(join(tmpdir(), 'axios-release-e2e-'));
+const temporary = await realpath(await mkdtemp(join(tmpdir(), 'axios-release-e2e-')));
 let services;
 try {
   const directory =

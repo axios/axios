@@ -461,6 +461,7 @@ export async function register(test, esm) {
   });
   test('HTTP explicit proxy routes redirects through the proxy', async () => {
     const proxy = new URL(info.proxy);
+    const before = (await client.get('/records')).data.length;
     const response = await client.get('/redirect', {
       proxy: {
         protocol: 'http',
@@ -470,16 +471,18 @@ export async function register(test, esm) {
       },
     });
     assert.equal(response.data.headers['proxy-authorization'], undefined);
-    const records = (await client.get('/records')).data.filter((r) => r.path === 'proxy');
-    assert.ok(records.some((r) => r.target.includes('/redirect')));
-    assert.ok(records.some((r) => r.target.includes('/echo')));
-    assert.ok(
-      records.some(
-        (r) =>
-          r.headers['proxy-authorization'] ===
-          'Basic ' + Buffer.from('proxy-user:proxy-pass').toString('base64')
-      )
+    const records = (await client.get('/records')).data
+      .slice(before)
+      .filter((r) => r.path === 'proxy');
+    assert.deepEqual(
+      records.map((r) => r.target),
+      [origin + '/redirect', origin + '/echo']
     );
+    for (const record of records)
+      assert.equal(
+        record.headers['proxy-authorization'],
+        'Basic ' + Buffer.from('proxy-user:proxy-pass').toString('base64')
+      );
   });
   test('HTTP environment proxy, NO_PROXY, and proxy:false follow the configured route', async () => {
     const keys = [
@@ -563,6 +566,7 @@ export async function register(test, esm) {
   });
   test('HTTP HTTPS CONNECT uses the configured trusted CA', async () => {
     const proxy = new URL(info.proxy);
+    const before = (await client.get('/records')).data.length;
     const agent = new https.Agent({ ca: readFileSync('cert.pem'), servername: 'localhost' });
     try {
       const response = await client.get(info.secure + '/echo', {
@@ -570,6 +574,13 @@ export async function register(test, esm) {
         httpsAgent: agent,
       });
       assert.equal(response.data.httpVersion, '1.1');
+      const tunnels = (await client.get('/records')).data
+        .slice(before)
+        .filter((record) => record.path === 'connect');
+      assert.deepEqual(
+        tunnels.map((record) => record.target),
+        [new URL(info.secure).host]
+      );
     } finally {
       agent.destroy();
     }

@@ -28,6 +28,7 @@ Artifact paths are repository-relative. The manifest selects one exact tarball a
 ## Layout and isolation
 
 - `run.mjs` builds/packs or verifies a CI artifact, installs it into a temporary consumer outside this repository using pnpm with install scripts disabled, runs the selected suites, and cleans up.
+- `helpers/run.mjs` stops the command's process group on POSIX or process tree on Windows when a timeout expires, then waits for command closure before cleanup. Fresh packing runs `harness/run.test.mjs`, including a real Node test worker with a deliberately leaked server; run it directly with `node --test tests/harness/run.test.mjs`.
 - `fixtures/service.mjs` provides real HTTP origins, HTTPS, HTTP/2, CORS, cookies, redirects, streamed responses, faults, multipart parsing, and a loopback-only forward/CONNECT proxy. `fixtures/tls/` contains public test-only credentials copied from the existing test fixture.
 - `runtime/scenarios.mjs` defines shared user workflows. Native `node:test`, `bun:test`, and `Deno.test` entry points execute these inside the installed consumer; they import the bare `axios` package.
 - `browser/app/` is a tiny consumer application built with Vite from its installed `axios` dependency. Playwright tests real user interactions and browser requests through XHR and Fetch, plus the installed classic-script UMD bundle.

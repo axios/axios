@@ -52,7 +52,7 @@
 
 ## Documentation
 
-- **Remove internal planning docs:** Remove `apps/docs/codebase-knowledge-base/` and `apps/docs/plans/`, including archived plans, so internal codebase snapshots and implementation planning are no longer included in the documentation site or its search index. No runtime, public API, or type compatibility changes.
+- **Remove internal planning docs:** Remove `apps/docs/codebase-knowledge-base/` and `apps/docs/plans/`, including archived plans, so internal codebase snapshots and implementation planning are no longer included in the documentation site or its search index. No runtime, public API, or type compatibility changes. ([#11360](https://github.com/axios/axios/pull/11360))
 - **Contributor request lifecycle:** Corrected the contributor guide to limit `synchronous` and `runWhen` options to request interceptors, describe the opt-in FIFO request order, and place request transforms before adapter selection. This aligns contributor guidance with the existing implementation; runtime behavior, public APIs, and types are unchanged. ([#11335](https://github.com/axios/axios/pull/11335))
 - **README CDN examples:** Updated the jsDelivr and unpkg script tags from Axios 1.13.2 to the published 1.20.0 browser bundle so readers copying the examples use the current release. Both examples remain explicitly version-pinned; this documentation change does not alter package APIs or existing installations. (**[#11149](https://github.com/axios/axios/pull/11149)**)
 - **Contributor test setup:** Clarified that `npm test` runs the unit and browser test suites and requires Playwright browsers to be installed first, helping contributors avoid missing-browser errors. No runtime, public API, or type compatibility changes. (**#11284**)

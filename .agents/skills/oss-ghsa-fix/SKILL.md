@@ -7,6 +7,8 @@ description: Plan and implement fixes for open source GitHub Security Advisory r
 
 Use this command when the user wants to implement a fix for a GitHub Security Advisory in an open source repository before the fix is publicly released.
 
+Prerequisites: Git, an authenticated GitHub CLI (`gh`) with access to the advisory, and ripgrep (`rg`) for the public-wording verification scan.
+
 This workflow is gated. First fetch the advisory with the GitHub CLI, investigate, write a plan, present the plan to the user, and stop. Only implement after the user explicitly says to continue.
 
 ## Non-Negotiable Rules

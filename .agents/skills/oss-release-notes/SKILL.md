@@ -17,6 +17,8 @@ description: >
 Generates structured, technical Markdown release notes for an open source GitHub repository
 by fetching merged PRs between two tags using the GitHub CLI.
 
+Prerequisites: Git, an authenticated GitHub CLI (`gh`) with repository access, and `jq` for the JSON-filtering example below.
+
 ---
 
 ## Step 1 — Gather Inputs
@@ -96,19 +98,27 @@ For each PR, determine its category by:
 
 ## Step 4 — Identify New Contributors
 
-A **new contributor** is any PR author who has **no prior merged PRs** in the repository before the base tag.
+A **new contributor** is an author of a PR selected for this release who has **no prior merged PRs** in the repository at or before the base release's cutoff.
 
-Check using:
+Establish the base release's verified UTC timestamp, using a full ISO 8601 value such as `2026-01-01T12:00:00Z`. Do not substitute a tag's author or committer timestamp for the release cutoff. If the cutoff is unknown, ask for it before classifying contributors.
+
+Search specifically for prior contributions across the repository, without restricting the base branch:
 
 ```bash
 gh pr list \
+  --repo <owner/repo> \
   --state merged \
   --author <username> \
+  --search "merged:<=<base-release-timestamp>" \
   --json number,mergedAt \
-  --limit 5
+  --limit 1
 ```
 
-If their only merged PRs fall within this release range → they are a new contributor.
+Replace the placeholders before running the command. The merge-date filter is applied by GitHub before the result limit, so one match is enough to establish that the author is a returning contributor, even if they have many recent PRs.
+
+- If the query returns any PR, the author is a returning contributor.
+- If it succeeds with an empty result and the author has a PR selected for this release, they are a new contributor.
+- If the lookup fails or the history cannot be verified, report the uncertainty and omit the author from the new-contributors section until verified. Never infer first-time status from a limited list of recent PRs.
 
 ---
 

@@ -12,15 +12,15 @@
 *                          @jasonsaayman
 
 # Runtime source — shipped to every consumer
-/lib/                      @jasonsaayman
-/index.js                  @jasonsaayman
-/index.d.ts                @jasonsaayman
-/index.d.cts               @jasonsaayman
+/packages/axios/lib/                      @jasonsaayman
+/packages/axios/index.js                  @jasonsaayman
+/packages/axios/index.d.ts                @jasonsaayman
+/packages/axios/index.d.cts               @jasonsaayman
 
 # Build / release infrastructure
-/rolldown.config.js        @jasonsaayman
+/packages/axios/rolldown.config.js        @jasonsaayman
 /package.json              @jasonsaayman
-/package-lock.json         @jasonsaayman
+/pnpm-lock.yaml         @jasonsaayman
 /.npmrc                    @jasonsaayman
 
 # CI and repo automation
@@ -31,3 +31,9 @@
 # Security-critical docs
 /THREATMODEL.md            @jasonsaayman
 /SECURITY.md               @jasonsaayman
+
+/packages/axios/package.json @jasonsaayman
+/apps/*/package.json        @jasonsaayman
+/pnpm-workspace.yaml        @jasonsaayman
+/tooling/                   @jasonsaayman
+/tests/compatibility/       @jasonsaayman

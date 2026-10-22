@@ -1,15 +1,23 @@
 # AGENTS.md
 
-axios is a promise-based HTTP client for the browser and Node.js. The default instance is exported from `lib/axios.js` via `index.js`. Browser builds use the XHR or Fetch adapter; Node uses the HTTP/HTTPS adapter. Platform selection lives in `lib/platform/`.
+axios is a promise-based HTTP client for the browser and Node.js. The default instance is exported from `packages/axios/lib/axios.js` via `packages/axios/index.js`. Browser builds use the XHR or Fetch adapter; Node uses the HTTP/HTTPS adapter. Platform selection lives in `packages/axios/lib/platform/`.
 
 This file is the canonical contributor guide for both human and AI agents working in this repo. `.github/copilot-instructions.md` is a thin stub that points back here — keep it in sync with the load-bearing safety rules below if you change them.
+
+## Monorepo layout
+
+- The root manifest is private and pins pnpm 10.34.7. Install it with `npm install --global pnpm@10.34.7 --ignore-scripts`, or use Corepack if available. Keep `.npmrc`'s `ignore-scripts=true` and `pnpm-workspace.yaml`'s `ignoreScripts: true` enabled.
+- `packages/axios/` owns the published `axios` manifest, runtime dependencies, source, declarations, build scripts, generated bundles, and unit/browser/build tests. Paths below are repository-relative; forwarded Axios scripts execute in `packages/axios`.
+- `apps/docs/` and `apps/sandbox/` are private workspaces, along with `examples/`, consuming `axios` through `workspace:*`. The docs Splide patch is applied by pnpm without lifecycle scripts.
+- `tests/compatibility/` contains independent consumer projects, excluded from the workspace. Install their tools with `pnpm --dir tests/compatibility/<kind>/<mode> install --ignore-workspace --frozen-lockfile --ignore-scripts`. After `pnpm run build && pnpm run pack:axios`, install `../../../../artifacts/axios-*.tgz` from each fixture using `pnpm add --ignore-workspace --ignore-scripts --lockfile=false --save-dev`, then run its test script. Never replace these tarball installs with workspace links. Their manifests are temporarily changed by tarball installation; restore them after local validation.
+- Repository policy and prerelease tracking stay at the root. Release history and migration guidance live in `packages/axios/`; the package owns its usage README, and its LICENSE must stay synchronized with the root LICENSE.
 
 ## Setup And Safety
 
 - Use Node.js 20.19 or newer for v2 development and validation. Rolldown currently requires `^20.19.0 || >=22.12.0`; the published Axios runtime floor remains Node.js 20.0.
-- Use `npm ci`; repo `.npmrc` sets `ignore-scripts=true`, and CI also uses `npm ci --ignore-scripts`.
-- Do not remove `ignore-scripts=true`; if git hooks are needed after a fresh install, run `npm rebuild husky && npx husky` once.
-- Adding or updating dependencies is security-sensitive; `package-lock.json` is checked by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
+- Use `pnpm install --frozen-lockfile --ignore-scripts`; repo `.npmrc` sets `ignore-scripts=true`, and CI also uses `pnpm install --frozen-lockfile --ignore-scripts`.
+- Do not remove `ignore-scripts=true`; if git hooks are needed after a fresh install, run `pnpm exec husky` once.
+- Adding or updating dependencies is security-sensitive; committed `pnpm-lock.yaml` files are checked by `pnpm run lint:lockfiles` for npm HTTPS hosts and integrity hashes.
 - Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.
 - Build/test/lint tools still execute dependency code despite `ignore-scripts`; run the validation required by the PR submission checklist below and avoid unrelated runtime checks for documentation-only changes.
 - Do not add new runtime dependencies without discussion; the dependency surface is intentionally tiny.
@@ -21,33 +29,33 @@ This file is the canonical contributor guide for both human and AI agents workin
 
 ## Commands
 
-- Build published artifacts: `npm run build` (the project-owned Node cleanup script deletes `dist/`, then Rolldown writes browser ESM/UMD/CJS and Node CJS bundles).
-- For a local version bump with release hooks enabled, use `npm version patch --ignore-scripts=false` (or `minor`/`major`). The post-bump `version` hook prepares metadata from the updated manifest, builds, and stages the manifest and generated version file. CI keeps automatic hooks disabled and explicitly runs `npm run prepare:version` after bumping, then builds and validates artifacts.
+- Build published artifacts: `pnpm run build` (the project-owned Node cleanup script deletes `packages/axios/dist/`, then Rolldown writes browser ESM/UMD/CJS and Node CJS bundles).
+- For a local version bump with release hooks enabled, use `pnpm run version:axios patch --ignore-scripts=false` (or `minor`/`major`). The post-bump `version` hook prepares metadata from the updated manifest, builds, and stages the package manifest and generated version file. Run `pnpm install --lockfile-only --offline --ignore-scripts` after changing package versions. The root command explicitly disables automatic Git commits and tags because Axios is nested inside the repository. Commit the staged changes and create release tags separately after review. CI also bumps without creating a Git tag. CI keeps automatic hooks disabled and explicitly runs `pnpm run prepare:version` after bumping, then builds and validates artifacts.
 - Contributor refresh during `prepare:version` is optional, with a 10-second timeout per GitHub request. A failed refresh warns and keeps the existing manifest contributor list. Release file write failures remain fatal and roll back prior replacements; if rollback fails, the error reports a retained recovery path.
-- Validate generated package contracts after a build: `npm run test:build:artifacts` (file inventory, ES2018 browser syntax, UMD global/AMD loaders, ESM/CJS export shapes, source maps, and platform separation).
-- Lint source only: `npm run lint`; focused lint: `npx eslint lib/path/to/file.js`.
-- Unit tests: `npm run test:vitest:unit`; focused unit test: `npm run test:vitest:unit -- tests/unit/path.test.js`.
-- Browser tests need Playwright installed first (`npx playwright install` locally; CI uses `npx playwright install --with-deps`); run `npm run test:vitest:browser:headless` for CI parity.
-- Smoke/module compatibility suites test the packed package, not the source tree: run `npm run build`, `npm pack`, install the tarball into the relevant `tests/smoke/*` or `tests/module/*` package, then run that suite's npm script.
+- Validate generated package contracts after a build: `pnpm run test:build:artifacts` (file inventory, ES2018 browser syntax, UMD global/AMD loaders, ESM/CJS export shapes, source maps, and platform separation).
+- Lint source only: `pnpm run lint`; focused lint: `pnpm --filter axios exec eslint lib/path/to/file.js`.
+- Unit tests: `pnpm run test:vitest:unit`; focused unit test: `pnpm --filter axios run test:vitest:unit tests/unit/path.test.js`.
+- Browser tests need Playwright installed first (`pnpm --filter axios exec playwright install` locally; CI uses `pnpm --filter axios exec playwright install --with-deps`); run `pnpm run test:vitest:browser:headless` for CI parity.
+- Smoke/module compatibility suites test the packed package, not the source tree: run `pnpm run build`, `pnpm run pack:axios`, install the tarball into the relevant `tests/compatibility/smoke/*` or `tests/compatibility/module/*` package, then run that suite's package script.
 - The `build-and-run-vitest` job runs install -> lint (pull-request CI only) -> build -> artifact validation -> Playwright install -> unit -> browser headless -> pack. After that job succeeds, CJS/ESM module and smoke jobs, Bun, and Deno run in parallel; each depends on `build-and-run-vitest`.
 
 ## Package Shape
 
-- Source is ESM (`type: module`); public ESM entry is `index.js`, which re-exports the default instance from `lib/axios.js`.
-- Do not edit `dist/` by hand; it is ignored and generated from `lib/` by Rolldown.
+- Source is ESM (`type: module`); public ESM entry is `packages/axios/index.js`, which re-exports the default instance from `packages/axios/lib/axios.js`.
+- Do not edit `packages/axios/dist/` by hand; it is ignored and generated from `packages/axios/lib/` by Rolldown.
 - Browser ESM, UMD, and CJS outputs target ES2018. The UMD files remain classic-script/AMD compatible and expose the `axios` global, but v2 does not promise ES5 syntax or runtime polyfills.
-- Runtime package exports are split by environment: browser/react-native map Node HTTP/platform files to browser/null replacements, while Node CJS ships as `dist/node/axios.cjs`.
-- Keep public runtime exports, `index.d.ts` (ESM types), and `index.d.cts` (CJS `export = axios` types) in sync for API changes.
-- `lib/env/data.js` is generated by `npm run prepare:version` after the manifest version is bumped; do not edit it for normal feature work.
+- Runtime package exports are split by environment: browser/react-native map Node HTTP/platform files to browser/null replacements, while Node CJS ships as `packages/axios/dist/node/axios.cjs`.
+- Keep public runtime exports, `packages/axios/index.d.ts` (ESM types), and `packages/axios/index.d.cts` (CJS `export = axios` types) in sync for API changes.
+- `packages/axios/lib/env/data.js` is generated by `pnpm run prepare:version` after the manifest version is bumped; do not edit it for normal feature work.
 
 ## Pre-Release Notes
 
 - Every PR MUST add or update an entry in `PRE_RELEASE_CHANGELOG.md`, except for the automated release-preparation PRs described below. This includes runtime fixes, features, internal refactors, tests, documentation, tooling, and CI changes. An unchanged public API or a documentation-only diff is not a reason to omit the entry.
 - Use **Features** for new capabilities, **Bug Fixes** for behavior corrections, **Documentation** for documentation changes, and **Maintenance** for test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change. Explain the final change, why it matters, and any compatibility implications. Update the existing entry when revising the same PR instead of adding duplicates. Link the issue and PR when their numbers are known; never invent a reference.
 - **Automated release-preparation exception:** PRs created by [the release-branch workflow](.github/workflows/release-branch.yml) that contain only generated version, package metadata, lockfile, and build changes may omit a new prerelease entry. They prepare changes already recorded by the contributing PRs. If additional fixes, features, or maintenance changes are added, those changes still require an entry. This exception only covers the prerelease-entry requirement; maintainers must complete the other applicable submission requirements and release documentation before merge.
-- `CHANGELOG.md` is release-owned and should only be updated as part of preparing an actual release. A PR body, commit message, or planned release note does not replace the committed prerelease entry.
+- `packages/axios/CHANGELOG.md` is release-owned and should only be updated as part of preparing an actual release. A PR body, commit message, or planned release note does not replace the committed prerelease entry.
 - Track deferred README, docs site, examples, migration guide, and translated docs updates in `PRE_RELEASE_DOCS.md`. Use enough context for release preparation; do not store brittle diffs or line-number-only notes.
-- Do not update `README.md` or the docs site for unreleased runtime/API changes unless the task is explicitly release preparation. During feature/fix work, record what docs need to say in `PRE_RELEASE_DOCS.md` so it can be applied during release work.
+- Do not update `packages/axios/README.md` or the docs site for unreleased runtime/API changes unless the task is explicitly release preparation. During feature/fix work, record what docs need to say in `PRE_RELEASE_DOCS.md` so it can be applied during release work.
 
 ## Before Opening Or Updating A Pull Request
 
@@ -56,8 +64,8 @@ These requirements apply to human contributors and AI agents. Complete the appli
 1. **Confirm scope and base.** Read this guide, `CONTRIBUTING.md`, and `SECURITY.md`; consult `THREATMODEL.md` for security-sensitive changes. Target the intended supported release branch, link the issue or explain the problem, and review the complete diff against that base. Keep unrelated changes out of the PR.
 2. **Commit the prerelease entry.** Follow the mandatory Pre-Release Notes rules above. Confirm that the entry describes the final implementation, including any limitations. Only the automated release-preparation exception above may be marked not applicable; explain why it applies in the PR description.
 3. **Prove the behavior.** Bug fixes need a regression test that fails before the fix and passes afterward. Cover relevant negative cases and preserve existing defensive tests. For adapter or platform changes, consider Node, browser, custom-environment, and affected-runtime behavior; a mock should reflect the capability being fixed. Use a safe local runtime reproduction when the ordinary suites cannot establish compatibility.
-4. **Run the required local checks.** Install with `npm ci --ignore-scripts`. For runtime changes, run `npm run lint`, `npm run build`, and `npm run test:vitest:unit`; adapter or browser changes also need `npm run test:vitest:browser:headless`. Public type changes require the matching CJS/ESM module tests. Packaging, exports, or build changes require building and testing the packed package with the affected module/smoke suites. Follow the supported runtimes in `.github/workflows/run-ci.yml`. For changes limited to documentation or contributor instructions, check formatting, links, and consistency; explain why runtime checks are not applicable instead of running unrelated suites.
-5. **Check compatibility and documentation.** State the semver impact and call out intentional breaking behavior. Keep runtime exports, `index.d.ts`, `index.d.cts`, and their tests aligned when the public API changes. Record deferred release documentation in `PRE_RELEASE_DOCS.md`, or explain why no docs/types update is needed. A bug fix without an API change still requires its prerelease changelog entry.
+4. **Run the required local checks.** Install with `pnpm install --frozen-lockfile --ignore-scripts`. For runtime changes, run `pnpm run lint`, `pnpm run build`, and `pnpm run test:vitest:unit`; adapter or browser changes also need `pnpm run test:vitest:browser:headless`. Public type changes require the matching CJS/ESM module tests. Packaging, exports, or build changes require building and testing the packed package with the affected module/smoke suites. Follow the supported runtimes in `.github/workflows/run-ci.yml`. For changes limited to documentation or contributor instructions, check formatting, links, and consistency; explain why runtime checks are not applicable instead of running unrelated suites.
+5. **Check compatibility and documentation.** State the semver impact and call out intentional breaking behavior. Keep runtime exports, `packages/axios/index.d.ts`, `packages/axios/index.d.cts`, and their tests aligned when the public API changes. Record deferred release documentation in `PRE_RELEASE_DOCS.md`, or explain why no docs/types update is needed. A bug fix without an API change still requires its prerelease changelog entry.
 6. **Review security and hygiene.** Preserve the guards and architecture boundaries below. Inspect the final diff for unrelated dependency or workflow changes, generated bundles, version churn, secrets, debug code, focused tests (`.only`, `fit`, `fdescribe`), and unexplained lint suppressions. Respect the maintainer-only dependency/workflow policy and never edit generated artifacts by hand.
 7. **Write an accurate submission.** Use Conventional Commits for the title and commits. Explain the concrete problem, resulting behavior, issue/rationale, and validation. List the commands actually run, their results, and relevant runtime versions. Give a specific reason for each genuinely inapplicable check; distinguish failed or blocked checks from checks that do not apply. Fill in the PR description yourself rather than relying on a bot to reconstruct it.
 
@@ -65,24 +73,24 @@ CI runs after a PR is opened. Inspect the actual GitHub Actions checks for the l
 
 ## Architecture Boundaries
 
-- `lib/core/` is axios domain logic: request dispatch, config merge, interceptors, headers, errors. Key classes: `Axios` (request dispatch + interceptor chains), `AxiosError` (standardized error codes), `AxiosHeaders` (case-insensitive header normalization), `InterceptorManager` (sync/async interceptor registration).
-- `lib/adapters/` performs I/O; default adapter preference is `['xhr', 'http', 'fetch']`, with capability selection in `lib/adapters/adapters.js`. Detect by capability, not environment name.
-- `lib/platform/` selects Node by default; browser builds rely on package/Rolldown browser-field resolution to `lib/platform/browser`.
-- `lib/helpers/` should stay generic and reusable outside axios; do not put axios-specific request lifecycle logic there.
-- New `lib/**/*.js` files should match existing source style: ESM imports with explicit `.js` extensions, `'use strict';` where current library files use it, and `AxiosError` for axios-originated failures.
+- `packages/axios/lib/core/` is axios domain logic: request dispatch, config merge, interceptors, headers, errors. Key classes: `Axios` (request dispatch + interceptor chains), `AxiosError` (standardized error codes), `AxiosHeaders` (case-insensitive header normalization), `InterceptorManager` (sync/async interceptor registration).
+- `packages/axios/lib/adapters/` performs I/O; default adapter preference is `['xhr', 'http', 'fetch']`, with capability selection in `packages/axios/lib/adapters/adapters.js`. Detect by capability, not environment name.
+- `packages/axios/lib/platform/` selects Node by default; browser builds rely on package/Rolldown browser-field resolution to `packages/axios/lib/platform/browser`.
+- `packages/axios/lib/helpers/` should stay generic and reusable outside axios; do not put axios-specific request lifecycle logic there.
+- New `packages/axios/lib/**/*.js` files should match existing source style: ESM imports with explicit `.js` extensions, `'use strict';` where current library files use it, and `AxiosError` for axios-originated failures.
 
 ## Naming Conventions
 
 - Classes: PascalCase (`Axios`, `AxiosError`, `InterceptorManager`).
 - Functions: camelCase (`buildURL`, `mergeConfig`, `dispatchRequest`).
 - Error codes: UPPER_SNAKE_CASE constants on `AxiosError` (`ERR_NETWORK`, `ETIMEDOUT`).
-- Internal class slots: `Symbol`-keyed (e.g. `const $internals = Symbol('internals')` in `lib/core/AxiosHeaders.js`) rather than underscore-prefixed properties.
+- Internal class slots: `Symbol`-keyed (e.g. `const $internals = Symbol('internals')` in `packages/axios/lib/core/AxiosHeaders.js`) rather than underscore-prefixed properties.
 
 ## Error Handling
 
 - Throw `AxiosError` for axios-originated failures; never raw `Error`. Pass `(message, code, config, request, response)` so consumers can introspect.
 - Wrap third-party errors with `AxiosError.from(error, code, config, request, response)`.
-- Canonical code list lives in `lib/core/AxiosError.js`; current codes include `ERR_BAD_OPTION_VALUE`, `ERR_BAD_OPTION`, `ECONNABORTED`, `ETIMEDOUT`, `ECONNREFUSED`, `ERR_NETWORK`, `ERR_FR_TOO_MANY_REDIRECTS`, `ERR_DEPRECATED`, `ERR_BAD_RESPONSE`, `ERR_BAD_REQUEST`, `ERR_CANCELED`, `ERR_NOT_SUPPORT`, `ERR_INVALID_URL`, `ERR_FORM_DATA_DEPTH_EXCEEDED`.
+- Canonical code list lives in `packages/axios/lib/core/AxiosError.js`; current codes include `ERR_BAD_OPTION_VALUE`, `ERR_BAD_OPTION`, `ECONNABORTED`, `ETIMEDOUT`, `ECONNREFUSED`, `ERR_NETWORK`, `ERR_FR_TOO_MANY_REDIRECTS`, `ERR_DEPRECATED`, `ERR_BAD_RESPONSE`, `ERR_BAD_REQUEST`, `ERR_CANCELED`, `ERR_NOT_SUPPORT`, `ERR_INVALID_URL`, `ERR_FORM_DATA_DEPTH_EXCEEDED`.
 - Validate config options through the `validator` helper; do not invent ad-hoc validation paths.
 
 ## Interceptor Execution Order
@@ -98,7 +106,7 @@ CI runs after a PR is opened. Inspect the actual GitHub Actions checks for the l
 2. Merge instance defaults with request config via `mergeConfig`.
 3. Run request interceptors (LIFO by default; FIFO with `transitional.legacyInterceptorReqResOrdering: false`).
 4. Apply `transformRequest` functions.
-5. Select adapter via `lib/adapters/adapters.js` capability check.
+5. Select adapter via `packages/axios/lib/adapters/adapters.js` capability check.
 6. Adapter performs the HTTP request.
 7. Apply `transformResponse` functions.
 8. Run response interceptors (FIFO).
@@ -114,15 +122,15 @@ CI runs after a PR is opened. Inspect the actual GitHub Actions checks for the l
 
 - Do not mutate config objects in-place; return new objects from merges/transforms.
 - Do not assume browser- or Node-specific globals exist; capability-check first.
-- Do not use `Function.prototype.bind` directly — use `lib/helpers/bind.js`, which forwards `arguments` via `apply` and is what the rest of the library relies on.
+- Do not use `Function.prototype.bind` directly — use `packages/axios/lib/helpers/bind.js`, which forwards `arguments` via `apply` and is what the rest of the library relies on.
 - Do not throw raw `Error` from library code; use `AxiosError` with an appropriate code (see Error Handling).
 
 ## Tests
 
-- Test layout is runtime-first: `tests/unit/**/*.test.js`, `tests/build/**/*.test.js`, `tests/browser/**/*.browser.test.js`, `tests/smoke/esm/**/*.smoke.test.js`, `tests/smoke/cjs/**/*.smoke.test.cjs`.
-- Use `tests/setup/server.js` for local HTTP servers and cleanup with `try/finally`; leaking servers causes Vitest hangs.
+- Test layout is runtime-first: `packages/axios/tests/unit/**/*.test.js`, `packages/axios/tests/build/**/*.test.js`, `packages/axios/tests/browser/**/*.browser.test.js`, `tests/compatibility/smoke/esm/**/*.smoke.test.js`, `tests/compatibility/smoke/cjs/**/*.smoke.test.cjs`.
+- Use `packages/axios/tests/setup/server.js` for local HTTP servers and cleanup with `try/finally`; leaking servers causes Vitest hangs.
 - Keep CJS and ESM smoke coverage aligned when behavior is packaging/import related.
-- Type compatibility is exercised against Node 20 definitions through `tests/module/cjs` with TypeScript 4.9 and `tests/module/esm` with TypeScript 5.x; run the matching module suite for declaration changes.
+- Type compatibility is exercised against Node 20 definitions through `tests/compatibility/module/cjs` with TypeScript 4.9 and `tests/compatibility/module/esm` with TypeScript 5.x; run the matching module suite for declaration changes.
 - Node.js 20 is the minimum supported v2 runtime. Installed-package CJS and ESM suites cover Node 20 and newer configured majors until the ESM-only migration removes the transitional CommonJS surface.
 - Browser tests replace globals such as XHR; restore globals and reset spies in cleanup hooks.
 

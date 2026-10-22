@@ -4,7 +4,7 @@
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
   },
-  "postCreateCommand": "npm ci --ignore-scripts",
+  "postCreateCommand": "npm install --global pnpm@10.34.7 --ignore-scripts && pnpm install --frozen-lockfile --ignore-scripts",
   "customizations": {
     "vscode": {
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],

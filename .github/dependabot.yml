@@ -44,9 +44,8 @@ updates:
   # Keep these packages limited to security updates.
   - package-ecosystem: 'npm'
     directories:
-      - '/docs'
-      - '/tests/module/*'
-      - '/tests/smoke/*'
+      - '/tests/compatibility/module/*'
+      - '/tests/compatibility/smoke/*'
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 0

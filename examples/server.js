@@ -17,7 +17,7 @@ function listDirs(root) {
 
   for (let i = 0, l = files.length; i < l; i++) {
     const file = files[i];
-    if (file[0] !== '.') {
+    if (file[0] !== '.' && file !== 'node_modules') {
       const stat = fs.statSync(path.join(root, file));
       if (stat.isDirectory()) {
         dirs.push(file);
@@ -69,14 +69,13 @@ function send404(res, body) {
   sendResponse(res, 404, body || '<h1>Not Found</h1>');
 }
 
-function pipeFileToResponse(res, file, type) {
+function pipeFileToResponse(res, file, type, safeBasePath = __dirname) {
   try {
     // Validate file path - prevent directory traversal
-    const safeBasePath = path.join(__dirname, 'examples');
     const resolvedPath = path.resolve(path.join(safeBasePath, file));
 
     // Ensure the resolved path is within intended directory
-    if (!resolvedPath.startsWith(safeBasePath)) {
+    if (resolvedPath !== safeBasePath && !resolvedPath.startsWith(safeBasePath + path.sep)) {
       res.writeHead(400);
       res.end('Invalid file path');
       return;
@@ -124,19 +123,39 @@ server = http.createServer(function (req, res) {
 
   // Process axios itself
   if (/axios\.min\.js$/.test(url)) {
-    pipeFileToResponse(res, '../dist/axios.min.js', 'text/javascript');
+    pipeFileToResponse(
+      res,
+      'axios.min.js',
+      'text/javascript',
+      path.resolve(__dirname, '../packages/axios/dist')
+    );
     return;
   }
-  if (/axios\.min\.map$/.test(url)) {
-    pipeFileToResponse(res, '../dist/axios.min.map', 'text/javascript');
+  if (/axios\.min\.(?:js\.)?map$/.test(url)) {
+    pipeFileToResponse(
+      res,
+      'axios.min.js.map',
+      'text/javascript',
+      path.resolve(__dirname, '../packages/axios/dist')
+    );
     return;
   }
   if (/axios\.amd\.min\.js$/.test(url)) {
-    pipeFileToResponse(res, '../dist/axios.amd.min.js', 'text/javascript');
+    pipeFileToResponse(
+      res,
+      'axios.min.js',
+      'text/javascript',
+      path.resolve(__dirname, '../packages/axios/dist')
+    );
     return;
   }
   if (/axios\.amd\.min\.map$/.test(url)) {
-    pipeFileToResponse(res, '../dist/axios.amd.min.map', 'text/javascript');
+    pipeFileToResponse(
+      res,
+      'axios.min.js.map',
+      'text/javascript',
+      path.resolve(__dirname, '../packages/axios/dist')
+    );
     return;
   }
 

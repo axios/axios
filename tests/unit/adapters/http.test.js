@@ -183,6 +183,10 @@ describe('supports http with nodejs', () => {
         [-1n, undefined],
         [-Infinity, undefined],
         [-Infinity, 0],
+        ['-1e-324', undefined],
+        ['-1e-324', 0],
+        ['-1e-7', undefined],
+        ['-1e-7', 0],
       ]) {
         await assert.rejects(
           axios.get(`http://localhost:${server.address().port}`, {

@@ -176,4 +176,23 @@ describe('formDataToStream', () => {
 
     expect(body).toContain('filename="blob"');
   });
+
+  // Real File/Blob objects, matching what browsers send (reviewer suggestion).
+  it.runIf(typeof File === 'function')(
+    'should emit the same filenames for real File and Blob objects',
+    async () => {
+      const fd = new SpecFormData();
+      fd.append(
+        'empty',
+        new File([new Uint8Array([0xff, 0x00])], '', { type: 'application/octet-stream' })
+      );
+      fd.append('nameless', new Blob([new Uint8Array([0x01])], { type: 'application/octet-stream' }));
+
+      const body = await collect(formDataToStream(fd, () => {}));
+
+      expect(body).toContain('Content-Disposition: form-data; name="empty"; filename=""');
+      expect(body).toContain('Content-Disposition: form-data; name="nameless"; filename="blob"');
+      expect(body).toContain(Buffer.from([0xff, 0x00]).toString('utf8'));
+    }
+  );
 });

@@ -5,7 +5,7 @@ axios may throw many different types of errors. Some of these errors are caused 
 | Property | Definition                                                                                                                                    |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | message  | A quick summary of the error message and the status it failed with.                                                                           |
-| name     | This defines where the error originated from. For axios, it will always be an `AxiosError`.                                                   |
+| name     | The error name: usually `AxiosError`, `CanceledError` for cancellations, or the original name of a wrapped error. Use `axios.isAxiosError(error)` to identify Axios errors.                                                   |
 | stack    | Provides the stack trace of the error.                                                                                                        |
 | config   | An axios config object with specific instance configurations defined by the user from when the request was made.                              |
 | code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.                                |

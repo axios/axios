@@ -1,4 +1,39 @@
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
+import { setTimeout as delay } from 'node:timers/promises';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
+
+async function collectGroups(pid, groups) {
+  const { stdout } = await execFileAsync('ps', ['-A', '-o', 'pid=,ppid=,pgid='], { timeout: 2000 });
+  const processes = stdout
+    .trim()
+    .split('\n')
+    .map((line) => line.trim().split(/\s+/).map(Number));
+  const descendants = new Set([pid]);
+  let changed;
+  do {
+    changed = false;
+    for (const [child, parent] of processes) {
+      if (descendants.has(parent) && !descendants.has(child)) {
+        descendants.add(child);
+        changed = true;
+      }
+    }
+  } while (changed);
+  for (const [child, , group] of processes) {
+    // Only target groups whose leader belongs to this command's descendant tree.
+    if (descendants.has(child) && descendants.has(group)) groups.add(group);
+  }
+}
+
+function signalGroup(group, signal) {
+  try {
+    process.kill(-group, signal);
+  } catch (error) {
+    if (error.code !== 'ESRCH') throw error;
+  }
+}
 
 export async function run(command, argv, { timeout = 180000, ...options } = {}) {
   const windows = process.platform === 'win32';
@@ -37,10 +72,23 @@ export async function run(command, argv, { timeout = 180000, ...options } = {}) 
           );
         });
       } else {
+        // Snapshot before signalling: exiting parents can orphan nested groups.
+        const groups = new Set([child.pid]);
+        let discoveryError;
         try {
-          process.kill(-child.pid, 'SIGKILL');
+          await collectGroups(child.pid, groups);
         } catch (error) {
-          if (error.code !== 'ESRCH') throw error;
+          discoveryError = error;
+        }
+        for (const group of groups) signalGroup(group, result?.interrupted || 'SIGTERM');
+        // The supervisor may close before its workers finish their own cleanup.
+        await delay(1000);
+        for (const group of groups) signalGroup(group, 'SIGKILL');
+        if (discoveryError) {
+          await closed;
+          throw new Error('Could not inspect descendant process groups with ps', {
+            cause: discoveryError,
+          });
         }
       }
       // Do not remove the consumer while its command is still shutting down.

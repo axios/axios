@@ -103,7 +103,7 @@
                 align="center"
                 title="SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications."
             >
-                BSAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
+                SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
             </p>
             <p align="center">
                 <a

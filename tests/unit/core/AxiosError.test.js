@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isNativeError } from 'node:util/types';
+import http from 'http';
+import https from 'https';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import AxiosHeaders from '../../../lib/core/AxiosHeaders.js';
 
@@ -609,6 +611,272 @@ describe('core::AxiosError', () => {
 
       // Useful for debugging — operators can see what was being redacted.
       expect(error.toJSON().config.redact).toEqual(['password']);
+    });
+  });
+
+  describe('toJSON agent serialization', () => {
+    it('replaces agent instances with a label instead of walking the socket pool', () => {
+      const httpAgent = new http.Agent({ keepAlive: true });
+      const httpsAgent = new https.Agent({ keepAlive: true });
+
+      // a populated pool is the OOM trigger: every host key shares the same
+      // request/response subgraphs, and the per-path walk re-serializes them
+      // for each path (#11145)
+      const shared = { remote: {}, queue: [] };
+      for (let i = 0; i < 8; i++) {
+        const socket = { req: { shared, socket: null }, res: { shared } };
+        socket.req.socket = socket;
+        httpAgent.sockets[`host${i}:80:`] = [socket];
+        httpAgent.requests[`host${i}:80:`] = [{ shared }];
+      }
+
+      const config = { url: '/api', httpAgent, httpsAgent };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(json.config.httpsAgent).toBe('[Agent]');
+      expect(json.config.url).toBe('/api');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+
+      // the live config is not mutated by serialization
+      expect(config.httpAgent).toBe(httpAgent);
+    });
+
+    it('labels third-party agent classes by their constructor name', () => {
+      class AgentkeepAlive {}
+      const config = { httpAgent: new AgentkeepAlive() };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config.httpAgent).toBe('[AgentkeepAlive]');
+    });
+
+    it('leaves non-agent agent values untouched', () => {
+      const config = { httpAgent: true, httpsAgent: { keepAlive: true } };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe(true);
+      expect(json.config.httpsAgent).toEqual({ keepAlive: true });
+    });
+
+    it('does not invoke inherited agent accessors', () => {
+      const config = Object.create({
+        get httpAgent() {
+          throw new Error('inherited accessor invoked');
+        },
+      });
+      config.url = '/api';
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(() => error.toJSON()).not.toThrow();
+      expect(error.toJSON().config).not.toHaveProperty('httpAgent');
+    });
+
+    it('labels agents reachable through a circular config reference', () => {
+      const httpAgent = new http.Agent();
+      const config = { url: '/api', httpAgent };
+      config.self = config;
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // the circular key is dropped by the visited check, and every path into
+      // the config sees the label rather than the live agent
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(json.config).not.toHaveProperty('self');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+      expect(config.httpAgent).toBe(httpAgent);
+    });
+
+    it('labels agents inside a frozen config', () => {
+      const httpAgent = new http.Agent();
+      const config = Object.freeze({ url: '/api', httpAgent });
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // an in-place swap cannot redefine a frozen slot; reads through the
+      // labeling proxy bound the agent without touching the config
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+      expect(config.httpAgent).toBe(httpAgent);
+      expect(Object.isFrozen(config)).toBe(true);
+    });
+
+    it('labels agents exposed through an own accessor', () => {
+      const httpAgent = new http.Agent();
+      const config = {
+        url: '/api',
+        get httpAgent() {
+          return httpAgent;
+        },
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+    });
+
+    it('keeps getter values derived from the real agent', () => {
+      const config = {
+        httpAgent: new http.Agent({ keepAlive: true }),
+        get agentMode() {
+          return this.httpAgent.keepAlive ? 'keep-alive' : 'closed';
+        },
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // getters run against the real config, so derived scalars survive while
+      // the agent itself still serializes as the bounded label
+      expect(json.config.agentMode).toBe('keep-alive');
+      expect(json.config.httpAgent).toBe('[Agent]');
+    });
+
+    it('labels agents reachable through a deeper circular reference', () => {
+      const httpAgent = new http.Agent();
+      const config = { url: '/api', httpAgent, inner: {} };
+      config.inner.cfg = config;
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // config -> inner -> cfg resolves back through the same proxy, so the
+      // visited check still drops it instead of walking the raw config
+      expect(json.config.inner).toEqual({});
+      expect(JSON.stringify(json.config).length).toBeLessThan(2000);
+    });
+
+    it('keeps an inherited toJSON hook on the config when an agent is present', () => {
+      const config = Object.create({
+        toJSON() {
+          return { snapshot: true };
+        },
+      });
+      config.url = '/api';
+      config.httpAgent = new http.Agent();
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      // toJSONObject returns toJSON-bearing sources untouched, so the hook
+      // keeps deciding the snapshot; the hook is bound to the real config so
+      // its `this` behaves exactly as it did before labeling
+      expect(JSON.stringify(json.config)).toBe('{"snapshot":true}');
+      expect(config.httpAgent).toBeInstanceOf(http.Agent);
+    });
+
+    it('labels agents on the redact path too', () => {
+      const config = {
+        httpAgent: new http.Agent(),
+        auth: { password: 'secret' },
+        redact: ['password'],
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      expect(json.config.auth.password).toBe('[REDACTED ****]');
+    });
+
+    it('bounds agent references held through arrays and class instances', () => {
+      const config = { httpAgent: new http.Agent(), items: null, holder: null };
+      class Holder {}
+      config.items = [config];
+      config.holder = new Holder();
+      config.holder.config = config;
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.httpAgent).toBe('[Agent]');
+      // the back-references hit toJSONObject's visited set and are dropped
+      expect(json.config.items).toEqual([]);
+      expect(json.config.holder.config).toBeUndefined();
+    });
+
+    it('serializes frozen configs that have no agent', () => {
+      const config = Object.freeze({
+        auth: Object.freeze({ username: 'user', password: 'secret' }),
+        handler: Object.freeze(function handler() {}),
+      });
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.auth.username).toBe('user');
+      expect(typeof json.config.handler).toBe('function');
+    });
+
+    it('runs custom config toJSON hooks against the real config', () => {
+      const agent = new http.Agent({ keepAlive: true });
+      const config = {
+        httpAgent: agent,
+        toJSON() {
+          return { name: this.httpAgent.getName(), ka: this.httpAgent.keepAlive };
+        },
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(JSON.parse(JSON.stringify(error)).config).toEqual({ name: agent.getName(), ka: true });
+    });
+
+    it('does not invoke non-enumerable accessors', () => {
+      const config = { visible: 1 };
+      Object.defineProperty(config, 'hidden', {
+        enumerable: false,
+        get() {
+          throw new Error('must not be invoked');
+        },
+      });
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config).toEqual({ visible: 1 });
+    });
+
+    it('does not evaluate children under redact-matched keys', () => {
+      const config = { redact: ['secret'] };
+      Object.defineProperty(config, 'secret', {
+        enumerable: true,
+        get() {
+          throw new Error('must not be invoked');
+        },
+      });
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config.secret).toBe('[REDACTED ****]');
+    });
+
+    it('still bounds agents inside arrays when a redact key matches the index', () => {
+      // redactConfig only matches keys on non-array objects, so a numeric
+      // redact entry must not stop the snapshot from bounding array elements.
+      const config = {
+        items: [{ httpAgent: new http.Agent() }],
+        redact: ['0'],
+      };
+      const error = new AxiosError('Boom', 'ECODE', config);
+      const json = error.toJSON();
+
+      expect(json.config.items[0].httpAgent).toBe('[Agent]');
+    });
+
+    it('does not evaluate named properties on arrays', () => {
+      // forEach-based serializers only visit index elements, so a named
+      // accessor on an array must never run, even when redact lists its name
+      const items = [{ httpAgent: new http.Agent() }];
+      Object.defineProperty(items, 'secret', {
+        enumerable: true,
+        get() {
+          throw new Error('must not be invoked');
+        },
+      });
+      const config = { items, redact: ['secret'] };
+      const error = new AxiosError('Boom', 'ECODE', config);
+
+      expect(error.toJSON().config.items[0].httpAgent).toBe('[Agent]');
+    });
+
+    it('serializes subclasses of builtin containers', () => {
+      class Tags extends Set {}
+      const error = new AxiosError('Boom', 'ECODE', { tags: new Tags(['a', 'b']) });
+
+      expect(error.toJSON().config.tags).toEqual(['a', 'b']);
     });
   });
 });

@@ -1061,9 +1061,9 @@ describe('supports http with nodejs', () => {
           });
         });
 
-      const deflate = (value) =>
+      const deflate = (value, options = {}) =>
         new Promise((resolve, reject) => {
-          zlib.deflate(value, (error, compressed) => {
+          zlib.deflate(value, options, (error, compressed) => {
             if (error) {
               reject(error);
               return;
@@ -1114,6 +1114,7 @@ describe('supports http with nodejs', () => {
         GZIP: gzip(responseBody),
         compress: gzip(responseBody),
         deflate: deflate(responseBody),
+        'deflate-small-window': deflate(responseBody, { windowBits: 9 }),
         'deflate-raw': deflateRaw(responseBody),
         br: brotliCompress(responseBody),
         ...(isZstdSupported ? { zstd: zstdCompress(responseBody) } : {}),
@@ -1233,6 +1234,130 @@ describe('supports http with nodejs', () => {
           });
         });
       }
+
+      it('should decode a small-window zlib stream whose first bytes also look like a stored block header', async () => {
+        const payload = 'a'.repeat(65254);
+        // 18 19 01 e6 fe: the zlib header, then a final stored block that bytes 1-4 mimic as LEN/NLEN
+        const body = zlib.deflateSync(payload, { level: 0, windowBits: 9, chunkSize: 128 * 1024 });
+        assert.strictEqual(body.subarray(0, 5).toString('hex'), '181901e6fe');
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(body);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, payload);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should decode a small-window zlib stream whose header bytes arrive in separate chunks', async () => {
+        const body = await deflate(responseBody, { windowBits: 9 });
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.write(body.subarray(0, 1));
+            setTimeout(() => res.end(body.subarray(1)), 50);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      for (const split of [0, 1, 2, 5]) {
+        it(`should decode a raw stored block whose first bytes also pass the zlib header check (first chunk: ${split || 'whole body'})`, async () => {
+          // 08 1d: a valid RFC 1950 header, and also a non-final stored block of 29 bytes with a padding bit set
+          const body = Buffer.concat([
+            Buffer.from([8, 29, 0, 226, 255]),
+            Buffer.alloc(29, 120),
+            Buffer.from([1, 0, 0, 255, 255]),
+          ]);
+          assert.strictEqual(zlib.inflateRawSync(body).toString(), 'x'.repeat(29));
+          const server = await startHTTPServer(
+            (req, res) => {
+              res.setHeader('Content-Encoding', 'deflate');
+              if (!split) {
+                res.end(body);
+                return;
+              }
+              res.write(body.subarray(0, split));
+              setTimeout(() => res.end(body.subarray(split)), 50);
+            },
+            { port: SERVER_PORT }
+          );
+
+          try {
+            const { data } = await axios.get(`http://localhost:${server.address().port}`);
+            assert.strictEqual(data, 'x'.repeat(29));
+          } finally {
+            await stopHTTPServer(server);
+          }
+        });
+      }
+
+      it('should decode a raw stored block whose first bytes pass the zlib header check with FDICT set', async () => {
+        // 08 3c: a valid RFC 1950 header with FDICT set, and also a non-final stored block of 60 bytes
+        const body = Buffer.concat([
+          Buffer.from([8, 60, 0, 195, 255]),
+          Buffer.alloc(60, 120),
+          Buffer.from([1, 0, 0, 255, 255]),
+        ]);
+        assert.strictEqual(zlib.inflateRawSync(body).toString(), 'x'.repeat(60));
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(body);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, 'x'.repeat(60));
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should decode a small-window zlib stream whose probe stops at the 64K output limit', async () => {
+        const payload = '*Ip' + 'a'.repeat(128 * 1024);
+        // 48 0d d3 f2 2c: bytes 1-4 also read as a stored block of 54,029 bytes, longer than
+        // the body, so the whole body is probed and its zlib reading passes 64K of output
+        const body = zlib.deflateSync(payload, {
+          windowBits: 12,
+          strategy: zlib.constants.Z_FIXED,
+        });
+        assert.strictEqual(body.subarray(0, 5).toString('hex'), '480dd3f22c');
+        assert.throws(
+          () => zlib.inflateSync(body, { maxOutputLength: 64 * 1024 }),
+          (err) => err.code === 'ERR_BUFFER_TOO_LARGE'
+        );
+        const server = await startHTTPServer(
+          (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(body);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, payload);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
     });
   });
 

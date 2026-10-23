@@ -36,3 +36,25 @@ describe('formDataToJSON regression (#11295)', () => {
     });
   });
 });
+
+  it('should handle arrays of objects where each object has a "length" key', () => {
+    const formData = new FormData();
+    formData.append('a[0][length]', '1');
+    formData.append('a[1][length]', '2');
+    expect(formDataToJSON(formData)).toEqual({
+      a: [
+        { length: '1' },
+        { length: '2' },
+      ],
+    });
+  });
+
+  it('should handle a "length" key that itself contains an array', () => {
+    const formData = new FormData();
+    formData.append('a[length][0]', 'val');
+    expect(formDataToJSON(formData)).toEqual({
+      a: {
+        length: ['val'],
+      },
+    });
+  });

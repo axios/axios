@@ -1233,6 +1233,86 @@ describe('supports http with nodejs', () => {
           });
         });
       }
+
+      it('should decompress a deflate body written with a window smaller than 32K', async () => {
+        // a zlib stream written with windowBits < 15 has a CMF byte of 0x08-0x68,
+        // not the 0x78 the header detection used to require
+        const zipped = new Promise((resolve, reject) => {
+          zlib.deflate(responseBody, { windowBits: 9 }, (error, compressed) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve(compressed);
+          });
+        });
+
+        const server = await startHTTPServer(
+          async (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(await zipped);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should decompress a deflate body when the zlib header arrives split across chunks', async () => {
+        const zipped = zlib.deflateSync(responseBody, { windowBits: 9 });
+
+        const server = await startHTTPServer(
+          async (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.write(zipped.subarray(0, 1));
+            res.end(zipped.subarray(1));
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`);
+          assert.strictEqual(data, responseBody);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should decompress a raw deflate body that starts with zlib-shaped bytes', async () => {
+        // a raw stored block can open with bytes that satisfy the RFC 1950
+        // header constraints: 0x08 is CM=8/CINFO=0 and 0x081d % 31 == 0.
+        // Treating it as zlib-wrapped skips the two bytes as a header and
+        // corrupts the payload.
+        const payload = Buffer.alloc(29, 0x78);
+        const rawDeflate = Buffer.concat([
+          Buffer.from([0x08, 0x1d, 0x00, 0xe2, 0xff]), // stored block, LEN=29
+          payload,
+          Buffer.from([0x01, 0x00, 0x00, 0xff, 0xff]) // final empty stored block
+        ]);
+
+        const server = await startHTTPServer(
+          async (req, res) => {
+            res.setHeader('Content-Encoding', 'deflate');
+            res.end(rawDeflate);
+          },
+          { port: SERVER_PORT }
+        );
+
+        try {
+          const { data } = await axios.get(`http://localhost:${server.address().port}`, {
+            responseType: 'arraybuffer'
+          });
+          assert.deepStrictEqual(Buffer.from(data), payload);
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
     });
   });
 

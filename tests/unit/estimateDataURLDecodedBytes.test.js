@@ -139,4 +139,49 @@ describe('estimateDataURLDecodedBytes', () => {
 
     assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
   });
+
+  describe('matches the bytes Fetch decodes', () => {
+    const b64 = (str) => Buffer.from(str, 'utf8').toString('base64');
+    const urls = [
+      'data:,Hello',
+      'data:,%41%46%5A%61%66%7A%30%39',
+      'data:,%e2%82%ac',
+      'data:,%E2%82%AC',
+      'data:,%4',
+      'data:,%2',
+      'data:,%G1x',
+      'data:,100%25',
+      'data:,café',
+      'data:,߿ࠀ',
+      'data:,€',
+      'data:,😀',
+      'data:,\ud800x',
+      'data:,\udc00',
+      'data:text/plain;base64,' + b64('hello world'),
+      'data:;base64,' + b64('ab'),
+      'data:;base64,' + b64('abc'),
+      'data:;BASE64,' + b64('xyz'),
+      'data:;base64 ,' + b64('xyz'),
+      'data:;base64,SGVs%09bG8=',
+      'data:;base64,SGVs%0AbG8=',
+      'data:;base64,SGVs%0CbG8=',
+      'data:;base64,SGVs%0DbG8=',
+      'data:;base64,SGVs%20bG8=',
+      'data:;base64,YWJj ZGVm',
+      'data:;base64,SGVsbG8%3D',
+      'data:;base64,YQ%3D%3D',
+      'data:;base64,%2B%2F%2B%2F',
+      'data:;base64,+/+/',
+      'data:;base64,AZaz09+/',
+    ];
+
+    urls.forEach((url) => {
+      it(JSON.stringify(url), async () => {
+        const response = await fetch(url);
+        const decoded = await response.arrayBuffer();
+
+        assert.strictEqual(estimateDataURLDecodedBytes(url), decoded.byteLength);
+      });
+    });
+  });
 });

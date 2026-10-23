@@ -6,7 +6,7 @@ The local server sends **real bytes** with a declared `Content-Type` charset. Th
 
 ## Requirements
 
-- Node.js 20 or newer. This is required to install and run the root dev toolchain: the locked version of Vitest declares `"engines": {"node": "^20.0.0 || ^22.0.0 || >=24.0.0"}`, and the main CI workflow runs the Vitest suites on Node 26.x.
+- Node.js 22.22.1 or newer. The root dev toolchain installs with the repository lockfile, whose largest engine requirement is `lint-staged` with `"engines": {"node": ">=22.22.1"}`; the Vitest harness itself only requires `"engines": {"node": "^20.0.0 || ^22.0.0 || >=24.0.0"}`, and the main CI workflow runs the Vitest suites on Node 26.x.
 - npm
 
 ## Run

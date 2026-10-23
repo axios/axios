@@ -144,32 +144,6 @@
     <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://stytch.com/"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-               <img
-                    width="90px"
-                    height="90px"
-                    src="https://images.opencollective.com/stytch/f84ce43/logo/256.png?height=256"
-                    alt="Stytch"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                The identity platform for humans & AI agents
-            </p>
-            <p align="center">
-                   <a
-                       href="https://stytch.com"
-                       target="_blank"
-                       ><b>stytch.com</b></a
-                   >
-              </p>
-        </td>
-        <td align="center" width="33.333333333333336%">
-            <a
                 href="https://rxdb.info/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship&utm_content=logo"
                 style="padding: 10px; display: inline-block"
                 target="_blank"
@@ -215,60 +189,6 @@
                     href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
                     target="_blank"
                     ><b>poprey.com</b></a
-                >
-            </p>
-        </td>
-    </tr>
-    <tr width="33.333333333333336%">
-        <td align="center" width="33.333333333333336%">
-            <a
-                href="https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-                <img
-                    width="71px"
-                    height="70px"
-                    src="https://images.opencollective.com/buzzoid-buy-instagram-followers/56a09fe/logo.png"
-                    alt="Buzzoid - Buy Instagram Followers"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                At Buzzoid, you can buy Instagram followers through a short checkout flow with safety controls. Rated world&#39;s #1 IG service since 2012.
-            </p>
-            <p align="center">
-                <a
-                    href="https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                    target="_blank"
-                    ><b>buzzoid.com</b></a
-                >
-            </p>
-        </td>
-        <td align="center" width="33.333333333333336%">
-            <a
-                href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-                <img
-                    width="71px"
-                    height="70px"
-                    src="https://images.opencollective.com/buy-instagram-followers-twicsy/b4c5d7f/logo/256.png?height=256"
-                    alt="Buy Instagram Followers Twicsy"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                Buy real Instagram followers from Twicsy. Twicsy has been voted the best site to buy followers from the likes of US Magazine.
-            </p>
-            <p align="center">
-                <a
-                    href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                    target="_blank"
-                    ><b>twicsy.com</b></a
                 >
             </p>
         </td>
@@ -354,34 +274,6 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-                <img
-                    width="71px"
-                    height="70px"
-                    src="https://images.opencollective.com/polskie-kasyno-online/c25e456/avatar.png"
-                    alt="polskie kasyno online"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                Kasyno.us.com to niezależny portal o tematyce kasyno online Polska, który pomaga graczom znaleźć bezpieczne i sprawdzone kasyna internetowe.
-            </p>
-            <p align="center">
-                <a
-                    href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                    target="_blank"
-                    ><b>kasyno.us.com</b></a
-                >
-            </p>
-        </td>
-    </tr>
-    <tr width="33.333333333333336%">
-        <td align="center" width="33.333333333333336%">
-            <a
                 href="https://www.scrapingbee.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
                 style="padding: 10px; display: inline-block"
                 target="_blank"
@@ -406,6 +298,8 @@
                 >
             </p>
         </td>
+    </tr>
+    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"

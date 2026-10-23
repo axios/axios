@@ -5,7 +5,7 @@ axios puede lanzar muchos tipos diferentes de errores. Algunos de estos errores 
 | Propiedad | Definición                                                                                                                                    |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | message   | Un resumen rápido del mensaje de error y el estado con el que falló.                                                                          |
-| name      | Define el origen del error. Para axios, siempre será un `AxiosError`.                                                                         |
+| name      | Nombre del error: normalmente `AxiosError`, `CanceledError` para cancelaciones o el nombre original de un error encapsulado. Use `axios.isAxiosError(error)` para identificar errores de Axios.                                                                         |
 | stack     | Proporciona el seguimiento de la pila (stack trace) del error.                                                                                |
 | config    | Un objeto de configuración de axios con configuraciones específicas de la instancia definidas por el usuario al momento de realizar la solicitud. |
 | code      | Representa un error identificado por axios. La tabla a continuación lista definiciones específicas para errores internos de axios.             |

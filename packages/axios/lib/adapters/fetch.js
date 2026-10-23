@@ -242,7 +242,10 @@ const factory = (env) => {
 
     let composedSignal = composeSignals(
       [signal, cancelToken && cancelToken.toAbortSignal()],
-      timeout
+      timeout,
+      utils.hasOwnProp(config, 'timeoutErrorMessage') && config.timeoutErrorMessage
+        ? new AxiosError(config.timeoutErrorMessage, AxiosError.ETIMEDOUT, config)
+        : undefined
     );
 
     let request = null;
@@ -465,14 +468,14 @@ const factory = (env) => {
       // see https://github.com/cloudflare/workerd/issues/902
       const isCredentialsSupported = isRequestSupported && 'credentials' in Request.prototype;
 
-      // If data is FormData and Content-Type is multipart/form-data without boundary,
-      // delete it so fetch can set it correctly with the boundary
+      // Native FormData owns its encoding and boundary. Clear dispatchRequest's
+      // urlencoded default as well as a bare multipart placeholder so Fetch can
+      // generate the matching header. Keep explicitly supplied boundaries.
       if (utils.isFormData(data)) {
         const contentType = headers.getContentType();
         if (
           contentType &&
-          /^multipart\/form-data/i.test(contentType) &&
-          !/boundary=/i.test(contentType)
+          !(/^multipart\/form-data(?:\s*;|$)/i.test(contentType) && /boundary=/i.test(contentType))
         ) {
           headers.delete('content-type');
         }
@@ -541,12 +544,21 @@ const factory = (env) => {
       if (hasMaxContentLength) {
         const declaredLength = utils.toFiniteNumber(responseHeaders.getContentLength());
         if (declaredLength != null && declaredLength > maxContentLength) {
-          throw new AxiosError(
+          const error = new AxiosError(
             'maxContentLength size of ' + maxContentLength + ' exceeded',
             AxiosError.ERR_BAD_RESPONSE,
             config,
             request
           );
+          // The body is still owned by the transport at this point. Release it
+          // without letting failed or pending cleanup replace the size error.
+          try {
+            const body = response.body;
+            body && Promise.resolve(body.cancel(error)).catch(utils.noop);
+          } catch (cleanupError) {
+            // Preserve the original limit rejection for custom Response bodies.
+          }
+          throw error;
         }
       }
 

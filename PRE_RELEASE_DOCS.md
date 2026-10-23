@@ -287,9 +287,17 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ### v2 monorepo contributor and release paths
 
-- **Change:** The repository root is private; the published library lives in `packages/axios/`. Supporting apps live in `apps/`, repository tools in `tooling/`, and isolated packed-package consumers in `tests/compatibility/`.
+- **Change:** The repository root is private; the published library lives in `packages/axios/`. Supporting apps live in `apps/`, repository tools in `tooling/`, and packaged e2e orchestration in `tests/`.
 - **Source:** `PRE_RELEASE_CHANGELOG.md` Maintenance, v2 monorepo and pnpm.
 - **Status:** Pending.
 - **Docs targets:** Published package README development links, migration guide, contributor-facing docs site pages and translations, external repository source links, and release procedures.
 - **Required content:** Use pnpm 10.34.7 and frozen installs with scripts disabled; explain workspace filters and `pnpm run pack:axios`. Update source links to `packages/axios/lib/`, app links to `apps/`, and release-history links to `packages/axios/CHANGELOG.md`. Keep consumer-facing `import axios from 'axios'`, npm installation examples, public exports, and the Node.js 20 runtime floor unchanged. The root README and contributor guides already describe the new layout.
-- **Notes:** Docs and sandbox use `workspace:*`; compatibility fixtures must install tarballs independently. Release preparation targets the `v2.x` branch, and publishing triggers on `v2.*.*` tags and publishes from `packages/axios` using npm's staged publishing with provenance. No public declaration changes are needed. Keep bundle-size comparisons on the v1 baseline until the first stable v2 release exists, then switch the release stream to 2.
+- **Notes:** Docs and sandbox use `workspace:*`; e2e commands install the fresh tarball into temporary consumers outside the repository. Document `pnpm run test:e2e` and its Node/browser/Bun/Deno scopes using `tests/README.md`; unit and source-browser suites remain separate. Release preparation targets the `v2.x` branch, and publishing triggers on `v2.*.*` tags and publishes from `packages/axios` using npm's staged publishing with provenance. No public declaration changes are needed. Keep bundle-size comparisons on the v1 baseline until the first stable v2 release exists, then switch the release stream to 2.
+
+### Fetch multipart uploads, timeout diagnostics, and rejected response cleanup
+
+- **Change:** Real-network packaged tests expose and fix native FormData content-type mismatches, ignored Fetch `timeoutErrorMessage`, and unread response bodies left open after a declared `maxContentLength` rejection.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch real-network behavior; related public reports #11351 and #11292.
+- **Status:** Pending.
+- **Docs targets:** Fetch adapter guidance, request-config timeout and size-limit descriptions, native FormData examples, and translations after English release wording is finalized.
+- **Required content:** Native FormData supplies its multipart boundary and matching content type; applications should let the transport generate these. Fetch timeouts honor an own `timeoutErrorMessage` while retaining the current timeout code. Responses rejected by their declared size begin best-effort body cancellation; cleanup failures do not replace or delay the size error. No API or type migration is required.

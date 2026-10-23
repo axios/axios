@@ -1,0 +1,115 @@
+name: Packaged Axios e2e
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Node ${{ matrix.node }} e2e
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24, 26]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - name: Install verified pnpm
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          mkdir "$RUNNER_TEMP/pnpm"
+          tar -xzf "$RUNNER_TEMP/pnpm.tgz" -C "$RUNNER_TEMP/pnpm" --strip-components=1
+          ln -s "$RUNNER_TEMP/pnpm/bin/pnpm.cjs" "$RUNNER_TEMP/pnpm/bin/pnpm"
+          printf '%s\n' "$RUNNER_TEMP/pnpm/bin" >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: axios-tarball
+          path: artifacts/e2e
+      - run: pnpm run test:e2e:node -- --artifact-dir artifacts/e2e
+
+  browser:
+    name: Chromium, Firefox and WebKit e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.x
+          package-manager-cache: false
+      - name: Install verified pnpm
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          mkdir "$RUNNER_TEMP/pnpm"
+          tar -xzf "$RUNNER_TEMP/pnpm.tgz" -C "$RUNNER_TEMP/pnpm" --strip-components=1
+          ln -s "$RUNNER_TEMP/pnpm/bin/pnpm.cjs" "$RUNNER_TEMP/pnpm/bin/pnpm"
+          printf '%s\n' "$RUNNER_TEMP/pnpm/bin" >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: axios-tarball
+          path: artifacts/e2e
+      - run: pnpm --filter @axios/e2e exec playwright install --with-deps
+      - run: pnpm run test:e2e:browser -- --artifact-dir artifacts/e2e
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: browser-e2e-report
+          path: tests/results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  runtimes:
+    name: ${{ matrix.runtime }} e2e
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [bun, deno]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.x
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        if: matrix.runtime == 'bun'
+        with:
+          no-cache: true
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        if: matrix.runtime == 'deno'
+        with:
+          cache: false
+      - name: Install verified pnpm
+        run: |
+          curl --fail --silent --show-error --location https://registry.npmjs.org/pnpm/-/pnpm-10.34.7.tgz --output "$RUNNER_TEMP/pnpm.tgz"
+          printf '%s  %s\n' 'ba98abc585539933375b5971f4bc6d6c73a1b4b7edc4a879e7d102fe5423d1e02309d67c60a11f04955093a96e521ad9c3b138cdd654ca5be563f378b3ae48bd' "$RUNNER_TEMP/pnpm.tgz" | sha512sum --check
+          mkdir "$RUNNER_TEMP/pnpm"
+          tar -xzf "$RUNNER_TEMP/pnpm.tgz" -C "$RUNNER_TEMP/pnpm" --strip-components=1
+          ln -s "$RUNNER_TEMP/pnpm/bin/pnpm.cjs" "$RUNNER_TEMP/pnpm/bin/pnpm"
+          printf '%s\n' "$RUNNER_TEMP/pnpm/bin" >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: axios-tarball
+          path: artifacts/e2e
+      - name: Run Bun
+        if: matrix.runtime == 'bun'
+        run: pnpm run test:e2e:bun -- --artifact-dir artifacts/e2e
+      - name: Run Deno
+        if: matrix.runtime == 'deno'
+        run: pnpm run test:e2e:deno -- --artifact-dir artifacts/e2e

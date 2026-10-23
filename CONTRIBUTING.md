@@ -50,10 +50,11 @@ The root is a private pnpm workspace. Install pnpm 10.34.7 (`npm install --globa
 
 Axios source and its tests live in `packages/axios/`. Documentation and the sandbox are in `apps/`; shared tools are in `tooling/`. Root commands forward to these workspaces. For example, run a focused unit test with `pnpm --filter axios run test:vitest:unit tests/unit/core/Axios.test.js`.
 
-Consumer projects in `tests/compatibility/` are intentionally outside the workspace and install the tarball produced by `pnpm run pack:axios`. Follow [AGENTS.md](AGENTS.md#monorepo-layout) for isolated installation instructions.
+The `tests/` workspace owns packaged e2e tests. `pnpm run test:e2e` builds and packs the current Axios release, installs it into a temporary consumer outside the repository, and exercises local HTTP services from real browsers, Node.js, Bun, and Deno. Install Bun and Deno and run `pnpm --filter @axios/e2e exec playwright install` first. See [tests/README.md](tests/README.md) for focused commands and CI artifact reuse. Existing unit and source-browser tests remain in `packages/axios/tests/`.
 
 ## Developing
 
+- `pnpm run test:e2e` runs the packaged consumer scenarios across all supported e2e runtimes
 - `pnpm run lint` checks the library source
 - `pnpm test` runs the unit and browser test suites; install the browsers first with `pnpm --filter axios exec playwright install`
 - `pnpm run test:vitest:unit` runs the Node unit tests

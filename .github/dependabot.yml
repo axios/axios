@@ -62,17 +62,3 @@ updates:
       - 'type::automated-pr'
     cooldown:
       default-days: 7
-  # Give security updates in nested packages the same custom labels.
-  # Keep these packages limited to security updates.
-  - package-ecosystem: 'npm'
-    directories:
-      - '/tests/compatibility/module/*'
-      - '/tests/compatibility/smoke/*'
-    schedule:
-      interval: 'weekly'
-    open-pull-requests-limit: 0
-    labels:
-      - 'commit::chore'
-      - 'type::automated-pr'
-    cooldown:
-      default-days: 7

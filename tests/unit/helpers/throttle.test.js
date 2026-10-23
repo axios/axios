@@ -34,4 +34,26 @@ describe('helpers::throttle', () => {
 
     expect(listener.mock.calls).toEqual([['first'], ['replacement']]);
   });
+
+  it('should ignore a trailing timer that fires after the pending arguments were flushed', () => {
+    const listener = vi.fn();
+    const [throttled, flush] = throttle(listener, 1);
+    const originalSetTimeout = globalThis.setTimeout;
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementation((...args) => {
+      originalSetTimeout(...args);
+    });
+
+    try {
+      throttled('first');
+      throttled('second');
+      throttled('pending');
+      flush();
+
+      expect(() => vi.runAllTimers()).not.toThrow();
+    } finally {
+      setTimeoutSpy.mockRestore();
+    }
+
+    expect(listener.mock.calls).toEqual([['first'], ['pending']]);
+  });
 });

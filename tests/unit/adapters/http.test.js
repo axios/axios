@@ -162,6 +162,96 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should reject a negative timeout as an immediate timeout instead of crashing', async () => {
+    let requests = 0;
+    const server = await startHTTPServer(
+      (req, res) => {
+        requests++;
+        res.end('ok');
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      for (const [timeout, maxRedirects] of [
+        [-1, undefined],
+        [-1, 0],
+        [-0.5, undefined],
+        [-0.5, 0],
+        ['-1', undefined],
+        ['-1', 0],
+        [-1n, undefined],
+        [-Infinity, undefined],
+        [-Infinity, 0],
+        ['-1e-324', undefined],
+        ['-1e-324', 0],
+        ['-1e-7', undefined],
+        ['-1e-7', 0],
+      ]) {
+        await assert.rejects(
+          axios.get(`http://localhost:${server.address().port}`, {
+            timeout,
+            maxRedirects,
+          }),
+          (error) => {
+            assert.ok(error instanceof AxiosError);
+            assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+            assert.strictEqual(error.message, `timeout of ${timeout}ms exceeded`);
+            return true;
+          }
+        );
+      }
+
+      await assert.rejects(
+        axios.get(`http://localhost:${server.address().port}`, {
+          timeout: -1,
+          transitional: { clarifyTimeoutError: true },
+        }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ETIMEDOUT);
+          return true;
+        }
+      );
+
+      assert.strictEqual(requests, 0);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should keep integer truncation for exponent-form string timeouts', async () => {
+    // The sign check uses parseFloat, but the applied timeout is still the base-10 integer
+    // prefix, so these keep timing out after 1ms instead of 1000ms, never, or ~24.8 days.
+    const server = await startHTTPServer(
+      (req, res) => {
+        setTimeout(() => res.end('ok'), 150);
+      },
+      { port: SERVER_PORT }
+    );
+
+    try {
+      for (const timeout of ['1e3', '1e-7', 1e21]) {
+        for (const maxRedirects of [undefined, 0]) {
+          await assert.rejects(
+            axios.get(`http://localhost:${server.address().port}`, {
+              timeout,
+              maxRedirects,
+            }),
+            (error) => {
+              assert.ok(error instanceof AxiosError);
+              assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+              return true;
+            },
+            `timeout ${String(timeout)} with maxRedirects ${maxRedirects}`
+          );
+        }
+      }
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

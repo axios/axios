@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import axios from '../../../index.js';
 import formDataToStream from '../../../lib/helpers/formDataToStream.js';
+import { startHTTPServer, stopHTTPServer } from '../../setup/server.js';
 
 class SpecFormData {
   constructor() {
@@ -142,5 +144,35 @@ describe('formDataToStream', () => {
     const body = await collect(stream);
 
     expect(Buffer.byteLength(body, 'utf8')).toBe(reportedLength);
+  });
+
+  it('should send a file with an empty name as a file through the http adapter', async () => {
+    let received;
+    const server = await startHTTPServer((req, res) => {
+      const chunks = [];
+      req.on('data', (chunk) => chunks.push(chunk));
+      req.on('end', () => {
+        received = { body: Buffer.concat(chunks), type: req.headers['content-type'] };
+        res.end('ok');
+      });
+    });
+
+    try {
+      const form = new FormData();
+      form.append('upload', new Blob([new Uint8Array([0xff, 0x00])]), '');
+
+      await axios.post(`http://localhost:${server.address().port}/`, form, { adapter: 'http' });
+    } finally {
+      await stopHTTPServer(server);
+    }
+
+    const decoded = await new Response(received.body, {
+      headers: { 'Content-Type': received.type },
+    }).formData();
+    const upload = decoded.get('upload');
+
+    expect(upload).toBeInstanceOf(File);
+    expect(upload.name).toBe('');
+    expect(new Uint8Array(await upload.arrayBuffer())).toEqual(new Uint8Array([0xff, 0x00]));
   });
 });

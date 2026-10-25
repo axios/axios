@@ -51,6 +51,8 @@
 
 ## Maintenance
 
+- **Cancellation lifecycle regression coverage:** Added Node HTTP/Fetch and browser XHR tests for cancellation inside asynchronous request interceptors and successful reuse of an Axios instance after an in-flight cancellation, using AbortSignal, CancelToken, and both together. Added deterministic signal-composition tests for timeout/cancellation precedence and subscription cleanup. Runtime behavior, public APIs, and types are unchanged.
+
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 
 - **Proxy hostname regression coverage:** Added a long non-matching request-hostname test for `NO_PROXY` matching, complementing the existing long-entry test so regressions confined to request-hostname normalization exceed the test's time budget. This protects coverage of the previously fixed trailing-dot normalization denial of service; runtime behavior, public APIs, and types are unchanged. (**[#11235](https://github.com/axios/axios/pull/11235)**)

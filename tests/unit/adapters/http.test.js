@@ -5627,6 +5627,34 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    it('should support a custom DNS lookup function returning a thenable without catch method', async () => {
+      const server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+      const payload = 'test';
+      let isCalled = false;
+
+      try {
+        const { data } = await axios.post(
+          `http://fake-name.axios:${server.address().port}`,
+          payload,
+          {
+            lookup: (hostname, opt) => {
+              isCalled = true;
+              return {
+                then(resolve) {
+                  resolve('127.0.0.1');
+                },
+              };
+            },
+          }
+        );
+
+        assert.ok(isCalled);
+        assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
     it('should handle errors', async () => {
       await assert.rejects(async () => {
         await axios.get('https://no-such-domain-987654.com', {

@@ -42,6 +42,40 @@ describe('helpers::callbackify', () => {
     });
   });
 
+  it('handles thenables with then method but without catch method', async () => {
+    const fn = (a, b) => ({
+      then(resolve) {
+        resolve(a + b);
+      },
+    });
+    const cbFn = callbackify(fn);
+
+    await new Promise((resolve) => {
+      cbFn(2, 3, (err, result) => {
+        expect(err).toBeNull();
+        expect(result).toBe(5);
+        resolve();
+      });
+    });
+  });
+
+  it('handles rejected thenables with then method but without catch method', async () => {
+    const error = new Error('Thenable error');
+    const fn = () => ({
+      then(resolve, reject) {
+        reject(error);
+      },
+    });
+    const cbFn = callbackify(fn);
+
+    await new Promise((resolve) => {
+      cbFn((err) => {
+        expect(err).toBe(error);
+        resolve();
+      });
+    });
+  });
+
   it('applies reducer when provided for Promise-returning functions', async () => {
     const fn = (a, b) => Promise.resolve([a, b]);
     const cbFn = callbackify(fn, (arr) => arr);

@@ -5603,6 +5603,30 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    it('should support a custom DNS lookup function that returns a Promise without async keyword', async () => {
+      const server = await startHTTPServer(SERVER_HANDLER_STREAM_ECHO);
+      const payload = 'test';
+      let isCalled = false;
+
+      try {
+        const { data } = await axios.post(
+          `http://fake-name.axios:${server.address().port}`,
+          payload,
+          {
+            lookup: (hostname, opt) => {
+              isCalled = true;
+              return Promise.resolve('127.0.0.1');
+            },
+          }
+        );
+
+        assert.ok(isCalled);
+        assert.strictEqual(data, payload);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
     it('should handle errors', async () => {
       await assert.rejects(async () => {
         await axios.get('https://no-such-domain-987654.com', {
@@ -7433,5 +7457,16 @@ describe('supports http with nodejs', () => {
         }
       );
     });
+  });
+
+  it('should reject with an AxiosError when URL is invalid in http adapter', async () => {
+    await assert.rejects(
+      axios.get('http://invalid:port:99999/foo', { adapter: 'http' }),
+      (err) => {
+        assert.strictEqual(err.isAxiosError, true);
+        assert.strictEqual(err.code, 'ERR_INVALID_URL');
+        return true;
+      }
+    );
   });
 });

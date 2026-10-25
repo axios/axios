@@ -183,4 +183,12 @@ describe('helpers::fromDataURI', () => {
       (err) => err.code === 'ERR_INVALID_URL'
     );
   }, 1000);
+  it('should reject malformed percent-encoding in data URI with ERR_INVALID_URL', () => {
+    assert.throws(
+      () => {
+        fromDataURI('data:text/plain,hello%99world', false);
+      },
+      (err) => err.code === 'ERR_INVALID_URL'
+    );
+  });
 });

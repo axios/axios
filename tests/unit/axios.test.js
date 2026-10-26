@@ -439,4 +439,27 @@ describe('Axios', () => {
       }
     });
   });
+  it('should use config.data for post/put/patch when data argument is undefined', async () => {
+    const client = axios.create({
+      adapter: async (config) => {
+        return {
+          data: config.data,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        };
+      },
+    });
+
+    const postRes = await client.post('/test-post', undefined, { data: { foo: 'bar' } });
+    assert.deepStrictEqual(postRes.data, { foo: 'bar' });
+
+    const putRes = await client.put('/test-put', undefined, { data: { baz: 'qux' } });
+    assert.deepStrictEqual(putRes.data, { baz: 'qux' });
+
+    const patchRes = await client.patch('/test-patch', undefined, { data: { hello: 'world' } });
+    assert.deepStrictEqual(patchRes.data, { hello: 'world' });
+  });
 });

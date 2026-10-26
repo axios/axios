@@ -20,6 +20,47 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Response duration
+
+- **Change:** Expose elapsed adapter time as the optional numeric `AxiosResponse.duration` property in milliseconds, including on `error.response` when present.
+- **Source:** [PR #11214](https://github.com/axios/axios/pull/11214), related to [request/response timing #695](https://github.com/axios/axios/issues/695) and [feature suggestions #6984](https://github.com/axios/axios/issues/6984).
+- **Status:** Pending.
+- **Docs targets:** README response schema and error-handling examples; docs-site response schema and error handling; corresponding translations.
+- **Required content:** Timing starts immediately before adapter invocation, after request interceptors and request transforms. It ends in the adapter's settlement handler, before response transforms and response interceptors. Buffered responses include body reception; HTTP/Fetch streaming responses measure only the time until the stream becomes available, and consuming or failing that stream later does not update the value. This is not a DNS/TCP/TLS/TTFB breakdown or server-processing time. It includes adapter work such as connection queuing and redirects. Errors without a response, including ordinary network errors, timeouts, and cancellations, have no duration. Strict JSON parsing failures retain the duration on their attached response.
+- **Examples:** Show `const response = await axios.get('/users'); console.log(response.duration);`. For errors, guard with `axios.isAxiosError(error)` and `error.response` before reading `error.response.duration`; do not imply that every error has a response.
+- **Notes:** Values use `Date.now()`, with two clock reads for a response receiving timing metadata. Backward clock adjustments clamp to zero; forward adjustments can inflate the value, so it is approximate wall-clock timing rather than a monotonic measurement. The field is enumerable and overwrites a custom adapter's existing `duration` property. Both declaration formats keep it optional for custom adapters and manually constructed responses. Semver impact is minor; no new option, dependency, or migration for built-in-adapter users. Apply published documentation only during release preparation.
+
+### Asynchronous XSRF cookie reads in the XHR adapter
+
+- **Change:** Document the XHR adapter's use of the Cookie Store API for XSRF token reads.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, XHR adapter cookie access; PR #11166 and issue #10826.
+- **Status:** Pending.
+- **Docs targets:** README and request-config guidance for `xsrfCookieName`, `xsrfHeaderName`, and `withXSRFToken`; browser support notes; translated docs after the English documentation is finalized.
+- **Required content:** Explain that the XHR adapter automatically uses `window.cookieStore` when available to avoid synchronous `document.cookie` access while resolving an eligible XSRF token. Browsers without Cookie Store support retain the existing `document.cookie` behavior, and a failed Cookie Store read also falls back to that path. Both read paths preserve Axios's existing URI decoding (once), with malformed escape sequences left unchanged. Cookie lookup and the subsequent XHR share the configured timeout; both cancellation APIs also work during lookup, and late results cannot dispatch a canceled or expired request. The Fetch adapter and the public request-config surface are unchanged; no migration is required.
+- **Examples:** None required because capability detection is automatic and adds no configuration.
+- **Notes:** Keep the explanation scoped to XHR XSRF reads; do not imply that all cookie operations or the Fetch adapter use Cookie Store. Issue #10826 originally requested raw values; compatibility requires retaining Axios's existing decoding because Cookie Store does not percent-decode stored cookies.
+
+### Opt-in UTF-8 Basic auth usernames
+
+- **Change:** Added `transitional.encodeBasicAuthUsername`, a boolean defaulting to `false`, to opt into UTF-8 encoding of `auth.username` during XHR/Fetch config resolution.
+- **Source:** [PR #11159](https://github.com/axios/axios/pull/11159); `PRE_RELEASE_CHANGELOG.md` Features.
+- **Status:** Pending.
+- **Docs targets:** README request-config `auth` and transitional options; request-config and authentication documentation in the docs site and translations.
+- **Required content:** Explain that applications talking to UTF-8 Basic-auth servers can enable this option per request or with `axios.create`. Existing defaults remain compatible: XHR uses legacy single-byte username encoding and UTF-8 passwords, while Fetch already sends UTF-8 but its config resolution rejects usernames above U+00FF unless opted in. Node HTTP and Fetch URL-embedded credentials are unchanged. Setting the option to `false` on a request overrides an instance opt-in; it does not select Latin-1 for Fetch or Node HTTP.
+- **Examples:** `axios.get('/account', { auth: { username: 'π', password: 'secret' }, transitional: { encodeBasicAuthUsername: true } })`. Also show an instance opt-in with a request-level `false` override for a legacy XHR endpoint.
+- **Compatibility:** No migration is required unless enabling the option. Remove manual UTF-8-to-byte-string username conversion when opting in to avoid double encoding. Do not enable it for XHR servers expecting legacy Latin-1 username bytes. RFC 7617 leaves the default encoding unspecified; this option does not negotiate server challenges or normalize Unicode. ASCII/empty credentials are unchanged and malformed UTF-16 continues to reject with `ERR_BAD_OPTION_VALUE` in XHR/Fetch.
+- **Types:** Both `index.d.ts` and `index.d.cts` expose the optional boolean in `TransitionalOptions`.
+
+### Global TLS options for CONNECT-tunneled origins
+
+- **Change:** Apply the current `https.globalAgent.options` to an HTTPS origin reached through an Axios-managed CONNECT tunnel when no per-request `httpsAgent` is configured.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11178; related to #11176, whose explicit-agent failure is not established as fixed by this change.
+- **Status:** Pending.
+- **Docs targets:** README request-config proxy/agent guidance and the Node proxy configuration docs; translated docs after the English documentation is finalized.
+- **Required content:** Explain that an explicit `httpsAgent` takes precedence over the global agent, without merging their trust settings. Origin TLS options are read for each request, including after the tunneling agent is cached; changes to either selected agent's options and replacement of `https.globalAgent` are observed by subsequent requests. Global TLS settings apply only to the tunneled origin, not to the HTTPS proxy's TLS connection. Existing explicit-agent handling for the proxy is unchanged.
+- **Examples:** Show a process-installed private CA with `https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem')` and `axios.get('https://internal-api.example.com/data', { proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 } })`, without an explicit `httpsAgent`. Explain that a request-specific agent must carry its own required CA.
+- **Notes:** Patch-level behavior correction with no new API, type, or migration requirements. Configured TLS options include `checkServerIdentity` and `rejectUnauthorized`; do not recommend disabling certificate validation. This forwards options, not arbitrary custom agent connection hooks. Browser adapters and HTTP/2 behavior are unchanged.
+
 ### Literal method-named request headers
 
 - **Change:** Restore literal headers such as `Link`, including non-plain object values, and distinguish them from common and method-specific header maps.

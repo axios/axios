@@ -39,11 +39,11 @@ The `allowAbsoluteUrls` determines whether or not absolute URLs will override a 
 
 ### `transformRequest`
 
-The `transformRequest` function allows you to modify the request data before it is sent to the server. This function is called with the request data as its only argument. This is only applicable for request methods `PUT`, `POST`, `PATCH` and `DELETE`. The last function in the array must return a string or an instance of Buffer, ArrayBuffer, FormData or Stream.
+The `transformRequest` function allows you to modify the request data before it is sent to the server. Each function is called with the request data and the request headers (an `AxiosHeaders` instance). It runs for every request, whatever the request method. The last function in the array must return a string or an instance of Buffer, ArrayBuffer, FormData or Stream.
 
 ### `transformResponse`
 
-The `transformResponse` function allows you to modify the response data before it is passed to the `then` or `catch` functions. This function is called with the response data as its only argument.
+The `transformResponse` function allows you to modify the response data before it is passed to the `then` or `catch` functions. Each function is called with the response data, the response headers (an `AxiosHeaders` instance), and the HTTP status code.
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-The `headers` are the HTTP headers to be sent with the request. The `Content-Type` header is set to `application/json` by default.
+The `headers` are the HTTP headers to be sent with the request. axios does not set a default `Content-Type` header. If you do not set one, axios picks it from the request `data`. For example, a plain object is sent as `application/json`.
 
 ### `params`
 

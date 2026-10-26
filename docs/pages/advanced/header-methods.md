@@ -65,7 +65,7 @@ headers.set(
 
 ## Get
 
-The `get` method is used to retrieve the value of a header. The method can be called with a single header name, an optional matcher, or a parser. The matcher is defaulted to `true`. The parser can be a regular expression that is used to extract the value from the header.
+The `get` method is used to retrieve the value of a header. The method can be called with a single header name, an optional matcher, or a parser. Without a matcher, it returns the raw header value. Pass `true` to parse the value into key-value pairs. The parser can be a regular expression that is used to extract the value from the header.
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
@@ -151,7 +151,7 @@ Returns true if at least one header has been cleared.
 
 ## Normalize
 
-If the headers object was changed directly, it can cause duplicates with the same name but in different cases. This method normalizes the headers object by combining duplicate keys into one. Axios uses this method internally after calling each interceptor. Set format to true for converting headers name to lowercase and capitalize the initial letters (cOntEnt-type => Content-Type) or false to keep the original format.
+If the headers object was changed directly, it can cause duplicates with the same name but in different cases. This method normalizes the headers object by combining duplicate keys into one. Axios uses this method internally before calling each request and response transformer. Set format to true for converting headers name to lowercase and capitalize the initial letters (cOntEnt-type => Content-Type) or false to keep the original format.
 
 ```js
 const headers = new AxiosHeaders({

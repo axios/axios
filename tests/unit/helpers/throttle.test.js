@@ -34,4 +34,28 @@ describe('helpers::throttle', () => {
 
     expect(listener.mock.calls).toEqual([['first'], ['replacement']]);
   });
+
+  it('should ignore trailing timers that fire after flush when setTimeout drops the timer id', () => {
+    const realSetTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = function (...args) {
+      realSetTimeout.apply(this, args);
+    };
+
+    try {
+      const listener = vi.fn();
+      const [throttled, flush] = throttle(listener, 3);
+
+      throttled({ loaded: 1 });
+      throttled({ loaded: 2 });
+      throttled({ loaded: 3 });
+      flush();
+
+      expect(() => {
+        vi.runAllTimers();
+      }).not.toThrow();
+      expect(listener.mock.calls).toEqual([[{ loaded: 1 }], [{ loaded: 3 }]]);
+    } finally {
+      globalThis.setTimeout = realSetTimeout;
+    }
+  });
 });

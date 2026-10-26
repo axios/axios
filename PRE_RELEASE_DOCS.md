@@ -30,6 +30,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Examples:** Show `const response = await axios.get('/users'); console.log(response.duration);`. For errors, guard with `axios.isAxiosError(error)` and `error.response` before reading `error.response.duration`; do not imply that every error has a response.
 - **Notes:** Values use `Date.now()`, with two clock reads for a response receiving timing metadata. Backward clock adjustments clamp to zero; forward adjustments can inflate the value, so it is approximate wall-clock timing rather than a monotonic measurement. The field is enumerable and overwrites a custom adapter's existing `duration` property. Both declaration formats keep it optional for custom adapters and manually constructed responses. Semver impact is minor; no new option, dependency, or migration for built-in-adapter users. Apply published documentation only during release preparation.
 
+### Stacked content codings in the Node HTTP adapter
+
+- **Change:** The Node HTTP adapter decodes responses whose `Content-Encoding` lists several codings.
+- **Source:** [PR #11336](https://github.com/axios/axios/pull/11336); `PRE_RELEASE_CHANGELOG.md` Bug Fixes, "Node HTTP adapter - stacked content codings".
+- **Status:** Pending.
+- **Docs targets:** README request-config section for `decompress` and `maxContentLength`; docs-site request config and the HTTP adapter's response-decompression notes; translated docs after the English text is final.
+- **Required content:** When `decompress` is true (the default), a `Content-Encoding` that lists several codings, such as `gzip, br`, is decoded by undoing them from last to first (RFC 9110, section 8.4), and the header is then removed. Supported codings are `gzip`, `x-gzip`, `compress`, `x-compress`, `deflate`, plus `br` and `zstd` where the Node version supports them. Names are case-insensitive, whitespace around them is ignored, and `identity` entries are skipped. If any listed coding is unsupported, or more than five codings are listed, the body and the header are left as received, as for a single unknown coding today; the five-coding cap matches undici's fetch, which rejects such responses instead. `maxContentLength` applies to the fully decoded body, for buffered responses and for `responseType: 'stream'`, where exceeding it errors and destroys the stream. Set `decompress: false` to receive the bytes as sent.
+- **Examples:** None required: no new option. If the README shows `decompress: false`, mention that it also keeps a multi-coding body as sent.
+- **Notes:** Node HTTP adapter only. The fetch and XHR adapters rely on the runtime's own decoding and are unchanged. The cap limits the number of decoding stages, not the decoded size; `maxContentLength` is what bounds the decoded size. No API or type changes; semver impact is a bug fix.
+
 ### Asynchronous XSRF cookie reads in the XHR adapter
 
 - **Change:** Document the XHR adapter's use of the Cookie Store API for XSRF token reads.

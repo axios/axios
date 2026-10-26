@@ -99,6 +99,21 @@ describe('core::buildFullPath', () => {
     expect(error.message).toBe('Invalid URL "http:example.com/users": missing "//" after protocol');
   });
 
+  it('redacts credentials in http: URLs as well as https: URLs', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, 'http:admin:hunter2@api.example.com/v1');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe(
+      'Invalid URL "http:[REDACTED ****]@api.example.com/v1": missing "//" after protocol'
+    );
+    expect(error.message).not.toContain('hunter2');
+  });
+
   it('redacts credentials and query/fragment values while keeping the URL identifiable', () => {
     let error;
 

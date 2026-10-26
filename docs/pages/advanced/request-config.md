@@ -176,6 +176,8 @@ You may also pass an array of adapters to be used, axios will use the first adap
 
 `auth` indicates that HTTP Basic auth should be used, and supplies credentials. This will set an `Authorization` header, overwriting any existing `Authorization` custom headers you have set using `headers`. If `auth` is omitted, the Node.js HTTP and fetch adapters can derive Basic auth credentials from the request URL, for example `https://user:pass@example.com`; percent-encoded URL credentials are decoded, and `auth` always takes precedence over URL-embedded credentials. In the Node.js HTTP adapter, Basic auth is preserved on same-origin redirects and stripped on cross-origin redirects. Please note that only HTTP Basic auth is configurable through this parameter. For Bearer tokens and such, use `Authorization` custom headers instead.
 
+In the XHR and fetch adapters, usernames outside Latin-1 (above U+00FF) are rejected with `ERR_BAD_OPTION_VALUE` unless you opt in to UTF-8 username encoding with [`transitional.encodeBasicAuthUsername`](#transitional). See [Authentication](/pages/advanced/authentication#utf-8-usernames) for details.
+
 ### `responseType`
 
 The `responseType` indicates the type of data that the server will respond with. This can be one of the following:
@@ -251,17 +253,19 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 :::
 
+When the XHR adapter needs to read the XSRF cookie and the browser supports the [Cookie Store API](https://developer.mozilla.org/en-US/docs/Web/API/Cookie_Store_API), it reads the cookie asynchronously through `window.cookieStore` instead of synchronously reading `document.cookie`. Browsers without Cookie Store support, or a failed Cookie Store read, use `document.cookie` as before. Both paths URI-decode the cookie value once, leaving malformed escape sequences unchanged. The cookie lookup counts toward the request's `timeout`, and cancellation with an `AbortSignal` or `CancelToken` also applies during the lookup. This is automatic and needs no configuration; the fetch adapter and other cookie handling are unchanged.
+
 ### `onUploadProgress`
 
 The `onUploadProgress` function allows you to listen to the progress of an upload.
 
 ### `onDownloadProgress`
 
-The `onDownloadProgress` function allows you to listen to the progress of a download.
+The `onDownloadProgress` function allows you to listen to the progress of a download. Callbacks are throttled; see [Progress capturing](/pages/advanced/progress-capturing#reading-response-data-incrementally) for reading partial response data from these events.
 
 ### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined.
+The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined. Exceeding the limit rejects with `ERR_BAD_RESPONSE`; see [Fetch adapter response size limits](/pages/advanced/fetch-adapter#response-size-limits).
 
 > ⚠️ **Security:** defaults to `-1` (unlimited). Unbounded responses combined with gzip/deflate/brotli/zstd decompression allow decompression-bomb DoS.
 > Set an explicit limit when requesting servers you do not fully trust.
@@ -305,9 +309,11 @@ axios.get('/user/12345', {
 });
 ```
 
-### `maxRedirects` <Badge type="warning" text="Node.js only" />
+### `maxRedirects` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxRedirects` property defines the maximum number of redirects to follow. If set to 0, no redirects will be followed.
+The `maxRedirects` property defines the maximum number of redirects the Node.js HTTP adapter follows. If set to 0, no redirects will be followed.
+
+In the fetch adapter, only `maxRedirects: 0` has an effect: it requests the platform's manual redirect mode. What the response then exposes depends on the fetch runtime; see [Fetch adapter redirects](/pages/advanced/fetch-adapter#redirects). Positive values do not enforce a redirect count in the fetch adapter.
 
 ### `sensitiveHeaders` <Badge type="warning" text="Node.js only" />
 
@@ -374,9 +380,25 @@ The `httpAgent` and `httpsAgent` define a custom agent to be used when performin
 
 The `proxy` defines the hostname, port, and protocol of a proxy server you would like to use. You can also define your proxy using the conventional `http_proxy` and `https_proxy` environment variables.
 
-If you are using environment variables for your proxy configuration, you can also define a `no_proxy` environment variable as a comma-separated list of domains that should not be proxied.
+If you are using environment variables for your proxy configuration, you can also define a `no_proxy` (or `NO_PROXY`) environment variable as a comma-separated list of domains that should not be proxied.
+
+`no_proxy` entries can also be IPv4 or IPv6 CIDR ranges. A CIDR entry bypasses the proxy when the request URL's host is an IP address inside that range; hostnames are not resolved for CIDR matching.
+
+```sh
+NO_PROXY=10.0.0.0/8,2001:db8::/32
+# http://10.1.2.3/ and http://[2001:db8::1]/ connect directly
+```
+
+- Bracketed IPv6 ranges such as `[2001:db8::]/32` are accepted.
+- IPv4-mapped IPv6 ranges, such as `::ffff:10.0.0.0/104`, are treated as the equivalent IPv4 range when the prefix allows it. Otherwise IPv4 and IPv6 ranges only match addresses of their own family.
+- Malformed CIDR entries never bypass the proxy.
+- A `/0` prefix covers an entire address family: `0.0.0.0/0` bypasses the proxy for every IPv4 destination, and `::/0` does the same for every IPv6 destination.
+
+Hostname, wildcard, explicit-port, and loopback entries keep their existing behavior.
 
 On Node.js versions with native environment proxy support, axios defers environment proxy handling to Node when the selected `httpAgent` or `httpsAgent` has `proxyEnv` enabled, including processes started with `NODE_USE_ENV_PROXY=1`, `--use-env-proxy`, or `NODE_OPTIONS=--use-env-proxy`. Custom agents without `proxyEnv` continue to use axios environment proxy resolution. Explicit `proxy` config is still handled by axios.
+
+HTTP/2 requests (`httpVersion: 2`) cannot be proxied: they ignore proxy environment variables and agent `proxyEnv` settings, and an explicit `proxy` object rejects with `ERR_NOT_SUPPORT`. See [HTTP2](/pages/advanced/http2#proxies).
 
 Use `false` to disable proxies, ignoring environment variables. `auth` indicates that HTTP Basic auth should be used to connect to the proxy, and supplies credentials. This will set an `Proxy-Authorization` header, overwriting any existing `Proxy-Authorization` custom headers you have set using `headers`. If the proxy server uses HTTPS, then you must set the protocol to `https`.
 
@@ -395,6 +417,21 @@ proxy: {
     password: "rapunz3l"
   }
 },
+```
+
+If no `httpsAgent` is configured, the current `https.globalAgent.options` apply to the tunneled origin's TLS connection, matching a request made without a proxy. An explicit `httpsAgent` takes precedence over the global agent and their TLS settings are not merged, so a request-specific agent must carry every CA it needs. Origin TLS options are read for each request, so later changes to the selected agent's options, or replacing `https.globalAgent`, affect subsequent requests. Global agent options apply only to the tunneled origin, not to the TLS connection to an HTTPS proxy.
+
+```js
+import fs from 'node:fs';
+import https from 'node:https';
+
+// Trust a private CA for the whole process
+https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem');
+
+// No httpsAgent: the tunneled origin connection uses the global CA
+await axios.get('https://internal-api.example.com/data', {
+  proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 },
+});
 ```
 
 ### `cancelToken`
@@ -435,6 +472,7 @@ The `transitional` property allows you to enable or disable certain transitional
 - `validateStatusUndefinedResolves`: If set to `true` _(default)_, explicit `validateStatus: undefined` resolves every response status for backward compatibility. Set to `false` to treat explicit `undefined` as if `validateStatus` was omitted, so axios uses the configured/default validator. Use `validateStatus: null` or a validator that returns `true` when you intentionally want all statuses to resolve.
 - `advertiseZstdAcceptEncoding`: When set to `true`, axios adds `zstd` to the default `Accept-Encoding` request header when the current Node.js runtime supports zstd decompression. zstd responses are still decompressed automatically when supported and `decompress` is `true`.
 - `legacyInterceptorReqResOrdering`: When set to true we will use the legacy interceptor request/response ordering.
+- `encodeBasicAuthUsername`: When set to `true`, the XHR and fetch adapters encode the `auth.username` as UTF-8 when building the Basic `Authorization` header. Defaults to `false` for compatibility. See [Authentication](/pages/advanced/authentication#utf-8-usernames).
 
 ### `env`
 
@@ -567,6 +605,7 @@ The `maxRate` property defines the maximum **bandwidth** (in bytes per second) f
     validateStatusUndefinedResolves: true,
     advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
+    encodeBasicAuthUsername: false,
   },
   env: {
     FormData: window?.FormData || global?.FormData

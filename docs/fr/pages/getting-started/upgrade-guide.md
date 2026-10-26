@@ -2,6 +2,34 @@
 
 Ce guide a pour but de vous aider à migrer votre projet d'une version du framework à une autre. Il est recommandé de lire les notes de version de chaque version majeure que vous migrez, car elles peuvent contenir des informations importantes sur les changements incompatibles.
 
+## Migration vers v1.21.0
+
+### Instances de classes personnalisées comme valeurs par défaut des en-têtes
+
+Sous `headers.common` et les clés de méthode telles que `headers.post`, axios ne traite désormais comme groupes de valeurs par défaut que les objets simples, les objets à prototype nul et les instances d'`AxiosHeaders`, afin que les en-têtes littéraux portant le nom d'une méthode, comme `Link`, soient préservés. Si vous affectez une instance de votre propre classe comme groupe, convertissez-la en objet simple (`{ post: { ...customDefaults } }`) ou en `new AxiosHeaders({ ...customDefaults })`. Sinon, sa représentation sous forme de chaîne est envoyée comme en-tête littéral à chaque requête, y compris les requêtes utilisant d'autres méthodes, ce qui peut exposer le contenu inclus par une méthode `toString()` personnalisée. Consultez [Valeurs par défaut des en-têtes par méthode](/fr/pages/advanced/config-defaults#valeurs-par-defaut-des-en-tetes-par-methode).
+
+## Migration vers v1.20.0
+
+### Le fetch personnalisé reçoit un second argument filtré
+
+Lorsqu'un constructeur `Request` est disponible, un `env.fetch` personnalisé reçoit toujours `fetchOptions` comme second argument, mais sans `method`, `headers`, `body`, `signal`, `duplex` et `credentials`. Ces valeurs sont représentées par la `Request` résolue passée comme premier argument, et leur omission empêche le second argument de la remplacer. Les implémentations de fetch personnalisées qui lisent ces champs depuis le second argument doivent désormais les lire depuis la `Request`. Consultez [Arguments passés à un fetch personnalisé](/fr/pages/advanced/fetch-adapter#arguments-passes-a-un-fetch-personnalise).
+
+### Adaptateur fetch et `maxRedirects: 0`
+
+L'adaptateur fetch associe `maxRedirects: 0` au mode de redirection manuel de la plateforme au lieu de suivre les redirections. Dans Node.js, la réponse `3xx` et son en-tête `Location` peuvent être visibles ; les navigateurs retournent une redirection opaque avec le statut `0` et des en-têtes illisibles. Les valeurs positives ne limitent toujours pas le nombre de redirections dans l'adaptateur fetch. Consultez [Redirections de l'adaptateur fetch](/fr/pages/advanced/fetch-adapter#redirections).
+
+### HTTP/2 et proxys
+
+Les requêtes avec `httpVersion: 2` et un objet `proxy` explicite sont rejetées avec `ERR_NOT_SUPPORT`. Les requêtes HTTP/2 ignorent les variables d'environnement de proxy et les paramètres `proxyEnv` des agents et se connectent directement : n'utilisez donc pas HTTP/2 lorsque le passage par un proxy est une politique de sortie obligatoire. `proxy: false` continue de se connecter directement. Consultez [Proxys HTTP2](/fr/pages/advanced/http2#proxys).
+
+### Configurations de remplacement retournées par les intercepteurs de requête
+
+Lorsqu'un intercepteur de requête retourne un objet différent de la configuration qu'il a reçue, axios le copie dans un instantané filtré à prototype nul avant l'envoi. Les champs hérités d'un prototype défini par l'application sont copiés comme champs propres, mais l'instantané ne préserve ni l'identité de l'objet, ni son prototype, ni les vérifications `instanceof`, ni les accesseurs, ni les attributs de propriété. Les champs hérités via un prototype dont le propre prototype est `null`, comme un modèle `Object.create(null)`, sont ignorés. Retourner la configuration d'origine conserve son identité. Consultez [Retourner un autre objet de configuration](/fr/pages/advanced/interceptors#retourner-un-autre-objet-de-configuration).
+
+### Noms de codes de statut de la RFC 9110
+
+`HttpStatusCode.ContentTooLarge` (413) et `HttpStatusCode.UnprocessableContent` (422) sont les noms à privilégier. `PayloadTooLarge` et `UnprocessableEntity` restent disponibles en tant qu'alias dépréciés tout au long de la v1.x, et les recherches inverses numériques retournent toujours les noms historiques.
+
 ## Migration vers v1.19.0
 
 ### Les URL HTTP(S) mal formées sont rejetées

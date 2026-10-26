@@ -83,6 +83,8 @@ function myAdapter(config) {
 const instance = axios.create({ adapter: myAdapter });
 ```
 
+适配器接收的是请求拦截器返回的配置。如果拦截器返回的是原始的合并后配置，适配器会接收同一个对象；替换对象则会先被复制到一个经过过滤的、原型为 null 的快照中（参阅[返回不同的配置对象](/zh/pages/advanced/interceptors#返回不同的配置对象)）。适配器完成后，axios 会在响应上设置 [`response.duration`](/zh/pages/advanced/response-schema#响应耗时)，替换适配器设置的任何 `duration` 值。
+
 TypeScript 适配器可以使用相应的泛型，在响应配置中同时保留请求数据和查询参数：
 
 ```ts

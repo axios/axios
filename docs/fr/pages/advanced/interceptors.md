@@ -64,6 +64,12 @@ instance.interceptors.response.use(function () {
 instance.interceptors.response.clear(); // Supprime les intercepteurs des réponses
 ```
 
+Le nombre retourné par `use()` est un identifiant d'intercepteur opaque. Repassez-le tel quel à `eject()` ; ne l'utilisez pas comme index dans le tableau `handlers`. Préférez `eject()` et `clear()` à la modification directe de `handlers` :
+
+- Éjecter un identifiant inconnu, ou éjecter deux fois le même identifiant, n'a aucun effet.
+- Un identifiant périmé ne supprime jamais un autre intercepteur, même après l'éjection d'autres intercepteurs ou le vidage du gestionnaire.
+- Si `handlers` est remplacé par `null` ou `undefined`, cette chaîne d'intercepteurs est ignorée, et le prochain appel à `use()` restaure un tableau vide avant d'ajouter le nouvel intercepteur.
+
 ## Comportement par défaut des intercepteurs
 
 Lorsque vous ajoutez des intercepteurs de requête, ils sont considérés comme asynchrones par défaut. Cela peut provoquer un délai dans l'exécution de votre requête axios lorsque le thread principal est bloqué (une promise est créée en coulisses pour l'intercepteur et votre requête est placée en bas de la pile d'appels). Si vos intercepteurs de requête sont synchrones, vous pouvez ajouter un indicateur à l'objet d'options qui indiquera à axios d'exécuter le code de manière synchrone et d'éviter tout délai dans l'exécution des requêtes.
@@ -114,6 +120,54 @@ axios.interceptors.request.use(
   { synchronous: true }
 );
 ```
+
+## Retourner un autre objet de configuration
+
+Un intercepteur de requête modifie et retourne généralement la configuration qu'il reçoit. Cette configuration est un objet modifiable à prototype nul créé par axios, et la retourner telle quelle préserve son identité : l'adaptateur et `response.config` reçoivent le même objet.
+
+```js
+let seen;
+
+const instance = axios.create({
+  adapter: async (config) => {
+    console.log(config === seen); // true
+    return { data: null, status: 200, statusText: 'OK', headers: {}, config };
+  },
+});
+
+instance.interceptors.request.use((config) => {
+  config.headers.set('X-Trace', '1');
+  seen = config;
+  return config;
+});
+```
+
+Si un intercepteur retourne un objet différent, axios le copie dans un nouvel instantané modifiable à prototype nul avant l'envoi. Les champs propres sont conservés, à l'exception des clés dangereuses `__proto__`, `constructor` et `prototype`, qui sont toujours supprimées. Les champs hérités d'un prototype défini par l'application sont copiés comme champs propres, mais l'instantané ne conserve ni l'identité de l'objet d'origine, ni son prototype, ni les vérifications `instanceof`, ni les accesseurs, ni les attributs de propriété :
+
+```js
+const template = { tenant: 'acme' };
+
+instance.interceptors.request.use((config) => {
+  // `tenant` est hérité de `template` ; un adaptateur personnalisé
+  // le lit comme un champ propre de l'instantané : config.tenant === 'acme'
+  return Object.assign(Object.create(template), config);
+});
+```
+
+Les champs hérités d'`Object.prototype`, ou d'un prototype dont le propre prototype est `null` (comme un prototype créé avec `Object.create(null)`), sont ignorés :
+
+```js
+const nullTemplate = Object.create(null);
+nullTemplate.tenant = 'acme';
+
+instance.interceptors.request.use((config) => {
+  // `tenant` est ignoré car `nullTemplate` a un prototype nul :
+  // un adaptateur personnalisé voit config.tenant === undefined
+  return Object.assign(Object.create(nullTemplate), config);
+});
+```
+
+Une configuration à prototype nul est également copiée lorsqu'elle est gelée, scellée, qu'elle utilise des accesseurs ou des propriétés non modifiables, ou qu'elle contient l'une des clés dangereuses, car axios doit mettre à jour des champs tels que `headers` et `data` pendant l'envoi. Ces règles constituent une limite de sécurité intentionnelle qui empêche les valeurs injectées dans des prototypes partagés de modifier le comportement des requêtes ; elles ne rendent pas la modification d'`Object.prototype` sûre ni prise en charge.
 
 ## Intercepteurs avec `runWhen`
 

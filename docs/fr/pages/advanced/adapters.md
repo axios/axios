@@ -83,6 +83,8 @@ function myAdapter(config) {
 const instance = axios.create({ adapter: myAdapter });
 ```
 
+L'adaptateur reçoit la configuration retournée par les intercepteurs de requête. Si un intercepteur a retourné la configuration fusionnée d'origine, l'adaptateur reçoit ce même objet ; un objet de remplacement est d'abord copié dans un instantané filtré à prototype nul (voir [Retourner un autre objet de configuration](/fr/pages/advanced/interceptors#retourner-un-autre-objet-de-configuration)). Une fois l'adaptateur terminé, axios définit [`response.duration`](/fr/pages/advanced/response-schema#duree-de-la-reponse) sur la réponse, en remplaçant toute valeur `duration` définie par l'adaptateur.
+
 Les adaptateurs TypeScript peuvent conserver les données de requête et les paramètres de requête dans la configuration de la réponse grâce aux génériques correspondants :
 
 ```ts

@@ -2,6 +2,34 @@
 
 本指南旨在帮助你将项目从旧版本升级到新版本。建议阅读每个主要版本的发布说明，其中可能包含关于破坏性变更的重要信息。
 
+## 升级到 v1.21.0
+
+### 将自定义类实例用作请求头默认值
+
+在 `headers.common` 以及 `headers.post` 等方法键下，axios 现在只将普通对象、原型为 null 的对象和 `AxiosHeaders` 实例视为默认值分组，因此与方法同名的字面请求头（例如 `Link`）会被保留。如果你将自己的类实例赋值为分组，请将其转换为普通对象（`{ post: { ...customDefaults } }`）或 `new AxiosHeaders({ ...customDefaults })`。否则，它的字符串表示形式会作为字面请求头随每个请求发送（包括使用其他方法的请求），这可能会暴露自定义 `toString()` 所包含的内容。参阅[按方法设置的请求头默认值](/zh/pages/advanced/config-defaults#按方法设置的请求头默认值)。
+
+## 升级到 v1.20.0
+
+### 自定义 fetch 接收经过过滤的第二个参数
+
+当 `Request` 构造函数可用时，自定义 `env.fetch` 仍会将 `fetchOptions` 作为第二个参数接收，但其中不再包含 `method`、`headers`、`body`、`signal`、`duplex` 和 `credentials`。这些值由作为第一个参数传入的解析后 `Request` 表示，省略它们可以防止第二个参数覆盖该 `Request`。从第二个参数读取这些字段的自定义 fetch 实现必须改为从 `Request` 中读取。参阅[传递给自定义 fetch 的参数](/zh/pages/advanced/fetch-adapter#传递给自定义-fetch-的参数)。
+
+### Fetch 适配器与 `maxRedirects: 0`
+
+fetch 适配器会将 `maxRedirects: 0` 映射为平台的手动重定向模式，而不再跟随重定向。在 Node.js 中，`3xx` 响应及其 `Location` 响应头可能可见；浏览器会返回状态为 `0`、响应头不可读的不透明重定向。在 fetch 适配器中，正数值仍不会限制重定向次数。参阅 [Fetch 适配器重定向](/zh/pages/advanced/fetch-adapter#重定向)。
+
+### HTTP/2 与代理
+
+使用 `httpVersion: 2` 和显式 `proxy` 对象的请求会以 `ERR_NOT_SUPPORT` 拒绝。HTTP/2 请求会忽略代理环境变量和 agent 的 `proxyEnv` 设置并直接连接，因此在代理为强制出站策略的环境中请勿使用 HTTP/2。`proxy: false` 仍会直接连接。参阅 [HTTP2 代理](/zh/pages/advanced/http2#代理)。
+
+### 请求拦截器返回的替换配置
+
+当请求拦截器返回的对象与它接收到的配置不同时，axios 会在分发请求前将其复制到一个经过过滤的、原型为 null 的快照中。从应用程序定义的原型继承的字段会被复制为自身字段，但快照不会保留该对象的身份、原型、`instanceof` 检查、访问器或属性特性。通过自身原型为 `null` 的原型（例如 `Object.create(null)` 模板）继承的字段会被忽略。返回原始配置则会保留其身份。参阅[返回不同的配置对象](/zh/pages/advanced/interceptors#返回不同的配置对象)。
+
+### RFC 9110 状态码名称
+
+`HttpStatusCode.ContentTooLarge`（413）和 `HttpStatusCode.UnprocessableContent`（422）是推荐使用的名称。`PayloadTooLarge` 和 `UnprocessableEntity` 在整个 v1.x 中仍可作为已废弃的别名使用，按数字反向查找仍会返回旧名称。
+
 ## 升级到 v1.19.0
 
 ### 格式错误的 HTTP(S) URL 将被拒绝

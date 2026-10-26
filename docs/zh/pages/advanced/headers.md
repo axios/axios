@@ -79,6 +79,29 @@ const api = axios.create({
 });
 ```
 
+## 与 HTTP 方法同名的请求头
+
+有些请求头名称与某个 HTTP 方法相同，例如 `Link`（对应 `LINK` 方法）。当其值为字符串或其他非映射值时，axios 会将其作为普通请求头发送：
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: '<https://example.com/resource>; rel="type"' },
+});
+```
+
+在配置的 `headers` 中，只有当键 `common` 和小写方法名（`get`、`post`、`link` 等）的值为普通对象、原型为 null 的对象或 `AxiosHeaders` 实例（包括子类以及来自另一份 axios 副本的兼容实例）时，它们才会被视为[默认值分组](/zh/pages/advanced/config-defaults#按方法设置的请求头默认值)。只有与请求方法匹配的分组会被应用，分组本身永远不会作为字面请求头发送。
+
+其他任何值都会被序列化为普通请求头值：字符串、数字、数组，以及 `Date`、`Buffer`、类型化数组和应用程序类实例等对象（这些对象会被转换为字符串）。例如，在 Node.js 中：
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: Buffer.from('<https://example.com/resource>; rel="type"') },
+});
+// 发送为：Link: <https://example.com/resource>; rel="type"
+```
+
+值为 `null`、`undefined` 和 `false` 时仍会省略该请求头。
+
 ## 保留特定请求头大小写
 
 axios 请求头名称不区分大小写，但 `AxiosHeaders` 会保留第一个匹配键的大小写形式。如果你需要为大小写敏感的非标准服务器保留特定大小写，可以在 `defaults` 中预设键名，之后再按常规方式设置值。

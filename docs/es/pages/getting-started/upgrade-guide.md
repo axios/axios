@@ -2,6 +2,34 @@
 
 Esta guía tiene como objetivo ayudarte a actualizar tu proyecto de una versión del framework a otra. Se recomienda leer las notas de la versión de cada versión mayor desde la que estás migrando, ya que pueden contener información importante sobre cambios que rompen la compatibilidad.
 
+## Actualización a v1.21.0
+
+### Instancias de clases personalizadas como valores predeterminados de encabezados
+
+Bajo `headers.common` y claves de método como `headers.post`, axios ahora trata solo los objetos planos, los objetos con prototipo nulo y las instancias de `AxiosHeaders` como grupos de valores predeterminados, de modo que se conservan los encabezados literales con nombre de método, como `Link`. Si asignas una instancia de tu propia clase como grupo, conviértela en un objeto plano (`{ post: { ...customDefaults } }`) o en `new AxiosHeaders({ ...customDefaults })`. De lo contrario, su representación como cadena se envía como un encabezado literal en cada solicitud, incluidas las solicitudes con otros métodos, lo que puede exponer contenido incluido por un `toString()` personalizado. Consulta [Valores predeterminados de encabezados por método](/es/pages/advanced/config-defaults#valores-predeterminados-de-encabezados-por-metodo).
+
+## Actualización a v1.20.0
+
+### El fetch personalizado recibe un segundo argumento filtrado
+
+Cuando hay un constructor `Request` disponible, un `env.fetch` personalizado sigue recibiendo `fetchOptions` como segundo argumento, pero sin `method`, `headers`, `body`, `signal`, `duplex` ni `credentials`. Estos valores están representados por la `Request` resuelta que se pasa como primer argumento, y omitirlos evita que el segundo argumento la sobrescriba. Las implementaciones de fetch personalizadas que leen esos campos desde el segundo argumento deben leerlos desde la `Request`. Consulta [Argumentos pasados a un fetch personalizado](/es/pages/advanced/fetch-adapter#argumentos-pasados-a-un-fetch-personalizado).
+
+### Adaptador fetch y `maxRedirects: 0`
+
+El adaptador fetch asigna `maxRedirects: 0` al modo de redirección manual de la plataforma en lugar de seguir las redirecciones. En Node.js, la respuesta `3xx` y su encabezado `Location` pueden ser visibles; los navegadores devuelven una redirección opaca con estado `0` y encabezados ilegibles. Los valores positivos siguen sin limitar el número de redirecciones en el adaptador fetch. Consulta [Redirecciones del adaptador fetch](/es/pages/advanced/fetch-adapter#redirecciones).
+
+### HTTP/2 y proxies
+
+Las solicitudes con `httpVersion: 2` y un objeto `proxy` explícito se rechazan con `ERR_NOT_SUPPORT`. Las solicitudes HTTP/2 ignoran las variables de entorno de proxy y la configuración `proxyEnv` de los agentes y se conectan directamente, así que no uses HTTP/2 donde el uso de proxy sea una política de salida obligatoria. `proxy: false` sigue conectándose directamente. Consulta [Proxies de HTTP2](/es/pages/advanced/http2#proxies).
+
+### Configuraciones de reemplazo desde interceptores de solicitud
+
+Cuando un interceptor de solicitud devuelve un objeto distinto de la configuración que recibió, axios lo copia en una instantánea filtrada con prototipo nulo antes del envío. Los campos heredados de un prototipo definido por la aplicación se copian como campos propios, pero la instantánea no conserva la identidad del objeto, su prototipo, las comprobaciones `instanceof`, los descriptores de acceso ni los atributos de las propiedades. Los campos heredados a través de un prototipo cuyo propio prototipo es `null`, como una plantilla `Object.create(null)`, se ignoran. Devolver la configuración original conserva su identidad. Consulta [Devolver un objeto de configuración diferente](/es/pages/advanced/interceptors#devolver-un-objeto-de-configuracion-diferente).
+
+### Nombres de códigos de estado de la RFC 9110
+
+`HttpStatusCode.ContentTooLarge` (413) y `HttpStatusCode.UnprocessableContent` (422) son los nombres preferidos. `PayloadTooLarge` y `UnprocessableEntity` siguen disponibles como alias obsoletos durante toda la v1.x, y las búsquedas inversas numéricas siguen devolviendo los nombres heredados.
+
 ## Actualización a v1.19.0
 
 ### Se rechazan las URL HTTP(S) malformadas

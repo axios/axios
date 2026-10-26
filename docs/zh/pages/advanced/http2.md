@@ -38,6 +38,34 @@ HTTP/2 支持目前仍为实验性功能，API 可能在未来的次要版本或
 HTTP/2 适配器目前不会自动跟随重定向。如果使用 `httpVersion: 2` 发起的请求收到 `3xx` 响应，重定向不会被自动跟随。请手动处理这类响应，或对依赖重定向的端点继续使用 HTTP/1.x。
 :::
 
+## 自定义 DNS 查询
+
+自定义的 [`lookup`](https://nodejs.org/api/dns.html#dnslookuphostname-options-callback) 函数同样适用于 HTTP/2 连接。查询函数是会话选项的一部分，因此只有使用相同 `lookup` 函数的请求才会复用同一个会话。
+
+```js
+import dns from 'node:dns';
+
+const { data } = await axios.get('https://example.com/api', {
+  httpVersion: 2,
+  lookup: (hostname, options, callback) => {
+    // 使用你自己的逻辑解析，然后将结果交回给 Node.js
+    dns.lookup(hostname, options, callback);
+  },
+});
+```
+
+## 代理
+
+HTTP/2 请求无法通过代理发送，因为 Node.js 的 `http2.connect()` 无法应用代理设置：
+
+- 显式的 `proxy` 对象会以代码为 `ERR_NOT_SUPPORT` 的 `AxiosError` 拒绝。
+- `proxy: false` 与之前一样直接连接。
+- 代理环境变量（`HTTP_PROXY`、`HTTPS_PROXY` 等）以及 `httpAgent`/`httpsAgent` 上的 `proxyEnv` 设置都会被忽略。
+
+::: danger HTTP/2 请求会绕过环境代理
+由于环境代理设置会被忽略，即使进程已配置为使用代理，HTTP/2 请求也会直接连接到源服务器。如果你的部署要求所有出站流量都必须经过代理，请勿使用 `httpVersion: 2`。
+:::
+
 ## 完整示例
 
 以下示例通过 HTTP/2 发送 `multipart/form-data` POST 请求，并同时跟踪上传和下载进度。

@@ -1,5 +1,73 @@
 # Changelog
 
+## v1.21.0 — October 21, 2026
+
+This release adds response timing and opt-in UTF-8 Basic authentication, improves request handling across runtimes, and changes how header defaults are recognized.
+
+## ⚠️ Breaking Changes & Deprecations
+
+* **Header Defaults:** Only plain objects, null-prototype maps, and compatible `AxiosHeaders` instances are treated as common or method-specific defaults; literal headers such as `Link` are now preserved. Applications using custom class instances as defaults must convert them to plain maps, for example `{ post: { ...customDefaults } }`, or compatible `AxiosHeaders`. Otherwise, those instances become literal header values, including on requests using other methods. (**[#11156](https://github.com/axios/axios/pull/11156)**)
+
+## 🚀 New Features
+
+* **Response Timing:** Added `response.duration`, in milliseconds, including on `error.response` when present. Timing measures adapter execution and excludes interceptors and transforms; streamed responses stop timing when the stream becomes available. Axios replaces any existing `duration` value supplied by a custom adapter. (**[#11214](https://github.com/axios/axios/pull/11214)**)
+* **UTF-8 Basic Authentication:** Added `transitional.encodeBasicAuthUsername: true` to support Unicode usernames in XHR and Fetch requests. The option defaults to `false`, preserving existing authentication behavior; applications opting in should supply the original Unicode username and remove manual pre-encoding workarounds. (**[#11159](https://github.com/axios/axios/pull/11159)**)
+
+## 🐛 Bug Fixes
+
+* **Fetch Compatibility:** Restored requests in runtimes such as Cloudflare Workers that reject the implicit `cache: 'default'`, while preserving explicit caller settings. Response-size failures now retain their original `ERR_BAD_RESPONSE` and request context when runtime wrappers replace the underlying stream error. (**[#11194](https://github.com/axios/axios/pull/11194)**, **[#11179](https://github.com/axios/axios/pull/11179)**)
+* **Runtime Consistency:** Aligned encoded-byte size accounting, multipart uploads, proxy routing, same-origin resolution, parameter merging, and form serialization across adapters. Circular parameters now reject with `ERR_BAD_OPTION_VALUE`, and sparse or non-index numeric form fields serialize as keyed objects. With `proxy: false`, native `proxyEnv` agents using unsupported pool-management or TLS-session lifecycle overrides now reject with `ERR_BAD_OPTION_VALUE`; construct those agents without `proxyEnv`. (**[#11242](https://github.com/axios/axios/pull/11242)**)
+* **Header Handling:** Preserved headers named **`proto`** using safe casing without changing the `AxiosHeaders` instance prototype. Function matchers in `has()`, `delete()`, and `clear()` now receive the headers instance as `this`, matching their declared contract. (**[#11134](https://github.com/axios/axios/pull/11134)**, **[#11216](https://github.com/axios/axios/pull/11216)**)
+* **URL and Data URL Parsing:** Accepted case-insensitive supported URL schemes and Base64 markers, and corrected decoding of percent-encoded Base64 data URLs. Node data URL allocation estimates remain aligned with decoding so configured size limits apply before allocation. (**[#11138](https://github.com/axios/axios/pull/11138)**, **[#11163](https://github.com/axios/axios/pull/11163)**, **[#11294](https://github.com/axios/axios/pull/11294)**)
+* **Error Diagnostics:** Preserved short reconstructed request stacks and appended wrapped error stacks under `Caused by:` so tooling that reads only `error.stack` retains the original failure context. (**[#11132](https://github.com/axios/axios/pull/11132)**, **[#11142](https://github.com/axios/axios/pull/11142)**)
+* **Interceptor Removal:** Restored removal through canonical numeric-string interceptor IDs, including after registry compaction. (**[#11139](https://github.com/axios/axios/pull/11139)**)
+* **Proxy TLS:** HTTPS CONNECT tunnels now apply current origin TLS options from an explicit `httpsAgent`, or from `https.globalAgent` when no explicit agent is supplied. This preserves process-wide custom CA settings through proxy tunnels. (**[#11178](https://github.com/axios/axios/pull/11178)**)
+* **XHR Lifecycle:** Used asynchronous Cookie Store reads for XSRF tokens where supported, preserving cookie fallback, timeout accounting, and cancellation. Upload and download progress listeners are now removed on completion, failure, timeout, and cancellation. (**[#11166](https://github.com/axios/axios/pull/11166)**, **[#11225](https://github.com/axios/axios/pull/11225)**)
+* **HTTP/2 Sessions:** Stopped reusing sessions immediately after GOAWAY and prevented draining sessions from scheduling idle timers that could delay process exit. (**[#11210](https://github.com/axios/axios/pull/11210)**)
+* **TypeScript Declarations:** Exposed the response-default marker as a public type to resolve `TS2527` when consumers emit declarations involving unresolved response generics, covering both ESM and CommonJS. (**[#11125](https://github.com/axios/axios/pull/11125)**)
+
+## 🔧 Maintenance & Chores
+
+* **Configuration Performance:** Reduced request configuration merge overhead, particularly for requests with many headers, while preserving merge semantics and prototype-pollution guards. (**[#11208](https://github.com/axios/axios/pull/11208)**)
+* **Same-Origin Checks:** Removed obsolete Internet Explorer detection without changing origin decisions in supported environments. (**[#11174](https://github.com/axios/axios/pull/11174)**)
+* **Dependencies:** Updated `follow-redirects` to 1.16.1 and refreshed development, documentation, test, and GitHub Actions dependencies. Removed unused `dayjs` from the docs package, root `chalk`, and `chai` from CJS module tests. (**[#11169](https://github.com/axios/axios/pull/11169)**, **[#11188](https://github.com/axios/axios/pull/11188)**, **[#11189](https://github.com/axios/axios/pull/11189)**, **[#11195](https://github.com/axios/axios/pull/11195)**, **[#11212](https://github.com/axios/axios/pull/11212)**, **[#11213](https://github.com/axios/axios/pull/11213)**, **[#11218](https://github.com/axios/axios/pull/11218)**, **[#11220](https://github.com/axios/axios/pull/11220)**, **[#11221](https://github.com/axios/axios/pull/11221)**, **[#11230](https://github.com/axios/axios/pull/11230)**, **[#11234](https://github.com/axios/axios/pull/11234)**, **[#11244](https://github.com/axios/axios/pull/11244)**, **[#11245](https://github.com/axios/axios/pull/11245)**, **[#11266](https://github.com/axios/axios/pull/11266)**, **[#11267](https://github.com/axios/axios/pull/11267)**, **[#11268](https://github.com/axios/axios/pull/11268)**, **[#11269](https://github.com/axios/axios/pull/11269)**, **[#11270](https://github.com/axios/axios/pull/11270)**, **[#11271](https://github.com/axios/axios/pull/11271)**, **[#11272](https://github.com/axios/axios/pull/11272)**, **[#11298](https://github.com/axios/axios/pull/11298)**, **[#11302](https://github.com/axios/axios/pull/11302)**, **[#11303](https://github.com/axios/axios/pull/11303)**, **[#11304](https://github.com/axios/axios/pull/11304)**, **[#11305](https://github.com/axios/axios/pull/11305)**, **[#11306](https://github.com/axios/axios/pull/11306)**, **[#11313](https://github.com/axios/axios/pull/11313)**, **[#11321](https://github.com/axios/axios/pull/11321)**, **[#11322](https://github.com/axios/axios/pull/11322)**, **[#11323](https://github.com/axios/axios/pull/11323)**, **[#11342](https://github.com/axios/axios/pull/11342)**)
+* **Documentation:** Fixed interceptor test links, updated README CDN examples to the published 1.20.0 bundle, and corrected guidance on interceptor options and request lifecycle ordering. (**[#11228](https://github.com/axios/axios/pull/11228)**, **[#11149](https://github.com/axios/axios/pull/11149)**, **[#11335](https://github.com/axios/axios/pull/11335)**)
+* **Contributor Workflow:** Consolidated agent instructions in `AGENTS.md`, standardized PR labels, required prerelease notes and validation evidence, and clarified that `npm test` requires installed Playwright browsers. (**[#11238](https://github.com/axios/axios/pull/11238)**, **[#11273](https://github.com/axios/axios/pull/11273)**, **[#11223](https://github.com/axios/axios/pull/11223)**, **[#11284](https://github.com/axios/axios/pull/11284)**)
+* **Sponsors and Support:** Added HeroDevs, Code for Japan, and Sweepico sponsor listings, refreshed sponsor data, and documented extended security support for Axios v0. (**[#11222](https://github.com/axios/axios/pull/11222)**, **[#11249](https://github.com/axios/axios/pull/11249)**, **[#11252](https://github.com/axios/axios/pull/11252)**, **[#11341](https://github.com/axios/axios/pull/11341)**)
+* **Proxy Regression Coverage:** Added a long dotted request-hostname test for `NO_PROXY` handling, extending coverage of an existing denial-of-service fix. (**[#11235](https://github.com/axios/axios/pull/11235)**)
+* **Release Preparation:** Updated package version metadata for 1.21.0. (**[#11346](https://github.com/axios/axios/pull/11346)**)
+
+## 🌟 New Contributors
+
+Welcome to our 24 new contributors. Thank you for helping improve Axios:
+
+* **@lazerg** (**[#11194](https://github.com/axios/axios/pull/11194)**)
+* **@QIU-Guanzong** (**[#11228](https://github.com/axios/axios/pull/11228)**)
+* **@Iams4kura** (**[#11125](https://github.com/axios/axios/pull/11125)**)
+* **@vjymisal0** (**[#11179](https://github.com/axios/axios/pull/11179)**)
+* **@jarrensj** (**[#11238](https://github.com/axios/axios/pull/11238)**)
+* **@LineGu** (**[#11132](https://github.com/axios/axios/pull/11132)**)
+* **@luantaraschi** (**[#11134](https://github.com/axios/axios/pull/11134)**)
+* **@Cyberhet** (**[#11284](https://github.com/axios/axios/pull/11284)**)
+* **@nyxst4ck** (**[#11138](https://github.com/axios/axios/pull/11138)**)
+* **@windcrestai** (**[#11163](https://github.com/axios/axios/pull/11163)**)
+* **@kazuki-netizen** (**[#11294](https://github.com/axios/axios/pull/11294)**)
+* **@bilashcse** (**[#11139](https://github.com/axios/axios/pull/11139)**)
+* **@JiuYue0820** (**[#11149](https://github.com/axios/axios/pull/11149)**)
+* **@official-burak** (**[#11156](https://github.com/axios/axios/pull/11156)**)
+* **@contactjawad** (**[#11159](https://github.com/axios/axios/pull/11159)**)
+* **@wittachai-as** (**[#11174](https://github.com/axios/axios/pull/11174)**)
+* **@yiheng-kkk** (**[#11166](https://github.com/axios/axios/pull/11166)**)
+* **@ShikeChen01** (**[#11208](https://github.com/axios/axios/pull/11208)**)
+* **@cuishuang** (**[#11210](https://github.com/axios/axios/pull/11210)**)
+* **@Truenocancion** (**[#11225](https://github.com/axios/axios/pull/11225)**)
+* **@jakezwang** (**[#11216](https://github.com/axios/axios/pull/11216)**)
+* **@Adityagarg2712** (**[#11214](https://github.com/axios/axios/pull/11214)**)
+* **@Zandereins** (**[#11235](https://github.com/axios/axios/pull/11235)**)
+* **@Plastic-time** (**[#11335](https://github.com/axios/axios/pull/11335)**)
+
+[Full Changelog](https://github.com/axios/axios/compare/v1.20.0...v1.21.0)
+
 ## v1.19.0 — July 22, 2026
 
 This release raises the form-data security floor, adds configuration and type-system capabilities, and fixes NO_PROXY matching, interceptor errors, progress reporting, and serialization edge cases.

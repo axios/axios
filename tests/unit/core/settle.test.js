@@ -45,6 +45,42 @@ describe('core::settle', () => {
     });
   });
 
+  describe('invalid validateStatus', () => {
+    for (const validateStatus of ['200', true, {}, 1]) {
+      it(`rejects with ERR_BAD_OPTION_VALUE when validateStatus is ${JSON.stringify(validateStatus)}`, () => {
+        const resolve = vi.fn();
+        const reject = vi.fn();
+        const response = makeResponse(200, validateStatus);
+        settle(resolve, reject, response);
+        expect(resolve).not.toHaveBeenCalled();
+        expect(reject).toHaveBeenCalledTimes(1);
+        const error = reject.mock.calls[0][0];
+        expect(error).toBeInstanceOf(AxiosError);
+        expect(error.code).toBe(AxiosError.ERR_BAD_OPTION_VALUE);
+        expect(error.config).toBe(response.config);
+        expect(error.response).toBe(response);
+      });
+    }
+
+    it('rejects with an AxiosError that wraps an error thrown by validateStatus', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const cause = new Error('boom');
+      const response = makeResponse(200, () => {
+        throw cause;
+      });
+      settle(resolve, reject, response);
+      expect(resolve).not.toHaveBeenCalled();
+      expect(reject).toHaveBeenCalledTimes(1);
+      const error = reject.mock.calls[0][0];
+      expect(error).toBeInstanceOf(AxiosError);
+      expect(error.message).toBe('boom');
+      expect(error.cause).toBe(cause);
+      expect(error.config).toBe(response.config);
+      expect(error.response).toBe(response);
+    });
+  });
+
   describe('error code assignment', () => {
     it('assigns ERR_BAD_REQUEST for a 400 status', () => {
       const resolve = vi.fn();

@@ -2,6 +2,7 @@ import { describe, it } from 'vitest';
 import assert from 'assert';
 import estimateDataURLDecodedBytes, {
   estimateDataURLBufferAllocation,
+  trimC0AndSpace,
 } from '../../lib/helpers/estimateDataURLDecodedBytes.js';
 
 describe('estimateDataURLDecodedBytes', () => {
@@ -22,6 +23,38 @@ describe('estimateDataURLDecodedBytes', () => {
       assert.strictEqual(estimateDataURLBufferAllocation(url), 0);
     }
   );
+
+  it('should strip ASCII tab and newline characters when estimating Fetch data URL payload', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,a://\n\nb'), 5);
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,a://\t\r\nb'), 5);
+  });
+
+  it('should trim leading and trailing C0 control and space characters when estimating Fetch data URL payload', () => {
+    assert.strictEqual(estimateDataURLDecodedBytes('   data:text/plain,payload   '), 7);
+    assert.strictEqual(estimateDataURLDecodedBytes('\u0001\u001fdata:text/plain,payload\u0020\u0000'), 7);
+  });
+
+  it('should preserve non-breaking space (NBSP) and BOM in data URL payload', () => {
+    // \u00a0 is 2 bytes in UTF-8
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,a://' + '\u00a0'.repeat(10)), 4 + 20);
+    // \ufeff is 3 bytes in UTF-8
+    assert.strictEqual(estimateDataURLDecodedBytes('data:,\ufeffhello'), 3 + 5);
+  });
+
+  it('should process large interior space runs in linear time without blocking', () => {
+    const start = Date.now();
+    const result = estimateDataURLDecodedBytes('data:,a://' + ' '.repeat(65536) + 'x');
+    const duration = Date.now() - start;
+    assert.strictEqual(result, 4 + 65536 + 1);
+    assert.ok(duration < 500, `Expected under 500ms, took ${duration}ms`);
+  });
+
+  it('should trim C0 control and space characters with trimC0AndSpace', () => {
+    assert.strictEqual(trimC0AndSpace('  foo  '), 'foo');
+    assert.strictEqual(trimC0AndSpace('\u0000\u001ffoo\u0020\u0000'), 'foo');
+    assert.strictEqual(trimC0AndSpace('foo'), 'foo');
+    assert.strictEqual(trimC0AndSpace('   '), '');
+  });
 
   it('should calculate length for simple non-base64 data URL', () => {
     const url = 'data:,Hello';

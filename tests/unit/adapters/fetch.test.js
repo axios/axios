@@ -740,6 +740,57 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           await stopHTTPServer(server);
         }
       });
+
+      it('should send string chunks of a ReadableStream body when tracking upload progress', async () => {
+        const server = await startHTTPServer((req, res) => req.pipe(res), { port: SERVER_PORT });
+        const makeBody = () =>
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue('hé');
+              controller.enqueue('llo🙂');
+              controller.close();
+            },
+          });
+
+        try {
+          const url = `http://localhost:${server.address().port}/`;
+          const options = { responseType: 'text' };
+
+          const plain = await fetchAxios.post(url, makeBody(), options);
+          const tracked = await fetchAxios.post(url, makeBody(), {
+            ...options,
+            onUploadProgress() {},
+          });
+
+          assert.strictEqual(plain.data, 'héllo🙂');
+          assert.strictEqual(tracked.data, 'héllo🙂');
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should enforce maxBodyLength on string chunks of a ReadableStream body', async () => {
+        const server = await startHTTPServer((req, res) => req.pipe(res), { port: SERVER_PORT });
+        const body = new ReadableStream({
+          start(controller) {
+            controller.enqueue('hé');
+            controller.enqueue('llo🙂');
+            controller.close();
+          },
+        });
+
+        try {
+          await assert.rejects(
+            fetchAxios.post(`http://localhost:${server.address().port}/`, body, {
+              maxBodyLength: 5,
+              responseType: 'text',
+            }),
+            { code: AxiosError.ERR_BAD_REQUEST }
+          );
+        } finally {
+          await stopHTTPServer(server);
+        }
+      });
     });
 
     describe('download', () => {

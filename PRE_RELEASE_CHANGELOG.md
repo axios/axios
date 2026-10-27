@@ -6,7 +6,7 @@
 
 ## Bug Fixes
 
-- **Fetch and XHR adapters - param serialization errors:** Failures raised while building the query string, such as a lone surrogate in a param value or a throwing `paramsSerializer`, now reject with an `AxiosError` carrying `ERR_BAD_REQUEST` and the request config instead of a raw `URIError`, matching what the Node HTTP adapter already reported. Failures that are already an `AxiosError`, such as `ERR_FORM_DATA_DEPTH_EXCEEDED`, keep their code.
+- **Fetch and XHR adapters - param serialization errors:** Failures raised while building the query string, such as a lone surrogate in a param value or a throwing `paramsSerializer`, now reject with an `AxiosError` carrying `ERR_BAD_REQUEST` and the request config instead of a raw `URIError`, matching what the Node HTTP adapter already reported. Failures that are already an `AxiosError`, such as `ERR_FORM_DATA_DEPTH_EXCEEDED`, keep their code, and a `CanceledError` thrown by the serializer is rethrown unchanged so `axios.isCancel` still recognizes it. ([#11253](https://github.com/axios/axios/pull/11253))
 
 ## Documentation
 

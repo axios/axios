@@ -3,6 +3,8 @@ import assert from 'assert';
 import FormData from 'form-data';
 import resolveConfig from '../../../lib/helpers/resolveConfig.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
+import CanceledError from '../../../lib/cancel/CanceledError.js';
+import isCancel from '../../../lib/cancel/isCancel.js';
 
 class ReactNativeFormData {
   append() {}
@@ -244,6 +246,47 @@ describe('helpers::resolveConfig', () => {
         return true;
       }
     );
+  });
+
+  it('should rethrow a CanceledError thrown by a custom paramsSerializer unchanged', () => {
+    const canceled = new CanceledError('stop');
+
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: { a: 1 },
+          paramsSerializer: () => {
+            throw canceled;
+          },
+        }),
+      (err) => {
+        assert.strictEqual(err, canceled);
+        assert.ok(isCancel(err));
+        return true;
+      }
+    );
+  });
+
+  it('should rethrow nullish values thrown by a custom paramsSerializer unchanged', () => {
+    for (const value of [null, undefined]) {
+      let thrown;
+
+      try {
+        resolveConfig({
+          url: '/foo',
+          params: { a: 1 },
+          paramsSerializer: () => {
+            throw value;
+          },
+        });
+      } catch (err) {
+        thrown = { err };
+      }
+
+      assert.ok(thrown);
+      assert.strictEqual(thrown.err, value);
+    }
   });
 
   it('should wrap param serialization failures as AxiosError', () => {

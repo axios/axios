@@ -176,6 +176,8 @@ Vous pouvez également passer un tableau d'adaptateurs ; axios utilisera le prem
 
 `auth` indique que l'authentification HTTP Basic doit être utilisée, et fournit les identifiants. Cela définira un en-tête `Authorization`, en écrasant tout en-tête `Authorization` personnalisé que vous auriez défini via `headers`. Si `auth` est omis, les adaptateurs HTTP Node.js et fetch peuvent déduire les identifiants Basic depuis l'URL de requête, par exemple `https://user:pass@example.com` ; les identifiants encodés en pourcentage dans l'URL sont décodés, et `auth` prend toujours le dessus sur les identifiants intégrés à l'URL. Dans l'adaptateur HTTP Node.js, l'authentification Basic est conservée lors des redirections de même origine et supprimée lors des redirections cross-origin. Notez que seule l'authentification HTTP Basic est configurable via ce paramètre. Pour les tokens Bearer et similaires, utilisez plutôt des en-têtes `Authorization` personnalisés.
 
+Dans les adaptateurs XHR et fetch, les noms d'utilisateur en dehors du Latin-1 (au-delà de U+00FF) sont rejetés avec `ERR_BAD_OPTION_VALUE`, sauf si vous activez l'encodage UTF-8 des noms d'utilisateur avec [`transitional.encodeBasicAuthUsername`](#transitional). Consultez [Authentification](/fr/pages/advanced/authentication#noms-d-utilisateur-utf-8) pour plus de détails.
+
 ### `responseType`
 
 Le `responseType` indique le type de données que le serveur retournera. Il peut s'agir de l'un des types suivants :
@@ -251,17 +253,19 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 :::
 
+Lorsque l'adaptateur XHR doit lire le cookie XSRF et que le navigateur prend en charge l'[API Cookie Store](https://developer.mozilla.org/en-US/docs/Web/API/Cookie_Store_API), il lit le cookie de manière asynchrone via `window.cookieStore` au lieu de lire `document.cookie` de manière synchrone. Les navigateurs sans prise en charge de Cookie Store, ou une lecture Cookie Store qui échoue, utilisent `document.cookie` comme auparavant. Les deux chemins décodent la valeur du cookie (décodage URI) une seule fois, en laissant inchangées les séquences d'échappement mal formées. La recherche du cookie est comptabilisée dans le `timeout` de la requête, et l'annulation via un `AbortSignal` ou un `CancelToken` s'applique également pendant cette recherche. Ce comportement est automatique et ne nécessite aucune configuration ; l'adaptateur fetch et les autres traitements de cookies ne changent pas.
+
 ### `onUploadProgress`
 
 La fonction `onUploadProgress` vous permet d'écouter la progression d'un envoi.
 
 ### `onDownloadProgress`
 
-La fonction `onDownloadProgress` vous permet d'écouter la progression d'un téléchargement.
+La fonction `onDownloadProgress` vous permet d'écouter la progression d'un téléchargement. Les callbacks sont limités en fréquence (throttling) ; consultez [Capture de progression](/fr/pages/advanced/progress-capturing#lire-les-donnees-de-reponse-de-maniere-incrementale) pour lire les données de réponse partielles depuis ces événements.
 
 ### `maxContentLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée.
+La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée. Le dépassement de la limite entraîne un rejet avec `ERR_BAD_RESPONSE` ; consultez [Limites de taille de réponse de l'adaptateur fetch](/fr/pages/advanced/fetch-adapter#limites-de-taille-de-reponse).
 
 > ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli/zstd rendent possible un déni de service par bombe de décompression.
 > Définissez une limite explicite lorsque vous consommez des serveurs auxquels vous ne faites pas pleinement confiance.
@@ -305,9 +309,11 @@ axios.get('/user/12345', {
 });
 ```
 
-### `maxRedirects` <Badge type="warning" text="Node.js uniquement" />
+### `maxRedirects` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxRedirects` définit le nombre maximum de redirections à suivre. Si défini à 0, aucune redirection ne sera suivie.
+La propriété `maxRedirects` définit le nombre maximum de redirections que l'adaptateur HTTP Node.js suit. Si défini à 0, aucune redirection ne sera suivie.
+
+Dans l'adaptateur fetch, seule la valeur `maxRedirects: 0` a un effet : elle demande le mode de redirection manuel de la plateforme. Ce que la réponse expose alors dépend du runtime fetch ; consultez [Redirections de l'adaptateur fetch](/fr/pages/advanced/fetch-adapter#redirections). Les valeurs positives n'imposent pas de nombre de redirections dans l'adaptateur fetch.
 
 ### `sensitiveHeaders` <Badge type="warning" text="Node.js uniquement" />
 
@@ -374,9 +380,25 @@ Les `httpAgent` et `httpsAgent` définissent un agent personnalisé à utiliser 
 
 Le `proxy` définit le nom d'hôte, le port et le protocole d'un serveur proxy que vous souhaitez utiliser. Vous pouvez également définir votre proxy en utilisant les variables d'environnement conventionnelles `http_proxy` et `https_proxy`.
 
-Si vous utilisez des variables d'environnement pour la configuration de votre proxy, vous pouvez également définir une variable d'environnement `no_proxy` sous la forme d'une liste de domaines séparés par des virgules qui ne doivent pas être mandatés.
+Si vous utilisez des variables d'environnement pour la configuration de votre proxy, vous pouvez également définir une variable d'environnement `no_proxy` (ou `NO_PROXY`) sous la forme d'une liste de domaines séparés par des virgules qui ne doivent pas être mandatés.
+
+Les entrées de `no_proxy` peuvent également être des plages CIDR IPv4 ou IPv6. Une entrée CIDR contourne le proxy lorsque l'hôte de l'URL de la requête est une adresse IP comprise dans cette plage ; les noms d'hôte ne sont pas résolus pour la correspondance CIDR.
+
+```sh
+NO_PROXY=10.0.0.0/8,2001:db8::/32
+# http://10.1.2.3/ et http://[2001:db8::1]/ se connectent directement
+```
+
+- Les plages IPv6 entre crochets, comme `[2001:db8::]/32`, sont acceptées.
+- Les plages IPv6 mappées IPv4, comme `::ffff:10.0.0.0/104`, sont traitées comme la plage IPv4 équivalente lorsque le préfixe le permet. Sinon, les plages IPv4 et IPv6 ne correspondent qu'aux adresses de leur propre famille.
+- Les entrées CIDR mal formées ne contournent jamais le proxy.
+- Un préfixe `/0` couvre une famille d'adresses entière : `0.0.0.0/0` contourne le proxy pour toutes les destinations IPv4, et `::/0` fait de même pour toutes les destinations IPv6.
+
+Les entrées de nom d'hôte, génériques (wildcard), avec port explicite et de loopback conservent leur comportement existant.
 
 Dans les versions de Node.js avec prise en charge native des proxies d'environnement, axios délègue la gestion du proxy d'environnement à Node lorsque le `httpAgent` ou `httpsAgent` sélectionné a `proxyEnv` activé, y compris pour les processus démarrés avec `NODE_USE_ENV_PROXY=1`, `--use-env-proxy` ou `NODE_OPTIONS=--use-env-proxy`. Les agents personnalisés sans `proxyEnv` continuent d'utiliser la résolution de proxy d'environnement d'axios. La configuration explicite `proxy` reste gérée par axios.
+
+Les requêtes HTTP/2 (`httpVersion: 2`) ne peuvent pas passer par un proxy : elles ignorent les variables d'environnement de proxy et les paramètres `proxyEnv` des agents, et un objet `proxy` explicite est rejeté avec `ERR_NOT_SUPPORT`. Consultez [HTTP2](/fr/pages/advanced/http2#proxys).
 
 Utilisez `false` pour désactiver les proxies, en ignorant les variables d'environnement. `auth` indique que l'authentification HTTP Basic doit être utilisée pour se connecter au proxy, et fournit les identifiants. Cela définira un en-tête `Proxy-Authorization`, en écrasant tout en-tête `Proxy-Authorization` personnalisé que vous auriez défini via `headers`. Si le serveur proxy utilise HTTPS, vous devez définir le protocole à `https`.
 
@@ -395,6 +417,21 @@ proxy: {
     password: "rapunz3l"
   }
 },
+```
+
+Si aucun `httpsAgent` n'est configuré, les `https.globalAgent.options` actuelles s'appliquent à la connexion TLS de l'origine tunnelisée, comme pour une requête effectuée sans proxy. Un `httpsAgent` explicite a la priorité sur l'agent global et leurs paramètres TLS ne sont pas fusionnés : un agent propre à la requête doit donc porter toutes les autorités de certification (CA) dont il a besoin. Les options TLS de l'origine sont lues à chaque requête, si bien que les modifications ultérieures des options de l'agent sélectionné, ou le remplacement de `https.globalAgent`, affectent les requêtes suivantes. Les options de l'agent global ne s'appliquent qu'à l'origine tunnelisée, pas à la connexion TLS vers un proxy HTTPS.
+
+```js
+import fs from 'node:fs';
+import https from 'node:https';
+
+// Faire confiance à une CA privée pour l'ensemble du processus
+https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem');
+
+// Pas de httpsAgent : la connexion tunnelisée vers l'origine utilise la CA globale
+await axios.get('https://internal-api.example.com/data', {
+  proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 },
+});
 ```
 
 ### `cancelToken`
@@ -435,6 +472,7 @@ La propriété `transitional` vous permet d'activer ou de désactiver certaines 
 - `validateStatusUndefinedResolves` : Si défini à `true` _(par défaut)_, un `validateStatus: undefined` explicite résout tous les statuts de réponse pour préserver la compatibilité. Définissez à `false` pour traiter `undefined` explicite comme si `validateStatus` était omis, afin qu'axios utilise le validateur configuré/par défaut. Utilisez `validateStatus: null` ou un validateur qui retourne `true` lorsque vous voulez intentionnellement résoudre tous les statuts.
 - `advertiseZstdAcceptEncoding` : Lorsqu'elle vaut `true`, axios ajoute `zstd` à l'en-tête `Accept-Encoding` par défaut lorsque le runtime Node.js actuel prend en charge la décompression zstd. Les réponses zstd sont tout de même décompressées automatiquement lorsqu'elles sont prises en charge et que `decompress` vaut `true`.
 - `legacyInterceptorReqResOrdering` : Lorsque défini à true, l'ordre hérité de traitement requête/réponse des intercepteurs sera utilisé.
+- `encodeBasicAuthUsername` : Lorsqu'elle vaut `true`, les adaptateurs XHR et fetch encodent `auth.username` en UTF-8 lors de la construction de l'en-tête `Authorization` Basic. La valeur par défaut est `false` pour préserver la compatibilité. Consultez [Authentification](/fr/pages/advanced/authentication#noms-d-utilisateur-utf-8).
 
 ### `env`
 
@@ -566,6 +604,7 @@ La propriété `maxRate` définit la **bande passante** maximale (en octets par 
     validateStatusUndefinedResolves: true,
     advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
+    encodeBasicAuthUsername: false,
   },
   env: {
     FormData: window?.FormData || global?.FormData

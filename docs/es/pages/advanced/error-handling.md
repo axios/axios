@@ -95,6 +95,58 @@ axios.get("/user/12345", {
 });
 ```
 
+## Duración de la respuesta en errores
+
+Cuando un error incluye una respuesta, como un estado distinto de 2xx rechazado por `validateStatus`, `error.response.duration` contiene el tiempo transcurrido del adaptador en milisegundos. No todos los errores tienen una respuesta: los errores de red, los tiempos de espera agotados y las cancelaciones no tienen `error.response` y, por tanto, tampoco duración. Comprueba que exista una respuesta antes de leerla:
+
+```js
+try {
+  await axios.get('/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.response) {
+    console.log(error.response.status, error.response.duration);
+  }
+}
+```
+
+Los fallos de análisis JSON estricto conservan la duración en la respuesta adjunta al error. Consulta [Duración de la respuesta](/es/pages/advanced/response-schema#duracion-de-la-respuesta) para saber qué mide el valor.
+
+## Pilas de errores envueltos
+
+Cuando axios envuelve un error de más bajo nivel, como un fallo de socket o de DNS de Node.js, el error original sigue disponible como `error.cause`. El `error.stack` del contenedor también incluye la pila del error envuelto después de una línea `Caused by:`, de modo que los sistemas de reporte de errores que solo leen `stack` pueden ver el fallo subyacente. Primero aparecen los marcos de axios y los marcos reconstruidos del llamador, seguidos de la pila envuelta tal cual:
+
+```text
+Error: getaddrinfo ENOTFOUND api.example.invalid
+    at AxiosError.from (.../axios/lib/core/AxiosError.js)
+    ...
+    at Axios.request (.../axios/lib/core/Axios.js)
+    at async loadUser (/app/users.js:4:5)
+Caused by: Error: getaddrinfo ENOTFOUND api.example.invalid
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:...)
+```
+
+Usa `error.cause` para el acceso programático; es el mismo objeto de error original:
+
+```js
+try {
+  await axios.get('https://api.example.invalid/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.cause) {
+    console.log(error.cause.code); // p. ej. 'ENOTFOUND'
+  }
+}
+```
+
+Ten en cuenta lo siguiente:
+
+- `error.toJSON().stack` también devuelve la cadena combinada. Es una salida de diagnóstico literal: `redact` no limpia las cadenas de pila.
+- Las herramientas que ya muestran `error.cause` pueden mostrar parte del contenido de la pila dos veces.
+- Solo los errores envueltos mediante `AxiosError.from()` cuya causa tiene una pila utilizable obtienen una sección. Las pilas ausentes, vacías o ilegibles se omiten.
+- Envolver un error ya envuelto añade otra sección anidada cada vez, por lo que la cadena crece con cada envoltura.
+- Un `stack` pasado en el argumento `customProps` de `AxiosError.from()` sigue reemplazando la pila generada.
+- El marcador `Caused by:` es texto de diagnóstico, no un formato estable que se pueda analizar.
+- Envolver no puede recuperar detalles que la plataforma nunca proporcionó. Por ejemplo, un `Network Error` de XHR en el navegador generalmente no tiene una pila de error subyacente, por lo que las causas ocultas de CORS, DNS o TLS siguen sin estar disponibles.
+
 ## Manejo de tiempos de espera
 
 Cuando una solicitud excede su `timeout` configurado, axios rechaza con `ECONNABORTED` por defecto. Establece `transitional.clarifyTimeoutError: true` para recibir `ETIMEDOUT` en su lugar, lo que facilita distinguir los errores de tiempo de espera de otros abortos.

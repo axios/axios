@@ -13,6 +13,28 @@ axios.defaults.headers.post["Content-Type"] =
 Si tu aplicación se comunica con más de un dominio, establecer `axios.defaults.headers.common["Authorization"]` enviará el token a **todos** ellos, incluidas APIs de terceros que tal vez no controles. Usa una [instancia personalizada](#valores-predeterminados-personalizados-por-instancia) con un `baseURL` acotado para cualquier cliente que transporte credenciales.
 :::
 
+## Valores predeterminados de encabezados por método
+
+`headers.common` se aplica a todas las solicitudes, y `headers.get`, `headers.post` y los demás nombres de método en minúsculas se aplican solo a las solicitudes con ese método. Estos grupos de valores predeterminados deben ser objetos planos, objetos con prototipo nulo o instancias de `AxiosHeaders`. Cualquier otro valor bajo una de estas claves se trata como un valor de encabezado literal; consulta [Encabezados con nombres de métodos HTTP](/es/pages/advanced/headers#encabezados-con-nombres-de-metodos-http).
+
+Si construyes los valores predeterminados con tu propia clase, convierte la instancia antes de asignarla como grupo:
+
+```js
+import axios, { AxiosHeaders } from 'axios';
+
+const instance = axios.create({
+  headers: {
+    // Ambas opciones conservan las entradas de encabezado propias y enumerables de la instancia como valores predeterminados de POST
+    post: { ...customDefaults },
+    // o bien: post: new AxiosHeaders({ ...customDefaults }),
+  },
+});
+```
+
+::: warning
+Una instancia de clase arbitraria asignada bajo `common` o un nombre de método no se usa como grupo. Su representación como cadena se envía como un encabezado literal (por ejemplo, `post: [object Object]`) en cada solicitud, incluidas las solicitudes con otros métodos. Un `toString()` personalizado puede exponer de esta forma el contenido de la instancia.
+:::
+
 ## Valores predeterminados personalizados por instancia
 
 Las instancias de axios se declaran con sus propios valores predeterminados al ser creadas. Estos valores pueden sobreescribirse estableciendo la propiedad `defaults` en la instancia. A continuación se muestra un ejemplo de cómo usar valores predeterminados personalizados por instancia:

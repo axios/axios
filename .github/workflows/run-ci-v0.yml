@@ -36,6 +36,8 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Build project
         run: npm run build
+      - name: Setup Firefox
+        uses: browser-actions/setup-firefox@0bc507ddf224827e3b1af68e014d5e42ab93e795 # v1.7.2
       - name: Run tests
         run: npm run test
       - name: Dependency Review

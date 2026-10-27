@@ -6,7 +6,7 @@
 
 ## Bug Fixes
 
-- **Fetch request headers:** Preserve the resolved request headers when forwarding `fetchOptions`, preventing an inherited `Object.prototype.headers` value from replacing caller headers during RequestInit conversion in Node. (**[#11263](https://github.com/axios/axios/issues/11263)**)
+- **Fetch request headers:** Preserve the resolved request headers when forwarding `fetchOptions`, preventing an inherited `Object.prototype.headers` value from replacing caller headers during RequestInit conversion in Node. (**[#11263](https://github.com/axios/axios/issues/11263)**, **[#11394](https://github.com/axios/axios/pull/11394)**)
 
 ## Documentation
 

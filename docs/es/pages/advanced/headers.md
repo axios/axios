@@ -79,6 +79,29 @@ const api = axios.create({
 });
 ```
 
+## Encabezados con nombres de métodos HTTP
+
+Algunos nombres de encabezado coinciden con un método HTTP, como `Link` (el método `LINK`). axios los envía como encabezados normales cuando su valor es una cadena u otro valor que no sea un mapa:
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: '<https://example.com/resource>; rel="type"' },
+});
+```
+
+En los `headers` de la configuración, la clave `common` y los nombres de método en minúsculas (`get`, `post`, `link`, etc.) se tratan como [grupos de valores predeterminados](/es/pages/advanced/config-defaults#valores-predeterminados-de-encabezados-por-metodo) solo cuando su valor es un objeto plano, un objeto con prototipo nulo o una instancia de `AxiosHeaders` (incluidas las subclases y las instancias compatibles de otra copia de axios). Solo se aplica el grupo que coincide con el método de la solicitud, y los grupos nunca se envían como encabezados literales.
+
+Cualquier otro valor se serializa como un valor de encabezado normal: cadenas, números, arrays y objetos como `Date`, `Buffer`, arrays tipados e instancias de clases de la aplicación, que se convierten en cadenas. Por ejemplo, en Node.js:
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: Buffer.from('<https://example.com/resource>; rel="type"') },
+});
+// Se envía como: Link: <https://example.com/resource>; rel="type"
+```
+
+Los valores `null`, `undefined` y `false` siguen omitiendo el encabezado.
+
 ## Preservar el formato de un encabezado específico
 
 Los nombres de encabezados de Axios son insensibles a mayúsculas y minúsculas, pero `AxiosHeaders` conserva el formato de la primera clave coincidente que encuentra. Si necesitas un formato específico para un servidor con comportamiento sensible a mayúsculas y minúsculas no estándar, define un formato predeterminado en `defaults` y luego establece los valores normalmente.

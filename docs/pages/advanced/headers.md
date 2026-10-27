@@ -79,6 +79,29 @@ const api = axios.create({
 });
 ```
 
+## Headers named after HTTP methods
+
+Some header names match an HTTP method, such as `Link` (the `LINK` method). axios sends these as ordinary headers when their value is a string or another non-map value:
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: '<https://example.com/resource>; rel="type"' },
+});
+```
+
+In config `headers`, the keys `common` and the lower-case method names (`get`, `post`, `link`, and so on) are treated as [defaults buckets](/pages/advanced/config-defaults#method-specific-header-defaults) only when their value is a plain object, a null-prototype object, or an `AxiosHeaders` instance (including subclasses and compatible instances from another copy of axios). Only the bucket matching the request method is applied, and buckets are never sent as literal headers.
+
+Any other value is serialized as a normal header value: strings, numbers, arrays, and objects such as `Date`, `Buffer`, typed arrays, and application class instances, which are converted to strings. For example, in Node.js:
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: Buffer.from('<https://example.com/resource>; rel="type"') },
+});
+// Sent as: Link: <https://example.com/resource>; rel="type"
+```
+
+`null`, `undefined`, and `false` values still omit the header.
+
 ## Preserving a specific header case
 
 Axios header names are case-insensitive, but `AxiosHeaders` keeps the case of the first matching key it sees. If you need a specific case for a server with non-standard case-sensitive behavior, define a case preset in defaults and then set values as usual.

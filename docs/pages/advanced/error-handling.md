@@ -95,6 +95,58 @@ axios.get("/user/12345", {
 });
 ```
 
+## Response duration on errors
+
+When an error carries a response, such as a non-2xx status rejected by `validateStatus`, `error.response.duration` holds the elapsed adapter time in milliseconds. Not every error has a response: network errors, timeouts, and cancellations have no `error.response` and therefore no duration. Check for a response before reading it:
+
+```js
+try {
+  await axios.get('/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.response) {
+    console.log(error.response.status, error.response.duration);
+  }
+}
+```
+
+Strict JSON parsing failures keep the duration on the response attached to the error. See [Response duration](/pages/advanced/response-schema#response-duration) for what the value measures.
+
+## Wrapped error stacks
+
+When axios wraps a lower-level error, such as a Node.js socket or DNS failure, the original error remains available as `error.cause`. The wrapper's `error.stack` also includes the wrapped error's stack after a `Caused by:` line, so error reporters that read only `stack` can see the underlying failure. The axios frames and reconstructed caller frames come first, followed by the wrapped stack verbatim:
+
+```text
+Error: getaddrinfo ENOTFOUND api.example.invalid
+    at AxiosError.from (.../axios/lib/core/AxiosError.js)
+    ...
+    at Axios.request (.../axios/lib/core/Axios.js)
+    at async loadUser (/app/users.js:4:5)
+Caused by: Error: getaddrinfo ENOTFOUND api.example.invalid
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:...)
+```
+
+Use `error.cause` for programmatic access; it is the same original error object:
+
+```js
+try {
+  await axios.get('https://api.example.invalid/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.cause) {
+    console.log(error.cause.code); // e.g. 'ENOTFOUND'
+  }
+}
+```
+
+Keep the following in mind:
+
+- The combined string is also returned by `error.toJSON().stack`. It is verbatim diagnostic output: `redact` does not sanitize stack strings.
+- Cause-aware tooling that already prints `error.cause` may show some stack content twice.
+- Only errors wrapped through `AxiosError.from()` whose cause has a usable stack gain a section. Missing, empty, or unreadable stacks are skipped.
+- Wrapping an already-wrapped error adds another nested section each time, so the string grows with every wrap.
+- A `stack` passed in the `customProps` argument of `AxiosError.from()` still replaces the generated stack.
+- The `Caused by:` marker is diagnostic text, not a stable format to parse.
+- Wrapping cannot recover details the platform never provided. For example, a browser XHR `Network Error` generally has no underlying error stack, so hidden CORS, DNS, or TLS causes remain unavailable.
+
 ## Handling timeouts
 
 When a request exceeds its configured `timeout`, axios rejects with `ECONNABORTED` by default. Set `transitional.clarifyTimeoutError: true` to receive `ETIMEDOUT` instead, which makes timeout errors easier to distinguish from other aborts.

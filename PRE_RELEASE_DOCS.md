@@ -20,121 +20,74 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
-### Fetch response size errors
+### Response duration (README)
 
-- **Change:** Preserve fetch response-limit errors across runtime wrappers and clarify the custom Response constructor's existing stream requirements.
-- **Source:** #11179; `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch response size errors.
-- **Status:** Pending.
-- **Docs targets:** Fetch adapter and `maxContentLength` guidance; TypeScript/custom fetch examples.
-- **Required content:** Explain that exceeding `maxContentLength` while consuming a fetch response rejects with `ERR_BAD_RESPONSE`, retaining the current request and config even if the runtime wraps or drops the original stream error. When response-body streaming is supported and the response has a body, custom `env.Response` implementations must accept a tracked `ReadableStream<Uint8Array>` if `maxContentLength` is enabled (a numeric value greater than `-1`), `onDownloadProgress` is set, or `responseType` is `'stream'` or `'response'` with cancellation/timeout tracking. An enabled size limit requires stream support even without a progress callback. The constructor signature retains its legacy body type for compatibility; assignability to `env.Response` alone does not establish support for these runtime stream inputs. Node-only TypeScript imports can keep DOM declarations excluded with declaration checking enabled.
-- **Examples:** Show handling `ERR_BAD_RESPONSE` separately from `ERR_NETWORK`, and a custom Response wrapper that forwards tracked streams unchanged when used with `maxContentLength` or `onDownloadProgress`.
-- **Notes:** Do not imply the limit, default adapter, genuine network-error behavior, or accepted constructor types change. No migration is required.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** [PR #11214](https://github.com/axios/axios/pull/11214); shipped in v1.21.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Response schema and Handling errors sections.
+- **Required content:** Add `duration` to the response schema and a short note on reading `error.response.duration` after checking `axios.isAxiosError(error)` and `error.response`. Use the docs-site wording in `docs/pages/advanced/response-schema.md` (Response duration) and `docs/pages/advanced/error-handling.md` (Response duration on errors): timing covers adapter execution only, streamed responses stop when the stream is available, the value is approximate wall-clock time, and errors without a response have no duration.
 
-### Runtime configuration prototype hardening
+### Asynchronous XSRF cookie reads in the XHR adapter (README)
 
-- **Change:** Document the shared-prototype filtering applied to request config and interceptor replacements.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Runtime configuration hardening.
-- **Status:** Pending.
-- **Docs targets:** Request interceptor and custom adapter guidance; request-config security and migration notes; translated docs after the English documentation is finalized.
-- **Required content:** Explain that own request-config fields remain supported, including fields on a root null-prototype config, except that unsafe materialization keys (`__proto__`, `constructor`, and `prototype`) are always excluded. Values inherited only from a realm's shared `Object.prototype` are ignored even if that prototype's `constructor` is changed, deleted, or replaced by an accessor. An interceptor that returns the writable, already-merged null-prototype config preserves object identity through the adapter and `response.config`. A frozen, sealed, accessor-based, otherwise restricted, or unsafe-key-bearing null-prototype replacement is materialized into a writable filtered snapshot because dispatch updates fields such as headers, data, and temporary response state and must retain the dangerous-key filtering invariant. An interceptor replacement with a non-terminal application-defined prototype is likewise converted to a null-prototype normalized snapshot: safe inherited fields are materialized as own fields, but the original identity, prototype, `instanceof` branding, accessor placement, and property descriptor attributes are not preserved. Because a foreign shared `Object.prototype` is structurally indistinguishable from an application-created terminal null-prototype template once mutable properties are altered, inherited fields on terminal null-prototype ancestors are intentionally excluded as a fail-closed security boundary.
-- **Examples:** Show an unchanged merged config retaining identity between a request interceptor and custom adapter. Show a request interceptor returning an object with a non-terminal application prototype whose custom adapter field is materialized into the normalized snapshot, and contrast it with a terminal `Object.create(null)` prototype whose inherited behavior fields are ignored.
-- **Notes:** Present replacement normalization and the terminal null-prototype restriction as intentional security compatibility changes. Do not imply that mutating `Object.prototype` is supported or safe.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** PR #11166, issue #10826; shipped in v1.21.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Request config comments for `xsrfCookieName`, `xsrfHeaderName`, and `withXSRFToken`.
+- **Required content:** Briefly note that the XHR adapter reads the XSRF cookie through `window.cookieStore` when available and falls back to `document.cookie`, with unchanged decoding, timeout, and cancellation behavior. Keep it scoped to XHR, as in `docs/pages/advanced/request-config.md` after the `withXSRFToken` warning.
 
-### Proxy bypass CIDR ranges
+### Opt-in UTF-8 Basic auth usernames (README)
 
-- **Change:** Document CIDR matching in `NO_PROXY` and `no_proxy`.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, Proxy bypass CIDR ranges.
-- **Status:** Pending.
-- **Docs targets:** Node proxy/environment-variable guidance and request-config proxy documentation; translated docs after the English documentation is finalized.
-- **Required content:** Explain that IPv4 and IPv6 CIDR entries are supported, bracketed IPv6 is accepted, IPv4-mapped IPv6 ranges are normalized to IPv4 when their prefix permits it, address families remain distinct, and malformed CIDR entries do not bypass the proxy. State explicitly that `0.0.0.0/0` bypasses the proxy for every IPv4 destination and `::/0` does the same for IPv6.
-- **Examples:** Show `NO_PROXY=10.0.0.0/8,2001:db8::/32` bypassing matching HTTP destinations and identify `/0` as the entire-family form.
-- **Notes:** Preserve the existing hostname, explicit-port, wildcard, loopback, and non-CIDR matching behavior.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** [PR #11159](https://github.com/axios/axios/pull/11159); shipped in v1.21.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Request config `auth` comment and `transitional` options.
+- **Required content:** Add `encodeBasicAuthUsername: false` to the `transitional` block with a comment, and mention it under `auth`. Follow `docs/pages/advanced/authentication.md` (UTF-8 usernames): defaults are unchanged, it applies to XHR/Fetch only, a request-level `false` overrides an instance opt-in, and manual pre-encoding must be removed when opting in.
 
-### Fetch and HTTP/2 adapter option consistency
+### Global TLS options for CONNECT-tunneled origins (README)
 
-- **Change:** Document adapter-specific redirect, custom fetch, DNS lookup, and proxy behavior.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter consistency and HTTP/2 adapter consistency.
-- **Status:** Pending.
-- **Docs targets:** Request-config entries for `fetchOptions`, `maxRedirects`, `lookup`, `httpVersion`, and `proxy`; custom adapter/fetch guidance; translated docs after the English documentation is finalized.
-- **Required content:** State that a custom fetch receives the fully resolved `Request` when `Request` is supported and continues to receive a second `fetchOptions` argument containing safe own custom fields; Axios-managed fields such as method, headers, body, signal, duplex, and credentials are represented by the `Request` and omitted from that second argument. Custom fetch implementations that previously inspected those fields on the second argument must migrate to the `Request`; identify this as an intentional compatibility change that prevents the second argument from overriding the authoritative request. Explain that `maxRedirects: 0` requests manual redirect handling in the Fetch adapter, but response visibility follows the Fetch runtime: Node may expose the 3xx status and `Location`, while browsers return an opaque redirect with status 0 and inaccessible headers. Custom DNS lookup applies to HTTP/2 connections and participates in session reuse. HTTP/2 ignores process-environment and HTTP/1-agent `proxyEnv` settings because `http2.connect()` cannot apply them, `proxy: false` remains direct, and an explicit Axios proxy object rejects with `ERR_NOT_SUPPORT`.
-- **Examples:** Include focused Fetch `maxRedirects: 0` and Node `httpVersion: 2` plus `lookup` examples.
-- **Notes:** Present the filtered custom-Fetch second argument, Fetch manual redirects, and explicit HTTP/2 proxy rejection as intentional compatibility changes. Do not imply that positive Fetch `maxRedirects` values enforce a redirect count; only zero maps to the platform's manual redirect mode. Do not present the Node-visible 3xx response as portable browser behavior. Keep the HTTP/2 environment-proxy direct-egress residual prominent for deployments that treat proxying as mandatory policy.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** PR #11178, related to #11176; shipped in v1.21.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Request config `proxy` comments.
+- **Required content:** Note that HTTPS origins reached through a CONNECT proxy use `https.globalAgent` TLS options (such as a custom `ca`) when no `httpsAgent` is set, and that an explicit `httpsAgent` takes precedence. Follow the `proxy` section of `docs/pages/advanced/request-config.md`; do not recommend disabling certificate validation.
 
-### RFC 9110 HTTP status code names
+### Literal method-named request headers (README)
 
-- **Change:** Document the additive RFC 9110 names for HTTP statuses 413 and 422.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11082, closes #11066.
-- **Status:** Pending.
-- **Docs targets:** `README.md` and `docs/pages/advanced/api-reference.md` `HttpStatusCode` guidance; migration or upgrade notes; translated docs after the English documentation is finalized.
-- **Required content:** Introduce `HttpStatusCode.ContentTooLarge` for 413 and `HttpStatusCode.UnprocessableContent` for 422 as the preferred RFC 9110 names. Explain that `PayloadTooLarge` and `UnprocessableEntity` remain available as deprecated aliases throughout v1.x, and that numeric reverse lookups continue returning those legacy names for backward compatibility.
-- **Examples:** Show forward comparisons using `HttpStatusCode.ContentTooLarge` and `HttpStatusCode.UnprocessableContent`.
-- **Notes:** Removing the deprecated aliases or changing the numeric reverse-lookup strings is reserved for a future major release. Keep ESM and CommonJS examples aligned and update translated documentation after the English wording is finalized.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** [PR #11156](https://github.com/axios/axios/pull/11156); shipped in v1.21.0 as a breaking change for custom-class header defaults.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Config Defaults / Global axios defaults and AxiosHeaders guidance.
+- **Required content:** Explain that `headers.common` and lower-case method keys are defaults buckets only for plain objects, null-prototype objects, and `AxiosHeaders`, so literal headers such as `Link` are preserved. Include the migration from `headers: { post: customDefaults }` to `headers: { post: { ...customDefaults } }`. Follow `docs/pages/advanced/headers.md` (Headers named after HTTP methods), `docs/pages/advanced/config-defaults.md` (Method-specific header defaults), and the v1.21.0 upgrade-guide note.
 
-### Streaming reads from download progress events
+### Interceptor IDs and nullish handler recovery (README)
 
-- **Change:** Document how to read incremental response data from throttled download progress events, and the guaranteed final delivery on successful XHR `loadend`.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, closes #6796.
-- **Status:** Pending.
-- **Docs targets:** README request config reference for `onDownloadProgress`; any response streaming examples.
-- **Required content:** Progress callbacks are throttled, so intermediate deliveries can run after the originating browser event finished dispatching; in that case `event.currentTarget` is `null` per DOM semantics, while `event.target` still references the request. A final download delivery with the complete transfer state is guaranteed when a completed XHR download reaches its successful `loadend` handler and is dispatched live. Upload progress, stream-error or abort-reason flushes, and failed XHR downloads retain their prior pending-event behavior.
-- **Examples:** An incremental `responseText` reader that slices new data using `progressEvent.event.target` inside `onDownloadProgress`.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** PR #11139, #11114, and #11118; shipped in v1.21.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Interceptors section.
+- **Required content:** State that the ID returned by `use()` is opaque and must be passed unchanged to `eject()`, recommend `eject()`/`clear()` over editing the handlers array, and note that unknown or stale IDs are no-ops. Follow the Removing Interceptors section of `docs/pages/advanced/interceptors.md`.
 
-### Typed request params
+### RFC 9110 HTTP status code names (README)
 
-- **Change:** Document the additive request-params generic across axios's public TypeScript declarations.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11081, closes #4954.
-- **Status:** Applied.
-- **Docs targets:** TypeScript usage guidance; request config reference for `params` and `paramsSerializer`; API reference for request methods, `AxiosResponse`, `AxiosPromise`, `AxiosError`, `CanceledError`, `isCancel`, and adapters; cancellation guidance; translated docs after the English documentation is finalized.
-- **Required content:** Explain that `AxiosRequestConfig<D = any, P = any>` uses `D` for request data and `P` for query params, and that custom params serializers receive the same `P`. Cover propagation through `RawAxiosRequestConfig`, `InternalAxiosRequestConfig`, defaults, default response shapes, `AxiosResponse`, `AxiosPromise<T, D, P>`, `AxiosError`, `CanceledError`, the `isCancel<T, D, P>` type guard, request aliases, `request()`, callable instances, adapters, and `mergeConfig()`. State that default request results and explicitly typed `AxiosPromise` values preserve `D` and `P` on `response.config.data` and `response.config.params`, including when request methods infer those types from request config. Note that request methods add `P` as the final generic so the existing `T`, custom response `R`, and `D` positions remain unchanged, and explicitly supplied custom response types continue to control the resolved value.
-- **Examples:** Show a `SearchParams` interface used with `AxiosRequestConfig<RequestBody, SearchParams>`, including a serializer callback that receives `SearchParams`, an invalid params object rejected by TypeScript, and an inferred default response whose `response.config.params` remains `SearchParams`. Include an `AxiosPromise<ResponseBody, RequestBody, SearchParams>` adapter/promise example and cancellation narrowing from `unknown` with `isCancel<ResponseBody, RequestBody, SearchParams>()`, demonstrating that both preserve request data and params on the config.
-- **Notes:** README, English docs, and Spanish, French, and Chinese translations now cover the request-data and params generics, serializer typing, default response propagation, promises/adapters, error and cancellation narrowing, request method order, and config merging. The `any` default is documented for backward compatibility; the internal default-response marker remains undocumented.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** #11082, closes #11066; shipped in v1.20.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md`, wherever `HttpStatusCode` is introduced (currently not documented; add a short mention near Handling errors or the API overview).
+- **Required content:** `HttpStatusCode.ContentTooLarge` (413) and `HttpStatusCode.UnprocessableContent` (422) are preferred; `PayloadTooLarge` and `UnprocessableEntity` remain deprecated aliases throughout v1.x, and numeric reverse lookups keep the legacy names. Follow the `HttpStatusCode` section of `docs/pages/advanced/api-reference.md`.
 
-### Synchronous request interceptor error handling
+### Streaming reads from download progress events (README)
 
-- **Change:** Document how synchronous request interceptor errors are handled without changing the existing paired-handler contract.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11071.
-- **Status:** Applied.
-- **Docs targets:** `README.md` Interceptors section; interceptor API reference; migration/upgrade notes; translated docs after the English documentation is finalized.
-- **Required content:** Explain that when a synchronous request interceptor throws, axios calls that interceptor's paired `onRejected` handler and stops running the remaining request interceptors. If the handler returns normally, including returning `undefined` or a fulfilled Promise, axios treats the error as handled and dispatches with the last valid config; a value returned by the handler does not replace that config. If there is no rejection handler, or the handler throws or returns a rejected Promise, axios does not dispatch the request. Terminal errors continue through response rejection interceptors.
-- **Examples:** Show a synchronous validation interceptor whose rejection handler returns `Promise.reject(error)` to block dispatch, and a logging-only rejection handler that returns normally to preserve the existing request-continuation behavior.
-- **Notes:** README, interceptor docs, upgrade guidance, and Spanish, French, and Chinese translations now document blocking and continuation examples while preserving axios's synchronous paired-handler semantics.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** #11121, closes #6796; shipped in v1.20.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Request config `onDownloadProgress` comment and Progress capturing section.
+- **Required content:** Show reading new `responseText` through `progressEvent.event.target` (not `currentTarget`, which can be `null` for throttled deliveries), and note the final delivery on a successful XHR `loadend`. Follow the new final section of `docs/pages/advanced/progress-capturing.md`.
 
-### Opt-in AxiosHeaders parameter parsing
+### Wrapped error stacks in `AxiosError` (README)
 
-- **Change:** Document the additive `AxiosHeaders.parseParameters()` parser for normalized HTTP parameter values.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Features, #11051, closes #11050.
-- **Status:** Applied.
-- **Docs targets:** `README.md` `AxiosHeaders#get` section; `docs/pages/advanced/api-reference.md` and `docs/pages/advanced/header-methods.md`; translated docs after English docs are finalized.
-- **Required content:** Explain that callers can pass `AxiosHeaders.parseParameters` to `AxiosHeaders#get()` to produce a null-prototype map with case-insensitive parameter names, remove surrounding quoted-string delimiters, decode quoted-pair DQUOTE/backslash escapes, keep commas and semicolons inside quoted values, and remove only RFC optional whitespace around unquoted values. Note that unsafe object-materialization keys (`__proto__`, `constructor`, and `prototype`) are omitted. State explicitly that `get(name, true)` remains the legacy tokenizer and keeps its existing output for backward compatibility.
-- **Examples:** Show `headers.get('content-type', AxiosHeaders.parseParameters)` returning `{ boundary: 'a,b' }` for `multipart/form-data; boundary="a,b"`.
-- **Notes:** README, API/header-method docs, and Spanish, French, and Chinese translations now document the additive parser, its hardened output, quoted-value behavior, and the unchanged legacy `true` tokenizer.
-
-### Malformed `http(s):` URL rejection
-
-- **Change:** Document that axios rejects `http:`/`https:` URLs that omit `//` after the protocol, and that the error now names the offending URL.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11000 (rejection) and #11008 (improved message).
-- **Status:** Applied.
-- **Docs targets:** `README.md` errors / handling-errors section; migration/upgrade notes; `docs/pages/advanced/request-config.md` `url`/`baseURL` description; translated docs after English docs are finalized.
-- **Required content:** Explain that since this release a request `url` or `baseURL` of the form `https:example.com` or `https:/example.com` (scheme present, `//` missing) is rejected with an `AxiosError` whose code is `ERR_INVALID_URL`, instead of being silently normalized by the browser/Node URL parser. This is a security fix preventing `baseURL`/allowlist (SSRF) bypasses. Callers must pass a well-formed URL such as `https://example.com`. The error message now includes the offending URL: `Invalid URL "https:example.com": missing "//" after protocol`. The reported URL is the control-character-normalized form with userinfo (credentials), query parameter values, and fragment contents redacted (parameter names, host and path are preserved), because `AxiosError.message` is always serialized by `toJSON()` and the opt-in `config.redact` model cannot clean it.
-- **Examples:** None required.
-- **Notes:** README, request-config, error-handling, upgrade guidance, and Spanish, French, and Chinese translations now frame the rejection as an intentional security behavior change and describe the safely redacted error message.
-
-### Symbol-keyed custom request config
-
-- **Change:** Document that custom request config fields can use own enumerable symbol keys and survive axios config merging.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11043, closes #11042.
-- **Status:** Applied.
-- **Docs targets:** TypeScript/custom client docs; request config reference; interceptor examples if custom config fields are documented there; translated docs after English docs are finalized.
-- **Required content:** Explain that applications can module-augment `AxiosRequestConfig` with a specific symbol key and pass that symbol-keyed option in request config; axios preserves the own enumerable symbol property when merging defaults with request config so request interceptors and adapters can read it from `InternalAxiosRequestConfig`.
-- **Examples:** Include a short TypeScript example with `export const someFlag = Symbol('some flag used in request interceptor')`, `declare module 'axios' { interface AxiosRequestConfig { [someFlag]?: boolean } }`, and a request interceptor reading `config[someFlag]`.
-- **Notes:** README, TypeScript/request-config docs, and Spanish, French, and Chinese translations now show module augmentation and an interceptor example, limited explicitly to own enumerable symbol properties.
-
-### FormData literal key parsing
-
-- **Change:** Document that `formToJSON`/`formDataToJSON` only split FormData field names on dot notation and bracket notation.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, #11006, closes #5402.
-- **Status:** Applied.
-- **Docs targets:** `README.md` FormData serializer/formToJSON sections; `docs/pages/advanced/api-reference.md` `formToJSON`; generated docs pages for multipart/urlencoded form serialization; translated docs after English docs are finalized.
-- **Required content:** Explain that `.`, `[`, and `]` are structural path separators when converting FormData back to JSON, while other characters such as `-`, spaces, `+`, `*`, and `&` remain literal key characters. Mention that `foo[bar]`, `foo.bar`, and `foo[]` continue to create nested object/array paths.
-- **Examples:** Include a short example showing `form.append('user-name', 'johndoe')` converting to `{ 'user-name': 'johndoe' }`, and `form.append('user.name', 'john')` or `form.append('user[name]', 'john')` converting to `{ user: { name: 'john' } }`.
-- **Notes:** README, API/multipart/HTML-form docs, and Spanish, French, and Chinese translations now document dot/bracket path parsing and literal punctuation keys without presenting the previous splitting behavior as supported.
+- **Change:** Bring `README.md` in line with the released docs site.
+- **Source:** [PR #11142](https://github.com/axios/axios/pull/11142), related to [issue #6670](https://github.com/axios/axios/issues/6670); shipped in v1.21.0.
+- **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
+- **Docs targets:** `README.md` Handling errors section.
+- **Required content:** Explain that wrapped errors append the original stack to `error.stack` after `Caused by:`, that `error.cause` remains the programmatic link, and that stacks are not redacted by `config.redact`. Do not present the marker as a parsing contract. Follow the Wrapped error stacks section of `docs/pages/advanced/error-handling.md`.

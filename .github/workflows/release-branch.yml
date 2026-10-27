@@ -15,7 +15,7 @@ on:
 jobs:
   ci:
     name: Test (Node ${{ matrix.node-version }})
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     permissions:
       contents: read
 
@@ -45,7 +45,7 @@ jobs:
 
   bump-version-and-create-pr:
     name: Bump version and create PR v0.x
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     needs: ci
     permissions:
       contents: write

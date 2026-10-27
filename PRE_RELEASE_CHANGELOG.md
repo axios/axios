@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Fetch request headers:** Preserve the resolved request headers when forwarding `fetchOptions`, preventing an inherited `Object.prototype.headers` value from replacing caller headers during RequestInit conversion in Node. (**[#11263](https://github.com/axios/axios/issues/11263)**)
+
 ## Documentation
 
 - **Error identification:** Corrected the error `name` description in the README and English, French, Spanish, and Chinese error-handling guides. Cancellation errors use `CanceledError`, and wrapped errors may retain their original name, so the guides now recommend `axios.isAxiosError(error)` for identifying Axios errors and `axios.isCancel(error)` for detecting cancellations instead of comparing `name`. Documentation only; no runtime, public API, or type changes. ([#11374](https://github.com/axios/axios/pull/11374))

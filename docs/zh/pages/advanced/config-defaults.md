@@ -13,6 +13,28 @@ axios.defaults.headers.post["Content-Type"] =
 如果你的应用会与多个域名通信，设置 `axios.defaults.headers.common["Authorization"]` 会将令牌发送到**所有**域名，包括你可能无法控制的第三方 API。对任何携带凭据的客户端，请使用带有限定 `baseURL` 的[自定义实例](#自定义实例默认值)。
 :::
 
+## 按方法设置的请求头默认值
+
+`headers.common` 适用于所有请求，而 `headers.get`、`headers.post` 及其他小写方法名仅适用于使用相应方法的请求。这些默认值分组必须是普通对象、原型为 null 的对象或 `AxiosHeaders` 实例。这些键下的其他任何值都会被视为字面请求头值；参阅[与 HTTP 方法同名的请求头](/zh/pages/advanced/headers#与-http-方法同名的请求头)。
+
+如果你使用自己的类构建默认值，请在将实例赋值为分组之前先进行转换：
+
+```js
+import axios, { AxiosHeaders } from 'axios';
+
+const instance = axios.create({
+  headers: {
+    // 两种方式都会将实例自身的可枚举请求头条目保留为 POST 默认值
+    post: { ...customDefaults },
+    // 或：post: new AxiosHeaders({ ...customDefaults }),
+  },
+});
+```
+
+::: warning
+赋值给 `common` 或某个方法名的任意类实例不会被用作分组。它的字符串表示形式会作为字面请求头（例如 `post: [object Object]`）随每个请求发送，包括使用其他方法的请求。自定义的 `toString()` 可能会以这种方式暴露实例的内容。
+:::
+
 ## 自定义实例默认值
 
 axios 实例在创建时会有自己的默认配置，这些默认配置可以通过修改实例的 `defaults` 属性来覆盖。下面是使用自定义实例默认值的示例：

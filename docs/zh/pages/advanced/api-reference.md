@@ -103,11 +103,14 @@ isAxiosError: boolean;
 status?: number;
 
 // 将错误转换为 JSON 对象的辅助方法。
+// 包含 `stack`，其中可能带有包装的 `Caused by:` 部分。
 toJSON: () => object;
 
-// 错误原因。
+// 错误原因：由 `AxiosError.from()` 包装的原始错误。
 cause?: Error;
 ```
+
+当 `AxiosError.from()` 包装一个具有可用堆栈的错误时，`stack` 还会在 `Caused by:` 行之后包含该堆栈。`cause` 仍是以编程方式访问原始错误的受支持方式。参阅[包装的错误堆栈](/zh/pages/advanced/error-handling#包装的错误堆栈)。
 
 ### `AxiosHeaders`
 
@@ -394,6 +397,18 @@ try {
   }
 }
 ```
+
+对于状态码 413 和 422，建议使用 RFC 9110 中的名称 `ContentTooLarge` 和 `UnprocessableContent`：
+
+```js
+if (error.response?.status === HttpStatusCode.ContentTooLarge) {
+  console.error('Upload is too large'); // 413
+} else if (error.response?.status === HttpStatusCode.UnprocessableContent) {
+  console.error('Validation failed'); // 422
+}
+```
+
+旧名称 `PayloadTooLarge` 和 `UnprocessableEntity` 在整个 v1.x 中仍可作为已废弃的别名使用。为保持向后兼容，按数字反向查找仍会返回旧名称，因此 `HttpStatusCode[413]` 为 `'PayloadTooLarge'`，`HttpStatusCode[422]` 为 `'UnprocessableEntity'`。
 
 ## 其他
 

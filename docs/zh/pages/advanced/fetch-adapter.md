@@ -35,7 +35,7 @@ try {
 }
 ```
 
-使用 `responseType: 'stream'` 或 `'response'` 时，请求会在响应流可用时立即 resolve。只有当声明的 `Content-Length` 已经超过限制时，axios 才会提前拒绝请求。否则，大小检查会在读取流时进行，响应体过大时，读取会在请求 Promise 已经 resolve 之后以同样的 `ERR_BAD_RESPONSE` 失败。因此在消费流时也要处理错误：
+使用 `responseType: 'stream'` 时，请求会在响应流可用时立即 resolve。只有当声明的 `Content-Length` 已经超过限制时，axios 才会提前拒绝请求。否则，大小检查会在读取流时进行，响应体过大时，读取会在请求 Promise 已经 resolve 之后以同样的 `ERR_BAD_RESPONSE` 失败。因此在消费流时也要处理错误：
 
 ```js
 const response = await axios.get('https://example.com/large-file', {

@@ -35,7 +35,7 @@ try {
 }
 ```
 
-Con `responseType: 'stream'` o `'response'`, la solicitud se resuelve en cuanto el flujo de la respuesta está disponible. axios rechaza la solicitud de forma anticipada solo cuando un `Content-Length` declarado ya supera el límite. En caso contrario, la comprobación de tamaño se realiza mientras lees el flujo, y un cuerpo demasiado grande hace que la lectura falle con el mismo `ERR_BAD_RESPONSE` después de que la promesa de la solicitud se haya resuelto. Gestiona también los errores mientras consumes el flujo:
+Con `responseType: 'stream'`, la solicitud se resuelve en cuanto el flujo de la respuesta está disponible. axios rechaza la solicitud de forma anticipada solo cuando un `Content-Length` declarado ya supera el límite. En caso contrario, la comprobación de tamaño se realiza mientras lees el flujo, y un cuerpo demasiado grande hace que la lectura falle con el mismo `ERR_BAD_RESPONSE` después de que la promesa de la solicitud se haya resuelto. Gestiona también los errores mientras consumes el flujo:
 
 ```js
 const response = await axios.get('https://example.com/large-file', {

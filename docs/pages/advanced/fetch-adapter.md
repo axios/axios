@@ -35,7 +35,7 @@ try {
 }
 ```
 
-With `responseType: 'stream'` or `'response'`, the request resolves as soon as the response stream is available. axios rejects the request early only when a declared `Content-Length` already exceeds the limit. Otherwise the size check runs as you read the stream, and an oversized body makes the read fail with the same `ERR_BAD_RESPONSE` after the request promise has resolved. Handle errors while consuming the stream as well:
+With `responseType: 'stream'`, the request resolves as soon as the response stream is available. axios rejects the request early only when a declared `Content-Length` already exceeds the limit. Otherwise the size check runs as you read the stream, and an oversized body makes the read fail with the same `ERR_BAD_RESPONSE` after the request promise has resolved. Handle errors while consuming the stream as well:
 
 ```js
 const response = await axios.get('https://example.com/large-file', {

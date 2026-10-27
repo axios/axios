@@ -35,6 +35,28 @@ try {
 }
 ```
 
+Con `responseType: 'stream'` o `'response'`, la solicitud se resuelve en cuanto el flujo de la respuesta está disponible. axios rechaza la solicitud de forma anticipada solo cuando un `Content-Length` declarado ya supera el límite. En caso contrario, la comprobación de tamaño se realiza mientras lees el flujo, y un cuerpo demasiado grande hace que la lectura falle con el mismo `ERR_BAD_RESPONSE` después de que la promesa de la solicitud se haya resuelto. Gestiona también los errores mientras consumes el flujo:
+
+```js
+const response = await axios.get('https://example.com/large-file', {
+  adapter: 'fetch',
+  responseType: 'stream',
+  maxContentLength: 10 * 1024 * 1024, // 10 MB
+});
+
+const reader = response.data.getReader();
+
+try {
+  for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+    // procesa chunk.value
+  }
+} catch (error) {
+  if (axios.isAxiosError(error) && error.code === 'ERR_BAD_RESPONSE') {
+    console.error('Response too large:', error.message);
+  }
+}
+```
+
 ## Redirecciones
 
 De forma predeterminada, el adaptador fetch deja que el entorno de ejecución siga las redirecciones. Establecer `maxRedirects: 0` solicita el modo de redirección manual de la plataforma (`redirect: 'manual'`). Lo que recibas entonces depende del entorno de ejecución de fetch:

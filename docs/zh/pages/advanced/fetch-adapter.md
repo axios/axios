@@ -35,6 +35,28 @@ try {
 }
 ```
 
+使用 `responseType: 'stream'` 或 `'response'` 时，请求会在响应流可用时立即 resolve。只有当声明的 `Content-Length` 已经超过限制时，axios 才会提前拒绝请求。否则，大小检查会在读取流时进行，响应体过大时，读取会在请求 Promise 已经 resolve 之后以同样的 `ERR_BAD_RESPONSE` 失败。因此在消费流时也要处理错误：
+
+```js
+const response = await axios.get('https://example.com/large-file', {
+  adapter: 'fetch',
+  responseType: 'stream',
+  maxContentLength: 10 * 1024 * 1024, // 10 MB
+});
+
+const reader = response.data.getReader();
+
+try {
+  for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+    // 处理 chunk.value
+  }
+} catch (error) {
+  if (axios.isAxiosError(error) && error.code === 'ERR_BAD_RESPONSE') {
+    console.error('Response too large:', error.message);
+  }
+}
+```
+
 ## 重定向
 
 默认情况下，fetch 适配器由运行时跟随重定向。设置 `maxRedirects: 0` 会请求平台的手动重定向模式（`redirect: 'manual'`）。此时得到的结果取决于 fetch 运行时：

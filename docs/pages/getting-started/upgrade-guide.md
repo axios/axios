@@ -24,7 +24,7 @@ Requests with `httpVersion: 2` and an explicit `proxy` object reject with `ERR_N
 
 ### Replacement configs from request interceptors
 
-When a request interceptor returns a different object than the config it received, axios copies it into a filtered null-prototype snapshot before dispatch. Fields inherited from an application-defined prototype are copied as own fields, but the snapshot does not preserve the object's identity, prototype, `instanceof` checks, accessors, or property attributes. Fields inherited through a prototype whose own prototype is `null`, such as an `Object.create(null)` template, are ignored. Returning the original config keeps its identity. See [Returning a different config object](/pages/advanced/interceptors#returning-a-different-config-object).
+When a request interceptor returns an object that is not a writable null-prototype object, such as an object literal, a `{ ...config }` copy, or a class instance, axios copies it into a filtered null-prototype snapshot before dispatch. Fields inherited from an application-defined prototype are copied as own fields, but the snapshot does not preserve the object's identity, prototype, `instanceof` checks, accessors, or property attributes. Fields inherited through a prototype whose own prototype is `null`, such as an `Object.create(null)` template, are ignored. Returning the original config, or another writable null-prototype object without unsafe keys, keeps its identity, and axios updates fields such as `headers` and `data` on that object during dispatch. See [Returning a different config object](/pages/advanced/interceptors#returning-a-different-config-object).
 
 ### RFC 9110 status code names
 

@@ -83,7 +83,7 @@ function myAdapter(config) {
 const instance = axios.create({ adapter: myAdapter });
 ```
 
-The adapter receives the config returned by the request interceptors. If an interceptor returned the original merged config, the adapter receives that same object; a replacement object is first copied into a filtered null-prototype snapshot (see [Returning a different config object](/pages/advanced/interceptors#returning-a-different-config-object)). After the adapter settles, axios sets [`response.duration`](/pages/advanced/response-schema#response-duration) on the response, replacing any `duration` value the adapter set.
+The adapter receives the config returned by the request interceptors. A writable null-prototype config, such as the original merged config, is passed through as the same object; any other config returned by an interceptor is first copied into a filtered null-prototype snapshot (see [Returning a different config object](/pages/advanced/interceptors#returning-a-different-config-object)). After the adapter settles, axios sets [`response.duration`](/pages/advanced/response-schema#response-duration) on the response, replacing any `duration` value the adapter set.
 
 TypeScript adapters can preserve both request data and query params on the response config by using the matching generics:
 

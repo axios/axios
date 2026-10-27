@@ -142,7 +142,9 @@ instance.interceptors.request.use((config) => {
 });
 ```
 
-Si un interceptor devuelve un objeto diferente, axios lo copia en una nueva instantánea escribible con prototipo nulo antes del envío. Se conservan los campos propios, excepto las claves inseguras `__proto__`, `constructor` y `prototype`, que siempre se descartan. Los campos heredados de un prototipo definido por la aplicación se copian como campos propios, pero la instantánea no conserva la identidad del objeto original, su prototipo, las comprobaciones `instanceof`, los descriptores de acceso ni los atributos de las propiedades:
+Que axios reutilice o copie el objeto devuelto depende de su forma, no de si es el mismo objeto que recibió el interceptor. Un objeto escribible y extensible con prototipo nulo, cuyas propiedades son todas propiedades de datos escribibles y que no tiene claves inseguras, se envía tal cual: axios actualiza en él campos como `headers` y `data`, y el adaptador recibe ese mismo objeto. Esto también se aplica a un objeto distinto con prototipo nulo devuelto por un interceptor, así que no devuelvas un objeto que deba permanecer sin cambios.
+
+Cualquier otro objeto, como un literal de objeto, una copia `{ ...config }` o una instancia de clase, se copia en una nueva instantánea escribible con prototipo nulo antes del envío. Se conservan los campos propios, excepto las claves inseguras `__proto__`, `constructor` y `prototype`, que siempre se descartan. Los campos heredados de un prototipo definido por la aplicación se copian como campos propios, pero la instantánea no conserva la identidad del objeto original, su prototipo, las comprobaciones `instanceof`, los descriptores de acceso ni los atributos de las propiedades:
 
 ```js
 const template = { tenant: 'acme' };

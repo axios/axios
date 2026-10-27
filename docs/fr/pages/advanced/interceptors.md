@@ -142,7 +142,9 @@ instance.interceptors.request.use((config) => {
 });
 ```
 
-Si un intercepteur retourne un objet différent, axios le copie dans un nouvel instantané modifiable à prototype nul avant l'envoi. Les champs propres sont conservés, à l'exception des clés dangereuses `__proto__`, `constructor` et `prototype`, qui sont toujours supprimées. Les champs hérités d'un prototype défini par l'application sont copiés comme champs propres, mais l'instantané ne conserve ni l'identité de l'objet d'origine, ni son prototype, ni les vérifications `instanceof`, ni les accesseurs, ni les attributs de propriété :
+Le fait qu'axios réutilise ou copie l'objet retourné dépend de sa forme, et non du fait qu'il s'agisse de l'objet reçu par l'intercepteur. Un objet modifiable et extensible à prototype nul, dont toutes les propriétés sont des propriétés de données modifiables et qui ne contient aucune clé dangereuse, est envoyé tel quel : axios y met à jour des champs comme `headers` et `data`, et l'adaptateur reçoit ce même objet. Cela s'applique aussi à un autre objet à prototype nul retourné par un intercepteur ; ne retournez donc pas un objet qui doit rester inchangé.
+
+Tout autre objet, comme un littéral d'objet, une copie `{ ...config }` ou une instance de classe, est copié dans un nouvel instantané modifiable à prototype nul avant l'envoi. Les champs propres sont conservés, à l'exception des clés dangereuses `__proto__`, `constructor` et `prototype`, qui sont toujours supprimées. Les champs hérités d'un prototype défini par l'application sont copiés comme champs propres, mais l'instantané ne conserve ni l'identité de l'objet d'origine, ni son prototype, ni les vérifications `instanceof`, ni les accesseurs, ni les attributs de propriété :
 
 ```js
 const template = { tenant: 'acme' };

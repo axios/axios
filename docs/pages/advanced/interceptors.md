@@ -144,7 +144,9 @@ instance.interceptors.request.use((config) => {
 });
 ```
 
-If an interceptor returns a different object, axios copies it into a new writable null-prototype snapshot before dispatch. Own fields are kept, except the unsafe keys `__proto__`, `constructor`, and `prototype`, which are always dropped. Fields inherited from an application-defined prototype are copied as own fields, but the snapshot does not keep the original object's identity, prototype, `instanceof` checks, accessors, or property attributes:
+Whether axios reuses or copies the returned object depends on its shape, not on whether it is the object the interceptor received. A writable, extensible null-prototype object whose properties are all plain writable data properties and that has no unsafe keys is dispatched as is: axios updates fields such as `headers` and `data` on it, and the adapter receives that same object. This also applies to a different null-prototype object returned by an interceptor, so do not return an object that must stay unchanged.
+
+Any other object, such as an object literal, a `{ ...config }` copy, or a class instance, is copied into a new writable null-prototype snapshot before dispatch. Own fields are kept, except the unsafe keys `__proto__`, `constructor`, and `prototype`, which are always dropped. Fields inherited from an application-defined prototype are copied as own fields, but the snapshot does not keep the original object's identity, prototype, `instanceof` checks, accessors, or property attributes:
 
 ```js
 const template = { tenant: 'acme' };

@@ -103,7 +103,7 @@
                 align="center"
                 title="SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications."
             >
-                BSAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
+                SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
             </p>
             <p align="center">
                 <a
@@ -1481,7 +1481,7 @@ Axios errors use this structure:
 | Property | Definition |
 | -------- | ---------- |
 | message | A quick summary of the error message and the status it failed with. |
-| name | This defines where the error originated from. For axios, it will always be an 'AxiosError'. |
+| name | The error name: usually `AxiosError`, `CanceledError` for cancellations, or the original name of a wrapped error. Use `axios.isAxiosError(error)` to identify Axios errors and `axios.isCancel(error)` to detect cancellations. |
 | stack | Stack trace for the error. |
 | config | An axios config object with specific instance configurations defined by the user from when the request was made |
 | code | Axios error code. The table below lists internal Axios error codes. |

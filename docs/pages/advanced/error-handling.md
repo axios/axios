@@ -2,14 +2,14 @@
 
 axios may throw many different types of errors. Some of these errors are caused by axios itself, while others are caused by the server or the client. The following table lists the general structure of the thrown error:
 
-| Property | Definition                                                                                                                                    |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| message  | A quick summary of the error message and the status it failed with.                                                                           |
-| name     | This defines where the error originated from. For axios, it will always be an `AxiosError`.                                                   |
-| stack    | Provides the stack trace of the error.                                                                                                        |
-| config   | An axios config object with specific instance configurations defined by the user from when the request was made.                              |
-| code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.                                |
-| status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings. |
+| Property | Definition                                                                                                                                                                                                                      |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message  | A quick summary of the error message and the status it failed with.                                                                                                                                                             |
+| name     | The error name: usually `AxiosError`, `CanceledError` for cancellations, or the original name of a wrapped error. Use `axios.isAxiosError(error)` to identify Axios errors and `axios.isCancel(error)` to detect cancellations. |
+| stack    | Provides the stack trace of the error.                                                                                                                                                                                          |
+| config   | An axios config object with specific instance configurations defined by the user from when the request was made.                                                                                                                |
+| code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.                                                                                                                  |
+| status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings.                                                                                   |
 
 Below is a list of potential axios identified error
 

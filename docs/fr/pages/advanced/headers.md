@@ -79,6 +79,29 @@ const api = axios.create({
 });
 ```
 
+## En-têtes portant le nom d'une méthode HTTP
+
+Certains noms d'en-têtes correspondent à une méthode HTTP, comme `Link` (la méthode `LINK`). axios les envoie comme des en-têtes ordinaires lorsque leur valeur est une chaîne ou une autre valeur qui n'est pas une map :
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: '<https://example.com/resource>; rel="type"' },
+});
+```
+
+Dans les `headers` de la configuration, la clé `common` et les noms de méthode en minuscules (`get`, `post`, `link`, etc.) ne sont traités comme des [groupes de valeurs par défaut](/fr/pages/advanced/config-defaults#valeurs-par-defaut-des-en-tetes-par-methode) que lorsque leur valeur est un objet simple, un objet à prototype nul ou une instance d'`AxiosHeaders` (y compris les sous-classes et les instances compatibles provenant d'une autre copie d'axios). Seul le groupe correspondant à la méthode de la requête est appliqué, et les groupes ne sont jamais envoyés comme en-têtes littéraux.
+
+Toute autre valeur est sérialisée comme une valeur d'en-tête normale : les chaînes, les nombres, les tableaux et les objets tels que `Date`, `Buffer`, les tableaux typés et les instances de classes applicatives, qui sont convertis en chaînes. Par exemple, dans Node.js :
+
+```js
+await axios.post('/api/resource', data, {
+  headers: { Link: Buffer.from('<https://example.com/resource>; rel="type"') },
+});
+// Envoyé sous la forme : Link: <https://example.com/resource>; rel="type"
+```
+
+Les valeurs `null`, `undefined` et `false` omettent toujours l'en-tête.
+
 ## Préserver la casse d'un en-tête spécifique
 
 Les noms d'en-têtes Axios sont insensibles à la casse, mais `AxiosHeaders` conserve la casse de la première clé correspondante qu'il voit. Si vous avez besoin d'une casse spécifique pour un serveur avec un comportement non standard sensible à la casse, définissez un préréglage de casse dans les valeurs par défaut puis définissez les valeurs normalement.

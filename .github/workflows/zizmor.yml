@@ -10,7 +10,7 @@ permissions: {}
 
 jobs:
   zizmor:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     permissions:
       security-events: write
     steps:

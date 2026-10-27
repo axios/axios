@@ -9,7 +9,7 @@ permissions:
 jobs:
   node:
     name: Node ${{ matrix.node }} e2e
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +39,7 @@ jobs:
 
   browser:
     name: Chromium, Firefox and WebKit e2e
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -73,7 +73,7 @@ jobs:
 
   runtimes:
     name: ${{ matrix.runtime }} e2e
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     strategy:
       fail-fast: false
       matrix:

@@ -22,7 +22,7 @@ permissions:
 jobs:
   build-and-run-vitest:
     name: Build and run vitest
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     steps:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -76,7 +76,7 @@ jobs:
   bump-version-and-create-pr:
     name: Bump version and create PR
     needs: [build-and-run-vitest, e2e]
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     permissions:
       contents: write
       pull-requests: write

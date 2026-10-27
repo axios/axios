@@ -203,14 +203,76 @@ describe('formDataToJSON', () => {
     });
   });
 
-  it('should parse long malformed bracket names in linear time', () => {
+  it('should handle a nested field named length without RangeError', () => {
     const formData = new FormData();
 
-    // A run of unmatched `[` must not make the tokenizer rescan to the end of
-    // the string from each `[` (quadratic). This guards the bracket-capture
-    // grammar against regressions by requiring the match to fail fast.
+    formData.append('metadata[length]', 'long');
+
+    expect(formDataToJSON(formData)).toEqual({
+      metadata: {
+        length: 'long',
+      },
+    });
+  });
+
+  it('should handle dot-notation length field', () => {
+    const formData = new FormData();
+
+    formData.append('metadata.length', 'long');
+
+    expect(formDataToJSON(formData)).toEqual({
+      metadata: {
+        length: 'long',
+      },
+    });
+  });
+
+  it('should handle repeated length fields', () => {
+    const formData = new FormData();
+
+    formData.append('metadata[length]', 'x');
+    formData.append('metadata[length]', 'y');
+
+    expect(formDataToJSON(formData)).toEqual({
+      metadata: {
+        length: ['x', 'y'],
+      },
+    });
+  });
+
+  it('should handle nested length fields', () => {
+    const formData = new FormData();
+
+    formData.append('metadata[length][unit]', 'cm');
+
+    expect(formDataToJSON(formData)).toEqual({
+      metadata: {
+        length: {
+          unit: 'cm',
+        },
+      },
+    });
+  });
+
+  it('should preserve numeric siblings when a length field is present', () => {
+    const formData = new FormData();
+
+    formData.append('items[0]', 'a');
+    formData.append('items[length]', 'b');
+
+    expect(formDataToJSON(formData)).toEqual({
+      items: {
+        0: 'a',
+        length: 'b',
+      },
+    });
+  });
+
+  it('should parse long malformed bracket names in linear time', () => {
+    const formData = new FormData();
     formData.append('a' + '['.repeat(100000), 'x');
 
     expect(formDataToJSON(formData)).toEqual({ a: 'x' });
   });
+
 });

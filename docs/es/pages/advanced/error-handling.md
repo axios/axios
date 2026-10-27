@@ -2,14 +2,14 @@
 
 axios puede lanzar muchos tipos diferentes de errores. Algunos de estos errores son causados por el propio axios, mientras que otros son causados por el servidor o el cliente. La siguiente tabla lista la estructura general del error lanzado:
 
-| Propiedad | Definición                                                                                                                                    |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| message   | Un resumen rápido del mensaje de error y el estado con el que falló.                                                                          |
-| name      | Nombre del error: normalmente `AxiosError`, `CanceledError` para cancelaciones o el nombre original de un error encapsulado. Use `axios.isAxiosError(error)` para identificar errores de Axios.                                                                         |
-| stack     | Proporciona el seguimiento de la pila (stack trace) del error.                                                                                |
-| config    | Un objeto de configuración de axios con configuraciones específicas de la instancia definidas por el usuario al momento de realizar la solicitud. |
-| code      | Representa un error identificado por axios. La tabla a continuación lista definiciones específicas para errores internos de axios.             |
-| status    | Código de estado HTTP de la respuesta. Consulta [aquí](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) para conocer los significados comunes de los códigos de estado HTTP. |
+| Propiedad | Definición                                                                                                                                                                                                                                            |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message   | Un resumen rápido del mensaje de error y el estado con el que falló.                                                                                                                                                                                  |
+| name      | Nombre del error: normalmente `AxiosError`, `CanceledError` para cancelaciones o el nombre original de un error encapsulado. Use `axios.isAxiosError(error)` para identificar errores de Axios y `axios.isCancel(error)` para detectar cancelaciones. |
+| stack     | Proporciona el seguimiento de la pila (stack trace) del error.                                                                                                                                                                                        |
+| config    | Un objeto de configuración de axios con configuraciones específicas de la instancia definidas por el usuario al momento de realizar la solicitud.                                                                                                     |
+| code      | Representa un error identificado por axios. La tabla a continuación lista definiciones específicas para errores internos de axios.                                                                                                                    |
+| status    | Código de estado HTTP de la respuesta. Consulta [aquí](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) para conocer los significados comunes de los códigos de estado HTTP.                                                                  |
 
 A continuación se lista una relación de posibles errores identificados por axios:
 

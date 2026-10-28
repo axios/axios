@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **FormData to JSON - nested length fields:** Preserve fields such as `metadata[length]` and `metadata.length` as ordinary object properties instead of throwing `RangeError` while building an intermediate array. Repeated values, deeper paths, and existing numeric siblings are retained. Array-only fields and the public API are unchanged. (**[#11296](https://github.com/axios/axios/pull/11296)**, closes **[#11295](https://github.com/axios/axios/issues/11295)**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

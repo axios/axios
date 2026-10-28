@@ -5,6 +5,7 @@
 ## Features
 
 ## Bug Fixes
+- **Node URL-encoded Buffer fields:** Preserve parent paths and configured dot notation when serializing nested Buffer values. Their existing base64 encoding and root-level field behavior are unchanged. (**[#11317](https://github.com/axios/axios/pull/11317)**, related to **#11290**, closes **[#11289](https://github.com/axios/axios/issues/11289)**)
 
 ## Documentation
 

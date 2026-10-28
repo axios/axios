@@ -52,6 +52,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Docs targets:** `README.md` Request config `proxy` comments.
 - **Required content:** Note that HTTPS origins reached through a CONNECT proxy use `https.globalAgent` TLS options (such as a custom `ca`) when no `httpsAgent` is set, and that an explicit `httpsAgent` takes precedence. Follow the `proxy` section of `docs/pages/advanced/request-config.md`; do not recommend disabling certificate validation.
 
+### Nested URL-encoded Buffer fields
+
+- **Change:** Preserve nested Buffer field names during automatic URL-encoded serialization in Node.
+- **Source:** [PR #11317](https://github.com/axios/axios/pull/11317) (related to #11290) and the Node URL-encoded Buffer fields entry in `PRE_RELEASE_CHANGELOG.md`.
+- **Status:** Pending.
+- **Docs targets:** README's automatic serialization to URLSearchParams section and the corresponding documentation page.
+- **Required content:** Explain that a Buffer value uses the existing base64 encoding and keeps its enclosing object or array path, including `formSerializer.dots` when enabled.
+- **Examples:** `{ user: { file: Buffer.from('abc') } }` produces `user[file]=YWJj`; with `dots: true`, the field name is `user.file`.
+- **Notes:** This corrects field names without changing the public API, top-level Buffer encoding, or browser behavior.
+
 ### Literal method-named request headers (README)
 
 - **Change:** Bring `README.md` in line with the released docs site.

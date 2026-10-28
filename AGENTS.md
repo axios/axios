@@ -82,18 +82,18 @@ CI runs after a PR is opened. Inspect the actual GitHub Actions checks for the l
 
 ## Interceptor Execution Order
 
-- Request interceptors run **last-registered-first** (LIFO).
+- Request interceptors run **last-registered-first** (LIFO) by default. Setting `transitional.legacyInterceptorReqResOrdering: false` switches them to **first-registered-first** (FIFO).
 - Response interceptors run **first-registered-first** (FIFO).
-- Both support `synchronous: true` (avoids Promise wrapping when no async handler is in the chain) and `runWhen: (config) => boolean` for conditional execution.
+- Only request interceptors support `synchronous: true` (avoids Promise wrapping when no async request handler is in the chain) and `runWhen: (config) => boolean` for conditional execution. Response interceptors run through the Promise chain and do not use these options.
 - Order matters for both behavior and tests; document it when adding new built-in interceptors.
 
 ## Request Lifecycle
 
 1. User calls `axios()` or a method alias.
 2. Merge instance defaults with request config via `mergeConfig`.
-3. Run request interceptors (LIFO).
-4. Select adapter via `lib/adapters/adapters.js` capability check.
-5. Apply `transformRequest` functions.
+3. Run request interceptors (LIFO by default; FIFO with `transitional.legacyInterceptorReqResOrdering: false`).
+4. Apply `transformRequest` functions.
+5. Select adapter via `lib/adapters/adapters.js` capability check.
 6. Adapter performs the HTTP request.
 7. Apply `transformResponse` functions.
 8. Run response interceptors (FIFO).

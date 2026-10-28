@@ -2,14 +2,14 @@
 
 axios 可能会抛出多种不同类型的错误，有些来自 axios 本身，有些来自服务器或客户端。下表列出了所抛出错误的基本结构：
 
-| 属性    | 说明                                                                                                                                          |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| message | 错误信息的简要摘要，以及失败时的状态码。                                                                                                      |
-| name    | 定义错误的来源，对于 axios 来说始终是 `AxiosError`。                                                                                          |
-| stack   | 提供错误的堆栈跟踪。                                                                                                                          |
-| config  | 包含用户在发起请求时定义的特定实例配置的 axios 配置对象。                                                                                     |
-| code    | 表示 axios 内部识别的错误，下表列出了 axios 内部错误的具体说明。                                                                              |
-| status  | HTTP 响应状态码。常见 HTTP 响应状态码的含义请参阅[此处](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)。                            |
+| 属性    | 说明                                                                                                                                                                                         |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message | 错误信息的简要摘要，以及失败时的状态码。                                                                                                                                                     |
+| name    | 错误名称：通常为 `AxiosError`，取消请求时为 `CanceledError`，封装底层错误时可能保留其原始名称。使用 `axios.isAxiosError(error)` 识别 Axios 错误，使用 `axios.isCancel(error)` 检测请求取消。 |
+| stack   | 提供错误的堆栈跟踪。                                                                                                                                                                         |
+| config  | 包含用户在发起请求时定义的特定实例配置的 axios 配置对象。                                                                                                                                    |
+| code    | 表示 axios 内部识别的错误，下表列出了 axios 内部错误的具体说明。                                                                                                                             |
+| status  | HTTP 响应状态码。常见 HTTP 响应状态码的含义请参阅[此处](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)。                                                                           |
 
 以下是 axios 内部可能出现的错误列表：
 
@@ -92,6 +92,58 @@ axios.get("/user/12345", {
   console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
 });
 ```
+
+## 错误中的响应耗时
+
+当错误携带响应时（例如被 `validateStatus` 拒绝的非 2xx 状态），`error.response.duration` 保存以毫秒为单位的适配器耗时。并非所有错误都有响应：网络错误、超时和取消都没有 `error.response`，因此也没有耗时。读取前请先检查是否存在响应：
+
+```js
+try {
+  await axios.get('/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.response) {
+    console.log(error.response.status, error.response.duration);
+  }
+}
+```
+
+严格 JSON 解析失败时，附加在错误上的响应仍会保留耗时。该值的具体含义请参阅[响应耗时](/zh/pages/advanced/response-schema#响应耗时)。
+
+## 包装的错误堆栈
+
+当 axios 包装底层错误（例如 Node.js 套接字或 DNS 故障）时，原始错误仍可通过 `error.cause` 访问。包装后的 `error.stack` 还会在 `Caused by:` 行之后包含被包装错误的堆栈，因此只读取 `stack` 的错误上报工具也能看到底层故障。axios 帧和重建的调用方帧排在前面，后面原样附上被包装的堆栈：
+
+```text
+Error: getaddrinfo ENOTFOUND api.example.invalid
+    at AxiosError.from (.../axios/lib/core/AxiosError.js)
+    ...
+    at Axios.request (.../axios/lib/core/Axios.js)
+    at async loadUser (/app/users.js:4:5)
+Caused by: Error: getaddrinfo ENOTFOUND api.example.invalid
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:...)
+```
+
+如需以编程方式访问，请使用 `error.cause`；它就是同一个原始错误对象：
+
+```js
+try {
+  await axios.get('https://api.example.invalid/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.cause) {
+    console.log(error.cause.code); // 例如 'ENOTFOUND'
+  }
+}
+```
+
+请注意以下几点：
+
+- `error.toJSON().stack` 也会返回这个组合后的字符串。它是原样输出的诊断信息：`redact` 不会清理堆栈字符串。
+- 已经会打印 `error.cause` 的、支持 cause 的工具可能会将部分堆栈内容显示两次。
+- 只有通过 `AxiosError.from()` 包装、且其 cause 具有可用堆栈的错误才会增加该部分。缺失、为空或无法读取的堆栈会被跳过。
+- 每次包装已经包装过的错误都会再增加一个嵌套部分，因此字符串会随每次包装而变长。
+- 在 `AxiosError.from()` 的 `customProps` 参数中传入的 `stack` 仍会替换生成的堆栈。
+- `Caused by:` 标记是诊断文本，并非可供解析的稳定格式。
+- 包装无法恢复平台从未提供的细节。例如，浏览器 XHR 的 `Network Error` 通常没有底层错误堆栈，因此被隐藏的 CORS、DNS 或 TLS 原因仍然无法获取。
 
 ## 处理超时
 

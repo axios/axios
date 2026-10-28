@@ -7,7 +7,7 @@ search: false
 import SponsorsGrid from '../../../.vitepress/theme/SponsorsGrid.vue';
 </script>
 
-<div style="margin: 1rem 7rem; max-width: 1200px;">
+<div class="logo-page">
   <h1 style="line-height: 64px; font-size: 32px; letter-spacing: -0.4px; font-weight: 600; margin-top: 2rem;">Sponsors</h1>
   <p>Axios est soutenu par les organisations suivantes. Si vous souhaitez sponsoriser Axios, consultez notre <a href="https://opencollective.com/axios" target="_blank" style="color: #007bff;">page Open Collective</a> pour plus d'informations.</p>
 

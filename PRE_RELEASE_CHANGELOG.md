@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Progress throttle - null trailing timer args:** Guard the trailing `setTimeout` callback in `throttle` so it skips when `lastArgs` is already `null`, matching `flush()`. Previously a third-party `setTimeout` wrapper that drops the timer id left uncancellable timers that threw `TypeError: args is not iterable` after flush on successful uploads with `onUploadProgress`. No public API or type changes. (**[#11382](https://github.com/axios/axios/pull/11382)**, closes **[#11338](https://github.com/axios/axios/issues/11338)**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

@@ -352,6 +352,29 @@
                 >
             </p>
         </td>
+       <td align="center" valign="middle" width="33.333333333333336%">
+    <a
+        href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+        style="padding: 10px; display: inline-block"
+        target="_blank"
+    >
+        <img
+            width="180px"
+            src="https://namespace.so/oss/badge.svg"
+            alt="CI powered by Namespace"
+        />
+    </a>
+    <p align="center">
+        Actually the fastest way to run your<br>GitHub Actions.
+    </p>
+    <p align="center">
+        <a
+            href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+            target="_blank"
+            ><b>namespace.so</b></a
+        >
+    </p>
+</td>
     </tr>
 </table>
 

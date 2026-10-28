@@ -64,6 +64,12 @@ instance.interceptors.response.use(function () {
 instance.interceptors.response.clear(); // 移除所有响应拦截器
 ```
 
+`use()` 返回的数字是一个不透明的拦截器 ID。请将其原样传回给 `eject()`；不要将其用作 `handlers` 数组的索引。建议使用 `eject()` 和 `clear()`，而不是直接编辑 `handlers`：
+
+- 移除未知 ID 或重复移除同一个 ID 不会产生任何效果。
+- 即使其他拦截器已被移除或管理器已被清空，过期的 ID 也永远不会移除另一个拦截器。
+- 如果 `handlers` 被替换为 `null` 或 `undefined`，该拦截器链会被跳过，下一次调用 `use()` 时会先恢复为空数组，再添加新的拦截器。
+
 ## 拦截器的默认行为
 
 添加请求拦截器时，默认被视为异步执行。当主线程被阻塞时（拦截器底层会创建一个 Promise，你的请求会被放到调用栈底部），这可能导致 axios 请求的执行出现延迟。如果你的请求拦截器是同步的，可以在选项对象中添加一个标志，告知 axios 同步运行该代码，从而避免请求执行的延迟。
@@ -114,6 +120,56 @@ axios.interceptors.request.use(
   { synchronous: true }
 );
 ```
+
+## 返回不同的配置对象
+
+请求拦截器通常会修改并返回它接收到的配置。该配置是由 axios 创建的、可写的、原型为 null 的对象，原样返回它会保留其身份：适配器和 `response.config` 接收到的是同一个对象。
+
+```js
+let seen;
+
+const instance = axios.create({
+  adapter: async (config) => {
+    console.log(config === seen); // true
+    return { data: null, status: 200, statusText: 'OK', headers: {}, config };
+  },
+});
+
+instance.interceptors.request.use((config) => {
+  config.headers.set('X-Trace', '1');
+  seen = config;
+  return config;
+});
+```
+
+axios 是复用还是复制返回的对象，取决于对象的形态，而不是它是否为拦截器接收到的那个对象。一个可写、可扩展、原型为 null 的对象，如果其所有属性都是可写的数据属性且不包含不安全的键，就会被原样分发：axios 会在该对象上更新 `headers` 和 `data` 等字段，适配器接收的也是同一个对象。这同样适用于拦截器返回的另一个原型为 null 的对象，因此不要返回需要保持不变的对象。
+
+其他任何对象，例如对象字面量、`{ ...config }` 副本或类实例，都会在分发请求前被复制到一个新的、可写的、原型为 null 的快照中。自身字段会被保留，但不安全的键 `__proto__`、`constructor` 和 `prototype` 始终会被丢弃。从应用程序定义的原型继承的字段会被复制为自身字段，但快照不会保留原始对象的身份、原型、`instanceof` 检查、访问器或属性特性：
+
+```js
+const template = { tenant: 'acme' };
+
+instance.interceptors.request.use((config) => {
+  // `tenant` 继承自 `template`；自定义适配器
+  // 会将其作为快照的自身字段读取：config.tenant === 'acme'
+  return Object.assign(Object.create(template), config);
+});
+```
+
+从 `Object.prototype` 继承的字段，或从自身原型为 `null` 的原型（例如使用 `Object.create(null)` 创建的原型）继承的字段会被忽略：
+
+```js
+const nullTemplate = Object.create(null);
+nullTemplate.tenant = 'acme';
+
+instance.interceptors.request.use((config) => {
+  // `tenant` 会被忽略，因为 `nullTemplate` 的原型为 null：
+  // 自定义适配器看到的是 config.tenant === undefined
+  return Object.assign(Object.create(nullTemplate), config);
+});
+```
+
+当原型为 null 的配置被冻结、被密封、使用了访问器或不可写属性，或包含某个不安全的键时，它同样会被复制，因为 axios 在分发请求期间必须更新 `headers` 和 `data` 等字段。这些规则是有意设置的安全边界，可防止注入到共享原型中的值改变请求行为；它们并不意味着修改 `Object.prototype` 是安全的或受支持的。
 
 ## 使用 `runWhen` 的拦截器
 

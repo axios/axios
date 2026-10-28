@@ -2,14 +2,14 @@
 
 axios puede lanzar muchos tipos diferentes de errores. Algunos de estos errores son causados por el propio axios, mientras que otros son causados por el servidor o el cliente. La siguiente tabla lista la estructura general del error lanzado:
 
-| Propiedad | Definición                                                                                                                                    |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| message   | Un resumen rápido del mensaje de error y el estado con el que falló.                                                                          |
-| name      | Define el origen del error. Para axios, siempre será un `AxiosError`.                                                                         |
-| stack     | Proporciona el seguimiento de la pila (stack trace) del error.                                                                                |
-| config    | Un objeto de configuración de axios con configuraciones específicas de la instancia definidas por el usuario al momento de realizar la solicitud. |
-| code      | Representa un error identificado por axios. La tabla a continuación lista definiciones específicas para errores internos de axios.             |
-| status    | Código de estado HTTP de la respuesta. Consulta [aquí](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) para conocer los significados comunes de los códigos de estado HTTP. |
+| Propiedad | Definición                                                                                                                                                                                                                                            |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message   | Un resumen rápido del mensaje de error y el estado con el que falló.                                                                                                                                                                                  |
+| name      | Nombre del error: normalmente `AxiosError`, `CanceledError` para cancelaciones o el nombre original de un error encapsulado. Use `axios.isAxiosError(error)` para identificar errores de Axios y `axios.isCancel(error)` para detectar cancelaciones. |
+| stack     | Proporciona el seguimiento de la pila (stack trace) del error.                                                                                                                                                                                        |
+| config    | Un objeto de configuración de axios con configuraciones específicas de la instancia definidas por el usuario al momento de realizar la solicitud.                                                                                                     |
+| code      | Representa un error identificado por axios. La tabla a continuación lista definiciones específicas para errores internos de axios.                                                                                                                    |
+| status    | Código de estado HTTP de la respuesta. Consulta [aquí](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) para conocer los significados comunes de los códigos de estado HTTP.                                                                  |
 
 A continuación se lista una relación de posibles errores identificados por axios:
 
@@ -94,6 +94,58 @@ axios.get("/user/12345", {
   console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
 });
 ```
+
+## Duración de la respuesta en errores
+
+Cuando un error incluye una respuesta, como un estado distinto de 2xx rechazado por `validateStatus`, `error.response.duration` contiene el tiempo transcurrido del adaptador en milisegundos. No todos los errores tienen una respuesta: los errores de red, los tiempos de espera agotados y las cancelaciones no tienen `error.response` y, por tanto, tampoco duración. Comprueba que exista una respuesta antes de leerla:
+
+```js
+try {
+  await axios.get('/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.response) {
+    console.log(error.response.status, error.response.duration);
+  }
+}
+```
+
+Los fallos de análisis JSON estricto conservan la duración en la respuesta adjunta al error. Consulta [Duración de la respuesta](/es/pages/advanced/response-schema#duracion-de-la-respuesta) para saber qué mide el valor.
+
+## Pilas de errores envueltos
+
+Cuando axios envuelve un error de más bajo nivel, como un fallo de socket o de DNS de Node.js, el error original sigue disponible como `error.cause`. El `error.stack` del contenedor también incluye la pila del error envuelto después de una línea `Caused by:`, de modo que los sistemas de reporte de errores que solo leen `stack` pueden ver el fallo subyacente. Primero aparecen los marcos de axios y los marcos reconstruidos del llamador, seguidos de la pila envuelta tal cual:
+
+```text
+Error: getaddrinfo ENOTFOUND api.example.invalid
+    at AxiosError.from (.../axios/lib/core/AxiosError.js)
+    ...
+    at Axios.request (.../axios/lib/core/Axios.js)
+    at async loadUser (/app/users.js:4:5)
+Caused by: Error: getaddrinfo ENOTFOUND api.example.invalid
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:...)
+```
+
+Usa `error.cause` para el acceso programático; es el mismo objeto de error original:
+
+```js
+try {
+  await axios.get('https://api.example.invalid/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.cause) {
+    console.log(error.cause.code); // p. ej. 'ENOTFOUND'
+  }
+}
+```
+
+Ten en cuenta lo siguiente:
+
+- `error.toJSON().stack` también devuelve la cadena combinada. Es una salida de diagnóstico literal: `redact` no limpia las cadenas de pila.
+- Las herramientas que ya muestran `error.cause` pueden mostrar parte del contenido de la pila dos veces.
+- Solo los errores envueltos mediante `AxiosError.from()` cuya causa tiene una pila utilizable obtienen una sección. Las pilas ausentes, vacías o ilegibles se omiten.
+- Envolver un error ya envuelto añade otra sección anidada cada vez, por lo que la cadena crece con cada envoltura.
+- Un `stack` pasado en el argumento `customProps` de `AxiosError.from()` sigue reemplazando la pila generada.
+- El marcador `Caused by:` es texto de diagnóstico, no un formato estable que se pueda analizar.
+- Envolver no puede recuperar detalles que la plataforma nunca proporcionó. Por ejemplo, un `Network Error` de XHR en el navegador generalmente no tiene una pila de error subyacente, por lo que las causas ocultas de CORS, DNS o TLS siguen sin estar disponibles.
 
 ## Manejo de tiempos de espera
 

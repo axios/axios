@@ -53,3 +53,28 @@ La captura del progreso de carga de FormData no está disponible actualmente en 
 ::: danger
 Se recomienda deshabilitar las redirecciones estableciendo `maxRedirects: 0` para subir el stream en el entorno Node.js, ya que el paquete `follow-redirects` almacenará todo el stream en memoria RAM sin seguir el algoritmo de "backpressure".
 :::
+
+## Leer los datos de respuesta de forma incremental
+
+En el navegador, el adaptador XHR (el predeterminado) pasa el evento de progreso nativo como `axiosProgressEvent.event`. Puedes usar su `target`, el `XMLHttpRequest` subyacente, para leer el texto de respuesta recibido hasta el momento:
+
+```js
+let received = 0;
+
+await axios.get('/api/stream', {
+  responseType: 'text',
+  onDownloadProgress: ({ event }) => {
+    const xhr = event.target;
+    const chunk = xhr.responseText.slice(received);
+    received = xhr.responseText.length;
+
+    if (chunk) {
+      console.log('new data:', chunk);
+    }
+  },
+});
+```
+
+Como las funciones de progreso están limitadas (throttled), una entrega puede ejecutarse después de que el navegador haya terminado de despachar el evento original. En ese caso, `event.currentTarget` es `null` (comportamiento estándar del DOM), pero `event.target` sigue haciendo referencia a la solicitud, así que usa `target` como se muestra arriba.
+
+Cuando una descarga XHR se completa correctamente, axios entrega un evento final de progreso de descarga desde el manejador `loadend` con el estado completo de la transferencia, de modo que el último fragmento no se pierde por la limitación. El progreso de carga, las descargas XHR fallidas y las transferencias abortadas o con errores mantienen su comportamiento anterior: solo se entrega un evento de progreso que ya estuviera pendiente.

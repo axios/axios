@@ -35,6 +35,44 @@ const response = await axios.get("https://api.example.com/data", {
 
 Si no se proporciona `auth`, los adaptadores HTTP de Node.js y fetch también pueden obtener credenciales Basic desde la URL de la solicitud, por ejemplo `https://myUser:myPassword@api.example.com/data`. Las credenciales codificadas con porcentaje en la URL se decodifican antes de generar el encabezado `Authorization`. Para código nuevo, prefiere la opción explícita `auth`; tiene prioridad sobre las credenciales incluidas en la URL.
 
+### Nombres de usuario UTF-8
+
+De forma predeterminada, los adaptadores XHR y fetch mantienen su manejo existente de nombres de usuario por compatibilidad:
+
+- El adaptador XHR envía el nombre de usuario como caracteres heredados de un solo byte (Latin-1) y la contraseña como UTF-8.
+- El adaptador fetch envía credenciales UTF-8, pero rechaza nombres de usuario que contengan caracteres por encima de U+00FF.
+
+En ambos adaptadores, un nombre de usuario no admitido se rechaza con `ERR_BAD_OPTION_VALUE`. Si tu servidor espera nombres de usuario Basic auth en UTF-8, establece `transitional.encodeBasicAuthUsername: true` por solicitud o en una instancia:
+
+```js
+await axios.get('/account', {
+  auth: { username: 'π', password: 'secret' },
+  transitional: { encodeBasicAuthUsername: true },
+});
+```
+
+Un `false` a nivel de solicitud anula la activación en la instancia, por ejemplo para un endpoint XHR heredado que espera bytes Latin-1 en el nombre de usuario:
+
+```js
+const api = axios.create({
+  transitional: { encodeBasicAuthUsername: true },
+});
+
+await api.get('/legacy/account', {
+  auth: { username: 'café', password: 'secret' },
+  transitional: { encodeBasicAuthUsername: false },
+});
+```
+
+Ten en cuenta lo siguiente:
+
+- Si actualmente conviertes tú mismo los nombres de usuario a cadenas de bytes UTF-8, elimina esa conversión al activar la opción para evitar una doble codificación.
+- No actives la opción para servidores XHR que esperan bytes Latin-1 heredados en el nombre de usuario.
+- Establecer la opción en `false` no hace que los adaptadores fetch o HTTP de Node.js envíen Latin-1.
+- La opción no afecta al adaptador HTTP de Node.js ni a las credenciales incluidas en la URL de una solicitud fetch.
+- Los nombres de usuario ASCII y vacíos se codifican igual en ambos casos. Las cadenas UTF-16 malformadas siguen rechazándose con `ERR_BAD_OPTION_VALUE`.
+- axios no negocia el conjunto de caracteres a partir del desafío de autenticación del servidor ni normaliza cadenas Unicode.
+
 ::: tip
 Para tokens Bearer y claves de API, usa un encabezado `Authorization` personalizado en lugar de la opción `auth` — `auth` es solo para HTTP Basic.
 :::

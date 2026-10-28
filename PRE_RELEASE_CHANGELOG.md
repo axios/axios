@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Node form-data typed arrays:** Preserve the raw bytes and view boundaries of typed arrays during Buffer conversion, matching Blob serialization. Wider numeric arrays no longer lose bytes, and BigInt arrays no longer throw during conversion. (**[#11264](https://github.com/axios/axios/pull/11264)**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

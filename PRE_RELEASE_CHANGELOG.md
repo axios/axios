@@ -16,6 +16,8 @@
 
 ## Maintenance
 
+- **Non-UTF-8 charset reproduction:** Added Vitest unit tests documenting how Node.js responses declared as UTF-8, ISO-8859-1, and EUC-JP are decoded, integrated with the standard HTTP-server test helpers in `tests/unit/adapters/httpResponseEncoding.test.js`. The tests show that the default UTF-8 decoding corrupts non-UTF-8 text, the Node-only `responseEncoding: 'latin1'` option handles ISO-8859-1, and Node.js `Buffer.toString()` rejects the unsupported `euc-jp` name with `ERR_UNKNOWN_ENCODING`. An optional standalone demo under `charset-repro/` (requires Node.js 22.22.1+, the largest engine requirement of the locked root dev toolchain) covers the same cases without changing Axios runtime behavior or its public API. (relates to [#5317](https://github.com/axios/axios/issues/5317), [#11312](https://github.com/axios/axios/pull/11312))
+
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 
 - **CI runners:** Switched GitHub Actions jobs from GitHub-hosted `ubuntu-latest` runners to the `namespace-profile-axios` Namespace runner profile. The npm publish job stays on `ubuntu-latest` because npm provenance and trusted publishing require GitHub-hosted runners. CI only; no runtime, public API, or type compatibility changes.

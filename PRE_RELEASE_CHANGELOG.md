@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **formDataToJSON:** handle fields named `length` without `RangeError`. Convert an intermediate array to an object before descending into a non-numeric key so keys like `length` don't collide with `Array.prototype.length`; numeric siblings are preserved. Fixes #11295.
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

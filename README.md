@@ -365,7 +365,7 @@
         />
     </a>
     <p align="center">
-        Actually the fastest way to run your<br>GitHub Actions.
+        Actually the fastest way to run <br>your GitHub Actions.
     </p>
     <p align="center">
         <a

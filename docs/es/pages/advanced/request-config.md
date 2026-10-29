@@ -12,7 +12,7 @@ axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
 axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ```
 
-Consulta la [guía de seguridad](/pages/misc/security) para más detalles.
+Consulta la [guía de seguridad](/es/pages/misc/security) para más detalles.
 :::
 
 ### `url`
@@ -152,7 +152,7 @@ Controla cómo axios copia los encabezados devueltos por `FormData#getHeaders()`
 
 ### Opciones personalizadas con claves de tipo símbolo
 
-La combinación de configuración conserva las propiedades de símbolo propias y enumerables. Las aplicaciones TypeScript pueden ampliar `AxiosRequestConfig` con una clave de símbolo específica y leer esa opción desde `InternalAxiosRequestConfig` en interceptores de solicitud o adaptadores. Las propiedades de símbolo heredadas o no enumerables no se copian. Consulta la [guía de TypeScript](/pages/advanced/type-script#configuracion-de-solicitud-personalizada-con-claves-de-tipo-simbolo) para ver un ejemplo.
+La combinación de configuración conserva las propiedades de símbolo propias y enumerables. Las aplicaciones TypeScript pueden ampliar `AxiosRequestConfig` con una clave de símbolo específica y leer esa opción desde `InternalAxiosRequestConfig` en interceptores de solicitud o adaptadores. Las propiedades de símbolo heredadas o no enumerables no se copian. Consulta la [guía de TypeScript](/es/pages/advanced/type-script#configuracion-de-solicitud-personalizada-con-claves-de-tipo-simbolo) para ver un ejemplo.
 
 ### `timeout`
 
@@ -164,7 +164,7 @@ La propiedad `withCredentials` indica si las solicitudes de Access-Control entre
 
 ### `adapter`
 
-`adapter` permite el manejo personalizado de solicitudes, lo que facilita las pruebas. Devuelve una Promise y proporciona una respuesta válida; consulta los [adaptadores](/pages/advanced/adapters) para más información. También proporcionamos una serie de adaptadores integrados. El adaptador predeterminado es `http` para Node.js y `xhr` para navegadores. La lista completa de adaptadores integrados es la siguiente:
+`adapter` permite el manejo personalizado de solicitudes, lo que facilita las pruebas. Devuelve una Promise y proporciona una respuesta válida; consulta los [adaptadores](/es/pages/advanced/adapters) para más información. También proporcionamos una serie de adaptadores integrados. El adaptador predeterminado es `http` para Node.js y `xhr` para navegadores. La lista completa de adaptadores integrados es la siguiente:
 
 - fetch
 - http

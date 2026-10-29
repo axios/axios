@@ -9,6 +9,7 @@ const enNav = [
   { text: 'Guide', link: '/pages/getting-started/first-steps' },
   { text: 'API', link: '/pages/advanced/api-reference' },
   { text: 'Sponsors', link: '/pages/misc/sponsors' },
+  { text: 'Partners', link: '/pages/misc/partners' },
   { text: 'v1.x', link: '#' },
 ];
 
@@ -81,6 +82,7 @@ const zhNav = [
   { text: '指南', link: '/zh/pages/getting-started/first-steps' },
   { text: 'API', link: '/zh/pages/advanced/api-reference' },
   { text: '赞助商', link: '/zh/pages/misc/sponsors' },
+  { text: '合作伙伴', link: '/zh/pages/misc/partners' },
   { text: 'v1.x', link: '#' },
 ];
 
@@ -153,6 +155,7 @@ const esNav = [
   { text: 'Guía', link: '/es/pages/getting-started/first-steps' },
   { text: 'API', link: '/es/pages/advanced/api-reference' },
   { text: 'Patrocinadores', link: '/es/pages/misc/sponsors' },
+  { text: 'Socios', link: '/es/pages/misc/partners' },
   { text: 'v1.x', link: '#' },
 ];
 
@@ -234,6 +237,7 @@ const frNav = [
   { text: 'Guide', link: '/fr/pages/getting-started/first-steps' },
   { text: 'API', link: '/fr/pages/advanced/api-reference' },
   { text: 'Sponsors', link: '/fr/pages/misc/sponsors' },
+  { text: 'Partenaires', link: '/fr/pages/misc/partners' },
   { text: 'v1.x', link: '#' },
 ];
 

@@ -53,6 +53,8 @@ class StubXMLHttpRequest extends StubEventTarget {
     this.onreadystatechange = null;
     this.upload = new StubEventTarget();
     this.aborted = false;
+    this.sentBody = undefined;
+    StubXMLHttpRequest.lastRequest = this;
   }
 
   open() {}
@@ -84,7 +86,8 @@ class StubXMLHttpRequest extends StubEventTarget {
     this.onloadend && this.onloadend();
   }
 
-  send() {
+  send(body) {
+    this.sentBody = body;
     setTimeout(() => {
       this.readyState = 4;
       this.onreadystatechange && this.onreadystatechange();
@@ -160,6 +163,27 @@ describe('xhr adapter status 0 handling', () => {
       expect(reason.code).toBe(axios.AxiosError.ECONNABORTED);
     }
   );
+});
+
+describe('xhr adapter request body', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it.each([
+    ['null', null, null],
+    ['undefined', undefined, null],
+    ['zero', 0, 0],
+    ['false', false, false],
+    ['NaN', NaN, NaN],
+  ])('should send a %s body as-is', async (label, data, expected) => {
+    const axios = await importAxiosForPage('http://localhost/index.html');
+    // The stub reports status 0 from an http page, which the adapter rejects as
+    // ECONNABORTED; the body is captured synchronously in `send` either way.
+    await axios.post('data.json', data, { adapter: 'xhr' }).catch(() => {});
+    expect(StubXMLHttpRequest.lastRequest.sentBody).toBe(expected);
+  });
 });
 
 describe('xhr adapter progress listener cleanup', () => {

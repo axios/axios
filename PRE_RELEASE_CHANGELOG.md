@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Falsy request bodies in the XHR adapter:** `axios.post(url, 0)` and `axios.post(url, false)` now send their body instead of an empty one. Only `null` and `undefined` are treated as "no body"; `0`, `false` and `NaN` previously reached `XMLHttpRequest.send()` as `null` because the adapter tested the body for truthiness. The Fetch adapter already normalized on `undefined`, so identical requests now produce identical bodies across both browser adapters. (**#11257**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

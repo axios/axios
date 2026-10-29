@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Fetch adapter - declared response size:** Attempt to cancel an unread response body when its declared `Content-Length` exceeds `maxContentLength`. Cleanup is best-effort and does not delay or replace the existing `ERR_BAD_RESPONSE` error, including when custom cleanup getters throw or cancellation fails. Responses without a cancellable body retain the same error behavior; successful requests, transfer-time limits, and public APIs are unchanged. (**#11293**, closes **#11292**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Fetch request headers:** Preserve the resolved request headers when forwarding `fetchOptions`, preventing an inherited `Object.prototype.headers` value from replacing caller headers during RequestInit conversion in Node. (**[#11263](https://github.com/axios/axios/issues/11263)**, **[#11394](https://github.com/axios/axios/pull/11394)**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

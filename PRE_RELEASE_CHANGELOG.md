@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Nested form field names:** Trimmed surrounding whitespace from every key segment when rendering nested form field names, not only from the key that names the field itself. A key such as `' b '` produced `a[b]=1` when it held a scalar, but leaked its whitespace into the rendered name as `a[ b ][c]=1` when it held a nested object, and as `a. b .c` with `dots` enabled, so the same key yielded two different field names depending only on its depth; converting the deeper form back to JSON also returned the untrimmed key, unlike the scalar case. (**#11256**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

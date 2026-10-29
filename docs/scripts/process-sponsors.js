@@ -22,8 +22,13 @@ const config = {
       description: 'Security and long-term support for end-of-life open source software.',
       tier: 'gold',
       slug: 'herodevs',
-      website: 'https://www.herodevs.com/',
-      twitter: null,
+      website: 'https://www.herodevs.com/support/nes-for-axios',
+      socialLinks: [
+        { type: 'TWITTER', url: 'https://x.com/herodevs' },
+        { type: 'GITHUB', url: 'https://github.com/herodevs' },
+        { type: 'LINKEDIN', url: 'https://www.linkedin.com/company/herodevs/' },
+        { type: 'YOUTUBE', url: 'https://www.youtube.com/@HeroDevs' },
+      ],
       active: true,
     },
     {
@@ -33,7 +38,7 @@ const config = {
       tier: 'silver',
       slug: 'code-for-japan',
       website: 'https://www.code4japan.org/',
-      twitter: 'https://x.com/CodeforJapan',
+      socialLinks: [{ type: 'TWITTER', url: 'https://x.com/CodeforJapan' }],
       active: true,
     },
     {
@@ -44,7 +49,7 @@ const config = {
       slug: 'superluxuryreps',
       website:
         'https://superluxuryreps.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship',
-      twitter: null,
+      socialLinks: [],
       active: true,
     },
   ],
@@ -188,6 +193,22 @@ const buildLinks = (url, bypass = false) => {
 };
 
 /**
+ * Builds the social links shown on a sponsor card. Website links are skipped
+ * because the card footer already links to the sponsor's website.
+ *
+ * @param {Array<{ type: string, url: string }>} socialLinks - The Open Collective social links.
+ * @returns {Array<{ type: string, url: string }>} The social links with UTM parameters.
+ */
+const buildSocialLinks = (socialLinks = []) => {
+  const seen = new Set();
+
+  return socialLinks
+    .filter((link) => link.url && link.type !== 'WEBSITE')
+    .map((link) => ({ type: link.type, url: buildLinks(link.url) }))
+    .filter((link) => !seen.has(link.url) && seen.add(link.url));
+};
+
+/**
  * Formats all active sponsors.
  *
  * @param {any} sponsorsData - The sponsors data.
@@ -218,9 +239,7 @@ const formatActiveSponsorData = (sponsorsData) => {
         : (buildLinks(
             sponsor.fromAccount.socialLinks.find((link) => link.type === 'WEBSITE')?.url
           ) ?? null),
-      twitter:
-        buildLinks(sponsor.fromAccount.socialLinks.find((link) => link.type === 'TWITTER')?.url) ??
-        null,
+      socialLinks: buildSocialLinks(sponsor.fromAccount.socialLinks),
     }))
     .filter((sponsor) => !config.sponsorsToIgnore.includes(sponsor.name));
 
@@ -259,9 +278,7 @@ const formatAllSponsorData = (sponsorsData) => {
         ? buildLinks(sponsor.account.website)
         : (buildLinks(sponsor.account.socialLinks.find((link) => link.type === 'WEBSITE')?.url) ??
           null),
-      twitter:
-        buildLinks(sponsor.account.socialLinks.find((link) => link.type === 'TWITTER')?.url) ??
-        null,
+      socialLinks: buildSocialLinks(sponsor.account.socialLinks),
     }))
     .filter((sponsor) => !config.sponsorsToIgnore.includes(sponsor.name));
 

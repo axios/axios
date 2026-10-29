@@ -53,3 +53,28 @@ Node.js 环境目前不支持捕获 FormData 上传进度
 ::: danger
 建议通过设置 `maxRedirects: 0` 来禁用重定向，以便在 Node.js 环境中上传流，因为 `follow-redirects` 包会不遵循"背压"算法而将整个流缓冲到内存中
 :::
+
+## 增量读取响应数据
+
+在浏览器中，XHR 适配器（默认适配器）会将原生进度事件作为 `axiosProgressEvent.event` 传入。你可以使用它的 `target`（即底层的 `XMLHttpRequest`）读取目前已收到的响应文本：
+
+```js
+let received = 0;
+
+await axios.get('/api/stream', {
+  responseType: 'text',
+  onDownloadProgress: ({ event }) => {
+    const xhr = event.target;
+    const chunk = xhr.responseText.slice(received);
+    received = xhr.responseText.length;
+
+    if (chunk) {
+      console.log('new data:', chunk);
+    }
+  },
+});
+```
+
+由于进度回调经过节流，一次回调可能会在浏览器完成原始事件的分发之后才运行。在这种情况下，`event.currentTarget` 为 `null`（标准 DOM 行为），但 `event.target` 仍然引用该请求，因此请按上例使用 `target`。
+
+当 XHR 下载成功完成时，axios 会在 `loadend` 处理器中发送一个包含完整传输状态的最终下载进度事件，因此最后一个数据块不会因节流而丢失。上传进度、失败的 XHR 下载以及被中止或出错的传输保持原有行为：只会发送已处于待发送状态的进度事件。

@@ -137,3 +137,18 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
+
+/**
+ * Component: Partners and Sponsors pages
+ * -------------------------------------------------------------------------- */
+
+.logo-page {
+  margin: 1rem 1.5rem;
+  max-width: 1200px;
+}
+
+@media (min-width: 960px) {
+  .logo-page {
+    margin: 1rem 7rem;
+  }
+}

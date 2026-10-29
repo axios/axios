@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Fetch adapter - native FormData Content-Type in Node.js:** Native `FormData` bodies sent through the fetch adapter in Node.js now use the fetch-generated `multipart/form-data; boundary=...` header. Previously the request kept the `application/x-www-form-urlencoded` default (or any other non-multipart `Content-Type`) while fetch serialized a multipart body, so servers could not parse it. This matches the Node HTTP adapter and axios in browsers. A `multipart/form-data` type that already includes a boundary, such as one from the `form-data` package's `getHeaders()`, is preserved. No public API or type changes. (**[#11351](https://github.com/axios/axios/pull/11351)**, related to **[#6993](https://github.com/axios/axios/issues/6993)**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

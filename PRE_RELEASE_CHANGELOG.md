@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Fetch upload tracking - string stream chunks:** Encode string chunks from a `ReadableStream` request body as UTF-8 when upload progress or `maxBodyLength` tracking wraps the stream. Previously the tracking wrapper read no `byteLength` from a string, so the body was sent empty and `maxBodyLength` was not enforced. Byte chunks, public API, and types are unchanged. (closes **#11379**; [#11380](https://github.com/axios/axios/pull/11380))
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

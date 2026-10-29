@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **Fetch adapter - capability probe cleanup:** Cancelled the throwaway `ReadableStream` body created while probing for response-stream support, so the probe no longer leaves a pending pull promise alive for the lifetime of the realm. Probe cleanup is now best-effort across both the request-stream and response-stream probes: a custom `env.Request` or `env.Response` whose probe body refuses cancellation, either by throwing or by rejecting, keeps the support the probe detected and no longer raises an unhandled rejection. Cleanup also runs when the capability check itself throws, so a probe body that cannot be inspected is still released. (**[#11241](https://github.com/axios/axios/pull/11241)**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

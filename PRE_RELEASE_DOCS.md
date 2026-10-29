@@ -91,3 +91,13 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
 - **Docs targets:** `README.md` Handling errors section.
 - **Required content:** Explain that wrapped errors append the original stack to `error.stack` after `Caused by:`, that `error.cause` remains the programmatic link, and that stacks are not redacted by `config.redact`. Do not present the marker as a parsing contract. Follow the Wrapped error stacks section of `docs/pages/advanced/error-handling.md`.
+
+### Fetch capability probe cleanup
+
+- **Change:** Document that the fetch adapter cancels the throwaway bodies it creates while probing for request-stream and response-stream support, and what that requires of custom `env.Request`/`env.Response` implementations.
+- **Source:** [PR #11241](https://github.com/axios/axios/pull/11241); `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter - capability probe cleanup.
+- **Status:** Pending.
+- **Docs targets:** Custom fetch/`env` guidance alongside the existing custom `env.Response` stream notes; fetch adapter internals if capability detection is described.
+- **Required content:** Explain that the adapter probes stream support once per `env` combination, at adapter construction rather than per request, and that it now calls `cancel()` on the probe body it created so the probe does not leave a pending stream alive for the lifetime of the realm. A custom `env.Request` or `env.Response` should therefore tolerate `cancel()` being called on the body it exposes during probing. State that this cleanup is best-effort and never changes detected support: a probe body whose `cancel()` is missing, throws, or returns a rejecting thenable still reports the support the probe detected, and the rejection is absorbed rather than surfacing as an unhandled rejection. Cleanup also runs when the capability check itself throws.
+- **Examples:** None required; if custom `env.Response` examples are expanded, show a wrapper whose body forwards `cancel()` to the underlying stream.
+- **Notes:** Internal behavior only. No public API, option, or type changes, and no migration is required. Do not imply that applications need to change a correct custom `env.Response`; the tolerance notes exist for partial or polyfilled implementations.

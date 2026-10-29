@@ -3,6 +3,8 @@ import assert from 'assert';
 import FormData from 'form-data';
 import resolveConfig from '../../../lib/helpers/resolveConfig.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
+import CanceledError from '../../../lib/cancel/CanceledError.js';
+import isCancel from '../../../lib/cancel/isCancel.js';
 
 class ReactNativeFormData {
   append() {}
@@ -199,6 +201,125 @@ describe('helpers::resolveConfig', () => {
       (err) => {
         assert.ok(err instanceof AxiosError);
         assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        return true;
+      }
+    );
+  });
+
+  it('should keep the code of param serialization failures that are already AxiosErrors', () => {
+    // Build params nested deeper than toFormData's default depth limit (100).
+    let params = {};
+    for (let i = 0; i < 105; i++) {
+      params = { nested: params };
+    }
+
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params,
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_FORM_DATA_DEPTH_EXCEEDED);
+        assert.strictEqual(err.config.url, '/foo');
+        return true;
+      }
+    );
+  });
+
+  it('should assign ERR_BAD_REQUEST to uncoded AxiosErrors thrown by a custom paramsSerializer', () => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: { a: 1 },
+          paramsSerializer: () => {
+            throw new AxiosError('serializer failed');
+          },
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_REQUEST);
+        assert.strictEqual(err.message, 'serializer failed');
+        assert.strictEqual(err.config.url, '/foo');
+        return true;
+      }
+    );
+  });
+
+  it('should rethrow a CanceledError thrown by a custom paramsSerializer unchanged', () => {
+    const canceled = new CanceledError('stop');
+
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: { a: 1 },
+          paramsSerializer: () => {
+            throw canceled;
+          },
+        }),
+      (err) => {
+        assert.strictEqual(err, canceled);
+        assert.ok(isCancel(err));
+        return true;
+      }
+    );
+  });
+
+  it('should rethrow nullish values thrown by a custom paramsSerializer unchanged', () => {
+    for (const value of [null, undefined]) {
+      let thrown;
+
+      try {
+        resolveConfig({
+          url: '/foo',
+          params: { a: 1 },
+          paramsSerializer: () => {
+            throw value;
+          },
+        });
+      } catch (err) {
+        thrown = { err };
+      }
+
+      assert.ok(thrown);
+      assert.strictEqual(thrown.err, value);
+    }
+  });
+
+  it('should wrap param serialization failures as AxiosError', () => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: {
+            value: '\uD800',
+          },
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_REQUEST);
+        return true;
+      }
+    );
+  });
+
+  it('should wrap paramsSerializer failures as AxiosError', () => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          params: { value: 1 },
+          paramsSerializer: () => {
+            throw new Error('serializer failed');
+          },
+        }),
+      (err) => {
+        assert.ok(err instanceof AxiosError);
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_REQUEST);
+        assert.strictEqual(err.message, 'serializer failed');
         return true;
       }
     );

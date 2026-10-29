@@ -103,11 +103,14 @@ isAxiosError: boolean;
 status?: number;
 
 // Método auxiliar para convertir el error a un objeto JSON.
+// Incluye `stack`, que puede contener una sección `Caused by:` del error envuelto.
 toJSON: () => object;
 
-// Causa del error.
+// Causa del error: el error original envuelto por `AxiosError.from()`.
 cause?: Error;
 ```
+
+Cuando `AxiosError.from()` envuelve un error con una pila utilizable, `stack` también incluye esa pila después de una línea `Caused by:`. `cause` sigue siendo el enlace programático admitido al error original. Consulta [Pilas de errores envueltos](/es/pages/advanced/error-handling#pilas-de-errores-envueltos).
 
 ### `AxiosHeaders`
 
@@ -394,6 +397,18 @@ try {
   }
 }
 ```
+
+Para los estados 413 y 422, prefiere los nombres de la RFC 9110 `ContentTooLarge` y `UnprocessableContent`:
+
+```js
+if (error.response?.status === HttpStatusCode.ContentTooLarge) {
+  console.error('Upload is too large'); // 413
+} else if (error.response?.status === HttpStatusCode.UnprocessableContent) {
+  console.error('Validation failed'); // 422
+}
+```
+
+Los nombres anteriores `PayloadTooLarge` y `UnprocessableEntity` siguen disponibles como alias obsoletos durante toda la v1.x. Las búsquedas inversas numéricas siguen devolviendo los nombres heredados por compatibilidad, por lo que `HttpStatusCode[413]` es `'PayloadTooLarge'` y `HttpStatusCode[422]` es `'UnprocessableEntity'`.
 
 ## Miscelánea
 

@@ -35,6 +35,44 @@ const response = await axios.get("https://api.example.com/data", {
 
 If `auth` is not supplied, the Node.js HTTP and fetch adapters can also derive Basic auth credentials from the request URL, for example `https://myUser:myPassword@api.example.com/data`. Percent-encoded URL credentials are decoded before the `Authorization` header is generated. Prefer the explicit `auth` option for new code; it takes precedence over URL-embedded credentials.
 
+### UTF-8 usernames
+
+By default, the XHR and fetch adapters keep their existing username handling for compatibility:
+
+- The XHR adapter sends the username as legacy single-byte (Latin-1) characters and the password as UTF-8.
+- The fetch adapter sends UTF-8 credentials, but rejects usernames containing characters above U+00FF.
+
+In both adapters, an unsupported username rejects with `ERR_BAD_OPTION_VALUE`. If your server expects UTF-8 Basic auth usernames, set `transitional.encodeBasicAuthUsername: true` per request or on an instance:
+
+```js
+await axios.get('/account', {
+  auth: { username: 'π', password: 'secret' },
+  transitional: { encodeBasicAuthUsername: true },
+});
+```
+
+A request-level `false` overrides an instance opt-in, for example for a legacy XHR endpoint that expects Latin-1 username bytes:
+
+```js
+const api = axios.create({
+  transitional: { encodeBasicAuthUsername: true },
+});
+
+await api.get('/legacy/account', {
+  auth: { username: 'café', password: 'secret' },
+  transitional: { encodeBasicAuthUsername: false },
+});
+```
+
+Keep the following in mind:
+
+- If you currently convert usernames to UTF-8 byte strings yourself, remove that conversion when you opt in to avoid double encoding.
+- Do not enable the option for XHR servers that expect legacy Latin-1 username bytes.
+- Setting the option to `false` does not make the fetch or Node.js HTTP adapters send Latin-1.
+- The option does not affect the Node.js HTTP adapter or credentials embedded in a fetch request URL.
+- ASCII and empty usernames are encoded the same way either way. Malformed UTF-16 strings still reject with `ERR_BAD_OPTION_VALUE`.
+- axios does not negotiate the charset from a server's authentication challenge or normalize Unicode strings.
+
 ::: tip
 For Bearer tokens and API keys, use a custom `Authorization` header rather than the `auth` option — `auth` is only for HTTP Basic.
 :::

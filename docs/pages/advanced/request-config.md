@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-The `headers` are the HTTP headers to be sent with the request. axios does not set a default `Content-Type` header. If you do not set one, axios picks it from the request `data`. For example, a plain object is sent as `application/json`.
+The `headers` are the HTTP headers to be sent with the request. axios does not set a default `Content-Type` header. If you do not set one, axios picks it from the request `data`: for example, a plain object is sent as `application/json` and `URLSearchParams` as `application/x-www-form-urlencoded`. For `post`, `put` and `patch` requests that still have no `Content-Type` after the request transforms, such as a plain string body, axios falls back to `application/x-www-form-urlencoded`.
 
 ### `params`
 

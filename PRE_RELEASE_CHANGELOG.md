@@ -5,6 +5,8 @@
 ## Features
 
 ## Bug Fixes
+- **AxiosError custom properties:** `AxiosError.toJSON()` now includes explicitly assigned custom properties while safely removing circular references and redacting credentials according to `config.redact` rules. (**#11287**)
+
 
 ## Documentation
 

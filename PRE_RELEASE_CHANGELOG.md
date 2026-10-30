@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **FormData nested length fields:** Prevent `RangeError: Invalid array length` when a nested field is named `length` by converting intermediate arrays to objects up front. (**[#11365](https://github.com/axios/axios/pull/11365)**, closes **[#11295](https://github.com/axios/axios/issues/11295)**)
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

@@ -83,6 +83,8 @@ function myAdapter(config) {
 const instance = axios.create({ adapter: myAdapter });
 ```
 
+El adaptador recibe la configuración devuelta por los interceptores de solicitud. Una configuración escribible con prototipo nulo, como la configuración combinada original, se pasa como el mismo objeto; cualquier otra configuración devuelta por un interceptor se copia primero en una instantánea filtrada con prototipo nulo (consulta [Devolver un objeto de configuración diferente](/es/pages/advanced/interceptors#devolver-un-objeto-de-configuracion-diferente)). Cuando el adaptador termina, axios establece [`response.duration`](/es/pages/advanced/response-schema#duracion-de-la-respuesta) en la respuesta, reemplazando cualquier valor de `duration` que haya establecido el adaptador.
+
 Los adaptadores TypeScript pueden conservar tanto los datos de solicitud como los parámetros de consulta en la configuración de la respuesta usando los genéricos correspondientes:
 
 ```ts

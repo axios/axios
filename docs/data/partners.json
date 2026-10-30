@@ -1,0 +1,147 @@
+[
+  {
+    "name": "HeroDevs",
+    "imageUrl": "/partners/herodevs.png",
+    "website": "https://www.herodevs.com/support/nes-for-axios?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+    "socialLinks": [
+      {
+        "type": "TWITTER",
+        "url": "https://x.com/herodevs?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "GITHUB",
+        "url": "https://github.com/herodevs?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "LINKEDIN",
+        "url": "https://www.linkedin.com/company/herodevs/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "YOUTUBE",
+        "url": "https://www.youtube.com/@HeroDevs?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      }
+    ],
+    "description": {
+      "en": "Never-Ending Support for end-of-life open source software.",
+      "es": "Soporte continuo para software de código abierto al final de su vida útil.",
+      "fr": "Support continu pour les logiciels open source en fin de vie.",
+      "zh": "为已停止维护的开源软件提供长期支持。"
+    }
+  },
+  {
+    "name": "Socket",
+    "imageUrl": "/partners/socket.png",
+    "website": "https://socket.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+    "socialLinks": [
+      {
+        "type": "TWITTER",
+        "url": "https://x.com/SocketSecurity?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "GITHUB",
+        "url": "https://github.com/SocketDev?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "LINKEDIN",
+        "url": "https://www.linkedin.com/company/socketinc/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "BLUESKY",
+        "url": "https://bsky.app/profile/socket.dev?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "DISCORD",
+        "url": "https://discord.gg/JkhgPpXDSd?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      }
+    ],
+    "description": {
+      "en": "Supply chain security for open source dependencies.",
+      "es": "Seguridad de la cadena de suministro para dependencias de código abierto.",
+      "fr": "Sécurité de la chaîne d'approvisionnement pour les dépendances open source.",
+      "zh": "为开源依赖提供供应链安全保障。"
+    }
+  },
+  {
+    "name": "Namespace",
+    "imageUrl": "/partners/namespace.png",
+    "website": "https://namespace.so/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+    "socialLinks": [
+      {
+        "type": "TWITTER",
+        "url": "https://x.com/namespacelabs?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "GITHUB",
+        "url": "https://github.com/namespacelabs?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "LINKEDIN",
+        "url": "https://www.linkedin.com/company/namespace/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "DISCORD",
+        "url": "https://discord.gg/DqMzDFR6Hc?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      }
+    ],
+    "description": {
+      "en": "High-performance runners and build infrastructure for CI.",
+      "es": "Runners de alto rendimiento e infraestructura de compilación para CI.",
+      "fr": "Runners haute performance et infrastructure de build pour la CI.",
+      "zh": "为 CI 提供高性能运行器和构建基础设施。"
+    }
+  },
+  {
+    "name": "Greptile",
+    "imageUrl": "/partners/greptile.png",
+    "website": "https://www.greptile.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+    "socialLinks": [
+      {
+        "type": "TWITTER",
+        "url": "https://x.com/greptile?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "GITHUB",
+        "url": "https://github.com/greptileai?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "LINKEDIN",
+        "url": "https://www.linkedin.com/company/greptile/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "DISCORD",
+        "url": "https://discord.gg/dWaGnuFyJA?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      }
+    ],
+    "description": {
+      "en": "AI code review with full context of your codebase.",
+      "es": "Revisión de código con IA que conoce todo tu código base.",
+      "fr": "Revue de code par IA avec le contexte complet de votre base de code.",
+      "zh": "基于完整代码库上下文的 AI 代码审查。"
+    }
+  },
+  {
+    "name": "cubic",
+    "imageUrl": "/partners/cubic.png",
+    "website": "https://www.cubic.dev/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship",
+    "socialLinks": [
+      {
+        "type": "TWITTER",
+        "url": "https://x.com/cubic_dev_?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "GITHUB",
+        "url": "https://github.com/mrge-io?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      },
+      {
+        "type": "LINKEDIN",
+        "url": "https://www.linkedin.com/company/cubic-dev?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
+      }
+    ],
+    "description": {
+      "en": "AI code review for pull requests.",
+      "es": "Revisión de código con IA para pull requests.",
+      "fr": "Revue de code par IA pour les pull requests.",
+      "zh": "面向 Pull Request 的 AI 代码审查。"
+    }
+  }
+]

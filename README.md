@@ -103,7 +103,7 @@
                 align="center"
                 title="SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications."
             >
-                BSAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
+                SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
             </p>
             <p align="center">
                 <a
@@ -352,6 +352,29 @@
                 >
             </p>
         </td>
+       <td align="center" valign="middle" width="33.333333333333336%">
+    <a
+        href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+        style="padding: 10px; display: inline-block"
+        target="_blank"
+    >
+        <img
+            width="180px"
+            src="https://namespace.so/oss/badge.svg"
+            alt="CI powered by Namespace"
+        />
+    </a>
+    <p align="center">
+        Actually the fastest way to run <br>your GitHub Actions.
+    </p>
+    <p align="center">
+        <a
+            href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+            target="_blank"
+            ><b>namespace.so</b></a
+        >
+    </p>
+</td>
     </tr>
 </table>
 
@@ -1481,7 +1504,7 @@ Axios errors use this structure:
 | Property | Definition |
 | -------- | ---------- |
 | message | A quick summary of the error message and the status it failed with. |
-| name | This defines where the error originated from. For axios, it will always be an 'AxiosError'. |
+| name | The error name: usually `AxiosError`, `CanceledError` for cancellations, or the original name of a wrapped error. Use `axios.isAxiosError(error)` to identify Axios errors and `axios.isCancel(error)` to detect cancellations. |
 | stack | Stack trace for the error. |
 | config | An axios config object with specific instance configurations defined by the user from when the request was made |
 | code | Axios error code. The table below lists internal Axios error codes. |

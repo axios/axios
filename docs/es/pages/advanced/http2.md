@@ -38,6 +38,34 @@ El soporte de HTTP/2 es actualmente experimental. La API puede cambiar en futura
 El adaptador HTTP/2 actualmente no sigue redirecciones. Si una solicitud emitida con `httpVersion: 2` recibe una respuesta `3xx`, la redirección no se sigue automáticamente. Maneja estas respuestas manualmente o permanece en HTTP/1.x para endpoints que dependen de redirecciones.
 :::
 
+## Búsqueda DNS personalizada
+
+Una función [`lookup`](https://nodejs.org/api/dns.html#dnslookuphostname-options-callback) personalizada también se aplica a las conexiones HTTP/2. La función de búsqueda forma parte de las opciones de sesión, por lo que las solicitudes reutilizan una sesión solo cuando usan la misma función `lookup`.
+
+```js
+import dns from 'node:dns';
+
+const { data } = await axios.get('https://example.com/api', {
+  httpVersion: 2,
+  lookup: (hostname, options, callback) => {
+    // Resuelve con tu propia lógica y luego devuelve el resultado a Node.js
+    dns.lookup(hostname, options, callback);
+  },
+});
+```
+
+## Proxies
+
+Las solicitudes HTTP/2 no pueden enviarse a través de un proxy porque `http2.connect()` de Node.js no puede aplicar la configuración de proxy:
+
+- Un objeto `proxy` explícito se rechaza con un `AxiosError` cuyo código es `ERR_NOT_SUPPORT`.
+- `proxy: false` se conecta directamente, como antes.
+- Las variables de entorno de proxy (`HTTP_PROXY`, `HTTPS_PROXY`, etc.) y la configuración `proxyEnv` en `httpAgent`/`httpsAgent` se ignoran.
+
+::: danger Las solicitudes HTTP/2 omiten los proxies del entorno
+Como la configuración de proxy del entorno se ignora, una solicitud HTTP/2 se conecta directamente al origen incluso cuando el proceso está configurado para usar un proxy. Si tu despliegue requiere que todo el tráfico de salida pase por un proxy, no uses `httpVersion: 2`.
+:::
+
 ## Ejemplo completo
 
 El ejemplo a continuación envía una solicitud POST con `multipart/form-data` sobre HTTP/2 y rastrea tanto el progreso de carga como el de descarga.

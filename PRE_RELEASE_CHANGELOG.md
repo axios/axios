@@ -16,6 +16,8 @@
 
 ## Maintenance
 
+- **Cancellation lifecycle regression coverage:** Added Node HTTP/Fetch and browser XHR tests for cancellation inside asynchronous request interceptors and successful reuse of an Axios instance after an in-flight cancellation, using AbortSignal, CancelToken, and both together. Added deterministic signal-composition tests for timeout/cancellation precedence and subscription cleanup. Runtime behavior, public APIs, and types are unchanged.
+
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 
 - **CI runners:** Switched GitHub Actions jobs from GitHub-hosted `ubuntu-latest` runners to the `namespace-profile-axios` Namespace runner profile. The npm publish job stays on `ubuntu-latest` because npm provenance and trusted publishing require GitHub-hosted runners. CI only; no runtime, public API, or type compatibility changes.

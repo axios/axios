@@ -43,6 +43,22 @@ describe('adapters', () => {
     );
   });
 
+  it('should pass the config to adapter getters', () => {
+    const adapter = () => {};
+    const config = { env: {} };
+    let received;
+
+    adapters.adapters.testadapter = {
+      get: (c) => {
+        received = c;
+        return adapter;
+      },
+    };
+
+    assert.strictEqual(adapters.getAdapter('testAdapter', config), adapter);
+    assert.strictEqual(received, config);
+  });
+
   it('should pick suitable adapter from the list', () => {
     const adapter = () => {};
 

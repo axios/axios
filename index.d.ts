@@ -752,7 +752,8 @@ export interface GenericHTMLFormElement {
 }
 
 export function getAdapter(
-  adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined
+  adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined,
+  config?: AxiosRequestConfig
 ): AxiosAdapter;
 
 export function toFormData(

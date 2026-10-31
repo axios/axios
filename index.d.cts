@@ -771,7 +771,10 @@ declare namespace axios {
       options?: FormSerializerOptions
     ): GenericFormData;
     formToJSON(form: GenericFormData | GenericHTMLFormElement): object;
-    getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
+    getAdapter(
+      adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined,
+      config?: AxiosRequestConfig
+    ): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
     mergeConfig<D = any, P = any>(
       config1: AxiosRequestConfig<D, P>,

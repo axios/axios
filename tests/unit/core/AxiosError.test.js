@@ -878,5 +878,34 @@ describe('core::AxiosError', () => {
 
       expect(error.toJSON().config.tags).toEqual(['a', 'b']);
     });
+
+    it('bounds agents reachable through Set elements', () => {
+      const agent = new http.Agent();
+      const error = new AxiosError('Boom', 'ECODE', {
+        items: new Set([{ httpAgent: agent }]),
+      });
+
+      expect(error.toJSON().config.items[0].httpAgent).toBe('[Agent]');
+    });
+
+    it('does not invoke hidden duck-type accessors while snapshotting', () => {
+      const weird = {};
+      Object.defineProperty(weird, 'pipe', {
+        get() {
+          throw new Error('must not be invoked');
+        },
+      });
+      const error = new AxiosError('Boom', 'ECODE', { weird });
+
+      expect(error.toJSON().config.weird).toEqual({});
+    });
+
+    it('keeps non-enumerable array indices', () => {
+      const items = [];
+      Object.defineProperty(items, '0', { value: 'keep' });
+      const error = new AxiosError('Boom', 'ECODE', { items });
+
+      expect(error.toJSON().config.items).toEqual(['keep']);
+    });
   });
 });

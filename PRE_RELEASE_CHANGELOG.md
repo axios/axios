@@ -6,6 +6,7 @@
 
 ## Bug Fixes
 
+- **Progress throttle trailing timer:** Skip the trailing `setTimeout` delivery when there is no pending progress event, matching the existing `flush()` guard. A page that wraps `window.setTimeout` without forwarding the timer id leaves the throttle unable to cancel scheduled callbacks; such a leftover timer firing after the latest event was delivered threw `TypeError: args is not iterable` from a detached callback, even though the request itself succeeded. Skipping is lossless because `lastArgs === null` means the newest event was already delivered. (**[#11338](https://github.com/axios/axios/issues/11338)**)
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

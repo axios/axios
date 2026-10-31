@@ -34,4 +34,27 @@ describe('helpers::throttle', () => {
 
     expect(listener.mock.calls).toEqual([['first'], ['replacement']]);
   });
+
+  it('should ignore a trailing timer that fires after flush cleared the pending arguments', () => {
+    const listener = vi.fn();
+    const [throttled, flush] = throttle(listener, 1);
+
+    // Simulate a third-party setTimeout wrapper that drops the timer id, so
+    // the throttle can neither dedupe nor cancel the timers it schedules.
+    const underlying = globalThis.setTimeout;
+    globalThis.setTimeout = (...args) => {
+      underlying(...args);
+    };
+
+    try {
+      throttled('first');
+      throttled('pending');
+      flush();
+
+      expect(() => vi.runAllTimers()).not.toThrow();
+      expect(listener.mock.calls).toEqual([['first'], ['pending']]);
+    } finally {
+      globalThis.setTimeout = underlying;
+    }
+  });
 });

@@ -68,5 +68,7 @@ axios.create({
 const customFetch: typeof fetch = (input, init) => fetch(input, init);
 axios.getAdapter('fetch', { env: { fetch: customFetch } });
 axios.getAdapter(['fetch', 'xhr'], { env: { fetch: customFetch } });
+axios.getAdapter(undefined, { env: { fetch: customFetch } });
+axios.getAdapter((config) => axios.getAdapter('fetch', config)(config), { timeout: 1000 });
 // @ts-expect-error env.fetch must be a fetch function
 axios.getAdapter('fetch', { env: { fetch: 1 } });

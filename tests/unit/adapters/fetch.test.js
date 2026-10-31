@@ -2229,5 +2229,26 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         cancelSpy.mockRestore();
       }
     });
+
+    it('should cancel the ReadableStream created during the response stream probe', () => {
+      // The response probe builds `new Response('').body` solely to test
+      // isReadableStream.  Uncancelled, it leaks a pending pull promise per
+      // realm, the same class of leak the request probe had before its fix.
+      const cancelSpy = vi.spyOn(ReadableStream.prototype, 'cancel');
+
+      try {
+        const uniqueFetch = async () => new Response('ok');
+        getFetch({ env: { fetch: uniqueFetch } });
+
+        // Request probe cancels once; the response probe must cancel too.
+        assert.strictEqual(
+          cancelSpy.mock.calls.length,
+          2,
+          'both capability probes should cancel their probe streams'
+        );
+      } finally {
+        cancelSpy.mockRestore();
+      }
+    });
   });
 });

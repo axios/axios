@@ -6,6 +6,7 @@
 
 ## Bug Fixes
 
+- **combineURLs missing base URL:** Return the relative URL unchanged when `baseURL` is `null` or `undefined`, mirroring the existing guard for a missing relative URL, instead of throwing `TypeError` while reading `length`. (**[#11354](https://github.com/axios/axios/pull/11354)**, closes **[#11282](https://github.com/axios/axios/issues/11282)**)
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

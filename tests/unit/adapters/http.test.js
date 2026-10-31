@@ -19,6 +19,7 @@ import HttpsProxyAgent from 'https-proxy-agent';
 import http from 'http';
 import https from 'https';
 import net from 'net';
+import tls from 'tls';
 import stream from 'stream';
 import zlib from 'zlib';
 import fs from 'fs';
@@ -5689,6 +5690,39 @@ describe('supports http with nodejs', () => {
         const http2Axios = createHttp2Axios(localServerURL);
         const { data } = await http2Axios.get(localServerURL);
         assert.deepStrictEqual(data, 'OK');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should support IPv6 literal hosts', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.end('OK');
+        },
+        {
+          useHTTP2: true,
+          port: SERVER_PORT,
+        }
+      );
+
+      try {
+        const { port } = server.address();
+        const http2Axios = createHttp2Axios(`https://[::1]:${port}`);
+        // Connect to the IPv4 test server so the test does not need IPv6 on the host.
+        const { data } = await http2Axios.get('/', {
+          http2Options: {
+            createConnection: () =>
+              tls.connect({
+                host: '127.0.0.1',
+                port,
+                rejectUnauthorized: false,
+                ALPNProtocols: ['h2'],
+              }),
+          },
+        });
+
+        assert.strictEqual(data, 'OK');
       } finally {
         await stopHTTPServer(server);
       }

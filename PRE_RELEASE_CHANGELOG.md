@@ -6,6 +6,8 @@
 
 ## Bug Fixes
 
+- **HTTP/2 IPv6 literal hosts:** HTTP/2 requests (`httpVersion: 2`) to an IPv6 literal URL such as `https://[::1]:8443/` no longer fail with `ERR_INVALID_URL` ("Invalid URL"). The Node HTTP adapter strips the brackets from IPv6 hostnames for `http.request()`, and the HTTP/2 transport then built the session authority from that bare hostname (`https://::1:8443`), which `http2.connect()` cannot parse. The authority now re-adds the brackets for IPv6 hostnames. Hostnames and IPv4 addresses produce the same authority as before, so HTTP/2 session reuse for them is unchanged. Node.js still derives the `:authority` pseudo-header itself, and this change does not alter it. Node.js HTTP adapter only; no public API or type changes.
+
 ## Documentation
 
 - **README sponsor name:** Corrected sponsor name typo `BSAP SE` → `SAP SE` in the README sponsor listing. This updates sponsor recognition only, with no runtime, public API, or type compatibility changes. ([#11373](https://github.com/axios/axios/pull/11373))

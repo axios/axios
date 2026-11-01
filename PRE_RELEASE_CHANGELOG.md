@@ -16,6 +16,8 @@
 
 ## Maintenance
 
+- **Error initialization regression coverage:** Verify that the public module loads and AxiosError and CanceledError retain their JSON serialization when another library installs a read-only `Error.prototype.toJSON` before import. The test runs in an isolated process and checks that the external serializer remains intact. Test-only coverage for [#6690](https://github.com/axios/axios/issues/6690); no runtime, public API, or type changes.
+
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 
 - **CI runners:** Switched GitHub Actions jobs from GitHub-hosted `ubuntu-latest` runners to the `namespace-profile-axios` Namespace runner profile. The npm publish job stays on `ubuntu-latest` because npm provenance and trusted publishing require GitHub-hosted runners. CI only; no runtime, public API, or type compatibility changes.

@@ -16,7 +16,7 @@
 
 ## Maintenance
 
-- **Error initialization regression coverage:** Verify that the public module loads and AxiosError and CanceledError retain their JSON serialization when another library installs a read-only `Error.prototype.toJSON` before import. The test runs in an isolated process and checks that the external serializer remains intact. Test-only coverage for [#6690](https://github.com/axios/axios/issues/6690); no runtime, public API, or type changes.
+- **Error initialization regression coverage:** Verify that the public module loads and AxiosError and CanceledError retain their JSON serialization when another library installs a read-only `Error.prototype.toJSON` before import. The test runs in an isolated process and checks that the external serializer remains intact. Test-only coverage for [#6690](https://github.com/axios/axios/issues/6690) ([#11406](https://github.com/axios/axios/pull/11406)); no runtime, public API, or type changes.
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 

@@ -17,7 +17,7 @@ describe.each(['http', 'fetch'])('%s response duration', (adapter) => {
     });
 
     try {
-      vi.spyOn(Date, 'now').mockImplementation(() => now);
+      vi.spyOn(performance, 'now').mockImplementation(() => now);
       const result = await axios
         .get(`http://localhost:${server.address().port}`, {
           adapter,
@@ -45,7 +45,7 @@ describe.each(['http', 'fetch'])('%s response duration', (adapter) => {
     });
 
     try {
-      vi.spyOn(Date, 'now').mockImplementation(() => now);
+      vi.spyOn(performance, 'now').mockImplementation(() => now);
       const response = await axios.get(`http://localhost:${server.address().port}`, {
         adapter,
         proxy: false,

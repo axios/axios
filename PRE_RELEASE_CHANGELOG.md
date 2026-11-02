@@ -6,7 +6,8 @@
 
 ## Bug Fixes
 
-- **`getAdapter` typings:** `getAdapter(adapters, config?)` in `index.d.ts` and `index.d.cts` now accepts the optional request config that the runtime already forwards to adapter getters, so `getAdapter('fetch', { env: { fetch } })` type-checks without a cast. Type-only; additive and backwards compatible, no runtime change. ([#11403](https://github.com/axios/axios/issues/11403))
+- **Response duration clock:** `response.duration` is now measured with the monotonic `performance.now()` instead of `Date.now()`, falling back to `Date.now()` only in runtimes without `performance.now()`. Since v1.21.0, axios read `Date.now()` on every request, which broke Next.js production builds that use Cache Components (`cacheComponents: true`) because Next.js rejects reading the current time while prerendering; `performance.now()` is the timing API Next.js allows for this. The monotonic clock also stops system clock adjustments from skewing the value. `duration` is rounded to whole milliseconds, so it stays an integer as in v1.21.0, and it is still clamped at `0`. No public API or type changes; the `duration` declaration comments in `index.d.ts` and `index.d.cts` now name the clock. ([#11407](https://github.com/axios/axios/issues/11407))
+- **`getAdapter` typings:** `getAdapter(adapters, config?)` in `index.d.ts` and `index.d.cts` now accepts the optional request config that the runtime already forwards to adapter getters, so `getAdapter('fetch', { env: { fetch } })` type-checks without a cast. Type-only; additive and backwards compatible, no runtime change. ([#11403](https://github.com/axios/axios/issues/11403), [#11404](https://github.com/axios/axios/pull/11404))
 
 ## Documentation
 
@@ -20,4 +21,5 @@
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 
+- **follow-redirects security update:** Raised the `follow-redirects` dependency range from `^1.16.0` to `^1.16.2` and updated the lockfile to 1.16.2, which fixes [CVE-2026-116689](https://github.com/advisories/GHSA-mrwp-f3q8-3g9p) (cross-realm `sensitiveHeaders` arrays are discarded and custom credentials can follow redirects). Raising the range floor stops installs from resolving the vulnerable 1.16.0 and 1.16.1 releases. No axios runtime, public API, or type compatibility changes. ([#11409](https://github.com/axios/axios/issues/11409), [#11410](https://github.com/axios/axios/pull/11410))
 - **CI runners:** Switched GitHub Actions jobs from GitHub-hosted `ubuntu-latest` runners to the `namespace-profile-axios` Namespace runner profile. The npm publish job stays on `ubuntu-latest` because npm provenance and trusted publishing require GitHub-hosted runners. CI only; no runtime, public API, or type compatibility changes.

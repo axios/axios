@@ -210,13 +210,4 @@ describe('helpers::fromDataURI', () => {
       Buffer.from('hello%20world%ZZ')
     );
   });
-
-  it('should still decode valid escapes before an invalid one', () => {
-    // decodeURIComponent throws on the whole string if any escape is invalid,
-    // so the fallback returns the raw body (not a partial decode).
-    assert.deepStrictEqual(
-      fromDataURI('data:text/plain,hello%20world%ZZ', false),
-      Buffer.from('hello%20world%ZZ')
-    );
-  });
 });

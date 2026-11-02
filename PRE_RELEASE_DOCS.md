@@ -20,6 +20,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Response duration clock
+
+- **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.
+- **Source:** [Issue #11407](https://github.com/axios/axios/issues/11407).
+- **Status:** Pending.
+- **Docs targets:** `docs/pages/advanced/response-schema.md` (Response duration) and the Spanish, French, and Chinese translations of that section; the README duration note tracked in the entry below.
+- **Required content:** Replace the bullet saying the value is approximate wall-clock time measured with `Date.now()`. The value is now measured with the monotonic `performance.now()` and rounded to whole milliseconds, so system clock adjustments no longer affect it. Runtimes without `performance.now()` fall back to `Date.now()`, where backward clock adjustments are clamped to `0` and forward adjustments can inflate the value. Optionally note that this keeps axios compatible with Next.js Cache Components prerendering, which rejects `Date.now()`.
+- **Notes:** The README entry below says "approximate wall-clock time"; use the new wording when applying it.
+
 ### Response duration (README)
 
 - **Change:** Bring `README.md` in line with the released docs site.

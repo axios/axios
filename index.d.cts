@@ -651,7 +651,8 @@ declare namespace axios {
     status: number;
     statusText: string;
     /**
-     * Wall-clock milliseconds from adapter invocation to settlement, clamped at zero.
+     * Whole milliseconds from adapter invocation to settlement, clamped at zero. Measured with
+     * `performance.now()` when available, otherwise `Date.now()`.
      * Excludes interceptors and request/response transforms. Stream consumption is not included.
      */
     duration?: number;

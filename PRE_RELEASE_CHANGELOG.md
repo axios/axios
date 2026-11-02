@@ -20,4 +20,5 @@
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->
 
+- **follow-redirects security update:** Raised the `follow-redirects` dependency range from `^1.16.0` to `^1.16.2` and updated the lockfile to 1.16.2, which fixes [CVE-2026-116689](https://github.com/advisories/GHSA-mrwp-f3q8-3g9p) (cross-realm `sensitiveHeaders` arrays are discarded and custom credentials can follow redirects). Raising the range floor stops installs from resolving the vulnerable 1.16.0 and 1.16.1 releases. No axios runtime, public API, or type compatibility changes. ([#11409](https://github.com/axios/axios/issues/11409), [#11410](https://github.com/axios/axios/pull/11410))
 - **CI runners:** Switched GitHub Actions jobs from GitHub-hosted `ubuntu-latest` runners to the `namespace-profile-axios` Namespace runner profile. The npm publish job stays on `ubuntu-latest` because npm provenance and trusted publishing require GitHub-hosted runners. CI only; no runtime, public API, or type compatibility changes.

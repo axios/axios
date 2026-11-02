@@ -2229,5 +2229,262 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         cancelSpy.mockRestore();
       }
     });
+
+    it('should cancel the ReadableStream created during the response stream probe', async () => {
+      // The response probe reads `new Response('').body` to test for stream
+      // support.  The probe body was never cancelled, so its pull promise
+      // stayed pending for the lifetime of the realm -- one leaked async
+      // resource per module realm.  This is the sibling of the request probe
+      // leak fixed in #7515, which did not cover the response probe.
+      //
+      // The request probe already calls `ReadableStream.prototype.cancel`, so
+      // spying on the prototype would pass with or without this fix.  Instead
+      // we inject a custom `env.Response` whose body we can observe directly.
+
+      const probeBodies = [];
+
+      class ProbeResponse {
+        constructor() {
+          this.body = new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([1]));
+              controller.close();
+            },
+          });
+
+          probeBodies.push(this.body);
+        }
+      }
+
+      // Unique fetch function ensures a cache miss -> factory() re-runs the probe.
+      const uniqueFetch = async () => new Response('ok');
+
+      getFetch({ env: { fetch: uniqueFetch, Response: ProbeResponse } });
+
+      assert.strictEqual(
+        probeBodies.length,
+        1,
+        'the response probe should build exactly one probe body'
+      );
+
+      // A cancelled ReadableStream is closed: reading from it resolves
+      // immediately with `done: true` and yields no chunks.  An uncancelled
+      // probe body still holds its enqueued chunk, so the read yields data.
+      const { done, value } = await probeBodies[0].getReader().read();
+
+      assert.strictEqual(done, true, 'the probe body should be closed after the probe');
+      assert.strictEqual(value, undefined, 'the probe body should not yield data');
+    });
+
+    it('should not leave the response probe body pull promise pending', async () => {
+      // Regression guard for the leak itself: the probe body must be released
+      // by the time the factory returns, so no pull promise stays pending.
+
+      const probeBodies = [];
+
+      class ProbeResponse {
+        constructor() {
+          const body = new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([1]));
+              controller.close();
+            },
+          });
+
+          let cancelCalls = 0;
+
+          const cancel = body.cancel.bind(body);
+
+          body.cancel = (...args) => {
+            cancelCalls++;
+            return cancel(...args);
+          };
+
+          Object.defineProperty(body, 'cancelCalls', {
+            get: () => cancelCalls,
+          });
+
+          probeBodies.push(body);
+
+          this.body = body;
+        }
+      }
+
+      const uniqueFetch = async () => new Response('ok');
+
+      getFetch({ env: { fetch: uniqueFetch, Response: ProbeResponse } });
+
+      assert.strictEqual(probeBodies.length, 1);
+      assert.strictEqual(
+        probeBodies[0].cancelCalls,
+        1,
+        'the response probe body should be cancelled exactly once'
+      );
+    });
+
+    it('should keep response stream support when the probe body cancel throws', async () => {
+      // `isReadableStream` is a `Symbol.toStringTag` check rather than a
+      // structural one, so a custom `env.Response` can expose a stream-like
+      // body with a broken `cancel()`.  A `cancel()` that throws must not
+      // escape into the capability probe, which would turn the probe into
+      // `false` and silently downgrade a capability that was detected as
+      // supported before this change.
+
+      class ThrowingCancelResponse {
+        constructor() {
+          const body = new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([1]));
+              controller.close();
+            },
+          });
+
+          body.cancel = () => {
+            throw new Error('cancel is not supported');
+          };
+
+          this.body = body;
+        }
+      }
+
+      const uniqueFetch = async () => new Response('ok');
+
+      const adapter = getFetch({ env: { fetch: uniqueFetch, Response: ThrowingCancelResponse } });
+
+      // The `stream` response type is only wired up when
+      // `supportsResponseStream` is truthy, so resolving it proves the
+      // capability survived the failing cleanup.
+      const { data } = await adapter({
+        url: 'http://localhost/probe',
+        method: 'get',
+        responseType: 'stream',
+        env: {
+          Response: ThrowingCancelResponse,
+          async fetch() {
+            return new Response('ok');
+          },
+        },
+      });
+
+      assert.ok(data, 'the response stream should still be resolvable');
+    });
+
+    it('should keep response stream support when the probe body cancel rejects', async () => {
+      // A `cancel()` that returns a rejected promise must not surface as an
+      // unhandled rejection, and must not change the detected capability.
+
+      class RejectingCancelResponse {
+        constructor() {
+          const body = new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([1]));
+              controller.close();
+            },
+          });
+
+          body.cancel = () => Promise.reject(new Error('cancel failed'));
+
+          this.body = body;
+        }
+      }
+
+      const uniqueFetch = async () => new Response('ok');
+
+      const adapter = getFetch({ env: { fetch: uniqueFetch, Response: RejectingCancelResponse } });
+
+      const { data } = await adapter({
+        url: 'http://localhost/probe',
+        method: 'get',
+        responseType: 'stream',
+        env: {
+          Response: RejectingCancelResponse,
+          async fetch() {
+            return new Response('ok');
+          },
+        },
+      });
+
+      assert.ok(data, 'the response stream should still be resolvable');
+
+      // Give any unhandled rejection a chance to surface.
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+
+    it('should release the response probe body when the capability check throws', () => {
+      // A custom body whose `Symbol.toStringTag` getter throws exits the
+      // capability check early.  The probe body must still be released, so the
+      // cleanup has to run from a `finally` block.
+
+      let cancelled = false;
+
+      const body = {
+        get [Symbol.toStringTag]() {
+          throw new Error('toStringTag is unavailable');
+        },
+        cancel() {
+          cancelled = true;
+          return Promise.resolve();
+        },
+      };
+
+      class ThrowingTagResponse {
+        constructor() {
+          this.body = body;
+        }
+      }
+
+      const uniqueFetch = async () => new Response('ok');
+
+      getFetch({ env: { fetch: uniqueFetch, Response: ThrowingTagResponse } });
+
+      assert.strictEqual(cancelled, true, 'the probe body should be released');
+    });
+
+    it('should keep request stream support when the probe body cancel throws', async () => {
+      // The request probe had the same bare `cancel()` call, so a throwing
+      // `cancel()` could previously turn the probe into `false`.  Cleanup must
+      // stay best-effort there as well.
+
+      class ThrowingCancelRequest extends Request {
+        constructor(input, init) {
+          super(input, init);
+
+          if (this.body) {
+            this.body.cancel = () => {
+              throw new Error('cancel is not supported');
+            };
+          }
+        }
+      }
+
+      const uniqueFetch = async () => new Response('ok');
+
+      const adapter = getFetch({ env: { fetch: uniqueFetch, Request: ThrowingCancelRequest } });
+
+      assert.strictEqual(typeof adapter, 'function');
+
+      // A streamed upload under `maxBodyLength` only succeeds when
+      // `supportsRequestStream` is truthy.  With the bare `cancel()` this
+      // rejected with ERR_NOT_SUPPORT; the cleanup must not change that.
+      const { data } = await adapter({
+        url: 'http://localhost/probe',
+        method: 'post',
+        data: new ReadableStream({
+          start(controller) {
+            controller.close();
+          },
+        }),
+        maxBodyLength: 1024,
+        headers: { 'Content-Type': 'application/octet-stream' },
+        env: {
+          Request: ThrowingCancelRequest,
+          async fetch() {
+            return new Response('ok');
+          },
+        },
+      });
+
+      assert.strictEqual(data, 'ok', 'the streamed upload should still be supported');
+    });
   });
 });

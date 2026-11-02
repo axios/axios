@@ -4,6 +4,12 @@ import { tokenizeSearchText } from './tokenizeSearchText.js';
 export const searchConfig = {
   provider: 'local',
   options: {
+    // Same as VitePress's default, but draft blog posts (`draft: true`) are
+    // also left out of the search index.
+    _render(src, env, md) {
+      const html = md.render(src, env);
+      return env.frontmatter?.search === false || env.frontmatter?.draft ? '' : html;
+    },
     detailedView: 'auto',
     disableQueryPersistence: false,
     miniSearch: {

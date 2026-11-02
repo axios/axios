@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Header normalization collisions
+
+- **Change:** Preserve the last value when header-name formatting or whitespace trimming creates a duplicate.
+- **Source:** The Header normalization entry in `PRE_RELEASE_CHANGELOG.md`.
+- **Status:** Pending.
+- **Docs targets:** `README.md`, the `AxiosHeaders#normalize(format)` section, and corresponding API-reference documentation and translations.
+- **Required content:** Explain that duplicate detection uses trimmed, case-insensitive names. Calling `normalize(true)` directly after assigning differently cased keys preserves the last value; callers do not need to call `normalize()` first.
+- **Examples:** `const headers = new AxiosHeaders({ foo: 'first' }); headers.Foo = 'last'; headers.normalize(true).toJSON(); // { Foo: 'last' }`
+- **Notes:** Patch fix only; the existing method signature and return value are unchanged.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

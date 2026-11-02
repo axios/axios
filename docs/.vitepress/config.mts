@@ -336,7 +336,10 @@ export default defineConfig({
         nav: enNav,
         // Blog posts get their own sidebar. The theme fills in the list of
         // posts from docs/blog/posts.data.ts (see .vitepress/theme/index.ts).
-        sidebar: { '/blog/': [{ text: 'Blog', items: [] }], '/': enSidebar },
+        sidebar: {
+          '/blog/': [{ text: 'Blog', items: [{ text: 'All posts', link: '/blog/' }] }],
+          '/': enSidebar,
+        },
       },
     },
     zh: {

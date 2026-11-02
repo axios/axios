@@ -26,7 +26,7 @@ The [supply chain compromise in March](https://github.com/axios/axios/issues/106
 - **Time to migrate properly,** with v0 supported while you plan the move to v1.
 - **A named vendor for compliance,** with a documented patch history.
 
-It covers the 0.x line, including 0.24.x and 0.27.x. The [NES for Axios documentation](https://docs.herodevs.com/axios) has the full list of supported versions.
+Builds are available for Axios 0.24.x today. The [NES for Axios documentation](https://docs.herodevs.com/axios) has the current list of supported versions.
 
 ## How it works
 
@@ -35,15 +35,15 @@ You point npm at the NES registry and swap the `axios` package for the NES build
 ```json
 {
   "dependencies": {
-    "axios": "npm:@neverendingsupport/axios@0.24.0-axios-0.24.2"
+    "axios": "npm:@neverendingsupport/axios@0.24.0-axios-0.24.4"
   },
   "overrides": {
-    "axios": "npm:@neverendingsupport/axios@0.24.0-axios-0.24.2"
+    "axios": "npm:@neverendingsupport/axios@0.24.0-axios-0.24.4"
   }
 }
 ```
 
-The [documentation](https://docs.herodevs.com/axios) walks through setting up the registry.
+This example uses the latest 0.24.x build at the time of writing. The [documentation](https://docs.herodevs.com/axios) has the current version and walks through setting up the registry.
 
 ## How this helps Axios
 

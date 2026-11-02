@@ -19,7 +19,8 @@ const date = computed(() => {
 <template>
   <div v-if="isPost" :class="$style.meta">
     <a :href="withBase('/blog/')" :class="$style.back">← All posts</a>
-    <h1 v-if="frontmatter.title" :class="$style.title">{{ frontmatter.title }}</h1>
+    <!-- id matches the anchor site search uses for the post title (search.mts) -->
+    <h1 v-if="frontmatter.title" id="post-title" :class="$style.title">{{ frontmatter.title }}</h1>
     <p v-if="date || frontmatter.author" :class="$style.byline">
       <time v-if="date" :datetime="date">{{ formatPostDate(date) }}</time>
       <span v-if="date && frontmatter.author"> · </span>
@@ -28,7 +29,7 @@ const date = computed(() => {
     <img
       v-if="frontmatter.image"
       :src="withBase(frontmatter.image)"
-      :alt="frontmatter.imageAlt || ''"
+      :alt="frontmatter.imageAlt || frontmatter.title"
       :class="$style.cover"
     />
   </div>

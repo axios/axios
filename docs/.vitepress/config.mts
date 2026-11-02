@@ -1,6 +1,5 @@
 import { defineConfig, type HeadConfig } from 'vitepress';
 import { searchConfig } from './search.mts';
-import { blogSidebar } from './blogSidebar.mts';
 
 const SITE_URL = 'https://axios.rest';
 
@@ -335,8 +334,9 @@ export default defineConfig({
       lang: 'en-US',
       themeConfig: {
         nav: enNav,
-        // Blog pages get their own sidebar listing the posts.
-        sidebar: { '/blog/': blogSidebar(), '/': enSidebar },
+        // Blog posts get their own sidebar. The theme fills in the list of
+        // posts from docs/blog/posts.data.ts (see .vitepress/theme/index.ts).
+        sidebar: { '/blog/': [{ text: 'Blog', items: [] }], '/': enSidebar },
       },
     },
     zh: {

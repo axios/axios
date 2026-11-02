@@ -4,11 +4,21 @@ import { tokenizeSearchText } from './tokenizeSearchText.js';
 export const searchConfig = {
   provider: 'local',
   options: {
-    // Same as VitePress's default, but draft blog posts (`draft: true`) are
-    // also left out of the search index.
+    // Same as VitePress's default, with two changes for blog posts:
+    // - drafts (`draft: true`) are left out of the search index;
+    // - the post's title is indexed as its top heading. The title comes from
+    //   frontmatter (BlogPostMeta.vue renders it), and VitePress drops any text
+    //   before the first heading, so without this the title and opening
+    //   paragraphs of a post would not be searchable.
     _render(src, env, md) {
       const html = md.render(src, env);
-      return env.frontmatter?.search === false || env.frontmatter?.draft ? '' : html;
+      const frontmatter = env.frontmatter ?? {};
+      if (frontmatter.search === false || frontmatter.draft) return '';
+      const isBlogPost =
+        env.relativePath.startsWith('blog/') && env.relativePath !== 'blog/index.md';
+      if (!isBlogPost || !frontmatter.title) return html;
+      const titleHtml = md.render(`# ${frontmatter.title} {#post-title}`, { ...env, frontmatter: {} });
+      return titleHtml + html;
     },
     detailedView: 'auto',
     disableQueryPersistence: false,

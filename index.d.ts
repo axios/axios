@@ -752,6 +752,12 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+/**
+ * Resolves an adapter by name, adapter function, or priority list.
+ * @param config Request config forwarded to adapter getters. The built-in `fetch`
+ * adapter reads `env.fetch`, `env.Request`, and `env.Response` from it and falls
+ * back to the globals when it is omitted. Other fields are not applied here.
+ */
 export function getAdapter(
   adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined,
   config?: AxiosRequestConfig

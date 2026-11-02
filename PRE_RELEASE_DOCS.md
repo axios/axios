@@ -29,6 +29,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Required content:** Replace the bullet saying the value is approximate wall-clock time measured with `Date.now()`. The value is now measured with the monotonic `performance.now()` and rounded to whole milliseconds, so system clock adjustments no longer affect it. Runtimes without `performance.now()` fall back to `Date.now()`, where backward clock adjustments are clamped to `0` and forward adjustments can inflate the value. Optionally note that this keeps axios compatible with Next.js Cache Components prerendering, which rejects `Date.now()`.
 - **Notes:** The README entry below says "approximate wall-clock time"; use the new wording when applying it.
 
+### `getAdapter` request config argument
+
+- **Change:** The `getAdapter` typings accept an optional second `config` argument, which the runtime already forwards to adapter getters.
+- **Source:** [Issue #11403](https://github.com/axios/axios/issues/11403), [PR #11404](https://github.com/axios/axios/pull/11404).
+- **Status:** Pending.
+- **Docs targets:** The `getAdapter` section of `docs/pages/advanced/api-reference.md` and its Spanish, French, and Chinese translations. Optionally cross-link from the custom `fetch` section of `docs/pages/advanced/fetch-adapter.md`.
+- **Required content:** Update the signature to `getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined, config?: AxiosRequestConfig): AxiosAdapter`. The current docs signature (`string | string[]`) also omits `undefined` and adapter functions, which the typings have always accepted. Explain that `config` is passed to adapter getters: the built-in `fetch` adapter reads `env.fetch`, `env.Request`, and `env.Response` from it, and without `config` it uses the global implementations. Other config fields are not applied by `getAdapter`; they only take effect when the returned adapter is called with a request config.
+- **Examples:** `const fetchAdapter = getAdapter('fetch', { env: { fetch: customFetch } });`
+- **Notes:** Passing a new `fetch` function on every call creates and caches a new adapter each time, so reuse the same `fetch` reference.
+
 ### Response duration (README)
 
 - **Change:** Bring `README.md` in line with the released docs site.

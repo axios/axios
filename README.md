@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> [**Get Security Updates for Axios v0 →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
+> [**Get Security Updates for Axios v0 & Early Access Provider →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
 
 <h3 align="center">💎 Platinum sponsors <br /></h3>
 <table align="center">

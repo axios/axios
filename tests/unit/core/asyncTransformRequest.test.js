@@ -179,6 +179,79 @@ describe('async request transformers', () => {
     assert.equal(source.token._listeners?.length || 0, 0);
   });
 
+
+  it('does not start another transformer after the request is cancelled', async () => {
+    const controller = new AbortController();
+    let finishFirst;
+    let secondCalled = false;
+    let adapterCalled = false;
+    const pending = dispatchRequest(makeConfig({
+      signal: controller.signal,
+      transformRequest: [
+        () => new Promise((resolve) => { finishFirst = resolve; }),
+        () => { secondCalled = true; return 'second'; },
+      ],
+      adapter: (config) => {
+        adapterCalled = true;
+        return Promise.resolve(makeResponse(config));
+      },
+    }));
+
+    controller.abort();
+    await assert.rejects(pending, (error) => error.code === AxiosError.ERR_CANCELED);
+    finishFirst('first finished');
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(secondCalled, false);
+    assert.equal(adapterCalled, false);
+  });
+
+  it('limits an indefinitely pending async transformer with timeout', async () => {
+    let adapterCalled = false;
+    const pending = dispatchRequest(makeConfig({
+      timeout: 25,
+      transformRequest: [() => new Promise(() => {})],
+      adapter: (config) => {
+        adapterCalled = true;
+        return Promise.resolve(makeResponse(config));
+      },
+    }));
+
+    await assert.rejects(pending, (error) =>
+      error.code === AxiosError.ECONNABORTED && error.message === 'timeout of 25ms exceeded'
+    );
+    assert.equal(adapterCalled, false);
+  });
+
+  it('honors clarified timeout errors and custom messages during transforms', async () => {
+    const pending = dispatchRequest(makeConfig({
+      timeout: 25,
+      timeoutErrorMessage: 'transform timed out',
+      transitional: { clarifyTimeoutError: true },
+      transformRequest: [() => new Promise(() => {})],
+    }));
+
+    await assert.rejects(pending, (error) =>
+      error.code === AxiosError.ETIMEDOUT && error.message === 'transform timed out'
+    );
+  });
+
+  it('skips queued transformers after a transform timeout', async () => {
+    let finishFirst;
+    let secondCalled = false;
+    const pending = dispatchRequest(makeConfig({
+      timeout: 25,
+      transformRequest: [
+        () => new Promise((resolve) => { finishFirst = resolve; }),
+        () => { secondCalled = true; return 'too late'; },
+      ],
+    }));
+
+    await assert.rejects(pending, (error) => error.code === AxiosError.ECONNABORTED);
+    finishFirst('completed after deadline');
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(secondCalled, false);
+  });
+
   it('leaves response transformations synchronous even if they return a Promise', () => {
     const thenable = Promise.resolve('response');
     const transformed = transformData.call(

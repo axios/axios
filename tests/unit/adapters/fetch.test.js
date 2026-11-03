@@ -2276,9 +2276,59 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(value, undefined, 'the probe body should not yield data');
     });
 
-    it('should not leave the response probe body pull promise pending', async () => {
-      // Regression guard for the leak itself: the probe body must be released
-      // by the time the factory returns, so no pull promise stays pending.
+    it('should cancel the request probe body when constructing the Request throws', () => {
+      // A custom `env.Request` can throw while the probe body is already
+      // created.  The body must still be cancelled, otherwise the probe
+      // leaks an async resource on every factory call.
+
+      const probeBodies = [];
+
+      class ThrowingRequest {
+        constructor(_url, init) {
+          // The factory creates the probe body and passes it in as the
+          // request body.  Throwing here must not leave that body
+          // uncancelled.
+          const body = init && init.body;
+
+          let cancelCalls = 0;
+
+          const cancel = body.cancel.bind(body);
+
+          body.cancel = (...args) => {
+            cancelCalls++;
+            return cancel(...args);
+          };
+
+          Object.defineProperty(body, 'cancelCalls', {
+            get: () => cancelCalls,
+          });
+
+          probeBodies.push(body);
+
+          throw new Error('request construction failed');
+        }
+      }
+
+      const uniqueFetch = async () => new Response('ok');
+
+      getFetch({ env: { fetch: uniqueFetch, Request: ThrowingRequest } });
+
+      // Every probe body the factory created must have been cancelled.
+      assert.ok(probeBodies.length > 0, 'the request probe should create a probe body');
+
+      for (const probeBody of probeBodies) {
+        assert.strictEqual(
+          probeBody.cancelCalls,
+          1,
+          'the request probe body should be cancelled exactly once'
+        );
+      }
+    });
+
+    it('should cancel the response probe body exactly once', () => {
+      // The probe body must be cancelled exactly once: not zero times, which
+      // would leave the pull promise pending, and not twice, which would
+      // cancel an already-cancelled stream.
 
       const probeBodies = [];
 

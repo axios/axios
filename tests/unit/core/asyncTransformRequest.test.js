@@ -252,6 +252,61 @@ describe('async request transformers', () => {
     assert.equal(secondCalled, false);
   });
 
+
+  it('rejects before adapter dispatch if an async transformer outlives its deadline', async () => {
+    let adapterCalled = false;
+    const pending = dispatchRequest(makeConfig({
+      timeout: 10,
+      transformRequest: [async () => {
+        await Promise.resolve();
+        // Block the event loop so the timeout is overdue but its callback
+        // cannot fire before the transformed Promise resolves.
+        const end = Date.now() + 40;
+        while (Date.now() < end) {
+          Math.sqrt(2);
+        }
+        return 'late';
+      }],
+      adapter: (config) => {
+        adapterCalled = true;
+        return Promise.resolve(makeResponse(config));
+      },
+    }));
+
+    await assert.rejects(pending, (error) => error.code === AxiosError.ECONNABORTED);
+    assert.equal(adapterCalled, false);
+  });
+
+  it('skips queued transforms when the deadline has passed before the timer fires', async () => {
+    let nextTransformerCalled = false;
+    let adapterCalled = false;
+    const pending = dispatchRequest(makeConfig({
+      timeout: 10,
+      transformRequest: [
+        async () => {
+          await Promise.resolve();
+          const end = Date.now() + 40;
+          while (Date.now() < end) {
+            Math.sqrt(2);
+          }
+          return 'late';
+        },
+        () => {
+          nextTransformerCalled = true;
+          return 'unexpected';
+        },
+      ],
+      adapter: (config) => {
+        adapterCalled = true;
+        return Promise.resolve(makeResponse(config));
+      },
+    }));
+
+    await assert.rejects(pending, (error) => error.code === AxiosError.ECONNABORTED);
+    assert.equal(nextTransformerCalled, false);
+    assert.equal(adapterCalled, false);
+  });
+
   it('leaves response transformations synchronous even if they return a Promise', () => {
     const thenable = Promise.resolve('response');
     const transformed = transformData.call(

@@ -278,7 +278,7 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 `redact` 属性是一个可选的配置键名数组，用于在 `AxiosError` 通过 `toJSON()` 序列化时对匹配的键进行脱敏。匹配不区分大小写，并会在序列化后的请求配置中递归进行，命中的值会被替换为 `[REDACTED ****]`。
 
-匹配会遍历普通对象、数组和类实例。定义了自身 `toJSON()` 方法的值（例如 `URL` 对象，或带有 `toJSON()` 的类实例）会按原样序列化，其内容不会被扫描。此外，`redact` 只匹配键名，因此 URL 字符串中的凭据（例如 `url: 'http://user:pass@example.com'`）不会被脱敏。如需脱敏整个值，请列出它的父级键，例如 `redact: ['auth', 'proxy']`。
+匹配会遍历普通对象（即使它定义了 `toJSON()`）、数组、类实例以及 `AxiosHeaders`（会先被转换为普通对象）。其他带有 `toJSON()` 方法的对象（例如 `URL` 对象，或定义了 `toJSON()` 的类实例）会按原样序列化，其内容不会被扫描。此外，`redact` 只匹配键名，因此 URL 字符串中的凭据（例如 `url: 'http://user:pass@example.com'`）不会被脱敏。如需脱敏整个值，请列出它的父级键，例如 `redact: ['auth', 'proxy']`。
 
 `redact` 仅影响错误序列化，不会修改请求数据、请求头或原始配置对象。
 

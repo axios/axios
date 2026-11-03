@@ -278,7 +278,7 @@ La propriété `maxBodyLength` définit la taille maximale du corps de requête 
 
 La propriété `redact` est un tableau optionnel de noms de clés de configuration à masquer lorsqu'une `AxiosError` est sérialisée avec `toJSON()`. La correspondance est insensible à la casse et récursive sur l'ensemble de la configuration de requête sérialisée. Les valeurs correspondantes sont remplacées par `[REDACTED ****]`.
 
-La correspondance parcourt les objets simples, les tableaux et les instances de classe. Une valeur qui définit sa propre méthode `toJSON()`, comme un objet `URL` ou une instance de classe dotée de `toJSON()`, est sérialisée telle quelle et son contenu n'est pas analysé. De plus, `redact` ne compare que les noms de clés : les identifiants contenus dans une chaîne d'URL, comme `url: 'http://user:pass@example.com'`, ne sont donc pas masqués. Pour masquer une valeur entière, indiquez sa clé parente, par exemple `redact: ['auth', 'proxy']`.
+La correspondance parcourt les objets simples (même ceux qui définissent `toJSON()`), les tableaux, les instances de classe et `AxiosHeaders`, qui est d'abord converti en objet simple. Tout autre objet doté d'une méthode `toJSON()`, comme un objet `URL` ou une instance de classe qui définit `toJSON()`, est sérialisé tel quel et son contenu n'est pas analysé. De plus, `redact` ne compare que les noms de clés : les identifiants contenus dans une chaîne d'URL, comme `url: 'http://user:pass@example.com'`, ne sont donc pas masqués. Pour masquer une valeur entière, indiquez sa clé parente, par exemple `redact: ['auth', 'proxy']`.
 
 `redact` n'affecte que la sérialisation des erreurs. Elle ne modifie ni les données de la requête, ni les en-têtes, ni l'objet de configuration original.
 

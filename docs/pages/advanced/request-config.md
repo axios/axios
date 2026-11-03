@@ -278,7 +278,7 @@ The `maxBodyLength` property defines the maximum request body size in bytes. The
 
 The `redact` property is an optional array of config key names to mask when an `AxiosError` is serialized with `toJSON()`. Matching is case-insensitive and recursive across the serialized request config. Matching values are replaced with `[REDACTED ****]`.
 
-Matching walks plain objects, arrays, and class instances. A value that defines its own `toJSON()` method, such as a `URL` object or a class instance with `toJSON()`, is serialized as-is, and its contents are not scanned. `redact` also matches key names only, so credentials inside a URL string, such as `url: 'http://user:pass@example.com'`, are not masked. To mask a whole value, list its parent key, for example `redact: ['auth', 'proxy']`.
+Matching walks plain objects (even ones that define `toJSON()`), arrays, class instances, and `AxiosHeaders`, which is converted to a plain object first. Any other object that has a `toJSON()` method, such as a `URL` object or a class instance that defines `toJSON()`, is serialized as-is, and its contents are not scanned. `redact` also matches key names only, so credentials inside a URL string, such as `url: 'http://user:pass@example.com'`, are not masked. To mask a whole value, list its parent key, for example `redact: ['auth', 'proxy']`.
 
 `redact` only affects error serialization. It does not change request data, headers, or the original config object.
 

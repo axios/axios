@@ -278,7 +278,7 @@ La propiedad `maxBodyLength` define el tamaño máximo del cuerpo de la solicitu
 
 La propiedad `redact` es un arreglo opcional de nombres de claves de configuración que se enmascararán cuando un `AxiosError` se serialice con `toJSON()`. La coincidencia es insensible a mayúsculas/minúsculas y recursiva a lo largo de la configuración de la solicitud serializada. Los valores coincidentes se reemplazan por `[REDACTED ****]`.
 
-La coincidencia recorre objetos planos, arreglos e instancias de clases. Un valor que define su propio método `toJSON()`, como un objeto `URL` o una instancia de clase con `toJSON()`, se serializa tal cual y su contenido no se examina. Además, `redact` solo compara nombres de claves, por lo que las credenciales dentro de una cadena de URL, como `url: 'http://user:pass@example.com'`, no se enmascaran. Para enmascarar un valor completo, incluye su clave padre, por ejemplo `redact: ['auth', 'proxy']`.
+La coincidencia recorre objetos planos (incluso los que definen `toJSON()`), arreglos, instancias de clases y `AxiosHeaders`, que primero se convierte en un objeto plano. Cualquier otro objeto que tenga un método `toJSON()`, como un objeto `URL` o una instancia de clase que define `toJSON()`, se serializa tal cual y su contenido no se examina. Además, `redact` solo compara nombres de claves, por lo que las credenciales dentro de una cadena de URL, como `url: 'http://user:pass@example.com'`, no se enmascaran. Para enmascarar un valor completo, incluye su clave padre, por ejemplo `redact: ['auth', 'proxy']`.
 
 `redact` solo afecta a la serialización del error. No modifica los datos de la solicitud, los encabezados ni el objeto de configuración original.
 

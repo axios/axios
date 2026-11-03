@@ -4,6 +4,8 @@
 
 ## Features
 
+- **Asynchronous request transformations:** `transformRequest` callbacks may now return a Promise. Axios awaits each asynchronous result before running later request transformers or invoking the adapter; rejected transforms and cancellations while awaiting prevent request dispatch. Synchronous transforms still dispatch immediately, and response transforms remain synchronous. This is additive behavior without a public type signature change. ([#10713](https://github.com/axios/axios/issues/10713))
+
 ## Bug Fixes
 
 - **Response duration clock:** `response.duration` is now measured with the monotonic `performance.now()` instead of `Date.now()`, falling back to `Date.now()` only in runtimes without `performance.now()`. Since v1.21.0, axios read `Date.now()` on every request, which broke Next.js production builds that use Cache Components (`cacheComponents: true`) because Next.js rejects reading the current time while prerendering; `performance.now()` is the timing API Next.js allows for this. The monotonic clock also stops system clock adjustments from skewing the value. `duration` is rounded to whole milliseconds, so it stays an integer as in v1.21.0, and it is still clamped at `0`. No public API or type changes; the `duration` declaration comments in `index.d.ts` and `index.d.cts` now name the clock. ([#11407](https://github.com/axios/axios/issues/11407))

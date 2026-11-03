@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Async `transformRequest` callbacks
+
+- **Change:** Request body transformers may return promises, which Axios resolves in order before sending the request.
+- **Source:** [Issue #10713](https://github.com/axios/axios/issues/10713).
+- **Status:** Pending.
+- **Docs targets:** `README.md` Request Config `transformRequest` and the English, Spanish, French, and Chinese `docs/pages/advanced/request-config.md` sections.
+- **Required content:** Clarify that only request transformers may return a Promise; the next request transformer receives the resolved value, and the adapter starts after all transforms complete. Rejected transformations prevent the request from being sent. Existing synchronous callbacks remain synchronous; `transformResponse` behavior is unchanged. Requests may be cancelled while an asynchronous transformer is running, preventing adapter dispatch after it settles, but Axios cannot forcibly cancel the transformer's own asynchronous work.
+- **Examples:** A per-request `async (data, headers) => { headers.set('X-Signature', await sign(data)); return data; }` transformer followed by `...axios.defaults.transformRequest` to preserve default serialization.
+- **Notes:** TypeScript `AxiosRequestTransformer` already returns `any` in both ESM and CJS declarations, so no public type change is needed.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

@@ -65,6 +65,38 @@ describe('helpers::speedometer', () => {
     expect(sample(100)).toBeUndefined();
   });
 
+  it('discards fallback samples from the future after a clock correction', () => {
+    let time = 1000;
+    vi.stubGlobal('performance', undefined);
+    vi.spyOn(Date, 'now').mockImplementation(() => time);
+    const sample = speedometer(3, 0);
+
+    sample(100);
+    time = 100000;
+    sample(100);
+    time = 2000;
+    expect(sample(100)).toBeUndefined();
+    time = 3000;
+    expect(sample(100)).toBe(100);
+  });
+
+  it('restarts the minimum sampling interval after a fallback clock correction', () => {
+    let time = 1000;
+    vi.stubGlobal('performance', undefined);
+    vi.spyOn(Date, 'now').mockImplementation(() => time);
+    const sample = speedometer(3, 1000);
+
+    sample(100);
+    time = 100000;
+    sample(100);
+    time = 2000;
+    expect(sample(100)).toBeUndefined();
+    time = 2500;
+    expect(sample(100)).toBeUndefined();
+    time = 3000;
+    expect(sample(100)).toBe(200);
+  });
+
   it('keeps progress rate and remaining time stable after a wall-clock adjustment', () => {
     let time = 1000;
     const wallClock = vi.spyOn(Date, 'now').mockImplementation(() => time);

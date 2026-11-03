@@ -165,4 +165,6 @@ console.log(axios.formToJSON(form));
 
 `user[name]` crée également un chemin d'objet imbriqué, tandis que `items[]` crée un tableau.
 
+Les noms de champs sont des chemins : des noms qui se recoupent sont donc combinés au lieu d'être conservés séparément. Un nom répété devient un tableau : deux champs `account` produisent `{ account: ['standard', 'admin'] }`. Un nom utilisé à la fois comme valeur simple et comme chemin parent ne peut pas conserver les deux : `account=standard` suivi de `account[role]=admin` produit `{ account: { role: 'admin' } }`, et la valeur simple est perdue. Si vous validez les champs soumis, vérifiez l'objet renvoyé par `formToJSON()`, qui est aussi ce qu'axios envoie lorsqu'il sérialise un `FormData` en JSON, plutôt que les entrées d'origine du `FormData`.
+
 Axios supporte les méthodes raccourcies suivantes : `postForm`, `putForm`, `patchForm` qui sont simplement les méthodes HTTP correspondantes avec l'en-tête `Content-Type` prédéfini à `multipart/form-data`.

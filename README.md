@@ -1587,7 +1587,7 @@ axios.get('/user/12345').catch(function (error) {
 });
 ```
 
-To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called. Objects other than plain objects and `AxiosHeaders` that have a `toJSON()` method, such as `URL` objects, are serialized as-is and not scanned, and credentials inside URL strings are not matched. List the parent key, such as `auth` or `proxy`, to mask the whole value.
 
 ```js
 axios
@@ -2008,6 +2008,8 @@ console.log(axios.formToJSON(form));
 ```
 
 `user[name]` also creates `{ user: { name: ... } }`, while `items[]` creates an array.
+
+Field names are paths, so names that collide are combined rather than kept apart. A repeated name becomes an array: two `account` fields produce `{ account: ['standard', 'admin'] }`. When a name is used both as a plain value and as a parent path, the result depends on field order. `account=standard` followed by `account[role]=admin` produces `{ account: { role: 'admin' } }`, and the plain value is lost. The reverse order produces `{ account: [{ role: 'admin' }, 'standard'] }`. If you validate submitted fields, check the object `formToJSON()` returns, which is also what axios sends when it serializes `FormData` as JSON, rather than the original `FormData` entries.
 
 Axios supports `postForm`, `putForm`, and `patchForm` as shortcuts for the matching HTTP methods with the `Content-Type` header preset to `multipart/form-data`.
 

@@ -82,7 +82,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-为避免从 `error.config` 中泄露敏感信息，可在请求配置中传入 `redact` 数组。当调用 `AxiosError#toJSON()` 时，匹配的配置键会在任意深度上以不区分大小写的方式被脱敏。
+为避免从 `error.config` 中泄露敏感信息，可在请求配置中传入 `redact` 数组。当调用 `AxiosError#toJSON()` 时，匹配的配置键会在任意深度上以不区分大小写的方式被脱敏。除普通对象和 `AxiosHeaders` 之外、带有 `toJSON()` 方法的对象（例如 `URL` 对象）会按原样序列化且不会被扫描，URL 字符串中的凭据也不会被匹配。如需脱敏整个值，请列出父级键，例如 `auth` 或 `proxy`。
 
 ```js
 axios.get("/user/12345", {

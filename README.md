@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> [**Get Security Updates for Axios v0 →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
+> [**Get Security Updates for Axios v0 & Early Access Provider →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
 
 <h3 align="center">💎 Platinum sponsors <br /></h3>
 <table align="center">
@@ -352,6 +352,29 @@
                 >
             </p>
         </td>
+       <td align="center" valign="middle" width="33.333333333333336%">
+    <a
+        href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+        style="padding: 10px; display: inline-block"
+        target="_blank"
+    >
+        <img
+            width="180px"
+            src="https://namespace.so/oss/badge.svg"
+            alt="CI powered by Namespace"
+        />
+    </a>
+    <p align="center">
+        Actually the fastest way to run <br>your GitHub Actions.
+    </p>
+    <p align="center">
+        <a
+            href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+            target="_blank"
+            ><b>namespace.so</b></a
+        >
+    </p>
+</td>
     </tr>
 </table>
 

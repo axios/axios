@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Asynchronous request transformations:** `transformRequest` callbacks may now return a Promise. Axios awaits each asynchronous result before running later request transformers or invoking the adapter; rejected transforms and cancellations while awaiting prevent request dispatch. Synchronous transforms still dispatch immediately, and response transforms remain synchronous. This is additive behavior without a public type signature change. ([#10713](https://github.com/axios/axios/issues/10713))
+- **Asynchronous request transformations:** `transformRequest` callbacks may now return a Promise. Axios awaits each asynchronous result before running later request transformers or invoking the adapter. Rejected transformers prevent dispatch, and cancelling through an `AbortSignal` or `CancelToken` rejects the request immediately while an async transformer is pending; the transformer's own asynchronous work is not forcibly stopped. Synchronous transforms still dispatch immediately, and response transforms remain synchronous. This is additive behavior without a public type signature change. ([#10713](https://github.com/axios/axios/issues/10713), [#11418](https://github.com/axios/axios/pull/11418))
 
 ## Bug Fixes
 

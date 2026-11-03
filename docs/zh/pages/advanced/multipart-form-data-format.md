@@ -165,4 +165,6 @@ console.log(axios.formToJSON(form));
 
 `user[name]` 同样会创建嵌套对象路径，而 `items[]` 会创建数组。
 
+字段名称是路径，因此相互冲突的名称会被合并，而不是分开保留。重复的名称会变成数组：两个 `account` 字段会生成 `{ account: ['standard', 'admin'] }`。同一个名称如果既用作普通值又用作父路径，结果取决于字段顺序。先 `account=standard` 再 `account[role]=admin` 会生成 `{ account: { role: 'admin' } }`，普通值会丢失；顺序相反时会生成 `{ account: [{ role: 'admin' }, 'standard'] }`。如果你要校验提交的字段，请检查 `formToJSON()` 返回的对象（这也是 axios 将 `FormData` 序列化为 JSON 时发送的内容），而不是原始的 `FormData` 条目。
+
 axios 支持以下快捷方法：`postForm`、`putForm`、`patchForm`，它们分别对应相应的 HTTP 方法，并预设 `Content-Type` 请求头为 `multipart/form-data`。

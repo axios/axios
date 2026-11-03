@@ -84,7 +84,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called. Objects other than plain objects and `AxiosHeaders` that have a `toJSON()` method, such as `URL` objects, are serialized as-is and not scanned, and credentials inside URL strings are not matched. List the parent key, such as `auth` or `proxy`, to mask the whole value.
 
 ```js
 axios.get("/user/12345", {

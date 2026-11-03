@@ -84,7 +84,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-Pour éviter de journaliser des secrets depuis `error.config`, passez un tableau `redact` dans la configuration de la requête. Les clés de configuration correspondantes sont masquées de manière insensible à la casse à n'importe quelle profondeur lorsque `AxiosError#toJSON()` est appelée.
+Pour éviter de journaliser des secrets depuis `error.config`, passez un tableau `redact` dans la configuration de la requête. Les clés de configuration correspondantes sont masquées de manière insensible à la casse à n'importe quelle profondeur lorsque `AxiosError#toJSON()` est appelée. Les objets autres que les objets simples et `AxiosHeaders` qui ont une méthode `toJSON()`, comme les objets `URL`, sont sérialisés tels quels et ne sont pas analysés, et les identifiants contenus dans des chaînes d'URL ne sont pas détectés. Indiquez la clé parente, comme `auth` ou `proxy`, pour masquer la valeur entière.
 
 ```js
 axios.get("/user/12345", {

@@ -23,7 +23,7 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 ### Fetch adapter `sensitiveHeaders` rejection
 
 - **Change:** The fetch adapter rejects non-empty `sensitiveHeaders` arrays before sending a request instead of silently ignoring them.
-- **Source:** The Fetch `sensitiveHeaders` entry in `PRE_RELEASE_CHANGELOG.md`.
+- **Source:** [PR #11425](https://github.com/axios/axios/pull/11425).
 - **Status:** Pending.
 - **Docs targets:** `README.md` Request config and custom secret-bearing header example; `docs/pages/advanced/request-config.md`, `docs/pages/advanced/fetch-adapter.md`, and `docs/pages/advanced/security.md`, with their Spanish, French, and Chinese translations; `THREATMODEL.md` T-R2.
 - **Required content:** Clarify that custom redirect-header stripping is supported only by the Node HTTP adapter, rather than by every adapter running in Node. A non-empty array with `adapter: 'fetch'` rejects with `AxiosError.ERR_NOT_SUPPORT`, including with custom `env.fetch` implementations. Omitted, `null`, and empty arrays remain no-ops. Fetch delegates redirects to the runtime and cannot strip caller-selected headers between hops. Callers requiring this protection should explicitly select `adapter: 'http'` where available or avoid sending the custom secret header; do not recommend removing `sensitiveHeaders` while retaining the secret header.

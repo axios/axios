@@ -2,14 +2,14 @@
 
 axios peut lever de nombreux types d'erreurs différents. Certaines de ces erreurs sont causées par axios lui-même, tandis que d'autres sont causées par le serveur ou le client. Le tableau suivant liste la structure générale de l'erreur levée :
 
-| Propriété | Définition                                                                                                                                    |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| message   | Un résumé rapide du message d'erreur et du statut avec lequel elle a échoué.                                                                  |
-| name      | Définit l'origine de l'erreur. Pour axios, ce sera toujours une `AxiosError`.                                                                 |
-| stack     | Fournit la trace de pile de l'erreur.                                                                                                         |
-| config    | Un objet de configuration axios avec les configurations d'instance spécifiques définies par l'utilisateur au moment de la requête.            |
-| code      | Représente une erreur identifiée par axios. Le tableau ci-dessous liste les définitions spécifiques des erreurs internes d'axios.             |
-| status    | Code de statut de la réponse HTTP. Consultez [ici](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) pour la signification des codes de statut HTTP courants. |
+| Propriété | Définition                                                                                                                                                                                                                                                           |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message   | Un résumé rapide du message d'erreur et du statut avec lequel elle a échoué.                                                                                                                                                                                         |
+| name      | Le nom de l'erreur : généralement `AxiosError`, `CanceledError` lors d'une annulation, ou le nom d'origine d'une erreur encapsulée. Utilisez `axios.isAxiosError(error)` pour identifier les erreurs Axios et `axios.isCancel(error)` pour détecter les annulations. |
+| stack     | Fournit la trace de pile de l'erreur.                                                                                                                                                                                                                                |
+| config    | Un objet de configuration axios avec les configurations d'instance spécifiques définies par l'utilisateur au moment de la requête.                                                                                                                                   |
+| code      | Représente une erreur identifiée par axios. Le tableau ci-dessous liste les définitions spécifiques des erreurs internes d'axios.                                                                                                                                    |
+| status    | Code de statut de la réponse HTTP. Consultez [ici](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) pour la signification des codes de statut HTTP courants.                                                                                                 |
 
 Voici une liste des erreurs potentielles identifiées par axios :
 
@@ -84,7 +84,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-Pour éviter de journaliser des secrets depuis `error.config`, passez un tableau `redact` dans la configuration de la requête. Les clés de configuration correspondantes sont masquées de manière insensible à la casse à n'importe quelle profondeur lorsque `AxiosError#toJSON()` est appelée.
+Pour éviter de journaliser des secrets depuis `error.config`, passez un tableau `redact` dans la configuration de la requête. Les clés de configuration correspondantes sont masquées de manière insensible à la casse à n'importe quelle profondeur lorsque `AxiosError#toJSON()` est appelée. Les objets autres que les objets simples et `AxiosHeaders` qui ont une méthode `toJSON()`, comme les objets `URL`, sont sérialisés tels quels et ne sont pas analysés, et les identifiants contenus dans des chaînes d'URL ne sont pas détectés. Indiquez la clé parente, comme `auth` ou `proxy`, pour masquer la valeur entière.
 
 ```js
 axios.get("/user/12345", {

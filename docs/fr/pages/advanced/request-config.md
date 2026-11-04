@@ -265,7 +265,7 @@ La fonction `onDownloadProgress` vous permet d'écouter la progression d'un tél
 
 ### `maxContentLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée. Le dépassement de la limite entraîne un rejet avec `ERR_BAD_RESPONSE` ; consultez [Limites de taille de réponse de l'adaptateur fetch](/fr/pages/advanced/fetch-adapter#limites-de-taille-de-reponse).
+La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée. Le dépassement de la limite entraîne un rejet avec `ERR_BAD_RESPONSE` ; consultez [Limites de taille de réponse de l'adaptateur fetch](/fr/pages/advanced/fetch-adapter#limites-de-taille-de-reponse). L'adaptateur XHR ne l'applique pas.
 
 > ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli/zstd rendent possible un déni de service par bombe de décompression.
 > Définissez une limite explicite lorsque vous consommez des serveurs auxquels vous ne faites pas pleinement confiance.
@@ -277,6 +277,8 @@ La propriété `maxBodyLength` définit la taille maximale du corps de requête 
 ### `redact`
 
 La propriété `redact` est un tableau optionnel de noms de clés de configuration à masquer lorsqu'une `AxiosError` est sérialisée avec `toJSON()`. La correspondance est insensible à la casse et récursive sur l'ensemble de la configuration de requête sérialisée. Les valeurs correspondantes sont remplacées par `[REDACTED ****]`.
+
+La correspondance parcourt les objets simples (même ceux qui définissent `toJSON()`), les tableaux, les instances de classe et `AxiosHeaders`, qui est d'abord converti en objet simple. Tout autre objet doté d'une méthode `toJSON()`, comme un objet `URL` ou une instance de classe qui définit `toJSON()`, est sérialisé tel quel et son contenu n'est pas analysé. De plus, `redact` ne compare que les noms de clés : les identifiants contenus dans une chaîne d'URL, comme `url: 'http://user:pass@example.com'`, ne sont donc pas masqués. Pour masquer une valeur entière, indiquez sa clé parente, par exemple `redact: ['auth', 'proxy']`.
 
 `redact` n'affecte que la sérialisation des erreurs. Elle ne modifie ni les données de la requête, ni les en-têtes, ni l'objet de configuration original.
 

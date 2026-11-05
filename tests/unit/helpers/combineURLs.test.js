@@ -25,4 +25,12 @@ describe('helpers::combineURLs', () => {
   it('should allow a single slash for relative url', () => {
     expect(combineURLs('https://api.github.com/users', '/')).toBe('https://api.github.com/users/');
   });
+
+  it('should combine a root base URL with a relative URL', () => {
+    expect(combineURLs('/', '/users')).toBe('/users');
+  });
+
+  it('should return relativeURL if baseURL is undefined', () => {
+    expect(combineURLs(undefined, '/users')).toBe('/users');
+  });
 });

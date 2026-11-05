@@ -84,7 +84,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-Para evitar registrar secretos desde `error.config`, pasa un arreglo `redact` en la configuración de la solicitud. Las claves de configuración coincidentes se enmascaran de forma insensible a mayúsculas/minúsculas a cualquier profundidad cuando se llama a `AxiosError#toJSON()`.
+Para evitar registrar secretos desde `error.config`, pasa un arreglo `redact` en la configuración de la solicitud. Las claves de configuración coincidentes se enmascaran de forma insensible a mayúsculas/minúsculas a cualquier profundidad cuando se llama a `AxiosError#toJSON()`. Los objetos que no son objetos planos ni `AxiosHeaders` y tienen un método `toJSON()`, como los objetos `URL`, se serializan tal cual y no se examinan, y las credenciales dentro de cadenas de URL no se detectan. Incluye la clave padre, como `auth` o `proxy`, para enmascarar el valor completo.
 
 ```js
 axios.get("/user/12345", {

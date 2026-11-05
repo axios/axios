@@ -6,6 +6,8 @@
 
 **如果你向不完全可信的服务器发起请求，必须根据你的业务场景设置合适的 `maxContentLength`（以及 `maxBodyLength`）。** 在流式解压过程中会按分块强制执行该限制，因此只需设置该值即可抵御解压炸弹攻击。
 
+Node.js HTTP 适配器会强制执行这些限制。fetch 适配器会在能够确定大小或跟踪请求体/响应体流时强制执行；参阅 [Fetch 适配器响应大小限制](/zh/pages/advanced/fetch-adapter#响应大小限制)。浏览器默认使用的 XHR 适配器不会强制执行 `maxContentLength` 或 `maxBodyLength`。对于响应，浏览器会在 axios 能够检查大小之前缓冲并解压响应体。如需在浏览器中限制响应大小，请使用 `adapter: 'fetch'`，但同样受上述条件限制。
+
 ```js
 axios.get('https://example.com/data', {
   maxContentLength: 10 * 1024 * 1024, // 10 MB
@@ -30,7 +32,7 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 | [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | 在 `follow-redirects` 因协议降级剥离凭据**之后**运行。如果不检查目标协议就重新注入凭据，可能在明文 HTTP 上泄露凭据。 | 仅对可信的 HTTPS 目标重新添加凭据。在为 `auth` 赋值前检查 `options.protocol === "https:"`。 |
 | [`sensitiveHeaders`](/pages/advanced/request-config#sensitiveheaders) | `X-API-Key` 等自定义密钥请求头在 Node.js HTTP 适配器跟随重定向到不同源时可能被转发。 | 在 `sensitiveHeaders` 中列出这些自定义密钥请求头名称；axios 会在跨源重定向时不区分大小写地移除匹配项。同源重定向会保留它们。 |
 | [`withXSRFToken`](/pages/advanced/request-config#withxsrftoken) | 设置为 `true` 会在跨域请求中强制设置 XSRF 请求头。较旧的 axios 版本会在 `withCredentials: true` 时隐式启用此行为；新版本要求两个标志同时设置。 | 保持为 `undefined`（仅同源），除非你的后端确实在跨域请求中校验 XSRF。 |
-| [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` 默认会包含请求配置，可能将 `Authorization` 请求头或 `auth` 凭据泄露到错误日志和遥测中。 | 通过 `redact` 数组传入需要遮蔽的配置键名。匹配不区分大小写，且会递归处理。 |
+| [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` 默认会包含请求配置，可能将 `Authorization` 请求头或 `auth` 凭据泄露到错误日志和遥测中。 | 通过 `redact` 数组传入需要遮蔽的配置键名。匹配不区分大小写，且会递归处理。除普通对象和 `AxiosHeaders` 之外、带有 `toJSON()` 方法的对象（例如 `URL` 对象）以及 URL 字符串中的凭据不会被扫描；如需遮蔽整个值，请列出父级键，例如 `auth` 或 `proxy`。 |
 | [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) | 自定义 `FormData` 的 `getHeaders()` 若返回攻击者可控的值，可能在 Node.js 中覆盖 `Authorization` 等请求头或注入任意请求头。 | 设置为 `'content-only'` 仅复制 `Content-Type` 与 `Content-Length`，再通过请求 `headers` 配置显式设置其他请求头。 |
 
 ## 供应链加固：`ignore-scripts` 与生命周期脚本

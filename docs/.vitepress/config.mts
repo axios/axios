@@ -1,5 +1,7 @@
-import { defineConfig } from 'vitepress';
+import { defineConfig, type HeadConfig } from 'vitepress';
 import { searchConfig } from './search.mts';
+
+const SITE_URL = 'https://axios.rest';
 
 // https://vitepress.dev/reference/site-config
 
@@ -10,6 +12,7 @@ const enNav = [
   { text: 'API', link: '/pages/advanced/api-reference' },
   { text: 'Sponsors', link: '/pages/misc/sponsors' },
   { text: 'Partners', link: '/pages/misc/partners' },
+  { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
   { text: 'v1.x', link: '#' },
 ];
 
@@ -83,6 +86,7 @@ const zhNav = [
   { text: 'API', link: '/zh/pages/advanced/api-reference' },
   { text: '赞助商', link: '/zh/pages/misc/sponsors' },
   { text: '合作伙伴', link: '/zh/pages/misc/partners' },
+  { text: '博客', link: '/blog/', activeMatch: '^/blog/' },
   { text: 'v1.x', link: '#' },
 ];
 
@@ -156,6 +160,7 @@ const esNav = [
   { text: 'API', link: '/es/pages/advanced/api-reference' },
   { text: 'Patrocinadores', link: '/es/pages/misc/sponsors' },
   { text: 'Socios', link: '/es/pages/misc/partners' },
+  { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
   { text: 'v1.x', link: '#' },
 ];
 
@@ -238,6 +243,7 @@ const frNav = [
   { text: 'API', link: '/fr/pages/advanced/api-reference' },
   { text: 'Sponsors', link: '/fr/pages/misc/sponsors' },
   { text: 'Partenaires', link: '/fr/pages/misc/partners' },
+  { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
   { text: 'v1.x', link: '#' },
 ];
 
@@ -328,7 +334,12 @@ export default defineConfig({
       lang: 'en-US',
       themeConfig: {
         nav: enNav,
-        sidebar: enSidebar,
+        // Blog posts get their own sidebar. The theme fills in the list of
+        // posts from docs/blog/posts.data.ts (see .vitepress/theme/index.ts).
+        sidebar: {
+          '/blog/': [{ text: 'Blog', items: [{ text: 'All posts', link: '/blog/' }] }],
+          '/': enSidebar,
+        },
       },
     },
     zh: {
@@ -355,6 +366,22 @@ export default defineConfig({
         sidebar: frSidebar,
       },
     },
+  },
+  // Share previews for blog posts: use the post's title, description, and
+  // cover image when someone links to it.
+  transformHead({ pageData }) {
+    if (!pageData.relativePath.startsWith('blog/') || pageData.relativePath === 'blog/index.md') {
+      return [];
+    }
+    const { title, description, image } = pageData.frontmatter;
+    const head: HeadConfig[] = [['meta', { property: 'og:type', content: 'article' }]];
+    if (title) head.push(['meta', { property: 'og:title', content: title }]);
+    if (description) head.push(['meta', { property: 'og:description', content: description }]);
+    if (image) {
+      head.push(['meta', { property: 'og:image', content: new URL(image, SITE_URL).href }]);
+      head.push(['meta', { name: 'twitter:card', content: 'summary_large_image' }]);
+    }
+    return head;
   },
   themeConfig: {
     search: searchConfig,

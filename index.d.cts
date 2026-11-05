@@ -195,6 +195,10 @@ declare class Axios {
     response: axios.AxiosInterceptorManager<axios.AxiosResponse>;
   };
   getUri(config?: axios.AxiosRequestConfig): string;
+  /**
+   * Node only. Gracefully closes all pooled HTTP/2 sessions.
+   */
+  closeHttp2Sessions(): Promise<void>;
   request<T = any, R = AxiosResponseDefault, D = any, P = any>(
     config: axios.AxiosRequestConfig<D, P>
   ): Promise<AxiosResponseResult<T, R, D, P>>;

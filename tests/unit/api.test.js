@@ -141,6 +141,14 @@ describe('static api', () => {
     assert.strictEqual(typeof axios.getAdapter, 'function');
   });
 
+  it('should have closeHttp2Sessions method', () => {
+    assert.strictEqual(typeof axios.closeHttp2Sessions, 'function');
+  });
+
+  it('should return a promise from closeHttp2Sessions', async () => {
+    await axios.closeHttp2Sessions();
+  });
+
   it('should pass symbol keys to transformRequest', async () => {
     const symbolKey = Symbol('example');
     let transformedData;
@@ -190,6 +198,10 @@ describe('instance api', () => {
   it('should have interceptors', () => {
     assert.strictEqual(typeof instance.interceptors.request, 'object');
     assert.strictEqual(typeof instance.interceptors.response, 'object');
+  });
+
+  it('should have closeHttp2Sessions method', () => {
+    assert.strictEqual(typeof instance.closeHttp2Sessions, 'function');
   });
 
   it('should pass symbol keys to transformRequest through axios.create', async () => {

@@ -110,3 +110,12 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
 - **Docs targets:** `README.md` Handling errors section.
 - **Required content:** Explain that wrapped errors append the original stack to `error.stack` after `Caused by:`, that `error.cause` remains the programmatic link, and that stacks are not redacted by `config.redact`. Do not present the marker as a parsing contract. Follow the Wrapped error stacks section of `docs/pages/advanced/error-handling.md`.
+
+### `closeHttp2Sessions` instance method (README)
+
+- **Change:** Document the new Node-only `closeHttp2Sessions()` method.
+- **Status:** Pending.
+- **Docs targets:** `README.md` API section (instance methods, near `getUri`/`request`), and the docs site API reference (`docs/pages/advanced/api-reference.md`) plus translations when applied.
+- **Required content:** `axios.closeHttp2Sessions()` and `instance.closeHttp2Sessions()` gracefully close all pooled HTTP/2 sessions on the Node adapter and return a promise that resolves once every session has emitted `close`; in-flight responses drain first, and later requests open fresh sessions. It is a no-op promise in the browser.
+- **Examples:** `await axios.closeHttp2Sessions();` — typical use is graceful server shutdown after `server.close()`.
+- **Notes:** Node only; do not present it as available in browsers.

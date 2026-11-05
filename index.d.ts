@@ -669,6 +669,10 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
+  /**
+   * Node only. Gracefully closes all pooled HTTP/2 sessions.
+   */
+  closeHttp2Sessions(): Promise<void>;
   request<T = any, R = AxiosResponseDefault, D = any, P = any>(
     config: AxiosRequestConfig<D, P>
   ): Promise<AxiosResponseResult<T, R, D, P>>;

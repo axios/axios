@@ -501,6 +501,46 @@ describe('helpers::Http2Sessions', () => {
       await shutdown;
     });
 
+    it('does not destroy sessions opened by later calls when an earlier timeout fires', async () => {
+      vi.useFakeTimers();
+      const first = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      first.close = vi.fn(() => {
+        first.closed = true;
+      });
+      first.destroy = vi.fn(() => {
+        first.destroyed = true;
+        first.emit('close');
+      });
+
+      const firstShutdown = pool.closeAll({ timeout: 1000 });
+
+      // A later call opens a fresh session and shuts down without a deadline.
+      const second = pool.getSession('https://other.test');
+      second.close = vi.fn(() => {
+        second.closed = true;
+      });
+      second.destroy = vi.fn(() => {
+        second.destroyed = true;
+        second.emit('close');
+      });
+
+      let secondResolved = false;
+      const secondShutdown = pool.closeAll().then(() => {
+        secondResolved = true;
+      });
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(first.destroyed).toBe(true);
+      expect(second.destroyed).toBe(false);
+
+      second.emit('close');
+
+      await Promise.all([firstShutdown, secondShutdown]);
+      expect(secondResolved).toBe(true);
+    });
+
     it('does not schedule an idle timer for a session removed by a shutdown', () => {
       vi.useFakeTimers();
       const session = pool.getSession('https://example.test', { sessionTimeout: 1000 });

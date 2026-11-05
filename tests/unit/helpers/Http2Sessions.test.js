@@ -430,10 +430,73 @@ describe('helpers::Http2Sessions', () => {
 
       expect(session.close).toHaveBeenCalledTimes(1);
 
-      await vi.advanceTimersByTimeAsync(5000);
+      await vi.advanceTimersByTimeAsync(4999);
+
+      expect(session.destroyed).toBe(false);
+      expect(resolved).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(1);
 
       expect(session.destroyed).toBe(true);
       expect(resolved).toBe(true);
+
+      await shutdown;
+    });
+
+    it('applies a later timeout to sessions draining from an earlier call', async () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      session.close = vi.fn(() => {
+        session.closed = true;
+      });
+      session.destroy = vi.fn(() => {
+        session.destroyed = true;
+        session.emit('close');
+      });
+
+      let firstResolved = false;
+      const firstShutdown = pool.closeAll().then(() => {
+        firstResolved = true;
+      });
+
+      // The pool is now empty, but the earlier close is still draining.
+      let secondResolved = false;
+      const secondShutdown = pool.closeAll({ timeout: 1000 }).then(() => {
+        secondResolved = true;
+      });
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(session.destroyed).toBe(true);
+      expect(secondResolved).toBe(true);
+
+      await Promise.all([firstShutdown, secondShutdown]);
+    });
+
+    it('ignores a timeout inherited through the prototype chain', async () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      session.close = vi.fn(() => {
+        session.closed = true;
+      });
+      session.destroy = vi.fn(() => {
+        session.destroyed = true;
+        session.emit('close');
+      });
+
+      // `timeout` comes from the prototype, not from own properties, and
+      // must not affect behavior.
+      const options = Object.create({ timeout: 1000 });
+
+      const shutdown = pool.closeAll(options);
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(session.destroyed).toBe(false);
+
+      session.emit('close');
 
       await shutdown;
     });

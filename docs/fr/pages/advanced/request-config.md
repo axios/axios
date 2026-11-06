@@ -12,7 +12,7 @@ axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 Mo
 axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ```
 
-Consultez le [guide de sécurité](/pages/misc/security) pour plus de détails.
+Consultez le [guide de sécurité](/fr/pages/misc/security) pour plus de détails.
 :::
 
 ### `url`
@@ -152,7 +152,7 @@ Contrôle la manière dont axios copie les en-têtes retournés par `FormData#ge
 
 ### Options personnalisées avec des clés symboles
 
-La fusion des configurations préserve les propriétés symboles propres et énumérables. Les applications TypeScript peuvent augmenter `AxiosRequestConfig` avec une clé symbole précise, puis lire cette option depuis `InternalAxiosRequestConfig` dans un intercepteur de requête ou un adaptateur. Les propriétés symboles héritées ou non énumérables ne sont pas copiées. Consultez le [guide TypeScript](/pages/advanced/type-script#configuration-de-requete-personnalisee-avec-des-cles-symboles) pour un exemple.
+La fusion des configurations préserve les propriétés symboles propres et énumérables. Les applications TypeScript peuvent augmenter `AxiosRequestConfig` avec une clé symbole précise, puis lire cette option depuis `InternalAxiosRequestConfig` dans un intercepteur de requête ou un adaptateur. Les propriétés symboles héritées ou non énumérables ne sont pas copiées. Consultez le [guide TypeScript](/fr/pages/advanced/type-script#configuration-de-requete-personnalisee-avec-des-cles-symboles) pour un exemple.
 
 ### `timeout`
 
@@ -164,7 +164,7 @@ La propriété `withCredentials` indique si les requêtes Cross-site Access-Cont
 
 ### `adapter`
 
-`adapter` permet une gestion personnalisée des requêtes, ce qui facilite les tests. Retournez une promise et fournissez une réponse valide ; consultez [les adaptateurs](/pages/advanced/adapters) pour plus d'informations. Nous fournissons également un certain nombre d'adaptateurs intégrés. L'adaptateur par défaut est `http` pour Node et `xhr` pour les navigateurs. La liste complète des adaptateurs intégrés est la suivante :
+`adapter` permet une gestion personnalisée des requêtes, ce qui facilite les tests. Retournez une promise et fournissez une réponse valide ; consultez [les adaptateurs](/fr/pages/advanced/adapters) pour plus d'informations. Nous fournissons également un certain nombre d'adaptateurs intégrés. L'adaptateur par défaut est `http` pour Node et `xhr` pour les navigateurs. La liste complète des adaptateurs intégrés est la suivante :
 
 - fetch
 - http

@@ -12,7 +12,7 @@ axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
 axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ```
 
-详见[安全指南](/pages/misc/security)。
+详见[安全指南](/zh/pages/misc/security)。
 :::
 
 ### `url`
@@ -152,7 +152,7 @@ const client = axios.create({
 
 ### 使用 Symbol 键的自定义选项
 
-配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
+配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/zh/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
 
 ### `timeout`
 
@@ -164,7 +164,7 @@ const client = axios.create({
 
 ### `adapter`
 
-`adapter` 允许自定义请求处理方式，便于测试。返回一个 Promise 并提供有效的响应，详见[适配器](/pages/advanced/adapters)文档。我们还提供了多个内置适配器，Node.js 默认使用 `http`，浏览器默认使用 `xhr`。内置适配器列表如下：
+`adapter` 允许自定义请求处理方式，便于测试。返回一个 Promise 并提供有效的响应，详见[适配器](/zh/pages/advanced/adapters)文档。我们还提供了多个内置适配器，Node.js 默认使用 `http`，浏览器默认使用 `xhr`。内置适配器列表如下：
 
 - fetch
 - http

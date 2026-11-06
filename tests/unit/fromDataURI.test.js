@@ -183,4 +183,31 @@ describe('helpers::fromDataURI', () => {
       (err) => err.code === 'ERR_INVALID_URL'
     );
   }, 1000);
+
+  it('should fall back to raw body for a lone percent-escape', () => {
+    // decodeURIComponent throws on a trailing '%', so fromDataURI falls back
+    // to the raw body instead of crashing.
+    assert.deepStrictEqual(
+      fromDataURI('data:text/plain,100% incomplete', false),
+      Buffer.from('100% incomplete')
+    );
+  });
+
+  it('should fall back to raw body for an invalid percent-escape', () => {
+    // '%ZZ' is not a valid percent-escape, so decodeURIComponent throws and
+    // fromDataURI falls back to the raw body.
+    assert.deepStrictEqual(
+      fromDataURI('data:text/plain,%ZZinvalid', false),
+      Buffer.from('%ZZinvalid')
+    );
+  });
+
+  it('should fall back to raw body for mixed valid and invalid escapes', () => {
+    // Valid %20 and invalid %ZZ coexist; decodeURIComponent throws on %ZZ,
+    // so fromDataURI falls back to the raw body.
+    assert.deepStrictEqual(
+      fromDataURI('data:text/plain,hello%20world%ZZ', false),
+      Buffer.from('hello%20world%ZZ')
+    );
+  });
 });

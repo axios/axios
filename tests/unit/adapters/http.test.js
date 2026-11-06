@@ -4509,6 +4509,80 @@ describe('supports http with nodejs', () => {
           await stopHTTPServer(server);
         }
       });
+
+      it('should send a filename parameter for a file with an empty name', async () => {
+        const server = await startHTTPServer(
+          async (req, res) => {
+            const { fields, files } = await handleFormData(req);
+
+            res.end(JSON.stringify({ fields, files }));
+          },
+          { port: 0 }
+        );
+
+        const oneShotAgent = new http.Agent({ keepAlive: false });
+
+        try {
+          const form = new FormDataSpecCompliant();
+          form.append('upload', new BlobSpecCompliant([new Uint8Array([0xff, 0x00])]), '');
+
+          const { data } = await axios.post(`http://localhost:${server.address().port}`, form, {
+            maxRedirects: 0,
+            httpAgent: oneShotAgent,
+            headers: { Connection: 'close' },
+          });
+
+          // Without a filename the part is parsed as a text field and binary
+          // bytes are decoded as UTF-8, so the upload must land under files.
+          assert.deepStrictEqual(data.fields, {});
+          assert.strictEqual(data.files.upload[0].originalFilename, '');
+          assert.strictEqual(data.files.upload[0].size, 2);
+          assert.deepStrictEqual(
+            fs.readFileSync(data.files.upload[0].filepath),
+            Buffer.from([0xff, 0x00])
+          );
+        } finally {
+          oneShotAgent.destroy();
+          await stopHTTPServer(server);
+        }
+      });
+
+      it('should not emit a filename for a non-string part without a name', async () => {
+        let rawBody = '';
+        const server = await startHTTPServer(
+          async (req, res) => {
+            for await (const chunk of req) {
+              rawBody += chunk;
+            }
+            res.end('ok');
+          },
+          { port: 0 }
+        );
+
+        const oneShotAgent = new http.Agent({ keepAlive: false });
+
+        try {
+          // a FormData implementation may yield a bare Blob, which carries
+          // no name; the part must keep the same no-filename disposition it
+          // had before the empty-name fix
+          class RawEntryFormData extends FormDataSpecCompliant {
+            *entries() { yield ['note', new BlobSpecCompliant(['abc'])]; }
+          }
+          const form = new RawEntryFormData();
+
+          await axios.post(`http://localhost:${server.address().port}`, form, {
+            maxRedirects: 0,
+            httpAgent: oneShotAgent,
+            headers: { Connection: 'close' },
+          });
+
+          assert.match(rawBody, /Content-Disposition: form-data; name="note"\r?\n/);
+          assert.doesNotMatch(rawBody, /filename=/);
+        } finally {
+          oneShotAgent.destroy();
+          await stopHTTPServer(server);
+        }
+      });
     });
 
     describe('prototype pollution', () => {

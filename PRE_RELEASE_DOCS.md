@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Async `transformRequest` callbacks
+
+- **Change:** Request body transformers may return promises, which Axios resolves in order before sending the request.
+- **Source:** [Issue #10713](https://github.com/axios/axios/issues/10713).
+- **Status:** Pending.
+- **Docs targets:** `README.md` Request Config `transformRequest` and the English, Spanish, French, and Chinese `docs/pages/advanced/request-config.md` sections.
+- **Required content:** Clarify that only request transformers may return a Promise; the next request transformer receives the resolved value, and the adapter starts after all transforms complete. Rejected transformations prevent the request from being sent. Existing synchronous callbacks remain synchronous; `transformResponse` behavior is unchanged. Requests cancelled through `AbortSignal` or `CancelToken` while an asynchronous transformer is running reject promptly with `ERR_CANCELED`, without waiting for the transformer to finish. A positive `timeout` also limits this transformation stage using Axios's usual `ECONNABORTED` or `ETIMEDOUT` (with `transitional.clarifyTimeoutError`) error and the configured timeout message. A monotonic deadline is checked before queued transformations and adapter dispatch, including when a blocking transformer delays the timeout callback. Later transformers and the adapter are skipped after cancellation or a timeout; the underlying transformer itself may still continue, so pass cancellation into long-running transformers where possible. The adapter uses its existing timeout independently after successful transformations (not a single end-to-end request deadline).
+- **Examples:** A per-request `async (data, headers) => { headers.set('X-Signature', await sign(data)); return data; }` transformer followed by `...axios.defaults.transformRequest` to preserve default serialization.
+- **Notes:** TypeScript `AxiosRequestTransformer` already returns `any` in both ESM and CJS declarations, so no public type change is needed.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

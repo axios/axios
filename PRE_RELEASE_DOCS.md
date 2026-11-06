@@ -20,6 +20,14 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Multipart typed array bytes
+
+- **Change:** The Node FormData fallback preserves the complete raw bytes of typed array views, including multi-byte and BigInt elements, matching native Blob conversion.
+- **Source:** The multipart typed-array prerelease changelog entry; follow-up to [PR #11255](https://github.com/axios/axios/pull/11255).
+- **Status:** Pending.
+- **Docs targets:** Multipart automatic serialization sections in the README and translated docs site.
+- **Required content:** Clarify that typed arrays serialize their binary representation, restricted to the view's byte offset and length. They are not serialized as numeric element values. No API or declaration changes are needed.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

@@ -137,7 +137,7 @@ describe('requests (vitest browser)', () => {
   });
 
   it.each([200, 500])('reports elapsed adapter time for XHR status %s', async (status) => {
-    const clock = vi.spyOn(Date, 'now').mockReturnValue(1000);
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
     const { request, promise } = startRequest('/timing', { adapter: 'xhr' });
     clock.mockReturnValue(1025);
     request.respondWith({ status, responseText: '{"ok":true}' });

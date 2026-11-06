@@ -260,4 +260,298 @@ describe('helpers::Http2Sessions', () => {
     // keeps Node's event loop refed for up to sessionTimeout ms past close.
     expect(clearTimeoutSpy).toHaveBeenCalled();
   });
+
+  describe('closeAll', () => {
+    it('closes all pooled sessions across authorities and empties the pool', async () => {
+      const first = pool.getSession('https://example.test');
+      const second = pool.getSession('https://other.test');
+
+      await pool.closeAll();
+
+      expect(first.close).toHaveBeenCalledTimes(1);
+      expect(second.close).toHaveBeenCalledTimes(1);
+      expect(pool.sessions['https://example.test']).toBeUndefined();
+      expect(pool.sessions['https://other.test']).toBeUndefined();
+    });
+
+    it('closes every pooled session when an authority holds several', async () => {
+      const first = pool.getSession('https://example.test', { sessionTimeout: 500 });
+      const second = pool.getSession('https://example.test', { sessionTimeout: 2000 });
+
+      expect(first).not.toBe(second);
+
+      await pool.closeAll();
+
+      expect(first.close).toHaveBeenCalledTimes(1);
+      expect(second.close).toHaveBeenCalledTimes(1);
+      expect(pool.sessions['https://example.test']).toBeUndefined();
+    });
+
+    it('awaits sessions that are already closing without closing them again', async () => {
+      const session = pool.getSession('https://example.test');
+      // Node marks closed as soon as close() is requested, even while
+      // in-flight streams are still draining.
+      session.closed = true;
+
+      let resolved = false;
+      const shutdown = pool.closeAll().then(() => {
+        resolved = true;
+      });
+
+      expect(session.close).not.toHaveBeenCalled();
+
+      // Give closeAll() a full macrotask to settle: a microtask tick would
+      // pass even if it resolved early, since its promise chain needs
+      // several ticks to reach `then`.
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(resolved).toBe(false);
+
+      session.emit('close');
+
+      await shutdown;
+      expect(resolved).toBe(true);
+      expect(pool.sessions['https://example.test']).toBeUndefined();
+    });
+
+    it('skips destroyed sessions', async () => {
+      const session = pool.getSession('https://example.test');
+      session.destroyed = true;
+
+      await pool.closeAll();
+
+      expect(session.close).not.toHaveBeenCalled();
+      expect(pool.sessions['https://example.test']).toBeUndefined();
+    });
+
+    it('resolves only after every session emits close', async () => {
+      const first = pool.getSession('https://example.test');
+      const second = pool.getSession('https://other.test');
+
+      for (const session of [first, second]) {
+        session.close = vi.fn(() => {
+          session.closed = true;
+        });
+      }
+
+      let resolved = false;
+      const shutdown = pool.closeAll().then(() => {
+        resolved = true;
+      });
+
+      expect(first.close).toHaveBeenCalledTimes(1);
+      expect(second.close).toHaveBeenCalledTimes(1);
+
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(resolved).toBe(false);
+
+      first.emit('close');
+      second.emit('close');
+
+      await shutdown;
+      expect(resolved).toBe(true);
+      expect(pool.sessions['https://example.test']).toBeUndefined();
+      expect(pool.sessions['https://other.test']).toBeUndefined();
+    });
+
+    it('allows new sessions after a shutdown', async () => {
+      const first = pool.getSession('https://example.test');
+
+      await pool.closeAll();
+
+      const second = pool.getSession('https://example.test');
+
+      expect(second).not.toBe(first);
+      expect(connectSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('resolves with an empty pool and returns a promise', async () => {
+      const result = pool.closeAll();
+
+      expect(result).toBeInstanceOf(Promise);
+      await expect(result).resolves.toBeUndefined();
+    });
+
+    it('is safe to call twice', async () => {
+      const session = pool.getSession('https://example.test');
+
+      await pool.closeAll();
+      await pool.closeAll();
+
+      expect(session.close).toHaveBeenCalledTimes(1);
+      expect(pool.sessions['https://example.test']).toBeUndefined();
+    });
+
+    it('makes overlapping calls wait for closes they did not initiate', async () => {
+      const draining = pool.getSession('https://example.test');
+      // Simulate a session draining an in-flight response.
+      draining.close = vi.fn(() => {
+        draining.closed = true;
+      });
+
+      let resolved = false;
+      const first = pool.closeAll().then(() => {
+        resolved = true;
+      });
+
+      // Second call after the pool has been emptied must still wait for the
+      // close initiated by the first call.
+      let secondResolved = false;
+      const second = pool.closeAll().then(() => {
+        secondResolved = true;
+      });
+
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(resolved).toBe(false);
+      expect(secondResolved).toBe(false);
+
+      draining.emit('close');
+
+      await Promise.all([first, second]);
+      expect(resolved).toBe(true);
+      expect(secondResolved).toBe(true);
+    });
+
+    it('force-destroys sessions still draining after the timeout elapses', async () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      session.close = vi.fn(() => {
+        session.closed = true;
+      });
+      session.destroy = vi.fn(() => {
+        session.destroyed = true;
+        session.emit('close');
+      });
+
+      let resolved = false;
+      const shutdown = pool.closeAll({ timeout: 5000 }).then(() => {
+        resolved = true;
+      });
+
+      expect(session.close).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(4999);
+
+      expect(session.destroyed).toBe(false);
+      expect(resolved).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(1);
+
+      expect(session.destroyed).toBe(true);
+      expect(resolved).toBe(true);
+
+      await shutdown;
+    });
+
+    it('applies a later timeout to sessions draining from an earlier call', async () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      session.close = vi.fn(() => {
+        session.closed = true;
+      });
+      session.destroy = vi.fn(() => {
+        session.destroyed = true;
+        session.emit('close');
+      });
+
+      let firstResolved = false;
+      const firstShutdown = pool.closeAll().then(() => {
+        firstResolved = true;
+      });
+
+      // The pool is now empty, but the earlier close is still draining.
+      let secondResolved = false;
+      const secondShutdown = pool.closeAll({ timeout: 1000 }).then(() => {
+        secondResolved = true;
+      });
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(session.destroyed).toBe(true);
+      expect(secondResolved).toBe(true);
+
+      await Promise.all([firstShutdown, secondShutdown]);
+    });
+
+    it('ignores a timeout inherited through the prototype chain', async () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      session.close = vi.fn(() => {
+        session.closed = true;
+      });
+      session.destroy = vi.fn(() => {
+        session.destroyed = true;
+        session.emit('close');
+      });
+
+      // `timeout` comes from the prototype, not from own properties, and
+      // must not affect behavior.
+      const options = Object.create({ timeout: 1000 });
+
+      const shutdown = pool.closeAll(options);
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(session.destroyed).toBe(false);
+
+      session.emit('close');
+
+      await shutdown;
+    });
+
+    it('does not destroy sessions opened by later calls when an earlier timeout fires', async () => {
+      vi.useFakeTimers();
+      const first = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      first.close = vi.fn(() => {
+        first.closed = true;
+      });
+      first.destroy = vi.fn(() => {
+        first.destroyed = true;
+        first.emit('close');
+      });
+
+      const firstShutdown = pool.closeAll({ timeout: 1000 });
+
+      // A later call opens a fresh session and shuts down without a deadline.
+      const second = pool.getSession('https://other.test');
+      second.close = vi.fn(() => {
+        second.closed = true;
+      });
+      second.destroy = vi.fn(() => {
+        second.destroyed = true;
+        second.emit('close');
+      });
+
+      let secondResolved = false;
+      const secondShutdown = pool.closeAll().then(() => {
+        secondResolved = true;
+      });
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(first.destroyed).toBe(true);
+      expect(second.destroyed).toBe(false);
+
+      second.emit('close');
+
+      await Promise.all([firstShutdown, secondShutdown]);
+      expect(secondResolved).toBe(true);
+    });
+
+    it('does not schedule an idle timer for a session removed by a shutdown', () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test', { sessionTimeout: 1000 });
+      const stream = session.request();
+
+      pool.closeAll();
+
+      expect(session.close).toHaveBeenCalledTimes(1);
+
+      stream.emit('close');
+      expect(vi.getTimerCount()).toBe(0);
+    });
+  });
 });

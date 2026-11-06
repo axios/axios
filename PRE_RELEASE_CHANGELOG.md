@@ -4,6 +4,8 @@
 
 ## Features
 
+- **`closeHttp2Sessions`:** Added `axios.closeHttp2Sessions()` and `instance.closeHttp2Sessions()`, a Node-only method that gracefully closes all pooled HTTP/2 sessions; already-destroyed sessions are skipped. Without options, it resolves once every non-destroyed session has emitted `close`, letting in-flight responses drain first. Passing `{ timeout }` bounds the wait: sessions still draining after that many milliseconds are force-destroyed, and the promise may resolve at that point rather than after their `close` event. The pool is emptied, so subsequent requests open fresh sessions, and overlapping shutdown calls all wait for the same closes. In the browser and other environments without the HTTP adapter it resolves as a no-op promise. Typings added to `index.d.ts` and `index.d.cts`. Additive and backwards compatible. ([#7470](https://github.com/axios/axios/issues/7470))
+
 ## Bug Fixes
 
 - **Response duration clock:** `response.duration` is now measured with the monotonic `performance.now()` instead of `Date.now()`, falling back to `Date.now()` only in runtimes without `performance.now()`. Since v1.21.0, axios read `Date.now()` on every request, which broke Next.js production builds that use Cache Components (`cacheComponents: true`) because Next.js rejects reading the current time while prerendering; `performance.now()` is the timing API Next.js allows for this. The monotonic clock also stops system clock adjustments from skewing the value. `duration` is rounded to whole milliseconds, so it stays an integer as in v1.21.0, and it is still clamped at `0`. No public API or type changes; the `duration` declaration comments in `index.d.ts` and `index.d.cts` now name the clock. ([#11407](https://github.com/axios/axios/issues/11407))

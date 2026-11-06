@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Fetch adapter `sensitiveHeaders` rejection
+
+- **Change:** The fetch adapter rejects non-empty `sensitiveHeaders` arrays before sending a request instead of silently ignoring them.
+- **Source:** [PR #11425](https://github.com/axios/axios/pull/11425).
+- **Status:** Pending.
+- **Docs targets:** `README.md` Request config and custom secret-bearing header example; `docs/pages/advanced/request-config.md`, `docs/pages/advanced/fetch-adapter.md`, and `docs/pages/advanced/security.md`, with their Spanish, French, and Chinese translations; `THREATMODEL.md` T-R2.
+- **Required content:** Clarify that custom redirect-header stripping is supported only by the Node HTTP adapter, rather than by every adapter running in Node. A non-empty array with `adapter: 'fetch'` rejects with `AxiosError.ERR_NOT_SUPPORT`, including with custom `env.fetch` implementations. Omitted, `null`, and empty arrays remain no-ops. Fetch delegates redirects to the runtime and cannot strip caller-selected headers between hops. Callers requiring this protection should explicitly select `adapter: 'http'` where available or avoid sending the custom secret header; do not recommend removing `sensitiveHeaders` while retaining the secret header.
+- **Examples:** Add `adapter: 'http'` to the existing `X-API-Key`/`sensitiveHeaders` example. Show checking `axios.isAxiosError(error)` and `error.code === 'ERR_NOT_SUPPORT'` when handling an unsupported configuration.
+- **Notes:** No declaration shape or runtime export changes are required. Document the intentional compatibility change: previously accepted fetch requests with this option now reject rather than proceeding without the requested protection.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

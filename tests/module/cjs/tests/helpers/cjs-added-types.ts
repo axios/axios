@@ -15,6 +15,12 @@ const invalidAuthConfig: axios.AxiosRequestConfig = {
 };
 
 const headers = new axios.AxiosHeaders();
+const HeadersWithAccessor: typeof axios.AxiosHeaders = axios.AxiosHeaders.accessor('X-Custom');
+const headersWithAccessor = new HeadersWithAccessor();
+const HeadersWithAccessors: typeof axios.AxiosHeaders = axios.AxiosHeaders.accessor([
+  'X-First',
+  'X-Second',
+]);
 const iterableHeaders: Iterable<[string, axios.AxiosHeaderValue]> = [['x-test', 'ok']];
 headers.set(iterableHeaders);
 const serializedHeaders: string = headers.toString();

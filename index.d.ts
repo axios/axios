@@ -59,7 +59,7 @@ export class AxiosHeaders {
 
   static parseParameters(value: AxiosHeaderValue): AxiosHeaderParameters;
 
-  static accessor(header: string | string[]): AxiosHeaders;
+  static accessor(header: string | string[]): typeof AxiosHeaders;
 
   static concat(
     ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>

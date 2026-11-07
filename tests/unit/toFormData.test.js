@@ -154,6 +154,20 @@ describe('helpers::toFormData', () => {
     }
   });
 
+  for (const ArrayType of [Uint16Array, Float32Array, BigInt64Array]) {
+    it(`should preserve ${ArrayType.name} bytes and view boundaries in Node FormData`, async () => {
+      const values = ArrayType === BigInt64Array ? [99n, 258n, 513n, 99n] : [99, 258, 513, 99];
+      const view = new ArrayType(values).subarray(1, 3);
+      const formData = createRNFormDataSpy();
+
+      toFormData({ file: view }, formData);
+
+      const expected = Buffer.from(await new Blob([view]).arrayBuffer());
+      assert.ok(Buffer.isBuffer(formData.calls[0][1]));
+      assert.deepStrictEqual(formData.calls[0][1], expected);
+    });
+  }
+
   it('should append root-level React Native blob without recursion', () => {
     const formData = createRNFormDataSpy();
 

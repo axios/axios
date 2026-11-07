@@ -81,10 +81,10 @@ export class AxiosHeaders {
   hasAccept(matcher?: AxiosHeaderMatcher): boolean;
 
   setAcceptEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getAcceptEncoding(parser: RegExp): RegExpExecArray | null;
-  getAcceptEncoding(parser: true): Record<string, string | undefined>;
-  getAcceptEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T>;
-  getAcceptEncoding(parser?: undefined): AxiosHeaderValue;
+  getAcceptEncoding(parser: RegExp): RegExpExecArray | null | undefined;
+  getAcceptEncoding(parser: true): Record<string, string | undefined> | undefined;
+  getAcceptEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T> | undefined;
+  getAcceptEncoding(parser?: undefined): AxiosHeaderValue | undefined;
   hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setUserAgent(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -93,10 +93,10 @@ export class AxiosHeaders {
   hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
 
   setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentEncoding(parser: RegExp): RegExpExecArray | null;
-  getContentEncoding(parser: true): Record<string, string | undefined>;
-  getContentEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T>;
-  getContentEncoding(parser?: undefined): AxiosHeaderValue;
+  getContentEncoding(parser: RegExp): RegExpExecArray | null | undefined;
+  getContentEncoding(parser: true): Record<string, string | undefined> | undefined;
+  getContentEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T> | undefined;
+  getContentEncoding(parser?: undefined): AxiosHeaderValue | undefined;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAuthorization(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;

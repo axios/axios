@@ -781,6 +781,16 @@ describe('AxiosHeaders', () => {
         headers.delete(header);
         assert.strictEqual(headers[`has${suffix}`](), false);
         assert.strictEqual(headers[`get${suffix}`](), undefined);
+        assert.strictEqual(headers[`get${suffix}`](true), undefined);
+        assert.strictEqual(headers[`get${suffix}`](/gzip/), undefined);
+        let parsed = false;
+        assert.strictEqual(
+          headers[`get${suffix}`](() => {
+            parsed = true;
+          }),
+          undefined
+        );
+        assert.strictEqual(parsed, false);
       });
     }
 

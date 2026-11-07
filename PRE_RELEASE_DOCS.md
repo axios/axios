@@ -23,7 +23,7 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 ### Header encoding shortcuts
 
 - **Change:** The documented `Content-Encoding` shortcuts now exist at runtime, and the existing `Accept-Encoding` shortcuts are explicitly typed in both module formats.
-- **Source:** [Issue #11432](https://github.com/axios/axios/issues/11432).
+- **Source:** [Issue #11432](https://github.com/axios/axios/issues/11432), [PR #11433](https://github.com/axios/axios/pull/11433).
 - **Status:** Pending.
 - **Docs targets:** `README.md` AxiosHeaders Shortcuts section; `docs/pages/advanced/header-methods.md` and its Spanish, French, and Chinese translations.
 - **Required content:** Keep the `setContentEncoding`, `getContentEncoding`, and `hasContentEncoding` shortcuts and add the `setAcceptEncoding`, `getAcceptEncoding`, and `hasAcceptEncoding` trio. Complete the shortcut lists with the existing `setAuthorization`, `getAuthorization`, and `hasAuthorization` methods. Document the existing `getSetCookie()` method on the header-methods pages, including its `string[]` result and empty array when no cookie is present.

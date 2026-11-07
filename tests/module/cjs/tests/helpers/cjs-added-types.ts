@@ -17,15 +17,20 @@ const invalidAuthConfig: axios.AxiosRequestConfig = {
 const headers = new axios.AxiosHeaders();
 
 const acceptEncoding: axios.AxiosHeaderValue = headers.getAcceptEncoding();
-headers.getAcceptEncoding(true);
+const contentEncoding: axios.AxiosHeaderValue = headers.getContentEncoding();
+const acceptTokens: Record<string, string | undefined> = headers.getAcceptEncoding(true);
+const contentTokens: Record<string, string | undefined> = headers.getContentEncoding(true);
 headers.getAcceptEncoding((value) => value);
 // @ts-expect-error -- a getter without a regex returns a header value, not regex matches
 const invalidAcceptEncoding: RegExpExecArray | null = headers.getAcceptEncoding();
+// @ts-expect-error -- a getter without a regex returns a header value, not regex matches
+const invalidContentEncoding: RegExpExecArray | null = headers.getContentEncoding();
 
 // Both built-in encoding accessor trios must be explicitly typed, not fall through the any indexer.
 for (const suffix of ['ContentEncoding', 'AcceptEncoding'] as const) {
   const updated: typeof headers = headers[`set${suffix}`]('gzip', false);
   const matched: RegExpExecArray | null = headers[`get${suffix}`](/gzip/);
+  const parsed: { value: axios.AxiosHeaderValue } = headers[`get${suffix}`]((value) => ({ value }));
   const present: boolean = headers[`has${suffix}`](/gzip/);
 
   // @ts-expect-error -- header values must not be arbitrary objects
@@ -34,7 +39,7 @@ for (const suffix of ['ContentEncoding', 'AcceptEncoding'] as const) {
   headers[`set${suffix}`]('gzip', 1);
   // @ts-expect-error -- get does not accept a numeric parser
   headers[`get${suffix}`](1);
-  // @ts-expect-error -- has requires a header matcher
+  // @ts-expect-error -- a number is not a header matcher
   headers[`has${suffix}`](1);
   // @ts-expect-error -- setters return AxiosHeaders, not a string
   const invalidUpdated: string = headers[`set${suffix}`]('gzip');

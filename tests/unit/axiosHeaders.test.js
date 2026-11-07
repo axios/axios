@@ -762,6 +762,10 @@ describe('AxiosHeaders', () => {
         assert.strictEqual(headers[`has${suffix}`](/gzip/), true);
         assert.strictEqual(headers[`get${suffix}`](/g(zip)/)[1], 'zip');
         assert.strictEqual(headers[`get${suffix}`](/br/), null);
+        const tokens = headers[`get${suffix}`](true);
+        assert.strictEqual(Object.getPrototypeOf(tokens), null);
+        assert.strictEqual(tokens.gzip, undefined);
+        assert.deepStrictEqual(Object.keys(tokens), ['gzip']);
 
         assert.strictEqual(headers[`set${suffix}`]('br', false), headers);
         assert.strictEqual(headers[`get${suffix}`](), 'gzip');

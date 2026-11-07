@@ -108,7 +108,9 @@ declare class AxiosHeaders {
     rewrite?: boolean | AxiosHeaderMatcher
   ): AxiosHeaders;
   getAcceptEncoding(parser: RegExp): RegExpExecArray | null;
-  getAcceptEncoding(matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
+  getAcceptEncoding(parser: true): Record<string, string | undefined>;
+  getAcceptEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T>;
+  getAcceptEncoding(parser?: undefined): axios.AxiosHeaderValue;
   hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setUserAgent(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -120,8 +122,10 @@ declare class AxiosHeaders {
     value: axios.AxiosHeaderValue,
     rewrite?: boolean | AxiosHeaderMatcher
   ): AxiosHeaders;
-  getContentEncoding(parser?: RegExp): RegExpExecArray | null;
-  getContentEncoding(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+  getContentEncoding(parser: RegExp): RegExpExecArray | null;
+  getContentEncoding(parser: true): Record<string, string | undefined>;
+  getContentEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T>;
+  getContentEncoding(parser?: undefined): axios.AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAuthorization(

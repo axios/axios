@@ -749,6 +749,37 @@ describe('AxiosHeaders', () => {
   });
 
   describe('accessors', () => {
+    for (const [header, suffix] of [
+      ['Content-Encoding', 'ContentEncoding'],
+      ['Accept-Encoding', 'AcceptEncoding'],
+    ]) {
+      it(`should support built-in ${header} accessors`, () => {
+        const headers = new AxiosHeaders({ [header.toLowerCase()]: 'gzip' });
+
+        assert.strictEqual(headers[`get${suffix}`](), 'gzip');
+        assert.strictEqual(headers[`has${suffix}`](), true);
+        assert.strictEqual(headers[`has${suffix}`]('br'), false);
+        assert.strictEqual(headers[`has${suffix}`](/gzip/), true);
+        assert.strictEqual(headers[`get${suffix}`](/g(zip)/)[1], 'zip');
+        assert.strictEqual(headers[`get${suffix}`](/br/), null);
+
+        assert.strictEqual(headers[`set${suffix}`]('br', false), headers);
+        assert.strictEqual(headers[`get${suffix}`](), 'gzip');
+        headers[`set${suffix}`]('br');
+        assert.strictEqual(headers.get(header.toUpperCase()), 'br');
+
+        headers[`set${suffix}`](false);
+        headers[`set${suffix}`]('gzip');
+        assert.strictEqual(headers[`get${suffix}`](), false);
+        headers[`set${suffix}`]('gzip', true);
+        assert.strictEqual(headers[`get${suffix}`](), 'gzip');
+
+        headers.delete(header);
+        assert.strictEqual(headers[`has${suffix}`](), false);
+        assert.strictEqual(headers[`get${suffix}`](), undefined);
+      });
+    }
+
     it('should support get accessor', () => {
       const headers = new AxiosHeaders({
         foo: 1,

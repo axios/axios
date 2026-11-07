@@ -7433,5 +7433,124 @@ describe('supports http with nodejs', () => {
         }
       );
     });
+
+    it('clears kAxiosCurrentReq on keep-alive sockets when following redirects (#11325)', async () => {
+      const server = await startHTTPServer((req, res) => {
+        res.end('ok');
+      });
+
+      const agent = new http.Agent({ keepAlive: true });
+
+      try {
+        const response = await axios.get(`http://127.0.0.1:${server.address().port}`, {
+          httpAgent: agent,
+        });
+
+        assert.strictEqual(response.status, 200);
+
+        const socket = response.request.socket;
+        assert.ok(socket, 'socket should exist on response request');
+
+        const currentReqSym = Object.getOwnPropertySymbols(socket).find(
+          (s) => s.description === 'axios.http.currentReq'
+        );
+        assert.ok(currentReqSym, 'kAxiosCurrentReq symbol should exist on socket');
+        assert.strictEqual(
+          socket[currentReqSym],
+          null,
+          'socket[kAxiosCurrentReq] must be cleared when response finishes'
+        );
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('clears kAxiosCurrentReq on all sockets when following multi-hop redirects (#11325)', async () => {
+      const server = await startHTTPServer((req, res) => {
+        if (req.url === '/hop1') {
+          res.writeHead(302, { Location: '/hop2' });
+          res.end();
+          return;
+        }
+        if (req.url === '/hop2') {
+          res.writeHead(302, { Location: '/target' });
+          res.end();
+          return;
+        }
+        res.end('target reached');
+      });
+
+      const agent = new http.Agent({ keepAlive: true });
+      const capturedSockets = new Set();
+      agent.on('free', (socket) => capturedSockets.add(socket));
+
+      try {
+        const response = await axios.get(`http://127.0.0.1:${server.address().port}/hop1`, {
+          httpAgent: agent,
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(response.data, 'target reached');
+
+        const freeSockets = Object.values(agent.freeSockets).flat();
+        for (const s of freeSockets) {
+          capturedSockets.add(s);
+        }
+        assert.ok(capturedSockets.size > 0, 'at least one socket should be pooled');
+
+        for (const sock of capturedSockets) {
+          const currentReqSym = Object.getOwnPropertySymbols(sock).find(
+            (s) => s.description === 'axios.http.currentReq'
+          );
+          assert.ok(currentReqSym, 'kAxiosCurrentReq symbol should exist on pooled socket');
+          assert.strictEqual(
+            sock[currentReqSym],
+            null,
+            'every socket in pool must have kAxiosCurrentReq cleared'
+          );
+        }
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('clears kAxiosCurrentReq on error before response arrives (#11325)', async () => {
+      const server = await startHTTPServer((req, res) => {
+        req.socket.destroy();
+      });
+
+      let clientSocket = null;
+      const agent = new http.Agent({ keepAlive: true });
+      const origCreateConnection = agent.createConnection;
+      agent.createConnection = function(options, cb) {
+        const sock = origCreateConnection.call(this, options, cb);
+        clientSocket = sock;
+        return sock;
+      };
+
+      try {
+        await assert.rejects(
+          axios.get(`http://127.0.0.1:${server.address().port}`, {
+            httpAgent: agent,
+          })
+        );
+
+        assert.ok(clientSocket, 'client socket should have been created');
+        const currentReqSym = Object.getOwnPropertySymbols(clientSocket).find(
+          (s) => s.description === 'axios.http.currentReq'
+        );
+        assert.ok(currentReqSym, 'kAxiosCurrentReq symbol should exist on socket');
+        assert.strictEqual(
+          clientSocket[currentReqSym],
+          null,
+          'socket[kAxiosCurrentReq] must be cleared on request error'
+        );
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
   });
 });

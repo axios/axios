@@ -74,6 +74,24 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('rejects param serialization failures as an AxiosError', async () => {
+    await assert.rejects(
+      () =>
+        axios.get('/users', {
+          adapter: 'fetch',
+          params: {
+            value: '\uD800',
+          },
+        }),
+      (error) => {
+        assert.ok(error instanceof AxiosError);
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+        assert.strictEqual(error.config.url, '/users');
+        return true;
+      }
+    );
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

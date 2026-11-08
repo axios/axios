@@ -166,7 +166,10 @@ describe('xhr adapter status 0 handling', () => {
     [false, 'false'],
     [123, '123'],
     [true, 'true'],
-  ])('should send primitive payload %s as string in xhr adapter', async (payload, expected) => {
+    [NaN, 'NaN'],
+    [null, null],
+    [undefined, null],
+  ])('should handle primitive payload %s in xhr adapter', async (payload, expected) => {
     let sentData;
     class CapturingXMLHttpRequest extends StubXMLHttpRequest {
       constructor() {

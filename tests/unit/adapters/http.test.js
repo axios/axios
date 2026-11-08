@@ -7552,5 +7552,67 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     });
+
+    it('does not clear a newer owner when stale request cleanup runs (#11325)', async () => {
+      let notifyRequest;
+      const requestSeen = new Promise((resolve) => {
+        notifyRequest = resolve;
+      });
+      const server = await startHTTPServer((req, res) => {
+        notifyRequest(res);
+      });
+
+      let clientSocket = null;
+      let responsePromise;
+      let serverResponse;
+      const agent = new http.Agent({ keepAlive: true });
+      const origCreateConnection = agent.createConnection;
+      agent.createConnection = function (options, cb) {
+        const sock = origCreateConnection.call(this, options, cb);
+        clientSocket = sock;
+        return sock;
+      };
+
+      try {
+        responsePromise = axios.get(`http://127.0.0.1:${server.address().port}`, {
+          httpAgent: agent,
+        });
+        serverResponse = await requestSeen;
+
+        assert.ok(clientSocket, 'client socket should have been created');
+        const currentReqSym = Object.getOwnPropertySymbols(clientSocket).find(
+          (s) => s.description === 'axios.http.currentReq'
+        );
+        assert.ok(currentReqSym, 'kAxiosCurrentReq symbol should exist on socket');
+
+        const staleRequest = clientSocket[currentReqSym];
+        assert.ok(staleRequest, 'the first request should own the socket');
+        const staleCleanup = staleRequest
+          .listeners('close')
+          .find((listener) => listener.name === 'clearCurrentReq');
+        assert.ok(staleCleanup, 'the request cleanup listener should be captured');
+
+        const newRequest = {};
+        clientSocket[currentReqSym] = newRequest;
+        staleCleanup();
+
+        assert.strictEqual(
+          clientSocket[currentReqSym],
+          newRequest,
+          'stale cleanup must not clear the newer request owner'
+        );
+
+        serverResponse.end('ok');
+        const response = await responsePromise;
+        assert.strictEqual(response.status, 200);
+      } finally {
+        if (serverResponse && !serverResponse.writableEnded) {
+          serverResponse.end('ok');
+        }
+        await responsePromise?.catch(() => {});
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
   });
 });

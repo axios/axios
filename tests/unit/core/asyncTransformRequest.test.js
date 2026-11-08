@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import assert from 'node:assert/strict';
 import dispatchRequest from '../../../lib/core/dispatchRequest.js';
 import transformData from '../../../lib/core/transformData.js';
@@ -305,6 +305,42 @@ describe('async request transformers', () => {
     await assert.rejects(pending, (error) => error.code === AxiosError.ECONNABORTED);
     assert.equal(nextTransformerCalled, false);
     assert.equal(adapterCalled, false);
+  });
+
+  it('caps long transform timeout delays rather than overflowing setTimeout', async () => {
+    const controller = new AbortController();
+    const timeoutSpy = vi.spyOn(globalThis, 'setTimeout');
+    let adapterCalled = false;
+    let pending;
+
+    try {
+      pending = dispatchRequest(makeConfig({
+        timeout: 3_000_000_000,
+        signal: controller.signal,
+        transformRequest: [() => new Promise(() => {})],
+        adapter: () => {
+          adapterCalled = true;
+          return Promise.resolve(makeResponse({}));
+        },
+      }));
+
+      const delays = timeoutSpy.mock.calls.map((args) => args[1]);
+      assert.ok(delays.length > 0, 'expected a scheduled timeout');
+      assert.ok(
+        delays.every((delay) => delay > 0 && delay <= 0x7fffffff),
+        'each timeout interval must stay within the platform timer limit'
+      );
+
+      controller.abort();
+      await assert.rejects(pending, (error) => error.code === AxiosError.ERR_CANCELED);
+      assert.equal(adapterCalled, false);
+    } finally {
+      controller.abort();
+      if (pending) {
+        await pending.catch(() => {});
+      }
+      timeoutSpy.mockRestore();
+    }
   });
 
   it('leaves response transformations synchronous even if they return a Promise', () => {

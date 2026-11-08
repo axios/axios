@@ -19,6 +19,7 @@ Voici une liste des erreurs potentielles identifiées par axios :
 | ERR_BAD_OPTION            | Option invalide fournie dans la configuration axios.                                          |
 | ECONNABORTED              | Indique généralement que la requête a expiré (sauf si `transitional.clarifyTimeoutError` est défini) ou a été abandonnée par le navigateur ou son plugin. |
 | ETIMEDOUT                 | La requête a expiré en dépassant la limite de temps par défaut d'axios. `transitional.clarifyTimeoutError` doit être défini à `true`, sinon une erreur générique `ECONNABORTED` sera levée à la place. |
+| ECONNREFUSED              | Le serveur a refusé la connexion. Défini par l'adaptateur `http` de Node.js, avec l'erreur système d'origine dans `error.cause` ; les adaptateurs `xhr` et `fetch` renvoient `ERR_NETWORK` à la place. |
 | ERR_NETWORK               | Problème lié au réseau. Dans le navigateur, cette erreur peut également être causée par une violation de politique [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) ou de [contenu mixte](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content). Le navigateur ne permet pas au code JS de clarifier la raison réelle de l'erreur pour des raisons de sécurité ; veuillez vérifier la console. |
 | ERR_FR_TOO_MANY_REDIRECTS | La requête est redirigée trop de fois ; dépasse le nombre maximum de redirections spécifié dans la configuration axios. |
 | ERR_DEPRECATED            | Fonctionnalité ou méthode dépréciée utilisée dans axios.                                      |

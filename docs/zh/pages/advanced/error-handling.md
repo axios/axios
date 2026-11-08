@@ -19,6 +19,7 @@ axios 可能会抛出多种不同类型的错误，有些来自 axios 本身，�
 | ERR_BAD_OPTION            | axios 配置中提供了无效选项。                                                            |
 | ECONNABORTED              | 通常表示请求已超时（除非设置了 `transitional.clarifyTimeoutError`）或被浏览器或其插件中止。 |
 | ETIMEDOUT                 | 请求因超过 axios 默认时限而超时。必须将 `transitional.clarifyTimeoutError` 设置为 `true`，否则会抛出通用的 `ECONNABORTED` 错误。 |
+| ECONNREFUSED              | 服务器拒绝了连接。由 Node.js 的 `http` 适配器设置，原始系统错误可通过 `error.cause` 获取；`xhr` 和 `fetch` 适配器则会报告 `ERR_NETWORK`。 |
 | ERR_NETWORK               | 网络相关问题。在浏览器中，此错误也可能由 [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) 或[混合内容](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content)策略违规引起。出于安全考虑，浏览器不允许 JS 代码获知错误的真实原因，请检查控制台。 |
 | ERR_FR_TOO_MANY_REDIRECTS | 请求重定向次数过多，超过了 axios 配置中指定的最大重定向次数。                           |
 | ERR_DEPRECATED            | 使用了 axios 中已废弃的功能或方法。                                                     |

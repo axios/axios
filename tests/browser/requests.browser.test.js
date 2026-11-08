@@ -111,6 +111,25 @@ describe('native XHR scheme casing', () => {
   });
 });
 
+describe('native XHR primitive request bodies', () => {
+  it.each([
+    [0, '0'],
+    [false, 'false'],
+    [123, '123'],
+    [true, 'true'],
+    [NaN, 'NaN'],
+    [null, ''],
+    [undefined, ''],
+  ])('sends %s through a native browser receiver', async (payload, expected) => {
+    const response = await axios.post('/__axios_test_echo__', payload, {
+      adapter: 'xhr',
+      responseType: 'text',
+    });
+
+    expect(response.data).toBe(expected);
+  });
+});
+
 const startRequest = (...args) => {
   const promise = axios(...args);
   const request = requests.at(-1);

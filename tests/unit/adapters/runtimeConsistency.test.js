@@ -162,6 +162,22 @@ describe('runtime option consistency', function () {
 
         // Verify primitive length accounting in fetch when maxBodyLength is enforced
         var expectedBytes = Buffer.byteLength(c.expected);
+        var uploadTotals = [];
+        var allowedFetch = await axios.post(url, c.value, {
+          adapter: 'fetch',
+          maxBodyLength: expectedBytes,
+          onUploadProgress: function (event) {
+            uploadTotals.push(event.total);
+          },
+        });
+        assert.strictEqual(allowedFetch.data.body, c.expected);
+        assert.ok(uploadTotals.length > 0, 'fetch adapter should report upload progress');
+        assert.deepStrictEqual(
+          Array.from(new Set(uploadTotals)),
+          [expectedBytes],
+          'fetch adapter should report primitive upload byte length'
+        );
+
         await assert.rejects(
           axios.post(url, c.value, {
             adapter: 'fetch',
@@ -172,12 +188,6 @@ describe('runtime option consistency', function () {
           },
           'fetch adapter should reject primitive exceeding maxBodyLength'
         );
-
-        var allowedFetch = await axios.post(url, c.value, {
-          adapter: 'fetch',
-          maxBodyLength: expectedBytes,
-        });
-        assert.strictEqual(allowedFetch.data.body, c.expected);
       }
     } finally {
       await stopHTTPServer(server);

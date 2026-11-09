@@ -65,7 +65,7 @@ headers.set(
 
 ## Get
 
-The `get` method is used to retrieve the value of a header. The method is called with a header name and an optional parser. Without a parser, it returns the raw header value. Pass `true` to parse the value into key-value pairs, a regular expression to extract part of the value, or a function that receives the value and the header name. Any other parser throws a `TypeError`.
+The `get` method is used to retrieve the value of a header. The method is called with a header name and an optional parser. Without a parser, it returns the raw header value. Pass `true` to parse the value into key-value pairs, a regular expression to extract part of the value, or a function that receives the value and the header name. When the header is present, any other truthy parser throws a `TypeError`.
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;

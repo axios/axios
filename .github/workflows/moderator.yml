@@ -10,7 +10,7 @@ on:
 jobs:
   spam-detection:
     name: AI Moderator
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     permissions:
       issues: write
       pull-requests: write

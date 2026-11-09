@@ -35,6 +35,44 @@ const response = await axios.get("https://api.example.com/data", {
 
 如果未提供 `auth`，Node.js HTTP 和 fetch 适配器也可以从请求 URL 中提取 Basic 认证凭据，例如 `https://myUser:myPassword@api.example.com/data`。URL 中经过百分号编码的凭据会在生成 `Authorization` 请求头前解码。新代码建议优先使用显式的 `auth` 选项；它会优先于 URL 中的凭据。
 
+### UTF-8 用户名
+
+为保持兼容，XHR 和 fetch 适配器默认沿用现有的用户名处理方式：
+
+- XHR 适配器以旧版单字节（Latin-1）字符发送用户名，以 UTF-8 发送密码。
+- fetch 适配器以 UTF-8 发送凭据，但会拒绝包含 U+00FF 以上字符的用户名。
+
+在这两个适配器中，不受支持的用户名都会以 `ERR_BAD_OPTION_VALUE` 拒绝。如果你的服务器要求 Basic 认证用户名使用 UTF-8，请在单个请求或实例上设置 `transitional.encodeBasicAuthUsername: true`：
+
+```js
+await axios.get('/account', {
+  auth: { username: 'π', password: 'secret' },
+  transitional: { encodeBasicAuthUsername: true },
+});
+```
+
+请求级的 `false` 会覆盖实例上的启用设置，例如用于要求 Latin-1 用户名字节的旧版 XHR 端点：
+
+```js
+const api = axios.create({
+  transitional: { encodeBasicAuthUsername: true },
+});
+
+await api.get('/legacy/account', {
+  auth: { username: 'café', password: 'secret' },
+  transitional: { encodeBasicAuthUsername: false },
+});
+```
+
+请注意以下几点：
+
+- 如果你目前会自行将用户名转换为 UTF-8 字节字符串，启用该选项时请移除这一转换，以免重复编码。
+- 对于要求旧版 Latin-1 用户名字节的 XHR 服务器，请勿启用该选项。
+- 将该选项设置为 `false` 并不会让 fetch 或 Node.js HTTP 适配器发送 Latin-1。
+- 该选项不影响 Node.js HTTP 适配器，也不影响嵌入在 fetch 请求 URL 中的凭据。
+- 无论是否启用，ASCII 用户名和空用户名的编码方式都相同。格式错误的 UTF-16 字符串仍会以 `ERR_BAD_OPTION_VALUE` 拒绝。
+- axios 不会根据服务器认证质询协商字符集，也不会对 Unicode 字符串进行规范化。
+
 ::: tip
 对于 Bearer 令牌和 API 密钥，请使用自定义 `Authorization` 请求头，而非 `auth` 选项——`auth` 仅适用于 HTTP Basic 认证。
 :::

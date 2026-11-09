@@ -2420,7 +2420,7 @@ Returns `true` if at least one header has been cleared.
 
 If the headers object was changed directly, it can have duplicates with the same name but in different cases.
 This method normalizes the headers object by combining duplicate keys into one.
-Axios uses this method internally before calling each request and response transformer.
+Axios uses this method internally before calling each request and response transformer, and once more after the transformers run.
 Set `format` to true for converting header names to lowercase and capitalizing the initial letters (`cOntEnt-type` => `Content-Type`)
 
 ```js

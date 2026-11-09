@@ -39,11 +39,11 @@ La même règle d'URL bien formée s'applique à `baseURL` : les valeurs `http:`
 
 ### `transformRequest`
 
-La fonction `transformRequest` vous permet de modifier les données de la requête avant leur envoi au serveur. Cette fonction est appelée avec les données de la requête comme seul argument. Elle ne s'applique que pour les méthodes de requête `PUT`, `POST`, `PATCH` et `DELETE`. La dernière fonction du tableau doit retourner une chaîne ou une instance de Buffer, ArrayBuffer, FormData ou Stream.
+La fonction `transformRequest` vous permet de modifier les données de la requête avant leur envoi au serveur. Chaque fonction est appelée avec les données de la requête et les en-têtes de la requête (une instance d'`AxiosHeaders`). Elle s'exécute pour chaque requête, quelle que soit la méthode. La dernière fonction du tableau doit retourner une chaîne ou une instance de Buffer, ArrayBuffer, FormData ou Stream.
 
 ### `transformResponse`
 
-La fonction `transformResponse` vous permet de modifier les données de la réponse avant qu'elles ne soient transmises aux fonctions `then` ou `catch`. Cette fonction est appelée avec les données de la réponse comme seul argument.
+La fonction `transformResponse` vous permet de modifier les données de la réponse avant qu'elles ne soient transmises aux fonctions `then` ou `catch`. Chaque fonction est appelée avec les données de la réponse, les en-têtes de la réponse (une instance d'`AxiosHeaders`) et le code de statut HTTP.
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-Les `headers` sont les en-têtes HTTP à envoyer avec la requête. L'en-tête `Content-Type` est défini à `application/json` par défaut.
+Les `headers` sont les en-têtes HTTP à envoyer avec la requête. Il n'y a pas de `Content-Type` fixe par défaut. Si vous n'en définissez pas, axios le choisit d'après les `data` de la requête : par exemple, un objet simple est envoyé en `application/json` et `URLSearchParams` en `application/x-www-form-urlencoded;charset=utf-8`. Pour les requêtes `post`, `put` et `patch` qui n'ont toujours pas de `Content-Type` après les transformations de la requête, comme un corps de type chaîne simple, axios se rabat sur `application/x-www-form-urlencoded`.
 
 ### `params`
 

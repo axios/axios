@@ -65,7 +65,7 @@ headers.set(
 
 ## Get
 
-`get` 方法用于获取请求头的值，可以传入单个请求头名称、可选的匹配器或解析器。匹配器默认为 `true`，解析器可以是用于从请求头中提取值的正则表达式。
+`get` 方法用于获取请求头的值，可以传入单个请求头名称、可选的匹配器或解析器。不传匹配器时返回原始请求头值，传入 `true` 则将值解析为键值对。解析器可以是用于从请求头中提取值的正则表达式。
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
@@ -151,7 +151,7 @@ clear(matcher?: AxiosHeaderMatcher): boolean;
 
 ## Normalize
 
-如果直接修改了请求头对象，可能导致相同名称但大小写不同的重复项。此方法通过将重复键合并为一个来规范化请求头对象。axios 在每个拦截器调用后内部使用此方法。将 format 设置为 true 可将请求头名称转换为首字母大写的格式（cOntEnt-type => Content-Type），设置为 false 则保留原始格式。
+如果直接修改了请求头对象，可能导致相同名称但大小写不同的重复项。此方法通过将重复键合并为一个来规范化请求头对象。axios 在调用每个请求和响应转换器之前内部使用此方法，并在所有转换器运行后再调用一次。将 format 设置为 true 可将请求头名称转换为首字母大写的格式（cOntEnt-type => Content-Type），设置为 false 则保留原始格式。
 
 ```js
 const headers = new AxiosHeaders({

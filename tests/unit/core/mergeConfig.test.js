@@ -424,6 +424,30 @@ describe('core::mergeConfig', () => {
       expect(requestReads).toBe(1);
     });
 
+    it('never reads getters on the skipped __proto__, constructor and prototype keys', () => {
+      const reads = [];
+      const withGuardedGetters = (config, label) => {
+        ['__proto__', 'constructor', 'prototype'].forEach((key) => {
+          Object.defineProperty(config, key, {
+            enumerable: true,
+            get() {
+              reads.push(`${label}.${key}`);
+              return { polluted: true };
+            },
+          });
+        });
+        return config;
+      };
+      const config1 = withGuardedGetters({ timeout: 1000 }, 'config1');
+      const config2 = withGuardedGetters({ url: '/foo' }, 'config2');
+
+      const merged = mergeConfig(config1, config2);
+
+      expect(merged).toEqual({ timeout: 1000, url: '/foo' });
+      expect(Object.keys(merged)).toEqual(['timeout', 'url']);
+      expect(reads).toEqual([]);
+    });
+
     it('preserves request-only symbol keys', () => {
       const symbol = Symbol('some flag used in request interceptor');
       const merged = mergeConfig(defaults, { [symbol]: true });

@@ -116,6 +116,14 @@ declare class AxiosHeaders {
   getContentEncoding(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
+  setAcceptEncoding(
+    value: axios.AxiosHeaderValue,
+    rewrite?: boolean | AxiosHeaderMatcher
+  ): AxiosHeaders;
+  getAcceptEncoding(parser?: RegExp): RegExpExecArray | null;
+  getAcceptEncoding(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+  hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
+
   setAuthorization(
     value: axios.AxiosHeaderValue,
     rewrite?: boolean | AxiosHeaderMatcher

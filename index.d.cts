@@ -11,6 +11,14 @@ type AxiosHeaderMatcher =
 
 type AxiosHeaderParser = (this: AxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
 
+type AxiosHeaderParserResult<T> = T extends RegExp
+  ? RegExpExecArray | null
+  : T extends true
+    ? Record<string, string | undefined>
+    : T extends AxiosHeaderParser
+      ? ReturnType<T>
+      : axios.AxiosHeaderValue;
+
 type CommonRequestHeadersList =
   | 'Accept'
   | 'Content-Length'
@@ -111,6 +119,9 @@ declare class AxiosHeaders {
   getAcceptEncoding(parser: true): Record<string, string | undefined> | undefined;
   getAcceptEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T> | undefined;
   getAcceptEncoding(parser?: undefined): axios.AxiosHeaderValue | undefined;
+  getAcceptEncoding<T extends RegExp | true | AxiosHeaderParser | undefined>(
+    parser: T
+  ): AxiosHeaderParserResult<T> | undefined;
   hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setUserAgent(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -126,6 +137,9 @@ declare class AxiosHeaders {
   getContentEncoding(parser: true): Record<string, string | undefined> | undefined;
   getContentEncoding<T extends AxiosHeaderParser>(parser: T): ReturnType<T> | undefined;
   getContentEncoding(parser?: undefined): axios.AxiosHeaderValue | undefined;
+  getContentEncoding<T extends RegExp | true | AxiosHeaderParser | undefined>(
+    parser: T
+  ): AxiosHeaderParserResult<T> | undefined;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAuthorization(

@@ -25,6 +25,7 @@
 
 ## Maintenance
 
+- **`no_proxy` matching test coverage:** Added unit tests for `shouldBypassProxy` covering internationalized domain name entries (Unicode and Punycode on either side, case, wildcard and leading-dot prefixes, explicit ports, and entries that cannot be converted to ASCII), empty and port-only entries, malformed CIDR bases (unbalanced or misplaced brackets, bracketed IPv4, trailing dots, and IPv4-mapped IPv6 ranges shorter than the /96 mapping prefix), malformed IPv4 entries, and port-qualified entries for protocols with and without a default port. The new tests document the existing fail-closed behavior; runtime behavior, public APIs, and types are unchanged. ([#11431](https://github.com/axios/axios/pull/11431))
 - **Cancellation lifecycle regression coverage:** Added Node HTTP/Fetch and browser XHR tests for cancellation inside asynchronous request interceptors and successful reuse of an Axios instance after an in-flight cancellation, using AbortSignal, CancelToken, and both together. Added deterministic signal-composition tests for timeout/cancellation precedence and subscription cleanup. Runtime behavior, public APIs, and types are unchanged.
 
 <!-- Record test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change here. -->

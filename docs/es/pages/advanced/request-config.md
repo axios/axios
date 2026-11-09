@@ -39,11 +39,11 @@ La misma regla de URL bien formada se aplica a `baseURL`: los valores `http:` y 
 
 ### `transformRequest`
 
-La función `transformRequest` te permite modificar los datos de la solicitud antes de enviarlos al servidor. Esta función se llama con los datos de la solicitud como único argumento. Solo aplica para los métodos de solicitud `PUT`, `POST`, `PATCH` y `DELETE`. La última función del arreglo debe devolver una cadena de texto o una instancia de Buffer, ArrayBuffer, FormData o Stream.
+La función `transformRequest` te permite modificar los datos de la solicitud antes de enviarlos al servidor. Cada función se llama con los datos de la solicitud y los encabezados de la solicitud (una instancia de `AxiosHeaders`). Se ejecuta en todas las solicitudes, sea cual sea el método. La última función del arreglo debe devolver una cadena de texto o una instancia de Buffer, ArrayBuffer, FormData, Stream, Blob o File.
 
 ### `transformResponse`
 
-La función `transformResponse` te permite modificar los datos de la respuesta antes de que sean pasados a las funciones `then` o `catch`. Esta función se llama con los datos de la respuesta como único argumento.
+La función `transformResponse` te permite modificar los datos de la respuesta antes de que sean pasados a las funciones `then` o `catch`. Cada función se llama con los datos de la respuesta, los encabezados de la respuesta (una instancia de `AxiosHeaders`) y el código de estado HTTP.
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-Los `headers` son los encabezados HTTP que se enviarán con la solicitud. El encabezado `Content-Type` se establece en `application/json` de forma predeterminada.
+Los `headers` son los encabezados HTTP que se enviarán con la solicitud. No hay un `Content-Type` predeterminado fijo. Para los tipos de datos que maneja la transformación de solicitud predeterminada, axios lo deduce de los `data` de la solicitud: por ejemplo, un objeto plano se envía como `application/json` y `URLSearchParams` como `application/x-www-form-urlencoded;charset=utf-8`. En las solicitudes `post`, `put` y `patch` que siguen sin `Content-Type` después de las transformaciones de la solicitud, como un cuerpo de cadena de texto simple, axios usa `application/x-www-form-urlencoded`.
 
 ### `params`
 
@@ -265,7 +265,7 @@ La función `onDownloadProgress` te permite escuchar el progreso de una descarga
 
 ### `maxContentLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propiedad `maxContentLength` define el tamaño máximo de la respuesta en bytes. El adaptador HTTP de Node.js lo aplica en respuestas almacenadas en búfer y en streaming. El adaptador fetch lo aplica cuando la longitud de la respuesta está declarada, se puede rastrear el stream de respuesta o se puede determinar el tamaño de la respuesta. Superar el límite rechaza con `ERR_BAD_RESPONSE`; consulta [Límites de tamaño de respuesta del adaptador fetch](/es/pages/advanced/fetch-adapter#limites-de-tamano-de-respuesta).
+La propiedad `maxContentLength` define el tamaño máximo de la respuesta en bytes. El adaptador HTTP de Node.js lo aplica en respuestas almacenadas en búfer y en streaming. El adaptador fetch lo aplica cuando la longitud de la respuesta está declarada, se puede rastrear el stream de respuesta o se puede determinar el tamaño de la respuesta. Superar el límite rechaza con `ERR_BAD_RESPONSE`; consulta [Límites de tamaño de respuesta del adaptador fetch](/es/pages/advanced/fetch-adapter#limites-de-tamano-de-respuesta). El adaptador XHR no lo aplica.
 
 > ⚠️ **Seguridad:** el valor por defecto es `-1` (sin límite). Las respuestas sin límite combinadas con la descompresión gzip/deflate/brotli/zstd permiten ataques de denegación de servicio por bomba de descompresión.
 > Establece un límite explícito al consumir servidores en los que no confíes plenamente.
@@ -277,6 +277,8 @@ La propiedad `maxBodyLength` define el tamaño máximo del cuerpo de la solicitu
 ### `redact`
 
 La propiedad `redact` es un arreglo opcional de nombres de claves de configuración que se enmascararán cuando un `AxiosError` se serialice con `toJSON()`. La coincidencia es insensible a mayúsculas/minúsculas y recursiva a lo largo de la configuración de la solicitud serializada. Los valores coincidentes se reemplazan por `[REDACTED ****]`.
+
+La coincidencia recorre objetos planos (incluso los que definen `toJSON()`), arreglos, instancias de clases y `AxiosHeaders`, que primero se convierte en un objeto plano. Cualquier otro objeto que tenga un método `toJSON()`, como un objeto `URL` o una instancia de clase que define `toJSON()`, se serializa tal cual y su contenido no se examina. Además, `redact` solo compara nombres de claves, por lo que las credenciales dentro de una cadena de URL, como `url: 'http://user:pass@example.com'`, no se enmascaran. Para enmascarar un valor completo, incluye su clave padre, por ejemplo `redact: ['auth', 'proxy']`.
 
 `redact` solo afecta a la serialización del error. No modifica los datos de la solicitud, los encabezados ni el objeto de configuración original.
 

@@ -39,11 +39,11 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 ### `transformRequest`
 
-`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改，仅适用于 `PUT`、`POST`、`PATCH` 和 `DELETE` 请求方法。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData 或 Stream 实例。
+`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改。每个函数接收请求数据和请求头（一个 `AxiosHeaders` 实例）作为参数，无论请求方法是什么，每个请求都会运行。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData、Stream、Blob 或 File 实例。
 
 ### `transformResponse`
 
-`transformResponse` 函数允许你在数据传递给 `then` 或 `catch` 函数之前对响应数据进行修改，函数以响应数据为唯一参数。
+`transformResponse` 函数允许你在数据传递给 `then` 或 `catch` 函数之前对响应数据进行修改，每个函数接收响应数据、响应头（一个 `AxiosHeaders` 实例）和 HTTP 状态码作为参数。
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-`headers` 是随请求发送的 HTTP 请求头，默认将 `Content-Type` 设置为 `application/json`。
+`headers` 是随请求发送的 HTTP 请求头。axios 没有固定的默认 `Content-Type`。对于默认请求转换能处理的数据类型，axios 会根据请求的 `data` 推断：例如，普通对象以 `application/json` 发送，`URLSearchParams` 以 `application/x-www-form-urlencoded;charset=utf-8` 发送。对于 `post`、`put` 和 `patch` 请求，如果经过请求转换后仍然没有 `Content-Type`（例如纯字符串请求体），axios 会回退为 `application/x-www-form-urlencoded`。
 
 ### `params`
 
@@ -265,7 +265,7 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 ### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。超出限制时会以 `ERR_BAD_RESPONSE` 拒绝；参阅 [Fetch 适配器响应大小限制](/zh/pages/advanced/fetch-adapter#响应大小限制)。
+`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。超出限制时会以 `ERR_BAD_RESPONSE` 拒绝；参阅 [Fetch 适配器响应大小限制](/zh/pages/advanced/fetch-adapter#响应大小限制)。XHR 适配器不会执行该限制。
 
 > ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli/zstd 解压，会带来解压炸弹导致的拒绝服务风险。
 > 在访问不完全可信的服务器时，请显式设置该限制。
@@ -277,6 +277,8 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ### `redact`
 
 `redact` 属性是一个可选的配置键名数组，用于在 `AxiosError` 通过 `toJSON()` 序列化时对匹配的键进行脱敏。匹配不区分大小写，并会在序列化后的请求配置中递归进行，命中的值会被替换为 `[REDACTED ****]`。
+
+匹配会遍历普通对象（即使它定义了 `toJSON()`）、数组、类实例以及 `AxiosHeaders`（会先被转换为普通对象）。其他带有 `toJSON()` 方法的对象（例如 `URL` 对象，或定义了 `toJSON()` 的类实例）会按原样序列化，其内容不会被扫描。此外，`redact` 只匹配键名，因此 URL 字符串中的凭据（例如 `url: 'http://user:pass@example.com'`）不会被脱敏。如需脱敏整个值，请列出它的父级键，例如 `redact: ['auth', 'proxy']`。
 
 `redact` 仅影响错误序列化，不会修改请求数据、请求头或原始配置对象。
 

@@ -78,7 +78,7 @@ await axios.post('https://example.com/upload', form, {
 });
 ```
 
-El valor predeterminado es `'legacy'`. Consulta [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) en la referencia de configuración de solicitud para más detalles.
+El valor predeterminado es `'legacy'`. Consulta [`formDataHeaderPolicy`](/es/pages/advanced/request-config#formdataheaderpolicy) en la referencia de configuración de solicitud para más detalles.
 
 ## Terminaciones admitidas
 

@@ -114,7 +114,7 @@ const response = await axios.get("https://example.com/data", {
 });
 ```
 
-Voir [`timeout` dans la configuration de requête](/pages/advanced/request-config#timeout) et [Gestion des erreurs](/pages/advanced/error-handling) pour les codes `ECONNABORTED` / `ETIMEDOUT` correspondants.
+Voir [`timeout` dans la configuration de requête](/fr/pages/advanced/request-config#timeout) et [Gestion des erreurs](/fr/pages/advanced/error-handling) pour les codes `ECONNABORTED` / `ETIMEDOUT` correspondants.
 :::
 
 ## Prochaines étapes

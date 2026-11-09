@@ -28,7 +28,7 @@ A continuación se lista una relación de posibles errores identificados por axi
 | ERR_CANCELED              | La característica o método fue cancelado explícitamente por el usuario usando un AbortSignal (o un CancelToken). |
 | ERR_NOT_SUPPORT           | Característica o método no compatible en el entorno actual de axios.                          |
 | ERR_INVALID_URL           | URL inválida proporcionada para la solicitud de axios.                                        |
-| ERR_FORM_DATA_DEPTH_EXCEEDED | Un objeto excede el `maxDepth` configurado al serializar `params` o datos de formulario. El límite predeterminado es de 100 niveles. Convertir FormData a JSON, con `axios.formToJSON()` o al enviar un `FormData` o un formulario HTML con `Content-Type: application/json`, tiene un límite fijo de 100 niveles que `maxDepth` no modifica. Consulta [`paramsSerializer`](/es/pages/advanced/request-config#paramsserializer) y [`formSerializer`](/es/pages/advanced/request-config#formserializer). |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | Un objeto excede el `maxDepth` configurado al serializar `params` o datos de formulario. El límite predeterminado es de 100 niveles. Convertir FormData a JSON, con `axios.formToJSON()` o al enviar un `FormData` conforme a la especificación (con un método `entries()`) o un formulario HTML con `Content-Type: application/json`, tiene un límite fijo de 100 niveles que `maxDepth` no modifica. Consulta [`paramsSerializer`](/es/pages/advanced/request-config#paramsserializer) y [`formSerializer`](/es/pages/advanced/request-config#formserializer). |
 
 ## Manejo de errores
 

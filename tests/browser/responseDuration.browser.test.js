@@ -8,7 +8,7 @@ describe('fetch response duration', () => {
 
   it.each([200, 500])('includes body buffering for status %s', async (status) => {
     let now = 1000;
-    vi.spyOn(Date, 'now').mockImplementation(() => now);
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
     const result = await axios
       .get(new URL('/timing', location.href).href, {
         adapter: 'fetch',
@@ -39,7 +39,7 @@ describe('fetch response duration', () => {
   it('excludes later stream consumption', async () => {
     let now = 1000;
     let controller;
-    vi.spyOn(Date, 'now').mockImplementation(() => now);
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
     const response = await axios.get(new URL('/timing', location.href).href, {
       adapter: 'fetch',
       responseType: 'stream',

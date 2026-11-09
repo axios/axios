@@ -12,7 +12,7 @@ axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
 axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ```
 
-详见[安全指南](/pages/misc/security)。
+详见[安全指南](/zh/pages/misc/security)。
 :::
 
 ### `url`
@@ -39,11 +39,11 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 ### `transformRequest`
 
-`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改，仅适用于 `PUT`、`POST`、`PATCH` 和 `DELETE` 请求方法。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData 或 Stream 实例。
+`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改。每个函数接收请求数据和请求头（一个 `AxiosHeaders` 实例）作为参数，无论请求方法是什么，每个请求都会运行。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData、Stream、Blob 或 File 实例。
 
 ### `transformResponse`
 
-`transformResponse` 函数允许你在数据传递给 `then` 或 `catch` 函数之前对响应数据进行修改，函数以响应数据为唯一参数。
+`transformResponse` 函数允许你在数据传递给 `then` 或 `catch` 函数之前对响应数据进行修改，每个函数接收响应数据、响应头（一个 `AxiosHeaders` 实例）和 HTTP 状态码作为参数。
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-`headers` 是随请求发送的 HTTP 请求头，默认将 `Content-Type` 设置为 `application/json`。
+`headers` 是随请求发送的 HTTP 请求头。axios 没有固定的默认 `Content-Type`。对于默认请求转换能处理的数据类型，axios 会根据请求的 `data` 推断：例如，普通对象以 `application/json` 发送，`URLSearchParams` 以 `application/x-www-form-urlencoded;charset=utf-8` 发送。对于 `post`、`put` 和 `patch` 请求，如果经过请求转换后仍然没有 `Content-Type`（例如纯字符串请求体），axios 会回退为 `application/x-www-form-urlencoded`。
 
 ### `params`
 
@@ -152,7 +152,7 @@ const client = axios.create({
 
 ### 使用 Symbol 键的自定义选项
 
-配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
+配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/zh/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
 
 ### `timeout`
 
@@ -164,7 +164,7 @@ const client = axios.create({
 
 ### `adapter`
 
-`adapter` 允许自定义请求处理方式，便于测试。返回一个 Promise 并提供有效的响应，详见[适配器](/pages/advanced/adapters)文档。我们还提供了多个内置适配器，Node.js 默认使用 `http`，浏览器默认使用 `xhr`。内置适配器列表如下：
+`adapter` 允许自定义请求处理方式，便于测试。返回一个 Promise 并提供有效的响应，详见[适配器](/zh/pages/advanced/adapters)文档。我们还提供了多个内置适配器，Node.js 默认使用 `http`，浏览器默认使用 `xhr`。内置适配器列表如下：
 
 - fetch
 - http
@@ -175,6 +175,8 @@ const client = axios.create({
 ### `auth`
 
 `auth` 表示使用 HTTP Basic 认证，并提供凭据。这将设置 `Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Authorization` 请求头。如果省略 `auth`，Node.js HTTP 和 fetch 适配器可以从请求 URL 中提取 Basic 认证凭据，例如 `https://user:pass@example.com`；URL 中经过百分号编码的凭据会先解码，且 `auth` 始终优先于 URL 中的凭据。在 Node.js HTTP 适配器中，Basic 认证会在同源重定向时保留，并在跨源重定向时剥离。请注意，仅 HTTP Basic 认证可通过此参数配置，Bearer 令牌等请改用自定义 `Authorization` 请求头。
+
+在 XHR 和 fetch 适配器中，Latin-1 范围之外（U+00FF 以上）的用户名会以 `ERR_BAD_OPTION_VALUE` 拒绝，除非你通过 [`transitional.encodeBasicAuthUsername`](#transitional) 启用 UTF-8 用户名编码。详见[认证](/zh/pages/advanced/authentication#utf-8-用户名)。
 
 ### `responseType`
 
@@ -251,17 +253,19 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 :::
 
+当 XHR 适配器需要读取 XSRF cookie，且浏览器支持 [Cookie Store API](https://developer.mozilla.org/en-US/docs/Web/API/Cookie_Store_API) 时，它会通过 `window.cookieStore` 异步读取该 cookie，而不是同步读取 `document.cookie`。不支持 Cookie Store 的浏览器，或 Cookie Store 读取失败时，会像以前一样使用 `document.cookie`。两种途径都只会对 cookie 值进行一次 URI 解码，格式错误的转义序列保持不变。cookie 查找时间计入请求的 `timeout`，并且使用 `AbortSignal` 或 `CancelToken` 的取消操作在查找期间同样有效。这一行为是自动的，无需任何配置；fetch 适配器和其他 cookie 处理保持不变。
+
 ### `onUploadProgress`
 
 `onUploadProgress` 函数允许你监听上传进度。
 
 ### `onDownloadProgress`
 
-`onDownloadProgress` 函数允许你监听下载进度。
+`onDownloadProgress` 函数允许你监听下载进度。回调经过节流；关于如何从这些事件中读取部分响应数据，请参阅[进度捕获](/zh/pages/advanced/progress-capturing#增量读取响应数据)。
 
 ### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。
+`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。超出限制时会以 `ERR_BAD_RESPONSE` 拒绝；参阅 [Fetch 适配器响应大小限制](/zh/pages/advanced/fetch-adapter#响应大小限制)。XHR 适配器不会执行该限制。
 
 > ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli/zstd 解压，会带来解压炸弹导致的拒绝服务风险。
 > 在访问不完全可信的服务器时，请显式设置该限制。
@@ -273,6 +277,8 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ### `redact`
 
 `redact` 属性是一个可选的配置键名数组，用于在 `AxiosError` 通过 `toJSON()` 序列化时对匹配的键进行脱敏。匹配不区分大小写，并会在序列化后的请求配置中递归进行，命中的值会被替换为 `[REDACTED ****]`。
+
+匹配会遍历普通对象（即使它定义了 `toJSON()`）、数组、类实例以及 `AxiosHeaders`（会先被转换为普通对象）。其他带有 `toJSON()` 方法的对象（例如 `URL` 对象，或定义了 `toJSON()` 的类实例）会按原样序列化，其内容不会被扫描。此外，`redact` 只匹配键名，因此 URL 字符串中的凭据（例如 `url: 'http://user:pass@example.com'`）不会被脱敏。如需脱敏整个值，请列出它的父级键，例如 `redact: ['auth', 'proxy']`。
 
 `redact` 仅影响错误序列化，不会修改请求数据、请求头或原始配置对象。
 
@@ -305,9 +311,11 @@ axios.get('/user/12345', {
 });
 ```
 
-### `maxRedirects` <Badge type="warning" text="仅 Node.js" />
+### `maxRedirects` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxRedirects` 属性定义最大重定向次数，设置为 0 时不跟随任何重定向。
+`maxRedirects` 属性定义 Node.js HTTP 适配器跟随的最大重定向次数，设置为 0 时不跟随任何重定向。
+
+在 fetch 适配器中，只有 `maxRedirects: 0` 会生效：它会请求平台的手动重定向模式。此时响应会暴露哪些内容取决于 fetch 运行时；参阅 [Fetch 适配器重定向](/zh/pages/advanced/fetch-adapter#重定向)。在 fetch 适配器中，正数值不会限制重定向次数。
 
 ### `sensitiveHeaders` <Badge type="warning" text="仅 Node.js" />
 
@@ -374,9 +382,25 @@ await client.get('http://localhost/pods', { socketPath: '/var/run/kubelet.sock' 
 
 `proxy` 定义代理服务器的主机名、端口和协议，也可以通过常规的 `http_proxy` 和 `https_proxy` 环境变量来定义代理。
 
-如果你使用环境变量配置代理，还可以定义 `no_proxy` 环境变量，以逗号分隔的方式列出不需要代理的域名。
+如果你使用环境变量配置代理，还可以定义 `no_proxy`（或 `NO_PROXY`）环境变量，以逗号分隔的方式列出不需要代理的域名。
+
+`no_proxy` 条目也可以是 IPv4 或 IPv6 CIDR 范围。当请求 URL 的主机是位于该范围内的 IP 地址时，CIDR 条目会绕过代理；进行 CIDR 匹配时不会解析主机名。
+
+```sh
+NO_PROXY=10.0.0.0/8,2001:db8::/32
+# http://10.1.2.3/ 和 http://[2001:db8::1]/ 会直接连接
+```
+
+- 接受带方括号的 IPv6 范围，例如 `[2001:db8::]/32`。
+- IPv4 映射的 IPv6 范围（例如 `::ffff:10.0.0.0/104`）在前缀允许时会被视为等效的 IPv4 范围。否则，IPv4 和 IPv6 范围只匹配各自地址族的地址。
+- 格式错误的 CIDR 条目永远不会绕过代理。
+- `/0` 前缀覆盖整个地址族：`0.0.0.0/0` 会让所有 IPv4 目标绕过代理，`::/0` 对所有 IPv6 目标同样如此。
+
+主机名、通配符、显式端口和回环地址条目保持原有行为。
 
 在支持原生环境变量代理的 Node.js 版本中，当所选 `httpAgent` 或 `httpsAgent` 启用了 `proxyEnv` 时，axios 会将环境变量代理处理交给 Node，包括使用 `NODE_USE_ENV_PROXY=1`、`--use-env-proxy` 或 `NODE_OPTIONS=--use-env-proxy` 启动的进程。没有 `proxyEnv` 的自定义 agent 仍继续使用 axios 的环境变量代理解析。显式的 `proxy` 配置仍由 axios 处理。
+
+HTTP/2 请求（`httpVersion: 2`）无法使用代理：它们会忽略代理环境变量和 agent 的 `proxyEnv` 设置，显式的 `proxy` 对象会以 `ERR_NOT_SUPPORT` 拒绝。参阅 [HTTP2](/zh/pages/advanced/http2#代理)。
 
 设置为 `false` 可禁用代理，忽略环境变量。`auth` 表示使用 HTTP Basic 认证连接代理并提供凭据，这将设置 `Proxy-Authorization` 请求头，覆盖任何通过 `headers` 自定义的 `Proxy-Authorization` 请求头。如果代理服务器使用 HTTPS，则必须将协议设置为 `https`。
 
@@ -397,9 +421,24 @@ proxy: {
 },
 ```
 
+如果未配置 `httpsAgent`，当前的 `https.globalAgent.options` 会应用于隧道源站的 TLS 连接，与不使用代理时发出的请求一致。显式的 `httpsAgent` 优先于全局 agent，且两者的 TLS 设置不会合并，因此请求专用的 agent 必须包含它所需的所有 CA。源站 TLS 选项会在每次请求时读取，因此之后对所选 agent 选项的修改或替换 `https.globalAgent`，都会影响后续请求。全局 agent 选项仅应用于隧道源站，不会应用于与 HTTPS 代理之间的 TLS 连接。
+
+```js
+import fs from 'node:fs';
+import https from 'node:https';
+
+// 为整个进程信任私有 CA
+https.globalAgent.options.ca = fs.readFileSync('/path/to/corp-ca.pem');
+
+// 未设置 httpsAgent：隧道源站连接使用全局 CA
+await axios.get('https://internal-api.example.com/data', {
+  proxy: { protocol: 'http', host: 'proxy.corp.net', port: 3128 },
+});
+```
+
 ### `cancelToken`
 
-`cancelToken` 属性允许你创建一个取消令牌，用于取消请求。详见[取消请求](/pages/advanced/cancellation)文档。
+`cancelToken` 属性允许你创建一个取消令牌，用于取消请求。详见[取消请求](/zh/pages/advanced/cancellation)文档。
 
 ### `signal`
 
@@ -435,6 +474,7 @@ proxy: {
 - `validateStatusUndefinedResolves`：若设置为 `true` _（默认）_，显式的 `validateStatus: undefined` 会出于兼容性 resolve 所有响应状态码。设置为 `false` 后，显式的 `undefined` 会像未设置 `validateStatus` 一样处理，axios 将使用已配置/默认的验证器。如果你确实希望所有状态码都 resolve，请使用 `validateStatus: null` 或返回 `true` 的验证器。
 - `advertiseZstdAcceptEncoding`：设为 `true` 时，如果当前 Node.js 运行时支持 zstd 解压，axios 会在默认 `Accept-Encoding` 请求头中加入 `zstd`。在受支持且 `decompress` 为 `true` 时，zstd 响应仍会自动解压。
 - `legacyInterceptorReqResOrdering`：设置为 true 时使用旧版拦截器请求/响应排序。
+- `encodeBasicAuthUsername`：设为 `true` 时，XHR 和 fetch 适配器在构建 Basic `Authorization` 请求头时会以 UTF-8 编码 `auth.username`。为保持兼容，默认值为 `false`。参阅[认证](/zh/pages/advanced/authentication#utf-8-用户名)。
 
 ### `env`
 
@@ -453,11 +493,11 @@ proxy: {
 - `maxDepth` _（默认：`100`）_ — 抛出 `AxiosError`（错误码 `ERR_FORM_DATA_DEPTH_EXCEEDED`）前的最大嵌套深度。设置为 `Infinity` 可禁用。
 - `Blob` — 在符合规范的 `FormData` 中转换类 ArrayBuffer 值时使用的 Blob 构造函数。
 
-详见 [multipart/form-data](/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
+详见 [multipart/form-data](/zh/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
 
 ### `maxRate` <Badge type="warning" text="仅 Node.js" />
 
-`maxRate` 属性定义上传和/或下载的最大**带宽**（字节/秒）。接受单个数字（同时适用于两个方向）或两元素数组 `[uploadRate, downloadRate]`，每个元素为字节/秒限制。例如，`100 * 1024` 表示 100 KB/s。详见[速率限制](/pages/advanced/rate-limiting)中的示例。
+`maxRate` 属性定义上传和/或下载的最大**带宽**（字节/秒）。接受单个数字（同时适用于两个方向）或两元素数组 `[uploadRate, downloadRate]`，每个元素为字节/秒限制。例如，`100 * 1024` 表示 100 KB/s。详见[速率限制](/zh/pages/advanced/rate-limiting)中的示例。
 
 ## 完整请求配置示例
 
@@ -566,6 +606,7 @@ proxy: {
     validateStatusUndefinedResolves: true,
     advertiseZstdAcceptEncoding: false,
     legacyInterceptorReqResOrdering: true,
+    encodeBasicAuthUsername: false,
   },
   env: {
     FormData: window?.FormData || global?.FormData

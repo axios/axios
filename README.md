@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> [**Get Security Updates for Axios v0 →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
+> [**Get Security Updates for Axios v0 & Early Access Provider →**](https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&utm_medium=referral&utm_campaign=nes-for-axios_global&utm_content=landing-page_none_20260924_a)
 
 <h3 align="center">💎 Platinum sponsors <br /></h3>
 <table align="center">
@@ -103,7 +103,7 @@
                 align="center"
                 title="SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications."
             >
-                BSAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
+                SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
             </p>
             <p align="center">
                 <a
@@ -142,32 +142,6 @@
         </td>
     </tr>
     <tr width="33.333333333333336%">
-        <td align="center" width="33.333333333333336%">
-            <a
-                href="https://stytch.com/"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-               <img
-                    width="90px"
-                    height="90px"
-                    src="https://images.opencollective.com/stytch/f84ce43/logo/256.png?height=256"
-                    alt="Stytch"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                The identity platform for humans & AI agents
-            </p>
-            <p align="center">
-                   <a
-                       href="https://stytch.com"
-                       target="_blank"
-                       ><b>stytch.com</b></a
-                   >
-              </p>
-        </td>
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://rxdb.info/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship&utm_content=logo"
@@ -215,60 +189,6 @@
                     href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
                     target="_blank"
                     ><b>poprey.com</b></a
-                >
-            </p>
-        </td>
-    </tr>
-    <tr width="33.333333333333336%">
-        <td align="center" width="33.333333333333336%">
-            <a
-                href="https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-                <img
-                    width="71px"
-                    height="70px"
-                    src="https://images.opencollective.com/buzzoid-buy-instagram-followers/56a09fe/logo.png"
-                    alt="Buzzoid - Buy Instagram Followers"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                At Buzzoid, you can buy Instagram followers through a short checkout flow with safety controls. Rated world&#39;s #1 IG service since 2012.
-            </p>
-            <p align="center">
-                <a
-                    href="https://buzzoid.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                    target="_blank"
-                    ><b>buzzoid.com</b></a
-                >
-            </p>
-        </td>
-        <td align="center" width="33.333333333333336%">
-            <a
-                href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-                <img
-                    width="71px"
-                    height="70px"
-                    src="https://images.opencollective.com/buy-instagram-followers-twicsy/b4c5d7f/logo/256.png?height=256"
-                    alt="Buy Instagram Followers Twicsy"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                Buy real Instagram followers from Twicsy. Twicsy has been voted the best site to buy followers from the likes of US Magazine.
-            </p>
-            <p align="center">
-                <a
-                    href="https://twicsy.com/buy-instagram-followers/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                    target="_blank"
-                    ><b>twicsy.com</b></a
                 >
             </p>
         </td>
@@ -354,34 +274,6 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-                <img
-                    width="71px"
-                    height="70px"
-                    src="https://images.opencollective.com/polskie-kasyno-online/c25e456/avatar.png"
-                    alt="polskie kasyno online"
-                />
-            </a>
-            <p
-                align="center"
-            >
-                Kasyno.us.com to niezależny portal o tematyce kasyno online Polska, który pomaga graczom znaleźć bezpieczne i sprawdzone kasyna internetowe.
-            </p>
-            <p align="center">
-                <a
-                    href="https://kasyno.us.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
-                    target="_blank"
-                    ><b>kasyno.us.com</b></a
-                >
-            </p>
-        </td>
-    </tr>
-    <tr width="33.333333333333336%">
-        <td align="center" width="33.333333333333336%">
-            <a
                 href="https://www.scrapingbee.com/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
                 style="padding: 10px; display: inline-block"
                 target="_blank"
@@ -406,6 +298,8 @@
                 >
             </p>
         </td>
+    </tr>
+    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"
@@ -458,6 +352,29 @@
                 >
             </p>
         </td>
+       <td align="center" valign="middle" width="33.333333333333336%">
+    <a
+        href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+        style="padding: 10px; display: inline-block"
+        target="_blank"
+    >
+        <img
+            width="180px"
+            src="https://namespace.so/oss/badge.svg"
+            alt="CI powered by Namespace"
+        />
+    </a>
+    <p align="center">
+        Actually the fastest way to run <br>your GitHub Actions.
+    </p>
+    <p align="center">
+        <a
+            href="https://namespace.so/github-actions/?utm_source=oss&utm_campaign=axios"
+            target="_blank"
+            ><b>namespace.so</b></a
+        >
+    </p>
+</td>
     </tr>
 </table>
 
@@ -876,9 +793,9 @@ These config options are available for requests. Only `url` is required. Request
   allowAbsoluteUrls: true,
 
   // `transformRequest` allows changes to the request data before it is sent to the server
-  // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
+  // It runs for every request, whatever the request method
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
-  // FormData or Stream
+  // FormData, Stream, Blob or File
   // You may modify the headers object.
   transformRequest: [function (data, headers) {
     // Do whatever you want to transform the data
@@ -1003,7 +920,7 @@ These config options are available for requests. Only `url` is required. Request
   // `responseType` indicates the type of data that the server will respond with
   // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
   //   browser only: 'blob'
-  responseType: 'json', // default
+  responseType: 'json', // not set by default; see `forcedJSONParsing` below
 
   // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
@@ -1587,7 +1504,7 @@ Axios errors use this structure:
 | Property | Definition |
 | -------- | ---------- |
 | message | A quick summary of the error message and the status it failed with. |
-| name | This defines where the error originated from. For axios, it will always be an 'AxiosError'. |
+| name | The error name: usually `AxiosError`, `CanceledError` for cancellations, or the original name of a wrapped error. Use `axios.isAxiosError(error)` to identify Axios errors and `axios.isCancel(error)` to detect cancellations. |
 | stack | Stack trace for the error. |
 | config | An axios config object with specific instance configurations defined by the user from when the request was made |
 | code | Axios error code. The table below lists internal Axios error codes. |
@@ -1605,10 +1522,12 @@ These are the internal Axios error codes:
 | ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin.                                                                                                                                                                                                                                            |
 | ERR_CANCELED              | The user explicitly canceled the request with an AbortSignal or CancelToken.                                                                                                                                                                                                                                                                                                                   |
 | ETIMEDOUT                 | Request timed out after exceeding the configured Axios timeout. Set `transitional.clarifyTimeoutError` to `true`; otherwise Axios throws a generic `ECONNABORTED` error.                                                                                                                                                                                                                       |
+| ECONNREFUSED              | The server refused the connection. Set by the Node.js `http` adapter, with the original system error on `error.cause`; the `xhr` and `fetch` adapters report `ERR_NETWORK` instead.                                                                                                                                                                                                            |
 | ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request exceeded the configured maximum number of redirects.                                                                                                                                                                                                                                                                                                                                   |
 | ERR_BAD_RESPONSE          | Response cannot be parsed properly or is in an unexpected format. Usually related to a response with `5xx` status code.                                                                                                                                                                                                                                                                        |
 | ERR_BAD_REQUEST           | The request has an unexpected format or is missing required parameters. Usually related to a response with `4xx` status code.                                                                                                                                                                                                                                                                  |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | An object exceeds the configured `maxDepth` while serializing `params` or form data. Default limit is 100 levels. Parsing FormData into JSON, by `axios.formToJSON()` or when a spec-compliant `FormData` (one with an `entries()` method) or HTML form is sent with `Content-Type: application/json`, has a fixed limit of 100 levels that `maxDepth` does not change.                                                                                                                                                   |
 
 ## Handling errors
 
@@ -1670,7 +1589,7 @@ axios.get('/user/12345').catch(function (error) {
 });
 ```
 
-To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called. Objects other than plain objects and `AxiosHeaders` that have a `toJSON()` method, such as `URL` objects, are serialized as-is and not scanned, and credentials inside URL strings are not matched. List the parent key, such as `auth` or `proxy`, to mask the whole value.
 
 ```js
 axios
@@ -2092,6 +2011,10 @@ console.log(axios.formToJSON(form));
 
 `user[name]` also creates `{ user: { name: ... } }`, while `items[]` creates an array.
 
+Field names are paths, so names that collide are combined rather than kept apart. A repeated name becomes an array: two `account` fields produce `{ account: ['standard', 'admin'] }`. When a name is used both as a plain value and as a parent path, the result depends on field order. `account=standard` followed by `account[role]=admin` produces `{ account: { role: 'admin' } }`, and the plain value is lost. The reverse order produces `{ account: [{ role: 'admin' }, 'standard'] }`. If you validate submitted fields, check the object `formToJSON()` returns, which is also what axios sends when it serializes `FormData` as JSON, rather than the original `FormData` entries.
+
+Field names can nest at most 100 levels deep. A deeper name throws an `AxiosError` with code `ERR_FORM_DATA_DEPTH_EXCEEDED`, including when axios sends a spec-compliant `FormData` (one with an `entries()` method) or an HTML form as JSON. The limit is fixed, and `formSerializer.maxDepth` and `paramsSerializer.maxDepth` do not change it.
+
 Axios supports `postForm`, `putForm`, and `patchForm` as shortcuts for the matching HTTP methods with the `Content-Type` header preset to `multipart/form-data`.
 
 ## Posting files
@@ -2499,7 +2422,7 @@ Returns `true` if at least one header has been cleared.
 
 If the headers object was changed directly, it can have duplicates with the same name but in different cases.
 This method normalizes the headers object by combining duplicate keys into one.
-Axios uses this method internally after calling each interceptor.
+Axios uses this method internally before calling each request and response transformer, and once more after the transformers run.
 Set `format` to true for converting header names to lowercase and capitalizing the initial letters (`cOntEnt-type` => `Content-Type`)
 
 ```js

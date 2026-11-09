@@ -216,4 +216,59 @@ describe('cancel (vitest browser)', () => {
       expect(listenerCount).toBe(0);
     });
   });
+
+  describe.each(['signal', 'cancelToken', 'both'])('request isolation with %s', (kind) => {
+    const cancellation = () => {
+      const controller = new AbortController();
+      const source = axios.CancelToken.source();
+
+      return {
+        config: {
+          ...(kind !== 'cancelToken' ? { signal: controller.signal } : {}),
+          ...(kind !== 'signal' ? { cancelToken: source.token } : {}),
+        },
+        cancel() {
+          if (kind !== 'cancelToken') controller.abort();
+          if (kind !== 'signal') source.cancel('canceled');
+        },
+      };
+    };
+
+    it('does not dispatch after cancellation inside an async interceptor', async () => {
+      const instance = axios.create({ adapter: 'xhr' });
+      const { config, cancel } = cancellation();
+      const interceptor = instance.interceptors.request.use(async (requestConfig) => {
+        await Promise.resolve();
+        cancel();
+        return requestConfig;
+      });
+
+      try {
+        const error = await instance.get('/canceled', config).catch((reason) => reason);
+        expect(error.code).toBe('ERR_CANCELED');
+        expect(axios.isCancel(error)).toBe(true);
+        expect(requests).toHaveLength(0);
+      } finally {
+        instance.interceptors.request.eject(interceptor);
+      }
+    });
+
+    it('allows a new request on the same instance without reusing canceled controls', async () => {
+      const instance = axios.create({ adapter: 'xhr' });
+      const { config, cancel } = cancellation();
+      const first = instance.get('/canceled', config).catch((reason) => reason);
+      await waitForRequest();
+      cancel();
+      expect((await first).code).toBe('ERR_CANCELED');
+
+      // Discard the first mock so waitForRequest observes only the next dispatch.
+      requests = [];
+      const second = instance.get('/next', { signal: new AbortController().signal });
+      const request = await waitForRequest();
+      request.respondWith({ responseText: 'OK' });
+
+      expect((await second).data).toBe('OK');
+      expect(requests).toHaveLength(1);
+    });
+  });
 });

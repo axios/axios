@@ -17,7 +17,7 @@ permissions:
 jobs:
   verify-reproducible-build:
     name: Two-pass build and diff
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     # Non-blocking until divergence is eliminated. Surfaces regressions in
     # the build's determinism without gating merges. Remove this line to
     # promote to a hard gate once the build is byte-identical across runs.

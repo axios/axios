@@ -173,4 +173,4 @@ await axios.post('/api/data', payload, {
 });
 ```
 
-Para más detalles sobre la API completa de métodos de `AxiosHeaders`, consulta la página de [Métodos de encabezados](/pages/advanced/header-methods).
+Para más detalles sobre la API completa de métodos de `AxiosHeaders`, consulta la página de [Métodos de encabezados](/es/pages/advanced/header-methods).

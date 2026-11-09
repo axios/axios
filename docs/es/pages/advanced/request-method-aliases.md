@@ -6,7 +6,7 @@ axios se esfuerza por seguir las RFC 7231 y RFC 5789 de la manera más fiel posi
 
 ### `axios`
 
-axios puede usarse para hacer una solicitud HTTP pasando únicamente el objeto de configuración. El objeto de configuración completo está documentado [aquí](/pages/advanced/request-config).
+axios puede usarse para hacer una solicitud HTTP pasando únicamente el objeto de configuración. El objeto de configuración completo está documentado [aquí](/es/pages/advanced/request-config).
 
 ```ts
 axios<T, R, D, P>(
@@ -172,5 +172,5 @@ await axios.patchForm("/api/users/1", {
 ```
 
 ::: tip
-`postForm`, `putForm` y `patchForm` aceptan los mismos tipos de datos que sus métodos base: objetos planos, `FormData`, `FileList` y `HTMLFormElement`. Consulta [Publicación de archivos](/pages/advanced/file-posting) para más ejemplos.
+`postForm`, `putForm` y `patchForm` aceptan los mismos tipos de datos que sus métodos base: objetos planos, `FormData`, `FileList` y `HTMLFormElement`. Consulta [Publicación de archivos](/es/pages/advanced/file-posting) para más ejemplos.
 :::

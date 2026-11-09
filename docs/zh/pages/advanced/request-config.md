@@ -438,7 +438,7 @@ await axios.get('https://internal-api.example.com/data', {
 
 ### `cancelToken`
 
-`cancelToken` 属性允许你创建一个取消令牌，用于取消请求。详见[取消请求](/pages/advanced/cancellation)文档。
+`cancelToken` 属性允许你创建一个取消令牌，用于取消请求。详见[取消请求](/zh/pages/advanced/cancellation)文档。
 
 ### `signal`
 
@@ -493,11 +493,11 @@ await axios.get('https://internal-api.example.com/data', {
 - `maxDepth` _（默认：`100`）_ — 抛出 `AxiosError`（错误码 `ERR_FORM_DATA_DEPTH_EXCEEDED`）前的最大嵌套深度。设置为 `Infinity` 可禁用。
 - `Blob` — 在符合规范的 `FormData` 中转换类 ArrayBuffer 值时使用的 Blob 构造函数。
 
-详见 [multipart/form-data](/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
+详见 [multipart/form-data](/zh/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
 
 ### `maxRate` <Badge type="warning" text="仅 Node.js" />
 
-`maxRate` 属性定义上传和/或下载的最大**带宽**（字节/秒）。接受单个数字（同时适用于两个方向）或两元素数组 `[uploadRate, downloadRate]`，每个元素为字节/秒限制。例如，`100 * 1024` 表示 100 KB/s。详见[速率限制](/pages/advanced/rate-limiting)中的示例。
+`maxRate` 属性定义上传和/或下载的最大**带宽**（字节/秒）。接受单个数字（同时适用于两个方向）或两元素数组 `[uploadRate, downloadRate]`，每个元素为字节/秒限制。例如，`100 * 1024` 表示 100 KB/s。详见[速率限制](/zh/pages/advanced/rate-limiting)中的示例。
 
 ## 完整请求配置示例
 

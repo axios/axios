@@ -438,7 +438,7 @@ await axios.get('https://internal-api.example.com/data', {
 
 ### `cancelToken`
 
-La propiedad `cancelToken` te permite crear un token de cancelación que puede usarse para cancelar la solicitud. Para más información, consulta la documentación de [cancelación](/pages/advanced/cancellation).
+La propiedad `cancelToken` te permite crear un token de cancelación que puede usarse para cancelar la solicitud. Para más información, consulta la documentación de [cancelación](/es/pages/advanced/cancellation).
 
 ### `signal`
 
@@ -493,11 +493,11 @@ La opción `formSerializer` te permite configurar cómo se serializan los objeto
 - `maxDepth` _(predeterminado: `100`)_ — profundidad máxima de anidación antes de lanzar un `AxiosError` con código `ERR_FORM_DATA_DEPTH_EXCEEDED`. Establece en `Infinity` para desactivar.
 - `Blob` — constructor de Blob usado al convertir valores tipo ArrayBuffer para `FormData` compatible con la especificación.
 
-Consulta la página [multipart/form-data](/pages/advanced/multipart-form-data-format) para todos los detalles, y el ejemplo completo de configuración de solicitud al final de esta página.
+Consulta la página [multipart/form-data](/es/pages/advanced/multipart-form-data-format) para todos los detalles, y el ejemplo completo de configuración de solicitud al final de esta página.
 
 ### `maxRate` <Badge type="warning" text="Solo en Node.js" />
 
-La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segundo) para la carga y/o descarga. Acepta un número único (aplicado a ambas direcciones) o un arreglo de dos elementos `[uploadRate, downloadRate]` donde cada elemento es un límite en bytes por segundo. Por ejemplo, `100 * 1024` significa 100 KB/s. Consulta [Limitación de velocidad](/pages/advanced/rate-limiting) para ver ejemplos.
+La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segundo) para la carga y/o descarga. Acepta un número único (aplicado a ambas direcciones) o un arreglo de dos elementos `[uploadRate, downloadRate]` donde cada elemento es un límite en bytes por segundo. Por ejemplo, `100 * 1024` significa 100 KB/s. Consulta [Limitación de velocidad](/es/pages/advanced/rate-limiting) para ver ejemplos.
 
 ## Ejemplo completo de configuración de solicitud
 

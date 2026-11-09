@@ -61,7 +61,7 @@ headers.set(
 );
 ```
 
-`AxiosHeaders` 会保留第一个匹配键的大小写形式。你可以利用这一特性，先以 `undefined` 值预设一个键名，之后再设置值，从而保留特定的请求头大小写。详见[保留特定请求头大小写](/pages/advanced/headers#preserving-a-specific-header-case)。
+`AxiosHeaders` 会保留第一个匹配键的大小写形式。你可以利用这一特性，先以 `undefined` 值预设一个键名，之后再设置值，从而保留特定的请求头大小写。详见[保留特定请求头大小写](/zh/pages/advanced/headers#保留特定请求头大小写)。
 
 ## Get
 

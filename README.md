@@ -793,9 +793,9 @@ These config options are available for requests. Only `url` is required. Request
   allowAbsoluteUrls: true,
 
   // `transformRequest` allows changes to the request data before it is sent to the server
-  // This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
+  // It runs for every request, whatever the request method
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
-  // FormData or Stream
+  // FormData, Stream, Blob or File
   // You may modify the headers object.
   transformRequest: [function (data, headers) {
     // Do whatever you want to transform the data
@@ -920,7 +920,7 @@ These config options are available for requests. Only `url` is required. Request
   // `responseType` indicates the type of data that the server will respond with
   // options are: 'arraybuffer', 'document', 'json', 'text', 'stream'
   //   browser only: 'blob'
-  responseType: 'json', // default
+  responseType: 'json', // not set by default; see `forcedJSONParsing` below
 
   // `responseEncoding` indicates encoding to use for decoding responses (Node.js only)
   // Note: Ignored for `responseType` of 'stream' or client-side requests
@@ -2420,7 +2420,7 @@ Returns `true` if at least one header has been cleared.
 
 If the headers object was changed directly, it can have duplicates with the same name but in different cases.
 This method normalizes the headers object by combining duplicate keys into one.
-Axios uses this method internally after calling each interceptor.
+Axios uses this method internally before calling each request and response transformer, and once more after the transformers run.
 Set `format` to true for converting header names to lowercase and capitalizing the initial letters (`cOntEnt-type` => `Content-Type`)
 
 ```js

@@ -78,7 +78,7 @@ await axios.post('https://example.com/upload', form, {
 });
 ```
 
-默认值为 `'legacy'`。详见请求配置参考中的 [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy)。
+默认值为 `'legacy'`。详见请求配置参考中的 [`formDataHeaderPolicy`](/zh/pages/advanced/request-config#formdataheaderpolicy)。
 
 ## 支持的特殊结尾
 

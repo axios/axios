@@ -12,7 +12,7 @@ const instance = axios.create({
 });
 ```
 
-La méthode `create` accepte l'objet complet de [Configuration de requête](/pages/advanced/request-config). Vous pouvez ensuite utiliser l'instance exactement comme l'objet axios par défaut :
+La méthode `create` accepte l'objet complet de [Configuration de requête](/fr/pages/advanced/request-config). Vous pouvez ensuite utiliser l'instance exactement comme l'objet axios par défaut :
 
 ```js
 const response = await instance.get("/users/1");

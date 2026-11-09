@@ -32,9 +32,10 @@ encodingHeaders.setContentEncoding('gzip');
 encodingHeaders.setAcceptEncoding('gzip, br');
 const contentEncodingValue: axios.AxiosHeaderValue = encodingHeaders.getContentEncoding();
 const acceptEncodingValue: axios.AxiosHeaderValue = encodingHeaders.getAcceptEncoding();
+const acceptEncodingTokens: axios.AxiosHeaderValue = encodingHeaders.getAcceptEncoding(true);
 const acceptEncodingMatch: RegExpExecArray | null = encodingHeaders.getAcceptEncoding(/gzip/);
 const hasAcceptEncoding: boolean = encodingHeaders.hasAcceptEncoding('gzip');
-// @ts-expect-error -- getAcceptEncoding only accepts a RegExp, matcher, or parser function
+// @ts-expect-error -- getAcceptEncoding only accepts a RegExp, true, or a parser function
 encodingHeaders.getAcceptEncoding(1);
 
 const source = axios.CancelToken.source();

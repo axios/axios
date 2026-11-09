@@ -91,8 +91,8 @@ export class AxiosHeaders {
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAcceptEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getAcceptEncoding(parser?: RegExp): RegExpExecArray | null;
-  getAcceptEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getAcceptEncoding(parser: RegExp): RegExpExecArray | null;
+  getAcceptEncoding(matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
   hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAuthorization(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;

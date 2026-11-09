@@ -265,7 +265,7 @@ The `onDownloadProgress` function allows you to listen to the progress of a down
 
 ### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined. Exceeding the limit rejects with `ERR_BAD_RESPONSE`; see [Fetch adapter response size limits](/pages/advanced/fetch-adapter#response-size-limits).
+The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined. Exceeding the limit rejects with `ERR_BAD_RESPONSE`; see [Fetch adapter response size limits](/pages/advanced/fetch-adapter#response-size-limits). The XHR adapter does not enforce it.
 
 > ⚠️ **Security:** defaults to `-1` (unlimited). Unbounded responses combined with gzip/deflate/brotli/zstd decompression allow decompression-bomb DoS.
 > Set an explicit limit when requesting servers you do not fully trust.
@@ -277,6 +277,8 @@ The `maxBodyLength` property defines the maximum request body size in bytes. The
 ### `redact`
 
 The `redact` property is an optional array of config key names to mask when an `AxiosError` is serialized with `toJSON()`. Matching is case-insensitive and recursive across the serialized request config. Matching values are replaced with `[REDACTED ****]`.
+
+Matching walks plain objects (even ones that define `toJSON()`), arrays, class instances, and `AxiosHeaders`, which is converted to a plain object first. Any other object that has a `toJSON()` method, such as a `URL` object or a class instance that defines `toJSON()`, is serialized as-is, and its contents are not scanned. `redact` also matches key names only, so credentials inside a URL string, such as `url: 'http://user:pass@example.com'`, are not masked. To mask a whole value, list its parent key, for example `redact: ['auth', 'proxy']`.
 
 `redact` only affects error serialization. It does not change request data, headers, or the original config object.
 

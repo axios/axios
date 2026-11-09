@@ -265,7 +265,7 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 
 ### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch" />
 
-`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。超出限制时会以 `ERR_BAD_RESPONSE` 拒绝；参阅 [Fetch 适配器响应大小限制](/zh/pages/advanced/fetch-adapter#响应大小限制)。
+`maxContentLength` 属性定义响应内容允许的最大字节数。Node.js HTTP 适配器会对缓冲响应和流式响应执行该限制。fetch 适配器会在响应声明了长度、响应流可跟踪，或响应大小可确定时执行该限制。超出限制时会以 `ERR_BAD_RESPONSE` 拒绝；参阅 [Fetch 适配器响应大小限制](/zh/pages/advanced/fetch-adapter#响应大小限制)。XHR 适配器不会执行该限制。
 
 > ⚠️ **安全提示：** 默认值为 `-1`（不限制）。响应不加限制再加上 gzip/deflate/brotli/zstd 解压，会带来解压炸弹导致的拒绝服务风险。
 > 在访问不完全可信的服务器时，请显式设置该限制。
@@ -277,6 +277,8 @@ axios.get('/user', { withCredentials: true, withXSRFToken: true });
 ### `redact`
 
 `redact` 属性是一个可选的配置键名数组，用于在 `AxiosError` 通过 `toJSON()` 序列化时对匹配的键进行脱敏。匹配不区分大小写，并会在序列化后的请求配置中递归进行，命中的值会被替换为 `[REDACTED ****]`。
+
+匹配会遍历普通对象（即使它定义了 `toJSON()`）、数组、类实例以及 `AxiosHeaders`（会先被转换为普通对象）。其他带有 `toJSON()` 方法的对象（例如 `URL` 对象，或定义了 `toJSON()` 的类实例）会按原样序列化，其内容不会被扫描。此外，`redact` 只匹配键名，因此 URL 字符串中的凭据（例如 `url: 'http://user:pass@example.com'`）不会被脱敏。如需脱敏整个值，请列出它的父级键，例如 `redact: ['auth', 'proxy']`。
 
 `redact` 仅影响错误序列化，不会修改请求数据、请求头或原始配置对象。
 

@@ -28,7 +28,7 @@ axios 可能会抛出多种不同类型的错误，有些来自 axios 本身，�
 | ERR_CANCELED              | 功能或方法被用户通过 AbortSignal（或 CancelToken）显式取消。                            |
 | ERR_NOT_SUPPORT           | 当前 axios 环境不支持该功能或方法。                                                     |
 | ERR_INVALID_URL           | axios 请求提供了无效的 URL。                                                            |
-| ERR_FORM_DATA_DEPTH_EXCEEDED | 在序列化 `params` 或表单数据时，对象超过了配置的 `maxDepth`，默认上限为 100 层。将 FormData 解析为 JSON（如 `axios.formToJSON()`）时有固定的 100 层上限，`maxDepth` 无法更改。详见 [`paramsSerializer`](/zh/pages/advanced/request-config#paramsserializer) 和 [`formSerializer`](/zh/pages/advanced/request-config#formserializer)。 |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | 在序列化 `params` 或表单数据时，对象超过了配置的 `maxDepth`，默认上限为 100 层。将 FormData 解析为 JSON 时（通过 `axios.formToJSON()`，或以 `Content-Type: application/json` 发送 `FormData` 或 HTML 表单时），有固定的 100 层上限，且不受 `maxDepth` 影响。详见 [`paramsSerializer`](/zh/pages/advanced/request-config#paramsserializer) 和 [`formSerializer`](/zh/pages/advanced/request-config#formserializer)。 |
 
 ## 处理错误
 

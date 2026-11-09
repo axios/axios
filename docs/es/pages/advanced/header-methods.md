@@ -61,7 +61,7 @@ headers.set(
 );
 ```
 
-`AxiosHeaders` conserva el formato de la primera clave coincidente que encuentra. Puedes usar esto para preservar el formato específico de un encabezado inicializando una clave con `undefined` y luego estableciendo los valores posteriormente. Consulta [Preservar el formato de un encabezado específico](/pages/advanced/headers#preserving-a-specific-header-case).
+`AxiosHeaders` conserva el formato de la primera clave coincidente que encuentra. Puedes usar esto para preservar el formato específico de un encabezado inicializando una clave con `undefined` y luego estableciendo los valores posteriormente. Consulta [Preservar el formato de un encabezado específico](/es/pages/advanced/headers#preservar-el-formato-de-un-encabezado-especifico).
 
 ## Get (Obtener)
 

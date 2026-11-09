@@ -28,7 +28,7 @@ A continuación se lista una relación de posibles errores identificados por axi
 | ERR_CANCELED              | La característica o método fue cancelado explícitamente por el usuario usando un AbortSignal (o un CancelToken). |
 | ERR_NOT_SUPPORT           | Característica o método no compatible en el entorno actual de axios.                          |
 | ERR_INVALID_URL           | URL inválida proporcionada para la solicitud de axios.                                        |
-| ERR_FORM_DATA_DEPTH_EXCEEDED | Un objeto excede el `maxDepth` configurado al serializar `params` o datos de formulario. El límite predeterminado es de 100 niveles. Consulta [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) y [`formSerializer`](/pages/advanced/request-config#formserializer). |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | Un objeto excede el `maxDepth` configurado al serializar `params` o datos de formulario. El límite predeterminado es de 100 niveles. Consulta [`paramsSerializer`](/es/pages/advanced/request-config#paramsserializer) y [`formSerializer`](/es/pages/advanced/request-config#formserializer). |
 
 ## Manejo de errores
 
@@ -181,5 +181,5 @@ async function fetchWithTimeout() {
 ```
 
 ::: tip Establece siempre un `timeout` en producción
-Sin uno, una solicitud detenida puede colgarse indefinidamente. Consulta [`timeout`](/pages/advanced/request-config#timeout) y [`transitional.clarifyTimeoutError`](/pages/advanced/request-config#transitional) para las opciones de configuración correspondientes.
+Sin uno, una solicitud detenida puede colgarse indefinidamente. Consulta [`timeout`](/es/pages/advanced/request-config#timeout) y [`transitional.clarifyTimeoutError`](/es/pages/advanced/request-config#transitional) para las opciones de configuración correspondientes.
 :::

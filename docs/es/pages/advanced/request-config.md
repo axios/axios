@@ -12,7 +12,7 @@ axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
 axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ```
 
-Consulta la [guía de seguridad](/pages/misc/security) para más detalles.
+Consulta la [guía de seguridad](/es/pages/misc/security) para más detalles.
 :::
 
 ### `url`
@@ -152,7 +152,7 @@ Controla cómo axios copia los encabezados devueltos por `FormData#getHeaders()`
 
 ### Opciones personalizadas con claves de tipo símbolo
 
-La combinación de configuración conserva las propiedades de símbolo propias y enumerables. Las aplicaciones TypeScript pueden ampliar `AxiosRequestConfig` con una clave de símbolo específica y leer esa opción desde `InternalAxiosRequestConfig` en interceptores de solicitud o adaptadores. Las propiedades de símbolo heredadas o no enumerables no se copian. Consulta la [guía de TypeScript](/pages/advanced/type-script#configuracion-de-solicitud-personalizada-con-claves-de-tipo-simbolo) para ver un ejemplo.
+La combinación de configuración conserva las propiedades de símbolo propias y enumerables. Las aplicaciones TypeScript pueden ampliar `AxiosRequestConfig` con una clave de símbolo específica y leer esa opción desde `InternalAxiosRequestConfig` en interceptores de solicitud o adaptadores. Las propiedades de símbolo heredadas o no enumerables no se copian. Consulta la [guía de TypeScript](/es/pages/advanced/type-script#configuracion-de-solicitud-personalizada-con-claves-de-tipo-simbolo) para ver un ejemplo.
 
 ### `timeout`
 
@@ -164,7 +164,7 @@ La propiedad `withCredentials` indica si las solicitudes de Access-Control entre
 
 ### `adapter`
 
-`adapter` permite el manejo personalizado de solicitudes, lo que facilita las pruebas. Devuelve una Promise y proporciona una respuesta válida; consulta los [adaptadores](/pages/advanced/adapters) para más información. También proporcionamos una serie de adaptadores integrados. El adaptador predeterminado es `http` para Node.js y `xhr` para navegadores. La lista completa de adaptadores integrados es la siguiente:
+`adapter` permite el manejo personalizado de solicitudes, lo que facilita las pruebas. Devuelve una Promise y proporciona una respuesta válida; consulta los [adaptadores](/es/pages/advanced/adapters) para más información. También proporcionamos una serie de adaptadores integrados. El adaptador predeterminado es `http` para Node.js y `xhr` para navegadores. La lista completa de adaptadores integrados es la siguiente:
 
 - fetch
 - http
@@ -438,7 +438,7 @@ await axios.get('https://internal-api.example.com/data', {
 
 ### `cancelToken`
 
-La propiedad `cancelToken` te permite crear un token de cancelación que puede usarse para cancelar la solicitud. Para más información, consulta la documentación de [cancelación](/pages/advanced/cancellation).
+La propiedad `cancelToken` te permite crear un token de cancelación que puede usarse para cancelar la solicitud. Para más información, consulta la documentación de [cancelación](/es/pages/advanced/cancellation).
 
 ### `signal`
 
@@ -493,11 +493,11 @@ La opción `formSerializer` te permite configurar cómo se serializan los objeto
 - `maxDepth` _(predeterminado: `100`)_ — profundidad máxima de anidación antes de lanzar un `AxiosError` con código `ERR_FORM_DATA_DEPTH_EXCEEDED`. Establece en `Infinity` para desactivar.
 - `Blob` — constructor de Blob usado al convertir valores tipo ArrayBuffer para `FormData` compatible con la especificación.
 
-Consulta la página [multipart/form-data](/pages/advanced/multipart-form-data-format) para todos los detalles, y el ejemplo completo de configuración de solicitud al final de esta página.
+Consulta la página [multipart/form-data](/es/pages/advanced/multipart-form-data-format) para todos los detalles, y el ejemplo completo de configuración de solicitud al final de esta página.
 
 ### `maxRate` <Badge type="warning" text="Solo en Node.js" />
 
-La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segundo) para la carga y/o descarga. Acepta un número único (aplicado a ambas direcciones) o un arreglo de dos elementos `[uploadRate, downloadRate]` donde cada elemento es un límite en bytes por segundo. Por ejemplo, `100 * 1024` significa 100 KB/s. Consulta [Limitación de velocidad](/pages/advanced/rate-limiting) para ver ejemplos.
+La propiedad `maxRate` define el **ancho de banda** máximo (en bytes por segundo) para la carga y/o descarga. Acepta un número único (aplicado a ambas direcciones) o un arreglo de dos elementos `[uploadRate, downloadRate]` donde cada elemento es un límite en bytes por segundo. Por ejemplo, `100 * 1024` significa 100 KB/s. Consulta [Limitación de velocidad](/es/pages/advanced/rate-limiting) para ver ejemplos.
 
 ## Ejemplo completo de configuración de solicitud
 

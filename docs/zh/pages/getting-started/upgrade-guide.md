@@ -113,17 +113,17 @@ axios.create({
 
 **`null` 和 `undefined` 参数**的处理方式现在已统一：`null` 值序列化为空字符串，而 `undefined` 值则被完全忽略。
 
-关于参数序列化配置的完整选项，请参阅[请求配置](/pages/advanced/request-config)页面。
+关于参数序列化配置的完整选项，请参阅[请求配置](/zh/pages/advanced/request-config)页面。
 
 ### 内部模块不再导出
 
 我们决定不再导出 axios 的内部模块，你需要将代码更新为仅使用 axios 的公开 API。此变更旨在简化 API，缩小 axios 的接口范围，使我们能够在不声明破坏性变更的情况下修改内部实现。
 
-请查阅本站的 [API 参考](/pages/advanced/api-reference)，获取最新的公开 API 信息。
+请查阅本站的 [API 参考](/zh/pages/advanced/api-reference)，获取最新的公开 API 信息。
 
 ### 请求配置
 
-我们对请求配置对象进行了调整，请查阅本站的[配置参考](/pages/advanced/request-config)获取最新信息。
+我们对请求配置对象进行了调整，请查阅本站的[配置参考](/zh/pages/advanced/request-config)获取最新信息。
 
 ### 遗漏的破坏性变更
 

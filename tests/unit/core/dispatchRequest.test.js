@@ -240,10 +240,11 @@ describe('core::dispatchRequest response timing', () => {
 
   beforeEach(() => {
     now = 1000;
-    vi.spyOn(Date, 'now').mockImplementation(() => now);
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -257,7 +258,7 @@ describe('core::dispatchRequest response timing', () => {
 
   for (const status of [200, 500]) {
     it.each([25, -25])(
-      `measures only adapter execution for status ${status} with a %s ms clock change`,
+      `measures only adapter execution for status ${status} with a %s ms elapsed clock`,
       async (elapsed) => {
         const expectedDuration = Math.max(0, elapsed);
         const client = axios.create({
@@ -392,6 +393,59 @@ describe('core::dispatchRequest response timing', () => {
       assert.strictEqual(Object.hasOwn(response, 'duration'), false);
     }
   );
+
+  it('does not read the wall clock when performance.now() is available', async () => {
+    // Next.js Cache Components rejects Date.now() during prerendering (#11407).
+    const dateNow = vi.spyOn(Date, 'now').mockImplementation(() => {
+      throw new Error('Date.now() must not be called');
+    });
+
+    const response = await axios.get('/monotonic', {
+      adapter: async (config) => {
+        now += 25;
+        return createResponse(config);
+      },
+    });
+
+    assert.strictEqual(response.duration, 25);
+    assert.strictEqual(dateNow.mock.calls.length, 0);
+  });
+
+  it('rounds sub-millisecond performance.now() readings to whole milliseconds', async () => {
+    now = 1000.2;
+    const response = await axios.get('/fractional', {
+      adapter: async (config) => {
+        now += 24.6;
+        return createResponse(config);
+      },
+    });
+
+    assert.strictEqual(response.duration, 25);
+  });
+
+  it.each([
+    ['is missing', undefined],
+    ['has no now()', {}],
+  ])('falls back to Date.now() when performance %s', async (_label, stub) => {
+    vi.stubGlobal('performance', stub);
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    const forward = await axios.get('/fallback', {
+      adapter: async (config) => {
+        now += 25;
+        return createResponse(config);
+      },
+    });
+    const backward = await axios.get('/fallback-backward', {
+      adapter: async (config) => {
+        now -= 25;
+        return createResponse(config);
+      },
+    });
+
+    assert.strictEqual(forward.duration, 25);
+    assert.strictEqual(backward.duration, 0);
+  });
 
   it('replaces a custom adapter duration with the dispatch measurement', async () => {
     const response = await axios.get('/custom', {

@@ -42,6 +42,26 @@ describe('module esm typings compatibility', () => {
     }
   });
 
+  it('handles missing encoding headers under strictNullChecks', () => {
+    const sourcePath = path.join(
+      repoRoot,
+      'tests/module/esm/tests/helpers/esm-encoding-headers.ts'
+    );
+    const fixturePath = createTempFixture(
+      suiteRoot,
+      'typings-esm-encoding',
+      sourcePath,
+      { compilerOptions: { module: 'node16', strictNullChecks: true } },
+      { type: 'module' }
+    );
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
   it('type-checks fetch Response constructors with browser declarations', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/esm/tests/helpers/esm-fetch-types.ts');
     const fixturePath = createTempFixture(

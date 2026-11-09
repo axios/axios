@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Header encoding shortcuts
+
+- **Change:** The documented `Content-Encoding` shortcuts now exist at runtime, and the existing `Accept-Encoding` shortcuts are explicitly typed in both module formats.
+- **Source:** [Issue #11432](https://github.com/axios/axios/issues/11432), [PR #11433](https://github.com/axios/axios/pull/11433).
+- **Status:** Pending.
+- **Docs targets:** `README.md` AxiosHeaders Shortcuts section; `docs/pages/advanced/header-methods.md` and its Spanish, French, and Chinese translations.
+- **Required content:** Keep the `setContentEncoding`, `getContentEncoding`, and `hasContentEncoding` shortcuts and add the `setAcceptEncoding`, `getAcceptEncoding`, and `hasAcceptEncoding` trio. Explain that both encoding getters return raw header values without a parser, regex matches or `null` with a regex, token maps with `true`, and the callback's result with a custom parser. Every mode can return `undefined` for a missing header, without invoking parsers; callers using `strictNullChecks` must handle that possibility. Token maps have `string | undefined` values because bare tokens have no assigned value. Complete the shortcut lists with the existing `setAuthorization`, `getAuthorization`, and `hasAuthorization` methods. Document the existing `getSetCookie()` method on the header-methods pages, including its `string[]` result and empty array when no cookie is present.
+- **Examples:** `new AxiosHeaders({ 'content-encoding': 'gzip' }).getContentEncoding()` returns `'gzip'`; `headers.setAcceptEncoding('gzip, br')` sets the separate `Accept-Encoding` header.
+- **Notes:** These helpers manage header values; they do not compress or decompress request bodies. The runtime addition is patch-level; stricter declarations now diagnose invalid calls and unsafe use of possibly missing results. Apply during release preparation, with no changes to the other accessor signatures.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

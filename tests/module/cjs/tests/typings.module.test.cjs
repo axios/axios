@@ -48,6 +48,22 @@ describe('module cjs typings compatibility', () => {
     }
   });
 
+  it('handles missing encoding headers under strictNullChecks', () => {
+    const sourcePath = path.join(
+      repoRoot,
+      'tests/module/cjs/tests/helpers/cjs-encoding-headers.ts'
+    );
+    const fixturePath = createTempFixture(suiteRoot, 'typings-cjs-encoding', sourcePath, {
+      compilerOptions: { module: 'node16', strictNullChecks: true },
+    });
+
+    try {
+      runCommand('node', [tscBin, '--noEmit', '-p', 'tsconfig.json'], { cwd: fixturePath });
+    } finally {
+      cleanupTempFixture(fixturePath);
+    }
+  });
+
   it('type-checks fetch Response constructors with TypeScript 4.9', () => {
     const sourcePath = path.join(repoRoot, 'tests/module/cjs/tests/helpers/cjs-fetch-types.ts');
     const fixturePath = createTempFixture(suiteRoot, 'fetch-types-cjs', sourcePath, {

@@ -152,3 +152,106 @@
     margin: 1rem 7rem;
   }
 }
+
+/* Blog index: post cards in a masonry layout. CSS columns let cards of
+ * different heights pack together; posts read top to bottom, then across. */
+.blog-index {
+  padding-top: 2rem;
+}
+
+.blog-index__list {
+  column-count: 1;
+  column-gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .blog-index__list {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1100px) {
+  .blog-index__list {
+    column-count: 3;
+  }
+}
+
+.blog-index__item {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+}
+
+.blog-index__link {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.blog-index__link:hover {
+  border-color: var(--vp-c-brand-1);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-index__link {
+    transition: none;
+  }
+
+  .blog-index__link:hover {
+    transform: none;
+  }
+}
+
+.blog-index__image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.blog-index__body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.blog-index__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--vp-c-text-1);
+}
+
+.blog-index__link:hover .blog-index__title {
+  color: var(--vp-c-brand-1);
+}
+
+.blog-index__meta {
+  margin: 0.25rem 0 0;
+  font-size: 14px;
+  color: var(--vp-c-text-2);
+}
+
+.blog-index__description {
+  margin: 0.75rem 0 0;
+  line-height: 1.6;
+  color: var(--vp-c-text-1);
+}
+
+.blog-index__empty {
+  margin: 0;
+  color: var(--vp-c-text-2);
+}
+
+/* Images inside blog posts: never wider than the text column. */
+.vp-doc img[src^="/blog/"] {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}

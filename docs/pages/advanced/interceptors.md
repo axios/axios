@@ -64,6 +64,12 @@ instance.interceptors.response.use(function () {
 instance.interceptors.response.clear(); // Removes interceptors from responses
 ```
 
+The number returned by `use()` is an opaque interceptor ID. Pass it back to `eject()` unchanged; do not use it as an index into the `handlers` array. Prefer `eject()` and `clear()` over editing `handlers` directly:
+
+- Ejecting an unknown ID, or ejecting the same ID twice, does nothing.
+- A stale ID never removes a different interceptor, even after other interceptors were ejected or the manager was cleared.
+- If `handlers` is replaced with `null` or `undefined`, that interceptor chain is skipped, and the next `use()` call restores an empty array before adding the new interceptor.
+
 ## Interceptors default behaviour
 
 When you add request interceptors, they are presumed to be asynchronous by default. This can cause a delay in the execution of your axios request when the main thread is blocked (a promise is created under the hood for the interceptor and your request gets put on the bottom of the call stack). If your request interceptors are synchronous you can add a flag to the options object that will tell axios to run the code synchronously and avoid any delays in request execution.
@@ -116,6 +122,56 @@ axios.interceptors.request.use(
   { synchronous: true }
 );
 ```
+
+## Returning a different config object
+
+A request interceptor usually modifies and returns the config it receives. That config is a writable null-prototype object created by axios, and returning it unchanged preserves its identity: the adapter and `response.config` receive the same object.
+
+```js
+let seen;
+
+const instance = axios.create({
+  adapter: async (config) => {
+    console.log(config === seen); // true
+    return { data: null, status: 200, statusText: 'OK', headers: {}, config };
+  },
+});
+
+instance.interceptors.request.use((config) => {
+  config.headers.set('X-Trace', '1');
+  seen = config;
+  return config;
+});
+```
+
+Whether axios reuses or copies the returned object depends on its shape, not on whether it is the object the interceptor received. A writable, extensible null-prototype object whose properties are all plain writable data properties and that has no unsafe keys is dispatched as is: axios updates fields such as `headers` and `data` on it, and the adapter receives that same object. This also applies to a different null-prototype object returned by an interceptor, so do not return an object that must stay unchanged.
+
+Any other object, such as an object literal, a `{ ...config }` copy, or a class instance, is copied into a new writable null-prototype snapshot before dispatch. Own fields are kept, except the unsafe keys `__proto__`, `constructor`, and `prototype`, which are always dropped. Fields inherited from an application-defined prototype are copied as own fields, but the snapshot does not keep the original object's identity, prototype, `instanceof` checks, accessors, or property attributes:
+
+```js
+const template = { tenant: 'acme' };
+
+instance.interceptors.request.use((config) => {
+  // `tenant` is inherited from `template`; a custom adapter
+  // reads it as an own field of the snapshot: config.tenant === 'acme'
+  return Object.assign(Object.create(template), config);
+});
+```
+
+Fields inherited from `Object.prototype`, or from a prototype that itself has a `null` prototype (such as one created with `Object.create(null)`), are ignored:
+
+```js
+const nullTemplate = Object.create(null);
+nullTemplate.tenant = 'acme';
+
+instance.interceptors.request.use((config) => {
+  // `tenant` is ignored because `nullTemplate` has a null prototype:
+  // a custom adapter sees config.tenant === undefined
+  return Object.assign(Object.create(nullTemplate), config);
+});
+```
+
+A null-prototype config is also copied when it is frozen, sealed, uses accessors or non-writable properties, or contains one of the unsafe keys, because axios must update fields such as `headers` and `data` during dispatch. These rules are an intentional security boundary that prevents values injected into shared prototypes from changing request behavior; they do not make modifying `Object.prototype` safe or supported.
 
 ## Interceptors using `runWhen`
 

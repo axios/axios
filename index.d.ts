@@ -526,6 +526,12 @@ export interface AxiosResponse<T = any, D = any, H = {}, P = any> {
   data: T;
   status: number;
   statusText: string;
+  /**
+   * Whole milliseconds from adapter invocation to settlement, clamped at zero. Measured with
+   * `performance.now()` when available, otherwise `Date.now()`.
+   * Excludes interceptors and request/response transforms. Stream consumption is not included.
+   */
+  duration?: number;
   headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
   config: InternalAxiosRequestConfig<D, P>;
   request?: any;
@@ -746,8 +752,15 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+/**
+ * Resolves an adapter by name, adapter function, or priority list.
+ * @param config Request config forwarded to adapter getters. The built-in `fetch`
+ * adapter reads `env.fetch`, `env.Request`, and `env.Response` from it and falls
+ * back to the globals when it is omitted. Other fields are not applied here.
+ */
 export function getAdapter(
-  adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined
+  adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined,
+  config?: AxiosRequestConfig
 ): AxiosAdapter;
 
 export function toFormData(

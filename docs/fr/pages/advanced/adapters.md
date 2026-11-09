@@ -25,7 +25,7 @@ Vous pouvez également passer un tableau de noms d'adaptateurs. axios utilisera 
 const instance = axios.create({ adapter: ["fetch", "xhr", "http"] });
 ```
 
-Pour plus de détails sur l'adaptateur `fetch`, consultez la page [Adaptateur Fetch](/pages/advanced/fetch-adapter).
+Pour plus de détails sur l'adaptateur `fetch`, consultez la page [Adaptateur Fetch](/fr/pages/advanced/fetch-adapter).
 
 ## Créer un adaptateur personnalisé
 
@@ -82,6 +82,8 @@ function myAdapter(config) {
 
 const instance = axios.create({ adapter: myAdapter });
 ```
+
+L'adaptateur reçoit la configuration retournée par les intercepteurs de requête. Une configuration modifiable à prototype nul, comme la configuration fusionnée d'origine, est transmise sous la forme du même objet ; toute autre configuration retournée par un intercepteur est d'abord copiée dans un instantané filtré à prototype nul (voir [Retourner un autre objet de configuration](/fr/pages/advanced/interceptors#retourner-un-autre-objet-de-configuration)). Une fois l'adaptateur terminé, axios définit [`response.duration`](/fr/pages/advanced/response-schema#duree-de-la-reponse) sur la réponse, en remplaçant toute valeur `duration` définie par l'adaptateur.
 
 Les adaptateurs TypeScript peuvent conserver les données de requête et les paramètres de requête dans la configuration de la réponse grâce aux génériques correspondants :
 

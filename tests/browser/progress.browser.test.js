@@ -4,15 +4,22 @@ import axios from '../../index.js';
 
 // Real EventTarget + ProgressEvent dispatches so events keep genuine browser
 // semantics: `target` survives the dispatch, `currentTarget` does not.
+const $listeners = Symbol('listeners');
+
 class ProgressEventTarget extends EventTarget {
   constructor() {
     super();
-    this._listenerCounts = {};
+    this[$listeners] = {};
   }
 
   addEventListener(type, listener, options) {
-    this._listenerCounts[type] = (this._listenerCounts[type] || 0) + 1;
+    (this[$listeners][type] || (this[$listeners][type] = new Set())).add(listener);
     super.addEventListener(type, listener, options);
+  }
+
+  removeEventListener(type, listener, options) {
+    this[$listeners][type] && this[$listeners][type].delete(listener);
+    super.removeEventListener(type, listener, options);
   }
 }
 
@@ -70,7 +77,7 @@ class MockXMLHttpRequest extends ProgressEventTarget {
 
   getListenerCount(type, target = 'request') {
     const eventTarget = target === 'upload' ? this.upload : this;
-    return eventTarget._listenerCounts[type] || 0;
+    return eventTarget[$listeners][type] ? eventTarget[$listeners][type].size : 0;
   }
 
   emit(type, target = 'request', init = {}) {
@@ -133,7 +140,113 @@ describe('progress (vitest browser)', () => {
   afterEach(() => {
     window.XMLHttpRequest = OriginalXMLHttpRequest;
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
+
+  it.each(['success', 'cancellation'])(
+    'removes progress listeners from a native XHR after %s',
+    async (kind) => {
+      let request;
+      const registrations = [];
+      window.XMLHttpRequest = class extends OriginalXMLHttpRequest {
+        constructor() {
+          super();
+          request = this;
+          for (const target of [this, this.upload]) {
+            registrations.push({
+              target,
+              add: vi.spyOn(target, 'addEventListener'),
+              remove: vi.spyOn(target, 'removeEventListener'),
+            });
+          }
+        }
+      };
+      const controller = new AbortController();
+      const source = axios.CancelToken.source();
+      const unsubscribe = vi.spyOn(source.token, 'unsubscribe');
+      const removeListener = vi.spyOn(controller.signal, 'removeEventListener');
+      const upload = vi.fn();
+      const download = vi.fn(() => {
+        if (kind === 'cancellation') controller.abort();
+      });
+      const result = await axios
+        .get(new URL('../../package.json', import.meta.url).href, {
+          adapter: 'xhr',
+          timeout: 5000,
+          signal: controller.signal,
+          cancelToken: source.token,
+          onUploadProgress: upload,
+          onDownloadProgress: download,
+        })
+        .catch((error) => error);
+
+      if (kind === 'success') expect(result.status).toBe(200);
+      else expect(result.code).toBe('ERR_CANCELED');
+      expect(download).toHaveBeenCalled();
+      expect(unsubscribe).toHaveBeenCalled();
+      expect(removeListener).toHaveBeenCalledWith('abort', expect.any(Function));
+      for (const { target, add, remove } of registrations) {
+        const types = target === request ? ['progress'] : ['progress', 'loadend'];
+        for (const type of types) {
+          const registered = add.mock.calls.filter(([eventType]) => eventType === type);
+          expect(registered).toHaveLength(1);
+          expect(remove).toHaveBeenCalledWith(type, registered[0][1]);
+        }
+      }
+
+      // Verify that detached callbacks cannot be invoked by later dispatches.
+      const downloadCount = download.mock.calls.length;
+      const uploadCount = upload.mock.calls.length;
+      request.dispatchEvent(new ProgressEvent('progress', { loaded: 1000 }));
+      request.upload.dispatchEvent(new ProgressEvent('progress', { loaded: 1000 }));
+      request.upload.dispatchEvent(new ProgressEvent('loadend'));
+      expect(download).toHaveBeenCalledTimes(downloadCount);
+      expect(upload).toHaveBeenCalledTimes(uploadCount);
+    }
+  );
+
+  it.each(['throw', 'cancel'])(
+    'removes listeners when a flushed upload callback triggers %s',
+    async (kind) => {
+      vi.useFakeTimers();
+      const controller = new AbortController();
+      const source = axios.CancelToken.source();
+      const unsubscribe = vi.spyOn(source.token, 'unsubscribe');
+      const removeListener = vi.spyOn(controller.signal, 'removeEventListener');
+      const upload = vi.fn(() => {
+        if (upload.mock.calls.length !== 2) return;
+        if (kind === 'throw') throw new Error('upload listener failure');
+        controller.abort();
+      });
+      const responsePromise = axios.post('/foo', 'payload', {
+        signal: controller.signal,
+        cancelToken: source.token,
+        onUploadProgress: upload,
+        onDownloadProgress: () => {},
+      });
+      const request = getLastRequest();
+      request.emit('progress', 'upload', { loaded: 1 });
+      request.emit('progress', 'upload', { loaded: 2 });
+      expect(upload).toHaveBeenCalledOnce();
+      request.respondWith({ responseText: 'ok' });
+
+      if (kind === 'cancel') {
+        await expect(responsePromise).rejects.toMatchObject({ code: 'ERR_CANCELED' });
+      } else {
+        expect((await responsePromise).status).toBe(200);
+      }
+      expect(upload).toHaveBeenCalledTimes(2);
+      expect(request.getListenerCount('progress')).toBe(0);
+      expect(request.getListenerCount('progress', 'upload')).toBe(0);
+      expect(request.getListenerCount('loadend', 'upload')).toBe(0);
+      expect(unsubscribe).toHaveBeenCalled();
+      expect(removeListener).toHaveBeenCalledWith('abort', expect.any(Function));
+      if (kind === 'throw') {
+        await expect(vi.runAllTimersAsync()).rejects.toThrow('upload listener failure');
+      }
+      expect(vi.getTimerCount()).toBe(0);
+    }
+  );
 
   it('should add a download progress handler', async () => {
     const progressSpy = vi.fn();

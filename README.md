@@ -795,7 +795,7 @@ These config options are available for requests. Only `url` is required. Request
   // `transformRequest` allows changes to the request data before it is sent to the server
   // It runs for every request, whatever the request method
   // The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
-  // FormData or Stream
+  // FormData, Stream, Blob or File
   // You may modify the headers object.
   transformRequest: [function (data, headers) {
     // Do whatever you want to transform the data

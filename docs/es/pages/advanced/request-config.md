@@ -39,7 +39,7 @@ La misma regla de URL bien formada se aplica a `baseURL`: los valores `http:` y 
 
 ### `transformRequest`
 
-La función `transformRequest` te permite modificar los datos de la solicitud antes de enviarlos al servidor. Cada función se llama con los datos de la solicitud y los encabezados de la solicitud (una instancia de `AxiosHeaders`). Se ejecuta en todas las solicitudes, sea cual sea el método. La última función del arreglo debe devolver una cadena de texto o una instancia de Buffer, ArrayBuffer, FormData o Stream.
+La función `transformRequest` te permite modificar los datos de la solicitud antes de enviarlos al servidor. Cada función se llama con los datos de la solicitud y los encabezados de la solicitud (una instancia de `AxiosHeaders`). Se ejecuta en todas las solicitudes, sea cual sea el método. La última función del arreglo debe devolver una cadena de texto o una instancia de Buffer, ArrayBuffer, FormData, Stream, Blob o File.
 
 ### `transformResponse`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-Los `headers` son los encabezados HTTP que se enviarán con la solicitud. No hay un `Content-Type` predeterminado fijo. Si no estableces uno, axios lo elige según los `data` de la solicitud: por ejemplo, un objeto plano se envía como `application/json` y `URLSearchParams` como `application/x-www-form-urlencoded;charset=utf-8`. En las solicitudes `post`, `put` y `patch` que siguen sin `Content-Type` después de las transformaciones de la solicitud, como un cuerpo de cadena de texto simple, axios usa `application/x-www-form-urlencoded`.
+Los `headers` son los encabezados HTTP que se enviarán con la solicitud. No hay un `Content-Type` predeterminado fijo. Para los tipos de datos que maneja la transformación de solicitud predeterminada, axios lo deduce de los `data` de la solicitud: por ejemplo, un objeto plano se envía como `application/json` y `URLSearchParams` como `application/x-www-form-urlencoded;charset=utf-8`. En las solicitudes `post`, `put` y `patch` que siguen sin `Content-Type` después de las transformaciones de la solicitud, como un cuerpo de cadena de texto simple, axios usa `application/x-www-form-urlencoded`.
 
 ### `params`
 

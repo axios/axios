@@ -39,7 +39,7 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 ### `transformRequest`
 
-`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改。每个函数接收请求数据和请求头（一个 `AxiosHeaders` 实例）作为参数，无论请求方法是什么，每个请求都会运行。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData 或 Stream 实例。
+`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改。每个函数接收请求数据和请求头（一个 `AxiosHeaders` 实例）作为参数，无论请求方法是什么，每个请求都会运行。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData、Stream、Blob 或 File 实例。
 
 ### `transformResponse`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-`headers` 是随请求发送的 HTTP 请求头。axios 没有固定的默认 `Content-Type`。如果你没有设置，axios 会根据请求的 `data` 选择：例如，普通对象以 `application/json` 发送，`URLSearchParams` 以 `application/x-www-form-urlencoded;charset=utf-8` 发送。对于 `post`、`put` 和 `patch` 请求，如果经过请求转换后仍然没有 `Content-Type`（例如纯字符串请求体），axios 会回退为 `application/x-www-form-urlencoded`。
+`headers` 是随请求发送的 HTTP 请求头。axios 没有固定的默认 `Content-Type`。对于默认请求转换能处理的数据类型，axios 会根据请求的 `data` 推断：例如，普通对象以 `application/json` 发送，`URLSearchParams` 以 `application/x-www-form-urlencoded;charset=utf-8` 发送。对于 `post`、`put` 和 `patch` 请求，如果经过请求转换后仍然没有 `Content-Type`（例如纯字符串请求体），axios 会回退为 `application/x-www-form-urlencoded`。
 
 ### `params`
 

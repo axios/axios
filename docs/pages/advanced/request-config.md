@@ -39,7 +39,7 @@ The `allowAbsoluteUrls` determines whether or not absolute URLs will override a 
 
 ### `transformRequest`
 
-The `transformRequest` function allows you to modify the request data before it is sent to the server. Each function is called with the request data and the request headers (an `AxiosHeaders` instance). It runs for every request, whatever the request method. The last function in the array must return a string or an instance of Buffer, ArrayBuffer, FormData or Stream.
+The `transformRequest` function allows you to modify the request data before it is sent to the server. Each function is called with the request data and the request headers (an `AxiosHeaders` instance). It runs for every request, whatever the request method. The last function in the array must return a string or an instance of Buffer, ArrayBuffer, FormData, Stream, Blob or File.
 
 ### `transformResponse`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-The `headers` are the HTTP headers to be sent with the request. There is no static default `Content-Type`. If you do not set one, axios picks it from the request `data`: for example, a plain object is sent as `application/json` and `URLSearchParams` as `application/x-www-form-urlencoded;charset=utf-8`. For `post`, `put` and `patch` requests that still have no `Content-Type` after the request transforms, such as a plain string body, axios falls back to `application/x-www-form-urlencoded`.
+The `headers` are the HTTP headers to be sent with the request. There is no static default `Content-Type`. For data types handled by the default request transform, axios derives it from the request `data`: for example, a plain object is sent as `application/json` and `URLSearchParams` as `application/x-www-form-urlencoded;charset=utf-8`. For `post`, `put` and `patch` requests that still have no `Content-Type` after the request transforms, such as a plain string body, axios falls back to `application/x-www-form-urlencoded`.
 
 ### `params`
 

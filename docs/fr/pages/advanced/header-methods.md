@@ -65,7 +65,7 @@ headers.set(
 
 ## Get
 
-La méthode `get` est utilisée pour récupérer la valeur d'un en-tête. La méthode peut être appelée avec un seul nom d'en-tête, un matcher optionnel ou un analyseur. Sans matcher, elle retourne la valeur brute de l'en-tête. Passez `true` pour analyser la valeur en paires clé-valeur. L'analyseur peut être une expression régulière utilisée pour extraire la valeur de l'en-tête.
+La méthode `get` est utilisée pour récupérer la valeur d'un en-tête. La méthode est appelée avec un nom d'en-tête et un analyseur facultatif. Sans analyseur, elle retourne la valeur brute de l'en-tête. Passez `true` pour analyser la valeur en paires clé-valeur, une expression régulière pour en extraire une partie, ou une fonction qui reçoit la valeur et le nom de l'en-tête. Tout autre analyseur déclenche une `TypeError`.
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;

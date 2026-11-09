@@ -65,7 +65,7 @@ headers.set(
 
 ## Get
 
-`get` 方法用于获取请求头的值，可以传入单个请求头名称、可选的匹配器或解析器。不传匹配器时返回原始请求头值，传入 `true` 则将值解析为键值对。解析器可以是用于从请求头中提取值的正则表达式。
+`get` 方法用于获取请求头的值，接受一个请求头名称和一个可选的解析器。不传解析器时返回原始请求头值；传入 `true` 将值解析为键值对，传入正则表达式提取值的一部分，或传入一个接收值和请求头名称的函数。其他类型的解析器会抛出 `TypeError`。
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;

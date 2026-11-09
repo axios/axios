@@ -65,7 +65,7 @@ headers.set(
 
 ## Get (Obtener)
 
-El método `get` se usa para recuperar el valor de un encabezado. El método puede ser llamado con un nombre de encabezado único, un matcher opcional o un parser. Sin matcher, devuelve el valor sin procesar del encabezado. Pasa `true` para convertir el valor en pares clave-valor. El parser puede ser una expresión regular que se usa para extraer el valor del encabezado.
+El método `get` se usa para recuperar el valor de un encabezado. El método se llama con un nombre de encabezado y un parser opcional. Sin parser, devuelve el valor sin procesar del encabezado. Pasa `true` para convertir el valor en pares clave-valor, una expresión regular para extraer parte del valor, o una función que recibe el valor y el nombre del encabezado. Cualquier otro parser produce un `TypeError`.
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;

@@ -603,7 +603,8 @@ describe('helpers::shouldBypassProxy', () => {
     });
 
     it('should ignore entries that cannot be converted to ASCII', () => {
-      setNoProxy('­');
+      // U+00AD (soft hyphen) is removed by IDNA mapping, so domainToASCII() returns ''.
+      setNoProxy('\u00ad');
 
       expect(shouldBypassProxy('http://example.com/')).toBe(false);
     });

@@ -27,6 +27,27 @@ const parsedHeaderParameters: axios.AxiosHeaderParameters = headers.get(
   axios.AxiosHeaders.parseParameters
 );
 
+const encodingHeaders = new axios.AxiosHeaders();
+encodingHeaders.setContentEncoding('gzip');
+encodingHeaders.setAcceptEncoding('gzip, br');
+const contentEncodingValue: axios.AxiosHeaderValue = encodingHeaders.getContentEncoding();
+const contentEncodingTokens: axios.AxiosHeaderValue = encodingHeaders.getContentEncoding(true);
+const contentEncodingMatch: RegExpExecArray | null = encodingHeaders.getContentEncoding(/gzip/);
+const contentEncodingParameters: axios.AxiosHeaderParameters = encodingHeaders.getContentEncoding(
+  axios.AxiosHeaders.parseParameters
+);
+const acceptEncodingParameters: axios.AxiosHeaderParameters = encodingHeaders.getAcceptEncoding(
+  axios.AxiosHeaders.parseParameters
+);
+// @ts-expect-error -- getContentEncoding rejects string matchers, which throw at runtime
+encodingHeaders.getContentEncoding('gzip');
+const acceptEncodingValue: axios.AxiosHeaderValue = encodingHeaders.getAcceptEncoding();
+const acceptEncodingTokens: axios.AxiosHeaderValue = encodingHeaders.getAcceptEncoding(true);
+const acceptEncodingMatch: RegExpExecArray | null = encodingHeaders.getAcceptEncoding(/gzip/);
+const hasAcceptEncoding: boolean = encodingHeaders.hasAcceptEncoding('gzip');
+// @ts-expect-error -- getAcceptEncoding only accepts a RegExp, true, or a parser function
+encodingHeaders.getAcceptEncoding(1);
+
 const source = axios.CancelToken.source();
 source.token.subscribe((cancel) => {
   const message: string | undefined = cancel && cancel.message;

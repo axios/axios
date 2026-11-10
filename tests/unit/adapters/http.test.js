@@ -7019,6 +7019,93 @@ describe('supports http with nodejs', () => {
 
       assert.strictEqual(result.status, 200);
     });
+
+    it('should not leave a socket destroy-on-timeout listener that breaks other clients reusing the socket (regression #11440)', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          const delay = Number(new URL(req.url, 'http://localhost').searchParams.get('delay')) || 0;
+          setTimeout(() => res.end('ok'), delay);
+        },
+        // Keep the server keep-alive window well above the agent idle timeout so the socket is reused.
+        { keepAlive: 10000 }
+      );
+
+      // Mirrors http.globalAgent on Node >= 19 (keepAlive with an idle timeout), with a short timeout.
+      const agent = new http.Agent({ keepAlive: true, maxSockets: 1, timeout: 100 });
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+
+        // No axios timeout and the default maxRedirects, so the request goes through follow-redirects.
+        const first = await axios.get(`${baseURL}/?delay=0`, { httpAgent: agent });
+        assert.strictEqual(first.data, 'ok');
+
+        await setTimeoutAsync(0);
+
+        const [pooledSocket] = [].concat(...Object.values(agent.freeSockets));
+        assert.ok(pooledSocket, 'the socket should be back in the agent pool');
+        assert.ok(
+          !pooledSocket.listeners('timeout').includes(pooledSocket.destroy),
+          'axios must not leave a socket.destroy timeout listener on a pooled socket'
+        );
+
+        // A different client on the same agent reuses the pooled socket, and its response
+        // takes longer than the agent idle timeout that Node re-arms on the socket.
+        const second = await new Promise((resolve, reject) => {
+          const req = http.get(`${baseURL}/?delay=300`, { agent }, (res) => {
+            let body = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk) => (body += chunk));
+            res.on('end', () => resolve({ body, reusedSocket: req.reusedSocket }));
+          });
+          req.on('error', reject);
+        });
+
+        assert.strictEqual(second.reusedSocket, true);
+        assert.strictEqual(second.body, 'ok');
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should still clear a previous axios timeout from a reused keep-alive socket when no timeout is set (regression #6113)', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          const delay = Number(new URL(req.url, 'http://localhost').searchParams.get('delay')) || 0;
+          setTimeout(() => res.end('ok'), delay);
+        },
+        { keepAlive: 10000 }
+      );
+
+      // The agent idle timeout stays armed on the socket while a request runs unless axios resets it.
+      const agent = new http.Agent({ keepAlive: true, maxSockets: 1, timeout: 100 });
+
+      try {
+        const baseURL = `http://localhost:${server.address().port}`;
+
+        for (const maxRedirects of [undefined, 0]) {
+          const first = await axios.get(`${baseURL}/?delay=0`, {
+            httpAgent: agent,
+            timeout: 1000,
+            maxRedirects,
+          });
+          assert.strictEqual(first.data, 'ok');
+
+          // The second request reuses the socket, sets no timeout and answers after the
+          // agent idle timeout, which would fire the destroy listener left by the first request.
+          const second = await axios.get(`${baseURL}/?delay=300`, {
+            httpAgent: agent,
+            maxRedirects,
+          });
+          assert.strictEqual(second.data, 'ok');
+          assert.strictEqual(second.request.reusedSocket, true);
+        }
+      } finally {
+        agent.destroy();
+        await stopHTTPServer(server);
+      }
+    });
   });
 
   describe('redirect listener accumulation', () => {

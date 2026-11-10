@@ -19,6 +19,7 @@ Below is a list of potential axios identified error
 | ERR_BAD_OPTION            | Invalid option provided in axios configuration.                                               |
 | ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin. |
 | ETIMEDOUT                 | Request timed out due to exceeding the default axios timelimit. `transitional.clarifyTimeoutError` must be set to `true`, otherwise a generic `ECONNABORTED` error will be thrown instead |
+| ECONNREFUSED              | The server refused the connection. Set by the Node.js `http` adapter, with the original system error on `error.cause`; the `xhr` and `fetch` adapters report `ERR_NETWORK` instead. |
 | ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request is redirected too many times; exceeds max redirects specified in axios configuration. |
 | ERR_DEPRECATED            | Deprecated feature or method used in axios.                                                   |
@@ -27,7 +28,7 @@ Below is a list of potential axios identified error
 | ERR_CANCELED              | Feature or method is canceled explicitly by the user using an AbortSignal (or a CancelToken). |
 | ERR_NOT_SUPPORT           | Feature or method not supported in the current axios environment.                             |
 | ERR_INVALID_URL           | Invalid URL provided for axios request.                                                       |
-| ERR_FORM_DATA_DEPTH_EXCEEDED | An object exceeds the configured `maxDepth` while serializing `params` or form data. Default limit is 100 levels. See [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) and [`formSerializer`](/pages/advanced/request-config#formserializer). |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | An object exceeds the configured `maxDepth` while serializing `params` or form data. Default limit is 100 levels. Parsing FormData into JSON, by `axios.formToJSON()` or when a spec-compliant `FormData` (one with an `entries()` method) or HTML form is sent with `Content-Type: application/json`, has a fixed limit of 100 levels that `maxDepth` does not change. See [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) and [`formSerializer`](/pages/advanced/request-config#formserializer). |
 
 ## Handling errors
 
@@ -84,7 +85,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called. Objects other than plain objects and `AxiosHeaders` that have a `toJSON()` method, such as `URL` objects, are serialized as-is and not scanned, and credentials inside URL strings are not matched. List the parent key, such as `auth` or `proxy`, to mask the whole value.
 
 ```js
 axios.get("/user/12345", {

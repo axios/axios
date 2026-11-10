@@ -59,7 +59,7 @@ await axios.postForm("https://httpbin.org/post", {
 });
 ```
 
-Consultez [Capture de progression](/pages/advanced/progress-capturing) pour la liste complète des champs disponibles sur l'événement de progression.
+Consultez [Capture de progression](/fr/pages/advanced/progress-capturing) pour la liste complète des champs disponibles sur l'événement de progression.
 
 ## Fichiers dans Node.js
 

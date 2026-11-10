@@ -74,15 +74,9 @@ describe('static api', () => {
     // it must keep supporting a missing url.
     assert.strictEqual(axios.getUri({ params: { foo: 'bar' } }), '?foo=bar');
     assert.strictEqual(axios.getUri({ url: null, params: { foo: 'bar' } }), '?foo=bar');
-    assert.strictEqual(
-      axios.getUri({ url: undefined, params: { foo: 'bar' } }),
-      '?foo=bar'
-    );
+    assert.strictEqual(axios.getUri({ url: undefined, params: { foo: 'bar' } }), '?foo=bar');
     assert.strictEqual(axios.getUri({ url: '', params: { foo: 'bar' } }), '?foo=bar');
-    assert.strictEqual(
-      axios.getUri({ url: '/foo', params: { foo: 'bar' } }),
-      '/foo?foo=bar'
-    );
+    assert.strictEqual(axios.getUri({ url: '/foo', params: { foo: 'bar' } }), '/foo?foo=bar');
   });
 
   it('should ignore inherited data for bodyless method helpers', async () => {

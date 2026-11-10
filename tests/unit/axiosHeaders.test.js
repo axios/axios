@@ -804,6 +804,7 @@ describe('AxiosHeaders', () => {
       assert.strictEqual(headers.getAcceptEncoding(), 'gzip, br');
       assert.strictEqual(headers.hasAcceptEncoding(), true);
       assert.deepStrictEqual(Object.keys(headers.getAcceptEncoding(true)), ['gzip', 'br']);
+      assert.strictEqual(headers.getAcceptEncoding(/br/)[0], 'br');
 
       assert.strictEqual(headers.setAcceptEncoding('deflate'), headers);
       assert.strictEqual(headers.get('accept-encoding'), 'deflate');

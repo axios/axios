@@ -86,8 +86,8 @@ export class AxiosHeaders {
   hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
 
   setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentEncoding(parser?: RegExp): RegExpExecArray | null;
-  getContentEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getContentEncoding(parser: RegExp): RegExpExecArray | null;
+  getContentEncoding(matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAcceptEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;

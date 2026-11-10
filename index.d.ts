@@ -86,11 +86,13 @@ export class AxiosHeaders {
   hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
 
   setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getContentEncoding(parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
   getContentEncoding(parser: RegExp): RegExpExecArray | null;
   getContentEncoding(matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAcceptEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getAcceptEncoding(parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
   getAcceptEncoding(parser: RegExp): RegExpExecArray | null;
   getAcceptEncoding(matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
   hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;

@@ -12,7 +12,7 @@ axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 Mo
 axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ```
 
-Consultez le [guide de sécurité](/pages/misc/security) pour plus de détails.
+Consultez le [guide de sécurité](/fr/pages/misc/security) pour plus de détails.
 :::
 
 ### `url`
@@ -39,11 +39,11 @@ La même règle d'URL bien formée s'applique à `baseURL` : les valeurs `http:`
 
 ### `transformRequest`
 
-La fonction `transformRequest` vous permet de modifier les données de la requête avant leur envoi au serveur. Cette fonction est appelée avec les données de la requête comme seul argument. Elle ne s'applique que pour les méthodes de requête `PUT`, `POST`, `PATCH` et `DELETE`. La dernière fonction du tableau doit retourner une chaîne ou une instance de Buffer, ArrayBuffer, FormData ou Stream.
+La fonction `transformRequest` vous permet de modifier les données de la requête avant leur envoi au serveur. Chaque fonction est appelée avec les données de la requête et les en-têtes de la requête (une instance d'`AxiosHeaders`). Elle s'exécute pour chaque requête, quelle que soit la méthode. La dernière fonction du tableau doit retourner une chaîne ou une instance de Buffer, ArrayBuffer, FormData, Stream, Blob ou File.
 
 ### `transformResponse`
 
-La fonction `transformResponse` vous permet de modifier les données de la réponse avant qu'elles ne soient transmises aux fonctions `then` ou `catch`. Cette fonction est appelée avec les données de la réponse comme seul argument.
+La fonction `transformResponse` vous permet de modifier les données de la réponse avant qu'elles ne soient transmises aux fonctions `then` ou `catch`. Chaque fonction est appelée avec les données de la réponse, les en-têtes de la réponse (une instance d'`AxiosHeaders`) et le code de statut HTTP.
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-Les `headers` sont les en-têtes HTTP à envoyer avec la requête. L'en-tête `Content-Type` est défini à `application/json` par défaut.
+Les `headers` sont les en-têtes HTTP à envoyer avec la requête. Il n'y a pas de `Content-Type` fixe par défaut. Pour les types de données pris en charge par la transformation de requête par défaut, axios le déduit des `data` de la requête : par exemple, un objet simple est envoyé en `application/json` et `URLSearchParams` en `application/x-www-form-urlencoded;charset=utf-8`. Pour les requêtes `post`, `put` et `patch` qui n'ont toujours pas de `Content-Type` après les transformations de la requête, comme un corps de type chaîne simple, axios se rabat sur `application/x-www-form-urlencoded`.
 
 ### `params`
 
@@ -152,7 +152,7 @@ Contrôle la manière dont axios copie les en-têtes retournés par `FormData#ge
 
 ### Options personnalisées avec des clés symboles
 
-La fusion des configurations préserve les propriétés symboles propres et énumérables. Les applications TypeScript peuvent augmenter `AxiosRequestConfig` avec une clé symbole précise, puis lire cette option depuis `InternalAxiosRequestConfig` dans un intercepteur de requête ou un adaptateur. Les propriétés symboles héritées ou non énumérables ne sont pas copiées. Consultez le [guide TypeScript](/pages/advanced/type-script#configuration-de-requete-personnalisee-avec-des-cles-symboles) pour un exemple.
+La fusion des configurations préserve les propriétés symboles propres et énumérables. Les applications TypeScript peuvent augmenter `AxiosRequestConfig` avec une clé symbole précise, puis lire cette option depuis `InternalAxiosRequestConfig` dans un intercepteur de requête ou un adaptateur. Les propriétés symboles héritées ou non énumérables ne sont pas copiées. Consultez le [guide TypeScript](/fr/pages/advanced/type-script#configuration-de-requete-personnalisee-avec-des-cles-symboles) pour un exemple.
 
 ### `timeout`
 
@@ -164,7 +164,7 @@ La propriété `withCredentials` indique si les requêtes Cross-site Access-Cont
 
 ### `adapter`
 
-`adapter` permet une gestion personnalisée des requêtes, ce qui facilite les tests. Retournez une promise et fournissez une réponse valide ; consultez [les adaptateurs](/pages/advanced/adapters) pour plus d'informations. Nous fournissons également un certain nombre d'adaptateurs intégrés. L'adaptateur par défaut est `http` pour Node et `xhr` pour les navigateurs. La liste complète des adaptateurs intégrés est la suivante :
+`adapter` permet une gestion personnalisée des requêtes, ce qui facilite les tests. Retournez une promise et fournissez une réponse valide ; consultez [les adaptateurs](/fr/pages/advanced/adapters) pour plus d'informations. Nous fournissons également un certain nombre d'adaptateurs intégrés. L'adaptateur par défaut est `http` pour Node et `xhr` pour les navigateurs. La liste complète des adaptateurs intégrés est la suivante :
 
 - fetch
 - http
@@ -265,7 +265,7 @@ La fonction `onDownloadProgress` vous permet d'écouter la progression d'un tél
 
 ### `maxContentLength` <Badge type="warning" text="HTTP Node.js/fetch" />
 
-La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée. Le dépassement de la limite entraîne un rejet avec `ERR_BAD_RESPONSE` ; consultez [Limites de taille de réponse de l'adaptateur fetch](/fr/pages/advanced/fetch-adapter#limites-de-taille-de-reponse).
+La propriété `maxContentLength` définit la taille maximale de la réponse en octets. L'adaptateur HTTP Node.js l'applique aux réponses mises en mémoire tampon et aux réponses streamées. L'adaptateur fetch l'applique lorsque la longueur de la réponse est déclarée, lorsque le stream de réponse peut être suivi ou lorsque la taille de la réponse peut être déterminée. Le dépassement de la limite entraîne un rejet avec `ERR_BAD_RESPONSE` ; consultez [Limites de taille de réponse de l'adaptateur fetch](/fr/pages/advanced/fetch-adapter#limites-de-taille-de-reponse). L'adaptateur XHR ne l'applique pas.
 
 > ⚠️ **Sécurité :** la valeur par défaut est `-1` (illimitée). Des réponses non bornées combinées à la décompression gzip/deflate/brotli/zstd rendent possible un déni de service par bombe de décompression.
 > Définissez une limite explicite lorsque vous consommez des serveurs auxquels vous ne faites pas pleinement confiance.
@@ -277,6 +277,8 @@ La propriété `maxBodyLength` définit la taille maximale du corps de requête 
 ### `redact`
 
 La propriété `redact` est un tableau optionnel de noms de clés de configuration à masquer lorsqu'une `AxiosError` est sérialisée avec `toJSON()`. La correspondance est insensible à la casse et récursive sur l'ensemble de la configuration de requête sérialisée. Les valeurs correspondantes sont remplacées par `[REDACTED ****]`.
+
+La correspondance parcourt les objets simples (même ceux qui définissent `toJSON()`), les tableaux, les instances de classe et `AxiosHeaders`, qui est d'abord converti en objet simple. Tout autre objet doté d'une méthode `toJSON()`, comme un objet `URL` ou une instance de classe qui définit `toJSON()`, est sérialisé tel quel et son contenu n'est pas analysé. De plus, `redact` ne compare que les noms de clés : les identifiants contenus dans une chaîne d'URL, comme `url: 'http://user:pass@example.com'`, ne sont donc pas masqués. Pour masquer une valeur entière, indiquez sa clé parente, par exemple `redact: ['auth', 'proxy']`.
 
 `redact` n'affecte que la sérialisation des erreurs. Elle ne modifie ni les données de la requête, ni les en-têtes, ni l'objet de configuration original.
 
@@ -436,7 +438,7 @@ await axios.get('https://internal-api.example.com/data', {
 
 ### `cancelToken`
 
-La propriété `cancelToken` vous permet de créer un token d'annulation pouvant être utilisé pour annuler la requête. Pour plus d'informations, consultez la documentation sur l'[annulation](/pages/advanced/cancellation).
+La propriété `cancelToken` vous permet de créer un token d'annulation pouvant être utilisé pour annuler la requête. Pour plus d'informations, consultez la documentation sur l'[annulation](/fr/pages/advanced/cancellation).
 
 ### `signal`
 
@@ -491,11 +493,11 @@ L'option `formSerializer` vous permet de configurer comment les objets simples s
 - `maxDepth` _(par défaut : `100`)_ — profondeur maximale d'imbrication avant de lever une `AxiosError` avec le code `ERR_FORM_DATA_DEPTH_EXCEEDED`. Définir à `Infinity` pour désactiver.
 - `Blob` — constructeur Blob utilisé lors de la conversion de valeurs de type ArrayBuffer pour un `FormData` conforme à la spécification.
 
-Consultez la page [multipart/form-data](/pages/advanced/multipart-form-data-format) pour tous les détails, et l'exemple de configuration complète en bas de cette page.
+Consultez la page [multipart/form-data](/fr/pages/advanced/multipart-form-data-format) pour tous les détails, et l'exemple de configuration complète en bas de cette page.
 
 ### `maxRate` <Badge type="warning" text="Node.js uniquement" />
 
-La propriété `maxRate` définit la **bande passante** maximale (en octets par seconde) pour l'envoi et/ou le téléchargement. Elle accepte soit un nombre unique (appliqué dans les deux sens) soit un tableau de deux éléments `[uploadRate, downloadRate]` où chaque élément est une limite en octets par seconde. Par exemple, `100 * 1024` signifie 100 Ko/s. Consultez [Limitation de débit](/pages/advanced/rate-limiting) pour des exemples.
+La propriété `maxRate` définit la **bande passante** maximale (en octets par seconde) pour l'envoi et/ou le téléchargement. Elle accepte soit un nombre unique (appliqué dans les deux sens) soit un tableau de deux éléments `[uploadRate, downloadRate]` où chaque élément est une limite en octets par seconde. Par exemple, `100 * 1024` signifie 100 Ko/s. Consultez [Limitation de débit](/fr/pages/advanced/rate-limiting) pour des exemples.
 
 ## Exemple de configuration complète
 

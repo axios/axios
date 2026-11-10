@@ -139,4 +139,62 @@ describe('estimateDataURLDecodedBytes', () => {
 
     assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.byteLength(body, 'base64'));
   });
+
+  it('should bound Buffer allocation for malformed non-ASCII escapes', () => {
+    const body = 'é%';
+    const url = 'data:text/plain,' + body;
+
+    // decodeURIComponent throws on the trailing '%', so fromDataURI falls back
+    // to Buffer.from(body, 'utf8'), whose allocation is the raw UTF-8 byte
+    // length (3), not the character count (2).
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.from(body, 'utf8').length);
+    assert.ok(estimateDataURLBufferAllocation(url) >= body.length);
+  });
+
+  it('should bound Buffer allocation for a stray escape after valid escapes', () => {
+    const body = '%41'.repeat(4096) + '%';
+    const url = 'data:text/plain,' + body;
+
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.from(body, 'utf8').length);
+  });
+
+  it('should bound Buffer allocation for escapes forming invalid UTF-8', () => {
+    const body = '%FF'.repeat(4096);
+    const url = 'data:text/plain,' + body;
+
+    // Each %FF is syntactically valid but 0xFF is never valid UTF-8, so
+    // decodeURIComponent throws and the fallback allocates the raw body
+    // rather than the percent-decoded size.
+    assert.strictEqual(estimateDataURLBufferAllocation(url), Buffer.from(body, 'utf8').length);
+    assert.ok(estimateDataURLBufferAllocation(url) > body.length / 3);
+  });
+
+  it('should bound Buffer allocation for overlong and surrogate escapes', () => {
+    for (const body of [
+      '%C0%80',
+      '%C1%BF',
+      '%E0%80%80',
+      '%ED%A0%80',
+      '%F4%90%80%80',
+      '%C3',
+      '%C3%28',
+    ]) {
+      const url = 'data:text/plain,' + body;
+
+      assert.strictEqual(
+        estimateDataURLBufferAllocation(url),
+        Buffer.from(body, 'utf8').length,
+        `expected raw allocation for ${body}`
+      );
+    }
+  });
+
+  it('should keep the decoded allocation for valid UTF-8 escapes', () => {
+    const body = '%41'.repeat(4096);
+    const url = 'data:text/plain,' + body;
+
+    // All escapes are valid UTF-8, decodeURIComponent succeeds, and the
+    // percent-decoded estimate applies (no overestimation).
+    assert.strictEqual(estimateDataURLBufferAllocation(url), 4096);
+  });
 });

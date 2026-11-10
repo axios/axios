@@ -115,6 +115,23 @@ describe('request url validation (vitest browser)', () => {
       }
     );
 
+    it.each([null, undefined])(
+      'rejects a %s url when the fetch adapter is passed as a function',
+      async (url) => {
+        const fetch = vi.spyOn(window, 'fetch');
+
+        try {
+          await expectGuardRejection(
+            axios.get(url, { adapter: axios.getAdapter('fetch'), params: PARAMS })
+          );
+
+          expect(fetch).not.toHaveBeenCalled();
+        } finally {
+          fetch.mockRestore();
+        }
+      }
+    );
+
     it('still sends an empty-string url as a relative url', async () => {
       const fetch = vi.fn(async () => new Response('ok'));
 

@@ -5,6 +5,7 @@ import dispatchRequest from '../../../lib/core/dispatchRequest.js';
 import AxiosError from '../../../lib/core/AxiosError.js';
 import defaults from '../../../lib/defaults/index.js';
 import adapters from '../../../lib/adapters/adapters.js';
+import fetchAdapter from '../../../lib/adapters/fetch.js';
 import resolveConfig from '../../../lib/helpers/resolveConfig.js';
 
 class ReactNativeFormData {
@@ -122,6 +123,34 @@ describe('core::dispatchRequest', () => {
                 params: PARAMS,
                 adapter: 'fetch',
                 env: useCustomFetch ? { fetch: customFetch } : undefined,
+              })
+            )
+          )
+        );
+        assert.strictEqual(customFetch.mock.calls.length, 0, 'fetch must not be called');
+      });
+
+      // A fetch adapter passed as a function can be cached for a different
+      // environment from the request's: a real request inherits `env.Blob`
+      // from the defaults, so `fetch.get(config)` returns another instance.
+      it.each([
+        ["axios.getAdapter('fetch')", () => axios.getAdapter('fetch')],
+        ['the default export of the fetch adapter module', () => fetchAdapter],
+        [
+          "axios.getAdapter('fetch') for a custom env.fetch",
+          (customFetch) => axios.getAdapter('fetch', { env: { fetch: customFetch } }),
+        ],
+      ])('rejects when the fetch adapter is passed as %s', async (_, resolve) => {
+        const customFetch = vi.fn(() => Promise.resolve(new Response('{}')));
+
+        assertGuardRejection(
+          await rejection(() =>
+            dispatchRequest(
+              baseConfig({
+                url,
+                params: PARAMS,
+                env: defaults.env,
+                adapter: resolve(customFetch),
               })
             )
           )

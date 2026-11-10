@@ -833,6 +833,60 @@ describe('AxiosHeaders', () => {
   });
 
   describe('normalize()', () => {
+    it('should preserve the last value when formatting collides with a later key', () => {
+      const headers = new AxiosHeaders({ foo: 'first', 'x-other': 'other' });
+
+      headers.Foo = 'last';
+
+      assert.strictEqual(headers.normalize(true), headers);
+      assert.deepStrictEqual({ ...headers.toJSON() }, { Foo: 'last', 'X-Other': 'other' });
+      assert.deepStrictEqual(
+        { ...headers.normalize(true).toJSON() },
+        { Foo: 'last', 'X-Other': 'other' }
+      );
+    });
+
+    it('should preserve all original values while formatting several duplicates', () => {
+      const headers = new AxiosHeaders({ foo: 'first' });
+
+      headers.Foo = 'second';
+      headers.FOO = ['last', 3];
+
+      assert.deepStrictEqual({ ...headers.normalize(true).toJSON() }, { Foo: ['last', '3'] });
+    });
+
+    for (const format of [false, true]) {
+      for (const names of [
+        [' foo ', 'foo'],
+        ['foo', ' FOO '],
+      ]) {
+        it(`should combine padded duplicate names ${JSON.stringify(names)} with format=${format}`, () => {
+          const headers = new AxiosHeaders();
+
+          headers[names[0]] = 'first';
+          headers[names[1]] = 'last';
+
+          assert.deepStrictEqual(
+            { ...headers.normalize(format).toJSON() },
+            { [format ? 'Foo' : 'foo']: 'last' }
+          );
+        });
+      }
+    }
+
+    for (const value of [false, null, undefined]) {
+      it(`should preserve a disabled duplicate with value ${value} when formatting`, () => {
+        const headers = new AxiosHeaders({ foo: 'first' });
+
+        headers.Foo = value;
+        headers.normalize(true);
+
+        assert.deepStrictEqual(Object.keys(headers), ['Foo']);
+        assert.strictEqual(headers.get('foo'), value);
+        assert.deepStrictEqual({ ...headers.toJSON() }, {});
+      });
+    }
+
     it('should support auto-formatting', () => {
       const headers = new AxiosHeaders({
         fOo: 1,

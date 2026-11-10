@@ -119,6 +119,39 @@ describe('formDataToStream', () => {
     expect(body).toContain('filename="evil%0D%0AX-Bad: 1%22.jpg"');
   });
 
+  it('should emit filename="" for File-like parts with an empty name', async () => {
+    const fd = new SpecFormData();
+    fd.append(
+      'upload',
+      makeBlobLike({
+        type: 'application/octet-stream',
+        name: '',
+        payload: Buffer.from([0xff, 0x00]),
+      })
+    );
+
+    const body = await collect(formDataToStream(fd, () => {}));
+
+    expect(body).toContain('Content-Disposition: form-data; name="upload"; filename=""');
+    expect(body).toContain('Content-Type: application/octet-stream\r\n');
+  });
+
+  it('should default non-string blob names to filename="blob"', async () => {
+    const fd = new SpecFormData();
+    fd.append(
+      'upload',
+      makeBlobLike({
+        type: 'text/plain',
+        name: undefined,
+        payload: Buffer.from('x'),
+      })
+    );
+
+    const body = await collect(formDataToStream(fd, () => {}));
+
+    expect(body).toContain('filename="blob"');
+  });
+
   it('should report stable contentLength that matches emitted bytes', async () => {
     const fd = new SpecFormData();
     fd.append(

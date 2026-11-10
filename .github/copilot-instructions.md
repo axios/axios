@@ -51,7 +51,7 @@ The rules below are a Copilot-facing subset of the load-bearing safety guarantee
 
 - Do not mutate config objects in place; return new ones from merges/transforms.
 - Do not assume browser- or Node-only globals exist; capability-check first.
-- Validate options through the existing `validator` helper rather than inventing ad-hoc validation paths.
+- Validate the type and shape of config options in `Axios#request` through the existing `validator` helper rather than adding separate type or shape checks. Checks that need the final config after request interceptors, several options together, or the selected adapter belong where that information exists (for example `buildFullPath` or `dispatchRequest`) and throw `AxiosError` with a specific code.
 
 ## Pre-release tracking
 

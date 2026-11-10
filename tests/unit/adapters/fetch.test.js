@@ -52,6 +52,103 @@ const createBrokenDOMExceptionLikeError = () =>
   );
 
 describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => {
+  describe('sensitiveHeaders', () => {
+    it('rejects before sending a secret to a cross-origin redirect', async () => {
+      const received = [];
+      const target = await startHTTPServer((req, res) => {
+        received.push(req.headers['x-api-key']);
+        res.end('ok');
+      });
+      let redirect;
+      let requests = 0;
+
+      try {
+        redirect = await startHTTPServer((req, res) => {
+          requests++;
+          res.writeHead(302, {
+            Location: `http://localhost:${target.address().port}/target`,
+          });
+          res.end();
+        });
+
+        await assert.rejects(
+          () =>
+            fetchAxios.get(`http://localhost:${redirect.address().port}/redirect`, {
+              headers: { 'X-API-Key': 'secret' },
+              sensitiveHeaders: ['X-API-Key'],
+            }),
+          (error) => {
+            assert.ok(error instanceof AxiosError);
+            assert.strictEqual(error.code, AxiosError.ERR_NOT_SUPPORT);
+            assert.match(error.message, /sensitiveHeaders.*fetch adapter.*http adapter/);
+            assert.deepStrictEqual(error.config.sensitiveHeaders, ['X-API-Key']);
+            return true;
+          }
+        );
+
+        assert.strictEqual(requests, 0);
+        assert.deepStrictEqual(received, []);
+      } finally {
+        await stopHTTPServer(redirect);
+        await stopHTTPServer(target);
+      }
+    });
+
+    for (const requestSupported of [true, false]) {
+      it(`rejects instance defaults with a custom fetch ${requestSupported ? 'with' : 'without'} Request support`, async () => {
+        const customFetch = vi.fn(async () => new Response('ok'));
+        const instance = axios.create({
+          adapter: 'fetch',
+          sensitiveHeaders: ['X-API-Key'],
+          env: {
+            fetch: customFetch,
+            Request: requestSupported ? Request : null,
+            Response: requestSupported ? Response : null,
+          },
+        });
+
+        await assert.rejects(() => instance.get(LOCAL_SERVER_URL), {
+          code: AxiosError.ERR_NOT_SUPPORT,
+        });
+        assert.strictEqual(customFetch.mock.calls.length, 0);
+      });
+    }
+
+    for (const [label, sensitiveHeaders] of [
+      ['omitted', undefined],
+      ['null', null],
+      ['empty', []],
+    ]) {
+      it(`preserves requests with ${label} sensitiveHeaders`, async () => {
+        const customFetch = vi.fn(async () => new Response('ok'));
+        const { data } = await fetchAxios.get('/', {
+          headers: { 'X-API-Key': 'secret' },
+          sensitiveHeaders,
+          env: { fetch: customFetch },
+        });
+
+        assert.strictEqual(data, 'ok');
+        assert.strictEqual(customFetch.mock.calls.length, 1);
+        assert.strictEqual(customFetch.mock.calls[0][0].headers.get('X-API-Key'), 'secret');
+      });
+    }
+
+    it('ignores inherited sensitiveHeaders when the adapter is called directly', async () => {
+      const config = Object.assign(Object.create({ sensitiveHeaders: ['X-API-Key'] }), {
+        url: LOCAL_SERVER_URL,
+        method: 'get',
+        headers: {},
+      });
+      const customFetch = vi.fn(async () => new Response('ok'));
+      const adapter = getFetch({ env: { fetch: customFetch } });
+
+      const { data } = await adapter(config);
+
+      assert.strictEqual(data, 'ok');
+      assert.strictEqual(customFetch.mock.calls.length, 1);
+    });
+  });
+
   it('rejects malformed HTTP URLs before fetch normalization and preserves config', async () => {
     for (const url of ['\u0000https:example.com/users', 'h\nttp:example.com/users']) {
       await assert.rejects(

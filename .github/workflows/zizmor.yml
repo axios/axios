@@ -10,7 +10,7 @@ permissions: {}
 
 jobs:
   zizmor:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-axios
     permissions:
       security-events: write
     steps:
@@ -20,5 +20,5 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor
-        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
 

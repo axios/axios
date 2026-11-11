@@ -29,6 +29,21 @@ describe('helpers::parseHeaders', () => {
     expect(parsedMulti['set-cookie']).toEqual(['key=val;', 'key2=val2;']);
   });
 
+  it.each([
+    ['__proto__: first', 'first'],
+    [' __PrOtO__ : first\r\n__proto__: second', 'first, second'],
+    ['__proto__:\n__proto__: second', ', second'],
+  ])('should preserve prototype-named headers in %j', (raw, expected) => {
+    const parsed = parseHeaders(raw + '\nConstructor: ctor\nPrototype: proto\nX-Other: other');
+
+    expect(Object.getPrototypeOf(parsed)).toBe(null);
+    expect(Object.prototype.hasOwnProperty.call(parsed, '__proto__')).toBe(true);
+    expect(parsed.__proto__).toBe(expected);
+    expect(parsed.constructor).toBe('ctor');
+    expect(parsed.prototype).toBe('proto');
+    expect(parsed['x-other']).toBe('other');
+  });
+
   it('should handle duplicates', () => {
     const parsed = parseHeaders(
       'Age: age-a\n' +

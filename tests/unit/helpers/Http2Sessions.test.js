@@ -87,6 +87,65 @@ describe('helpers::Http2Sessions', () => {
     expect(connectSpy).toHaveBeenCalledTimes(2);
   });
 
+  it('drops a session from the pool when it receives a GOAWAY event', () => {
+    const first = pool.getSession('https://example.test');
+    first.emit('goaway');
+
+    const second = pool.getSession('https://example.test');
+
+    expect(second).not.toBe(first);
+    expect(connectSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not start an idle timer when streams finish after GOAWAY', () => {
+    vi.useFakeTimers();
+    const session = pool.getSession('https://example.test');
+    const firstStream = session.request();
+    const secondStream = session.request();
+
+    // Real HTTP/2 sessions remain open until their existing streams drain.
+    session.close.mockImplementation(() => {
+      session.closed = true;
+    });
+    session.emit('goaway');
+
+    const replacement = pool.getSession('https://example.test');
+    expect(replacement).not.toBe(session);
+
+    firstStream.emit('close');
+    expect(vi.getTimerCount()).toBe(0);
+
+    secondStream.emit('close');
+    expect(vi.getTimerCount()).toBe(0);
+
+    session.emit('close');
+    expect(vi.getTimerCount()).toBe(0);
+    expect(session.close).toHaveBeenCalledTimes(1);
+    expect(pool.getSession('https://example.test')).toBe(replacement);
+  });
+
+  it('cancels an existing idle timer when GOAWAY arrives', () => {
+    vi.useFakeTimers();
+    const session = pool.getSession('https://example.test');
+    session.request().emit('close');
+    expect(vi.getTimerCount()).toBe(1);
+
+    session.emit('goaway');
+
+    expect(vi.getTimerCount()).toBe(0);
+    expect(pool.getSession('https://example.test')).not.toBe(session);
+  });
+
+  it('removes a session after GOAWAY when idle expiry is disabled', () => {
+    const options = { sessionTimeout: null };
+    const session = pool.getSession('https://example.test', options);
+
+    session.emit('goaway');
+
+    expect(pool.getSession('https://example.test', options)).not.toBe(session);
+    expect(connectSpy).toHaveBeenCalledTimes(2);
+  });
+
   it('handles a session error and removes the failed session', () => {
     const first = pool.getSession('https://example.test');
 

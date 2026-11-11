@@ -86,9 +86,16 @@ export class AxiosHeaders {
   hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
 
   setContentEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
-  getContentEncoding(parser?: RegExp): RegExpExecArray | null;
-  getContentEncoding(matcher?: AxiosHeaderMatcher): AxiosHeaderValue;
+  getContentEncoding(parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
+  getContentEncoding(parser: RegExp): RegExpExecArray | null;
+  getContentEncoding(matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
+
+  setAcceptEncoding(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+  getAcceptEncoding(parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
+  getAcceptEncoding(parser: RegExp): RegExpExecArray | null;
+  getAcceptEncoding(matcher?: true | AxiosHeaderParser): AxiosHeaderValue;
+  hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAuthorization(value: AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
   getAuthorization(parser?: RegExp): RegExpExecArray | null;
@@ -304,6 +311,8 @@ export interface TransitionalOptions {
   legacyInterceptorReqResOrdering?: boolean;
   advertiseZstdAcceptEncoding?: boolean;
   validateStatusUndefinedResolves?: boolean;
+  /** Opt in to UTF-8 Basic auth usernames in XHR/Fetch config resolution. Defaults to false. */
+  encodeBasicAuthUsername?: boolean;
 }
 
 export interface GenericAbortSignal {
@@ -524,6 +533,12 @@ export interface AxiosResponse<T = any, D = any, H = {}, P = any> {
   data: T;
   status: number;
   statusText: string;
+  /**
+   * Whole milliseconds from adapter invocation to settlement, clamped at zero. Measured with
+   * `performance.now()` when available, otherwise `Date.now()`.
+   * Excludes interceptors and request/response transforms. Stream consumption is not included.
+   */
+  duration?: number;
   headers: (H & RawAxiosResponseHeaders) | AxiosResponseHeaders;
   config: InternalAxiosRequestConfig<D, P>;
   request?: any;
@@ -744,8 +759,15 @@ export interface GenericHTMLFormElement {
   submit(): void;
 }
 
+/**
+ * Resolves an adapter by name, adapter function, or priority list.
+ * @param config Request config forwarded to adapter getters. The built-in `fetch`
+ * adapter reads `env.fetch`, `env.Request`, and `env.Response` from it and falls
+ * back to the globals when it is omitted. Other fields are not applied here.
+ */
 export function getAdapter(
-  adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined
+  adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined,
+  config?: AxiosRequestConfig
 ): AxiosAdapter;
 
 export function toFormData(

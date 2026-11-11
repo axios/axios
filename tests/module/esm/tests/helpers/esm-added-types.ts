@@ -16,6 +16,20 @@ import axios, {
   type RawAxiosRequestConfig,
 } from 'axios';
 
+const utf8AuthConfig: AxiosRequestConfig = {
+  auth: { username: 'π', password: 'x' },
+  transitional: { encodeBasicAuthUsername: true },
+};
+const legacyAuthConfig: AxiosRequestConfig = {
+  transitional: { encodeBasicAuthUsername: false },
+};
+const invalidAuthConfig: AxiosRequestConfig = {
+  transitional: {
+    // @ts-expect-error -- the encoding opt-in only accepts booleans
+    encodeBasicAuthUsername: 'true',
+  },
+};
+
 const headers = new AxiosHeaders();
 const iterableHeaders: Iterable<[string, AxiosHeaderValue]> = [['x-test', 'ok']];
 headers.set(iterableHeaders);
@@ -28,6 +42,27 @@ const parsedHeaderParameters: AxiosHeaderParameters = headers.get(
   'content-type',
   AxiosHeaders.parseParameters
 );
+
+const encodingHeaders = new AxiosHeaders();
+encodingHeaders.setContentEncoding('gzip');
+encodingHeaders.setAcceptEncoding('gzip, br');
+const contentEncodingValue: AxiosHeaderValue = encodingHeaders.getContentEncoding();
+const contentEncodingTokens: AxiosHeaderValue = encodingHeaders.getContentEncoding(true);
+const contentEncodingMatch: RegExpExecArray | null = encodingHeaders.getContentEncoding(/gzip/);
+const contentEncodingParameters: AxiosHeaderParameters = encodingHeaders.getContentEncoding(
+  AxiosHeaders.parseParameters
+);
+const acceptEncodingParameters: AxiosHeaderParameters = encodingHeaders.getAcceptEncoding(
+  AxiosHeaders.parseParameters
+);
+// @ts-expect-error -- getContentEncoding rejects string matchers, which throw at runtime
+encodingHeaders.getContentEncoding('gzip');
+const acceptEncodingValue: AxiosHeaderValue = encodingHeaders.getAcceptEncoding();
+const acceptEncodingTokens: AxiosHeaderValue = encodingHeaders.getAcceptEncoding(true);
+const acceptEncodingMatch: RegExpExecArray | null = encodingHeaders.getAcceptEncoding(/gzip/);
+const hasAcceptEncoding: boolean = encodingHeaders.hasAcceptEncoding('gzip');
+// @ts-expect-error -- getAcceptEncoding only accepts a RegExp, true, or a parser function
+encodingHeaders.getAcceptEncoding(1);
 
 const source = axios.CancelToken.source();
 source.token.subscribe((cancel) => {
@@ -95,6 +130,21 @@ const paramsResponse = {} as AxiosResponse<unknown, SearchBody, {}, SearchParams
 const paramsError = {} as AxiosError<unknown, SearchBody, SearchParams>;
 declare const paramsPromise: AxiosPromise<unknown, SearchBody, SearchParams>;
 
+const responseDuration: number | undefined = paramsResponse.duration;
+const errorResponseDuration: number | undefined = paramsError.response?.duration;
+paramsResponse.duration = 25;
+paramsResponse.duration = undefined;
+// @ts-expect-error -- response duration is numeric when present
+paramsResponse.duration = '25';
+// Custom adapters can still return a response without timing metadata.
+const untimedResponse: AxiosResponse = {
+  data: null,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: internalParamsConfig,
+};
+
 const internalQuery: string = internalParamsConfig.params!.query;
 const responseQuery: string = paramsResponse.config.params!.query;
 const errorQuery: string = paramsError.config!.params!.query;
@@ -113,6 +163,11 @@ paramsPromise.then((response) => {
 });
 
 axios.get('/search', paramsConfig).then((response) => {
+  const duration: number | undefined = response.duration;
+  // @ts-expect-error -- inferred response duration is not a string
+  const invalidDuration: string = response.duration;
+  void duration;
+  void invalidDuration;
   const aliasData: SearchBody | undefined = response.config.data;
   const aliasParams: SearchParams | undefined = response.config.params;
   // @ts-expect-error -- default alias responses preserve the request data type

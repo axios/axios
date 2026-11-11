@@ -237,4 +237,106 @@ describe('utils::isX', () => {
     expect(utils.isTypedArray(new Uint8Array([1, 2, 3]))).toEqual(true);
     expect(utils.isTypedArray([1, 2, 3])).toEqual(false);
   });
+
+  describe('isPlainObject prototype boundaries', () => {
+    const withPollutedObjectPrototype = (symbol, descriptor, fn) => {
+      const original = Object.getOwnPropertyDescriptor(Object.prototype, symbol);
+
+      try {
+        Object.defineProperty(Object.prototype, symbol, descriptor);
+        fn();
+      } finally {
+        if (original) {
+          Object.defineProperty(Object.prototype, symbol, original);
+        } else {
+          delete Object.prototype[symbol];
+        }
+      }
+    };
+
+    it('should treat Object.prototype itself as a plain object', () => {
+      expect(utils.isPlainObject(Object.prototype)).toEqual(true);
+    });
+
+    it('should keep Object.prototype a fail-closed boundary when it carries an own Symbol.iterator', () => {
+      withPollutedObjectPrototype(
+        Symbol.iterator,
+        { value: undefined, configurable: true, writable: true },
+        () => {
+          expect(utils.isPlainObject(Object.prototype)).toEqual(true);
+          expect(utils.isPlainObject({})).toEqual(true);
+          expect(utils.isPlainObject(Object.create(null))).toEqual(true);
+          expect(utils.isPlainObject({ [Symbol.iterator]: function* () {} })).toEqual(false);
+        }
+      );
+    });
+
+    it('should keep Object.prototype a fail-closed boundary when it carries an own Symbol.toStringTag', () => {
+      withPollutedObjectPrototype(
+        Symbol.toStringTag,
+        { value: 'Custom', configurable: true, writable: true },
+        () => {
+          expect(utils.isPlainObject(Object.prototype)).toEqual(true);
+          expect(utils.isPlainObject({})).toEqual(true);
+          expect(utils.isPlainObject(Object.create(null))).toEqual(true);
+          expect(utils.isPlainObject({ [Symbol.toStringTag]: 'Own' })).toEqual(false);
+        }
+      );
+    });
+
+    it('should not read a polluted Object.prototype iterator accessor', () => {
+      let accessed = false;
+
+      withPollutedObjectPrototype(
+        Symbol.iterator,
+        {
+          configurable: true,
+          get() {
+            accessed = true;
+            throw new Error('polluted iterator accessor');
+          },
+        },
+        () => {
+          expect(utils.isPlainObject({})).toEqual(true);
+          expect(utils.isPlainObject(Object.prototype)).toEqual(true);
+          expect(accessed).toEqual(false);
+        }
+      );
+    });
+
+    it('should reject own symbol members on null-prototype objects', () => {
+      const tagged = Object.create(null);
+      tagged[Symbol.toStringTag] = 'Tagged';
+      const iterable = Object.create(null);
+      iterable[Symbol.iterator] = function* () {};
+
+      expect(utils.isPlainObject(Object.create(null))).toEqual(true);
+      expect(utils.isPlainObject(tagged)).toEqual(false);
+      expect(utils.isPlainObject(iterable)).toEqual(false);
+    });
+
+    it('should ignore symbol members inherited from a terminal null-prototype parent', () => {
+      const parent = Object.create(null);
+      parent[Symbol.toStringTag] = 'Parent';
+      parent[Symbol.iterator] = function* () {};
+      const child = Object.create(parent);
+      const ownIterable = Object.create(parent);
+      ownIterable[Symbol.iterator] = function* () {};
+
+      expect(utils.isPlainObject(child)).toEqual(true);
+      expect(utils.isPlainObject(ownIterable)).toEqual(false);
+    });
+
+    it('should reject class instances, deeper prototype chains and built-ins', () => {
+      class Klass {}
+
+      expect(utils.isPlainObject(new Klass())).toEqual(false);
+      expect(utils.isPlainObject(Object.create(Object.create(null)))).toEqual(true);
+      expect(utils.isPlainObject(Object.create(Object.create({})))).toEqual(false);
+      expect(utils.isPlainObject([])).toEqual(false);
+      expect(utils.isPlainObject(new Map())).toEqual(false);
+      expect(utils.isPlainObject(Buffer.from('x'))).toEqual(false);
+      expect(utils.isPlainObject(Object.freeze({}))).toEqual(true);
+    });
+  });
 });

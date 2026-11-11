@@ -53,3 +53,28 @@ Capturing FormData upload progress is not currently supported in node.js environ
 ::: danger
 It is recommended to disable redirects by setting maxRedirects: 0 to upload the stream in the node.js environment, as the follow-redirects package will buffer the entire stream in RAM without following the "backpressure" algorithm
 :::
+
+## Reading response data incrementally
+
+In the browser, the XHR adapter (the default) passes the native progress event as `axiosProgressEvent.event`. You can use its `target`, the underlying `XMLHttpRequest`, to read the response text received so far:
+
+```js
+let received = 0;
+
+await axios.get('/api/stream', {
+  responseType: 'text',
+  onDownloadProgress: ({ event }) => {
+    const xhr = event.target;
+    const chunk = xhr.responseText.slice(received);
+    received = xhr.responseText.length;
+
+    if (chunk) {
+      console.log('new data:', chunk);
+    }
+  },
+});
+```
+
+Because progress callbacks are throttled, a delivery can run after the browser finished dispatching the original event. In that case `event.currentTarget` is `null` (standard DOM behavior), but `event.target` still references the request, so use `target` as shown above.
+
+When an XHR download completes successfully, axios delivers a final download progress event from the `loadend` handler with the complete transfer state, so the last chunk is not lost to throttling. Upload progress, failed XHR downloads, and aborted or errored transfers keep their previous behavior: only an already pending progress event is delivered.

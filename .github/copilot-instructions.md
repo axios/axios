@@ -10,6 +10,10 @@ The rules below are a Copilot-facing subset of the load-bearing safety guarantee
 - Do not add new runtime dependencies without discussion. `package-lock.json` is verified by `lockfile-lint` for npm HTTPS hosts and integrity hashes.
 - Package, lockfile, and GitHub Actions update PRs are maintainer/bot-only; close these PRs from outside collaborators. Keep the 7-day Dependabot delay unless a critical vulnerability requires a maintainer-led manual update.
 
+## Pull requests
+
+- Apply the existing `ai-assisted` repository label to pull requests created or updated with AI assistance, including AI-generated descriptions. Do not add a surfer emoji to PR titles or bodies. If you cannot apply labels, report that a maintainer needs to apply `ai-assisted`.
+
 ## Architecture in one screen
 
 - `lib/core/` — domain logic: `Axios`, `AxiosError`, `AxiosHeaders`, `InterceptorManager`, config merge, request dispatch.
@@ -47,9 +51,15 @@ The rules below are a Copilot-facing subset of the load-bearing safety guarantee
 
 - Do not mutate config objects in place; return new ones from merges/transforms.
 - Do not assume browser- or Node-only globals exist; capability-check first.
-- Validate options through the existing `validator` helper rather than inventing ad-hoc validation paths.
+- In `Axios#request`, validate the type and shape of config options through the existing `validator` helper rather than with ad-hoc checks. Checks that need the final config after request interceptors, an option that may be `undefined`, or the selected adapter belong on the request path, such as `dispatchRequest` or the adapter, not in shared helpers that `axios.getUri()` also uses, and throw `AxiosError` with a specific code.
 
 ## Pre-release tracking
 
-- Add user-visible unreleased changes to `PRE_RELEASE_CHANGELOG.md`, not `CHANGELOG.md`.
+- Every PR MUST add or update `PRE_RELEASE_CHANGELOG.md`, including documentation, tests, internal refactors, tooling, and CI changes, except for the narrow [automated release-preparation exception in `AGENTS.md`](../AGENTS.md#pre-release-notes). An unchanged public API is not an exemption. Use the Maintenance section for test-only changes, internal refactors, tooling, dependency updates, and CI changes without a user-visible behavior change. Explain the final change, rationale, and compatibility impact; PR descriptions do not replace the entry. `CHANGELOG.md` remains release-owned.
 - Track deferred README, docs site, examples, migration guide, and translated docs updates in `PRE_RELEASE_DOCS.md`; do not update release docs for unreleased runtime/API changes unless explicitly doing release preparation.
+
+## Before submitting a pull request
+
+- Complete the mandatory [PR submission requirements in `AGENTS.md`](../AGENTS.md#before-opening-or-updating-a-pull-request) and the PR template before requesting maintainer review: scope/base, prerelease entry, regression coverage, applicable local checks, compatibility, docs/types, security, and final diff review.
+- Report the commands actually run, results, and runtime versions. Explain genuinely inapplicable checks; keep required-but-blocked local validation in a draft PR. Do not claim that planned checks passed.
+- After opening or updating the PR, inspect GitHub Actions for the latest commit. Review/security bots do not replace CI; report pending or approval-required runs accurately and resolve relevant failures before reporting the PR ready to merge.

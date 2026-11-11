@@ -2,6 +2,34 @@
 
 This guide is intended to help you upgrade your project from one version of the framework to another. It is recommended to read the release notes for each major version you are upgrading from/to, as they may contain important information about breaking changes.
 
+## Upgrading to v1.21.0
+
+### Custom class instances as header defaults
+
+Under `headers.common` and method keys such as `headers.post`, axios now treats only plain objects, null-prototype objects, and `AxiosHeaders` instances as defaults buckets, so literal headers named after a method, such as `Link`, are preserved. If you assign an instance of your own class as a bucket, convert it to a plain object (`{ post: { ...customDefaults } }`) or to `new AxiosHeaders({ ...customDefaults })`. Otherwise its string representation is sent as a literal header on every request, including requests with other methods, which can expose contents included by a custom `toString()`. See [Method-specific header defaults](/pages/advanced/config-defaults#method-specific-header-defaults).
+
+## Upgrading to v1.20.0
+
+### Custom fetch receives a filtered second argument
+
+When a `Request` constructor is available, a custom `env.fetch` still receives `fetchOptions` as its second argument, but without `method`, `headers`, `body`, `signal`, `duplex`, and `credentials`. These values are represented by the resolved `Request` passed as the first argument, and omitting them prevents the second argument from overriding it. Custom fetch implementations that read those fields from the second argument must read them from the `Request` instead. See [Arguments passed to a custom fetch](/pages/advanced/fetch-adapter#arguments-passed-to-a-custom-fetch).
+
+### Fetch adapter and `maxRedirects: 0`
+
+The fetch adapter maps `maxRedirects: 0` to the platform's manual redirect mode instead of following redirects. In Node.js the `3xx` response and its `Location` header may be visible; browsers return an opaque redirect with status `0` and unreadable headers. Positive values still do not limit the redirect count in the fetch adapter. See [Fetch adapter redirects](/pages/advanced/fetch-adapter#redirects).
+
+### HTTP/2 and proxies
+
+Requests with `httpVersion: 2` and an explicit `proxy` object reject with `ERR_NOT_SUPPORT`. HTTP/2 requests ignore proxy environment variables and agent `proxyEnv` settings and connect directly, so do not use HTTP/2 where proxying is a mandatory egress policy. `proxy: false` continues to connect directly. See [HTTP2 proxies](/pages/advanced/http2#proxies).
+
+### Replacement configs from request interceptors
+
+When a request interceptor returns an object that is not a writable null-prototype object, such as an object literal, a `{ ...config }` copy, or a class instance, axios copies it into a filtered null-prototype snapshot before dispatch. Fields inherited from an application-defined prototype are copied as own fields, but the snapshot does not preserve the object's identity, prototype, `instanceof` checks, accessors, or property attributes. Fields inherited through a prototype whose own prototype is `null`, such as an `Object.create(null)` template, are ignored. Returning the original config, or another writable null-prototype object without unsafe keys, keeps its identity, and axios updates fields such as `headers` and `data` on that object during dispatch. See [Returning a different config object](/pages/advanced/interceptors#returning-a-different-config-object).
+
+### RFC 9110 status code names
+
+`HttpStatusCode.ContentTooLarge` (413) and `HttpStatusCode.UnprocessableContent` (422) are the preferred names. `PayloadTooLarge` and `UnprocessableEntity` remain available as deprecated aliases throughout v1.x, and numeric reverse lookups still return the legacy names.
+
 ## Upgrading to v1.19.0
 
 ### Malformed HTTP(S) URLs are rejected

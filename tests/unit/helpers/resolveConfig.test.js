@@ -82,6 +82,110 @@ describe('helpers::resolveConfig', () => {
     }
   });
 
+  it('should UTF-8 encode both basic auth fields when opted in', () => {
+    const config = resolveConfig({
+      url: '/foo',
+      auth: { username: 'naïve', password: 'naïve' },
+      transitional: { encodeBasicAuthUsername: true },
+    });
+
+    const decoded = Buffer.from(
+      config.headers.get('Authorization').replace(/^Basic /, ''),
+      'base64'
+    ).toString('utf8');
+    assert.strictEqual(decoded, 'naïve:naïve');
+  });
+
+  it('should accept a basic auth username outside Latin-1 when opted in', () => {
+    let config;
+    assert.doesNotThrow(() => {
+      config = resolveConfig({
+        url: '/foo',
+        auth: { username: 'π', password: 'x' },
+        transitional: { encodeBasicAuthUsername: true },
+      });
+    });
+
+    const decoded = Buffer.from(
+      config.headers.get('Authorization').replace(/^Basic /, ''),
+      'base64'
+    ).toString('utf8');
+    assert.strictEqual(decoded, 'π:x');
+  });
+
+  it.each([undefined, false])(
+    'should preserve Latin-1 username bytes with opt-in %s',
+    (enabled) => {
+      const config = resolveConfig({
+        url: '/foo',
+        auth: { username: 'naïve', password: 'x' },
+        transitional: { encodeBasicAuthUsername: enabled },
+      });
+
+      assert.strictEqual(config.headers.get('Authorization'), 'Basic bmHvdmU6eA==');
+    }
+  );
+
+  it('should preserve manually UTF-8 encoded usernames by default', () => {
+    const config = resolveConfig({
+      url: '/foo',
+      auth: { username: 'na\u00c3\u00afve', password: 'x' },
+    });
+
+    assert.strictEqual(config.headers.get('Authorization'), 'Basic bmHDr3ZlOng=');
+  });
+
+  it.each(['transitional', 'encodeBasicAuthUsername'])(
+    'should ignore an inherited %s opt-in',
+    (key) => {
+      Object.defineProperty(Object.prototype, key, {
+        value: key === 'transitional' ? { encodeBasicAuthUsername: true } : true,
+        configurable: true,
+        writable: true,
+      });
+
+      try {
+        const config = resolveConfig({
+          url: '/foo',
+          auth: { username: 'naïve', password: 'x' },
+          ...(key === 'encodeBasicAuthUsername' ? { transitional: {} } : {}),
+        });
+
+        assert.strictEqual(config.headers.get('Authorization'), 'Basic bmHvdmU6eA==');
+      } finally {
+        delete Object.prototype[key];
+      }
+    }
+  );
+
+  it.each([
+    [{ username: 'Aladdin', password: 'open sesame' }, 'Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='],
+    [{}, 'Basic Og=='],
+    [{ username: 'π' }, 'Basic z4A6'],
+    [{ password: 'π' }, 'Basic Os+A'],
+    [{ username: '😀', password: 'x' }, 'Basic 8J+YgDp4'],
+  ])('should encode valid credentials %j when opted in', (auth, expected) => {
+    const config = resolveConfig({
+      url: '/foo',
+      auth,
+      transitional: { encodeBasicAuthUsername: true },
+    });
+
+    assert.strictEqual(config.headers.get('Authorization'), expected);
+  });
+
+  it.each(['username', 'password'])('should reject a lone surrogate in %s when opted in', (key) => {
+    assert.throws(
+      () =>
+        resolveConfig({
+          url: '/foo',
+          auth: { username: 'user', password: 'x', [key]: '\uD800' },
+          transitional: { encodeBasicAuthUsername: true },
+        }),
+      (error) => error instanceof AxiosError && error.code === AxiosError.ERR_BAD_OPTION_VALUE
+    );
+  });
+
   it('should wrap invalid auth encoding as AxiosError', () => {
     assert.throws(
       () =>

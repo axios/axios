@@ -21,9 +21,8 @@
   },
   "devDependencies": {
     "chalk": "^5.3.0",
-    "dayjs": "^1.11.13",
     "patch-package": "^8.0.1",
-    "vue": "^3.5.32"
+    "vue": "^3.5.43"
   },
   "overrides": {
     "esbuild": "^0.25.12"

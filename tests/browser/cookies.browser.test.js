@@ -62,6 +62,25 @@ describe('helpers::cookies (vitest browser)', () => {
     }
   });
 
+  it('returns null when document.cookie is undefined', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, 'cookie');
+
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get() {},
+    });
+
+    try {
+      expect(cookies.read('foo')).toBeNull();
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(document, 'cookie', descriptor);
+      } else {
+        delete document.cookie;
+      }
+    }
+  });
+
   it('removes cookies', () => {
     cookies.write('foo', 'bar');
     cookies.remove('foo');

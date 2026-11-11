@@ -2,14 +2,14 @@
 
 axios may throw many different types of errors. Some of these errors are caused by axios itself, while others are caused by the server or the client. The following table lists the general structure of the thrown error:
 
-| Property | Definition                                                                                                                                    |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| message  | A quick summary of the error message and the status it failed with.                                                                           |
-| name     | This defines where the error originated from. For axios, it will always be an `AxiosError`.                                                   |
-| stack    | Provides the stack trace of the error.                                                                                                        |
-| config   | An axios config object with specific instance configurations defined by the user from when the request was made.                              |
-| code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.                                |
-| status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings. |
+| Property | Definition                                                                                                                                                                                                                      |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| message  | A quick summary of the error message and the status it failed with.                                                                                                                                                             |
+| name     | The error name: usually `AxiosError`, `CanceledError` for cancellations, or the original name of a wrapped error. Use `axios.isAxiosError(error)` to identify Axios errors and `axios.isCancel(error)` to detect cancellations. |
+| stack    | Provides the stack trace of the error.                                                                                                                                                                                          |
+| config   | An axios config object with specific instance configurations defined by the user from when the request was made.                                                                                                                |
+| code     | Represents an axios identified error. The table below lists out specific definitions for internal axios error.                                                                                                                  |
+| status   | HTTP response status code. See [here](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) for common HTTP response status code meanings.                                                                                   |
 
 Below is a list of potential axios identified error
 
@@ -19,6 +19,7 @@ Below is a list of potential axios identified error
 | ERR_BAD_OPTION            | Invalid option provided in axios configuration.                                               |
 | ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin. |
 | ETIMEDOUT                 | Request timed out due to exceeding the default axios timelimit. `transitional.clarifyTimeoutError` must be set to `true`, otherwise a generic `ECONNABORTED` error will be thrown instead |
+| ECONNREFUSED              | The server refused the connection. Set by the Node.js `http` adapter, with the original system error on `error.cause`; the `xhr` and `fetch` adapters report `ERR_NETWORK` instead. |
 | ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request is redirected too many times; exceeds max redirects specified in axios configuration. |
 | ERR_DEPRECATED            | Deprecated feature or method used in axios.                                                   |
@@ -27,7 +28,7 @@ Below is a list of potential axios identified error
 | ERR_CANCELED              | Feature or method is canceled explicitly by the user using an AbortSignal (or a CancelToken). |
 | ERR_NOT_SUPPORT           | Feature or method not supported in the current axios environment.                             |
 | ERR_INVALID_URL           | Invalid URL provided for axios request.                                                       |
-| ERR_FORM_DATA_DEPTH_EXCEEDED | An object exceeds the configured `maxDepth` while serializing `params` or form data. Default limit is 100 levels. See [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) and [`formSerializer`](/pages/advanced/request-config#formserializer). |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | An object exceeds the configured `maxDepth` while serializing `params` or form data. Default limit is 100 levels. Parsing FormData into JSON, by `axios.formToJSON()` or when a spec-compliant `FormData` (one with an `entries()` method) or HTML form is sent with `Content-Type: application/json`, has a fixed limit of 100 levels that `maxDepth` does not change. See [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) and [`formSerializer`](/pages/advanced/request-config#formserializer). |
 
 ## Handling errors
 
@@ -84,7 +85,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called.
+To avoid logging secrets from `error.config`, pass a `redact` array in the request config. Matching config keys are masked case-insensitively at any depth when `AxiosError#toJSON()` is called. Objects other than plain objects and `AxiosHeaders` that have a `toJSON()` method, such as `URL` objects, are serialized as-is and not scanned, and credentials inside URL strings are not matched. List the parent key, such as `auth` or `proxy`, to mask the whole value.
 
 ```js
 axios.get("/user/12345", {
@@ -94,6 +95,58 @@ axios.get("/user/12345", {
   console.log(error.toJSON().config.headers.Authorization); // [REDACTED ****]
 });
 ```
+
+## Response duration on errors
+
+When an error carries a response, such as a non-2xx status rejected by `validateStatus`, `error.response.duration` holds the elapsed adapter time in milliseconds. Not every error has a response: network errors, timeouts, and cancellations have no `error.response` and therefore no duration. Check for a response before reading it:
+
+```js
+try {
+  await axios.get('/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.response) {
+    console.log(error.response.status, error.response.duration);
+  }
+}
+```
+
+Strict JSON parsing failures keep the duration on the response attached to the error. See [Response duration](/pages/advanced/response-schema#response-duration) for what the value measures.
+
+## Wrapped error stacks
+
+When axios wraps a lower-level error, such as a Node.js socket or DNS failure, the original error remains available as `error.cause`. The wrapper's `error.stack` also includes the wrapped error's stack after a `Caused by:` line, so error reporters that read only `stack` can see the underlying failure. The axios frames and reconstructed caller frames come first, followed by the wrapped stack verbatim:
+
+```text
+Error: getaddrinfo ENOTFOUND api.example.invalid
+    at AxiosError.from (.../axios/lib/core/AxiosError.js)
+    ...
+    at Axios.request (.../axios/lib/core/Axios.js)
+    at async loadUser (/app/users.js:4:5)
+Caused by: Error: getaddrinfo ENOTFOUND api.example.invalid
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:...)
+```
+
+Use `error.cause` for programmatic access; it is the same original error object:
+
+```js
+try {
+  await axios.get('https://api.example.invalid/users');
+} catch (error) {
+  if (axios.isAxiosError(error) && error.cause) {
+    console.log(error.cause.code); // e.g. 'ENOTFOUND'
+  }
+}
+```
+
+Keep the following in mind:
+
+- The combined string is also returned by `error.toJSON().stack`. It is verbatim diagnostic output: `redact` does not sanitize stack strings.
+- Cause-aware tooling that already prints `error.cause` may show some stack content twice.
+- Only errors wrapped through `AxiosError.from()` whose cause has a usable stack gain a section. Missing, empty, or unreadable stacks are skipped.
+- Wrapping an already-wrapped error adds another nested section each time, so the string grows with every wrap.
+- A `stack` passed in the `customProps` argument of `AxiosError.from()` still replaces the generated stack.
+- The `Caused by:` marker is diagnostic text, not a stable format to parse.
+- Wrapping cannot recover details the platform never provided. For example, a browser XHR `Network Error` generally has no underlying error stack, so hidden CORS, DNS, or TLS causes remain unavailable.
 
 ## Handling timeouts
 

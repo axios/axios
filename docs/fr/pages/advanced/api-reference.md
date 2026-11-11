@@ -4,7 +4,7 @@ Vous trouverez ci-dessous la liste de toutes les fonctions et classes disponible
 
 ## Instance
 
-L'instance `axios` est l'objet principal que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. L'instance `axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/pages/advanced/request-method-aliases) de la documentation.
+L'instance `axios` est l'objet principal que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. L'instance `axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/fr/pages/advanced/request-method-aliases) de la documentation.
 
 ## Types de requête TypeScript
 
@@ -31,7 +31,7 @@ Les méthodes de requête utilisent l'ordre générique `<T, R, D, P>`, avec `P`
 
 ### `Axios`
 
-La classe `Axios` est la classe principale que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. La classe `Axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/pages/advanced/request-method-aliases) de la documentation.
+La classe `Axios` est la classe principale que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. La classe `Axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/fr/pages/advanced/request-method-aliases) de la documentation.
 
 #### `constructor`
 
@@ -103,11 +103,14 @@ isAxiosError: boolean;
 status?: number;
 
 // Méthode utilitaire pour convertir l'erreur en objet JSON.
+// Inclut `stack`, qui peut contenir une section `Caused by:` encapsulée.
 toJSON: () => object;
 
-// Cause de l'erreur.
+// Cause de l'erreur : l'erreur d'origine encapsulée par `AxiosError.from()`.
 cause?: Error;
 ```
+
+Lorsque `AxiosError.from()` encapsule une erreur disposant d'une pile exploitable, `stack` inclut également cette pile après une ligne `Caused by:`. `cause` reste le lien programmatique pris en charge vers l'erreur d'origine. Consultez [Piles des erreurs encapsulées](/fr/pages/advanced/error-handling#piles-des-erreurs-encapsulees).
 
 ### `AxiosHeaders`
 
@@ -394,6 +397,18 @@ try {
   }
 }
 ```
+
+Pour les statuts 413 et 422, préférez les noms de la RFC 9110 `ContentTooLarge` et `UnprocessableContent` :
+
+```js
+if (error.response?.status === HttpStatusCode.ContentTooLarge) {
+  console.error('Upload is too large'); // 413
+} else if (error.response?.status === HttpStatusCode.UnprocessableContent) {
+  console.error('Validation failed'); // 422
+}
+```
+
+Les anciens noms `PayloadTooLarge` et `UnprocessableEntity` restent disponibles en tant qu'alias dépréciés tout au long de la v1.x. Les recherches inverses numériques retournent toujours les noms historiques pour la rétrocompatibilité : `HttpStatusCode[413]` vaut donc `'PayloadTooLarge'` et `HttpStatusCode[422]` vaut `'UnprocessableEntity'`.
 
 ## Divers
 

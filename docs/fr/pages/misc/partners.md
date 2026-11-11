@@ -1,0 +1,15 @@
+---
+layout: page
+search: false
+---
+
+<script setup>
+import PartnersGrid from '../../../.vitepress/theme/PartnersGrid.vue';
+</script>
+
+<div class="logo-page">
+  <h1 style="line-height: 64px; font-size: 32px; letter-spacing: -0.4px; font-weight: 600; margin-top: 2rem;">Partenaires</h1>
+  <p>Axios travaille avec les entreprises suivantes, dont les produits et services nous aident à développer, sécuriser et maintenir le projet.</p>
+
+  <PartnersGrid />
+</div>

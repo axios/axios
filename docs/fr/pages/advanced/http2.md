@@ -38,6 +38,34 @@ Le support HTTP/2 est actuellement expérimental. L'API peut changer dans les pr
 L'adaptateur HTTP/2 ne suit actuellement pas les redirections. Si une requête émise avec `httpVersion: 2` reçoit une réponse `3xx`, la redirection n'est pas suivie automatiquement. Gérez ces réponses manuellement ou restez sur HTTP/1.x pour les endpoints qui s'appuient sur les redirections.
 :::
 
+## Résolution DNS personnalisée
+
+Une fonction [`lookup`](https://nodejs.org/api/dns.html#dnslookuphostname-options-callback) personnalisée s'applique également aux connexions HTTP/2. La fonction de résolution fait partie des options de session : les requêtes ne réutilisent donc une session que lorsqu'elles utilisent la même fonction `lookup`.
+
+```js
+import dns from 'node:dns';
+
+const { data } = await axios.get('https://example.com/api', {
+  httpVersion: 2,
+  lookup: (hostname, options, callback) => {
+    // Résolvez avec votre propre logique, puis renvoyez le résultat à Node.js
+    dns.lookup(hostname, options, callback);
+  },
+});
+```
+
+## Proxys
+
+Les requêtes HTTP/2 ne peuvent pas être envoyées via un proxy, car `http2.connect()` de Node.js ne peut pas appliquer les paramètres de proxy :
+
+- Un objet `proxy` explicite est rejeté avec une `AxiosError` dont le code est `ERR_NOT_SUPPORT`.
+- `proxy: false` se connecte directement, comme auparavant.
+- Les variables d'environnement de proxy (`HTTP_PROXY`, `HTTPS_PROXY`, etc.) et les paramètres `proxyEnv` de `httpAgent`/`httpsAgent` sont ignorés.
+
+::: danger Les requêtes HTTP/2 contournent les proxys d'environnement
+Comme les paramètres de proxy de l'environnement sont ignorés, une requête HTTP/2 se connecte directement à l'origine même lorsque le processus est configuré pour utiliser un proxy. Si votre déploiement exige que tout le trafic sortant passe par un proxy, n'utilisez pas `httpVersion: 2`.
+:::
+
 ## Exemple complet
 
 L'exemple ci-dessous envoie une requête POST `multipart/form-data` via HTTP/2 et suit à la fois la progression de l'envoi et du téléchargement.

@@ -120,7 +120,9 @@ describe('basicAuth (vitest browser)', () => {
       },
     });
 
-    expect(request.requestHeaders.Authorization).toBe('Basic QWxhZGRpbjpvcGVuIMOfw6fCo+KYg3Nlc2FtZQ==');
+    expect(request.requestHeaders.Authorization).toBe(
+      'Basic QWxhZGRpbjpvcGVuIMOfw6fCo+KYg3Nlc2FtZQ=='
+    );
 
     await flushSuccess(request, promise);
   });
@@ -150,11 +152,69 @@ describe('basicAuth (vitest browser)', () => {
   });
 
   it('should fail to encode HTTP Basic auth credentials with non-Latin1 characters in username', async () => {
-    await expect(axios('/foo', {
-      auth: {
-        username: 'Aladßç£☃din',
-        password: 'open sesame',
-      },
-    })).rejects.toThrow(/character/i);
+    await expect(
+      axios('/foo', {
+        auth: {
+          username: 'Aladßç£☃din',
+          password: 'open sesame',
+        },
+      })
+    ).rejects.toThrow(/character/i);
+  });
+
+  it.each([undefined, false])('preserves Latin-1 usernames with opt-in %s', async (enabled) => {
+    const { request, promise } = startRequest('/foo', {
+      adapter: 'xhr',
+      auth: { username: 'naïve', password: 'x' },
+      transitional: { encodeBasicAuthUsername: enabled },
+    });
+
+    expect(request.requestHeaders.Authorization).toBe('Basic bmHvdmU6eA==');
+    await flushSuccess(request, promise);
+  });
+
+  it.each([
+    ['naïve', 'Basic bmHDr3ZlOng='],
+    ['π', 'Basic z4A6eA=='],
+    ['😀', 'Basic 8J+YgDp4'],
+  ])('encodes the username %s as UTF-8 when opted in', async (username, expected) => {
+    const { request, promise } = startRequest('/foo', {
+      adapter: 'xhr',
+      auth: { username, password: 'x' },
+      transitional: { encodeBasicAuthUsername: true },
+    });
+
+    expect(request.requestHeaders.Authorization).toBe(expected);
+    await flushSuccess(request, promise);
+  });
+
+  it('allows a request to disable the instance UTF-8 opt-in', async () => {
+    const instance = axios.create({
+      adapter: 'xhr',
+      auth: { username: 'naïve', password: 'x' },
+      transitional: { encodeBasicAuthUsername: true },
+    });
+
+    for (const [config, expected] of [
+      [{}, 'Basic bmHDr3ZlOng='],
+      [{ transitional: { encodeBasicAuthUsername: false } }, 'Basic bmHvdmU6eA=='],
+      [{}, 'Basic bmHDr3ZlOng='],
+    ]) {
+      const promise = instance.get('/foo', config);
+      const request = requests.at(-1);
+      expect(request.requestHeaders.Authorization).toBe(expected);
+      await flushSuccess(request, promise);
+    }
+  });
+
+  it.each(['username', 'password'])('rejects malformed UTF-16 in %s when opted in', async (key) => {
+    await expect(
+      axios('/foo', {
+        adapter: 'xhr',
+        auth: { username: 'user', password: 'x', [key]: '\uD800' },
+        transitional: { encodeBasicAuthUsername: true },
+      })
+    ).rejects.toMatchObject({ code: 'ERR_BAD_OPTION_VALUE', isAxiosError: true });
+    expect(requests).toHaveLength(0);
   });
 });

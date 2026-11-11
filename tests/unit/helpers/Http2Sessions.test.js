@@ -313,6 +313,65 @@ describe('helpers::Http2Sessions', () => {
       expect(pool.sessions['https://example.test']).toBeUndefined();
     });
 
+    it('awaits sessions removed by GOAWAY that are still draining', async () => {
+      const session = pool.getSession('https://example.test');
+      const stream = session.request();
+
+      // Node keeps a GOAWAY session open until its in-flight streams drain,
+      // so close() must not emit 'close' right away.
+      session.close = vi.fn(() => {
+        session.closed = true;
+      });
+      session.emit('goaway');
+
+      let resolved = false;
+      const shutdown = pool.closeAll().then(() => {
+        resolved = true;
+      });
+
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(resolved).toBe(false);
+
+      stream.emit('close');
+      session.emit('close');
+
+      await shutdown;
+      expect(resolved).toBe(true);
+    });
+
+    it('force-destroys a GOAWAY-draining session after the shutdown timeout', async () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test');
+      const stream = session.request();
+
+      // GOAWAY removes the session from the pool; it keeps draining.
+      session.close = vi.fn(() => {
+        session.closed = true;
+      });
+      session.destroy = vi.fn(() => {
+        session.destroyed = true;
+        session.emit('close');
+      });
+      session.emit('goaway');
+
+      let resolved = false;
+      const shutdown = pool.closeAll({ timeout: 1000 }).then(() => {
+        resolved = true;
+      });
+
+      await vi.advanceTimersByTimeAsync(999);
+      expect(session.destroyed).toBe(false);
+      expect(resolved).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(1);
+
+      expect(session.destroyed).toBe(true);
+      expect(resolved).toBe(true);
+
+      stream.emit('close');
+      await shutdown;
+    });
+
     it('skips destroyed sessions', async () => {
       const session = pool.getSession('https://example.test');
       session.destroyed = true;

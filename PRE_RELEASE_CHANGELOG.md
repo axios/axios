@@ -4,9 +4,9 @@
 
 ## Features
 
-## Bug Fixes
-
 - **Opt-in error response snapshot:** `AxiosError#toJSON()` can include a cycle-safe `response` snapshot (`status`, `statusText`, `headers`, `data`) when `serializeErrorResponse: true` is set on the request config. Default serialization is unchanged. Response bodies returned from custom `toJSON()` are expanded before `redact` runs, axios errors embedded in `response.data` are omitted, and cyclic response payloads drop back-edges instead of throwing. Adds `serializeErrorResponse` on `AxiosRequestConfig` in `index.d.ts` and `index.d.cts`. Closes [#4836](https://github.com/axios/axios/issues/4836). ([#11445](https://github.com/axios/axios/pull/11445))
+
+## Bug Fixes
 
 - **Fetch stream cleanup:** When the fetch adapter rejects a streamed upload for exceeding `maxBodyLength`, or a streamed response for exceeding `maxContentLength`, it now cancels the source stream instead of leaving it open. Previously the size-limit error left the source paused mid-read, so its `cancel` hook never ran and the underlying connection or user-supplied `ReadableStream` stayed open until garbage collection. Cancellation is started without waiting for it, so a slow or failing cancel does not delay or replace the size-limit error. No public API or type changes. ([#11239](https://github.com/axios/axios/pull/11239))
 - **Nullish request url:** A request with a `null` or `undefined` url on a built-in adapter, whether selected by name or passed as a function such as `axios.getAdapter('fetch')`, now rejects with `AxiosError` and `ERR_INVALID_URL` before anything is sent. Since v1.18.1, adding `params` turned such a url into a query-only url like `?foo=bar`, which browsers resolve against the current page, so `axios.get(null, { params })` sent a request to the page itself. Without params, XHR requested `./null` or `./undefined`, and the Node HTTP adapter threw a native `TypeError`; both now reject with the same `AxiosError`. A `baseURL`, or a `socketPath` on the Node HTTP adapter, still supplies the destination; an empty-string url is still a valid relative url; custom adapters are not checked; and `axios.getUri()` still returns query-only urls. No public API or type changes. (**[#11237](https://github.com/axios/axios/pull/11237)**, closes **[#11160](https://github.com/axios/axios/issues/11160)**)

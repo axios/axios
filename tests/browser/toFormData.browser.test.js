@@ -126,4 +126,11 @@ describe('helpers::toFormData (vitest browser)', () => {
     expect(value).toBeInstanceOf(Blob);
     expect([...new Uint8Array(await value.arrayBuffer())]).toEqual([1, 2, 3]);
   });
+
+  it('preserves the selected bytes of a DataView in browser FormData', async () => {
+    const view = new DataView(new Uint8Array([0, 1, 2, 3, 4]).buffer, 1, 3);
+    const form = toFormData({ file: view });
+
+    expect([...new Uint8Array(await form.get('file').arrayBuffer())]).toEqual([1, 2, 3]);
+  });
 });

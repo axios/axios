@@ -111,6 +111,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Docs targets:** `README.md` Handling errors section.
 - **Required content:** Explain that wrapped errors append the original stack to `error.stack` after `Caused by:`, that `error.cause` remains the programmatic link, and that stacks are not redacted by `config.redact`. Do not present the marker as a parsing contract. Follow the Wrapped error stacks section of `docs/pages/advanced/error-handling.md`.
 
+### `AxiosHeaders` encoding shortcut lists
+
+- **Change:** The `Content-Encoding` shortcuts now exist at runtime, and the `Accept-Encoding` shortcuts are declared in both type files.
+- **Source:** [Issue #11432](https://github.com/axios/axios/issues/11432).
+- **Status:** Pending.
+- **Docs targets:** `README.md` AxiosHeaders Shortcuts, `docs/pages/advanced/header-methods.md` Shortcuts, and the Spanish, French, and Chinese translations.
+- **Required content:** Keep the `setContentEncoding`, `getContentEncoding`, `hasContentEncoding` entries, which now match the runtime. Add `setAcceptEncoding`, `getAcceptEncoding`, `hasAcceptEncoding`; add the existing `Authorization` shortcuts (`setAuthorization`, `getAuthorization`, `hasAuthorization`); and mention `getSetCookie()` in the methods list, since none of these appear in the shortcut lists today.
+- **Notes:** Release-time documentation only; the runtime and type changes ship with the PR. Translations use their own section headings and may need localized wording.
+
 ### `closeHttp2Sessions` instance method (README)
 
 - **Change:** Document the new Node-only `closeHttp2Sessions()` method.

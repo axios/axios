@@ -22,10 +22,10 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ### Multipart typed array bytes
 
-- **Change:** The Node FormData fallback preserves the complete raw bytes of typed array views, including multi-byte and BigInt elements, matching native Blob conversion.
-- **Source:** The multipart typed-array prerelease changelog entry; follow-up to [PR #11255](https://github.com/axios/axios/pull/11255).
+- **Change:** The Node FormData fallback preserves the complete raw bytes of ArrayBuffer views, including multi-byte, BigInt, cross-realm typed arrays and DataView slices, matching native Blob conversion.
+- **Source:** [PR #11443](https://github.com/axios/axios/pull/11443); follow-up to [PR #11255](https://github.com/axios/axios/pull/11255).
 - **Status:** Pending.
-- **Docs targets:** Multipart automatic serialization sections in the README and translated docs site.
+- **Docs targets:** `README.md` and `docs/pages/advanced/multipart-form-data-format.md`, plus the Spanish, French, and Chinese copies at `docs/{es,fr,zh}/pages/advanced/multipart-form-data-format.md`.
 - **Required content:** Clarify that typed arrays serialize their binary representation, restricted to the view's byte offset and length. They are not serialized as numeric element values. No API or declaration changes are needed.
 
 ### Response duration clock

@@ -1,5 +1,6 @@
 import { describe, it } from 'vitest';
 import assert from 'assert';
+import { runInNewContext } from 'vm';
 import FormData from 'form-data';
 import axios from '../../../index.js';
 import toFormData from '../../../lib/helpers/toFormData.js';
@@ -46,6 +47,30 @@ describe('multipart typed array bytes', () => {
       Buffer.from(await new Blob([value]).arrayBuffer())
     );
   });
+
+  for (const [name, value] of [
+    ['DataView', new DataView(new Uint8Array([0, 1, 2, 3, 4]).buffer, 1, 3)],
+    ['empty DataView', new DataView(new ArrayBuffer(8), 2, 0)],
+    [
+      'cross-realm Uint16Array',
+      runInNewContext('new Uint16Array([0, 0x1234, 0xabcd, 0]).subarray(1, 3)'),
+    ],
+    [
+      'cross-realm BigInt64Array',
+      runInNewContext('new BigInt64Array([0n, -123456789n, 0n]).subarray(1, 2)'),
+    ],
+    [
+      'cross-realm DataView',
+      runInNewContext('new DataView(new Uint8Array([0, 1, 2, 3, 4]).buffer, 1, 3)'),
+    ],
+  ]) {
+    it(`preserves ${name} bytes in Node FormData`, async () => {
+      const expected = Buffer.from(await new Blob([value]).arrayBuffer());
+      const form = toFormData({ file: value }, new FormData());
+
+      assert.deepStrictEqual(multipartBytes(form.getBuffer(), form.getBoundary()), expected);
+    });
+  }
 
   it('uploads the same view bytes with legacy and native FormData', async () => {
     const value = new Float64Array([0, Math.PI, -2.5, 0]).subarray(1, 3);

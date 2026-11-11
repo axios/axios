@@ -166,6 +166,19 @@ describe('core::AxiosError', () => {
       });
     });
 
+    it('redacts response statusText when statusText is listed', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['statusText'] },
+        { path: '/' },
+        { status: 400, statusText: 'Bad Request' },
+      );
+
+      expect(error.toJSON().response.statusText).toBe('[REDACTED ****]');
+      expect(error.toJSON().response.status).toBe(400);
+    });
+
     it('redacts the whole response headers field when headers is listed', () => {
       const error = new AxiosError(
         'Boom!',

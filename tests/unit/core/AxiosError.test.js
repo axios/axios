@@ -92,6 +92,100 @@ describe('core::AxiosError', () => {
         data: { token: '[REDACTED ****]', message: 'nope' },
       });
     });
+
+    it('redacts secrets returned from a custom response toJSON()', () => {
+      class Body {
+        constructor(token) {
+          this.token = token;
+        }
+
+        toJSON() {
+          return { token: this.token, kind: 'body' };
+        }
+      }
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['token'] },
+        { path: '/' },
+        { status: 401, data: new Body('leaked') },
+      );
+
+      expect(error.toJSON().response.data).toEqual({
+        token: '[REDACTED ****]',
+        kind: 'body',
+      });
+    });
+
+    it('drops cyclic response.data references', () => {
+      const data = { value: 'ok' };
+      data.self = data;
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true },
+        { path: '/' },
+        { status: 500, data },
+      );
+
+      expect(error.toJSON().response.data).toEqual({ value: 'ok' });
+    });
+
+    it('drops cyclic response.data while redacting other keys', () => {
+      const data = { token: 'secret', value: 'ok' };
+      data.self = data;
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['token'] },
+        { path: '/' },
+        { status: 500, data },
+      );
+
+      expect(error.toJSON().response.data).toEqual({
+        token: '[REDACTED ****]',
+        value: 'ok',
+      });
+    });
+
+    it('preserves an own __proto__ key on response.data', () => {
+      const data = {};
+      Object.defineProperty(data, '__proto__', {
+        value: { marker: 'own-key' },
+        enumerable: true,
+      });
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true },
+        { path: '/' },
+        { status: 400, data },
+      );
+
+      const serialized = error.toJSON().response.data;
+      expect(Object.prototype.hasOwnProperty.call(serialized, '__proto__')).toBe(true);
+      expect(serialized.__proto__).toEqual({ marker: 'own-key' });
+    });
+
+    it('omits axios errors embedded in response.data', () => {
+      const inner = new AxiosError('Inner', 'ERR_INNER', { url: '/inner' });
+      const outer = new AxiosError(
+        'Outer',
+        'ERR_OUTER',
+        { serializeErrorResponse: true, url: '/outer' },
+        { path: '/' },
+        { status: 502, data: inner },
+      );
+
+      const json = outer.toJSON();
+      expect(json.response.status).toBe(502);
+      expect(Object.prototype.hasOwnProperty.call(json.response, 'data')).toBe(false);
+      expect(() => JSON.stringify(json)).not.toThrow();
+    });
   });
 
   it('serializes Set values in config snapshots', () => {

@@ -3559,6 +3559,141 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should decode percent-encoded proxy credentials from env', async () => {
+    const originalHttpProxy = process.env.http_proxy;
+    const originalHTTPProxy = process.env.HTTP_PROXY;
+    const originalNoProxy = process.env.no_proxy;
+    const originalNOProxy = process.env.NO_PROXY;
+
+    const server = await startHTTPServer(
+      (req, res) => {
+        res.end();
+      },
+      { port: SERVER_PORT }
+    );
+
+    const proxy = await startHTTPServer(
+      (request, response) => {
+        const parsed = new URL(request.url);
+        const opts = {
+          host: parsed.hostname,
+          port: parsed.port,
+          path: `${parsed.pathname}${parsed.search}`,
+        };
+        const proxyAuth = request.headers['proxy-authorization'];
+
+        http.get(opts, (res) => {
+          res.on('data', () => {});
+
+          res.on('end', () => {
+            response.setHeader('Content-Type', 'text/html; charset=UTF-8');
+            response.end(proxyAuth);
+          });
+        });
+      },
+      { port: PROXY_PORT }
+    );
+
+    const proxyUrl = `http://us%40er:p%3Ass@localhost:${proxy.address().port}/`;
+    process.env.http_proxy = proxyUrl;
+    process.env.HTTP_PROXY = proxyUrl;
+    process.env.no_proxy = '';
+    process.env.NO_PROXY = '';
+
+    try {
+      const response = await axios.get(`http://localhost:${server.address().port}/`);
+      const base64 = Buffer.from('us@er:p:ss', 'utf8').toString('base64');
+      assert.equal(
+        response.data,
+        `Basic ${base64}`,
+        'should authenticate to the proxy set by process.env.http_proxy'
+      );
+    } finally {
+      await stopHTTPServer(server);
+      await stopHTTPServer(proxy);
+
+      if (originalHttpProxy === undefined) {
+        delete process.env.http_proxy;
+      } else {
+        process.env.http_proxy = originalHttpProxy;
+      }
+
+      if (originalHTTPProxy === undefined) {
+        delete process.env.HTTP_PROXY;
+      } else {
+        process.env.HTTP_PROXY = originalHTTPProxy;
+      }
+
+      if (originalNoProxy === undefined) {
+        delete process.env.no_proxy;
+      } else {
+        process.env.no_proxy = originalNoProxy;
+      }
+
+      if (originalNOProxy === undefined) {
+        delete process.env.NO_PROXY;
+      } else {
+        process.env.NO_PROXY = originalNOProxy;
+      }
+    }
+  });
+
+  it('should decode URL proxy credentials once and leave plain proxy objects as given', async () => {
+    const proxy = await startHTTPServer(
+      (req, res) => {
+        res.end(Buffer.from(req.headers['proxy-authorization'].slice(6), 'base64'));
+      },
+      { port: PROXY_PORT }
+    );
+    const port = proxy.address().port;
+
+    try {
+      for (const [config, expected] of [
+        [new URL(`http://us%2540er:p%3Ass@localhost:${port}`), 'us%40er:p:ss'],
+        [new URL(`http://us%E0%A4%A:p%3Ass@localhost:${port}`), 'us%E0%A4%A:p:ss'],
+        [
+          { protocol: 'http', host: 'localhost', port, username: 'us%40er', password: 'p%3Ass' },
+          'us%40er:p%3Ass',
+        ],
+        [
+          {
+            protocol: 'http',
+            host: 'localhost',
+            port,
+            auth: { username: 'us%40er', password: 'p%3Ass' },
+          },
+          'us%40er:p%3Ass',
+        ],
+      ]) {
+        const { data } = await axios.get('http://example.com/', { proxy: config });
+        assert.strictEqual(data, expected);
+      }
+    } finally {
+      await stopHTTPServer(proxy);
+    }
+  });
+
+  it('should decode URL proxy credentials on the CONNECT request for HTTPS targets', async () => {
+    let connectAuth;
+    const proxy = http.createServer();
+    proxy.on('connect', (req, socket) => {
+      connectAuth = req.headers['proxy-authorization'];
+      socket.end('HTTP/1.1 407 Proxy Authentication Required\r\n\r\n');
+    });
+    await new Promise((resolve) => proxy.listen(0, '127.0.0.1', resolve));
+
+    try {
+      await assert.rejects(
+        axios.get('https://example.com/', {
+          proxy: new URL(`http://us%40er:p%3Ass@127.0.0.1:${proxy.address().port}`),
+        })
+      );
+      assert.strictEqual(connectAuth, `Basic ${Buffer.from('us@er:p:ss').toString('base64')}`);
+    } finally {
+      proxy.close();
+    }
+  });
+
   describe('when invalid proxy options are provided', () => {
     it('should throw error', async () => {
       const proxy = {

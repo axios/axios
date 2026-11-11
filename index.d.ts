@@ -673,7 +673,7 @@ export class Axios {
    * Node only. Gracefully closes all pooled HTTP/2 sessions, resolving once
    * every non-destroyed session has emitted `close`. With `options.timeout`,
    * sessions still draining after that many milliseconds are force-destroyed
-   * so shutdown cannot hang.
+   * so shutdown cannot hang; a `timeout` of 0 destroys them immediately.
    */
   closeHttp2Sessions(options?: {
     timeout?: number;

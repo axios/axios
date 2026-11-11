@@ -7020,6 +7020,12 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(result.status, 200);
     });
 
+    // Shared by the two keep-alive regression tests below: the slow response must outlast the
+    // agent idle timeout that Node re-arms on a reused socket, and the idle timeout must be long
+    // enough that the socket is never closed while it waits in the pool between requests.
+    const AGENT_IDLE_TIMEOUT = 1000;
+    const SLOW_RESPONSE_DELAY = AGENT_IDLE_TIMEOUT + 500;
+
     it('should not leave a socket destroy-on-timeout listener that breaks other clients reusing the socket (regression #11440)', async () => {
       const server = await startHTTPServer(
         (req, res) => {
@@ -7030,8 +7036,9 @@ describe('supports http with nodejs', () => {
         { keepAlive: 10000 }
       );
 
-      // Mirrors http.globalAgent on Node >= 19 (keepAlive with an idle timeout), with a short timeout.
-      const agent = new http.Agent({ keepAlive: true, maxSockets: 1, timeout: 100 });
+      // Mirrors http.globalAgent on Node >= 19 (keepAlive with an idle timeout). The idle timeout
+      // leaves a wide margin so a slow CI run does not close the pooled socket between requests.
+      const agent = new http.Agent({ keepAlive: true, maxSockets: 1, timeout: AGENT_IDLE_TIMEOUT });
 
       try {
         const baseURL = `http://localhost:${server.address().port}`;
@@ -7052,7 +7059,7 @@ describe('supports http with nodejs', () => {
         // A different client on the same agent reuses the pooled socket, and its response
         // takes longer than the agent idle timeout that Node re-arms on the socket.
         const second = await new Promise((resolve, reject) => {
-          const req = http.get(`${baseURL}/?delay=300`, { agent }, (res) => {
+          const req = http.get(`${baseURL}/?delay=${SLOW_RESPONSE_DELAY}`, { agent }, (res) => {
             let body = '';
             res.setEncoding('utf8');
             res.on('data', (chunk) => (body += chunk));
@@ -7079,7 +7086,7 @@ describe('supports http with nodejs', () => {
       );
 
       // The agent idle timeout stays armed on the socket while a request runs unless axios resets it.
-      const agent = new http.Agent({ keepAlive: true, maxSockets: 1, timeout: 100 });
+      const agent = new http.Agent({ keepAlive: true, maxSockets: 1, timeout: AGENT_IDLE_TIMEOUT });
 
       try {
         const baseURL = `http://localhost:${server.address().port}`;
@@ -7094,7 +7101,7 @@ describe('supports http with nodejs', () => {
 
           // The second request reuses the socket, sets no timeout and answers after the
           // agent idle timeout, which would fire the destroy listener left by the first request.
-          const second = await axios.get(`${baseURL}/?delay=300`, {
+          const second = await axios.get(`${baseURL}/?delay=${SLOW_RESPONSE_DELAY}`, {
             httpAgent: agent,
             maxRedirects,
           });

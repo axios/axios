@@ -35,6 +35,65 @@ describe('core::AxiosError', () => {
     expect(json.response).toBeUndefined();
   });
 
+  describe('toJSON serializeErrorResponse via config.serializeErrorResponse', () => {
+    it('includes a plain response snapshot when opted in', () => {
+      const request = { path: '/foo' };
+      const response = {
+        status: 502,
+        statusText: 'Bad Gateway',
+        data: { error: 'upstream' },
+        headers: { 'content-type': 'application/json' },
+        config: { url: '/should-not-leak' },
+        request: { path: '/should-not-leak' },
+      };
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { url: '/foo', serializeErrorResponse: true },
+        request,
+        response,
+      );
+
+      expect(error.toJSON()).toEqual({
+        message: 'Boom!',
+        name: 'AxiosError',
+        description: undefined,
+        number: undefined,
+        fileName: undefined,
+        lineNumber: undefined,
+        columnNumber: undefined,
+        stack: error.stack,
+        config: { url: '/foo', serializeErrorResponse: true },
+        code: 'ERR_BAD_RESPONSE',
+        status: 502,
+        response: {
+          status: 502,
+          statusText: 'Bad Gateway',
+          headers: { 'content-type': 'application/json' },
+          data: { error: 'upstream' },
+        },
+      });
+    });
+
+    it('applies redact keys inside the response snapshot', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        {
+          serializeErrorResponse: true,
+          redact: ['token'],
+        },
+        { path: '/' },
+        { status: 401, data: { token: 'abc', message: 'nope' } },
+      );
+
+      expect(error.toJSON().response).toEqual({
+        status: 401,
+        data: { token: '[REDACTED ****]', message: 'nope' },
+      });
+    });
+  });
+
   it('serializes Set values in config snapshots', () => {
     const error = new AxiosError('Boom!', 'ESOMETHING', {
       tags: new Set(['a', 'b']),

@@ -493,6 +493,11 @@ export interface AxiosRequestConfig<D = any, P = any> {
   };
   formDataHeaderPolicy?: 'legacy' | 'content-only';
   redact?: string[];
+  /**
+   * When true, {@link AxiosError.toJSON} includes a `response` snapshot
+   * (status, headers, data) without circular `config` / `request` references.
+   */
+  serializeErrorResponse?: boolean;
   sensitiveHeaders?: string[];
 }
 

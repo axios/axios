@@ -302,6 +302,34 @@ describe('helpers::Http2Sessions', () => {
       expect(pool.sessions['https://example.test']).toBeUndefined();
     });
 
+    it('resolves only after every session emits close', async () => {
+      const first = pool.getSession('https://example.test');
+      const second = pool.getSession('https://other.test');
+      closeWithoutEvent(first);
+      closeWithoutEvent(second);
+
+      let resolved = false;
+      const shutdown = pool.closeAll().then(() => {
+        resolved = true;
+      });
+
+      expect(first.close).toHaveBeenCalledTimes(1);
+      expect(second.close).toHaveBeenCalledTimes(1);
+
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(resolved).toBe(false);
+
+      first.emit('close');
+      await new Promise((resolve) => setImmediate(resolve));
+      // The second session is still draining; the shutdown must not resolve.
+      expect(resolved).toBe(false);
+
+      second.emit('close');
+
+      await shutdown;
+      expect(resolved).toBe(true);
+    });
+
     it('waits for in-flight streams to drain before resolving', async () => {
       const session = pool.getSession('https://example.test');
       const stream = session.request();

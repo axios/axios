@@ -676,6 +676,15 @@ export class Axios {
     response: AxiosInterceptorManager<AxiosResponse>;
   };
   getUri(config?: AxiosRequestConfig): string;
+  /**
+   * Node only. Gracefully closes all pooled HTTP/2 sessions, resolving once
+   * every non-destroyed session has emitted `close`. With `options.timeout`,
+   * sessions still draining after that many milliseconds are force-destroyed
+   * so shutdown cannot hang; a `timeout` of 0 destroys them immediately.
+   */
+  closeHttp2Sessions(options?: {
+    timeout?: number;
+  }): Promise<void>;
   request<T = any, R = AxiosResponseDefault, D = any, P = any>(
     config: AxiosRequestConfig<D, P>
   ): Promise<AxiosResponseResult<T, R, D, P>>;

@@ -119,3 +119,13 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Docs targets:** `README.md` AxiosHeaders Shortcuts, `docs/pages/advanced/header-methods.md` Shortcuts, and the Spanish, French, and Chinese translations.
 - **Required content:** Keep the `setContentEncoding`, `getContentEncoding`, `hasContentEncoding` entries, which now match the runtime. Add `setAcceptEncoding`, `getAcceptEncoding`, `hasAcceptEncoding`; add the existing `Authorization` shortcuts (`setAuthorization`, `getAuthorization`, `hasAuthorization`); and mention `getSetCookie()` in the methods list, since none of these appear in the shortcut lists today.
 - **Notes:** Release-time documentation only; the runtime and type changes ship with the PR. Translations use their own section headings and may need localized wording.
+
+### `closeHttp2Sessions` instance method (README)
+
+- **Change:** Document the new Node-only `closeHttp2Sessions()` method.
+- **Source:** [Issue #7470](https://github.com/axios/axios/issues/7470).
+- **Status:** Pending.
+- **Docs targets:** `README.md` API section (instance methods, near `getUri`/`request`), and the docs site API reference (`docs/pages/advanced/api-reference.md`) plus translations when applied.
+- **Required content:** `axios.closeHttp2Sessions()` and `instance.closeHttp2Sessions()` gracefully close all pooled HTTP/2 sessions on the Node adapter. Without options, the returned promise resolves once every non-destroyed session has emitted `close` (in-flight responses drain first); with `{ timeout }`, sessions still draining after that many milliseconds are force-destroyed and the promise may resolve at that point rather than after their `close` event. Already-destroyed sessions are skipped, and later requests open fresh sessions. It is a no-op promise in the browser.
+- **Examples:** `await axios.closeHttp2Sessions();` — typical use is graceful server shutdown after `server.close()`.
+- **Notes:** Node only; do not present it as available in browsers.

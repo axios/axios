@@ -35,6 +35,211 @@ describe('core::AxiosError', () => {
     expect(json.response).toBeUndefined();
   });
 
+  describe('toJSON serializeErrorResponse via config.serializeErrorResponse', () => {
+    it('includes a plain response snapshot when opted in', () => {
+      const request = { path: '/foo' };
+      const response = {
+        status: 502,
+        statusText: 'Bad Gateway',
+        data: { error: 'upstream' },
+        headers: { 'content-type': 'application/json' },
+        config: { url: '/should-not-leak' },
+        request: { path: '/should-not-leak' },
+      };
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { url: '/foo', serializeErrorResponse: true },
+        request,
+        response,
+      );
+
+      expect(error.toJSON()).toEqual({
+        message: 'Boom!',
+        name: 'AxiosError',
+        description: undefined,
+        number: undefined,
+        fileName: undefined,
+        lineNumber: undefined,
+        columnNumber: undefined,
+        stack: error.stack,
+        config: { url: '/foo', serializeErrorResponse: true },
+        code: 'ERR_BAD_RESPONSE',
+        status: 502,
+        response: {
+          status: 502,
+          statusText: 'Bad Gateway',
+          headers: { 'content-type': 'application/json' },
+          data: { error: 'upstream' },
+        },
+      });
+    });
+
+    it('applies redact keys inside the response snapshot', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        {
+          serializeErrorResponse: true,
+          redact: ['token'],
+        },
+        { path: '/' },
+        { status: 401, data: { token: 'abc', message: 'nope' } },
+      );
+
+      expect(error.toJSON().response).toEqual({
+        status: 401,
+        data: { token: '[REDACTED ****]', message: 'nope' },
+      });
+    });
+
+    it('redacts secrets returned from a custom response toJSON()', () => {
+      class Body {
+        constructor(token) {
+          this.token = token;
+        }
+
+        toJSON() {
+          return { token: this.token, kind: 'body' };
+        }
+      }
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['token'] },
+        { path: '/' },
+        { status: 401, data: new Body('leaked') },
+      );
+
+      expect(error.toJSON().response.data).toEqual({
+        token: '[REDACTED ****]',
+        kind: 'body',
+      });
+    });
+
+    it('drops cyclic response.data references', () => {
+      const data = { value: 'ok' };
+      data.self = data;
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true },
+        { path: '/' },
+        { status: 500, data },
+      );
+
+      expect(error.toJSON().response.data).toEqual({ value: 'ok' });
+    });
+
+    it('drops cyclic response.data while redacting other keys', () => {
+      const data = { token: 'secret', value: 'ok' };
+      data.self = data;
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['token'] },
+        { path: '/' },
+        { status: 500, data },
+      );
+
+      expect(error.toJSON().response.data).toEqual({
+        token: '[REDACTED ****]',
+        value: 'ok',
+      });
+    });
+
+    it('redacts the whole response data field when data is listed', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['data'] },
+        { path: '/' },
+        { status: 400, data: { secret: 'leak' } },
+      );
+
+      expect(error.toJSON().response).toEqual({
+        status: 400,
+        data: '[REDACTED ****]',
+      });
+    });
+
+    it('redacts response statusText when statusText is listed', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['statusText'] },
+        { path: '/' },
+        { status: 400, statusText: 'Bad Request' },
+      );
+
+      expect(error.toJSON().response.statusText).toBe('[REDACTED ****]');
+      expect(error.toJSON().response.status).toBe(400);
+    });
+
+    it('redacts the whole response headers field when headers is listed', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['headers'] },
+        { path: '/' },
+        { status: 400, headers: { Authorization: 'Bearer x' } },
+      );
+
+      expect(error.toJSON().response.headers).toBe('[REDACTED ****]');
+    });
+
+    it('serializes Set values in response.data as arrays', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true },
+        { path: '/' },
+        { status: 200, data: new Set(['a', 'b']) },
+      );
+
+      expect(error.toJSON().response.data).toEqual(['a', 'b']);
+    });
+
+    it('filters unsafe keys from response.data objects', () => {
+      const data = { safe: 'ok' };
+      Object.defineProperty(data, '__proto__', {
+        value: { polluted: true },
+        enumerable: true,
+      });
+      data.constructor = { name: 'leak' };
+      data.prototype = { leak: true };
+
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true },
+        { path: '/' },
+        { status: 400, data },
+      );
+
+      expect(error.toJSON().response.data).toEqual({ safe: 'ok' });
+    });
+
+    it('omits axios errors embedded in response.data', () => {
+      const inner = new AxiosError('Inner', 'ERR_INNER', { url: '/inner' });
+      const outer = new AxiosError(
+        'Outer',
+        'ERR_OUTER',
+        { serializeErrorResponse: true, url: '/outer' },
+        { path: '/' },
+        { status: 502, data: inner },
+      );
+
+      const json = outer.toJSON();
+      expect(json.response.status).toBe(502);
+      expect(Object.prototype.hasOwnProperty.call(json.response, 'data')).toBe(false);
+      expect(() => JSON.stringify(json)).not.toThrow();
+    });
+  });
+
   it('serializes Set values in config snapshots', () => {
     const error = new AxiosError('Boom!', 'ESOMETHING', {
       tags: new Set(['a', 'b']),

@@ -4,6 +4,8 @@
 
 ## Features
 
+- **Opt-in error response snapshot:** `AxiosError#toJSON()` can include a cycle-safe `response` snapshot (`status`, `statusText`, `headers`, `data`) when `serializeErrorResponse: true` is set on the request config. Default serialization is unchanged. Response bodies returned from custom `toJSON()` are expanded before `redact` runs, axios errors embedded in `response.data` are omitted, and cyclic response payloads drop back-edges instead of throwing. Adds `serializeErrorResponse` on `AxiosRequestConfig` in `index.d.ts` and `index.d.cts`. Closes [#4836](https://github.com/axios/axios/issues/4836). ([#11445](https://github.com/axios/axios/pull/11445))
+
 ## Bug Fixes
 
 - **Fetch stream cleanup:** When the fetch adapter rejects a streamed upload for exceeding `maxBodyLength`, or a streamed response for exceeding `maxContentLength`, it now cancels the source stream instead of leaving it open. Previously the size-limit error left the source paused mid-read, so its `cancel` hook never ran and the underlying connection or user-supplied `ReadableStream` stayed open until garbage collection. Cancellation is started without waiting for it, so a slow or failing cancel does not delay or replace the size-limit error. No public API or type changes. ([#11239](https://github.com/axios/axios/pull/11239))

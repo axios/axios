@@ -20,6 +20,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### `serializeErrorResponse` error JSON snapshot
+
+- **Change:** Opt-in `serializeErrorResponse` on `AxiosRequestConfig` includes a cycle-safe `response` snapshot in `AxiosError#toJSON()`.
+- **Source:** [Issue #4836](https://github.com/axios/axios/issues/4836), [PR #11445](https://github.com/axios/axios/pull/11445).
+- **Status:** Pending.
+- **Docs targets:** README error-handling section; `docs/pages/advanced/error-handling.md` (`toJSON` and `redact` sections); Spanish, French, and Chinese translations of those sections.
+- **Required content:** Document that `response` is omitted by default to avoid circular JSON. When `serializeErrorResponse: true`, the snapshot includes `status`, `statusText`, `headers`, and `data` but not `response.config` or `response.request`. Mention that `redact` applies inside the response snapshot, that custom `toJSON` response bodies are expanded before redaction, that cyclic response data drops back-edges, and that nested axios errors in `response.data` are omitted.
+- **Examples:** `catch (error) { console.log(error.toJSON()); }` with `serializeErrorResponse: true` and optional `redact: ['Authorization']`.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

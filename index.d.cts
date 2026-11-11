@@ -620,6 +620,7 @@ declare namespace axios {
     };
     formDataHeaderPolicy?: 'legacy' | 'content-only';
     redact?: string[];
+    serializeErrorResponse?: boolean;
     sensitiveHeaders?: string[];
   }
 

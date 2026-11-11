@@ -424,6 +424,29 @@ describe('helpers::Http2Sessions', () => {
       expect(connectSpy).toHaveBeenCalledTimes(2);
     });
 
+    it('does not track sessions whose close event already fired', async () => {
+      const session = pool.getSession('https://example.test');
+      // Node's destroy() does not necessarily set `closed`, so the pool's
+      // close listener removes a destroyed session while `closed` is false.
+      session.destroyed = true;
+      // A real destroyed session never re-emits 'close' (even in response
+      // to close()), so the shared mock's re-emit is disabled here.
+      session.close = vi.fn();
+
+      session.emit('close');
+
+      // The finished session must not be tracked again for a 'close' event
+      // that will never repeat.
+      expect(pool.closing.size).toBe(0);
+      expect(session.close).not.toHaveBeenCalled();
+
+      await expect(pool.closeAll()).resolves.toBeUndefined();
+
+      const next = pool.getSession('https://example.test');
+      expect(next).not.toBe(session);
+      expect(connectSpy).toHaveBeenCalledTimes(2);
+    });
+
     it('skips destroyed sessions', async () => {
       const session = pool.getSession('https://example.test');
       session.destroyed = true;
@@ -555,6 +578,34 @@ describe('helpers::Http2Sessions', () => {
 
       await vi.advanceTimersByTimeAsync(0);
 
+      expect(session.destroyed).toBe(true);
+      expect(resolved).toBe(true);
+
+      await shutdown;
+    });
+
+    it('resolves at the deadline even when a destroyed session never emits close', async () => {
+      vi.useFakeTimers();
+      const session = pool.getSession('https://example.test');
+      // Session that never finishes draining on its own.
+      closeWithoutEvent(session);
+      // Node can mark a session destroyed while its 'close' event is still
+      // pending (e.g. waiting for the peer to release the socket).
+      session.destroy = vi.fn(() => {
+        session.destroyed = true;
+      });
+
+      let resolved = false;
+      const shutdown = pool.closeAll({ timeout: 1000 }).then(() => {
+        resolved = true;
+      });
+
+      await vi.advanceTimersByTimeAsync(999);
+      expect(resolved).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(1);
+
+      // The deadline settles the wait even without a 'close' event.
       expect(session.destroyed).toBe(true);
       expect(resolved).toBe(true);
 

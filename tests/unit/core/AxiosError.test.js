@@ -151,12 +151,53 @@ describe('core::AxiosError', () => {
       });
     });
 
-    it('preserves an own __proto__ key on response.data', () => {
-      const data = {};
+    it('redacts the whole response data field when data is listed', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['data'] },
+        { path: '/' },
+        { status: 400, data: { secret: 'leak' } },
+      );
+
+      expect(error.toJSON().response).toEqual({
+        status: 400,
+        data: '[REDACTED ****]',
+      });
+    });
+
+    it('redacts the whole response headers field when headers is listed', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true, redact: ['headers'] },
+        { path: '/' },
+        { status: 400, headers: { Authorization: 'Bearer x' } },
+      );
+
+      expect(error.toJSON().response.headers).toBe('[REDACTED ****]');
+    });
+
+    it('serializes Set values in response.data as arrays', () => {
+      const error = new AxiosError(
+        'Boom!',
+        'ERR_BAD_RESPONSE',
+        { serializeErrorResponse: true },
+        { path: '/' },
+        { status: 200, data: new Set(['a', 'b']) },
+      );
+
+      expect(error.toJSON().response.data).toEqual(['a', 'b']);
+    });
+
+    it('filters unsafe keys from response.data objects', () => {
+      const data = { safe: 'ok' };
       Object.defineProperty(data, '__proto__', {
-        value: { marker: 'own-key' },
+        value: { polluted: true },
         enumerable: true,
       });
+      data.constructor = { name: 'leak' };
+      data.prototype = { leak: true };
 
       const error = new AxiosError(
         'Boom!',
@@ -166,9 +207,7 @@ describe('core::AxiosError', () => {
         { status: 400, data },
       );
 
-      const serialized = error.toJSON().response.data;
-      expect(Object.prototype.hasOwnProperty.call(serialized, '__proto__')).toBe(true);
-      expect(serialized.__proto__).toEqual({ marker: 'own-key' });
+      expect(error.toJSON().response.data).toEqual({ safe: 'ok' });
     });
 
     it('omits axios errors embedded in response.data', () => {

@@ -12,7 +12,7 @@ axios.defaults.maxContentLength = 10 * 1024 * 1024; // 10 MB
 axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 ```
 
-详见[安全指南](/pages/misc/security)。
+详见[安全指南](/zh/pages/misc/security)。
 :::
 
 ### `url`
@@ -39,11 +39,11 @@ axios.defaults.maxBodyLength = 10 * 1024 * 1024;
 
 ### `transformRequest`
 
-`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改，仅适用于 `PUT`、`POST`、`PATCH` 和 `DELETE` 请求方法。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData 或 Stream 实例。
+`transformRequest` 函数允许你在数据发送到服务器之前对其进行修改。每个函数接收请求数据和请求头（一个 `AxiosHeaders` 实例）作为参数，无论请求方法是什么，每个请求都会运行。数组中的最后一个函数必须返回字符串、Buffer、ArrayBuffer、FormData、Stream、Blob 或 File 实例。
 
 ### `transformResponse`
 
-`transformResponse` 函数允许你在数据传递给 `then` 或 `catch` 函数之前对响应数据进行修改，函数以响应数据为唯一参数。
+`transformResponse` 函数允许你在数据传递给 `then` 或 `catch` 函数之前对响应数据进行修改，每个函数接收响应数据、响应头（一个 `AxiosHeaders` 实例）和 HTTP 状态码作为参数。
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-`headers` 是随请求发送的 HTTP 请求头，默认将 `Content-Type` 设置为 `application/json`。
+`headers` 是随请求发送的 HTTP 请求头。axios 没有固定的默认 `Content-Type`。对于默认请求转换能处理的数据类型，axios 会根据请求的 `data` 推断：例如，普通对象以 `application/json` 发送，`URLSearchParams` 以 `application/x-www-form-urlencoded;charset=utf-8` 发送。对于 `post`、`put` 和 `patch` 请求，如果经过请求转换后仍然没有 `Content-Type`（例如纯字符串请求体），axios 会回退为 `application/x-www-form-urlencoded`。
 
 ### `params`
 
@@ -152,7 +152,7 @@ const client = axios.create({
 
 ### 使用 Symbol 键的自定义选项
 
-配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
+配置合并会保留自身的、可枚举的 Symbol 属性。TypeScript 应用可以通过模块扩充为 `AxiosRequestConfig` 添加特定 Symbol 键，然后在请求拦截器或适配器的 `InternalAxiosRequestConfig` 中读取该选项。继承的或不可枚举的 Symbol 属性不会被复制。示例请参阅 [TypeScript 指南](/zh/pages/advanced/type-script#使用-symbol-键的自定义请求配置)。
 
 ### `timeout`
 
@@ -164,7 +164,7 @@ const client = axios.create({
 
 ### `adapter`
 
-`adapter` 允许自定义请求处理方式，便于测试。返回一个 Promise 并提供有效的响应，详见[适配器](/pages/advanced/adapters)文档。我们还提供了多个内置适配器，Node.js 默认使用 `http`，浏览器默认使用 `xhr`。内置适配器列表如下：
+`adapter` 允许自定义请求处理方式，便于测试。返回一个 Promise 并提供有效的响应，详见[适配器](/zh/pages/advanced/adapters)文档。我们还提供了多个内置适配器，Node.js 默认使用 `http`，浏览器默认使用 `xhr`。内置适配器列表如下：
 
 - fetch
 - http
@@ -438,7 +438,7 @@ await axios.get('https://internal-api.example.com/data', {
 
 ### `cancelToken`
 
-`cancelToken` 属性允许你创建一个取消令牌，用于取消请求。详见[取消请求](/pages/advanced/cancellation)文档。
+`cancelToken` 属性允许你创建一个取消令牌，用于取消请求。详见[取消请求](/zh/pages/advanced/cancellation)文档。
 
 ### `signal`
 
@@ -493,11 +493,11 @@ await axios.get('https://internal-api.example.com/data', {
 - `maxDepth` _（默认：`100`）_ — 抛出 `AxiosError`（错误码 `ERR_FORM_DATA_DEPTH_EXCEEDED`）前的最大嵌套深度。设置为 `Infinity` 可禁用。
 - `Blob` — 在符合规范的 `FormData` 中转换类 ArrayBuffer 值时使用的 Blob 构造函数。
 
-详见 [multipart/form-data](/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
+详见 [multipart/form-data](/zh/pages/advanced/multipart-form-data-format) 页面以及本页末尾的完整请求配置示例。
 
 ### `maxRate` <Badge type="warning" text="仅 Node.js" />
 
-`maxRate` 属性定义上传和/或下载的最大**带宽**（字节/秒）。接受单个数字（同时适用于两个方向）或两元素数组 `[uploadRate, downloadRate]`，每个元素为字节/秒限制。例如，`100 * 1024` 表示 100 KB/s。详见[速率限制](/pages/advanced/rate-limiting)中的示例。
+`maxRate` 属性定义上传和/或下载的最大**带宽**（字节/秒）。接受单个数字（同时适用于两个方向）或两元素数组 `[uploadRate, downloadRate]`，每个元素为字节/秒限制。例如，`100 * 1024` 表示 100 KB/s。详见[速率限制](/zh/pages/advanced/rate-limiting)中的示例。
 
 ## 完整请求配置示例
 

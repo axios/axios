@@ -25,7 +25,7 @@ const instance = axios.create({ adapter: "http" });
 const instance = axios.create({ adapter: ["fetch", "xhr", "http"] });
 ```
 
-关于 `fetch` 适配器的更多详情，请参阅 [Fetch 适配器](/pages/advanced/fetch-adapter)页面。
+关于 `fetch` 适配器的更多详情，请参阅 [Fetch 适配器](/zh/pages/advanced/fetch-adapter)页面。
 
 ## 创建自定义适配器
 

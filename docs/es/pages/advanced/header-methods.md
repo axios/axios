@@ -61,11 +61,11 @@ headers.set(
 );
 ```
 
-`AxiosHeaders` conserva el formato de la primera clave coincidente que encuentra. Puedes usar esto para preservar el formato específico de un encabezado inicializando una clave con `undefined` y luego estableciendo los valores posteriormente. Consulta [Preservar el formato de un encabezado específico](/pages/advanced/headers#preserving-a-specific-header-case).
+`AxiosHeaders` conserva el formato de la primera clave coincidente que encuentra. Puedes usar esto para preservar el formato específico de un encabezado inicializando una clave con `undefined` y luego estableciendo los valores posteriormente. Consulta [Preservar el formato de un encabezado específico](/es/pages/advanced/headers#preservar-el-formato-de-un-encabezado-especifico).
 
 ## Get (Obtener)
 
-El método `get` se usa para recuperar el valor de un encabezado. El método puede ser llamado con un nombre de encabezado único, un matcher opcional o un parser. El matcher tiene valor predeterminado `true`. El parser puede ser una expresión regular que se usa para extraer el valor del encabezado.
+El método `get` se usa para recuperar el valor de un encabezado. El método se llama con un nombre de encabezado y un parser opcional. Sin parser, devuelve el valor sin procesar del encabezado. Pasa `true` para convertir el valor en pares clave-valor, una expresión regular para extraer parte del valor, o una función que recibe el valor y el nombre del encabezado. Si el encabezado existe, cualquier otro parser con valor verdadero produce un `TypeError`.
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
@@ -151,7 +151,7 @@ Devuelve `true` si al menos un encabezado fue eliminado.
 
 ## Normalize (Normalizar)
 
-Si el objeto de encabezados fue modificado directamente, puede generar duplicados con el mismo nombre pero en diferentes formatos. Este método normaliza el objeto de encabezados combinando claves duplicadas en una sola. Axios usa este método internamente después de llamar a cada interceptor. Establece `format` en `true` para convertir los nombres de los encabezados a minúsculas y capitalizar las letras iniciales (`cOntEnt-type` => `Content-Type`) o en `false` para mantener el formato original.
+Si el objeto de encabezados fue modificado directamente, puede generar duplicados con el mismo nombre pero en diferentes formatos. Este método normaliza el objeto de encabezados combinando claves duplicadas en una sola. Axios usa este método internamente antes de llamar a cada transformador de solicitud y de respuesta, y una vez más después de que se ejecutan los transformadores. Establece `format` en `true` para convertir los nombres de los encabezados a minúsculas y capitalizar las letras iniciales (`cOntEnt-type` => `Content-Type`) o en `false` para mantener el formato original.
 
 ```js
 const headers = new AxiosHeaders({

@@ -113,17 +113,17 @@ axios.create({
 
 **Los parámetros con valor `null` o `undefined`** ahora se manejan de forma consistente: los valores `null` se serializan como cadenas vacías, mientras que los valores `undefined` se omiten completamente.
 
-Para ver todas las opciones de configuración de serialización de parámetros, consulta la página de [Configuración de solicitud](/pages/advanced/request-config).
+Para ver todas las opciones de configuración de serialización de parámetros, consulta la página de [Configuración de solicitud](/es/pages/advanced/request-config).
 
 ### Los internos ya no se exportan
 
 Hemos decidido dejar de exportar los internos de axios. Esto significa que deberás actualizar tu código para usar únicamente la API pública de axios. Este cambio se realizó para simplificar la API y reducir la superficie expuesta de axios, permitiéndonos modificar los internos sin declararlos como cambios que rompen la compatibilidad.
 
-Consulta la [Referencia de la API](/pages/advanced/api-reference) en este sitio para obtener la información más actualizada sobre la API pública de axios.
+Consulta la [Referencia de la API](/es/pages/advanced/api-reference) en este sitio para obtener la información más actualizada sobre la API pública de axios.
 
 ### Configuración de solicitud
 
-Hemos realizado cambios en el objeto de configuración de solicitud. Consulta la [referencia de configuración](/pages/advanced/request-config) en este sitio para obtener la información más actualizada.
+Hemos realizado cambios en el objeto de configuración de solicitud. Consulta la [referencia de configuración](/es/pages/advanced/request-config) en este sitio para obtener la información más actualizada.
 
 ### Cambios que rompen la compatibilidad no cubiertos
 

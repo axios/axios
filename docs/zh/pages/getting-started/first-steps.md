@@ -114,7 +114,7 @@ const response = await axios.get("https://example.com/data", {
 });
 ```
 
-匹配的 `ECONNABORTED` / `ETIMEDOUT` 错误码请参阅[请求配置中的 `timeout`](/pages/advanced/request-config#timeout) 与[错误处理](/pages/advanced/error-handling)。
+匹配的 `ECONNABORTED` / `ETIMEDOUT` 错误码请参阅[请求配置中的 `timeout`](/zh/pages/advanced/request-config#timeout) 与[错误处理](/zh/pages/advanced/error-handling)。
 :::
 
 ## 下一步

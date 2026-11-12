@@ -20,6 +20,25 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### Response duration clock
+
+- **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.
+- **Source:** [Issue #11407](https://github.com/axios/axios/issues/11407).
+- **Status:** Pending.
+- **Docs targets:** `docs/pages/advanced/response-schema.md` (Response duration) and the Spanish, French, and Chinese translations of that section; the README duration note tracked in the entry below.
+- **Required content:** Replace the bullet saying the value is approximate wall-clock time measured with `Date.now()`. The value is now measured with the monotonic `performance.now()` and rounded to whole milliseconds, so system clock adjustments no longer affect it. Runtimes without `performance.now()` fall back to `Date.now()`, where backward clock adjustments are clamped to `0` and forward adjustments can inflate the value. Optionally note that this keeps axios compatible with Next.js Cache Components prerendering, which rejects `Date.now()`.
+- **Notes:** The README entry below says "approximate wall-clock time"; use the new wording when applying it.
+
+### `getAdapter` request config argument
+
+- **Change:** The `getAdapter` typings accept an optional second `config` argument, which the runtime already forwards to adapter getters.
+- **Source:** [Issue #11403](https://github.com/axios/axios/issues/11403), [PR #11404](https://github.com/axios/axios/pull/11404).
+- **Status:** Pending.
+- **Docs targets:** The `getAdapter` section of `docs/pages/advanced/api-reference.md` and its Spanish, French, and Chinese translations. Optionally cross-link from the custom `fetch` section of `docs/pages/advanced/fetch-adapter.md`.
+- **Required content:** Update the signature to `getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined, config?: AxiosRequestConfig): AxiosAdapter`. The current docs signature (`string | string[]`) also omits `undefined` and adapter functions, which the typings have always accepted. Explain that `config` is passed to adapter getters: the built-in `fetch` adapter reads `env.fetch`, `env.Request`, and `env.Response` from it, and without `config` it uses the global implementations. For the built-in `fetch` adapter, other request fields are not used while resolving the adapter; they take effect when the returned adapter is called with a request config. Custom adapter getters may inspect any forwarded config field.
+- **Examples:** `const fetchAdapter = getAdapter('fetch', { env: { fetch: customFetch } });`
+- **Notes:** Passing a new `fetch` function on every call creates and caches a new adapter each time, so reuse the same `fetch` reference.
+
 ### Response duration (README)
 
 - **Change:** Bring `README.md` in line with the released docs site.
@@ -91,3 +110,12 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
 - **Docs targets:** `README.md` Handling errors section.
 - **Required content:** Explain that wrapped errors append the original stack to `error.stack` after `Caused by:`, that `error.cause` remains the programmatic link, and that stacks are not redacted by `config.redact`. Do not present the marker as a parsing contract. Follow the Wrapped error stacks section of `docs/pages/advanced/error-handling.md`.
+
+### `AxiosHeaders` encoding shortcut lists
+
+- **Change:** The `Content-Encoding` shortcuts now exist at runtime, and the `Accept-Encoding` shortcuts are declared in both type files.
+- **Source:** [Issue #11432](https://github.com/axios/axios/issues/11432).
+- **Status:** Pending.
+- **Docs targets:** `README.md` AxiosHeaders Shortcuts, `docs/pages/advanced/header-methods.md` Shortcuts, and the Spanish, French, and Chinese translations.
+- **Required content:** Keep the `setContentEncoding`, `getContentEncoding`, `hasContentEncoding` entries, which now match the runtime. Add `setAcceptEncoding`, `getAcceptEncoding`, `hasAcceptEncoding`; add the existing `Authorization` shortcuts (`setAuthorization`, `getAuthorization`, `hasAuthorization`); and mention `getSetCookie()` in the methods list, since none of these appear in the shortcut lists today.
+- **Notes:** Release-time documentation only; the runtime and type changes ship with the PR. Translations use their own section headings and may need localized wording.

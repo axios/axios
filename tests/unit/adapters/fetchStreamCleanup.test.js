@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { getEventListeners } from 'node:events';
 import axios from '../../../index.js';
 
 describe('fetch adapter stream cleanup', () => {
@@ -55,4 +56,35 @@ describe('fetch adapter stream cleanup', () => {
       await vi.waitFor(() => expect(cancel).toHaveBeenCalledTimes(1));
     });
   }
+
+  it('removes the abort listener of a stream response without a body', async () => {
+    const controller = new AbortController();
+    const response = await axios.get('http://localhost/no-content', {
+      adapter: 'fetch',
+      responseType: 'stream',
+      signal: controller.signal,
+      env: { fetch: async () => new Response(null, { status: 204 }) },
+    });
+
+    expect(response.data).toBeNull();
+    await vi.waitFor(() => expect(getEventListeners(controller.signal, 'abort')).toHaveLength(0));
+  });
+
+  it('clears the timeout of a stream response without a body', async () => {
+    let fetchSignal;
+    await axios.get('http://localhost/no-content', {
+      adapter: 'fetch',
+      responseType: 'stream',
+      timeout: 20,
+      env: {
+        async fetch(input) {
+          fetchSignal = input.signal;
+          return new Response(null, { status: 204 });
+        },
+      },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(fetchSignal.aborted).toBe(false);
+  });
 });

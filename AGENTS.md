@@ -78,7 +78,7 @@ CI runs after a PR is opened. Inspect the actual GitHub Actions checks for the l
 - Throw `AxiosError` for axios-originated failures; never raw `Error`. Pass `(message, code, config, request, response)` so consumers can introspect.
 - Wrap third-party errors with `AxiosError.from(error, code, config, request, response)`.
 - Canonical code list lives in `lib/core/AxiosError.js`; current codes include `ERR_BAD_OPTION_VALUE`, `ERR_BAD_OPTION`, `ECONNABORTED`, `ETIMEDOUT`, `ECONNREFUSED`, `ERR_NETWORK`, `ERR_FR_TOO_MANY_REDIRECTS`, `ERR_DEPRECATED`, `ERR_BAD_RESPONSE`, `ERR_BAD_REQUEST`, `ERR_CANCELED`, `ERR_NOT_SUPPORT`, `ERR_INVALID_URL`, `ERR_FORM_DATA_DEPTH_EXCEEDED`.
-- Validate config options through the `validator` helper; do not invent ad-hoc validation paths.
+- In `Axios#request`, validate the type and shape of config options through the `validator` helper (`validator.assertOptions`) rather than with ad-hoc checks. That validation runs before request interceptors, checks only the options listed in each schema, and skips options whose value is `undefined`. A check that needs the final config after interceptors, an option that may be `undefined`, or the adapter chosen for the request belongs on the request path where that information exists, such as `dispatchRequest` or the adapter, and throws `AxiosError` with a specific code such as `ERR_INVALID_URL`. Keep request-only checks out of shared helpers such as `buildURL` and `buildFullPath`, which `axios.getUri()` also uses.
 
 ## Interceptor Execution Order
 

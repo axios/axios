@@ -93,13 +93,16 @@ describe('static api', () => {
       assertInvalidUrl(() => axios.getUri({ url: null, params: PARAMS }), 'null');
     });
 
-    it('should reject a nullish url on a built-in adapter selected by name', () => {
-      assertInvalidUrl(() => axios.getUri({ adapter: 'fetch', params: PARAMS }), 'undefined');
-      assertInvalidUrl(
-        () => axios.getUri({ adapter: 'fetch', socketPath: '/tmp/axios.sock', params: PARAMS }),
-        'undefined'
-      );
-    });
+    it.runIf(typeof fetch === 'function')(
+      'should reject a nullish url on a built-in adapter selected by name',
+      () => {
+        assertInvalidUrl(() => axios.getUri({ adapter: 'fetch', params: PARAMS }), 'undefined');
+        assertInvalidUrl(
+          () => axios.getUri({ adapter: 'fetch', socketPath: '/tmp/axios.sock', params: PARAMS }),
+          'undefined'
+        );
+      }
+    );
 
     it('should keep building urls that a request would accept', () => {
       assert.strictEqual(axios.getUri({ url: '', params: PARAMS }), '?foo=bar');

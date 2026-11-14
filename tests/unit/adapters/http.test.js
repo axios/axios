@@ -5694,6 +5694,47 @@ describe('supports http with nodejs', () => {
       }
     });
 
+    for (const method of ['get', 'head', 'delete']) {
+      for (const bodyType of ['buffer', 'stream', 'none']) {
+        it(`should send an HTTP/2 ${method} request with ${bodyType} data`, async () => {
+          const body = bodyType === 'none' ? '' : 'request body';
+          const server = await startHTTPServer(
+            (req, res) => {
+              const chunks = [];
+              req.on('data', (chunk) => chunks.push(chunk));
+              req.on('end', () => {
+                res.setHeader('x-request-method', req.method);
+                res.setHeader('x-request-body', Buffer.concat(chunks).toString('base64'));
+                res.end();
+              });
+            },
+            { useHTTP2: true }
+          );
+
+          try {
+            const data =
+              bodyType === 'none'
+                ? undefined
+                : bodyType === 'stream'
+                  ? stream.Readable.from([body])
+                  : Buffer.from(body);
+            const response = await createHttp2Axios(`https://localhost:${server.address().port}`)[
+              method
+            ]('/', { data, proxy: false });
+
+            assert.strictEqual(response.status, 200);
+            assert.strictEqual(response.headers['x-request-method'], method.toUpperCase());
+            assert.strictEqual(
+              response.headers['x-request-body'],
+              Buffer.from(body).toString('base64')
+            );
+          } finally {
+            await stopHTTPServer(server);
+          }
+        });
+      }
+    }
+
     it('should use a custom DNS lookup for HTTP/2 connections', async () => {
       const server = await startHTTPServer(
         (req, res) => {

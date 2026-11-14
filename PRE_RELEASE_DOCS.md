@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### `getUri` rejects a nullish url
+
+- **Change:** `getUri` throws `AxiosError` with `ERR_INVALID_URL` for a `null` or `undefined` url without `baseURL`, the same configs a request rejects.
+- **Source:** `PRE_RELEASE_CHANGELOG.md`, Bug Fixes, "`getUri` rejects a nullish url".
+- **Status:** Pending.
+- **Docs targets:** The `getUri` section of `docs/pages/advanced/request-method-aliases.md` and its Spanish, French, and Chinese translations; the `getUri` mention in the README; the upgrade guide for the release that ships this.
+- **Required content:** Say that `getUri` throws `ERR_INVALID_URL` when the url is `null` or `undefined` and no `baseURL` is set, unless a custom adapter or a `socketPath` on the Node HTTP adapter supplies the destination, and that an empty-string url is still accepted. Replace the claim that `getUri` returns "the same string axios would put on the wire": it applies `baseURL`, `params`, `paramsSerializer`, and the url check, but does not run request interceptors, so a url, params, or `baseURL` set by an interceptor is not reflected and a url that only an interceptor supplies makes `getUri` throw. In the upgrade guide, note that `getUri({ params })` without a url previously returned a query-only string such as `?foo=bar` and `getUri()` with no url or `baseURL` returned `undefined`; callers that relied on either should pass `url: ''` or set `baseURL`.
+- **Examples:** `axios.getUri({ params: { q: 1 } })` throws; `axios.getUri({ url: '', params: { q: 1 } })` returns `'?q=1'`.
+- **Notes:** None.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.

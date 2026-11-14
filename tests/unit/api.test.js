@@ -69,14 +69,71 @@ describe('static api', () => {
     assert.strictEqual(typeof axios.getUri, 'function');
   });
 
-  it('should build a query-only uri without a destination', () => {
-    // `getUri` only builds a query string; it never dispatches a request, so
-    // it must keep supporting a missing url.
-    assert.strictEqual(axios.getUri({ params: { foo: 'bar' } }), '?foo=bar');
-    assert.strictEqual(axios.getUri({ url: null, params: { foo: 'bar' } }), '?foo=bar');
-    assert.strictEqual(axios.getUri({ url: undefined, params: { foo: 'bar' } }), '?foo=bar');
-    assert.strictEqual(axios.getUri({ url: '', params: { foo: 'bar' } }), '?foo=bar');
-    assert.strictEqual(axios.getUri({ url: '/foo', params: { foo: 'bar' } }), '/foo?foo=bar');
+  describe('getUri url validation', () => {
+    // `getUri` applies the same url check as a dispatched request, so it never
+    // returns a uri that the request itself would reject.
+    const PARAMS = { foo: 'bar' };
+
+    const assertInvalidUrl = (fn, kind) =>
+      assert.throws(fn, (error) => {
+        assert.strictEqual(error.name, 'AxiosError');
+        assert.strictEqual(error.code, 'ERR_INVALID_URL');
+        assert.strictEqual(
+          error.message,
+          `Invalid URL: url cannot be ${kind} when baseURL is not set`
+        );
+        return true;
+      });
+
+    it('should reject a nullish url without baseURL', () => {
+      assertInvalidUrl(() => axios.getUri(), 'undefined');
+      assertInvalidUrl(() => axios.getUri({}), 'undefined');
+      assertInvalidUrl(() => axios.getUri({ params: PARAMS }), 'undefined');
+      assertInvalidUrl(() => axios.getUri({ url: undefined, params: PARAMS }), 'undefined');
+      assertInvalidUrl(() => axios.getUri({ url: null, params: PARAMS }), 'null');
+    });
+
+    it('should reject a nullish url on a built-in adapter selected by name', () => {
+      assertInvalidUrl(() => axios.getUri({ adapter: 'fetch', params: PARAMS }), 'undefined');
+      assertInvalidUrl(
+        () => axios.getUri({ adapter: 'fetch', socketPath: '/tmp/axios.sock', params: PARAMS }),
+        'undefined'
+      );
+    });
+
+    it('should keep building urls that a request would accept', () => {
+      assert.strictEqual(axios.getUri({ url: '', params: PARAMS }), '?foo=bar');
+      assert.strictEqual(axios.getUri({ url: '/foo', params: PARAMS }), '/foo?foo=bar');
+      assert.strictEqual(
+        create({ baseURL: 'https://api.example.com' }).getUri({ params: PARAMS }),
+        'https://api.example.com?foo=bar'
+      );
+      assert.strictEqual(
+        axios.getUri({ adapter: 'http', socketPath: '/tmp/axios.sock', params: PARAMS }),
+        '?foo=bar'
+      );
+      assert.strictEqual(
+        axios.getUri({ adapter: (config) => Promise.resolve({ config }), params: PARAMS }),
+        '?foo=bar'
+      );
+    });
+
+    it('should not resolve the adapter for a usable url', () => {
+      // `xhr` is unavailable in Node; resolving it would throw ERR_NOT_SUPPORT.
+      assert.strictEqual(axios.getUri({ adapter: 'xhr', url: '/foo' }), '/foo');
+      assert.strictEqual(
+        create({ baseURL: 'https://api.example.com' }).getUri({ adapter: 'xhr' }),
+        'https://api.example.com'
+      );
+    });
+
+    it('should not see a url that a request interceptor would supply', () => {
+      // `getUri` does not run interceptors.
+      const instance = create();
+      instance.interceptors.request.use((config) => ({ ...config, url: '/foo' }));
+
+      assertInvalidUrl(() => instance.getUri({ params: PARAMS }), 'undefined');
+    });
   });
 
   it('should ignore inherited data for bodyless method helpers', async () => {

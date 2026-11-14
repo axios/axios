@@ -61,7 +61,7 @@ describe('core::dispatchRequest', () => {
     const assertGuardRejection = (error) => {
       assert.ok(error instanceof AxiosError, 'must be AxiosError');
       assert.strictEqual(error.code, AxiosError.ERR_INVALID_URL);
-      assert.match(error.message, /for a dispatched request$/);
+      assert.match(error.message, /when baseURL is not set$/);
     };
 
     // Swap the registered `http` built-in for a stub. `getAdapter('http')` and

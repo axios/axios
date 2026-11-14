@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import assert from 'assert';
 import {
   startHTTPServer,
@@ -5409,6 +5409,34 @@ describe('supports http with nodejs', () => {
         await stopHTTPServer(server);
       }
     }, 30000);
+
+    it('should keep a rate-limited upload moving after the system clock moves backwards', async () => {
+      const configRate = 1000;
+      const buf = Buffer.alloc(configRate * 2).fill('s');
+      const realNow = Date.now;
+      let clockOffset = 0;
+      const server = await startHTTPServer((req, res) => {
+        req.once('data', () => {
+          clockOffset = 60 * 60 * 1000;
+        });
+        req.pipe(res);
+      });
+      const dateNow = vi.spyOn(Date, 'now').mockImplementation(() => realNow() - clockOffset);
+
+      try {
+        const { data } = await axios.post(`http://localhost:${server.address().port}`, buf, {
+          maxRate: [configRate],
+          responseType: 'text',
+          maxRedirects: 0,
+          timeout: 8000,
+        });
+
+        assert.strictEqual(data, buf.toString(), 'content corrupted');
+      } finally {
+        dateNow.mockRestore();
+        await stopHTTPServer(server);
+      }
+    }, 15000);
   });
 
   describe('request aborting', () => {

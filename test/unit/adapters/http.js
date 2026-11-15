@@ -238,6 +238,72 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  it("should reject a negative timeout as an immediate timeout instead of crashing", async function () {
+    var requests = 0;
+
+    server = await new Promise(function (resolve) {
+      var srv = http
+        .createServer(function (req, res) {
+          requests++;
+          res.end("ok");
+        })
+        .listen(4444, function () {
+          resolve(srv);
+        });
+    });
+
+    var cases = [
+      [-1, undefined],
+      [-1, 0],
+      ["-1", undefined],
+      ["-1", 0],
+      [-1e-7, undefined],
+      [-1e-7, 0],
+      ["-1e-324", undefined],
+      ["-1e-324", 0],
+    ];
+
+    for (var i = 0; i < cases.length; i++) {
+      var timeout = cases[i][0];
+      var maxRedirects = cases[i][1];
+
+      await assert.rejects(
+        axios.get("http://localhost:4444/", {
+          timeout: timeout,
+          maxRedirects: maxRedirects,
+        }),
+        function (error) {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+          assert.strictEqual(error.message, "timeout of " + timeout + "ms exceeded");
+          return true;
+        },
+        "timeout " + timeout + " with maxRedirects " + maxRedirects
+      );
+    }
+
+    await assert.rejects(
+      axios.get("http://localhost:4444/", {
+        timeout: -1,
+        transitional: { clarifyTimeoutError: true },
+      }),
+      function (error) {
+        assert.strictEqual(error.code, AxiosError.ETIMEDOUT);
+        return true;
+      }
+    );
+
+    assert.strictEqual(requests, 0);
+  });
+
+  it("should not apply a negative timeout to data: URLs", async function () {
+    var response = await axios.get("data:text/plain;base64,aGk=", {
+      timeout: -1,
+    });
+
+    assert.strictEqual(response.data.toString(), "hi");
+  });
+
   it("should allow passing JSON", function (done) {
     var data = {
       firstName: "Fred",

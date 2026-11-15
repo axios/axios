@@ -2204,101 +2204,52 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
   });
 
   describe('capability probe cleanup', () => {
-    it('should cancel the ReadableStream created during the request stream probe', () => {
-      // The fetch adapter factory probes for request-stream support by creating
-      // a ReadableStream as a Request body.  Previously the stream was never
-      // cancelled, leaving a dangling pull-algorithm promise (async resource leak
-      // visible via `--detect-async-leaks` or Node.js async_hooks).
-      //
-      // Calling getFetch with a unique env triggers a fresh factory() execution
-      // (including the probe).  We spy on ReadableStream.prototype.cancel to
-      // verify it is invoked during the probe.
+    // Each test passes its own env.Request or env.Response, which is a fresh
+    // getFetch cache key, so factory() re-runs the capability probes.
 
-      const cancelSpy = vi.spyOn(ReadableStream.prototype, 'cancel');
+    // Records cancel() calls on one exact stream and keeps the returned promise.
+    const trackCancel = (stream) => {
+      const probe = { stream, calls: 0, result: undefined };
+      const cancel = stream.cancel;
 
-      try {
-        // Unique fetch function ensures cache miss → factory() re-runs the probe.
-        const uniqueFetch = async () => new Response('ok');
-        getFetch({ env: { fetch: uniqueFetch } });
+      stream.cancel = function (...args) {
+        probe.calls++;
+        probe.result = cancel.apply(this, args);
 
-        assert.ok(
-          cancelSpy.mock.calls.length > 0,
-          'ReadableStream.prototype.cancel should be called during the capability probe'
-        );
-      } finally {
-        cancelSpy.mockRestore();
-      }
-    });
+        return probe.result;
+      };
 
-    it('should cancel the ReadableStream created during the response stream probe', () => {
-      // The factory also probes for response-stream support by reading the body of a
-      // throwaway `new Response('')`.  That body is a ReadableStream whose pull
-      // algorithm stays pending unless the stream is cancelled, so an uncancelled
-      // probe body is an async resource leak for the lifetime of the realm.
-      //
-      // Spying on ReadableStream.prototype.cancel is not enough here: the
-      // request-stream probe above already calls it, so such an assertion passes
-      // whether or not this probe cleans up.  Stub the `Response` global instead and
-      // track cancellation on the exact stream this probe creates.
+      return probe;
+    };
 
-      const OriginalResponse = globalThis.Response;
-      const probes = [];
+    const assertReleased = async (probe) => {
+      assert.strictEqual(probe.calls, 1, 'the probe body should be cancelled exactly once');
+      await probe.result;
+      assert.match(util.inspect(probe.stream), /state: 'closed'/);
+    };
 
-      class ProbeResponse extends OriginalResponse {
-        get body() {
-          const body = super.body;
+    // The request stream probe is the only Request built with a `duplex` getter;
+    // requests made by the adapter pass a plain value.
+    const isRequestProbe = (init) => {
+      const duplex = init && Object.getOwnPropertyDescriptor(init, 'duplex');
 
-          if (body && !probes.some((probe) => probe.stream === body)) {
-            const probe = { stream: body, cancelled: false };
-            const cancel = body.cancel;
+      return Boolean(duplex && duplex.get);
+    };
 
-            body.cancel = function (...args) {
-              probe.cancelled = true;
-              return cancel.apply(this, args);
-            };
+    const withUnhandledRejections = async (fn) => {
+      const rejections = [];
+      const onUnhandledRejection = (reason) => rejections.push(reason);
 
-            probes.push(probe);
-          }
-
-          return body;
-        }
-      }
-
-      globalThis.Response = ProbeResponse;
+      process.on('unhandledRejection', onUnhandledRejection);
 
       try {
-        // Unique fetch function ensures cache miss → factory() re-runs the probe.
-        const uniqueFetch = async () => new OriginalResponse('ok');
-        getFetch({ env: { fetch: uniqueFetch } });
-
-        assert.strictEqual(
-          probes.length,
-          1,
-          'the response stream probe should read exactly one Response body'
-        );
-        assert.ok(
-          probes[0].cancelled,
-          'the ReadableStream created by the response stream probe should be cancelled'
-        );
+        await fn();
+        await setTimeoutAsync(50);
       } finally {
-        globalThis.Response = OriginalResponse;
+        process.off('unhandledRejection', onUnhandledRejection);
       }
-    });
 
-    // `utils.isReadableStream` is a toStringTag check rather than a structural one,
-    // so a custom `env.Response` can expose a stream-like body whose `cancel` is
-    // missing or broken.  Probe cleanup runs after the capability has been read and
-    // must not downgrade it.
-    const makeStubResponse = (cancel) => {
-      const probeBody = { cancel };
-
-      Object.defineProperty(probeBody, Symbol.toStringTag, { value: 'ReadableStream' });
-
-      const StubResponse = function () {};
-
-      Object.defineProperty(StubResponse.prototype, 'body', { get: () => probeBody });
-
-      return StubResponse;
+      return rejections;
     };
 
     const asStream = (value) => {
@@ -2307,74 +2258,61 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       return value;
     };
 
-    it('should keep response stream support when the probe body refuses cancellation', async () => {
-      const responseBody = asStream({});
+    it('should cancel the exact ReadableStream created by the request stream probe', async () => {
+      const probes = [];
 
-      const { data } = await fetchAxios.get('/', {
-        responseType: 'stream',
-        env: {
-          fetch: async () => ({ status: 200, headers: {}, body: responseBody }),
-          Response: makeStubResponse(() => {
-            throw new TypeError('cancel unsupported');
-          }),
-        },
-      });
+      class ProbeRequest extends Request {
+        constructor(input, init) {
+          super(input, init);
 
-      // A downgraded capability resolves `stream` through the generic resolver,
-      // which throws ERR_NOT_SUPPORT instead of handing back the body.
-      assert.strictEqual(data, responseBody);
-    });
-
-    it('should not emit an unhandled rejection when the probe body cancellation rejects', async () => {
-      const responseBody = asStream({});
-      const rejections = [];
-      const onUnhandledRejection = (reason) => rejections.push(reason);
-
-      process.on('unhandledRejection', onUnhandledRejection);
-
-      try {
-        const { data } = await fetchAxios.get('/', {
-          responseType: 'stream',
-          env: {
-            fetch: async () => ({ status: 200, headers: {}, body: responseBody }),
-            Response: makeStubResponse(() => Promise.reject(new Error('cancel failed'))),
-          },
-        });
-
-        await setTimeoutAsync(50);
-
-        assert.deepStrictEqual(rejections, []);
-        assert.strictEqual(data, responseBody);
-      } finally {
-        process.off('unhandledRejection', onUnhandledRejection);
-      }
-    });
-
-    it('should keep request stream support when the probe body refuses cancellation', async () => {
-      // Same contract on the request side.  The probe body is the only body this
-      // stub breaks; the request the adapter goes on to build keeps the real one.
-      const OriginalRequest = globalThis.Request;
-      const probeBody = asStream({
-        cancel() {
-          throw new TypeError('cancel unsupported');
-        },
-      });
-
-      // The stream probe builds the first Request the factory constructs.  Key off
-      // that instance so every read of its body is broken, including the null guard.
-      let probeRequest;
-
-      class ProbeRequest extends OriginalRequest {
-        constructor(...args) {
-          super(...args);
-
-          if (probeRequest === undefined) {
-            probeRequest = this;
+          if (isRequestProbe(init)) {
+            probes.push(trackCancel(super.body));
           }
         }
+      }
 
+      getFetch({ env: { fetch: async () => new Response('ok'), Request: ProbeRequest } });
+
+      assert.strictEqual(probes.length, 1, 'the request stream probe should build one Request');
+      await assertReleased(probes[0]);
+    });
+
+    it('should cancel the exact ReadableStream created by the response stream probe', async () => {
+      // A prototype spy on ReadableStream#cancel cannot tell the two probes apart,
+      // so track the exact body this probe reads.
+      const probes = [];
+
+      class ProbeResponse extends Response {
         get body() {
-          return this === probeRequest ? probeBody : super.body;
+          const body = super.body;
+
+          if (body && !probes.some((probe) => probe.stream === body)) {
+            probes.push(trackCancel(body));
+          }
+
+          return body;
+        }
+      }
+
+      getFetch({ env: { fetch: async () => new Response('ok'), Response: ProbeResponse } });
+
+      assert.strictEqual(probes.length, 1, 'the response stream probe should read one body');
+      await assertReleased(probes[0]);
+    });
+
+    it('should not emit an unhandled rejection when the request probe body cannot be cancelled', async () => {
+      // A locked stream rejects cancel(), as a polyfilled stream can when the
+      // runtime has already taken a reader on the request body.
+      const lockedBody = new ReadableStream();
+      lockedBody.getReader();
+
+      class LockedProbeRequest extends Request {
+        constructor(input, init) {
+          super(input, init);
+
+          if (isRequestProbe(init)) {
+            Object.defineProperty(this, 'body', { value: lockedBody });
+          }
         }
       }
 
@@ -2385,21 +2323,84 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         },
       });
 
-      const response = await fetchAxios.post('/', data, {
-        maxBodyLength: 1000,
-        env: {
-          fetch: async () => ({ status: 200, headers: {}, text: async () => 'ok' }),
-          Request: ProbeRequest,
-        },
+      let response;
+
+      const rejections = await withUnhandledRejections(async () => {
+        // maxBodyLength with a stream body throws ERR_NOT_SUPPORT unless request
+        // stream support was detected.
+        response = await fetchAxios.post('/', data, {
+          maxBodyLength: 1000,
+          env: {
+            fetch: async () => ({ status: 200, headers: {}, text: async () => 'ok' }),
+            Request: LockedProbeRequest,
+          },
+        });
       });
 
+      assert.deepStrictEqual(rejections, []);
       assert.strictEqual(response.data, 'ok');
     });
 
-    it('should cancel the probe body when the capability check itself throws', () => {
-      // `Object.prototype.toString` reads `Symbol.toStringTag`, so a custom
-      // `env.Response` can make the capability check throw before cleanup is
-      // reached.  The body still has to be cancelled.
+    // `utils.isReadableStream` is a toStringTag check rather than a structural
+    // one, so a custom env.Response can expose a stream-like body whose cancel()
+    // is missing or broken. Cleanup must not downgrade the detected support or
+    // leak a rejection.
+    it.each([
+      ['has no cancel()', undefined],
+      [
+        'throws from cancel()',
+        () => {
+          throw new TypeError('cancel unsupported');
+        },
+      ],
+      ['rejects from cancel()', () => Promise.reject(new Error('cancel failed'))],
+      [
+        'returns a rejecting thenable without catch()',
+        () => {
+          const rejected = Promise.reject(new Error('cancel failed'));
+
+          return { then: (onFulfilled, onRejected) => rejected.then(onFulfilled, onRejected) };
+        },
+      ],
+    ])('should keep response stream support when the probe body %s', async (_, cancel) => {
+      let calls = 0;
+      const probeBody = asStream({
+        cancel:
+          cancel &&
+          function (...args) {
+            calls++;
+
+            return cancel.apply(this, args);
+          },
+      });
+
+      const StubResponse = function () {};
+
+      Object.defineProperty(StubResponse.prototype, 'body', { get: () => probeBody });
+
+      const responseBody = asStream({});
+      let data;
+
+      const rejections = await withUnhandledRejections(async () => {
+        ({ data } = await fetchAxios.get('/', {
+          responseType: 'stream',
+          env: {
+            fetch: async () => ({ status: 200, headers: {}, body: responseBody }),
+            Response: StubResponse,
+          },
+        }));
+      });
+
+      assert.strictEqual(calls, cancel ? 1 : 0);
+      assert.deepStrictEqual(rejections, []);
+      // A downgraded capability resolves `stream` through the generic resolver,
+      // which throws ERR_NOT_SUPPORT instead of handing back the body.
+      assert.strictEqual(data, responseBody);
+    });
+
+    it('should cancel the response probe body when the capability check throws', () => {
+      // Object.prototype.toString reads Symbol.toStringTag, so a custom
+      // env.Response can make the check throw before it returns.
       let cancelled = false;
 
       const probeBody = {
@@ -2417,56 +2418,9 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       Object.defineProperty(StubResponse.prototype, 'body', { get: () => probeBody });
 
-      getFetch({
-        env: {
-          fetch: async () => new Response('ok'),
-          Response: StubResponse,
-        },
-      });
+      getFetch({ env: { fetch: async () => new Response('ok'), Response: StubResponse } });
 
       assert.ok(cancelled, 'the probe body should be cancelled even when the check throws');
-    });
-
-    it('should not emit an unhandled rejection when the cancellation thenable is hostile', async () => {
-      // Cleanup reads `then` once and invokes that same reference, so a getter that
-      // misbehaves on a second read cannot strand the rejection it handles.
-      const rejected = Promise.reject(new Error('cancel failed'));
-      let thenReads = 0;
-
-      const hostileThenable = {
-        get then() {
-          thenReads++;
-
-          if (thenReads > 1) {
-            throw new TypeError('then is not reusable');
-          }
-
-          return (onFulfilled, onRejected) => rejected.then(onFulfilled, onRejected);
-        },
-      };
-
-      const responseBody = asStream({});
-      const rejections = [];
-      const onUnhandledRejection = (reason) => rejections.push(reason);
-
-      process.on('unhandledRejection', onUnhandledRejection);
-
-      try {
-        const { data } = await fetchAxios.get('/', {
-          responseType: 'stream',
-          env: {
-            fetch: async () => ({ status: 200, headers: {}, body: responseBody }),
-            Response: makeStubResponse(() => hostileThenable),
-          },
-        });
-
-        await setTimeoutAsync(50);
-
-        assert.deepStrictEqual(rejections, []);
-        assert.strictEqual(data, responseBody);
-      } finally {
-        process.off('unhandledRejection', onUnhandledRejection);
-      }
     });
   });
 });

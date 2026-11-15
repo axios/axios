@@ -5695,9 +5695,9 @@ describe('supports http with nodejs', () => {
     });
 
     for (const method of ['get', 'head', 'delete']) {
-      for (const bodyType of ['buffer', 'stream']) {
+      for (const bodyType of ['buffer', 'stream', 'none']) {
         it(`should send an HTTP/2 ${method} request with ${bodyType} data`, async () => {
-          const body = 'request body';
+          const body = bodyType === 'none' ? '' : 'request body';
           const server = await startHTTPServer(
             (req, res) => {
               const chunks = [];
@@ -5712,7 +5712,12 @@ describe('supports http with nodejs', () => {
           );
 
           try {
-            const data = bodyType === 'stream' ? stream.Readable.from([body]) : Buffer.from(body);
+            const data =
+              bodyType === 'none'
+                ? undefined
+                : bodyType === 'stream'
+                  ? stream.Readable.from([body])
+                  : Buffer.from(body);
             const response = await createHttp2Axios(`https://localhost:${server.address().port}`)[
               method
             ]('/', { data, proxy: false });

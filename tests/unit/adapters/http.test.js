@@ -220,6 +220,18 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should not apply a negative timeout to data: URLs', async () => {
+    // data: URLs are decoded locally and never apply a timeout, so a negative one is ignored.
+    for (const timeout of [-1, -0.5, '-1']) {
+      const response = await axios.get('data:text/plain;base64,aGk=', {
+        timeout,
+        responseType: 'text',
+      });
+
+      assert.strictEqual(response.data, 'hi');
+    }
+  });
+
   it('should keep integer truncation for exponent-form string timeouts', async () => {
     // The sign check uses parseFloat, but the applied timeout is still the base-10 integer
     // prefix, so these keep timing out after 1ms instead of 1000ms, never, or ~24.8 days.

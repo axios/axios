@@ -180,6 +180,43 @@ describe('async request transformers', () => {
   });
 
 
+
+  it('removes listeners from original cancellation objects after config changes', async () => {
+    const originalController = new AbortController();
+    const replacementController = new AbortController();
+    const originalSource = CancelToken.source();
+    const replacementSource = CancelToken.source();
+    const removeListener = vi.spyOn(originalController.signal, 'removeEventListener');
+    let release;
+    const gate = new Promise((resolve) => { release = resolve; });
+    const config = makeConfig({
+      signal: originalController.signal,
+      cancelToken: originalSource.token,
+      transformRequest: [async function(data) {
+        await gate;
+        this.signal = replacementController.signal;
+        this.cancelToken = replacementSource.token;
+        return data;
+      }],
+    });
+
+    try {
+      const pending = dispatchRequest(config);
+      assert.equal(originalSource.token._listeners?.length, 1);
+      release();
+      await pending;
+
+      assert.equal(originalSource.token._listeners?.length || 0, 0);
+      assert.ok(
+        removeListener.mock.calls.some(([type]) => type === 'abort'),
+        'the original signal listener must be removed'
+      );
+    } finally {
+      release();
+      removeListener.mockRestore();
+    }
+  });
+
   it('does not start another transformer after the request is cancelled', async () => {
     const controller = new AbortController();
     let finishFirst;

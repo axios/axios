@@ -301,3 +301,12 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Status:** Pending.
 - **Docs targets:** Fetch adapter guidance, request-config timeout and size-limit descriptions, native FormData examples, and translations after English release wording is finalized.
 - **Required content:** Native FormData supplies its multipart boundary and matching content type; applications should let the transport generate these. Fetch timeouts honor an own `timeoutErrorMessage` while retaining the current timeout code. Responses rejected by their declared size begin best-effort body cancellation; cleanup failures do not replace or delay the size error. No API or type migration is required.
+
+### Fetch capability probe cleanup
+
+- **Change:** The fetch adapter now cancels the throwaway body it reads while probing for response-stream support.
+- **Source:** port of v1.x [PR #11241](https://github.com/axios/axios/pull/11241); `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter - capability probe cleanup.
+- **Status:** Pending.
+- **Docs targets:** `apps/docs/pages/advanced/fetch-adapter.md`, the Custom fetch section, after the paragraph about supplying matching `Request` and `Response` constructors.
+- **Required content:** One sentence: when axios builds the adapter it reads `new Response('').body` from `env.Response` once to detect stream support and then calls `cancel()` on that body, so a custom `Response` should return a fresh body per instance; a missing or failing `cancel()` is ignored and does not change detected support.
+- **Notes:** Internal behavior only; no API, option, or type change and no migration.

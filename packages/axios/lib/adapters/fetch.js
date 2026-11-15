@@ -71,6 +71,45 @@ const test = (fn, ...args) => {
   }
 };
 
+// Marks a probe body's cancellation result as handled. Reads `then` once and
+// does not go through the global Promise or `Promise.prototype.catch`, so a
+// rejected cancellation from a custom body cannot surface as an unhandled
+// rejection.
+const ignoreRejection = (result) => {
+  try {
+    if (result !== null && (typeof result === 'object' || typeof result === 'function')) {
+      const then = result.then;
+
+      if (isFunction(then)) {
+        then.call(result, undefined, utils.noop);
+      }
+    }
+  } catch (e) {
+    // Ignored: the cancellation has already been requested.
+  }
+};
+
+// On Node.js 22 and older, the body of the throwaway `new Response('')` used by
+// the response-stream probe leaves its stream's internal closed promise pending
+// until the stream is cancelled, which async-leak detectors report for every
+// realm that loads axios. This cleanup runs in `finally`, whether the check
+// returned or threw, and is best-effort so it never affects the probe result.
+const cancelProbeBody = (body) => {
+  if (body == null) {
+    return;
+  }
+
+  try {
+    const cancel = body.cancel;
+
+    if (isFunction(cancel)) {
+      ignoreRejection(cancel.call(body));
+    }
+  } catch (e) {
+    // Ignored: an uncancellable probe body is still a valid probe result.
+  }
+};
+
 const maybeWithAuthCredentials = (url) => {
   const protocolIndex = url.indexOf('://');
   let urlToCheck = url;
@@ -136,7 +175,7 @@ const factory = (env) => {
       const hasContentType = request.headers.has('Content-Type');
 
       if (request.body != null) {
-        request.body.cancel();
+        ignoreRejection(request.body.cancel());
       }
 
       return duplexAccessed && !hasContentType;
@@ -145,7 +184,15 @@ const factory = (env) => {
   const supportsResponseStream =
     isResponseSupported &&
     isReadableStreamSupported &&
-    test(() => utils.isReadableStream(new Response('').body));
+    test(() => {
+      const probeBody = new Response('').body;
+
+      try {
+        return utils.isReadableStream(probeBody);
+      } finally {
+        cancelProbeBody(probeBody);
+      }
+    });
 
   // Some runtimes reject every explicit cache mode. Use own defaults for both
   // probes so unrelated polluted options cannot affect cache-mode detection.

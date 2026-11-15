@@ -4,7 +4,7 @@
     href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"
     target="_blank"
     rel="noopener noreferrer sponsored"
-    aria-label="Get Security Updates for Axios v0 (opens in a new tab)"
+    aria-label="Get Security Updates for Axios v0 &amp; Early Access Provider (opens in a new tab)"
   >
     <span class="security-updates-banner__content">
       <svg
@@ -28,7 +28,7 @@
           stroke-linejoin="round"
         />
       </svg>
-      <span>Get Security Updates for Axios v0</span>
+      <span>Get Security Updates for Axios v0 &amp; Early Access Provider</span>
       <span class="security-updates-banner__arrow" aria-hidden="true">→</span>
     </span>
   </a>

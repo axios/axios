@@ -6,6 +6,8 @@ By default, `maxContentLength` and `maxBodyLength` are set to `-1` (unlimited). 
 
 **If you make requests to servers you do not fully trust, you MUST set a `maxContentLength` (and `maxBodyLength`) suitable for your workload.** The limit is enforced chunk-by-chunk during streaming decompression, so setting it is sufficient to neutralize decompression-bomb attacks.
 
+The Node.js HTTP adapter enforces these limits. The fetch adapter enforces them when it can determine the size or track the body stream; see [Fetch adapter response size limits](/pages/advanced/fetch-adapter#response-size-limits). The XHR adapter, which browsers use by default, does not enforce `maxContentLength` or `maxBodyLength`. For responses, the browser buffers and decompresses the body before axios could check its size. To cap response size in a browser, use `adapter: 'fetch'`, subject to those same conditions.
+
 ```js
 axios.get('https://example.com/data', {
   maxContentLength: 10 * 1024 * 1024, // 10 MB
@@ -30,7 +32,7 @@ The following request-config options have direct security implications. They are
 | [`beforeRedirect`](/pages/advanced/request-config#beforeredirect) | Runs after `follow-redirects` strips credentials on protocol downgrade. Re-injecting credentials without checking the destination protocol can leak them over plain HTTP. | Only re-add credentials for trusted HTTPS destinations. Check `options.protocol === "https:"` before assigning `auth`. |
 | [`sensitiveHeaders`](/pages/advanced/request-config#sensitiveheaders) | Custom secret headers such as `X-API-Key` can be forwarded by the Node.js HTTP adapter when following redirects to a different origin. | List custom secret-bearing header names in `sensitiveHeaders`; axios removes matching headers case-insensitively on cross-origin redirects. Same-origin redirects keep them. |
 | [`withXSRFToken`](/pages/advanced/request-config#withxsrftoken) | Setting `true` forces the XSRF header on cross-origin requests. Older axios versions implicitly enabled this with `withCredentials: true`; newer versions require both flags. | Leave at `undefined` (same-origin only) unless your backend explicitly validates XSRF on cross-origin requests. |
-| [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` includes the request config by default, which can leak `Authorization` headers or `auth` credentials into error logs and telemetry. | Pass a `redact` array with sensitive config key names. Matching is case-insensitive and recursive. |
+| [`redact`](/pages/advanced/request-config#redact) | `AxiosError#toJSON()` includes the request config by default, which can leak `Authorization` headers or `auth` credentials into error logs and telemetry. | Pass a `redact` array with sensitive config key names. Matching is case-insensitive and recursive. Objects other than plain objects and `AxiosHeaders` that have a `toJSON()` method, such as `URL` objects, and credentials inside URL strings are not scanned; list the parent key, such as `auth` or `proxy`, to mask the whole value. |
 | [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) | A custom `FormData` whose `getHeaders()` returns attacker-controlled values can overwrite headers like `Authorization` or inject arbitrary ones in Node.js. | Set `'content-only'` to copy only `Content-Type` and `Content-Length`, then set other headers explicitly via the request `headers` config. |
 
 ## Supply-chain hardening: `ignore-scripts` and lifecycle scripts

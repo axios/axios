@@ -78,7 +78,7 @@ await axios.post('https://example.com/upload', form, {
 });
 ```
 
-默认值为 `'legacy'`。详见请求配置参考中的 [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy)。
+默认值为 `'legacy'`。详见请求配置参考中的 [`formDataHeaderPolicy`](/zh/pages/advanced/request-config#formdataheaderpolicy)。
 
 ## 支持的特殊结尾
 
@@ -164,5 +164,9 @@ console.log(axios.formToJSON(form));
 ```
 
 `user[name]` 同样会创建嵌套对象路径，而 `items[]` 会创建数组。
+
+字段名称是路径，因此相互冲突的名称会被合并，而不是分开保留。重复的名称会变成数组：两个 `account` 字段会生成 `{ account: ['standard', 'admin'] }`。同一个名称如果既用作普通值又用作父路径，结果取决于字段顺序。先 `account=standard` 再 `account[role]=admin` 会生成 `{ account: { role: 'admin' } }`，普通值会丢失；顺序相反时会生成 `{ account: [{ role: 'admin' }, 'standard'] }`。如果你要校验提交的字段，请检查 `formToJSON()` 返回的对象（这也是 axios 将 `FormData` 序列化为 JSON 时发送的内容），而不是原始的 `FormData` 条目。
+
+字段名称最多可以嵌套 100 层。更深的名称会抛出错误码为 `ERR_FORM_DATA_DEPTH_EXCEEDED` 的 `AxiosError`，axios 将符合规范的 `FormData`（具有 `entries()` 方法）或 HTML 表单作为 JSON 发送时也是如此。该上限是固定的，不受 `formSerializer.maxDepth` 和 `paramsSerializer.maxDepth` 影响。
 
 axios 支持以下快捷方法：`postForm`、`putForm`、`patchForm`，它们分别对应相应的 HTTP 方法，并预设 `Content-Type` 请求头为 `multipart/form-data`。

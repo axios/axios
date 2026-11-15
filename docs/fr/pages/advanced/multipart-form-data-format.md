@@ -78,7 +78,7 @@ await axios.post('https://example.com/upload', form, {
 });
 ```
 
-La valeur par défaut est `'legacy'`. Voir [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) dans la référence de configuration de requête pour plus de détails.
+La valeur par défaut est `'legacy'`. Voir [`formDataHeaderPolicy`](/fr/pages/advanced/request-config#formdataheaderpolicy) dans la référence de configuration de requête pour plus de détails.
 
 ## Terminaisons supportées
 
@@ -164,5 +164,9 @@ console.log(axios.formToJSON(form));
 ```
 
 `user[name]` crée également un chemin d'objet imbriqué, tandis que `items[]` crée un tableau.
+
+Les noms de champs sont des chemins : des noms qui se recoupent sont donc combinés au lieu d'être conservés séparément. Un nom répété devient un tableau : deux champs `account` produisent `{ account: ['standard', 'admin'] }`. Lorsqu'un nom est utilisé à la fois comme valeur simple et comme chemin parent, le résultat dépend de l'ordre des champs. `account=standard` suivi de `account[role]=admin` produit `{ account: { role: 'admin' } }`, et la valeur simple est perdue. L'ordre inverse produit `{ account: [{ role: 'admin' }, 'standard'] }`. Si vous validez les champs soumis, vérifiez l'objet renvoyé par `formToJSON()`, qui est aussi ce qu'axios envoie lorsqu'il sérialise un `FormData` en JSON, plutôt que les entrées d'origine du `FormData`.
+
+Les noms de champs peuvent être imbriqués sur 100 niveaux au maximum. Un nom plus profond lève une `AxiosError` avec le code `ERR_FORM_DATA_DEPTH_EXCEEDED`, y compris lorsqu'axios envoie un `FormData` conforme à la spécification (doté d'une méthode `entries()`) ou un formulaire HTML en JSON. Cette limite est fixe : `formSerializer.maxDepth` et `paramsSerializer.maxDepth` ne la modifient pas.
 
 Axios supporte les méthodes raccourcies suivantes : `postForm`, `putForm`, `patchForm` qui sont simplement les méthodes HTTP correspondantes avec l'en-tête `Content-Type` prédéfini à `multipart/form-data`.

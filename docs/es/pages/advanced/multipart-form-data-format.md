@@ -78,7 +78,7 @@ await axios.post('https://example.com/upload', form, {
 });
 ```
 
-El valor predeterminado es `'legacy'`. Consulta [`formDataHeaderPolicy`](/pages/advanced/request-config#formdataheaderpolicy) en la referencia de configuración de solicitud para más detalles.
+El valor predeterminado es `'legacy'`. Consulta [`formDataHeaderPolicy`](/es/pages/advanced/request-config#formdataheaderpolicy) en la referencia de configuración de solicitud para más detalles.
 
 ## Terminaciones admitidas
 
@@ -164,5 +164,9 @@ console.log(axios.formToJSON(form));
 ```
 
 `user[name]` también crea una ruta de objeto anidada, mientras que `items[]` crea un array.
+
+Los nombres de campo son rutas, así que los nombres que coinciden se combinan en lugar de mantenerse por separado. Un nombre repetido se convierte en un array: dos campos `account` producen `{ account: ['standard', 'admin'] }`. Cuando un nombre se usa a la vez como valor simple y como ruta padre, el resultado depende del orden de los campos. `account=standard` seguido de `account[role]=admin` produce `{ account: { role: 'admin' } }`, y el valor simple se pierde. El orden inverso produce `{ account: [{ role: 'admin' }, 'standard'] }`. Si validas los campos enviados, comprueba el objeto que devuelve `formToJSON()`, que es también lo que axios envía cuando serializa `FormData` como JSON, en lugar de las entradas originales del `FormData`.
+
+Los nombres de campo pueden anidarse hasta 100 niveles. Un nombre más profundo lanza un `AxiosError` con el código `ERR_FORM_DATA_DEPTH_EXCEEDED`, también cuando axios envía un `FormData` conforme a la especificación (con un método `entries()`) o un formulario HTML como JSON. El límite es fijo, y `formSerializer.maxDepth` y `paramsSerializer.maxDepth` no lo modifican.
 
 Axios admite los siguientes métodos abreviados: `postForm`, `putForm`, `patchForm`, que son simplemente los métodos HTTP correspondientes con el encabezado `Content-Type` preestablecido en `multipart/form-data`.

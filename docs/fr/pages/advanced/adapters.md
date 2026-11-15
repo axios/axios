@@ -25,7 +25,7 @@ Vous pouvez également passer un tableau de noms d'adaptateurs. axios utilisera 
 const instance = axios.create({ adapter: ["fetch", "xhr", "http"] });
 ```
 
-Pour plus de détails sur l'adaptateur `fetch`, consultez la page [Adaptateur Fetch](/pages/advanced/fetch-adapter).
+Pour plus de détails sur l'adaptateur `fetch`, consultez la page [Adaptateur Fetch](/fr/pages/advanced/fetch-adapter).
 
 ## Créer un adaptateur personnalisé
 

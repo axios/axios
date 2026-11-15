@@ -19,6 +19,7 @@ Voici une liste des erreurs potentielles identifiées par axios :
 | ERR_BAD_OPTION            | Option invalide fournie dans la configuration axios.                                          |
 | ECONNABORTED              | Indique généralement que la requête a expiré (sauf si `transitional.clarifyTimeoutError` est défini) ou a été abandonnée par le navigateur ou son plugin. |
 | ETIMEDOUT                 | La requête a expiré en dépassant la limite de temps par défaut d'axios. `transitional.clarifyTimeoutError` doit être défini à `true`, sinon une erreur générique `ECONNABORTED` sera levée à la place. |
+| ECONNREFUSED              | Le serveur a refusé la connexion. Défini par l'adaptateur `http` de Node.js, avec l'erreur système d'origine dans `error.cause` ; les adaptateurs `xhr` et `fetch` renvoient `ERR_NETWORK` à la place. |
 | ERR_NETWORK               | Problème lié au réseau. Dans le navigateur, cette erreur peut également être causée par une violation de politique [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) ou de [contenu mixte](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content). Le navigateur ne permet pas au code JS de clarifier la raison réelle de l'erreur pour des raisons de sécurité ; veuillez vérifier la console. |
 | ERR_FR_TOO_MANY_REDIRECTS | La requête est redirigée trop de fois ; dépasse le nombre maximum de redirections spécifié dans la configuration axios. |
 | ERR_DEPRECATED            | Fonctionnalité ou méthode dépréciée utilisée dans axios.                                      |
@@ -27,7 +28,7 @@ Voici une liste des erreurs potentielles identifiées par axios :
 | ERR_CANCELED              | Fonctionnalité ou méthode annulée explicitement par l'utilisateur via un AbortSignal (ou un CancelToken). |
 | ERR_NOT_SUPPORT           | Fonctionnalité ou méthode non supportée dans l'environnement axios actuel.                    |
 | ERR_INVALID_URL           | URL invalide fournie pour la requête axios.                                                   |
-| ERR_FORM_DATA_DEPTH_EXCEEDED | Un objet dépasse la `maxDepth` configurée lors de la sérialisation de `params` ou des données de formulaire. La limite par défaut est de 100 niveaux. Voir [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) et [`formSerializer`](/pages/advanced/request-config#formserializer). |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | Un objet dépasse la `maxDepth` configurée lors de la sérialisation de `params` ou des données de formulaire. La limite par défaut est de 100 niveaux. La conversion de FormData en JSON, par `axios.formToJSON()` ou lors de l'envoi d'un `FormData` conforme à la spécification (doté d'une méthode `entries()`) ou d'un formulaire HTML avec `Content-Type: application/json`, a une limite fixe de 100 niveaux que `maxDepth` ne modifie pas. Voir [`paramsSerializer`](/fr/pages/advanced/request-config#paramsserializer) et [`formSerializer`](/fr/pages/advanced/request-config#formserializer). |
 
 ## Gérer les erreurs
 
@@ -84,7 +85,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-Pour éviter de journaliser des secrets depuis `error.config`, passez un tableau `redact` dans la configuration de la requête. Les clés de configuration correspondantes sont masquées de manière insensible à la casse à n'importe quelle profondeur lorsque `AxiosError#toJSON()` est appelée.
+Pour éviter de journaliser des secrets depuis `error.config`, passez un tableau `redact` dans la configuration de la requête. Les clés de configuration correspondantes sont masquées de manière insensible à la casse à n'importe quelle profondeur lorsque `AxiosError#toJSON()` est appelée. Les objets autres que les objets simples et `AxiosHeaders` qui ont une méthode `toJSON()`, comme les objets `URL`, sont sérialisés tels quels et ne sont pas analysés, et les identifiants contenus dans des chaînes d'URL ne sont pas détectés. Indiquez la clé parente, comme `auth` ou `proxy`, pour masquer la valeur entière.
 
 ```js
 axios.get("/user/12345", {
@@ -180,5 +181,5 @@ async function fetchWithTimeout() {
 ```
 
 ::: tip Définissez toujours un `timeout` en production
-Sans cela, une requête bloquée peut rester en attente indéfiniment. Consultez [`timeout`](/pages/advanced/request-config#timeout) et [`transitional.clarifyTimeoutError`](/pages/advanced/request-config#transitional) pour les options de configuration correspondantes.
+Sans cela, une requête bloquée peut rester en attente indéfiniment. Consultez [`timeout`](/fr/pages/advanced/request-config#timeout) et [`transitional.clarifyTimeoutError`](/fr/pages/advanced/request-config#transitional) pour les options de configuration correspondantes.
 :::

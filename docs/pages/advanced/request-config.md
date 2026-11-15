@@ -39,11 +39,11 @@ The `allowAbsoluteUrls` determines whether or not absolute URLs will override a 
 
 ### `transformRequest`
 
-The `transformRequest` function allows you to modify the request data before it is sent to the server. This function is called with the request data as its only argument. This is only applicable for request methods `PUT`, `POST`, `PATCH` and `DELETE`. The last function in the array must return a string or an instance of Buffer, ArrayBuffer, FormData or Stream.
+The `transformRequest` function allows you to modify the request data before it is sent to the server. Each function is called with the request data and the request headers (an `AxiosHeaders` instance). It runs for every request, whatever the request method. The last function in the array must return a string or an instance of Buffer, ArrayBuffer, FormData, Stream, Blob or File.
 
 ### `transformResponse`
 
-The `transformResponse` function allows you to modify the response data before it is passed to the `then` or `catch` functions. This function is called with the response data as its only argument.
+The `transformResponse` function allows you to modify the response data before it is passed to the `then` or `catch` functions. Each function is called with the response data, the response headers (an `AxiosHeaders` instance), and the HTTP status code.
 
 ### `parseReviver`
 
@@ -90,7 +90,7 @@ const client = axios.create({
 
 ### `headers`
 
-The `headers` are the HTTP headers to be sent with the request. The `Content-Type` header is set to `application/json` by default.
+The `headers` are the HTTP headers to be sent with the request. There is no static default `Content-Type`. For data types handled by the default request transform, axios derives it from the request `data`: for example, a plain object is sent as `application/json` and `URLSearchParams` as `application/x-www-form-urlencoded;charset=utf-8`. For `post`, `put` and `patch` requests that still have no `Content-Type` after the request transforms, such as a plain string body, axios falls back to `application/x-www-form-urlencoded`.
 
 ### `params`
 
@@ -265,7 +265,7 @@ The `onDownloadProgress` function allows you to listen to the progress of a down
 
 ### `maxContentLength` <Badge type="warning" text="Node.js HTTP/fetch adapter" />
 
-The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined. Exceeding the limit rejects with `ERR_BAD_RESPONSE`; see [Fetch adapter response size limits](/pages/advanced/fetch-adapter#response-size-limits).
+The `maxContentLength` property defines the maximum response size in bytes. The Node.js HTTP adapter enforces it for buffered and streamed responses. The fetch adapter enforces it when the response length is declared, the response stream can be tracked, or the response size can otherwise be determined. Exceeding the limit rejects with `ERR_BAD_RESPONSE`; see [Fetch adapter response size limits](/pages/advanced/fetch-adapter#response-size-limits). The XHR adapter does not enforce it.
 
 > ⚠️ **Security:** defaults to `-1` (unlimited). Unbounded responses combined with gzip/deflate/brotli/zstd decompression allow decompression-bomb DoS.
 > Set an explicit limit when requesting servers you do not fully trust.
@@ -277,6 +277,8 @@ The `maxBodyLength` property defines the maximum request body size in bytes. The
 ### `redact`
 
 The `redact` property is an optional array of config key names to mask when an `AxiosError` is serialized with `toJSON()`. Matching is case-insensitive and recursive across the serialized request config. Matching values are replaced with `[REDACTED ****]`.
+
+Matching walks plain objects (even ones that define `toJSON()`), arrays, class instances, and `AxiosHeaders`, which is converted to a plain object first. Any other object that has a `toJSON()` method, such as a `URL` object or a class instance that defines `toJSON()`, is serialized as-is, and its contents are not scanned. `redact` also matches key names only, so credentials inside a URL string, such as `url: 'http://user:pass@example.com'`, are not masked. To mask a whole value, list its parent key, for example `redact: ['auth', 'proxy']`.
 
 `redact` only affects error serialization. It does not change request data, headers, or the original config object.
 

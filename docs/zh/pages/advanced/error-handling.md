@@ -19,6 +19,7 @@ axios 可能会抛出多种不同类型的错误，有些来自 axios 本身，�
 | ERR_BAD_OPTION            | axios 配置中提供了无效选项。                                                            |
 | ECONNABORTED              | 通常表示请求已超时（除非设置了 `transitional.clarifyTimeoutError`）或被浏览器或其插件中止。 |
 | ETIMEDOUT                 | 请求因超过 axios 默认时限而超时。必须将 `transitional.clarifyTimeoutError` 设置为 `true`，否则会抛出通用的 `ECONNABORTED` 错误。 |
+| ECONNREFUSED              | 服务器拒绝了连接。由 Node.js 的 `http` 适配器设置，原始系统错误可通过 `error.cause` 获取；`xhr` 和 `fetch` 适配器则会报告 `ERR_NETWORK`。 |
 | ERR_NETWORK               | 网络相关问题。在浏览器中，此错误也可能由 [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) 或[混合内容](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content)策略违规引起。出于安全考虑，浏览器不允许 JS 代码获知错误的真实原因，请检查控制台。 |
 | ERR_FR_TOO_MANY_REDIRECTS | 请求重定向次数过多，超过了 axios 配置中指定的最大重定向次数。                           |
 | ERR_DEPRECATED            | 使用了 axios 中已废弃的功能或方法。                                                     |
@@ -27,7 +28,7 @@ axios 可能会抛出多种不同类型的错误，有些来自 axios 本身，�
 | ERR_CANCELED              | 功能或方法被用户通过 AbortSignal（或 CancelToken）显式取消。                            |
 | ERR_NOT_SUPPORT           | 当前 axios 环境不支持该功能或方法。                                                     |
 | ERR_INVALID_URL           | axios 请求提供了无效的 URL。                                                            |
-| ERR_FORM_DATA_DEPTH_EXCEEDED | 在序列化 `params` 或表单数据时，对象超过了配置的 `maxDepth`，默认上限为 100 层。详见 [`paramsSerializer`](/pages/advanced/request-config#paramsserializer) 和 [`formSerializer`](/pages/advanced/request-config#formserializer)。 |
+| ERR_FORM_DATA_DEPTH_EXCEEDED | 在序列化 `params` 或表单数据时，对象超过了配置的 `maxDepth`，默认上限为 100 层。将 FormData 解析为 JSON 时（通过 `axios.formToJSON()`，或以 `Content-Type: application/json` 发送符合规范的 `FormData`（具有 `entries()` 方法）或 HTML 表单时），有固定的 100 层上限，且不受 `maxDepth` 影响。详见 [`paramsSerializer`](/zh/pages/advanced/request-config#paramsserializer) 和 [`formSerializer`](/zh/pages/advanced/request-config#formserializer)。 |
 
 ## 处理错误
 
@@ -82,7 +83,7 @@ axios.get("/user/12345").catch(function (error) {
 });
 ```
 
-为避免从 `error.config` 中泄露敏感信息，可在请求配置中传入 `redact` 数组。当调用 `AxiosError#toJSON()` 时，匹配的配置键会在任意深度上以不区分大小写的方式被脱敏。
+为避免从 `error.config` 中泄露敏感信息，可在请求配置中传入 `redact` 数组。当调用 `AxiosError#toJSON()` 时，匹配的配置键会在任意深度上以不区分大小写的方式被脱敏。除普通对象和 `AxiosHeaders` 之外、带有 `toJSON()` 方法的对象（例如 `URL` 对象）会按原样序列化且不会被扫描，URL 字符串中的凭据也不会被匹配。如需脱敏整个值，请列出父级键，例如 `auth` 或 `proxy`。
 
 ```js
 axios.get("/user/12345", {
@@ -178,5 +179,5 @@ async function fetchWithTimeout() {
 ```
 
 ::: tip 在生产环境中始终设置 `timeout`
-若不设置超时，停滞的请求可能会无限挂起。匹配的配置选项请参阅 [`timeout`](/pages/advanced/request-config#timeout) 与 [`transitional.clarifyTimeoutError`](/pages/advanced/request-config#transitional)。
+若不设置超时，停滞的请求可能会无限挂起。匹配的配置选项请参阅 [`timeout`](/zh/pages/advanced/request-config#timeout) 与 [`transitional.clarifyTimeoutError`](/zh/pages/advanced/request-config#transitional)。
 :::

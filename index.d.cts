@@ -112,9 +112,19 @@ declare class AxiosHeaders {
     value: axios.AxiosHeaderValue,
     rewrite?: boolean | AxiosHeaderMatcher
   ): AxiosHeaders;
-  getContentEncoding(parser?: RegExp): RegExpExecArray | null;
-  getContentEncoding(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+  getContentEncoding(parser: typeof AxiosHeaders.parseParameters): axios.AxiosHeaderParameters;
+  getContentEncoding(parser: RegExp): RegExpExecArray | null;
+  getContentEncoding(matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
   hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
+
+  setAcceptEncoding(
+    value: axios.AxiosHeaderValue,
+    rewrite?: boolean | AxiosHeaderMatcher
+  ): AxiosHeaders;
+  getAcceptEncoding(parser: typeof AxiosHeaders.parseParameters): axios.AxiosHeaderParameters;
+  getAcceptEncoding(parser: RegExp): RegExpExecArray | null;
+  getAcceptEncoding(matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
+  hasAcceptEncoding(matcher?: AxiosHeaderMatcher): boolean;
 
   setAuthorization(
     value: axios.AxiosHeaderValue,
@@ -651,7 +661,8 @@ declare namespace axios {
     status: number;
     statusText: string;
     /**
-     * Wall-clock milliseconds from adapter invocation to settlement, clamped at zero.
+     * Whole milliseconds from adapter invocation to settlement, clamped at zero. Measured with
+     * `performance.now()` when available, otherwise `Date.now()`.
      * Excludes interceptors and request/response transforms. Stream consumption is not included.
      */
     duration?: number;
@@ -771,7 +782,16 @@ declare namespace axios {
       options?: FormSerializerOptions
     ): GenericFormData;
     formToJSON(form: GenericFormData | GenericHTMLFormElement): object;
-    getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
+    /**
+     * Resolves an adapter by name, adapter function, or priority list.
+     * @param config Request config forwarded to adapter getters. The built-in `fetch`
+     * adapter reads `env.fetch`, `env.Request`, and `env.Response` from it and falls
+     * back to the globals when it is omitted. Other fields are not applied here.
+     */
+    getAdapter(
+      adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined,
+      config?: AxiosRequestConfig
+    ): AxiosAdapter;
     AxiosHeaders: typeof AxiosHeaders;
     mergeConfig<D = any, P = any>(
       config1: AxiosRequestConfig<D, P>,

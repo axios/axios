@@ -849,10 +849,6 @@ async function compareRequests(config) {
 - [Axios GitHub Repository](https://github.com/axios/axios)
 - [Axios Changelog](https://github.com/axios/axios/blob/main/CHANGELOG.md)
 
-### Migration Tools
-- [Axios Migration Codemod](https://github.com/axios/axios-migration-codemod) *(if available)*
-- [ESLint Rules for Axios 1.x](https://github.com/axios/eslint-plugin-axios) *(if available)*
-
 ### Community Resources
 - [Stack Overflow - Axios Migration Questions](https://stackoverflow.com/questions/tagged/axios+migration)
 - [GitHub Discussions](https://github.com/axios/axios/discussions)

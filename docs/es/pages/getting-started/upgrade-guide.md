@@ -127,4 +127,4 @@ Hemos realizado cambios en el objeto de configuración de solicitud. Consulta la
 
 ### Cambios que rompen la compatibilidad no cubiertos
 
-Esta guía no es exhaustiva y puede no cubrir todos los cambios que rompen la compatibilidad. Si encuentras algún problema, por favor abre un issue en el [repositorio GitHub de la documentación](https://github.com/axios/docs) con la etiqueta `breaking change`.
+Esta guía no es exhaustiva y puede no cubrir todos los cambios que rompen la compatibilidad. Si encuentras algún problema, por favor abre un issue en el [repositorio GitHub de axios](https://github.com/axios/axios/issues).

@@ -127,4 +127,4 @@ Nous avons apporté des modifications à l'objet de configuration de requête. V
 
 ### Changements incompatibles non répertoriés
 
-Ce guide n'est pas exhaustif et peut ne pas couvrir tous les changements incompatibles. Si vous rencontrez un problème, veuillez ouvrir un ticket sur le [dépôt GitHub de la documentation](https://github.com/axios/docs) avec le label `breaking change`.
+Ce guide n'est pas exhaustif et peut ne pas couvrir tous les changements incompatibles. Si vous rencontrez un problème, veuillez ouvrir un ticket sur le [dépôt GitHub d'axios](https://github.com/axios/axios/issues).

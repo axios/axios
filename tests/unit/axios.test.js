@@ -24,15 +24,21 @@ const expectedMethodList = [
 describe('Axios', () => {
   describe('ArrayBuffer view request bodies', () => {
     const buffer = new Uint8Array([1, 2, 3, 4]).buffer;
+    const sharedBuffer = new SharedArrayBuffer(4);
+    new Uint8Array(sharedBuffer).set([1, 2, 3, 4]);
 
     for (const [name, view, expected] of [
       ['Uint8Array subarray', new Uint8Array(buffer).subarray(1, 3), [2, 3]],
       ['Uint16Array view', new Uint16Array(buffer, 2, 1), [3, 4]],
       ['DataView', new DataView(buffer, 1, 2), [2, 3]],
       ['empty view', new Uint8Array(buffer, 2, 0), []],
+      ['shared subarray', new Uint8Array(sharedBuffer, 1, 2), [2, 3]],
+      ['full shared view', new Uint8Array(sharedBuffer), [1, 2, 3, 4]],
+      ['empty shared view', new Uint8Array(sharedBuffer, 2, 0), []],
     ]) {
       it(`should serialize only the bytes in a ${name}`, async () => {
         const { config } = await axios.post('/binary', view, { adapter: echoHeaders });
+        assert.ok(config.data instanceof ArrayBuffer);
         assert.deepStrictEqual(Array.from(new Uint8Array(config.data)), expected);
       });
     }

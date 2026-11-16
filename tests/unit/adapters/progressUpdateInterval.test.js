@@ -69,6 +69,74 @@ describe.each([0, 5])('HTTP upload cancellation (maxRedirects: %i)', (maxRedirec
   });
 });
 
+describe('HTTP/2 upload progress', () => {
+  it.each(['text', 'stream'])('continues after an early %s response ends', async (responseType) => {
+    let received = deferred();
+    const uploadEnded = deferred();
+    const server = await startHTTPServer(
+      (req, res) => {
+        req.on('data', () => received.resolve());
+        req.on('end', () => uploadEnded.resolve());
+        res.end('ok');
+      },
+      { useHTTP2: true }
+    );
+    const input = new Readable({ read() {} });
+    const controller = new AbortController();
+    let request;
+    try {
+      vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+      const progress = vi.fn();
+      request = axios.post(`https://localhost:${server.address().port}/`, input, {
+        adapter: 'http',
+        proxy: false,
+        httpVersion: 2,
+        http2Options: { rejectUnauthorized: false },
+        signal: controller.signal,
+        responseType,
+        headers: { 'Content-Length': 3 },
+        progressUpdateIntervalMs: 1000,
+        onUploadProgress: progress,
+      });
+      request.catch(() => {});
+      input.push('a');
+      await received.promise;
+      const response = await request;
+      if (responseType === 'stream') {
+        let body = '';
+        for await (const chunk of response.data) {
+          body += chunk;
+        }
+        expect(body).toBe('ok');
+      } else {
+        expect(response.data).toBe('ok');
+      }
+      await nextTurn();
+      expect(progress).toHaveBeenCalledOnce();
+      received = deferred();
+      input.push('b');
+      await received.promise;
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(progress).toHaveBeenCalledTimes(2);
+      expect(progress.mock.calls[1][0]).toMatchObject({ loaded: 2, upload: true });
+      input.push('c');
+      input.push(null);
+      await uploadEnded.promise;
+      await nextTurn();
+      expect(progress).toHaveBeenCalledTimes(3);
+      expect(progress.mock.calls[2][0]).toMatchObject({ loaded: 3, upload: true, progress: 1 });
+    } finally {
+      controller.abort();
+      input.destroy();
+      if (request) await request.catch(() => {});
+      server.closeAllSessions();
+      vi.clearAllTimers();
+      vi.useRealTimers();
+      await stopHTTPServer(server);
+    }
+  });
+});
+
 describe.each(['http', 'fetch'])('%s progressUpdateIntervalMs', (adapter) => {
   afterEach(() => vi.useRealTimers());
 

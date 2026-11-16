@@ -47,7 +47,7 @@ const expectGuardRejection = (promise) =>
   expect(promise).rejects.toMatchObject({
     name: 'AxiosError',
     code: 'ERR_INVALID_URL',
-    message: expect.stringMatching(/for a dispatched request$/),
+    message: expect.stringMatching(/when baseURL is not set$/),
   });
 
 describe('request url validation (vitest browser)', () => {
@@ -142,6 +142,34 @@ describe('request url validation (vitest browser)', () => {
       const expected = new URL('?foo=bar', window.location.href).href;
 
       expect(fetch.mock.calls[0][0].url).toBe(expected);
+    });
+  });
+
+  describe('getUri', () => {
+    const expectGuardThrow = (fn) => {
+      let error;
+
+      try {
+        fn();
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toMatchObject({
+        name: 'AxiosError',
+        code: 'ERR_INVALID_URL',
+        message: expect.stringMatching(/when baseURL is not set$/),
+      });
+    };
+
+    it.each([null, undefined])('rejects a %s url that a request would reject', (url) => {
+      expectGuardThrow(() => axios.getUri({ url, params: PARAMS }));
+      expectGuardThrow(() => axios.getUri({ url, socketPath: '/app.sock', params: PARAMS }));
+    });
+
+    it('still builds urls that a request would send', () => {
+      expect(axios.getUri({ url: '', params: PARAMS })).toBe('?foo=bar');
+      expect(axios.getUri({ baseURL: '/api', params: PARAMS })).toBe('/api?foo=bar');
     });
   });
 });

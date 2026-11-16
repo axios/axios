@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Configurable progress interval:** Added `progressUpdateIntervalMs` to control the minimum interval between upload and download progress callbacks for the HTTP, Fetch, and XHR adapters. Accepts finite numbers from 1 to 2147483647 milliseconds; omission preserves the existing three updates per second. Completion still flushes pending progress immediately, and the option does not change transfer speed or make the underlying runtime produce progress events more frequently. Supports instance defaults and request overrides. This is an additive API change with matching ESM/CJS types. ([#6378](https://github.com/axios/axios/issues/6378), [#11457](https://github.com/axios/axios/pull/11457))
+- **Configurable progress interval:** Added `progressUpdateIntervalMs` to control the minimum interval between upload and download progress callbacks for the HTTP, Fetch, and XHR adapters. Accepts finite numbers from 1 to 2147483647 milliseconds; omission preserves the existing three updates per second. Completion still flushes pending progress immediately, and the option does not change transfer speed or make the underlying runtime produce progress events more frequently. Supports instance defaults and request overrides, with validation before and after request interceptors. Rejected HTTP uploads release pending progress timers and suppress queued upload callbacks. This is an additive API change with matching ESM/CJS types. ([#6378](https://github.com/axios/axios/issues/6378), [#11457](https://github.com/axios/axios/pull/11457))
 
 ## Bug Fixes
 

@@ -12,6 +12,63 @@ const deferred = () => {
   return { promise, resolve };
 };
 
+describe.each([0, 5])('HTTP upload cancellation (maxRedirects: %i)', (maxRedirects) => {
+  it.each(['signal', 'cancelToken'])('clears pending progress on %s cancellation', async (mode) => {
+    let received = deferred();
+    const server = await startHTTPServer((req) => {
+      req.on('data', () => received.resolve());
+    });
+    const input = new Readable({ read() {} });
+    const controller = new AbortController();
+    const source = axios.CancelToken.source();
+    let request;
+    try {
+      vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+      const progress = vi.fn();
+      request = axios.post(`http://127.0.0.1:${server.address().port}/`, input, {
+        adapter: 'http',
+        proxy: false,
+        maxRedirects,
+        ...(mode === 'signal' ? { signal: controller.signal } : { cancelToken: source.token }),
+        progressUpdateIntervalMs: 2147483647,
+        onUploadProgress: progress,
+      });
+      request.catch(() => {});
+      const push = async (chunk) => {
+        received = deferred();
+        input.push(chunk);
+        await received.promise;
+        await nextTurn();
+      };
+
+      await push('a');
+      expect(progress).toHaveBeenCalledOnce();
+      const transportTimers = vi.getTimerCount();
+      await push('b');
+      expect(progress).toHaveBeenCalledOnce();
+      expect(vi.getTimerCount()).toBe(transportTimers + 1);
+      if (mode === 'signal') controller.abort();
+      else source.cancel();
+      await expect(request).rejects.toMatchObject({ code: 'ERR_CANCELED' });
+      await nextTurn();
+      expect(vi.getTimerCount()).toBe(0);
+      input.push('c');
+      await nextTurn();
+      expect(vi.getTimerCount()).toBe(0);
+      await vi.advanceTimersByTimeAsync(2147483647);
+      expect(progress).toHaveBeenCalledOnce();
+    } finally {
+      controller.abort();
+      source.cancel();
+      input.destroy();
+      if (request) await request.catch(() => {});
+      vi.clearAllTimers();
+      vi.useRealTimers();
+      await stopHTTPServer(server);
+    }
+  });
+});
+
 describe.each(['http', 'fetch'])('%s progressUpdateIntervalMs', (adapter) => {
   afterEach(() => vi.useRealTimers());
 

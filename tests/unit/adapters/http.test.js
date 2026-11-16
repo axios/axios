@@ -273,6 +273,7 @@ describe('supports http with nodejs', () => {
           (error) => {
             assert.ok(error instanceof AxiosError);
             assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+            assert.strictEqual(error.message, 'timeout of 50ms exceeded');
             return true;
           },
           `maxRedirects ${maxRedirects}`
@@ -280,6 +281,53 @@ describe('supports http with nodejs', () => {
       }
 
       assert.strictEqual(requests, 2);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should not start reading an upload body when the config is rejected', async () => {
+    const server = await startHTTPServer((req, res) => res.end('ok'));
+    const url = `http://localhost:${server.address().port}`;
+
+    try {
+      for (const [name, config, code] of [
+        ['negative timeout', { timeout: -1 }, AxiosError.ECONNABORTED],
+        [
+          'throwing paramsSerializer',
+          {
+            params: { a: 1 },
+            paramsSerializer: () => {
+              throw new Error('bad params');
+            },
+          },
+          AxiosError.ERR_BAD_REQUEST,
+        ],
+      ]) {
+        for (const upload of [{ onUploadProgress: () => {} }, { maxRate: [1024, 0] }]) {
+          let reads = 0;
+          const body = new stream.Readable({
+            read() {
+              reads++;
+              this.push('x'.repeat(1024));
+            },
+          });
+
+          await assert.rejects(
+            axios.post(url, body, { ...config, ...upload }),
+            (error) => {
+              assert.strictEqual(error.code, code);
+              return true;
+            },
+            `${name} with ${Object.keys(upload)[0]}`
+          );
+
+          await setTimeoutAsync(20);
+
+          assert.strictEqual(reads, 0, `${name} with ${Object.keys(upload)[0]}`);
+          body.destroy();
+        }
+      }
     } finally {
       await stopHTTPServer(server);
     }

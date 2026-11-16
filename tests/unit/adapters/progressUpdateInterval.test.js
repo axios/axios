@@ -69,6 +69,95 @@ describe.each([0, 5])('HTTP upload cancellation (maxRedirects: %i)', (maxRedirec
   });
 });
 
+describe.each([
+  { maxRedirects: 0, redirect: false },
+  { maxRedirects: 5, redirect: false },
+  { maxRedirects: 5, redirect: true },
+])('HTTP early response ($maxRedirects, redirect: $redirect)', ({ maxRedirects, redirect }) => {
+  it.each(['text', 'stream'])(
+    'clears upload timers when the %s request closes',
+    async (responseType) => {
+      let received = deferred();
+      const responseReady = deferred();
+      const server = await startHTTPServer((req, res) => {
+        if (req.url === '/redirect') {
+          req.once('data', () => {
+            res.writeHead(307, { Location: '/' });
+            res.end();
+          });
+          return;
+        }
+        req.on('data', () => received.resolve());
+        responseReady.resolve(res);
+      });
+      const input = new Readable({ read() {} });
+      const controller = new AbortController();
+      let request;
+      try {
+        vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+        const progress = vi.fn();
+        request = axios.post(
+          `http://127.0.0.1:${server.address().port}/${redirect ? 'redirect' : ''}`,
+          input,
+          {
+            adapter: 'http',
+            proxy: false,
+            maxRedirects,
+            responseType,
+            signal: controller.signal,
+            headers: { 'Content-Length': 3 },
+            progressUpdateIntervalMs: 2147483647,
+            onUploadProgress: progress,
+          }
+        );
+        request.catch(() => {});
+        const push = async (chunk) => {
+          received = deferred();
+          input.push(chunk);
+          await received.promise;
+          await nextTurn();
+        };
+        await push('a');
+        expect(progress).toHaveBeenCalledOnce();
+        const transportTimers = vi.getTimerCount();
+        await push('b');
+        expect(vi.getTimerCount()).toBe(transportTimers + 1);
+        const res = await responseReady.promise;
+        res.setHeader('Connection', 'close');
+        res.end('ok');
+        const response = await request;
+        const closed = response.request.closed
+          ? Promise.resolve()
+          : new Promise((resolve) => response.request.once('close', resolve));
+        if (responseType === 'stream') {
+          let body = '';
+          for await (const chunk of response.data) body += chunk;
+          expect(body).toBe('ok');
+        } else {
+          expect(response.data).toBe('ok');
+        }
+        await closed;
+        await nextTurn();
+        expect(vi.getTimerCount()).toBe(0);
+        expect(progress).toHaveBeenCalledTimes(2);
+        expect(progress.mock.calls[1][0]).toMatchObject({ loaded: 2, upload: true });
+        input.push('c');
+        await nextTurn();
+        expect(vi.getTimerCount()).toBe(0);
+        await vi.advanceTimersByTimeAsync(2147483647);
+        expect(progress).toHaveBeenCalledTimes(2);
+      } finally {
+        controller.abort();
+        input.destroy();
+        if (request) await request.catch(() => {});
+        vi.clearAllTimers();
+        vi.useRealTimers();
+        await stopHTTPServer(server);
+      }
+    }
+  );
+});
+
 describe('HTTP/2 upload progress', () => {
   it.each(['text', 'stream'])('continues after an early %s response ends', async (responseType) => {
     let received = deferred();

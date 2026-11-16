@@ -4,6 +4,8 @@
 
 ## Features
 
+- **Configurable progress interval:** Added `progressUpdateIntervalMs` to control the minimum interval between upload and download progress callbacks for the HTTP, Fetch, and XHR adapters. Accepts finite numbers from 1 to 2147483647 milliseconds; omission preserves the existing three updates per second. Completion still flushes pending progress immediately, and the option does not change transfer speed or make the underlying runtime produce progress events more frequently. Supports instance defaults and request overrides. This is an additive API change with matching ESM/CJS types. ([#6378](https://github.com/axios/axios/issues/6378), [#11457](https://github.com/axios/axios/pull/11457))
+
 ## Bug Fixes
 
 - **Fetch stream cleanup:** When the fetch adapter rejects a streamed upload for exceeding `maxBodyLength`, or a streamed response for exceeding `maxContentLength`, it now cancels the source stream instead of leaving it open. Previously the size-limit error left the source paused mid-read, so its `cancel` hook never ran and the underlying connection or user-supplied `ReadableStream` stayed open until garbage collection. Cancellation is started without waiting for it, so a slow or failing cancel does not delay or replace the size-limit error. No public API or type changes. ([#11239](https://github.com/axios/axios/pull/11239))

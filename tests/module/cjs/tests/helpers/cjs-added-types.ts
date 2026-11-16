@@ -4,6 +4,11 @@ const utf8AuthConfig: axios.AxiosRequestConfig = {
   auth: { username: 'π', password: 'x' },
   transitional: { encodeBasicAuthUsername: true },
 };
+const progressConfig: axios.AxiosRequestConfig = { progressUpdateIntervalMs: 50 };
+const invalidProgressConfig: axios.AxiosRequestConfig = {
+  // @ts-expect-error -- progress intervals are numeric milliseconds
+  progressUpdateIntervalMs: '50',
+};
 const legacyAuthConfig: axios.AxiosRequestConfig = {
   transitional: { encodeBasicAuthUsername: false },
 };

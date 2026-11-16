@@ -72,7 +72,9 @@ describe('core::buildFullPath', () => {
       error = err;
     }
 
-    expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
+    expect(error.message).toBe(
+      'Invalid URL "https:example.com/users": missing "//" after protocol'
+    );
   });
 
   it('reports the control-character-normalized URL for a leading control character', () => {
@@ -84,7 +86,9 @@ describe('core::buildFullPath', () => {
       error = err;
     }
 
-    expect(error.message).toBe('Invalid URL "https:example.com/users": missing "//" after protocol');
+    expect(error.message).toBe(
+      'Invalid URL "https:example.com/users": missing "//" after protocol'
+    );
   });
 
   it('reports the control-character-normalized URL for an interior control character', () => {
@@ -122,6 +126,39 @@ describe('core::buildFullPath', () => {
     for (const kept of ['api.example.com', '/v1', 'apikey', 'id', 'token']) {
       expect(error.message).toContain(kept);
     }
+  });
+
+  it('redacts a long run of "?" without "=" in linear time', () => {
+    const url = 'http:' + '?'.repeat(100000) + '&=secret';
+    let error;
+
+    const start = Date.now();
+    try {
+      buildFullPath(undefined, url);
+    } catch (err) {
+      error = err;
+    }
+    const elapsed = Date.now() - start;
+
+    expect(error).toBeInstanceOf(AxiosError);
+    expect(error.code).toBe(AxiosError.ERR_INVALID_URL);
+    expect(error.message).not.toContain('secret');
+    expect(error.message).toContain('&=[REDACTED ****]');
+    expect(elapsed).toBeLessThan(1000);
+  });
+
+  it('redacts query values when a parameter name follows a bare "?"', () => {
+    let error;
+
+    try {
+      buildFullPath(undefined, 'http:example.com/?a?b=secret&?=v2&');
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe(
+      'Invalid URL "http:example.com/?a?b=[REDACTED ****]&?=[REDACTED ****]&": missing "//" after protocol'
+    );
   });
 
   it('does not reject an unused malformed baseURL for absolute requests', () => {

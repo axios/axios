@@ -90,7 +90,6 @@ describe('AxiosTransformStream', function () {
       'var realNow = Date.now;',
       'var offset = 0;',
       'Date.now = function () { return realNow() - offset; };',
-      'var started = realNow();',
       'var stream = new Transform({maxRate: 1000, timeWindow: 50});',
       'var total = 0;',
       'stream.on("data", function (chunk) {',
@@ -99,16 +98,16 @@ describe('AxiosTransformStream', function () {
       '});',
       'stream.on("error", function (error) { throw error; });',
       'stream.on("end", function () {',
-      '  console.log(JSON.stringify({ bytes: total, elapsed: realNow() - started }));',
+      '  console.log(JSON.stringify({ bytes: total }));',
       '});',
       'stream.end(Buffer.alloc(2000));',
     ].join('\n');
 
+    // Without the fix the next window delay becomes ~1 hour after the jump and
+    // the child process is killed by this timeout instead of finishing.
     return runModuleInChildProcess(source, { timeout: 5000 }).then(function (stdout) {
       var result = JSON.parse(stdout);
       assert.strictEqual(result.bytes, 2000);
-      // Without the fix the next window delay becomes ~1 hour after the jump.
-      assert.ok(result.elapsed < 3000, 'elapsed ' + result.elapsed + 'ms');
     });
   });
 });

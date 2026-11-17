@@ -15,7 +15,7 @@ describe('formDataToJSON regression (#11295)', () => {
     formData.append('tags[0]', 'rust');
     formData.append('tags[1]', 'go');
     formData.append('tags[length]', 'custom-length');
-    
+
     // It should treat it as an object because of the non-numeric 'length' key
     expect(formDataToJSON(formData)).toEqual({
       tags: {
@@ -35,7 +35,6 @@ describe('formDataToJSON regression (#11295)', () => {
       },
     });
   });
-});
 
   it('should handle arrays of objects where each object has a "length" key', () => {
     const formData = new FormData();
@@ -58,3 +57,4 @@ describe('formDataToJSON regression (#11295)', () => {
       },
     });
   });
+});

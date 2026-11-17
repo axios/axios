@@ -82,4 +82,33 @@ describe('AxiosTransformStream', function () {
       });
     });
   });
+
+  it('does not stall when the wall clock moves backwards mid-stream', function () {
+    var moduleURL = new URL('../../../lib/helpers/AxiosTransformStream.js', import.meta.url).href;
+    var source = [
+      'import Transform from ' + JSON.stringify(moduleURL) + ';',
+      'var realNow = Date.now;',
+      'var offset = 0;',
+      'Date.now = function () { return realNow() - offset; };',
+      'var started = realNow();',
+      'var stream = new Transform({maxRate: 1000, timeWindow: 50});',
+      'var total = 0;',
+      'stream.on("data", function (chunk) {',
+      '  total += chunk.length;',
+      '  if (offset === 0) offset = 60 * 60 * 1000;',
+      '});',
+      'stream.on("error", function (error) { throw error; });',
+      'stream.on("end", function () {',
+      '  console.log(JSON.stringify({ bytes: total, elapsed: realNow() - started }));',
+      '});',
+      'stream.end(Buffer.alloc(2000));',
+    ].join('\n');
+
+    return runModuleInChildProcess(source, { timeout: 5000 }).then(function (stdout) {
+      var result = JSON.parse(stdout);
+      assert.strictEqual(result.bytes, 2000);
+      // Without the fix the next window delay becomes ~1 hour after the jump.
+      assert.ok(result.elapsed < 3000, 'elapsed ' + result.elapsed + 'ms');
+    });
+  });
 });

@@ -72,6 +72,62 @@ describe('Axios', () => {
     assert.deepStrictEqual(client.defaults, {});
   });
 
+  describe('axios(url, config) shorthand', () => {
+    const adapter = async (config) => ({
+      data: config.url,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: {},
+    });
+
+    it('should not write the url into the caller config object', async () => {
+      const config = { adapter, headers: { 'X-Test': '1' } };
+
+      const response = await axios('/first', config);
+
+      assert.strictEqual(response.data, '/first');
+      assert.deepStrictEqual(Object.keys(config), ['adapter', 'headers']);
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(config, 'url'), false);
+    });
+
+    it('should not write the url into the config passed to request() or an instance', async () => {
+      const instance = axios.create();
+      const requestConfig = { adapter };
+      const instanceConfig = { adapter };
+
+      assert.strictEqual((await axios.request('/request', requestConfig)).data, '/request');
+      assert.strictEqual((await instance('/instance', instanceConfig)).data, '/instance');
+
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(requestConfig, 'url'), false);
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(instanceConfig, 'url'), false);
+    });
+
+    it('should accept a frozen config object', async () => {
+      const config = Object.freeze({ adapter });
+
+      const response = await axios('/frozen', config);
+
+      assert.strictEqual(response.data, '/frozen');
+    });
+
+    it('should keep the url argument ahead of a url in the config', async () => {
+      const config = { adapter, url: '/from-config' };
+
+      const response = await axios('/from-argument', config);
+
+      assert.strictEqual(response.data, '/from-argument');
+      assert.strictEqual(config.url, '/from-config');
+    });
+
+    it('should still work without a config argument', async () => {
+      const instance = axios.create({ adapter });
+
+      assert.strictEqual((await instance('/no-config')).data, '/no-config');
+    });
+  });
+
   it('should define default headers for every supported method', () => {
     assert.deepStrictEqual(methodList, expectedMethodList);
     assert.strictEqual(Object.isFrozen(methodList), true);

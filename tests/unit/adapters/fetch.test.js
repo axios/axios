@@ -2422,5 +2422,92 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       assert.ok(cancelled, 'the probe body should be cancelled even when the check throws');
     });
+
+    it('should cancel the request probe body when the Request construction throws', () => {
+      // The request probe builds a throwaway ReadableStream and passes it to a
+      // `Request`. When that `Request` throws while it is being constructed,
+      // `request.body` was never reachable, so the probe stream stayed pending
+      // and leaked one async resource per probe.
+      let cancelled = false;
+
+      class ThrowingProbeRequest extends Request {
+        constructor(input, init) {
+          if (isRequestProbe(init)) {
+            const probeBody = init.body;
+
+            probeBody.cancel = function (...args) {
+              cancelled = true;
+
+              return Promise.resolve();
+            };
+
+            throw new TypeError('Request construction failed');
+          }
+
+          super(input, init);
+        }
+      }
+
+      getFetch({ env: { fetch: async () => new Response('ok'), Request: ThrowingProbeRequest } });
+
+      assert.ok(cancelled, 'the probe body should be cancelled when the Request construction throws');
+    });
+
+    it('should cancel the request probe body when reading the Request headers throws', () => {
+      // The probe reads `request.headers` after the `Request` was built. A
+      // custom `Request` whose `headers` getter throws leaves the probe
+      // stream pending in the same way.
+      let cancelled = false;
+
+      class ThrowingHeadersRequest extends Request {
+        constructor(input, init) {
+          super(input, init);
+
+          if (isRequestProbe(init)) {
+            const probeBody = init.body;
+
+            probeBody.cancel = function (...args) {
+              cancelled = true;
+
+              return Promise.resolve();
+            };
+
+            Object.defineProperty(this, 'headers', {
+              get() {
+                throw new TypeError('headers unavailable');
+              },
+            });
+          }
+        }
+      }
+
+      getFetch({ env: { fetch: async () => new Response('ok'), Request: ThrowingHeadersRequest } });
+
+      assert.ok(cancelled, 'the probe body should be cancelled when reading the headers throws');
+    });
+
+    it('should not emit an unhandled rejection when the request probe body cannot be cancelled after a failure', async () => {
+      // A locked stream rejects cancel(), as a polyfilled stream can when the
+      // runtime has already taken a reader on the request body.
+      class LockedProbeRequest extends Request {
+        constructor(input, init) {
+          if (isRequestProbe(init)) {
+            const probeBody = init.body;
+
+            probeBody.getReader();
+
+            throw new TypeError('Request construction failed');
+          }
+
+          super(input, init);
+        }
+      }
+
+      const rejections = await withUnhandledRejections(async () => {
+        getFetch({ env: { fetch: async () => new Response('ok'), Request: LockedProbeRequest } });
+      });
+
+      assert.deepStrictEqual(rejections, []);
+    });
   });
 });

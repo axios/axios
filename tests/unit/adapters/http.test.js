@@ -5337,6 +5337,173 @@ describe('supports http with nodejs', () => {
         assert.strictEqual(stalled.canceled, true);
         assert.strictEqual(stalled.locked, false);
       });
+
+      // maxBodyLength destroys the Node upload stream. That must cancel the
+      // adapter-owned reader. Releasing the lock alone leaves a custom source
+      // running, and a pull that is already waiting stays locked until the
+      // producer resumes. The pull is released only after these assertions.
+      it('should cancel a stalled Blob reader when the upload exceeds maxBodyLength', async () => {
+        if (!isBlobSupported || typeof ReadableStream === 'undefined') {
+          return;
+        }
+
+        const stalled = createStalledBody(Blob, [[new Uint8Array(1024 * 1024)]]);
+        const server = await startHTTPServer(
+          (req, res) => {
+            req.on('error', () => {});
+            req.resume();
+            req.on('end', () => {
+              res.end('ok');
+            });
+          },
+          { port: 0 }
+        );
+        const agent = new http.Agent({ keepAlive: false });
+
+        try {
+          const error = await axios
+            .post(`http://127.0.0.1:${server.address().port}`, stalled.body, {
+              adapter: 'http',
+              proxy: false,
+              maxRedirects: 0,
+              maxBodyLength: 512,
+              timeout: 5000,
+              httpAgent: agent,
+              headers: { Connection: 'close' },
+            })
+            .catch((err) => err);
+
+          assert.strictEqual(error && error.code, AxiosError.ERR_BAD_REQUEST);
+          assert.strictEqual(
+            error && error.message,
+            'Request body larger than maxBodyLength limit'
+          );
+          assert.strictEqual(stalled.canceled, true);
+          assert.strictEqual(stalled.locked, false);
+        } finally {
+          stalled.releasePull();
+          agent.destroy();
+          await stopHTTPServer(server);
+        }
+      });
+
+      // Same limit, but the source is not stalled. pipeline() destroys the
+      // wrapper as soon as the first chunk is too large, which used to run
+      // only releaseLock() and never the source cancel hook.
+      it('should cancel the Blob source when maxBodyLength destroys the upload', async () => {
+        if (!isBlobSupported || typeof ReadableStream === 'undefined') {
+          return;
+        }
+
+        let canceled = false;
+        let pulls = 0;
+
+        class TrackedBlob extends Blob {
+          stream() {
+            return new ReadableStream({
+              pull(controller) {
+                pulls += 1;
+                if (pulls > 8) {
+                  controller.close();
+                  return;
+                }
+                controller.enqueue(new Uint8Array(4096));
+              },
+              cancel() {
+                canceled = true;
+              },
+            });
+          }
+        }
+
+        const server = await startHTTPServer(
+          (req, res) => {
+            req.on('error', () => {});
+            req.resume();
+            req.on('end', () => {
+              res.end('ok');
+            });
+          },
+          { port: 0 }
+        );
+        const agent = new http.Agent({ keepAlive: false });
+
+        try {
+          const error = await axios
+            .post(
+              `http://127.0.0.1:${server.address().port}`,
+              new TrackedBlob([new Uint8Array(64 * 1024)]),
+              {
+                adapter: 'http',
+                proxy: false,
+                maxRedirects: 0,
+                maxBodyLength: 1024,
+                timeout: 5000,
+                httpAgent: agent,
+                headers: { Connection: 'close' },
+              }
+            )
+            .catch((err) => err);
+
+          assert.strictEqual(error && error.code, AxiosError.ERR_BAD_REQUEST);
+          assert.strictEqual(canceled, true);
+          assert.ok(pulls < 8, `source kept pulling after maxBodyLength; pulls=${pulls}`);
+        } finally {
+          agent.destroy();
+          await stopHTTPServer(server);
+        }
+      });
+
+      // A socket error rejects the request without aborting. The reader is
+      // still inside a pending pull, so cancel has to run from rejection
+      // cleanup rather than from the stream's close handler.
+      it('should cancel a stalled Blob reader when the upload socket fails', async () => {
+        if (!isBlobSupported || typeof ReadableStream === 'undefined') {
+          return;
+        }
+
+        const stalled = createStalledBody(Blob, [[new Uint8Array(1024 * 1024)]]);
+        let destroyRequest;
+        const requestSeen = new Promise((resolve) => {
+          destroyRequest = resolve;
+        });
+        const server = await startHTTPServer(
+          (req) => {
+            req.once('data', () => {
+              destroyRequest(req);
+            });
+            req.on('error', () => {});
+          },
+          { port: 0 }
+        );
+        const agent = new http.Agent({ keepAlive: false });
+        const pending = axios
+          .post(`http://127.0.0.1:${server.address().port}`, stalled.body, {
+            adapter: 'http',
+            proxy: false,
+            maxRedirects: 0,
+            timeout: 5000,
+            httpAgent: agent,
+            headers: { Connection: 'close' },
+          })
+          .catch((err) => err);
+
+        try {
+          const req = await requestSeen;
+          await stalled.secondPull;
+          req.destroy();
+
+          const error = await pending;
+
+          assert.strictEqual(error && error.code, 'ECONNRESET');
+          assert.strictEqual(stalled.canceled, true);
+          assert.strictEqual(stalled.locked, false);
+        } finally {
+          stalled.releasePull();
+          agent.destroy();
+          await stopHTTPServer(server);
+        }
+      });
     });
   });
 

@@ -116,6 +116,9 @@ describe('AxiosTransformStream', function () {
       );
       var last = chunks[chunks.length - 1];
       assert.ok(last.elapsed < 2000, 'stream should finish quickly, took ' + last.elapsed + 'ms');
+      // The window after the clock step must still pace the remaining bytes:
+      // 4 bytes left at 1 byte per ~20ms window cannot all arrive at once.
+      assert.ok(last.elapsed >= 40, 'stream should stay paced after the clock step, finished in ' + last.elapsed + 'ms');
     });
   });
 });

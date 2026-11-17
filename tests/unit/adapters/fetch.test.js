@@ -1100,6 +1100,52 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await stopHTTPServer(server);
       }
     });
+
+    it('clears the timeout timer after a bodyless stream response', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.statusCode = 204;
+          res.end();
+        },
+        { port: 0 }
+      );
+
+      const timeout = 60000;
+      const timers = [];
+      const cleared = new Set();
+      const realSetTimeout = globalThis.setTimeout;
+      const realClearTimeout = globalThis.clearTimeout;
+      const setSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementation((fn, ms, ...args) => {
+        const handle = realSetTimeout(fn, ms, ...args);
+        if (ms === timeout) timers.push(handle);
+        return handle;
+      });
+      const clearSpy = vi.spyOn(globalThis, 'clearTimeout').mockImplementation((handle) => {
+        cleared.add(handle);
+        return realClearTimeout(handle);
+      });
+
+      try {
+        const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+          responseType: 'stream',
+          timeout,
+        });
+        assert.strictEqual(data, null);
+
+        await setTimeoutAsync(50);
+
+        assert.strictEqual(timers.length, 1, 'expected exactly one request timeout timer');
+        assert.ok(
+          cleared.has(timers[0]),
+          'the request timeout timer was left armed after a bodyless stream response'
+        );
+      } finally {
+        setSpy.mockRestore();
+        clearSpy.mockRestore();
+        timers.forEach((handle) => realClearTimeout(handle));
+        await stopHTTPServer(server);
+      }
+    });
   });
 
   it('should support a timeout', async () => {

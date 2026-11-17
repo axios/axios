@@ -121,6 +121,22 @@ describe('Axios', () => {
       assert.strictEqual(config.url, '/from-config');
     });
 
+    it('should keep own non-enumerable options of the caller config', async () => {
+      const config = Object.defineProperty({ adapter: (c) => adapter(c) }, 'timeout', {
+        value: 1234,
+      });
+      const seen = [];
+      config.adapter = async (c) => {
+        seen.push(c.timeout);
+        return adapter(c);
+      };
+
+      await axios('/non-enumerable', config);
+
+      assert.deepStrictEqual(seen, [1234]);
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(config, 'url'), false);
+    });
+
     it('should still work without a config argument', async () => {
       const instance = axios.create({ adapter });
 

@@ -59,7 +59,7 @@ await axios.postForm("https://httpbin.org/post", {
 });
 ```
 
-进度事件对象上可用的完整字段列表，请参阅[进度捕获](/pages/advanced/progress-capturing)。
+进度事件对象上可用的完整字段列表，请参阅[进度捕获](/zh/pages/advanced/progress-capturing)。
 
 ## Node.js 中的文件上传
 

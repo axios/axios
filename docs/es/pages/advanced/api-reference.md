@@ -4,7 +4,7 @@ A continuación se presenta una lista de todas las funciones y clases disponible
 
 ## Instancia
 
-La instancia `axios` es el objeto principal que usarás para realizar solicitudes HTTP. Es una función de fábrica que crea una nueva instancia de la clase `Axios`. La instancia `axios` cuenta con una serie de métodos para hacer solicitudes HTTP, los cuales están documentados en la [sección de alias de solicitud](/pages/advanced/request-method-aliases) de la documentación.
+La instancia `axios` es el objeto principal que usarás para realizar solicitudes HTTP. Es una función de fábrica que crea una nueva instancia de la clase `Axios`. La instancia `axios` cuenta con una serie de métodos para hacer solicitudes HTTP, los cuales están documentados en la [sección de alias de solicitud](/es/pages/advanced/request-method-aliases) de la documentación.
 
 ## Tipos de solicitud de TypeScript
 
@@ -31,7 +31,7 @@ Los métodos de solicitud usan el orden genérico `<T, R, D, P>`, con `P` al fin
 
 ### `Axios`
 
-La clase `Axios` es la clase principal que usarás para realizar solicitudes HTTP. Es una función de fábrica que crea una nueva instancia de la clase `Axios`. La clase `Axios` cuenta con una serie de métodos para hacer solicitudes HTTP, los cuales están documentados en la [sección de alias de solicitud](/pages/advanced/request-method-aliases) de la documentación.
+La clase `Axios` es la clase principal que usarás para realizar solicitudes HTTP. Es una función de fábrica que crea una nueva instancia de la clase `Axios`. La clase `Axios` cuenta con una serie de métodos para hacer solicitudes HTTP, los cuales están documentados en la [sección de alias de solicitud](/es/pages/advanced/request-method-aliases) de la documentación.
 
 #### `constructor`
 

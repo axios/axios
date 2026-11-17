@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### `getUri` rejects a nullish url
+
+- **Change:** `getUri` throws `AxiosError` with `ERR_INVALID_URL` for a `null` or `undefined` url without `baseURL` when the adapter is a built-in one, the same configs a request rejects.
+- **Source:** [PR #11453](https://github.com/axios/axios/pull/11453).
+- **Status:** Pending.
+- **Docs targets:** The `getUri` section of `docs/pages/advanced/request-method-aliases.md` and its Spanish, French, and Chinese translations; the `getUri` mention in the README; the upgrade guide for the release that ships this.
+- **Required content:** Say that `getUri` throws `ERR_INVALID_URL` when the url is `null` or `undefined` and no `baseURL` is set, unless a custom adapter or a `socketPath` on the Node HTTP adapter supplies the destination, and that an empty-string url is still accepted. The adapter is resolved first in that case, so an unknown adapter name or one unavailable in the current environment (such as `xhr` in Node) fails with the same adapter error a request gets, such as `ERR_NOT_SUPPORT`, instead of `ERR_INVALID_URL`. Replace the claim that `getUri` returns "the same string axios would put on the wire": it applies `baseURL`, `params`, `paramsSerializer`, and the url check, but does not run request interceptors, so a url, params, or `baseURL` set by an interceptor is not reflected and a url that only an interceptor supplies makes `getUri` throw. In the upgrade guide, note that `getUri({ params })` without a url previously returned a query-only string such as `?foo=bar` and `getUri()` with no url or `baseURL` returned `undefined`; callers that relied on either should pass `url: ''` or set `baseURL`.
+- **Examples:** `axios.getUri({ params: { q: 1 } })` throws; `axios.getUri({ url: '', params: { q: 1 } })` returns `'?q=1'`.
+- **Notes:** None.
+
 ### Response duration clock
 
 - **Change:** `response.duration` uses `performance.now()` instead of `Date.now()`.
@@ -110,3 +120,21 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Status:** Pending (README only; the English, Spanish, French, and Chinese docs site was applied in [PR #11390](https://github.com/axios/axios/pull/11390)).
 - **Docs targets:** `README.md` Handling errors section.
 - **Required content:** Explain that wrapped errors append the original stack to `error.stack` after `Caused by:`, that `error.cause` remains the programmatic link, and that stacks are not redacted by `config.redact`. Do not present the marker as a parsing contract. Follow the Wrapped error stacks section of `docs/pages/advanced/error-handling.md`.
+
+### `AxiosHeaders` encoding shortcut lists
+
+- **Change:** The `Content-Encoding` shortcuts now exist at runtime, and the `Accept-Encoding` shortcuts are declared in both type files.
+- **Source:** [Issue #11432](https://github.com/axios/axios/issues/11432).
+- **Status:** Pending.
+- **Docs targets:** `README.md` AxiosHeaders Shortcuts, `docs/pages/advanced/header-methods.md` Shortcuts, and the Spanish, French, and Chinese translations.
+- **Required content:** Keep the `setContentEncoding`, `getContentEncoding`, `hasContentEncoding` entries, which now match the runtime. Add `setAcceptEncoding`, `getAcceptEncoding`, `hasAcceptEncoding`; add the existing `Authorization` shortcuts (`setAuthorization`, `getAuthorization`, `hasAuthorization`); and mention `getSetCookie()` in the methods list, since none of these appear in the shortcut lists today.
+- **Notes:** Release-time documentation only; the runtime and type changes ship with the PR. Translations use their own section headings and may need localized wording.
+
+### Fetch capability probe cleanup
+
+- **Change:** The fetch adapter now cancels the throwaway body it reads while probing for response-stream support.
+- **Source:** [PR #11241](https://github.com/axios/axios/pull/11241); `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Fetch adapter - capability probe cleanup.
+- **Status:** Pending.
+- **Docs targets:** `docs/pages/advanced/fetch-adapter.md`, the custom `env.Response` paragraph about stream bodies.
+- **Required content:** One sentence: when axios builds the adapter it reads `new Response('').body` from `env.Response` once to detect stream support and then calls `cancel()` on that body, so a custom `Response` should return a fresh body per instance; a missing or failing `cancel()` is ignored and does not change detected support.
+- **Notes:** Internal behavior only; no API, option, or type change and no migration.

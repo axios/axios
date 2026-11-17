@@ -61,11 +61,11 @@ headers.set(
 );
 ```
 
-`AxiosHeaders` conserve la casse de la première clé correspondante qu'il voit. Vous pouvez utiliser cela pour préserver la casse spécifique d'un en-tête en initialisant une clé avec `undefined` puis en définissant les valeurs ultérieurement. Voir [Préserver la casse d'un en-tête spécifique](/pages/advanced/headers#preserving-a-specific-header-case).
+`AxiosHeaders` conserve la casse de la première clé correspondante qu'il voit. Vous pouvez utiliser cela pour préserver la casse spécifique d'un en-tête en initialisant une clé avec `undefined` puis en définissant les valeurs ultérieurement. Voir [Préserver la casse d'un en-tête spécifique](/fr/pages/advanced/headers#preserver-la-casse-d-un-en-tete-specifique).
 
 ## Get
 
-La méthode `get` est utilisée pour récupérer la valeur d'un en-tête. La méthode peut être appelée avec un seul nom d'en-tête, un matcher optionnel ou un analyseur. Le matcher est par défaut `true`. L'analyseur peut être une expression régulière utilisée pour extraire la valeur de l'en-tête.
+La méthode `get` est utilisée pour récupérer la valeur d'un en-tête. La méthode est appelée avec un nom d'en-tête et un analyseur facultatif. Sans analyseur, elle retourne la valeur brute de l'en-tête. Passez `true` pour analyser la valeur en paires clé-valeur, une expression régulière pour en extraire une partie, ou une fonction qui reçoit la valeur et le nom de l'en-tête. Si l'en-tête existe, tout autre analyseur à valeur vraie déclenche une `TypeError`.
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
@@ -151,7 +151,7 @@ Retourne true si au moins un en-tête a été effacé.
 
 ## Normalize
 
-Si l'objet d'en-têtes a été modifié directement, cela peut créer des doublons avec le même nom mais dans des casses différentes. Cette méthode normalise l'objet d'en-têtes en combinant les clés dupliquées en une seule. Axios utilise cette méthode en interne après l'appel de chaque intercepteur. Définissez `format` à `true` pour convertir les noms d'en-têtes en minuscules et capitaliser les premières lettres (cOntEnt-type => Content-Type) ou `false` pour conserver le format original.
+Si l'objet d'en-têtes a été modifié directement, cela peut créer des doublons avec le même nom mais dans des casses différentes. Cette méthode normalise l'objet d'en-têtes en combinant les clés dupliquées en une seule. Axios utilise cette méthode en interne avant l'appel de chaque transformateur de requête et de réponse, puis une fois de plus après l'exécution des transformateurs. Définissez `format` à `true` pour convertir les noms d'en-têtes en minuscules et capitaliser les premières lettres (cOntEnt-type => Content-Type) ou `false` pour conserver le format original.
 
 ```js
 const headers = new AxiosHeaders({

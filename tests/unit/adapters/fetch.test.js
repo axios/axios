@@ -13,6 +13,7 @@ import AxiosError from '../../../lib/core/AxiosError.js';
 import utils from '../../../lib/utils.js';
 import { getFetch } from '../../../lib/adapters/fetch.js';
 import stream from 'stream';
+import { getEventListeners } from 'node:events';
 import { AbortController } from 'abortcontroller-polyfill/dist/cjs-ponyfill.js';
 import util from 'util';
 import NodeFormData from 'form-data';
@@ -1061,6 +1062,40 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await assert.rejects(async () => {
           await data.pipeTo(makeEchoStream());
         }, /^(AbortError|CanceledError):/);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+  });
+
+  describe('fetch adapter - stream response without a body', () => {
+    it('releases the abort listener after a bodyless stream response', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          res.statusCode = 204;
+          res.end();
+        },
+        { port: 0 }
+      );
+
+      try {
+        const controller = new globalThis.AbortController();
+
+        for (let i = 0; i < 3; i++) {
+          const { data } = await fetchAxios.get(`http://localhost:${server.address().port}/`, {
+            responseType: 'stream',
+            signal: controller.signal,
+          });
+          assert.strictEqual(data, null);
+        }
+
+        await setTimeoutAsync(50);
+
+        assert.strictEqual(
+          getEventListeners(controller.signal, 'abort').length,
+          0,
+          'each bodyless stream response left an abort listener on the shared signal'
+        );
       } finally {
         await stopHTTPServer(server);
       }

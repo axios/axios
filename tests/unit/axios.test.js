@@ -159,6 +159,16 @@ describe('Axios', () => {
       assert.deepStrictEqual(seen, [4321]);
     });
 
+    it('should keep own options of a function used as the config', async () => {
+      const config = function config() {};
+      config.adapter = adapter;
+
+      const response = await axios('/function-config', config);
+
+      assert.strictEqual(response.data, '/function-config');
+      assert.strictEqual(Object.prototype.hasOwnProperty.call(config, 'url'), false);
+    });
+
     it('should still work without a config argument', async () => {
       const instance = axios.create({ adapter });
 

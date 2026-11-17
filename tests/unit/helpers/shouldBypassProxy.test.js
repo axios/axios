@@ -570,4 +570,128 @@ describe('helpers::shouldBypassProxy', () => {
       expect(shouldBypassProxy('http://127.0.0.1:7777/')).toBe(false);
     });
   });
+
+  describe('internationalized domain names', () => {
+    it('should match a Unicode entry against a Punycode request and vice versa', () => {
+      setNoProxy('bücher.example');
+      expect(shouldBypassProxy('http://xn--bcher-kva.example/')).toBe(true);
+
+      setNoProxy('xn--bcher-kva.example');
+      expect(shouldBypassProxy('http://bücher.example/')).toBe(true);
+    });
+
+    it('should match Unicode entries case-insensitively', () => {
+      setNoProxy('BÜCHER.example');
+
+      expect(shouldBypassProxy('http://bücher.example/')).toBe(true);
+    });
+
+    it('should preserve wildcard and leading-dot prefixes on Unicode entries', () => {
+      for (const entry of ['*.bücher.example', '.bücher.example']) {
+        setNoProxy(entry);
+
+        expect(shouldBypassProxy('http://api.xn--bcher-kva.example/')).toBe(true);
+        expect(shouldBypassProxy('http://xn--bcher-kva.example/')).toBe(false);
+      }
+    });
+
+    it('should respect explicit ports on Unicode entries', () => {
+      setNoProxy('bücher.example:8080');
+
+      expect(shouldBypassProxy('http://bücher.example:8080/')).toBe(true);
+      expect(shouldBypassProxy('http://bücher.example/')).toBe(false);
+    });
+
+    it('should ignore entries that cannot be converted to ASCII', () => {
+      // U+00AD (soft hyphen) is removed by IDNA mapping, so domainToASCII() returns ''.
+      setNoProxy('\u00ad');
+
+      expect(shouldBypassProxy('http://example.com/')).toBe(false);
+    });
+  });
+
+  describe('empty and host-less entries', () => {
+    it('should skip empty entries produced by leading or repeated separators', () => {
+      setNoProxy(',,example.com');
+      expect(shouldBypassProxy('http://example.com/')).toBe(true);
+
+      setNoProxy('  ,  ');
+      expect(shouldBypassProxy('http://example.com/')).toBe(false);
+    });
+
+    it('should not treat a port-only entry as matching every host on that port', () => {
+      setNoProxy(':8080');
+
+      expect(shouldBypassProxy('http://example.com:8080/')).toBe(false);
+    });
+  });
+
+  describe('malformed CIDR bases', () => {
+    it('should fail closed for unbalanced or misplaced brackets', () => {
+      for (const entry of ['[::1/128', '::1]/128', '10.0[0.0/8']) {
+        setNoProxy(entry);
+
+        expect(shouldBypassProxy('http://[::1]/')).toBe(false);
+        expect(shouldBypassProxy('http://10.1.2.3/')).toBe(false);
+      }
+    });
+
+    it('should fail closed for a bracketed IPv4 base', () => {
+      setNoProxy('[10.0.0.0]/8');
+
+      expect(shouldBypassProxy('http://10.1.2.3/')).toBe(false);
+    });
+
+    it('should fail closed for a base with a trailing dot', () => {
+      setNoProxy('10.0.0./8');
+
+      expect(shouldBypassProxy('http://10.1.2.3/')).toBe(false);
+    });
+
+    it('should reject IPv4-mapped IPv6 ranges shorter than the /96 mapping prefix', () => {
+      setNoProxy('::ffff:10.0.0.0/64');
+      expect(shouldBypassProxy('http://10.1.2.3/')).toBe(false);
+
+      setNoProxy('::ffff:10.0.0.0/104');
+      expect(shouldBypassProxy('http://10.1.2.3/')).toBe(true);
+    });
+  });
+
+  describe('malformed IPv4 entries', () => {
+    it('should not canonicalise entries with empty, extra, or out-of-range parts', () => {
+      const cases = [
+        ['127..0.1', 'http://127.0.0.1/'],
+        ['1.2.3.4.5', 'http://1.2.3.4/'],
+        ['300.1', 'http://44.0.0.1/'],
+      ];
+
+      for (const [entry, url] of cases) {
+        setNoProxy(entry);
+
+        expect(shouldBypassProxy(url)).toBe(false);
+      }
+    });
+
+    it('should treat an unterminated bracketed entry as a literal host', () => {
+      setNoProxy('[::1');
+
+      expect(shouldBypassProxy('http://[::1]/')).toBe(false);
+    });
+  });
+
+  describe('protocols without a default port', () => {
+    it('should not match a port-qualified entry when the protocol has no default port', () => {
+      setNoProxy('example.com:80');
+      expect(shouldBypassProxy('gopher://example.com/')).toBe(false);
+
+      setNoProxy('example.com');
+      expect(shouldBypassProxy('gopher://example.com/')).toBe(true);
+    });
+
+    it('should use the ftp default port for port-qualified entries', () => {
+      setNoProxy('example.com:21');
+
+      expect(shouldBypassProxy('ftp://example.com/')).toBe(true);
+    });
+  });
 });

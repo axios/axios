@@ -4,7 +4,7 @@
 
 ## 实例
 
-`axios` 实例是你用于发起 HTTP 请求的主要对象，它是一个创建 `Axios` 类新实例的工厂函数。`axios` 实例提供了多个请求方法，详见文档的[请求别名](/pages/advanced/request-method-aliases)章节。
+`axios` 实例是你用于发起 HTTP 请求的主要对象，它是一个创建 `Axios` 类新实例的工厂函数。`axios` 实例提供了多个请求方法，详见文档的[请求别名](/zh/pages/advanced/request-method-aliases)章节。
 
 ## TypeScript 请求类型
 
@@ -31,7 +31,7 @@ CanceledError<T, D = any, P = any>
 
 ### `Axios`
 
-`Axios` 类是发起 HTTP 请求的核心类，是一个创建 `Axios` 类新实例的工厂函数。该类提供多个 HTTP 请求方法，详见文档的[请求别名](/pages/advanced/request-method-aliases)章节。
+`Axios` 类是发起 HTTP 请求的核心类，是一个创建 `Axios` 类新实例的工厂函数。该类提供多个 HTTP 请求方法，详见文档的[请求别名](/zh/pages/advanced/request-method-aliases)章节。
 
 #### `constructor`
 

@@ -122,19 +122,41 @@ describe('Axios', () => {
     });
 
     it('should keep own non-enumerable options of the caller config', async () => {
-      const config = Object.defineProperty({ adapter: (c) => adapter(c) }, 'timeout', {
-        value: 1234,
-      });
       const seen = [];
-      config.adapter = async (c) => {
-        seen.push(c.timeout);
-        return adapter(c);
-      };
+      const config = Object.defineProperty(
+        {
+          adapter: async (c) => {
+            seen.push(c.timeout);
+            return adapter(c);
+          },
+        },
+        'timeout',
+        { value: 1234 }
+      );
 
       await axios('/non-enumerable', config);
 
       assert.deepStrictEqual(seen, [1234]);
       assert.strictEqual(Object.prototype.hasOwnProperty.call(config, 'url'), false);
+    });
+
+    it('should read own getters on the caller config, not on a copy', async () => {
+      const timeouts = new WeakMap();
+      const seen = [];
+      const config = {
+        adapter: async (c) => {
+          seen.push(c.timeout);
+          return adapter(c);
+        },
+        get timeout() {
+          return timeouts.get(this);
+        },
+      };
+      timeouts.set(config, 4321);
+
+      await axios('/getter', config);
+
+      assert.deepStrictEqual(seen, [4321]);
     });
 
     it('should still work without a config argument', async () => {

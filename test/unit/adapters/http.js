@@ -1196,6 +1196,68 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  it("should connect to the allow-listed socket when the path goes through a symlinked directory", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    var os = require("os");
+    var root = fs.mkdtempSync(path.join(os.tmpdir(), "axios-sock-"));
+    var allowedDir = path.join(root, "allowed");
+    var otherDir = path.join(root, "other");
+    var allowedSocket = path.join(allowedDir, "app.sock");
+    var otherSocket = path.join(otherDir, "app.sock");
+    var servers = [];
+
+    fs.mkdirSync(allowedDir);
+    fs.mkdirSync(path.join(otherDir, "sub"), { recursive: true });
+    // allowed/link/../app.sock normalizes to allowed/app.sock, but the kernel
+    // follows the link first and would land on other/app.sock.
+    fs.symlinkSync(path.join(otherDir, "sub"), path.join(allowedDir, "link"));
+
+    function listen(socketPath, body) {
+      return new Promise(function (resolve) {
+        var server = http.createServer(function (req, res) {
+          res.end(body);
+        });
+        servers.push(server);
+        server.listen(socketPath, resolve);
+      });
+    }
+
+    function cleanup() {
+      return Promise.all(servers.map(function (server) {
+        return new Promise(function (resolve) {
+          server.close(function () {
+            resolve();
+          });
+        });
+      })).then(function () {
+        fs.rmSync ? fs.rmSync(root, { recursive: true, force: true }) : fs.rmdirSync(root, { recursive: true });
+      });
+    }
+
+    return Promise.all([
+      listen(allowedSocket, "allowed"),
+      listen(otherSocket, "other")
+    ]).then(function () {
+      return axios({
+        // Built by hand: path.join would normalize the ".." away.
+        socketPath: allowedDir + "/link/../app.sock",
+        allowedSocketPaths: [allowedSocket],
+        url: "/"
+      });
+    }).then(function (response) {
+      return cleanup().then(function () {
+        assert.strictEqual(response.data, "allowed");
+      });
+    }, function (error) {
+      return cleanup().then(function () {
+        throw error;
+      });
+    });
+  });
+
   it("should reject invalid socket path options", function (done) {
     axios({
       socketPath: {},

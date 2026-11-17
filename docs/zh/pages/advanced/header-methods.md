@@ -61,11 +61,11 @@ headers.set(
 );
 ```
 
-`AxiosHeaders` 会保留第一个匹配键的大小写形式。你可以利用这一特性，先以 `undefined` 值预设一个键名，之后再设置值，从而保留特定的请求头大小写。详见[保留特定请求头大小写](/pages/advanced/headers#preserving-a-specific-header-case)。
+`AxiosHeaders` 会保留第一个匹配键的大小写形式。你可以利用这一特性，先以 `undefined` 值预设一个键名，之后再设置值，从而保留特定的请求头大小写。详见[保留特定请求头大小写](/zh/pages/advanced/headers#保留特定请求头大小写)。
 
 ## Get
 
-`get` 方法用于获取请求头的值，可以传入单个请求头名称、可选的匹配器或解析器。匹配器默认为 `true`，解析器可以是用于从请求头中提取值的正则表达式。
+`get` 方法用于获取请求头的值，接受一个请求头名称和一个可选的解析器。不传解析器时返回原始请求头值；传入 `true` 将值解析为键值对，传入正则表达式提取值的一部分，或传入一个接收值和请求头名称的函数。当请求头存在时，传入其他真值解析器会抛出 `TypeError`。
 
 ```js
 get(headerName: string, parser: typeof AxiosHeaders.parseParameters): AxiosHeaderParameters;
@@ -151,7 +151,7 @@ clear(matcher?: AxiosHeaderMatcher): boolean;
 
 ## Normalize
 
-如果直接修改了请求头对象，可能导致相同名称但大小写不同的重复项。此方法通过将重复键合并为一个来规范化请求头对象。axios 在每个拦截器调用后内部使用此方法。将 format 设置为 true 可将请求头名称转换为首字母大写的格式（cOntEnt-type => Content-Type），设置为 false 则保留原始格式。
+如果直接修改了请求头对象，可能导致相同名称但大小写不同的重复项。此方法通过将重复键合并为一个来规范化请求头对象。axios 在调用每个请求和响应转换器之前内部使用此方法，并在所有转换器运行后再调用一次。将 format 设置为 true 可将请求头名称转换为首字母大写的格式（cOntEnt-type => Content-Type），设置为 false 则保留原始格式。
 
 ```js
 const headers = new AxiosHeaders({

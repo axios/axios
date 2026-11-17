@@ -4,7 +4,7 @@ Vous trouverez ci-dessous la liste de toutes les fonctions et classes disponible
 
 ## Instance
 
-L'instance `axios` est l'objet principal que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. L'instance `axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/pages/advanced/request-method-aliases) de la documentation.
+L'instance `axios` est l'objet principal que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. L'instance `axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/fr/pages/advanced/request-method-aliases) de la documentation.
 
 ## Types de requête TypeScript
 
@@ -31,7 +31,7 @@ Les méthodes de requête utilisent l'ordre générique `<T, R, D, P>`, avec `P`
 
 ### `Axios`
 
-La classe `Axios` est la classe principale que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. La classe `Axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/pages/advanced/request-method-aliases) de la documentation.
+La classe `Axios` est la classe principale que vous utiliserez pour effectuer des requêtes HTTP. C'est une fonction fabrique qui crée une nouvelle instance de la classe `Axios`. La classe `Axios` dispose d'un certain nombre de méthodes pour effectuer des requêtes HTTP. Ces méthodes sont documentées dans la [section Alias de requête](/fr/pages/advanced/request-method-aliases) de la documentation.
 
 #### `constructor`
 

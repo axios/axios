@@ -119,6 +119,29 @@ describe('formDataToStream', () => {
     expect(body).toContain('filename="evil%0D%0AX-Bad: 1%22.jpg"');
   });
 
+  it('should normalize bare \\r and bare \\n in field names to CRLF', async () => {
+    for (const name of ['line\nbreak', 'line\rbreak', 'line\r\nbreak']) {
+      const fd = new SpecFormData();
+      fd.append(name, 'value');
+
+      const body = await collect(formDataToStream(fd, () => {}));
+
+      expect(body).toContain('name="line%0D%0Abreak"');
+    }
+  });
+
+  it('should not normalize line endings in filenames', async () => {
+    const fd = new SpecFormData();
+    fd.append(
+      'f',
+      makeBlobLike({ type: 'text/plain', name: 'a\nb.txt', payload: Buffer.from('x') })
+    );
+
+    const body = await collect(formDataToStream(fd, () => {}));
+
+    expect(body).toContain('filename="a%0Ab.txt"');
+  });
+
   it('should report stable contentLength that matches emitted bytes', async () => {
     const fd = new SpecFormData();
     fd.append(

@@ -4,6 +4,8 @@
 
 ## Features
 
+- **Asynchronous request transformations:** `transformRequest` callbacks may now return a Promise. Axios awaits each asynchronous result before running later request transformers or invoking the adapter. Rejected transformers prevent dispatch. An `AbortSignal` or `CancelToken` cancels the request promptly while a transformer is pending, and a positive `timeout` also bounds the transform wait using Axios's usual timeout error code and message, including when the JavaScript timer callback is delayed. Subsequent transformers do not start after cancellation or timeout; the transformer's own asynchronous work cannot be forcibly stopped. The adapter's existing timeout applies independently after transformations. Synchronous transforms still dispatch immediately, and response transforms remain synchronous. This is additive behavior without a public type signature change. ([#10713](https://github.com/axios/axios/issues/10713), [#11418](https://github.com/axios/axios/pull/11418))
+
 ## Bug Fixes
 
 - **Fetch stream cleanup:** When the fetch adapter rejects a streamed upload for exceeding `maxBodyLength`, or a streamed response for exceeding `maxContentLength`, it now cancels the source stream instead of leaving it open. Previously the size-limit error left the source paused mid-read, so its `cancel` hook never ran and the underlying connection or user-supplied `ReadableStream` stayed open until garbage collection. Cancellation is started without waiting for it, so a slow or failing cancel does not delay or replace the size-limit error. No public API or type changes. ([#11239](https://github.com/axios/axios/pull/11239))

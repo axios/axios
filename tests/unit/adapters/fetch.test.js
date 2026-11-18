@@ -138,6 +138,56 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should not send inherited headers forwarded through fetch options', async () => {
+    const server = await startHTTPServer((req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          authorization: req.headers.authorization ?? null,
+          xOrdinary: req.headers['x-ordinary'] ?? null,
+        })
+      );
+    });
+
+    try {
+      for (const fetchOptions of [undefined, {}, { cache: 'no-store' }, { redirect: 'follow' }]) {
+        Object.prototype.headers = {
+          Authorization: 'Bearer inherited-test-value',
+        };
+
+        try {
+          const config = {
+            adapter: 'fetch',
+            headers: {
+              'X-Ordinary': 'yes',
+            },
+          };
+
+          if (fetchOptions !== undefined) {
+            config.fetchOptions = fetchOptions;
+          }
+
+          const { data } = await axios.get(`http://localhost:${server.address().port}/`, config);
+
+          assert.strictEqual(
+            data.authorization,
+            null,
+            `inherited headers sent with fetchOptions ${JSON.stringify(fetchOptions)}`
+          );
+          assert.strictEqual(
+            data.xOrdinary,
+            'yes',
+            `resolved headers dropped with fetchOptions ${JSON.stringify(fetchOptions)}`
+          );
+        } finally {
+          delete Object.prototype.headers;
+        }
+      }
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should allow request interceptors to encode Unicode header values before fetch sends them', async () => {
     const server = await startHTTPServer(
       (req, res) => {
@@ -250,7 +300,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     assert.strictEqual(captured.init.redirect, 'error');
     assert.strictEqual(captured.init.customOption, 'custom-value');
     assert.strictEqual(captured.init.body, undefined);
-    assert.strictEqual(captured.init.headers, undefined);
+    assert.strictEqual(captured.init.headers, captured.input.headers);
     assert.strictEqual(captured.init.method, undefined);
     assert.strictEqual(captured.init.signal, undefined);
     assert.strictEqual(captured.init.credentials, undefined);

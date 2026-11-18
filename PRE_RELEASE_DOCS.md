@@ -20,6 +20,16 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### ArrayBuffer view request bodies
+
+- **Change:** The default request transform serializes only the bytes selected by an ArrayBuffer view.
+- **Source:** [Issue #2564](https://github.com/axios/axios/issues/2564).
+- **Status:** Pending.
+- **Docs targets:** Request body and `transformRequest` documentation, including corresponding README and translated sections at release time.
+- **Required content:** Explain that typed-array subarrays and DataViews respect their byte offset and byte length. Full-buffer views backed by an ordinary ArrayBuffer reuse that buffer; partial views and views backed by SharedArrayBuffer are copied into an ordinary, correctly sized ArrayBuffer. Empty views produce an empty body.
+- **Examples:** `new Uint8Array([1, 2, 3, 4]).subarray(1, 3)` sends bytes `[2, 3]`.
+- **Notes:** This corrects unexpected behavior without changing the supported input types.
+
 ### `getUri` rejects a nullish url
 
 - **Change:** `getUri` throws `AxiosError` with `ERR_INVALID_URL` for a `null` or `undefined` url without `baseURL` when the adapter is a built-in one, the same configs a request rejects.

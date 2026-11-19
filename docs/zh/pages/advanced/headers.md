@@ -173,4 +173,4 @@ await axios.post('/api/data', payload, {
 });
 ```
 
-关于完整 `AxiosHeaders` 方法 API 的详细说明，请参阅[请求头方法](/pages/advanced/header-methods)页面。
+关于完整 `AxiosHeaders` 方法 API 的详细说明，请参阅[请求头方法](/zh/pages/advanced/header-methods)页面。

@@ -12,7 +12,7 @@ const instance = axios.create({
 });
 ```
 
-`create` 方法接受完整的[请求配置](/pages/advanced/request-config)对象。之后可以像使用默认 axios 对象一样使用该实例：
+`create` 方法接受完整的[请求配置](/zh/pages/advanced/request-config)对象。之后可以像使用默认 axios 对象一样使用该实例：
 
 ```js
 const response = await instance.get("/users/1");

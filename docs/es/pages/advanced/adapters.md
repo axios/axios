@@ -25,7 +25,7 @@ También puedes pasar un arreglo de nombres de adaptadores. axios usará el prim
 const instance = axios.create({ adapter: ["fetch", "xhr", "http"] });
 ```
 
-Para más detalles sobre el adaptador `fetch`, consulta la página del [Adaptador Fetch](/pages/advanced/fetch-adapter).
+Para más detalles sobre el adaptador `fetch`, consulta la página del [Adaptador Fetch](/es/pages/advanced/fetch-adapter).
 
 ## Crear un adaptador personalizado
 

@@ -166,6 +166,243 @@ describe('supports http with nodejs', () => {
     }
   });
 
+  it('should reject a negative timeout as an immediate timeout instead of crashing', async () => {
+    let requests = 0;
+    let connections = 0;
+    const server = await startHTTPServer((req, res) => {
+      requests++;
+      res.end('ok');
+    });
+    server.on('connection', () => connections++);
+    const url = `http://localhost:${server.address().port}`;
+
+    try {
+      for (const [timeout, maxRedirects] of [
+        [-1, undefined],
+        [-1, 0],
+        [-0.5, undefined],
+        [-0.5, 0],
+        ['-1', undefined],
+        ['-1', 0],
+        [-1n, undefined],
+        [-Infinity, undefined],
+        [-Infinity, 0],
+        ['-1e-324', undefined],
+        ['-1e-324', 0],
+        ['-1e-7', undefined],
+        ['-1e-7', 0],
+      ]) {
+        await assert.rejects(
+          axios.get(url, { timeout, maxRedirects }),
+          (error) => {
+            assert.ok(error instanceof AxiosError);
+            assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+            assert.strictEqual(error.message, `timeout of ${timeout}ms exceeded`);
+            return true;
+          },
+          `timeout ${String(timeout)} with maxRedirects ${maxRedirects}`
+        );
+      }
+
+      await assert.rejects(
+        axios.get(url, {
+          timeout: -1,
+          transitional: { clarifyTimeoutError: true },
+        }),
+        (error) => {
+          assert.ok(error instanceof AxiosError);
+          assert.strictEqual(error.code, AxiosError.ETIMEDOUT);
+          return true;
+        }
+      );
+
+      await assert.rejects(
+        axios.get(url, { timeout: -1, timeoutErrorMessage: 'deadline passed' }),
+        (error) => {
+          assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+          assert.strictEqual(error.message, 'deadline passed');
+          return true;
+        }
+      );
+
+      // Give any socket that was opened time to reach the server before counting.
+      await setTimeoutAsync(50);
+
+      assert.strictEqual(requests, 0);
+      assert.strictEqual(connections, 0);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should report other config errors before a negative timeout', async () => {
+    const server = await startHTTPServer((req, res) => res.end('ok'));
+    const url = `http://localhost:${server.address().port}`;
+
+    try {
+      await assert.rejects(
+        axios.post(url, 'x'.repeat(100), { timeout: -1, maxBodyLength: 10 }),
+        (error) => {
+          assert.strictEqual(error.code, AxiosError.ERR_BAD_REQUEST);
+          return true;
+        }
+      );
+
+      await assert.rejects(axios.get(url, { timeout: -1, socketPath: 123 }), (error) => {
+        assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+        return true;
+      });
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should convert the timeout once, so the checked value is the applied value', async () => {
+    let requests = 0;
+    const server = await startHTTPServer((req, res) => {
+      requests++;
+      setTimeout(() => res.end('ok'), 300);
+    });
+    const url = `http://localhost:${server.address().port}`;
+
+    try {
+      for (const maxRedirects of [undefined, 0]) {
+        let conversions = 0;
+        // Valid on the first conversion and negative afterwards: converting again would either
+        // fail the request early or hand -1 to req.setTimeout and crash.
+        const timeout = { toString: () => (conversions++ === 0 ? '50' : '-1') };
+
+        await assert.rejects(
+          axios.get(url, { timeout, maxRedirects }),
+          (error) => {
+            assert.ok(error instanceof AxiosError);
+            assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+            assert.strictEqual(error.message, 'timeout of 50ms exceeded');
+            return true;
+          },
+          `maxRedirects ${maxRedirects}`
+        );
+      }
+
+      assert.strictEqual(requests, 2);
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should not start reading an upload body when the config is rejected', async () => {
+    const server = await startHTTPServer((req, res) => res.end('ok'));
+    const url = `http://localhost:${server.address().port}`;
+
+    try {
+      for (const [name, config, code] of [
+        ['negative timeout', { timeout: -1 }, AxiosError.ECONNABORTED],
+        [
+          'throwing paramsSerializer',
+          {
+            params: { a: 1 },
+            paramsSerializer: () => {
+              throw new Error('bad params');
+            },
+          },
+          AxiosError.ERR_BAD_REQUEST,
+        ],
+      ]) {
+        for (const upload of [{ onUploadProgress: () => {} }, { maxRate: [1024, 0] }]) {
+          let reads = 0;
+          const body = new stream.Readable({
+            read() {
+              reads++;
+              this.push('x'.repeat(1024));
+            },
+          });
+
+          await assert.rejects(
+            axios.post(url, body, { ...config, ...upload }),
+            (error) => {
+              assert.strictEqual(error.code, code);
+              return true;
+            },
+            `${name} with ${Object.keys(upload)[0]}`
+          );
+
+          await setTimeoutAsync(20);
+
+          assert.strictEqual(reads, 0, `${name} with ${Object.keys(upload)[0]}`);
+          body.destroy();
+        }
+      }
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should reject a timeout that converts to Infinity as unparsable', async () => {
+    // parseInt returns Infinity for very long digit strings, which Node rejects like a negative.
+    const server = await startHTTPServer((req, res) => res.end('ok'));
+    const url = `http://localhost:${server.address().port}`;
+
+    try {
+      for (const timeout of ['9'.repeat(400), 10n ** 400n]) {
+        for (const maxRedirects of [undefined, 0]) {
+          await assert.rejects(
+            axios.get(url, { timeout, maxRedirects }),
+            (error) => {
+              assert.ok(error instanceof AxiosError);
+              assert.strictEqual(error.code, AxiosError.ERR_BAD_OPTION_VALUE);
+              assert.strictEqual(error.message, 'error trying to parse `config.timeout` to int');
+              return true;
+            },
+            `${typeof timeout} timeout with maxRedirects ${maxRedirects}`
+          );
+        }
+      }
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
+  it('should not apply a negative timeout to data: URLs', async () => {
+    // data: URLs are decoded locally and never apply a timeout, so a negative one is ignored.
+    for (const timeout of [-1, -0.5, '-1']) {
+      const response = await axios.get('data:text/plain;base64,aGk=', {
+        timeout,
+        responseType: 'text',
+      });
+
+      assert.strictEqual(response.data, 'hi');
+    }
+  });
+
+  it('should keep integer truncation for exponent-form string timeouts', async () => {
+    // The sign check uses parseFloat, but the applied timeout is still the base-10 integer
+    // prefix, so these keep timing out after 1ms instead of 1000ms, never, or ~24.8 days.
+    const server = await startHTTPServer((req, res) => {
+      setTimeout(() => res.end('ok'), 150);
+    });
+
+    try {
+      for (const timeout of ['1e3', '1e-7', 1e21]) {
+        for (const maxRedirects of [undefined, 0]) {
+          await assert.rejects(
+            axios.get(`http://localhost:${server.address().port}`, {
+              timeout,
+              maxRedirects,
+            }),
+            (error) => {
+              assert.ok(error instanceof AxiosError);
+              assert.strictEqual(error.code, AxiosError.ECONNABORTED);
+              return true;
+            },
+            `timeout ${String(timeout)} with maxRedirects ${maxRedirects}`
+          );
+        }
+      }
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   it('should sanitize request headers containing CRLF characters', async () => {
     const server = await startHTTPServer(
       (req, res) => {

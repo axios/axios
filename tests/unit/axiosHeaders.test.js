@@ -784,6 +784,34 @@ describe('AxiosHeaders', () => {
     });
   });
 
+  describe('encoding accessors', () => {
+    it('should support the Content-Encoding shortcuts', () => {
+      const headers = new AxiosHeaders({ 'Content-Encoding': 'gzip' });
+
+      assert.strictEqual(headers.getContentEncoding(), 'gzip');
+      assert.strictEqual(headers.hasContentEncoding(), true);
+      assert.deepStrictEqual(Object.keys(headers.getContentEncoding(true)), ['gzip']);
+      assert.strictEqual(headers.getContentEncoding(/gz/)[0], 'gz');
+
+      assert.strictEqual(headers.setContentEncoding('br'), headers);
+      assert.strictEqual(headers.get('content-encoding'), 'br');
+      assert.strictEqual(headers.hasContentEncoding('br'), true);
+    });
+
+    it('should support the Accept-Encoding shortcuts', () => {
+      const headers = new AxiosHeaders({ 'Accept-Encoding': 'gzip, br' });
+
+      assert.strictEqual(headers.getAcceptEncoding(), 'gzip, br');
+      assert.strictEqual(headers.hasAcceptEncoding(), true);
+      assert.deepStrictEqual(Object.keys(headers.getAcceptEncoding(true)), ['gzip', 'br']);
+      assert.strictEqual(headers.getAcceptEncoding(/br/)[0], 'br');
+
+      assert.strictEqual(headers.setAcceptEncoding('deflate'), headers);
+      assert.strictEqual(headers.get('accept-encoding'), 'deflate');
+      assert.strictEqual(headers.hasAcceptEncoding('deflate'), true);
+    });
+  });
+
   it('should be caseless', () => {
     const headers = new AxiosHeaders({
       fOo: 1,

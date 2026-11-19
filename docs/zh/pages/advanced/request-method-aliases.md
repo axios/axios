@@ -6,7 +6,7 @@ axios 尽量遵循 RFC 7231 和 RFC 5789 规范，别名方法与这些规范中
 
 ### `axios`
 
-axios 可以通过仅传入配置对象来发起 HTTP 请求，完整的配置对象文档见[此处](/pages/advanced/request-config)。
+axios 可以通过仅传入配置对象来发起 HTTP 请求，完整的配置对象文档见[此处](/zh/pages/advanced/request-config)。
 
 ```ts
 axios<T, R, D, P>(
@@ -172,5 +172,5 @@ await axios.patchForm("/api/users/1", {
 ```
 
 ::: tip
-`postForm`、`putForm` 和 `patchForm` 接受与基础方法相同的所有数据类型——普通对象、`FormData`、`FileList` 以及 `HTMLFormElement`。更多示例请参阅[文件上传](/pages/advanced/file-posting)。
+`postForm`、`putForm` 和 `patchForm` 接受与基础方法相同的所有数据类型——普通对象、`FormData`、`FileList` 以及 `HTMLFormElement`。更多示例请参阅[文件上传](/zh/pages/advanced/file-posting)。
 :::

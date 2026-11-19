@@ -10,7 +10,7 @@ axios.defaults.headers.post["Content-Type"] =
 ```
 
 ::: warning Les en-têtes globaux sont envoyés à chaque hôte
-Si votre application communique avec plus d'un domaine, définir `axios.defaults.headers.common["Authorization"]` enverra le token à **tous** ces domaines, y compris à des APIs tierces que vous ne contrôlez peut-être pas. Utilisez une [instance personnalisée](#valeurs-par-défaut-d-une-instance-personnalisée) avec une `baseURL` limitée pour tout client qui transporte des identifiants.
+Si votre application communique avec plus d'un domaine, définir `axios.defaults.headers.common["Authorization"]` enverra le token à **tous** ces domaines, y compris à des APIs tierces que vous ne contrôlez peut-être pas. Utilisez une [instance personnalisée](#valeurs-par-defaut-d-une-instance-personnalisee) avec une `baseURL` limitée pour tout client qui transporte des identifiants.
 :::
 
 ## Valeurs par défaut des en-têtes par méthode

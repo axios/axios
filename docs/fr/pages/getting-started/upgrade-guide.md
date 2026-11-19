@@ -113,17 +113,17 @@ axios.create({
 
 **Les paramètres `null` et `undefined`** sont désormais gérés de manière cohérente : les valeurs `null` sont sérialisées comme des chaînes vides, tandis que les valeurs `undefined` sont entièrement omises.
 
-Pour les options complètes de configuration de la sérialisation des paramètres, consultez la page [Configuration de requête](/pages/advanced/request-config).
+Pour les options complètes de configuration de la sérialisation des paramètres, consultez la page [Configuration de requête](/fr/pages/advanced/request-config).
 
 ### Les éléments internes ne sont plus exportés
 
 Nous avons décidé de ne plus exporter les éléments internes d'axios. Vous devrez donc mettre à jour votre code pour n'utiliser que l'API publique d'axios. Cette modification a été apportée pour simplifier l'API et réduire la surface exposée d'axios, nous permettant ainsi d'effectuer des modifications internes sans les déclarer comme des changements incompatibles.
 
-Veuillez consulter la [référence API](/pages/advanced/api-reference) sur ce site pour obtenir les dernières informations sur l'API publique d'axios.
+Veuillez consulter la [référence API](/fr/pages/advanced/api-reference) sur ce site pour obtenir les dernières informations sur l'API publique d'axios.
 
 ### Configuration de requête
 
-Nous avons apporté des modifications à l'objet de configuration de requête. Veuillez consulter la [référence de configuration](/pages/advanced/request-config) sur ce site pour obtenir les dernières informations.
+Nous avons apporté des modifications à l'objet de configuration de requête. Veuillez consulter la [référence de configuration](/fr/pages/advanced/request-config) sur ce site pour obtenir les dernières informations.
 
 ### Changements incompatibles non répertoriés
 

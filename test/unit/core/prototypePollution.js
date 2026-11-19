@@ -28,6 +28,8 @@ describe("Prototype Pollution Protection", function () {
     delete Object.prototype.method;
     delete Object.prototype.headers;
     delete Object.prototype.config;
+    delete Object.prototype.host;
+    delete Object.prototype.followRedirects;
   }
 
   function stubAdapter(store) {
@@ -664,6 +666,101 @@ describe("Prototype Pollution Protection", function () {
         }
       }, function (error) {
         closeAll();
+        throw error;
+      });
+    });
+  });
+
+  describe("redirect options", function () {
+    function listen(handler) {
+      return new Promise(function (resolve) {
+        var server = http.createServer(handler);
+        server.listen(0, '127.0.0.1', function () {
+          resolve(server);
+        });
+      });
+    }
+
+    function closeAll(servers) {
+      servers.forEach(function closeServer(server) {
+        if (server) {
+          server.close();
+        }
+      });
+    }
+
+    it("should resolve a relative redirect against the real host when host is set on Object.prototype", function () {
+      var legitHits = [];
+      var otherHits = [];
+      var legit;
+      var other;
+
+      // Servers are constructed before any pollution is applied.
+      return listen(function (req, res) {
+        legitHits.push({ url: req.url, authorization: req.headers.authorization });
+        if (req.url === '/start') {
+          res.writeHead(302, { Location: '/next' });
+          res.end();
+          return;
+        }
+        res.end('LEGIT');
+      }).then(function (server) {
+        legit = server;
+
+        return listen(function (req, res) {
+          otherHits.push({ url: req.url, authorization: req.headers.authorization });
+          res.end('OTHER');
+        });
+      }).then(function (server) {
+        other = server;
+
+        Object.prototype.host = '127.0.0.1:' + other.address().port;
+
+        return axios.get('http://127.0.0.1:' + legit.address().port + '/start', {
+          headers: { Authorization: 'Bearer token' }
+        });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'LEGIT');
+          assert.deepStrictEqual(legitHits, [
+            { url: '/start', authorization: 'Bearer token' },
+            { url: '/next', authorization: 'Bearer token' }
+          ]);
+          assert.deepStrictEqual(otherHits, []);
+        } finally {
+          closeAll([legit, other]);
+        }
+      }, function (error) {
+        closeAll([legit, other]);
+        throw error;
+      });
+    });
+
+    it("should keep following redirects when followRedirects is set on Object.prototype", function () {
+      var server;
+
+      return listen(function (req, res) {
+        if (req.url === '/start') {
+          res.writeHead(302, { Location: '/next' });
+          res.end();
+          return;
+        }
+        res.end('DONE');
+      }).then(function (created) {
+        server = created;
+
+        Object.prototype.followRedirects = false;
+
+        return axios.get('http://127.0.0.1:' + server.address().port + '/start');
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.status, 200);
+          assert.strictEqual(response.data, 'DONE');
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
         throw error;
       });
     });

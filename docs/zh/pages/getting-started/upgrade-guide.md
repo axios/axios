@@ -127,4 +127,4 @@ axios.create({
 
 ### 遗漏的破坏性变更
 
-本指南并不详尽，可能未涵盖所有破坏性变更。如果你遇到任何问题，欢迎在 [docs GitHub 仓库](https://github.com/axios/docs)提交 issue，并添加 `breaking change` 标签。
+本指南并不详尽，可能未涵盖所有破坏性变更。如果你遇到任何问题，欢迎在 [axios GitHub 仓库](https://github.com/axios/axios/issues)提交 issue。

@@ -1196,6 +1196,149 @@ describe("supports http with nodejs", function () {
       });
   });
 
+  it("should connect to the allow-listed socket when the path goes through a symlinked directory", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    var os = require("os");
+    var root = fs.mkdtempSync(path.join(os.tmpdir(), "axios-sock-"));
+    var allowedDir = path.join(root, "allowed");
+    var otherDir = path.join(root, "other");
+    var allowedSocket = path.join(allowedDir, "app.sock");
+    var otherSocket = path.join(otherDir, "app.sock");
+    var servers = [];
+
+    fs.mkdirSync(allowedDir);
+    fs.mkdirSync(path.join(otherDir, "sub"), { recursive: true });
+    // allowed/link/../app.sock normalizes to allowed/app.sock, but the kernel
+    // follows the link first and would land on other/app.sock.
+    fs.symlinkSync(path.join(otherDir, "sub"), path.join(allowedDir, "link"));
+
+    function listen(socketPath, body) {
+      return new Promise(function (resolve, reject) {
+        var server = http.createServer(function (req, res) {
+          res.end(body);
+        });
+        servers.push(server);
+        server.once("error", reject);
+        server.listen(socketPath, resolve);
+      });
+    }
+
+    function cleanup() {
+      return Promise.all(servers.map(function (server) {
+        return new Promise(function (resolve) {
+          server.close(function () {
+            resolve();
+          });
+        });
+      })).then(function () {
+        fs.rmSync ? fs.rmSync(root, { recursive: true, force: true }) : fs.rmdirSync(root, { recursive: true });
+      });
+    }
+
+    return Promise.all([
+      listen(allowedSocket, "allowed"),
+      listen(otherSocket, "other")
+    ]).then(function () {
+      return axios({
+        // Built by hand: path.join would normalize the ".." away.
+        socketPath: allowedDir + "/link/../app.sock",
+        allowedSocketPaths: [allowedSocket],
+        url: "/"
+      });
+    }).then(function (response) {
+      return cleanup().then(function () {
+        assert.strictEqual(response.data, "allowed");
+      });
+    }, function (error) {
+      return cleanup().then(function () {
+        throw error;
+      });
+    });
+  });
+
+  it("should connect to an allow-listed Linux abstract socket", function (done) {
+    if (process.platform !== "linux") {
+      this.skip();
+    }
+
+    var socketName = "\0axios-test-" + process.pid + "-" + Date.now();
+
+    server = http
+      .createServer(function (req, res) {
+        res.end("abstract");
+      })
+      .once("error", done)
+      .listen(socketName, function () {
+        axios({
+          socketPath: socketName,
+          allowedSocketPaths: [socketName],
+          url: "/"
+        })
+          .then(function (response) {
+            assert.strictEqual(response.data, "abstract");
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should keep an allow-listed relative socket path relative", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    var os = require("os");
+    var cwd = process.cwd();
+    var root = fs.mkdtempSync(path.join(os.tmpdir(), "axios-sock-"));
+    // Deep enough that the absolute socket path is longer than the Unix socket
+    // path limit (108 bytes on Linux, 104 on macOS), while "app.sock" is not.
+    var deepDir = path.join(root, new Array(121).join("d"));
+    var socketServer;
+
+    fs.mkdirSync(path.join(deepDir, "sub"), { recursive: true });
+
+    function cleanup() {
+      process.chdir(cwd);
+      return new Promise(function (resolve) {
+        if (!socketServer) {
+          return resolve();
+        }
+        socketServer.close(function () {
+          resolve();
+        });
+      }).then(function () {
+        fs.rmSync ? fs.rmSync(root, { recursive: true, force: true }) : fs.rmdirSync(root, { recursive: true });
+      });
+    }
+
+    process.chdir(deepDir);
+
+    return new Promise(function (resolve, reject) {
+      socketServer = http.createServer(function (req, res) {
+        res.end("relative");
+      });
+      socketServer.once("error", reject);
+      socketServer.listen("app.sock", resolve);
+    }).then(function () {
+      return axios({
+        socketPath: "sub/../app.sock",
+        allowedSocketPaths: ["app.sock"],
+        url: "/"
+      });
+    }).then(function (response) {
+      return cleanup().then(function () {
+        assert.strictEqual(response.data, "relative");
+      });
+    }, function (error) {
+      return cleanup().then(function () {
+        throw error;
+      });
+    });
+  });
+
   it("should reject invalid socket path options", function (done) {
     axios({
       socketPath: {},

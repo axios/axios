@@ -942,5 +942,47 @@ describe('core::AxiosError', () => {
 
       expect(error.toJSON().config.items).toEqual([{ httpAgent: '[Agent]' }]);
     });
+
+    it('preserves Date, URL, RegExp, and URLSearchParams values under httpAgent/httpsAgent keys', () => {
+      const date = new Date('2026-01-01T00:00:00.000Z');
+      const targetUrl = new URL('https://example.com/path');
+      const pattern = /abc/i;
+      const search = new URLSearchParams('a=1');
+
+      const defaultError = new AxiosError('Boom', 'ECODE', {
+        httpAgent: new http.Agent(),
+        params: {
+          httpAgent: date,
+          httpsAgent: targetUrl,
+        },
+        nested: {
+          httpAgent: pattern,
+          httpsAgent: search,
+        },
+      });
+
+      const defaultJson = JSON.parse(JSON.stringify(defaultError));
+      expect(defaultJson.config.httpAgent).toBe('[Agent]');
+      expect(defaultJson.config.params.httpAgent).toBe('2026-01-01T00:00:00.000Z');
+      expect(defaultJson.config.params.httpsAgent).toBe('https://example.com/path');
+      expect(defaultJson.config.nested.httpAgent).toEqual({});
+      expect(defaultJson.config.nested.httpsAgent).toEqual({});
+
+      const redactedError = new AxiosError('Boom', 'ECODE', {
+        httpAgent: new https.Agent(),
+        auth: { password: 'secret' },
+        redact: ['password'],
+        params: {
+          httpAgent: date,
+          httpsAgent: targetUrl,
+        },
+      });
+
+      const redactedJson = JSON.parse(JSON.stringify(redactedError));
+      expect(redactedJson.config.httpAgent).toBe('[Agent]');
+      expect(redactedJson.config.auth.password).toBe('[REDACTED ****]');
+      expect(redactedJson.config.params.httpAgent).toBe('2026-01-01T00:00:00.000Z');
+      expect(redactedJson.config.params.httpsAgent).toBe('https://example.com/path');
+    });
   });
 });

@@ -2808,7 +2808,7 @@ Do not remove `ignore-scripts=true` from `.npmrc` to "fix" this. That reopens th
 
 ## Credits
 
-axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) in [AngularJS](https://angularjs.org/). It provides a standalone `$http`-like service for use outside AngularJS.
+axios is heavily inspired by the [$http service](https://docs.angularjs.org/api/ng/service/$http) in [AngularJS](https://docs.angularjs.org/). It provides a standalone `$http`-like service for use outside AngularJS.
 
 ## License
 

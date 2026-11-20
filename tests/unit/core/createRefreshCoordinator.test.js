@@ -191,6 +191,58 @@ describe('core::createRefreshCoordinator', () => {
     expect(res.data).toEqual({ ok: true });
     expect(failedError.config.__isRetryRequest).toBeUndefined();
     expect(failedError.config.headers.get('Authorization')).toBe('Bearer old-token');
+
+    const failingCoordinator = createRefreshCoordinator(async () => {
+      throw new Error('refresh failed');
+    });
+    let rejectedFailedError;
+    const failingClient = axios.create({
+      adapter: async (config) => {
+        throw make401Error(config, 401);
+      },
+    });
+    failingClient.interceptors.response.use(undefined, (err) => {
+      rejectedFailedError = err;
+      return Promise.reject(err);
+    });
+    failingCoordinator.attachInterceptor(failingClient);
+
+    await expect(
+      failingClient.get('/me', { headers: { Authorization: 'Bearer old-token' } })
+    ).rejects.toThrow('refresh failed');
+    expect(rejectedFailedError.config.__isRetryRequest).toBeUndefined();
+    expect(rejectedFailedError.config.headers.get('Authorization')).toBe('Bearer old-token');
+  });
+
+  it('ignores inherited Object.prototype properties for baseURL, skipFlag, and retryFlag', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+
+    Object.prototype.baseURL = 'https://evil.example.com';
+    Object.prototype.__skipAuthRefresh = true;
+    Object.prototype.__isRetryRequest = true;
+
+    try {
+      const seenHeaders = [];
+      const client = axios.create({
+        adapter: async (config) => {
+          seenHeaders.push(config.headers.get('Authorization'));
+          if (seenHeaders.length === 1) {
+            throw make401Error(config, 401);
+          }
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        },
+      });
+      coordinator.attachInterceptor(client);
+
+      await client.get('https://evil.example.com/steal');
+      expect(refreshFn).toHaveBeenCalledTimes(1);
+      expect(seenHeaders[1]).toBeUndefined();
+    } finally {
+      delete Object.prototype.baseURL;
+      delete Object.prototype.__skipAuthRefresh;
+      delete Object.prototype.__isRetryRequest;
+    }
   });
 
   it('does not send refreshed bearer tokens to untrusted third-party absolute URLs by default', async () => {

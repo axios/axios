@@ -88,7 +88,7 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opensource.sap.com?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                href="https://github.com/SAP"
                 style="padding: 10px; display: inline-block"
                 target="_blank"
             >
@@ -107,9 +107,9 @@
             </p>
             <p align="center">
                 <a
-                    href="https://opensource.sap.com?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
+                    href="https://github.com/SAP"
                     target="_blank"
-                    ><b>opensource.sap.com</b></a
+                    ><b>github.com/SAP</b></a
                 >
             </p>
         </td>

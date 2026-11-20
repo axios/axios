@@ -3,6 +3,32 @@ import { Readable } from 'node:stream';
 import { trackStream } from '../../../lib/helpers/trackStream.js';
 
 describe('helpers::trackStream', () => {
+  it('allows cancellation after the source finishes with queued data', async () => {
+    const cancel = vi.fn();
+    const source = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array([1, 2]));
+        controller.close();
+      },
+      cancel,
+    });
+    const onProgress = vi.fn();
+    const onFinish = vi.fn();
+    const reader = trackStream(source, 2, onProgress, onFinish).getReader();
+
+    try {
+      await vi.waitFor(() => expect(onFinish).toHaveBeenCalledExactlyOnceWith(undefined));
+      expect(onProgress).toHaveBeenCalledExactlyOnceWith(2);
+      expect(source.locked).toBe(false);
+      await expect(reader.cancel('stop')).resolves.toBeUndefined();
+      expect(await reader.read()).toEqual({ done: true, value: undefined });
+      expect(cancel).not.toHaveBeenCalled();
+      expect(onFinish).toHaveBeenCalledExactlyOnceWith(undefined);
+    } finally {
+      reader.releaseLock();
+    }
+  });
+
   for (const useAsyncIterator of [true, false]) {
     for (const phase of ['before pulling', 'during a pending read', 'between split chunks']) {
       it(`cancels the source ${phase} (async iterator: ${useAsyncIterator})`, async () => {
@@ -58,7 +84,7 @@ describe('helpers::trackStream', () => {
           if (!cancel.mock.calls.length) {
             controller.close();
           }
-          await cancellation;
+          await cancellation?.catch(() => {});
           reader.releaseLock();
         }
       });
@@ -144,7 +170,7 @@ describe('helpers::trackStream', () => {
     }
   });
 
-  it.each(['async iterable', 'Node readable'])(
+  it.each(['async iterable', 'Node readable', 'async iterable with getReader'])(
     'still closes a %s when the consumer cancels',
     async (kind) => {
       const close = vi.fn();
@@ -157,12 +183,19 @@ describe('helpers::trackStream', () => {
       }
       const onFinish = vi.fn();
       const stream = kind === 'Node readable' ? Readable.from(source()) : source();
+      const getReader = vi.fn(() => {
+        throw new Error('getReader must not be used for this async iterable');
+      });
+      if (kind === 'async iterable with getReader') {
+        stream.getReader = getReader;
+      }
       const reader = trackStream(stream, 2, undefined, onFinish).getReader();
       try {
         expect(await reader.read()).toEqual({ done: false, value: new Uint8Array([1, 2]) });
         await reader.cancel('stop');
         expect(close).toHaveBeenCalledTimes(1);
         expect(onFinish).toHaveBeenCalledExactlyOnceWith('stop');
+        expect(getReader).not.toHaveBeenCalled();
       } finally {
         reader.releaseLock();
       }

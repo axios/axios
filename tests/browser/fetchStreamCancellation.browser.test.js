@@ -2,6 +2,30 @@ import { describe, expect, it, vi } from 'vitest';
 import axios from '../../index.js';
 
 describe('fetch response stream cancellation', () => {
+  it('allows cancellation after the source finishes with queued data', async () => {
+    const source = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array([1, 2]));
+        controller.close();
+      },
+    });
+    const { data } = await axios.get('https://example.com/stream', {
+      adapter: 'fetch',
+      responseType: 'stream',
+      onDownloadProgress() {},
+      env: { fetch: async () => new Response(source) },
+    });
+    const reader = data.getReader();
+
+    try {
+      await vi.waitFor(() => expect(source.locked).toBe(false));
+      await expect(reader.cancel('stop')).resolves.toBeUndefined();
+      expect(await reader.read()).toEqual({ done: true, value: undefined });
+    } finally {
+      reader.releaseLock();
+    }
+  });
+
   it.each([
     ['untracked', {}],
     ['download progress', { onDownloadProgress() {} }],
@@ -47,7 +71,7 @@ describe('fetch response stream cancellation', () => {
       if (!cancel.mock.calls.length) {
         controller.close();
       }
-      await cancellation;
+      await cancellation?.catch(() => {});
       reader.releaseLock();
     }
   });

@@ -34,7 +34,7 @@ describe('fetch response stream cancellation', () => {
       expect(await pendingRead).toEqual({ done: true, value: undefined });
     } finally {
       response && response.end();
-      await cancellation;
+      await cancellation?.catch(() => {});
       reader && reader.releaseLock();
       await stopHTTPServer(server);
     }

@@ -800,6 +800,8 @@ export interface RefreshCoordinatorOptions<T = any> {
   shouldRefresh?: (error: any) => boolean;
   onRefreshed?: (token: T, config: InternalAxiosRequestConfig) => void | Promise<void>;
   retryFlag?: string;
+  skipFlag?: string;
+  allowCrossOriginAuth?: boolean;
 }
 
 export interface RefreshCoordinator<T = any> {

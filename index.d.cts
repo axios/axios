@@ -808,6 +808,8 @@ declare namespace axios {
     shouldRefresh?: (error: any) => boolean;
     onRefreshed?: (token: T, config: InternalAxiosRequestConfig) => void | Promise<void>;
     retryFlag?: string;
+    skipFlag?: string;
+    allowCrossOriginAuth?: boolean;
   }
 
   interface RefreshCoordinator<T = any> {

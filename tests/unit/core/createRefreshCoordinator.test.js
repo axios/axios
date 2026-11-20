@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import axios, { AxiosError, createRefreshCoordinator } from '../../../index.js';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import axios, { AxiosError, CancelToken, CanceledError, createRefreshCoordinator } from '../../../index.js';
 
 function make401Error(config, status = 401) {
   return new AxiosError(
@@ -11,11 +11,18 @@ function make401Error(config, status = 401) {
   );
 }
 
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe('core::createRefreshCoordinator', () => {
-  it('validates refreshFn and cooldownMs options', () => {
+  it('validates refreshFn, cooldownMs, and reserved flag names', () => {
     expect(() => createRefreshCoordinator(null)).toThrowError(AxiosError);
     expect(() => createRefreshCoordinator(() => {}, { cooldownMs: -1 })).toThrowError(AxiosError);
     expect(() => createRefreshCoordinator(() => {}, { cooldownMs: Number.NaN })).toThrowError(AxiosError);
+    expect(() => createRefreshCoordinator(() => {}, { retryFlag: '__proto__' })).toThrowError(AxiosError);
+    expect(() => createRefreshCoordinator(() => {}, { retryFlag: 'constructor' })).toThrowError(AxiosError);
+    expect(() => createRefreshCoordinator(() => {}, { skipFlag: 'prototype' })).toThrowError(AxiosError);
   });
 
   it('coalesces concurrent proactive timer and reactive 401 refreshes into one call', async () => {
@@ -44,7 +51,8 @@ describe('core::createRefreshCoordinator', () => {
     expect(coordinator.isRefreshing()).toBe(false);
   });
 
-  it('reuses cached token within cooldownMs and resets cleanly', async () => {
+  it('reuses cached token within cooldownMs, expires after cooldownMs, and resets cleanly', async () => {
+    vi.useFakeTimers();
     let counter = 0;
     const refreshFn = vi.fn(async () => `token-${++counter}`);
     const coordinator = createRefreshCoordinator(refreshFn, { cooldownMs: 5000 });
@@ -53,7 +61,36 @@ describe('core::createRefreshCoordinator', () => {
     expect(await coordinator.refresh()).toBe('token-1');
     expect(refreshFn).toHaveBeenCalledTimes(1);
 
+    vi.advanceTimersByTime(5001);
+    expect(await coordinator.refresh()).toBe('token-2');
+    expect(refreshFn).toHaveBeenCalledTimes(2);
+
     coordinator.reset();
+    expect(await coordinator.refresh()).toBe('token-3');
+    expect(refreshFn).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not repopulate cooldown cache if reset() is called while refresh is in-flight', async () => {
+    let resolveFirst;
+    let counter = 0;
+    const refreshFn = vi.fn(() => {
+      counter += 1;
+      if (counter === 1) {
+        return new Promise((resolve) => {
+          resolveFirst = resolve;
+        });
+      }
+      return Promise.resolve(`token-${counter}`);
+    });
+
+    const coordinator = createRefreshCoordinator(refreshFn, { cooldownMs: 5000 });
+
+    const first = coordinator.refresh();
+    coordinator.reset();
+    resolveFirst('stale-pre-reset-token');
+    expect(await first).toBe('stale-pre-reset-token');
+
+    // Cache must NOT have been repopulated by the pre-reset refresh
     expect(await coordinator.refresh()).toBe('token-2');
     expect(refreshFn).toHaveBeenCalledTimes(2);
   });
@@ -94,6 +131,7 @@ describe('core::createRefreshCoordinator', () => {
     const seenAuthHeaders = [];
 
     const client = axios.create({
+      baseURL: 'https://api.example.com',
       adapter: async (config) => {
         const auth = config.headers.get('Authorization');
         seenAuthHeaders.push(auth);
@@ -106,18 +144,13 @@ describe('core::createRefreshCoordinator', () => {
 
     coordinator.attachInterceptor(client);
 
-    // 1. Proactive timer starts refreshing in the background
     const proactive = coordinator.refresh();
-
-    // 2. Two API requests fail with 401 in the same tick while refresh is in-flight
     const req1 = client.get('/profile', { headers: { Authorization: `Bearer ${currentToken}` } });
     const req2 = client.get('/orders', { headers: { Authorization: `Bearer ${currentToken}` } });
 
-    // Give microtasks a tick to hit the 401 interceptor
     await new Promise((r) => setTimeout(r, 10));
     expect(refreshFn).toHaveBeenCalledTimes(1);
 
-    // 3. Complete the single shared refresh
     resolveRefresh('fresh-token');
 
     const [tokenResult, res1, res2] = await Promise.all([proactive, req1, req2]);
@@ -131,6 +164,115 @@ describe('core::createRefreshCoordinator', () => {
       'Bearer fresh-token',
       'Bearer fresh-token',
     ]);
+  });
+
+  it('does not mutate error.config in place on retry or refresh failure', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+
+    let failedError;
+    const client = axios.create({
+      adapter: async (config) => {
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+
+    // Capture the original error before coordinator handles it
+    client.interceptors.response.use(undefined, (err) => {
+      failedError = err;
+      return Promise.reject(err);
+    });
+    coordinator.attachInterceptor(client);
+
+    const res = await client.get('/me', { headers: { Authorization: 'Bearer old-token' } });
+    expect(res.data).toEqual({ ok: true });
+    expect(failedError.config.__isRetryRequest).toBeUndefined();
+    expect(failedError.config.headers.get('Authorization')).toBe('Bearer old-token');
+  });
+
+  it('does not send refreshed bearer tokens to untrusted third-party absolute URLs by default', async () => {
+    const refreshFn = vi.fn(async () => 'secret-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+    const seenHeaders = [];
+
+    const client = axios.create({
+      baseURL: 'https://api.example.com',
+      adapter: async (config) => {
+        seenHeaders.push(config.headers.get('Authorization'));
+        throw make401Error(config, 401);
+      },
+    });
+
+    coordinator.attachInterceptor(client);
+
+    await expect(client.get('https://evil.thirdparty.test/resource')).rejects.toMatchObject({
+      response: { status: 401 },
+    });
+    expect(seenHeaders).toEqual([undefined, undefined]);
+  });
+
+  it('bypasses refresh interceptor when skipFlag is set on refresh requests to avoid deadlock', async () => {
+    const client = axios.create({
+      baseURL: 'https://api.example.com',
+      adapter: async (config) => {
+        throw make401Error(config, 401);
+      },
+    });
+
+    const coordinator = createRefreshCoordinator(async () => {
+      const res = await client.post('/auth/refresh', null, { __skipAuthRefresh: true });
+      return res.data.token;
+    });
+
+    coordinator.attachInterceptor(client);
+
+    await expect(client.get('/protected')).rejects.toMatchObject({
+      response: { status: 401 },
+    });
+  });
+
+  it('rejects canceled requests while waiting on refresh without canceling the shared refresh', async () => {
+    let resolveRefresh;
+    const refreshFn = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        })
+    );
+    const coordinator = createRefreshCoordinator(refreshFn);
+
+    const client = axios.create({
+      adapter: async (config) => {
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+
+    coordinator.attachInterceptor(client);
+
+    const controller = new AbortController();
+    const cancelSource = CancelToken.source();
+
+    const abortedReq = client.get('/aborted', { signal: controller.signal });
+    const canceledReq = client.get('/canceled', { cancelToken: cancelSource.token });
+    const activeReq = client.get('/active');
+
+    await new Promise((r) => setTimeout(r, 10));
+
+    controller.abort();
+    cancelSource.cancel('user canceled');
+
+    await expect(abortedReq).rejects.toBeInstanceOf(CanceledError);
+    await expect(canceledReq).rejects.toBeInstanceOf(CanceledError);
+
+    resolveRefresh('fresh-token');
+    const activeRes = await activeReq;
+    expect(activeRes.data).toEqual({ ok: true });
   });
 
   it('does not loop infinitely if the retried request also returns 401', async () => {

@@ -2,6 +2,7 @@ import axios, {
   AxiosHeaders,
   CanceledError,
   HttpStatusCode,
+  createRefreshCoordinator,
   isCancel,
   toFormData,
   type AxiosHeaderParameters,
@@ -226,6 +227,18 @@ const mergedParamsConfig = axios.mergeConfig<SearchBody, SearchParams>(
 );
 const mergedQuery: string = mergedParamsConfig.params!.query;
 
+const esmCoordinator = createRefreshCoordinator(async () => 'token', {
+  cooldownMs: 1000,
+  skipFlag: '__skipAuthRefresh',
+  allowCrossOriginAuth: false,
+});
+const esmRefreshing: boolean = esmCoordinator.isRefreshing();
+const esmRefreshedToken: Promise<string> = esmCoordinator.refresh();
+const esmInterceptorId: number = esmCoordinator.attachInterceptor(axios.create(), {
+  retryFlag: '__retried',
+});
+esmCoordinator.reset();
+
 console.log(
   serializedHeaders,
   parsedParameters,
@@ -240,5 +253,8 @@ console.log(
   errorQuery,
   legacyParamsConfig,
   mergedQuery,
-  invalidParamsConfig
+  invalidParamsConfig,
+  esmRefreshing,
+  esmRefreshedToken,
+  esmInterceptorId
 );

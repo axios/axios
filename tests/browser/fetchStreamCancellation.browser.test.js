@@ -9,16 +9,20 @@ describe('fetch response stream cancellation', () => {
         controller.close();
       },
     });
+    const onDownloadProgress = vi.fn();
     const { data } = await axios.get('https://example.com/stream', {
       adapter: 'fetch',
       responseType: 'stream',
-      onDownloadProgress() {},
+      onDownloadProgress,
       env: { fetch: async () => new Response(source) },
     });
     const reader = data.getReader();
 
     try {
-      await vi.waitFor(() => expect(source.locked).toBe(false));
+      await vi.waitFor(() => {
+        expect(onDownloadProgress).toHaveBeenCalled();
+        expect(source.locked).toBe(false);
+      });
       await expect(reader.cancel('stop')).resolves.toBeUndefined();
       expect(await reader.read()).toEqual({ done: true, value: undefined });
     } finally {

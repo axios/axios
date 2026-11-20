@@ -3,6 +3,52 @@ import { Readable } from 'node:stream';
 import { trackStream } from '../../../lib/helpers/trackStream.js';
 
 describe('helpers::trackStream', () => {
+  it('reports a locked source through the returned stream', async () => {
+    const cancel = vi.fn();
+    const source = new ReadableStream({ cancel });
+    const sourceReader = source.getReader();
+    const onFinish = vi.fn();
+    let reader;
+
+    try {
+      reader = trackStream(source, 2, undefined, onFinish).getReader();
+      const error = await reader.read().catch((error) => error);
+      expect(error).toBeInstanceOf(TypeError);
+      expect(onFinish).toHaveBeenCalledExactlyOnceWith(error);
+      expect(source.locked).toBe(true);
+      expect(cancel).not.toHaveBeenCalled();
+    } finally {
+      await sourceReader.cancel();
+      sourceReader.releaseLock();
+      reader && reader.releaseLock();
+    }
+  });
+
+  it('handles a source cancellation rejection when onFinish throws', async () => {
+    const cancelError = new Error('source cancellation failed');
+    const finishError = new Error('finish failed');
+    const cancel = vi.fn(() => Promise.reject(cancelError));
+    const source = new ReadableStream({ cancel });
+    const onFinish = vi.fn(() => {
+      throw finishError;
+    });
+    const reader = trackStream(source, 2, undefined, onFinish).getReader();
+    const onUnhandledRejection = vi.fn();
+    process.on('unhandledRejection', onUnhandledRejection);
+
+    try {
+      await expect(reader.cancel('stop')).rejects.toBe(finishError);
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(cancel).toHaveBeenCalledExactlyOnceWith('stop');
+      expect(onFinish).toHaveBeenCalledExactlyOnceWith('stop');
+      expect(source.locked).toBe(false);
+      expect(onUnhandledRejection).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', onUnhandledRejection);
+      reader.releaseLock();
+    }
+  });
+
   it('allows cancellation after the source finishes with queued data', async () => {
     const cancel = vi.fn();
     const source = new ReadableStream({

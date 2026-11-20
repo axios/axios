@@ -195,6 +195,27 @@ const mergedParamsConfig = axios.mergeConfig<SearchBody, SearchParams>(
 );
 const mergedQuery: string = mergedParamsConfig.params!.query;
 
+const cjsClient = axios.create();
+const cjsCoordinator = axios.createRefreshCoordinator(
+  async () => {
+    const res = await cjsClient.post<{ token: string }>('/auth/refresh', null, {
+      __skipAuthRefresh: true,
+    });
+    return res.data.token;
+  },
+  {
+    cooldownMs: 1000,
+    skipFlag: '__skipAuthRefresh',
+    allowCrossOriginAuth: false,
+  }
+);
+const cjsRefreshing: boolean = cjsCoordinator.isRefreshing();
+const cjsRefreshedToken: Promise<string> = cjsCoordinator.refresh();
+const cjsInterceptorId: number = cjsCoordinator.attachInterceptor(cjsClient, {
+  retryFlag: '__retried',
+});
+cjsCoordinator.reset();
+
 console.log(
   serializedHeaders,
   parsedParameters,
@@ -209,5 +230,8 @@ console.log(
   errorQuery,
   legacyParamsConfig,
   mergedQuery,
-  invalidParamsConfig
+  invalidParamsConfig,
+  cjsRefreshing,
+  cjsRefreshedToken,
+  cjsInterceptorId
 );

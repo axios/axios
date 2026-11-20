@@ -621,6 +621,7 @@ declare namespace axios {
     formDataHeaderPolicy?: 'legacy' | 'content-only';
     redact?: string[];
     sensitiveHeaders?: string[];
+    __skipAuthRefresh?: boolean;
   }
 
   // Alias
@@ -797,6 +798,29 @@ declare namespace axios {
       config1: AxiosRequestConfig<D, P>,
       config2: AxiosRequestConfig<D, P>
     ): AxiosRequestConfig<D, P>;
+    createRefreshCoordinator<T = any>(
+      refreshFn: (...args: any[]) => Promise<T> | T,
+      options?: RefreshCoordinatorOptions<T>
+    ): RefreshCoordinator<T>;
+  }
+
+  interface RefreshCoordinatorOptions<T = any> {
+    cooldownMs?: number;
+    shouldRefresh?: (error: any) => boolean;
+    onRefreshed?: (token: T, config: InternalAxiosRequestConfig) => void | Promise<void>;
+    retryFlag?: string;
+    skipFlag?: string;
+    allowCrossOriginAuth?: boolean;
+  }
+
+  interface RefreshCoordinator<T = any> {
+    refresh: (...args: any[]) => Promise<T>;
+    isRefreshing: () => boolean;
+    reset: () => void;
+    attachInterceptor: (
+      axiosInstance: AxiosInstance,
+      options?: Omit<RefreshCoordinatorOptions<T>, 'cooldownMs'>
+    ) => number;
   }
 }
 

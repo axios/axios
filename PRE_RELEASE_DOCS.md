@@ -20,6 +20,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### `createRefreshCoordinator` for proactive and reactive token refresh
+
+- **Change:** Added `axios.createRefreshCoordinator(refreshFn, options?)` (and named ESM export `createRefreshCoordinator`) to synchronize proactive refresh timers with reactive `401` response interceptors.
+- **Source:** [Issue #10701](https://github.com/axios/axios/issues/10701).
+- **Status:** Pending.
+- **Docs targets:** `docs/pages/advanced/interceptors.md` (and Spanish, French, Chinese translations) and README interceptors/recipes section.
+- **Required content:** Explain how proactive timers and reactive `401` interceptors can race on rotating refresh tokens, and show how `createRefreshCoordinator` shares a single-flight lock via `coordinator.refresh()`, `coordinator.attachInterceptor(api)`, and `coordinator.isRefreshing()`. Document that `coordinator.reset()` clears the cached token and invalidates any pre-reset in-flight refresh from repopulating the cooldown cache without canceling its promise, explain `cooldownMs`, document `retryFlag` (`__isRetryRequest`) for preventing repeated `401` retries and `skipFlag` (`__skipAuthRefresh`) for refresh requests made on the same Axios instance to prevent self-deadlock (noting custom flag names must match the request config marker), note that the default `onRefreshed` header injection only targets relative or same-origin `https:` URLs unless `allowCrossOriginAuth: true` is set, and explain interceptor registration order by handler type and outcome: rejected handlers registered before `attachInterceptor` see the initial `401`, fulfilled handlers registered after see a successful retry, rejected handlers registered after see a final retry error, and because the retry uses the same client, handlers registered after `attachInterceptor` can run on both the inner retry and the outer recovered request (warn callers to avoid misplaced error handlers or repeated side effects).
+- **Examples:** `const coordinator = axios.createRefreshCoordinator(() => refreshAuthToken(), { cooldownMs: 5000 }); coordinator.attachInterceptor(api);`
+
 ### `getUri` rejects a nullish url
 
 - **Change:** `getUri` throws `AxiosError` with `ERR_INVALID_URL` for a `null` or `undefined` url without `baseURL` when the adapter is a built-in one, the same configs a request rejects.

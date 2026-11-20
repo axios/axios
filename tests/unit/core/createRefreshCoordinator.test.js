@@ -275,6 +275,50 @@ describe('core::createRefreshCoordinator', () => {
     expect(activeRes.data).toEqual({ ok: true });
   });
 
+  it('does not start refresh if request is already canceled before interceptor runs and prevents unhandled rejections', async () => {
+    let rejectRefresh;
+    const refreshFn = vi.fn(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectRefresh = reject;
+        })
+    );
+    const coordinator = createRefreshCoordinator(refreshFn);
+
+    const preAbortedController = new AbortController();
+    preAbortedController.abort();
+
+    const client = axios.create({
+      adapter: async (config) => {
+        throw make401Error(config, 401);
+      },
+    });
+    coordinator.attachInterceptor(client);
+
+    await expect(
+      client.get('/already-aborted', { signal: preAbortedController.signal })
+    ).rejects.toBeInstanceOf(CanceledError);
+    expect(refreshFn).not.toHaveBeenCalled();
+
+    // Now start a refresh, cancel the only waiter, and reject refresh — should not emit unhandledRejection
+    const unhandled = [];
+    const onUnhandled = (reason) => unhandled.push(reason);
+    process.on('unhandledRejection', onUnhandled);
+    try {
+      const waiterController = new AbortController();
+      const pendingReq = client.get('/waiter', { signal: waiterController.signal });
+      await new Promise((r) => setTimeout(r, 10));
+      waiterController.abort();
+      await expect(pendingReq).rejects.toBeInstanceOf(CanceledError);
+
+      rejectRefresh(new Error('refresh exploded after cancel'));
+      await new Promise((r) => setTimeout(r, 10));
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+  });
+
   it('does not loop infinitely if the retried request also returns 401', async () => {
     const refreshFn = vi.fn(async () => 'still-rejected-token');
     const coordinator = createRefreshCoordinator(refreshFn);

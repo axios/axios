@@ -494,6 +494,7 @@ export interface AxiosRequestConfig<D = any, P = any> {
   formDataHeaderPolicy?: 'legacy' | 'content-only';
   redact?: string[];
   sensitiveHeaders?: string[];
+  __skipAuthRefresh?: boolean;
 }
 
 // Alias

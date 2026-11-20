@@ -621,6 +621,7 @@ declare namespace axios {
     formDataHeaderPolicy?: 'legacy' | 'content-only';
     redact?: string[];
     sensitiveHeaders?: string[];
+    __skipAuthRefresh?: boolean;
   }
 
   // Alias

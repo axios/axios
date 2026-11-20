@@ -227,14 +227,23 @@ const mergedParamsConfig = axios.mergeConfig<SearchBody, SearchParams>(
 );
 const mergedQuery: string = mergedParamsConfig.params!.query;
 
-const esmCoordinator = createRefreshCoordinator(async () => 'token', {
-  cooldownMs: 1000,
-  skipFlag: '__skipAuthRefresh',
-  allowCrossOriginAuth: false,
-});
+const esmClient = axios.create();
+const esmCoordinator = createRefreshCoordinator(
+  async () => {
+    const res = await esmClient.post<{ token: string }>('/auth/refresh', null, {
+      __skipAuthRefresh: true,
+    });
+    return res.data.token;
+  },
+  {
+    cooldownMs: 1000,
+    skipFlag: '__skipAuthRefresh',
+    allowCrossOriginAuth: false,
+  }
+);
 const esmRefreshing: boolean = esmCoordinator.isRefreshing();
 const esmRefreshedToken: Promise<string> = esmCoordinator.refresh();
-const esmInterceptorId: number = esmCoordinator.attachInterceptor(axios.create(), {
+const esmInterceptorId: number = esmCoordinator.attachInterceptor(esmClient, {
   retryFlag: '__retried',
 });
 esmCoordinator.reset();

@@ -4,6 +4,8 @@
 
 ## Features
 
+- **Token refresh coordinator:** Added `axios.createRefreshCoordinator(refreshFn, options?)` (also exported as named `createRefreshCoordinator` in ESM) to coordinate proactive token-refresh timers and reactive `401` response interceptors through a single-flight lock. Calling `coordinator.refresh()` from a background timer and via `coordinator.attachInterceptor(instance)` shares one in-flight promise, preventing duplicate refresh requests from racing and invalidating rotating refresh tokens. Optional `cooldownMs` reuses the recently refreshed token for a short window, `shouldRefresh` and `onRefreshed` customize trigger and header-update behavior, and `retryFlag` prevents infinite retry loops if a retried request still returns `401`. Additive public API and TypeScript declarations (`index.d.ts` and `index.d.cts`). ([#10701](https://github.com/axios/axios/issues/10701))
+
 ## Bug Fixes
 
 - **Fetch stream cleanup:** When the fetch adapter rejects a streamed upload for exceeding `maxBodyLength`, or a streamed response for exceeding `maxContentLength`, it now cancels the source stream instead of leaving it open. Previously the size-limit error left the source paused mid-read, so its `cancel` hook never ran and the underlying connection or user-supplied `ReadableStream` stayed open until garbage collection. Cancellation is started without waiting for it, so a slow or failing cancel does not delay or replace the size-limit error. No public API or type changes. ([#11239](https://github.com/axios/axios/pull/11239))

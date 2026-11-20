@@ -795,6 +795,28 @@ export function mergeConfig<D = any, P = any>(
 
 export function create(config?: CreateAxiosDefaults): AxiosInstance;
 
+export interface RefreshCoordinatorOptions<T = any> {
+  cooldownMs?: number;
+  shouldRefresh?: (error: any) => boolean;
+  onRefreshed?: (token: T, config: InternalAxiosRequestConfig) => void | Promise<void>;
+  retryFlag?: string;
+}
+
+export interface RefreshCoordinator<T = any> {
+  refresh: (...args: any[]) => Promise<T>;
+  isRefreshing: () => boolean;
+  reset: () => void;
+  attachInterceptor: (
+    axiosInstance: AxiosInstance,
+    options?: Omit<RefreshCoordinatorOptions<T>, 'cooldownMs'>
+  ) => number;
+}
+
+export function createRefreshCoordinator<T = any>(
+  refreshFn: (...args: any[]) => Promise<T> | T,
+  options?: RefreshCoordinatorOptions<T>
+): RefreshCoordinator<T>;
+
 export interface AxiosStatic extends AxiosInstance {
   Cancel: typeof CanceledError;
   CancelToken: CancelTokenStatic;
@@ -812,6 +834,7 @@ export interface AxiosStatic extends AxiosInstance {
   CanceledError: typeof CanceledError;
   AxiosHeaders: typeof AxiosHeaders;
   mergeConfig: typeof mergeConfig;
+  createRefreshCoordinator: typeof createRefreshCoordinator;
 }
 
 declare const axios: AxiosStatic;

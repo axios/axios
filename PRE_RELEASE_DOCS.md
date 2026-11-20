@@ -20,6 +20,15 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 
 ## Unreleased
 
+### `createRefreshCoordinator` for proactive and reactive token refresh
+
+- **Change:** Added `axios.createRefreshCoordinator(refreshFn, options?)` (and named ESM export `createRefreshCoordinator`) to synchronize proactive refresh timers with reactive `401` response interceptors.
+- **Source:** [Issue #10701](https://github.com/axios/axios/issues/10701).
+- **Status:** Pending.
+- **Docs targets:** `docs/pages/advanced/interceptors.md` (and Spanish, French, Chinese translations) and README interceptors/recipes section.
+- **Required content:** Explain how proactive timers and reactive `401` interceptors can race on rotating refresh tokens, and show how `createRefreshCoordinator` shares a single-flight lock via `coordinator.refresh()`, `coordinator.attachInterceptor(api)`, `coordinator.isRefreshing()`, `coordinator.reset()`, and `cooldownMs`.
+- **Examples:** `const coordinator = axios.createRefreshCoordinator(() => refreshAuthToken(), { cooldownMs: 5000 }); coordinator.attachInterceptor(api);`
+
 ### `getUri` rejects a nullish url
 
 - **Change:** `getUri` throws `AxiosError` with `ERR_INVALID_URL` for a `null` or `undefined` url without `baseURL` when the adapter is a built-in one, the same configs a request rejects.

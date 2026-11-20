@@ -21,11 +21,13 @@ const {
   getAdapter,
   mergeConfig,
   create,
+  createRefreshCoordinator,
 } = axios;
 
 export {
   axios as default,
   create,
+  createRefreshCoordinator,
   Axios,
   AxiosError,
   CanceledError,

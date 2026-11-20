@@ -275,7 +275,71 @@ describe('core::createRefreshCoordinator', () => {
     expect(activeRes.data).toEqual({ ok: true });
   });
 
-  it('does not start refresh if request is already canceled before interceptor runs and prevents unhandled rejections', async () => {
+  it('does not start refresh if an earlier interceptor cancels the request and rethrows 401', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+
+    const controller = new AbortController();
+    const client = axios.create({
+      adapter: async (config) => {
+        throw make401Error(config, 401);
+      },
+    });
+
+    client.interceptors.response.use(undefined, (err) => {
+      controller.abort();
+      return Promise.reject(err);
+    });
+    coordinator.attachInterceptor(client);
+
+    await expect(
+      client.get('/canceled-in-interceptor', { signal: controller.signal })
+    ).rejects.toBeInstanceOf(CanceledError);
+    expect(refreshFn).not.toHaveBeenCalled();
+  });
+
+  it('resolves relative baseURL against location.origin and requires https for default Authorization injection', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+
+    const originalLocation = globalThis.location;
+    globalThis.location = { origin: 'https://app.example.com' };
+
+    try {
+      const seenAuthHeaders = [];
+      const client = axios.create({
+        baseURL: '/api',
+        adapter: async (config) => {
+          seenAuthHeaders.push({ url: config.url, auth: config.headers && config.headers.Authorization });
+          if (seenAuthHeaders.length === 1 || seenAuthHeaders.length === 3) {
+            throw make401Error(config, 401);
+          }
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        },
+      });
+      coordinator.attachInterceptor(client);
+
+      await client.get('https://app.example.com/v1/me');
+      expect(seenAuthHeaders[1]).toEqual({
+        url: 'https://app.example.com/v1/me',
+        auth: 'Bearer fresh-token',
+      });
+
+      await client.get('http://app.example.com/v1/me');
+      expect(seenAuthHeaders[3]).toEqual({
+        url: 'http://app.example.com/v1/me',
+        auth: undefined,
+      });
+    } finally {
+      if (originalLocation === undefined) {
+        delete globalThis.location;
+      } else {
+        globalThis.location = originalLocation;
+      }
+    }
+  });
+
+  it('prevents unhandledRejection when an in-flight refresh rejects after waiter cancellation', async () => {
     let rejectRefresh;
     const refreshFn = vi.fn(
       () =>
@@ -285,9 +349,6 @@ describe('core::createRefreshCoordinator', () => {
     );
     const coordinator = createRefreshCoordinator(refreshFn);
 
-    const preAbortedController = new AbortController();
-    preAbortedController.abort();
-
     const client = axios.create({
       adapter: async (config) => {
         throw make401Error(config, 401);
@@ -295,12 +356,6 @@ describe('core::createRefreshCoordinator', () => {
     });
     coordinator.attachInterceptor(client);
 
-    await expect(
-      client.get('/already-aborted', { signal: preAbortedController.signal })
-    ).rejects.toBeInstanceOf(CanceledError);
-    expect(refreshFn).not.toHaveBeenCalled();
-
-    // Now start a refresh, cancel the only waiter, and reject refresh — should not emit unhandledRejection
     const unhandled = [];
     const onUnhandled = (reason) => unhandled.push(reason);
     process.on('unhandledRejection', onUnhandled);

@@ -933,6 +933,29 @@ describe('AxiosHeaders', () => {
     it('should serialize AxiosHeader instance to a raw headers string', () => {
       assert.deepStrictEqual(new AxiosHeaders({ x: 1, y: 2 }).toString(), 'x: 1\ny: 2');
     });
+
+    it('should serialize each value of a multi-value header on its own line', () => {
+      const headers = new AxiosHeaders('Set-Cookie: a=1; Path=/\nSet-Cookie: b=2\nX: y');
+
+      assert.strictEqual(headers.toString(), 'set-cookie: a=1; Path=/\nset-cookie: b=2\nx: y');
+      assert.deepStrictEqual(new AxiosHeaders(headers.toString()).getSetCookie(), [
+        'a=1; Path=/',
+        'b=2',
+      ]);
+    });
+
+    it('should serialize each value of an ordinary multi-value header on its own line', () => {
+      const headers = new AxiosHeaders({ 'x-list': ['a', 'b'] });
+
+      assert.strictEqual(headers.toString(), 'x-list: a\nx-list: b');
+    });
+
+    it('should serialize a directly assigned object value as a single line', () => {
+      const headers = new AxiosHeaders();
+      headers['x-token'] = { a: 1, toString: () => 'token' };
+
+      assert.strictEqual(headers.toString(), 'x-token: token');
+    });
   });
 
   describe('getSetCookie', () => {

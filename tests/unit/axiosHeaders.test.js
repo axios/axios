@@ -949,6 +949,13 @@ describe('AxiosHeaders', () => {
 
       assert.strictEqual(headers.toString(), 'x-list: a\nx-list: b');
     });
+
+    it('should serialize a directly assigned object value as a single line', () => {
+      const headers = new AxiosHeaders();
+      headers['x-token'] = { a: 1, toString: () => 'token' };
+
+      assert.strictEqual(headers.toString(), 'x-token: token');
+    });
   });
 
   describe('getSetCookie', () => {

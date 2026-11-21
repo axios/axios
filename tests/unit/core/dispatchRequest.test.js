@@ -312,6 +312,15 @@ describe('core::dispatchRequest', () => {
 
       assert.strictEqual(sent, '{"a":"1"}');
     });
+
+    it('ignores media type names inside Content-Type parameters', async () => {
+      const data = new FormData();
+      data.append('a', '1');
+
+      const sent = await transformedData(data, 'text/plain; note="Application/JSON"');
+
+      assert.strictEqual(sent, data);
+    });
   });
 
   describe('JSON parse failure on adapter resolution', () => {

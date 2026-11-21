@@ -1530,6 +1530,11 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.strictEqual(await captureCredentials(undefined), 'same-origin');
     });
 
+    it('should keep omitting credentials for other falsy withCredentials values', async () => {
+      assert.strictEqual(await captureCredentials(null), 'omit');
+      assert.strictEqual(await captureCredentials(0), 'omit');
+    });
+
     it('should include credentials when withCredentials is true', async () => {
       assert.strictEqual(await captureCredentials(true), 'include');
     });

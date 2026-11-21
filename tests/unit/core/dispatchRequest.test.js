@@ -266,6 +266,54 @@ describe('core::dispatchRequest', () => {
     });
   });
 
+  describe('request media type matching', () => {
+    const transformedData = async (data, contentType) => {
+      let sent;
+
+      await dispatchRequest(
+        baseConfig({
+          data,
+          headers: { 'Content-Type': contentType },
+          method: 'post',
+          adapter(adapterConfig) {
+            sent = adapterConfig.data;
+            return Promise.resolve({
+              data: null,
+              status: 200,
+              statusText: 'OK',
+              headers: {},
+              config: adapterConfig,
+              request: {},
+            });
+          },
+        })
+      );
+
+      return sent;
+    };
+
+    it('url-encodes objects for a mixed-case form media type', async () => {
+      const sent = await transformedData({ a: 1, b: 'x' }, 'Application/X-WWW-Form-Urlencoded');
+
+      assert.strictEqual(sent, 'a=1&b=x');
+    });
+
+    it('builds FormData from objects for a mixed-case multipart media type', async () => {
+      const sent = await transformedData({ a: '1' }, 'Multipart/Form-Data');
+
+      assert.ok(sent instanceof defaults.env.FormData);
+    });
+
+    it('serializes FormData as JSON for a mixed-case JSON media type', async () => {
+      const data = new FormData();
+      data.append('a', '1');
+
+      const sent = await transformedData(data, 'Application/JSON');
+
+      assert.strictEqual(sent, '{"a":"1"}');
+    });
+  });
+
   describe('JSON parse failure on adapter resolution', () => {
     it('rejects with AxiosError carrying response and status', async () => {
       const response = {

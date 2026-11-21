@@ -21,6 +21,49 @@ describe('core::Axios', () => {
     }
   );
 
+  it.each([[1], ['true'], [{}], [[]], [true]])(
+    'rejects non-function onUploadProgress option %j before dispatch',
+    async (value) => {
+      const adapter = vi.fn();
+
+      await expect(
+        axios({ url: '/foo', adapter, onUploadProgress: value })
+      ).rejects.toMatchObject({
+        code: AxiosError.ERR_BAD_OPTION_VALUE,
+      });
+      expect(adapter).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([[1], ['true'], [{}], [[]], [true]])(
+    'rejects non-function onDownloadProgress option %j before dispatch',
+    async (value) => {
+      const adapter = vi.fn();
+
+      await expect(
+        axios({ url: '/foo', adapter, onDownloadProgress: value })
+      ).rejects.toMatchObject({
+        code: AxiosError.ERR_BAD_OPTION_VALUE,
+      });
+      expect(adapter).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([false, null, 0, ''])(
+    'keeps a falsy onDownloadProgress value %j usable to disable a default listener',
+    async (value) => {
+      const adapter = vi.fn((config) =>
+        Promise.resolve({ status: 200, statusText: 'OK', headers: {}, config, data: 'ok' })
+      );
+      const instance = axios.create({ onDownloadProgress: () => {} });
+
+      await expect(
+        instance({ url: '/foo', adapter, onDownloadProgress: value })
+      ).resolves.toMatchObject({ status: 200 });
+      expect(adapter).toHaveBeenCalled();
+    }
+  );
+
   describe('request error stack decoration', () => {
     async function expectAdapterFailurePreserved() {
       const failure = new Error('adapter failure');

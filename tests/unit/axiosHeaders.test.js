@@ -943,6 +943,12 @@ describe('AxiosHeaders', () => {
         'b=2',
       ]);
     });
+
+    it('should serialize each value of an ordinary multi-value header on its own line', () => {
+      const headers = new AxiosHeaders({ 'x-list': ['a', 'b'] });
+
+      assert.strictEqual(headers.toString(), 'x-list: a\nx-list: b');
+    });
   });
 
   describe('getSetCookie', () => {

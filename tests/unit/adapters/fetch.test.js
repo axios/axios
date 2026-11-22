@@ -2423,23 +2423,19 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       assert.ok(cancelled, 'the probe body should be cancelled even when the check throws');
     });
 
-    it('should cancel the request probe body when the Request construction throws', () => {
+    it('should cancel the request probe body when the Request construction throws', async () => {
       // The request probe builds a throwaway ReadableStream and passes it to a
       // `Request`. When that `Request` throws while it is being constructed,
       // `request.body` was never reachable, so the probe stream stayed pending
       // and leaked one async resource per probe.
-      let cancelled = false;
+      const probes = [];
 
       class ThrowingProbeRequest extends Request {
         constructor(input, init) {
           if (isRequestProbe(init)) {
             const probeBody = init.body;
 
-            probeBody.cancel = function (...args) {
-              cancelled = true;
-
-              return Promise.resolve();
-            };
+            probes.push(trackCancel(probeBody));
 
             throw new TypeError('Request construction failed');
           }
@@ -2450,14 +2446,15 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       getFetch({ env: { fetch: async () => new Response('ok'), Request: ThrowingProbeRequest } });
 
-      assert.ok(cancelled, 'the probe body should be cancelled when the Request construction throws');
+      assert.strictEqual(probes.length, 1, 'the request stream probe should build one Request');
+      await assertReleased(probes[0]);
     });
 
-    it('should cancel the request probe body when reading the Request headers throws', () => {
+    it('should cancel the request probe body when reading the Request headers throws', async () => {
       // The probe reads `request.headers` after the `Request` was built. A
       // custom `Request` whose `headers` getter throws leaves the probe
       // stream pending in the same way.
-      let cancelled = false;
+      const probes = [];
 
       class ThrowingHeadersRequest extends Request {
         constructor(input, init) {
@@ -2466,11 +2463,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
           if (isRequestProbe(init)) {
             const probeBody = init.body;
 
-            probeBody.cancel = function (...args) {
-              cancelled = true;
-
-              return Promise.resolve();
-            };
+            probes.push(trackCancel(probeBody));
 
             Object.defineProperty(this, 'headers', {
               get() {
@@ -2483,7 +2476,8 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
 
       getFetch({ env: { fetch: async () => new Response('ok'), Request: ThrowingHeadersRequest } });
 
-      assert.ok(cancelled, 'the probe body should be cancelled when reading the headers throws');
+      assert.strictEqual(probes.length, 1, 'the request stream probe should build one Request');
+      await assertReleased(probes[0]);
     });
 
     it('should not emit an unhandled rejection when the request probe body cannot be cancelled after a failure', async () => {

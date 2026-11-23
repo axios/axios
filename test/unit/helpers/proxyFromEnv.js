@@ -175,6 +175,23 @@ describe('helpers::proxyFromEnv', function () {
 
       assert.strictEqual(getProxyForUrl('http://example.com/'), 'http://proxy.local:8080');
     });
+
+    it('should read a replaced process.env that inherits its values', function () {
+      var originalEnv = process.env;
+
+      try {
+        process.env = Object.create({HTTP_PROXY: 'http://proxy.local:8080'});
+
+        assert.strictEqual(getProxyForUrl('http://example.com/'), 'http://proxy.local:8080');
+
+        Object.prototype.http_proxy = 'http://inherited.local:1';
+        Object.prototype.NO_PROXY = '*';
+
+        assert.strictEqual(getProxyForUrl('http://example.com/'), 'http://proxy.local:8080');
+      } finally {
+        process.env = originalEnv;
+      }
+    });
   });
 
   describe('shouldBypassProxy', function () {

@@ -142,7 +142,7 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 ### `proxy-from-env` is no longer a runtime dependency
 
 - **Change:** The Node HTTP adapter resolves environment proxies through `lib/helpers/proxyFromEnv.js` instead of the `proxy-from-env` package, which is no longer a runtime dependency.
-- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Proxy environment variables and prototype pollution.
+- **Source:** [PR #11501](https://github.com/axios/axios/pull/11501); `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Proxy environment variables and prototype pollution.
 - **Status:** Pending.
 - **Docs targets:** The disclosure timeline section of `SECURITY.md` and `docs/pages/misc/security.md`, plus its Spanish, French, and Chinese translations.
 - **Required content:** Remove `proxy-from-env` from the list of upstream packages whose releases may extend the fix timeline, leaving `follow-redirects` and `form-data`.

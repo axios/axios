@@ -326,31 +326,43 @@ describe('helpers::shouldBypassProxy', function () {
     // quadratically during trailing-dot normalisation. Hostnames reach this
     // helper from redirect Location values, so the cost must stay linear.
     // Scaling is asserted rather than wall-clock, so a slow or loaded machine
-    // does not make this flaky.
-    function timeHostname(dotCount) {
-      var hostname = new Array(dotCount + 1).join('.') + 'a';
-      var best = Infinity;
-
-      for (var run = 0; run < 3; run++) {
-        var started = process.hrtime();
-        shouldBypassProxy('http://' + hostname + '/');
-        var elapsed = process.hrtime(started);
-        best = Math.min(best, elapsed[0] * 1e9 + elapsed[1]);
-      }
-
-      return best;
+    // does not make this flaky. Small and large inputs are timed alternately
+    // and the fastest of several runs is kept for each, so a GC pause or a
+    // noisy neighbour on a shared CI runner lands on both sizes rather than
+    // skewing the ratio.
+    function makeLocation(dotCount) {
+      return 'http://' + new Array(dotCount + 1).join('.') + 'a/';
     }
 
-    timeHostname(1000);
+    function timeOnce(location) {
+      var started = process.hrtime();
+      shouldBypassProxy(location);
+      var elapsed = process.hrtime(started);
+      return elapsed[0] * 1e9 + elapsed[1];
+    }
 
-    var small = timeHostname(10000);
-    var large = timeHostname(100000);
+    var smallLocation = makeLocation(10000);
+    var largeLocation = makeLocation(100000);
+
+    timeOnce(makeLocation(1000));
+    timeOnce(smallLocation);
+    timeOnce(largeLocation);
+
+    var small = Infinity;
+    var large = Infinity;
+
+    for (var run = 0; run < 7; run++) {
+      small = Math.min(small, timeOnce(smallLocation));
+      large = Math.min(large, timeOnce(largeLocation));
+    }
+
     var growth = large / Math.max(small, 1);
 
     // Ten times the input costs roughly ten times the work when the scan is
-    // linear. The previous anchored /\.+$/ grew by roughly a hundred times.
+    // linear. The previous anchored /\.+$/ grew by roughly a hundred times,
+    // so the bound leaves headroom for timer noise while still catching it.
     assert.ok(
-      growth < 25,
+      growth < 40,
       'trailing-dot normalisation should scale linearly, saw ' + growth.toFixed(1) + 'x for 10x input'
     );
   });

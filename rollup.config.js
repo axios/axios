@@ -65,10 +65,6 @@ const buildConfig = ({ es5, browser = true, minifiedVersion = true, alias, ...co
 };
 
 const nodeCjsExternal = (id) => {
-  if (id === 'proxy-from-env') {
-    return false;
-  }
-
   if (id.startsWith('.') || path.isAbsolute(id) || id.startsWith('\0')) {
     return false;
   }

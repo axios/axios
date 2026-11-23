@@ -138,3 +138,12 @@ Do not store raw diffs or line-number-only instructions here; prefer stable sect
 - **Docs targets:** `docs/pages/advanced/fetch-adapter.md`, the custom `env.Response` paragraph about stream bodies.
 - **Required content:** One sentence: when axios builds the adapter it reads `new Response('').body` from `env.Response` once to detect stream support and then calls `cancel()` on that body, so a custom `Response` should return a fresh body per instance; a missing or failing `cancel()` is ignored and does not change detected support.
 - **Notes:** Internal behavior only; no API, option, or type change and no migration.
+
+### `proxy-from-env` is no longer a runtime dependency
+
+- **Change:** The Node HTTP adapter resolves environment proxies through `lib/helpers/proxyFromEnv.js` instead of the `proxy-from-env` package, which is no longer a runtime dependency.
+- **Source:** `PRE_RELEASE_CHANGELOG.md` Bug Fixes, Proxy environment variables and prototype pollution.
+- **Status:** Pending.
+- **Docs targets:** The disclosure timeline section of `SECURITY.md` and `docs/pages/misc/security.md`, plus its Spanish, French, and Chinese translations.
+- **Required content:** Remove `proxy-from-env` from the list of upstream packages whose releases may extend the fix timeline, leaving `follow-redirects` and `form-data`.
+- **Notes:** Apply only when the release that drops the dependency ships, because earlier 1.x releases still depend on `proxy-from-env`. No README or API docs change is needed; proxy environment variables behave as before unless `Object.prototype` is polluted.

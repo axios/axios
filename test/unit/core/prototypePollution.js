@@ -887,6 +887,41 @@ describe("Prototype Pollution Protection", function () {
       });
     });
 
+    it("should ignore followRedirects and trackRedirects set on Object.prototype while a request is pending", function () {
+      var hits = [];
+      var server;
+
+      // Pollute only after the request has been sent, just before the
+      // redirect response that follow-redirects inspects.
+      return listen(function (req, res) {
+        hits.push(req.url);
+        if (req.url === '/a/start') {
+          Object.prototype.followRedirects = false;
+          Object.prototype.trackRedirects = true;
+          res.writeHead(302, { Location: 'next' });
+          res.end();
+          return;
+        }
+        res.end('DONE');
+      }).then(function (created) {
+        server = created;
+
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/start', { proxy: false });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.status, 200);
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(hits, ['/a/start', '/a/next']);
+          assert.deepStrictEqual(response.request.res.redirects, []);
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
+        throw error;
+      });
+    });
+
     it("should not use hostname or port from Object.prototype for socketPath redirects", function () {
       var hits = [];
       var server;

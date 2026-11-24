@@ -23,6 +23,7 @@ This is a list of axios-related libraries and resources. To add one, open a pull
 ### API clients
 
 - [@hey-api/openapi-ts](https://heyapi.dev/openapi-ts/clients/axios) - Generates TypeScript clients, SDKs, and validators from OpenAPI schemas
+- [@hyper-fetch/axios](https://hyperfetch.bettertyped.com/docs/integrations/adapter-axios/overview/) - Sends typed HyperFetch requests through axios, with caching, retries, and React hooks
 - [swagger-taxos-codegen](https://github.com/michalzaq12/swagger-taxos-codegen) - Generates TypeScript Swagger clients that use axios
 - [zodios](https://www.zodios.org) - Type-safe API client based on axios
 

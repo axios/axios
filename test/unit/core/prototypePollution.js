@@ -30,6 +30,11 @@ describe("Prototype Pollution Protection", function () {
     delete Object.prototype.config;
     delete Object.prototype.host;
     delete Object.prototype.followRedirects;
+    delete Object.prototype.pathname;
+    delete Object.prototype.trackRedirects;
+    delete Object.prototype.sensitiveHeaders;
+    delete Object.prototype.hostname;
+    delete Object.prototype.port;
     delete Object.prototype.synchronous;
     delete Object.prototype.runWhen;
   }
@@ -674,13 +679,32 @@ describe("Prototype Pollution Protection", function () {
   });
 
   describe("redirect options", function () {
-    function listen(handler) {
+    // Listens on 127.0.0.1 by default. Pass a path to listen on a socket.
+    function listen(handler, address) {
       return new Promise(function (resolve) {
         var server = http.createServer(handler);
-        server.listen(0, '127.0.0.1', function () {
+        var onListening = function () {
           resolve(server);
-        });
+        };
+        if (address === undefined) {
+          server.listen(0, '127.0.0.1', onListening);
+        } else {
+          server.listen(address, onListening);
+        }
       });
+    }
+
+    // Redirects /a/start to the relative location "next" and records each hit.
+    function relativeRedirectServer(hits, address) {
+      return listen(function (req, res) {
+        hits.push({ url: req.url, host: req.headers.host });
+        if (req.url === '/a/start') {
+          res.writeHead(302, { Location: 'next' });
+          res.end();
+          return;
+        }
+        res.end('DONE');
+      }, address);
     }
 
     function closeAll(servers) {
@@ -758,6 +782,125 @@ describe("Prototype Pollution Protection", function () {
         try {
           assert.strictEqual(response.status, 200);
           assert.strictEqual(response.data, 'DONE');
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
+        throw error;
+      });
+    });
+
+    it("should resolve a relative redirect against the real path when pathname is set on Object.prototype", function () {
+      var hits = [];
+      var server;
+
+      return relativeRedirectServer(hits).then(function (created) {
+        server = created;
+
+        Object.prototype.pathname = '/evil';
+
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/start');
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(hits.map(function (hit) { return hit.url; }), ['/a/start', '/a/next']);
+          assert.strictEqual(
+            response.request.res.responseUrl,
+            'http://127.0.0.1:' + server.address().port + '/a/next'
+          );
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
+        throw error;
+      });
+    });
+
+    it("should not record redirects when trackRedirects is set on Object.prototype", function () {
+      var hits = [];
+      var server;
+
+      return relativeRedirectServer(hits).then(function (created) {
+        server = created;
+
+        Object.prototype.trackRedirects = true;
+
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/start');
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(response.request.res.redirects, []);
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
+        throw error;
+      });
+    });
+
+    it("should not strip headers on a cross-host redirect when sensitiveHeaders is set on Object.prototype", function () {
+      var targetHits = [];
+      var redirector;
+      var target;
+
+      // A different port is a different host to follow-redirects, so the
+      // redirect below strips every header in its sensitive list.
+      return listen(function (req, res) {
+        targetHits.push({ url: req.url, custom: req.headers['x-custom'] });
+        res.end('DONE');
+      }).then(function (server) {
+        target = server;
+
+        return listen(function (req, res) {
+          res.writeHead(302, { Location: 'http://127.0.0.1:' + target.address().port + '/next' });
+          res.end();
+        });
+      }).then(function (server) {
+        redirector = server;
+
+        Object.prototype.sensitiveHeaders = ['X-Custom'];
+
+        return axios.get('http://127.0.0.1:' + redirector.address().port + '/start', {
+          headers: { 'X-Custom': 'keep' }
+        });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(targetHits, [{ url: '/next', custom: 'keep' }]);
+        } finally {
+          closeAll([redirector, target]);
+        }
+      }, function (error) {
+        closeAll([redirector, target]);
+        throw error;
+      });
+    });
+
+    it("should not use hostname or port from Object.prototype for socketPath redirects", function () {
+      var hits = [];
+      var server;
+      var socketName = process.platform === 'win32' ?
+        '\\\\.\\pipe\\axios-redirect-options-test' :
+        './axios-redirect-options-test.sock';
+
+      return relativeRedirectServer(hits, socketName).then(function (created) {
+        server = created;
+
+        Object.prototype.hostname = 'evil.example';
+        Object.prototype.port = '8443';
+
+        return axios({ socketPath: socketName, url: '/a/start' });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(hits.map(function (hit) { return hit.url; }), ['/a/start', '/a/next']);
+          hits.forEach(function (hit) {
+            assert.strictEqual(hit.host.indexOf('evil.example'), -1, 'Host header was ' + hit.host);
+          });
+          assert.strictEqual(response.request.res.responseUrl.indexOf('evil.example'), -1);
         } finally {
           closeAll([server]);
         }

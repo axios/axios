@@ -515,6 +515,12 @@ Using Deno:
 $ deno add axios
 ```
 
+Using vlt:
+
+```bash
+$ vlt install axios
+```
+
 Once the package is installed, import it with `import` or `require`:
 
 ```js

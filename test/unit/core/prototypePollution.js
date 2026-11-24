@@ -30,6 +30,8 @@ describe("Prototype Pollution Protection", function () {
     delete Object.prototype.config;
     delete Object.prototype.host;
     delete Object.prototype.followRedirects;
+    delete Object.prototype.synchronous;
+    delete Object.prototype.runWhen;
   }
 
   function stubAdapter(store) {
@@ -762,6 +764,98 @@ describe("Prototype Pollution Protection", function () {
       }, function (error) {
         closeAll([server]);
         throw error;
+      });
+    });
+  });
+
+  describe("interceptor options", function () {
+    it("should only read synchronous and runWhen from the options object itself", function () {
+      var instance = axios.create();
+
+      Object.prototype.synchronous = true;
+      Object.prototype.runWhen = function () {
+        return false;
+      };
+
+      instance.interceptors.request.use(function (config) {
+        return config;
+      }, null, {});
+
+      var handler = instance.interceptors.request.handlers[0];
+
+      assert.strictEqual(handler.synchronous, false);
+      assert.strictEqual(handler.runWhen, null);
+    });
+
+    it("should still run an asynchronous interceptor when synchronous is set on Object.prototype", function () {
+      var store = {};
+      var instance = axios.create({ adapter: stubAdapter(store) });
+
+      Object.prototype.synchronous = true;
+
+      instance.interceptors.request.use(function (config) {
+        return new Promise(function (resolve) {
+          setTimeout(function () {
+            config.headers['X-Async'] = 'yes';
+            resolve(config);
+          }, 0);
+        });
+      }, null, {});
+
+      return instance.get('http://example.com/').then(function () {
+        assert.strictEqual(store.config.headers['X-Async'], 'yes');
+      });
+    });
+
+    it("should not skip an interceptor when runWhen is set on Object.prototype", function () {
+      var store = {};
+      var instance = axios.create({ adapter: stubAdapter(store) });
+
+      Object.prototype.runWhen = function () {
+        return false;
+      };
+
+      instance.interceptors.request.use(function (config) {
+        config.headers['X-Interceptor'] = 'ran';
+        return config;
+      }, null, { synchronous: true });
+
+      return instance.get('http://example.com/').then(function () {
+        assert.strictEqual(store.config.headers['X-Interceptor'], 'ran');
+      });
+    });
+
+    it("should still honour explicit synchronous and runWhen options", function () {
+      var store = {};
+      var instance = axios.create({ adapter: stubAdapter(store) });
+
+      instance.interceptors.request.use(function (config) {
+        config.headers['X-Skipped'] = 'ran';
+        return config;
+      }, null, {
+        synchronous: true,
+        runWhen: function () {
+          return false;
+        }
+      });
+
+      instance.interceptors.request.use(function (config) {
+        config.headers['X-Run'] = 'ran';
+        return config;
+      }, null, {
+        synchronous: true,
+        runWhen: function () {
+          return true;
+        }
+      });
+
+      var handlers = instance.interceptors.request.handlers;
+      assert.strictEqual(handlers[0].synchronous, true);
+      assert.strictEqual(typeof handlers[1].runWhen, 'function');
+
+      return instance.get('http://example.com/').then(function () {
+        assert.strictEqual(store.config.headers['X-Skipped'], undefined);
+        assert.strictEqual(store.config.headers['X-Run'], 'ran');
       });
     });
   });

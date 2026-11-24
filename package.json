@@ -88,8 +88,7 @@
   "typings": "./index.d.ts",
   "dependencies": {
     "follow-redirects": "^1.16.2",
-    "form-data": "^4.0.6",
-    "proxy-from-env": "^1.1.0"
+    "form-data": "^4.0.6"
   },
   "bundlesize": [
     {

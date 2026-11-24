@@ -1,7 +1,10 @@
 "use strict";
 
 var assert = require('assert');
+var fs = require('fs');
 var http = require('http');
+var os = require('os');
+var path = require('path');
 var utils = require('../../../lib/utils');
 var mergeConfig = require('../../../lib/core/mergeConfig');
 var dispatchRequest = require('../../../lib/core/dispatchRequest');
@@ -35,6 +38,9 @@ describe("Prototype Pollution Protection", function () {
     delete Object.prototype.sensitiveHeaders;
     delete Object.prototype.hostname;
     delete Object.prototype.port;
+    delete Object.prototype.query;
+    delete Object.prototype.search;
+    delete Object.prototype.hash;
     delete Object.prototype.synchronous;
     delete Object.prototype.runWhen;
   }
@@ -660,7 +666,7 @@ describe("Prototype Pollution Protection", function () {
           options.port = attackerPort;
         };
 
-        return axios.get('http://127.0.0.1:' + redirector.address().port + '/start');
+        return axios.get('http://127.0.0.1:' + redirector.address().port + '/start', { proxy: false });
       }).then(function (response) {
         try {
           assert.strictEqual(response.data, 'LEGIT');
@@ -743,6 +749,7 @@ describe("Prototype Pollution Protection", function () {
         Object.prototype.host = '127.0.0.1:' + other.address().port;
 
         return axios.get('http://127.0.0.1:' + legit.address().port + '/start', {
+          proxy: false,
           headers: { Authorization: 'Bearer token' }
         });
       }).then(function (response) {
@@ -777,7 +784,7 @@ describe("Prototype Pollution Protection", function () {
 
         Object.prototype.followRedirects = false;
 
-        return axios.get('http://127.0.0.1:' + server.address().port + '/start');
+        return axios.get('http://127.0.0.1:' + server.address().port + '/start', { proxy: false });
       }).then(function (response) {
         try {
           assert.strictEqual(response.status, 200);
@@ -800,7 +807,7 @@ describe("Prototype Pollution Protection", function () {
 
         Object.prototype.pathname = '/evil';
 
-        return axios.get('http://127.0.0.1:' + server.address().port + '/a/start');
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/start', { proxy: false });
       }).then(function (response) {
         try {
           assert.strictEqual(response.data, 'DONE');
@@ -827,7 +834,7 @@ describe("Prototype Pollution Protection", function () {
 
         Object.prototype.trackRedirects = true;
 
-        return axios.get('http://127.0.0.1:' + server.address().port + '/a/start');
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/start', { proxy: false });
       }).then(function (response) {
         try {
           assert.strictEqual(response.data, 'DONE');
@@ -864,6 +871,7 @@ describe("Prototype Pollution Protection", function () {
         Object.prototype.sensitiveHeaders = ['X-Custom'];
 
         return axios.get('http://127.0.0.1:' + redirector.address().port + '/start', {
+          proxy: false,
           headers: { 'X-Custom': 'keep' }
         });
       }).then(function (response) {
@@ -883,8 +891,16 @@ describe("Prototype Pollution Protection", function () {
       var hits = [];
       var server;
       var socketName = process.platform === 'win32' ?
-        '\\\\.\\pipe\\axios-redirect-options-test' :
-        './axios-redirect-options-test.sock';
+        '\\\\.\\pipe\\axios-redirect-options-' + process.pid :
+        path.join(os.tmpdir(), 'axios-redirect-options-' + process.pid + '.sock');
+
+      if (process.platform !== 'win32') {
+        try {
+          fs.unlinkSync(socketName);
+        } catch (err) {
+          // No stale socket to remove.
+        }
+      }
 
       return relativeRedirectServer(hits, socketName).then(function (created) {
         server = created;
@@ -899,8 +915,149 @@ describe("Prototype Pollution Protection", function () {
           assert.deepStrictEqual(hits.map(function (hit) { return hit.url; }), ['/a/start', '/a/next']);
           hits.forEach(function (hit) {
             assert.strictEqual(hit.host.indexOf('evil.example'), -1, 'Host header was ' + hit.host);
+            assert.strictEqual(hit.host.indexOf('8443'), -1, 'Host header was ' + hit.host);
           });
           assert.strictEqual(response.request.res.responseUrl.indexOf('evil.example'), -1);
+          assert.strictEqual(response.request.res.responseUrl.indexOf('8443'), -1);
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
+        throw error;
+      });
+    });
+
+    // Redirects /a/1 to "2" and /a/2 to "3", both relative, and records each hit.
+    function relativeChainServer(hits) {
+      return listen(function (req, res) {
+        hits.push({ url: req.url, authorization: req.headers.authorization });
+        if (req.url === '/a/1' || req.url === '/a/2') {
+          res.writeHead(302, { Location: String(Number(req.url.slice(3)) + 1) });
+          res.end();
+          return;
+        }
+        res.end('DONE');
+      });
+    }
+
+    it("should keep every hop of a relative redirect chain on the real host when host is set on Object.prototype", function () {
+      var legitHits = [];
+      var otherHits = [];
+      var legit;
+      var other;
+
+      return relativeChainServer(legitHits).then(function (server) {
+        legit = server;
+
+        return listen(function (req, res) {
+          otherHits.push({ url: req.url, authorization: req.headers.authorization });
+          res.end('OTHER');
+        });
+      }).then(function (server) {
+        other = server;
+
+        Object.prototype.host = '127.0.0.1:' + other.address().port;
+
+        return axios.get('http://127.0.0.1:' + legit.address().port + '/a/1', {
+          proxy: false,
+          headers: { Authorization: 'Bearer token' }
+        });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(legitHits, [
+            { url: '/a/1', authorization: 'Bearer token' },
+            { url: '/a/2', authorization: 'Bearer token' },
+            { url: '/a/3', authorization: 'Bearer token' }
+          ]);
+          assert.deepStrictEqual(otherHits, []);
+        } finally {
+          closeAll([legit, other]);
+        }
+      }, function (error) {
+        closeAll([legit, other]);
+        throw error;
+      });
+    });
+
+    it("should not send credentials from Object.prototype.auth on redirect hops", function () {
+      var hits = [];
+      var server;
+
+      return relativeChainServer(hits).then(function (created) {
+        server = created;
+
+        Object.prototype.auth = 'attacker:secret';
+
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/1', { proxy: false });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(hits, [
+            { url: '/a/1', authorization: undefined },
+            { url: '/a/2', authorization: undefined },
+            { url: '/a/3', authorization: undefined }
+          ]);
+          assert.strictEqual(
+            response.request.res.responseUrl,
+            'http://127.0.0.1:' + server.address().port + '/a/3'
+          );
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
+        throw error;
+      });
+    });
+
+    it("should not use search or hash from Object.prototype for the response URL", function () {
+      var hits = [];
+      var server;
+
+      return relativeChainServer(hits).then(function (created) {
+        server = created;
+
+        Object.prototype.search = '?injected=1';
+        Object.prototype.hash = '#injected';
+
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/3', { proxy: false });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(hits.map(function (hit) { return hit.url; }), ['/a/3']);
+          assert.strictEqual(
+            response.request.res.responseUrl,
+            'http://127.0.0.1:' + server.address().port + '/a/3'
+          );
+        } finally {
+          closeAll([server]);
+        }
+      }, function (error) {
+        closeAll([server]);
+        throw error;
+      });
+    });
+
+    it("should not add a query from Object.prototype.query on redirect hops", function () {
+      var hits = [];
+      var server;
+
+      return relativeChainServer(hits).then(function (created) {
+        server = created;
+
+        Object.prototype.query = { injected: '1' };
+
+        return axios.get('http://127.0.0.1:' + server.address().port + '/a/1', { proxy: false });
+      }).then(function (response) {
+        try {
+          assert.strictEqual(response.data, 'DONE');
+          assert.deepStrictEqual(hits.map(function (hit) { return hit.url; }), ['/a/1', '/a/2', '/a/3']);
+          assert.strictEqual(
+            response.request.res.responseUrl,
+            'http://127.0.0.1:' + server.address().port + '/a/3'
+          );
         } finally {
           closeAll([server]);
         }

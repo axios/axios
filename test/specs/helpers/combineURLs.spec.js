@@ -39,9 +39,8 @@ describe('helpers::combineURLs', function () {
     bases.forEach(function (base) {
       relativeURLs.forEach(function (relativeURL) {
         var combined = combineURLs(base, relativeURL);
-        var resolved = new URL(combined, 'https://app.example/page');
 
-        expect(resolved.host).toBe('app.example');
+        expect(resolveHost(combined)).toBe(resolveHost('/'));
         expect(combined.charAt(0)).toBe('/');
         expect(combined.charAt(1)).not.toBe('/');
       });

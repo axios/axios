@@ -24,7 +24,7 @@ describe('helpers::buildFullPath', function () {
     ['\\\\evil.example/users', '/\\evil.example/users', '\t/evil.example/users', '//evil.example/users'].forEach(function (url) {
       var fullPath = buildFullPath('/', url, false);
 
-      expect(new URL(fullPath, 'https://app.example/page').host).toBe('app.example');
+      expect(resolveHost(fullPath)).toBe(resolveHost('/'));
     });
   });
 });

@@ -45,6 +45,16 @@ function attemptGettingAjaxRequest(resolve, reject) {
 return getAjaxRequest;
 })();
 
+// Resolve a URL against the current page and return its host. Uses an anchor
+// element instead of the URL constructor so it also works in IE11, which needs
+// the href set twice before it fills in the parsed fields.
+resolveHost = function resolveHost(url) {
+  var anchor = document.createElement('a');
+  anchor.setAttribute('href', url);
+  anchor.setAttribute('href', anchor.href);
+  return anchor.host;
+};
+
 // Validate an invalid character error
 validateInvalidCharacterError = function validateInvalidCharacterError(error) {
   expect(/character/i.test(error.message)).toEqual(true);

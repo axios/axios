@@ -66,6 +66,28 @@ describe('helpers::composeSignals', () => {
     }
   });
 
+  runIfAbortController('should not extend a long timeout when a timer step runs late', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const timeout = 30 * 24 * 60 * 60 * 1000;
+    let time = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => time);
+
+    try {
+      const signal = composeSignals([], timeout);
+
+      // The first step fires after the runtime was suspended past the deadline.
+      time = timeout + 1;
+      vi.advanceTimersByTime(0x7fffffff);
+
+      assert.strictEqual(signal.aborted, true);
+      assert.match(String(signal.reason), /timeout of 2592000000ms exceeded/);
+      assert.strictEqual(vi.getTimerCount(), 0);
+    } finally {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    }
+  });
+
   it('should return undefined if signals and timeout are not provided', () => {
     const signal = composeSignals([]);
 

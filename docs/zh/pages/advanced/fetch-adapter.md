@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 ```
 
-该适配器支持与 `xhr` 适配器相同的功能，包括上传和下载进度捕获，还支持额外的响应类型，如 `stream` 和 `formdata`（如果环境支持）。
+该适配器支持跟踪上传和下载进度，还支持额外的响应类型，如 `stream` 和 `formdata`（如果环境支持）。
 
 当省略 `auth` 时，fetch 适配器可以从请求 URL 中读取 HTTP Basic 认证凭据，例如 `https://user:pass@example.com`。生成 `Authorization` 请求头前会先解码 URL 中经过百分号编码的凭据，并且 `auth` 优先于 URL 中的凭据。
 

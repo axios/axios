@@ -17,8 +17,8 @@ axios 可能会抛出多种不同类型的错误，有些来自 axios 本身，�
 | ------------------------- | --------------------------------------------------------------------------------------- |
 | ERR_BAD_OPTION_VALUE      | axios 配置中提供了无效或不支持的值。                                                    |
 | ERR_BAD_OPTION            | axios 配置中提供了无效选项。                                                            |
-| ECONNABORTED              | 通常表示请求已超时（除非设置了 `transitional.clarifyTimeoutError`）或被浏览器或其插件中止。 |
-| ETIMEDOUT                 | 请求因超过 axios 默认时限而超时。必须将 `transitional.clarifyTimeoutError` 设置为 `true`，否则会抛出通用的 `ECONNABORTED` 错误。 |
+| ECONNABORTED              | `http` 和 `xhr` 适配器默认在请求超时时返回此错误码。浏览器中止请求时，`xhr` 适配器也可能返回此错误码。   |
+| ETIMEDOUT                 | 对于 Axios 自身的超时错误，无论 `transitional.clarifyTimeoutError` 如何设置，`fetch` 适配器都会返回此错误码。`http` 和 `xhr` 适配器在该选项为 `true` 时返回此错误码。 |
 | ECONNREFUSED              | 服务器拒绝了连接。由 Node.js 的 `http` 适配器设置，原始系统错误可通过 `error.cause` 获取；`xhr` 和 `fetch` 适配器则会报告 `ERR_NETWORK`。 |
 | ERR_NETWORK               | 网络相关问题。在浏览器中，此错误也可能由 [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) 或[混合内容](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content)策略违规引起。出于安全考虑，浏览器不允许 JS 代码获知错误的真实原因，请检查控制台。 |
 | ERR_FR_TOO_MANY_REDIRECTS | 请求重定向次数过多，超过了 axios 配置中指定的最大重定向次数。                           |
@@ -148,7 +148,7 @@ try {
 
 ## 处理超时
 
-当请求超过其配置的 `timeout` 时，axios 默认会以 `ECONNABORTED` 拒绝。设置 `transitional.clarifyTimeoutError: true` 可改为收到 `ETIMEDOUT`，便于将超时错误与其他中止情况区分开。
+对于 Axios 自身的超时错误，`http` 和 `xhr` 适配器默认以 `ECONNABORTED` 拒绝请求。设置 `transitional.clarifyTimeoutError: true` 可使这两个适配器返回 `ETIMEDOUT`。无论此选项如何设置，`fetch` 适配器都会返回 `ETIMEDOUT`。
 
 ```js
 async function fetchWithTimeout() {
@@ -156,7 +156,7 @@ async function fetchWithTimeout() {
     const response = await axios.get("https://example.com/data", {
       timeout: 5000, // 5 秒
       transitional: {
-        // 如果你更倾向于使用 ETIMEDOUT 而非 ECONNABORTED，请设置为 true
+        // 让 http 和 xhr 适配器在请求超时时返回 ETIMEDOUT。
         clarifyTimeoutError: true,
       },
     });

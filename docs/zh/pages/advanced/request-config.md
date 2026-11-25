@@ -470,7 +470,7 @@ await axios.get('https://internal-api.example.com/data', {
   :::
 
 - `forcedJSONParsing`：强制 axios 将响应解析为 JSON，即使响应不是有效的 JSON。适用于返回无效 JSON 的 API。
-- `clarifyTimeoutError`：在请求超时时提供更清晰的错误信息，适用于调试超时问题。
+- `clarifyTimeoutError`：设为 `true` 时，`http` 和 `xhr` 适配器在请求超时时返回 `ETIMEDOUT`。这两个适配器默认返回 `ECONNABORTED`。无论此选项如何设置，`fetch` 适配器都会返回 `ETIMEDOUT`。
 - `validateStatusUndefinedResolves`：若设置为 `true` _（默认）_，显式的 `validateStatus: undefined` 会出于兼容性 resolve 所有响应状态码。设置为 `false` 后，显式的 `undefined` 会像未设置 `validateStatus` 一样处理，axios 将使用已配置/默认的验证器。如果你确实希望所有状态码都 resolve，请使用 `validateStatus: null` 或返回 `true` 的验证器。
 - `advertiseZstdAcceptEncoding`：设为 `true` 时，如果当前 Node.js 运行时支持 zstd 解压，axios 会在默认 `Accept-Encoding` 请求头中加入 `zstd`。在受支持且 `decompress` 为 `true` 时，zstd 响应仍会自动解压。
 - `legacyInterceptorReqResOrdering`：设置为 true 时使用旧版拦截器请求/响应排序。

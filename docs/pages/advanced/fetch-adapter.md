@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 ```
 
-The adapter supports the same functionality as the `xhr` adapter, including upload and download progress capturing. It also supports additional response types such as `stream` and `formdata` (if supported by the environment).
+The adapter supports upload and download progress. It also supports additional response types such as `stream` and `formdata` (if supported by the environment).
 
 When `auth` is omitted, the fetch adapter can read HTTP Basic auth credentials from the request URL, for example `https://user:pass@example.com`. Percent-encoded URL credentials are decoded before the `Authorization` header is generated, and `auth` takes precedence over URL-embedded credentials.
 

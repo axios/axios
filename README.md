@@ -1141,7 +1141,7 @@ These config options are available for requests. Only `url` is required. Request
     // try to parse the response string as JSON even if `responseType` is not 'json'
     forcedJSONParsing: true,
 
-    // throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
+    // Set to true to use ETIMEDOUT for timeouts in the http and xhr adapters.
     clarifyTimeoutError: false,
 
     // keep explicit `validateStatus: undefined` resolving every response status
@@ -1519,9 +1519,9 @@ These are the internal Axios error codes:
 | ERR_NOT_SUPPORT           | Feature or method not supported in the current axios environment.                                                                                                                                                                                                                                                                                                                              |
 | ERR_DEPRECATED            | Deprecated feature or method used in axios.                                                                                                                                                                                                                                                                                                                                                    |
 | ERR_INVALID_URL           | Invalid URL provided for axios request.                                                                                                                                                                                                                                                                                                                                                        |
-| ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin.                                                                                                                                                                                                                                            |
+| ECONNABORTED              | The `http` and `xhr` adapters use this code for timeouts by default. The `xhr` adapter can also use it when the browser aborts a request.                                                                                                                                                                                                                                                      |
 | ERR_CANCELED              | The user explicitly canceled the request with an AbortSignal or CancelToken.                                                                                                                                                                                                                                                                                                                   |
-| ETIMEDOUT                 | Request timed out after exceeding the configured Axios timeout. Set `transitional.clarifyTimeoutError` to `true`; otherwise Axios throws a generic `ECONNABORTED` error.                                                                                                                                                                                                                       |
+| ETIMEDOUT                 | For Axios timeout errors, the `fetch` adapter uses this code regardless of `transitional.clarifyTimeoutError`. The `http` and `xhr` adapters use it when that option is `true`.                                                                                                                                                                                                                |
 | ECONNREFUSED              | The server refused the connection. Set by the Node.js `http` adapter, with the original system error on `error.cause`; the `xhr` and `fetch` adapters report `ERR_NETWORK` instead.                                                                                                                                                                                                            |
 | ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request exceeded the configured maximum number of redirects.                                                                                                                                                                                                                                                                                                                                   |
@@ -1604,13 +1604,15 @@ axios
 
 ## Handling timeouts
 
+For Axios timeout errors, the `http` and `xhr` adapters reject with `ECONNABORTED` by default. Set `transitional.clarifyTimeoutError: true` to get `ETIMEDOUT` from those adapters. The `fetch` adapter uses `ETIMEDOUT` regardless of this setting.
+
 ```js
 async function fetchWithTimeout() {
   try {
     const response = await axios.get('https://example.com/data', {
       timeout: 5000, // 5 seconds
       transitional: {
-        // set to true if you prefer ETIMEDOUT over ECONNABORTED
+        // Set to true to use ETIMEDOUT for timeouts in the http and xhr adapters.
         clarifyTimeoutError: false,
       },
     });
@@ -2520,7 +2522,7 @@ const fetchAxios = axios.create({
 const { data } = fetchAxios.get(url);
 ```
 
-The adapter supports the same features as the `xhr` adapter, including upload and download progress capturing.
+The adapter supports upload and download progress.
 It also supports response types such as `stream` and `formdata` when the environment supports them.
 
 When `auth` is omitted, the fetch adapter can read HTTP Basic auth credentials from the request URL, for example `https://user:pass@example.com`. Percent-encoded URL credentials are decoded before the `Authorization` header is generated, and `auth` takes precedence over URL-embedded credentials.

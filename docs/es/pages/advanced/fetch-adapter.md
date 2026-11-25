@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 ```
 
-El adaptador admite la misma funcionalidad que el adaptador `xhr`, incluyendo la captura del progreso de carga y descarga. También admite tipos de respuesta adicionales como `stream` y `formdata` (si el entorno lo soporta).
+El adaptador permite seguir el progreso de carga y descarga. También admite tipos de respuesta adicionales como `stream` y `formdata` (si el entorno lo soporta).
 
 Cuando `auth` se omite, el adaptador fetch puede leer credenciales de autenticación HTTP Basic desde la URL de la solicitud, por ejemplo `https://user:pass@example.com`. Las credenciales de URL codificadas con porcentaje se decodifican antes de generar el encabezado `Authorization`, y `auth` tiene prioridad sobre las credenciales incluidas en la URL.
 

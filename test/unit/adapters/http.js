@@ -25,6 +25,10 @@ var isBlobSupported = typeof Blob !== "undefined";
 var noop = () => {};
 
 describe("supports http with nodejs", function () {
+  // Restored after every test so one that changes directory and then fails
+  // or times out cannot leave the rest of the suite in a deleted directory.
+  var initialCwd = process.cwd();
+
   function clearPrototypePollution() {
     delete Object.prototype.auth;
     delete Object.prototype.username;
@@ -56,6 +60,7 @@ describe("supports http with nodejs", function () {
     delete process.env.no_proxy;
     delete process.env.NO_PROXY;
     clearPrototypePollution();
+    process.chdir(initialCwd);
   });
 
   it("should sanitize request headers containing invalid characters", function (done) {
@@ -1296,19 +1301,19 @@ describe("supports http with nodejs", function () {
     // Deep enough that the absolute socket path is longer than the Unix socket
     // path limit (108 bytes on Linux, 104 on macOS), while "app.sock" is not.
     var deepDir = path.join(root, new Array(121).join("d"));
-    var socketServer;
 
     fs.mkdirSync(path.join(deepDir, "sub"), { recursive: true });
 
     function cleanup() {
       process.chdir(cwd);
       return new Promise(function (resolve) {
-        if (!socketServer) {
+        if (!server) {
           return resolve();
         }
-        socketServer.close(function () {
+        server.close(function () {
           resolve();
         });
+        server = null;
       }).then(function () {
         fs.rmSync ? fs.rmSync(root, { recursive: true, force: true }) : fs.rmdirSync(root, { recursive: true });
       });
@@ -1317,16 +1322,19 @@ describe("supports http with nodejs", function () {
     process.chdir(deepDir);
 
     return new Promise(function (resolve, reject) {
-      socketServer = http.createServer(function (req, res) {
+      // Uses the shared server so the suite's afterEach closes it if this
+      // test times out before cleanup runs.
+      server = http.createServer(function (req, res) {
         res.end("relative");
       });
-      socketServer.once("error", reject);
-      socketServer.listen("app.sock", resolve);
+      server.once("error", reject);
+      server.listen("app.sock", resolve);
     }).then(function () {
       return axios({
         socketPath: "sub/../app.sock",
         allowedSocketPaths: ["app.sock"],
-        url: "/"
+        url: "/",
+        timeout: 5000
       });
     }).then(function (response) {
       return cleanup().then(function () {

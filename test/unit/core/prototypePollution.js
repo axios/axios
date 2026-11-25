@@ -690,11 +690,12 @@ describe("Prototype Pollution Protection", function () {
   describe("redirect options", function () {
     // Listens on 127.0.0.1 by default. Pass a path to listen on a socket.
     function listen(handler, address) {
-      return new Promise(function (resolve) {
+      return new Promise(function (resolve, reject) {
         var server = http.createServer(handler);
         var onListening = function () {
           resolve(server);
         };
+        server.once('error', reject);
         if (address === undefined) {
           server.listen(0, '127.0.0.1', onListening);
         } else {
@@ -962,6 +963,52 @@ describe("Prototype Pollution Protection", function () {
         }
       }, function (error) {
         closeAll([server]);
+        throw error;
+      });
+    });
+
+    it("should not connect to a socketPath getter set on Object.prototype", function () {
+      var socketServer;
+      var tcpServer;
+      var socketName = process.platform === 'win32' ?
+        '\\\\.\\pipe\\axios-inherited-getter-' + process.pid :
+        path.join(os.tmpdir(), 'axios-inherited-getter-' + process.pid + '.sock');
+
+      if (process.platform !== 'win32') {
+        try {
+          fs.unlinkSync(socketName);
+        } catch (err) {
+          // No stale socket to remove.
+        }
+      }
+
+      return listen(function (req, res) {
+        res.end('SOCKET');
+      }, socketName).then(function (created) {
+        socketServer = created;
+
+        return listen(function (req, res) {
+          res.end('TCP');
+        });
+      }).then(function (created) {
+        tcpServer = created;
+
+        // A setter that ignores writes, so assigning undefined would not
+        // shadow the getter.
+        Object.defineProperty(Object.prototype, 'socketPath', {
+          get: function () {
+            return socketName;
+          },
+          set: function () {},
+          configurable: true
+        });
+
+        return axios.get('http://127.0.0.1:' + tcpServer.address().port + '/', { proxy: false });
+      }).then(function (response) {
+        closeAll([socketServer, tcpServer]);
+        assert.strictEqual(response.data, 'TCP');
+      }, function (error) {
+        closeAll([socketServer, tcpServer]);
         throw error;
       });
     });

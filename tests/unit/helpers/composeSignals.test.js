@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import composeSignals from '../../../lib/helpers/composeSignals.js';
 
 describe('helpers::composeSignals', () => {
@@ -19,6 +19,19 @@ describe('helpers::composeSignals', () => {
       expect(calls[0]).toEqual({ type: 'abort', options: { once: true } });
     } finally {
       signal.unsubscribe();
+    }
+  });
+
+  it('caps timers that exceed the 32-bit signed integer limit', () => {
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+
+    try {
+      const signal = composeSignals([], 2147483648);
+
+      expect(setTimeoutSpy.mock.lastCall[1]).toBe(2147483647);
+      signal.unsubscribe();
+    } finally {
+      setTimeoutSpy.mockRestore();
     }
   });
 });

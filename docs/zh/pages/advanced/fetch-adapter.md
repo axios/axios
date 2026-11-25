@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 ```
 
-该适配器支持跟踪上传和下载进度，还支持额外的响应类型，如 `stream` 和 `formdata`（如果环境支持）。
+跟踪上传进度需要环境支持请求流，并提供可用的 `Request` 构造函数。跟踪下载进度需要环境支持响应流，且响应体可读。该适配器还支持额外的响应类型，如 `stream` 和 `formdata`（如果环境支持）。
 
 当省略 `auth` 时，fetch 适配器可以从请求 URL 中读取 HTTP Basic 认证凭据，例如 `https://user:pass@example.com`。生成 `Authorization` 请求头前会先解码 URL 中经过百分号编码的凭据，并且 `auth` 优先于 URL 中的凭据。
 

@@ -66,6 +66,7 @@ describe('fetch response size errors', () => {
     ['HEAD 404', 'head', 404],
     ['GET 304', 'get', 304],
     ['GET 204', 'get', 204],
+    ['GET 205', 'get', 205],
   ]) {
     it(`allows ${label} when representation Content-Length exceeds maxContentLength`, async () => {
       const url = new URL('/bodyless-limit', window.location.href).href;
@@ -136,4 +137,45 @@ describe('fetch response size errors', () => {
     expect(error.code).toBe(axios.AxiosError.ERR_BAD_RESPONSE);
     expect(error.message).toBe('maxContentLength size of 1 exceeded');
   });
+
+  for (const [label, method, status] of [
+    ['HEAD 200', 'head', 200],
+    ['GET 204', 'get', 204],
+    ['GET 205', 'get', 205],
+    ['GET 304', 'get', 304],
+  ]) {
+    it(`enforces maxContentLength on oversized materialized data for falsy-body ${label} custom fetch responses`, async () => {
+      const url = new URL('/falsy-body-oversized', window.location.href).href;
+
+      for (const [responseType, resolver] of [
+        ['text', { text: async () => 'oversized' }],
+        ['arraybuffer', { arrayBuffer: async () => new Uint8Array(9).buffer }],
+        ['blob', { blob: async () => new Blob(['oversized']) }],
+      ]) {
+        const error = await axios({
+          adapter: 'fetch',
+          method,
+          url,
+          responseType,
+          maxContentLength: 4,
+          validateStatus: () => true,
+          env: {
+            async fetch() {
+              return {
+                status,
+                statusText: '',
+                headers: { 'content-length': '5000' },
+                body: null,
+                ...resolver,
+              };
+            },
+          },
+        }).catch((err) => err);
+
+        expect(error).toBeInstanceOf(axios.AxiosError);
+        expect(error.code).toBe(axios.AxiosError.ERR_BAD_RESPONSE);
+        expect(error.message).toBe('maxContentLength size of 4 exceeded');
+      }
+    });
+  }
 });

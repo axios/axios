@@ -1201,67 +1201,183 @@ describe("supports http with nodejs", function () {
       });
   });
 
-  it("should connect to the allow-listed socket when the path goes through a symlinked directory", function () {
-    if (process.platform === "win32") {
-      this.skip();
-    }
-
+  // Builds two real sockets, allowed/app.sock and other/app.sock, and a symlink
+  // allowed/link -> other/sub. allowed/link/../app.sock collapses lexically to
+  // allowed/app.sock, but the kernel follows the link first and reaches
+  // other/app.sock. Runs `run(tree)`, then closes the servers and removes the
+  // directory whether or not `run` succeeded.
+  function withSocketTree(run) {
     var os = require("os");
-    var root = fs.mkdtempSync(path.join(os.tmpdir(), "axios-sock-"));
-    var allowedDir = path.join(root, "allowed");
-    var otherDir = path.join(root, "other");
-    var allowedSocket = path.join(allowedDir, "app.sock");
-    var otherSocket = path.join(otherDir, "app.sock");
     var servers = [];
-
-    fs.mkdirSync(allowedDir);
-    fs.mkdirSync(path.join(otherDir, "sub"), { recursive: true });
-    // allowed/link/../app.sock normalizes to allowed/app.sock, but the kernel
-    // follows the link first and would land on other/app.sock.
-    fs.symlinkSync(path.join(otherDir, "sub"), path.join(allowedDir, "link"));
+    var tree;
 
     function listen(socketPath, body) {
       return new Promise(function (resolve, reject) {
-        var server = http.createServer(function (req, res) {
+        var socketServer = http.createServer(function (req, res) {
           res.end(body);
         });
-        servers.push(server);
-        server.once("error", reject);
-        server.listen(socketPath, resolve);
+        servers.push(socketServer);
+        socketServer.once("error", reject);
+        socketServer.listen(socketPath, resolve);
       });
     }
 
     function cleanup() {
-      return Promise.all(servers.map(function (server) {
+      process.chdir(initialCwd);
+      return Promise.all(servers.map(function (socketServer) {
         return new Promise(function (resolve) {
-          server.close(function () {
+          socketServer.close(function () {
             resolve();
           });
         });
       })).then(function () {
-        fs.rmSync ? fs.rmSync(root, { recursive: true, force: true }) : fs.rmdirSync(root, { recursive: true });
+        if (tree) {
+          fs.rmSync ? fs.rmSync(tree.root, { recursive: true, force: true }) : fs.rmdirSync(tree.root, { recursive: true });
+        }
       });
     }
 
-    return Promise.all([
-      listen(allowedSocket, "allowed"),
-      listen(otherSocket, "other")
-    ]).then(function () {
-      return axios({
-        // Built by hand: path.join would normalize the ".." away.
-        socketPath: allowedDir + "/link/../app.sock",
-        allowedSocketPaths: [allowedSocket],
-        url: "/"
-      });
+    return Promise.resolve().then(function () {
+      var root = fs.mkdtempSync(path.join(os.tmpdir(), "axios-sock-"));
+      tree = {
+        root: root,
+        allowedDir: path.join(root, "allowed"),
+        allowedSocket: path.join(root, "allowed", "app.sock"),
+        otherSocket: path.join(root, "other", "app.sock")
+      };
+      fs.mkdirSync(tree.allowedDir);
+      fs.mkdirSync(path.join(root, "other", "sub"), { recursive: true });
+      fs.symlinkSync(path.join(root, "other", "sub"), path.join(tree.allowedDir, "link"));
+
+      return Promise.all([
+        listen(tree.allowedSocket, "allowed"),
+        listen(tree.otherSocket, "other")
+      ]);
+    }).then(function () {
+      return run(tree);
     }).then(function (response) {
       return cleanup().then(function () {
-        assert.strictEqual(response.data, "allowed");
+        return response;
       });
     }, function (error) {
       return cleanup().then(function () {
         throw error;
       });
     });
+  }
+
+  it("should connect to the allow-listed socket when the path goes through a symlinked directory", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        // Built by hand: path.join would normalize the ".." away.
+        socketPath: tree.allowedDir + "/link/../app.sock",
+        allowedSocketPaths: [tree.allowedSocket],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should connect to the allow-listed socket when a relative path goes through a symlinked directory", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      process.chdir(tree.root);
+      return axios({
+        socketPath: "allowed/link/../app.sock",
+        allowedSocketPaths: ["allowed/app.sock"],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should connect to the allow-listed socket when the path contains a NUL byte", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        // Some Node versions cut the path at the NUL, which would reach
+        // other/app.sock.
+        socketPath: tree.otherSocket + "\0/../../allowed/app.sock",
+        allowedSocketPaths: [tree.allowedSocket],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should not connect with a relative socket path longer than the absolute path", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        // More ".." than the working directory is deep, so the path resolves to
+        // the allowed socket but is far longer than it. Some Node versions
+        // truncate a socket path that is too long and connect to a prefix of it.
+        socketPath: new Array(65).join("../") + tree.allowedSocket.slice(1),
+        allowedSocketPaths: [tree.allowedSocket],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should connect to the socket path as given when no allowlist is set", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        socketPath: tree.allowedDir + "/link/../app.sock",
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "other");
+    });
+  });
+
+  it("should compare Linux abstract socket names exactly", function () {
+    // These used to be resolved like file paths, so they matched an allowlist
+    // entry but connected to a different abstract socket.
+    var cases = [
+      { socketPath: "\0x/../app.sock", allowedSocketPaths: [path.resolve("app.sock")] },
+      { socketPath: "\0name/", allowedSocketPaths: ["\0name"] },
+      { socketPath: "\0a/../\0name", allowedSocketPaths: ["\0name"] }
+    ];
+
+    return Promise.all(cases.map(function (testCase) {
+      return axios({
+        socketPath: testCase.socketPath,
+        allowedSocketPaths: testCase.allowedSocketPaths,
+        url: "/",
+        timeout: 5000
+      }).then(function () {
+        throw new Error("request should not succeed: " + JSON.stringify(testCase.socketPath));
+      }, function (err) {
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE, JSON.stringify(testCase.socketPath));
+      });
+    }));
   });
 
   it("should connect to an allow-listed Linux abstract socket", function (done) {
@@ -1269,7 +1385,8 @@ describe("supports http with nodejs", function () {
       this.skip();
     }
 
-    var socketName = "\0axios-test-" + process.pid + "-" + Date.now();
+    // The "//" would be collapsed if the name were normalized like a file path.
+    var socketName = "\0axios-test-" + process.pid + "-" + Date.now() + "//x";
 
     server = http
       .createServer(function (req, res) {

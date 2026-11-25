@@ -228,6 +228,43 @@ describe('utils::isX', () => {
     expect(utils.isFunction('function')).toEqual(false);
   });
 
+  describe('isThenable', () => {
+    it('should return true for native promises and Promises/A+ thenables without catch', () => {
+      const rejected = Promise.reject(new Error('expected'));
+      rejected.catch(() => {});
+
+      const objectThenable = { then() {} };
+      const nullProtoThenable = Object.assign(Object.create(null), { then() {} });
+      const inheritedThenable = Object.create({ then() {} });
+      const functionThenable = Object.assign(() => {}, { then() {} });
+
+      expect(utils.isThenable(Promise.resolve(1))).toBe(true);
+      expect(utils.isThenable(rejected)).toBe(true);
+      expect(utils.isThenable(objectThenable)).toBe(true);
+      expect(utils.isThenable(nullProtoThenable)).toBe(true);
+      expect(utils.isThenable(inheritedThenable)).toBe(true);
+      expect(utils.isThenable(functionThenable)).toBe(true);
+    });
+
+    it('should return false for non-thenable values', () => {
+      expect(utils.isThenable(null)).toBe(false);
+      expect(utils.isThenable(undefined)).toBe(false);
+      expect(utils.isThenable(false)).toBe(false);
+      expect(utils.isThenable(true)).toBe(false);
+      expect(utils.isThenable(0)).toBe(false);
+      expect(utils.isThenable(123)).toBe(false);
+      expect(utils.isThenable('')).toBe(false);
+      expect(utils.isThenable('then')).toBe(false);
+      expect(utils.isThenable(Symbol('then'))).toBe(false);
+      expect(utils.isThenable({})).toBe(false);
+      expect(utils.isThenable([])).toBe(false);
+      expect(utils.isThenable(() => {})).toBe(false);
+      expect(utils.isThenable({ then: null })).toBe(false);
+      expect(utils.isThenable({ then: 123 })).toBe(false);
+      expect(utils.isThenable({ then: 'not-a-function' })).toBe(false);
+    });
+  });
+
   it('should validate URLSearchParams', () => {
     expect(utils.isURLSearchParams(new URLSearchParams())).toEqual(true);
     expect(utils.isURLSearchParams('foo=1&bar=2')).toEqual(false);

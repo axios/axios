@@ -41,6 +41,9 @@ describe("Prototype Pollution Protection", function () {
     delete Object.prototype.query;
     delete Object.prototype.search;
     delete Object.prototype.hash;
+    delete Object.prototype.socketPath;
+    delete Object.prototype.allowedSocketPaths;
+    delete Object.prototype.error;
     delete Object.prototype.synchronous;
     delete Object.prototype.runWhen;
   }
@@ -959,6 +962,65 @@ describe("Prototype Pollution Protection", function () {
         }
       }, function (error) {
         closeAll([server]);
+        throw error;
+      });
+    });
+
+    it("should not connect to a socketPath set on Object.prototype", function () {
+      var socketServer;
+      var tcpServer;
+      var socketName = process.platform === 'win32' ?
+        '\\\\.\\pipe\\axios-inherited-socket-' + process.pid :
+        path.join(os.tmpdir(), 'axios-inherited-socket-' + process.pid + '.sock');
+
+      if (process.platform !== 'win32') {
+        try {
+          fs.unlinkSync(socketName);
+        } catch (err) {
+          // No stale socket to remove.
+        }
+      }
+
+      return listen(function (req, res) {
+        res.end('SOCKET');
+      }, socketName).then(function (created) {
+        socketServer = created;
+
+        return listen(function (req, res) {
+          res.end('TCP');
+        });
+      }).then(function (created) {
+        tcpServer = created;
+
+        Object.prototype.socketPath = socketName;
+        Object.prototype.allowedSocketPaths = [socketName];
+
+        return axios.get('http://127.0.0.1:' + tcpServer.address().port + '/', { proxy: false });
+      }).then(function (response) {
+        closeAll([socketServer, tcpServer]);
+        assert.strictEqual(response.data, 'TCP');
+      }, function (error) {
+        closeAll([socketServer, tcpServer]);
+        throw error;
+      });
+    });
+
+    it("should not reject with an error set on Object.prototype", function () {
+      var tcpServer;
+
+      return listen(function (req, res) {
+        res.end('TCP');
+      }).then(function (created) {
+        tcpServer = created;
+
+        Object.prototype.error = new Error('inherited error');
+
+        return axios.get('http://127.0.0.1:' + tcpServer.address().port + '/', { proxy: false });
+      }).then(function (response) {
+        closeAll([tcpServer]);
+        assert.strictEqual(response.data, 'TCP');
+      }, function (error) {
+        closeAll([tcpServer]);
         throw error;
       });
     });

@@ -1095,6 +1095,26 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     }
   });
 
+  it('should not time out early with a timeout above the 32-bit timer limit', async () => {
+    const server = await startHTTPServer(
+      async (req, res) => {
+        await setTimeoutAsync(100);
+        res.end('OK');
+      },
+      { port: 0 }
+    );
+
+    try {
+      const { data } = await fetchAxios(`http://localhost:${server.address().port}/`, {
+        timeout: 30 * 24 * 60 * 60 * 1000,
+      });
+
+      assert.strictEqual(data, 'OK');
+    } finally {
+      await stopHTTPServer(server);
+    }
+  });
+
   describe('fetch adapter - timeout normalization', () => {
     it('should reject with an AxiosError(ETIMEDOUT) on timeout', async () => {
       const server = await startHTTPServer(

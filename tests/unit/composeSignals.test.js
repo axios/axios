@@ -48,6 +48,24 @@ describe('helpers::composeSignals', () => {
     assert.match(String(signal.reason), /timeout of 100ms exceeded/);
   });
 
+  runIfAbortController('should abort at a timeout above the 32-bit timer limit', async () => {
+    vi.useFakeTimers();
+    const timeout = 30 * 24 * 60 * 60 * 1000;
+
+    try {
+      const signal = composeSignals([], timeout);
+
+      await vi.advanceTimersByTimeAsync(timeout - 1);
+      assert.strictEqual(signal.aborted, false);
+
+      await vi.advanceTimersByTimeAsync(1);
+      assert.strictEqual(signal.aborted, true);
+      assert.match(String(signal.reason), /timeout of 2592000000ms exceeded/);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('should return undefined if signals and timeout are not provided', () => {
     const signal = composeSignals([]);
 

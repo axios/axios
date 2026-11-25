@@ -24,13 +24,12 @@ describe('helpers::composeSignals', () => {
 
   it('caps timers that exceed the 32-bit signed integer limit', () => {
     const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+    const signal = composeSignals([], 2147483648);
 
     try {
-      const signal = composeSignals([], 2147483648);
-
       expect(setTimeoutSpy.mock.lastCall[1]).toBe(2147483647);
-      signal.unsubscribe();
     } finally {
+      signal.unsubscribe();
       setTimeoutSpy.mockRestore();
     }
   });

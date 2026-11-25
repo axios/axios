@@ -60,4 +60,80 @@ describe('fetch response size errors', () => {
       });
     }
   }
+
+  for (const [label, method, status] of [
+    ['HEAD 200', 'head', 200],
+    ['HEAD 404', 'head', 404],
+    ['GET 304', 'get', 304],
+    ['GET 204', 'get', 204],
+  ]) {
+    it(`allows ${label} when representation Content-Length exceeds maxContentLength`, async () => {
+      const url = new URL('/bodyless-limit', window.location.href).href;
+      const response = await axios({
+        adapter: 'fetch',
+        method,
+        url,
+        maxContentLength: 1,
+        validateStatus: () => true,
+        env: {
+          async fetch() {
+            return new Response(null, {
+              status,
+              headers: { 'Content-Length': '5000' },
+            });
+          },
+        },
+      });
+
+      expect(response.status).toBe(status);
+      expect(response.data).toBe('');
+      expect(response.headers.get('content-length')).toBe('5000');
+    });
+  }
+
+  it('rejects 304 with a status error rather than a maxContentLength error under default validateStatus', async () => {
+    const url = new URL('/not-modified', window.location.href).href;
+    const error = await axios
+      .get(url, {
+        adapter: 'fetch',
+        maxContentLength: 1,
+        env: {
+          async fetch() {
+            return new Response(null, {
+              status: 304,
+              headers: { 'Content-Length': '5000' },
+            });
+          },
+        },
+      })
+      .catch((err) => err);
+
+    expect(error).toBeInstanceOf(axios.AxiosError);
+    expect(error.code).toBe(axios.AxiosError.ERR_BAD_RESPONSE);
+    expect(error.message).toBe('Request failed with status code 304');
+    expect(error.response.status).toBe(304);
+    expect(error.response.headers.get('content-length')).toBe('5000');
+  });
+
+  it('still rejects non-bodyless GET 200 responses with oversized Content-Length', async () => {
+    const url = new URL('/oversized-declared', window.location.href).href;
+    const error = await axios
+      .get(url, {
+        adapter: 'fetch',
+        maxContentLength: 1,
+        env: {
+          async fetch() {
+            return new Response(null, {
+              status: 200,
+              headers: { 'Content-Length': '5000' },
+            });
+          },
+        },
+      })
+      .catch((err) => err);
+
+    expect(error).toBeInstanceOf(axios.AxiosError);
+    expect(error.code).toBe(axios.AxiosError.ERR_BAD_RESPONSE);
+    expect(error.message).toBe('maxContentLength size of 1 exceeded');
+  });
 });

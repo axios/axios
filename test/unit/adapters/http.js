@@ -1214,6 +1214,9 @@ describe("supports http with nodejs", function () {
     function listen(socketPath, body) {
       return new Promise(function (resolve, reject) {
         var socketServer = http.createServer(function (req, res) {
+          // Closing the connection makes an Agent open a new one for a queued
+          // request instead of reusing this one.
+          res.setHeader("Connection", "close");
           res.end(body);
         });
         servers.push(socketServer);
@@ -1321,7 +1324,7 @@ describe("supports http with nodejs", function () {
     });
   });
 
-  it("should not connect with a relative socket path longer than the absolute path", function () {
+  it("should connect to the allow-listed socket when a relative path is longer than the absolute path", function () {
     if (process.platform === "win32") {
       this.skip();
     }
@@ -1338,6 +1341,46 @@ describe("supports http with nodejs", function () {
       });
     }).then(function (response) {
       assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should keep connecting to the allow-listed socket when the working directory changes before a queued request connects", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    var agent = new http.Agent({ maxSockets: 1 });
+
+    return withSocketTree(function (tree) {
+      process.chdir(tree.allowedDir);
+
+      var requests = [1, 2].map(function () {
+        return axios({
+          socketPath: "app.sock",
+          allowedSocketPaths: ["app.sock"],
+          url: "/",
+          httpAgent: agent,
+          timeout: 5000
+        });
+      });
+
+      // Both requests have passed the allowlist by now, but the second one is
+      // queued by the Agent and opens its own connection only after the server
+      // closes the first one.
+      return new Promise(function (resolve) {
+        setImmediate(resolve);
+      }).then(function () {
+        process.chdir(path.join(tree.root, "other"));
+        return Promise.all(requests);
+      });
+    }).then(function (responses) {
+      agent.destroy();
+      assert.deepStrictEqual(responses.map(function (response) {
+        return response.data;
+      }), ["allowed", "allowed"]);
+    }, function (error) {
+      agent.destroy();
+      throw error;
     });
   });
 

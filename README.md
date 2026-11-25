@@ -476,6 +476,10 @@ These are the available config options for making requests. Only the `url` is re
   // Use this when config can include partially user-controlled input.
   // Set to a string or array of strings. An empty array denies all socket paths.
   // Set to `null` on a request to clear an instance-level allowlist.
+  // Paths are compared after resolving `.` and `..` segments (symlinks are not
+  // followed), and the request connects to that normalized path, so `..` cannot
+  // step out through a symlinked directory. Windows named pipes and Linux
+  // abstract socket names (leading `\0`) are compared exactly as given.
   allowedSocketPaths: null, // default
 
   // `httpAgent` and `httpsAgent` define a custom agent to be used when performing http

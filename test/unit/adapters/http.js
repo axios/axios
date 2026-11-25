@@ -25,6 +25,10 @@ var isBlobSupported = typeof Blob !== "undefined";
 var noop = () => {};
 
 describe("supports http with nodejs", function () {
+  // Restored after every test so one that changes directory and then fails
+  // or times out cannot leave the rest of the suite in a deleted directory.
+  var initialCwd = process.cwd();
+
   function clearPrototypePollution() {
     delete Object.prototype.auth;
     delete Object.prototype.username;
@@ -56,6 +60,7 @@ describe("supports http with nodejs", function () {
     delete process.env.no_proxy;
     delete process.env.NO_PROXY;
     clearPrototypePollution();
+    process.chdir(initialCwd);
   });
 
   it("should sanitize request headers containing invalid characters", function (done) {
@@ -1194,6 +1199,312 @@ describe("supports http with nodejs", function () {
           })
           .catch(done);
       });
+  });
+
+  // Builds two real sockets, allowed/app.sock and other/app.sock, and a symlink
+  // allowed/link -> other/sub. allowed/link/../app.sock collapses lexically to
+  // allowed/app.sock, but the kernel follows the link first and reaches
+  // other/app.sock. Runs `run(tree)`, then closes the servers and removes the
+  // directory whether or not `run` succeeded.
+  function withSocketTree(run) {
+    var os = require("os");
+    var servers = [];
+    var tree;
+
+    function listen(socketPath, body) {
+      return new Promise(function (resolve, reject) {
+        var socketServer = http.createServer(function (req, res) {
+          // Closing the connection makes an Agent open a new one for a queued
+          // request instead of reusing this one.
+          res.setHeader("Connection", "close");
+          res.end(body);
+        });
+        servers.push(socketServer);
+        socketServer.once("error", reject);
+        socketServer.listen(socketPath, resolve);
+      });
+    }
+
+    function cleanup() {
+      process.chdir(initialCwd);
+      return Promise.all(servers.map(function (socketServer) {
+        return new Promise(function (resolve) {
+          socketServer.close(function () {
+            resolve();
+          });
+        });
+      })).then(function () {
+        if (tree) {
+          fs.rmSync ? fs.rmSync(tree.root, { recursive: true, force: true }) : fs.rmdirSync(tree.root, { recursive: true });
+        }
+      });
+    }
+
+    return Promise.resolve().then(function () {
+      var root = fs.mkdtempSync(path.join(os.tmpdir(), "axios-sock-"));
+      tree = {
+        root: root,
+        allowedDir: path.join(root, "allowed"),
+        allowedSocket: path.join(root, "allowed", "app.sock"),
+        otherSocket: path.join(root, "other", "app.sock")
+      };
+      fs.mkdirSync(tree.allowedDir);
+      fs.mkdirSync(path.join(root, "other", "sub"), { recursive: true });
+      fs.symlinkSync(path.join(root, "other", "sub"), path.join(tree.allowedDir, "link"));
+
+      return Promise.all([
+        listen(tree.allowedSocket, "allowed"),
+        listen(tree.otherSocket, "other")
+      ]);
+    }).then(function () {
+      return run(tree);
+    }).then(function (response) {
+      return cleanup().then(function () {
+        return response;
+      });
+    }, function (error) {
+      return cleanup().then(function () {
+        throw error;
+      });
+    });
+  }
+
+  it("should connect to the allow-listed socket when the path goes through a symlinked directory", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        // Built by hand: path.join would normalize the ".." away.
+        socketPath: tree.allowedDir + "/link/../app.sock",
+        allowedSocketPaths: [tree.allowedSocket],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should connect to the allow-listed socket when a relative path goes through a symlinked directory", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      process.chdir(tree.root);
+      return axios({
+        socketPath: "allowed/link/../app.sock",
+        allowedSocketPaths: ["allowed/app.sock"],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should connect to the allow-listed socket when the path contains a NUL byte", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        // Some Node versions cut the path at the NUL, which would reach
+        // other/app.sock.
+        socketPath: tree.otherSocket + "\0/../../allowed/app.sock",
+        allowedSocketPaths: [tree.allowedSocket],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should connect to the allow-listed socket when a relative path is longer than the absolute path", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        // More ".." than the working directory is deep, so the path resolves to
+        // the allowed socket but is far longer than it. Some Node versions
+        // truncate a socket path that is too long and connect to a prefix of it.
+        socketPath: new Array(65).join("../") + tree.allowedSocket.slice(1),
+        allowedSocketPaths: [tree.allowedSocket],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "allowed");
+    });
+  });
+
+  it("should keep connecting to the allow-listed socket when the working directory changes before a queued request connects", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    var agent = new http.Agent({ maxSockets: 1 });
+
+    return withSocketTree(function (tree) {
+      process.chdir(tree.allowedDir);
+
+      var requests = [1, 2].map(function () {
+        return axios({
+          socketPath: "app.sock",
+          allowedSocketPaths: ["app.sock"],
+          url: "/",
+          httpAgent: agent,
+          timeout: 5000
+        });
+      });
+
+      // Both requests have passed the allowlist by now, but the second one is
+      // queued by the Agent and opens its own connection only after the server
+      // closes the first one.
+      return new Promise(function (resolve) {
+        setImmediate(resolve);
+      }).then(function () {
+        process.chdir(path.join(tree.root, "other"));
+        return Promise.all(requests);
+      });
+    }).then(function (responses) {
+      agent.destroy();
+      assert.deepStrictEqual(responses.map(function (response) {
+        return response.data;
+      }), ["allowed", "allowed"]);
+    }, function (error) {
+      agent.destroy();
+      throw error;
+    });
+  });
+
+  it("should connect to the socket path as given when no allowlist is set", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    return withSocketTree(function (tree) {
+      return axios({
+        socketPath: tree.allowedDir + "/link/../app.sock",
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      assert.strictEqual(response.data, "other");
+    });
+  });
+
+  it("should compare Linux abstract socket names exactly", function () {
+    // These used to be resolved like file paths, so they matched an allowlist
+    // entry but connected to a different abstract socket.
+    var cases = [
+      { socketPath: "\0x/../app.sock", allowedSocketPaths: [path.resolve("app.sock")] },
+      { socketPath: "\0name/", allowedSocketPaths: ["\0name"] },
+      { socketPath: "\0a/../\0name", allowedSocketPaths: ["\0name"] }
+    ];
+
+    return Promise.all(cases.map(function (testCase) {
+      return axios({
+        socketPath: testCase.socketPath,
+        allowedSocketPaths: testCase.allowedSocketPaths,
+        url: "/",
+        timeout: 5000
+      }).then(function () {
+        throw new Error("request should not succeed: " + JSON.stringify(testCase.socketPath));
+      }, function (err) {
+        assert.strictEqual(err.code, AxiosError.ERR_BAD_OPTION_VALUE, JSON.stringify(testCase.socketPath));
+      });
+    }));
+  });
+
+  it("should connect to an allow-listed Linux abstract socket", function (done) {
+    if (process.platform !== "linux") {
+      this.skip();
+    }
+
+    // The "//" would be collapsed if the name were normalized like a file path.
+    var socketName = "\0axios-test-" + process.pid + "-" + Date.now() + "//x";
+
+    server = http
+      .createServer(function (req, res) {
+        res.end("abstract");
+      })
+      .once("error", done)
+      .listen(socketName, function () {
+        axios({
+          socketPath: socketName,
+          allowedSocketPaths: [socketName],
+          url: "/"
+        })
+          .then(function (response) {
+            assert.strictEqual(response.data, "abstract");
+            done();
+          })
+          .catch(done);
+      });
+  });
+
+  it("should keep an allow-listed relative socket path relative", function () {
+    if (process.platform === "win32") {
+      this.skip();
+    }
+
+    var os = require("os");
+    var cwd = process.cwd();
+    var root = fs.mkdtempSync(path.join(os.tmpdir(), "axios-sock-"));
+    // Deep enough that the absolute socket path is longer than the Unix socket
+    // path limit (108 bytes on Linux, 104 on macOS), while "app.sock" is not.
+    var deepDir = path.join(root, new Array(121).join("d"));
+
+    fs.mkdirSync(path.join(deepDir, "sub"), { recursive: true });
+
+    function cleanup() {
+      process.chdir(cwd);
+      return new Promise(function (resolve) {
+        if (!server) {
+          return resolve();
+        }
+        server.close(function () {
+          resolve();
+        });
+        server = null;
+      }).then(function () {
+        fs.rmSync ? fs.rmSync(root, { recursive: true, force: true }) : fs.rmdirSync(root, { recursive: true });
+      });
+    }
+
+    process.chdir(deepDir);
+
+    return new Promise(function (resolve, reject) {
+      // Uses the shared server so the suite's afterEach closes it if this
+      // test times out before cleanup runs.
+      server = http.createServer(function (req, res) {
+        res.end("relative");
+      });
+      server.once("error", reject);
+      server.listen("app.sock", resolve);
+    }).then(function () {
+      return axios({
+        socketPath: "sub/../app.sock",
+        allowedSocketPaths: ["app.sock"],
+        url: "/",
+        timeout: 5000
+      });
+    }).then(function (response) {
+      return cleanup().then(function () {
+        assert.strictEqual(response.data, "relative");
+      });
+    }, function (error) {
+      return cleanup().then(function () {
+        throw error;
+      });
+    });
   });
 
   it("should reject invalid socket path options", function (done) {

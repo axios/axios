@@ -71,6 +71,16 @@ const getLastRequest = () => {
 };
 
 describe('formdata (vitest browser)', () => {
+  it('should preserve nested length fields when converting an HTML form to JSON', () => {
+    const form = document.createElement('form');
+    const input = document.createElement('input');
+    input.name = 'metadata[length]';
+    input.value = 'long';
+    form.append(input);
+
+    expect(axios.formToJSON(form)).toEqual({ metadata: { length: 'long' } });
+  });
+
   beforeEach(() => {
     requests = [];
     OriginalXMLHttpRequest = window.XMLHttpRequest;

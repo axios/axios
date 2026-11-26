@@ -63,6 +63,8 @@ describe('Prototype Pollution Protection', () => {
     delete Object.prototype.headers;
     delete Object.prototype.createConnection;
     delete Object.prototype.customNested;
+    delete Object.prototype.synchronous;
+    delete Object.prototype.runWhen;
   });
 
   describe('utils.merge', () => {
@@ -1615,5 +1617,89 @@ describe('Prototype Pollution Protection', () => {
         await stop(server);
       }
     }, 10000);
+  });
+
+  describe('interceptor options', () => {
+    const okAdapter = (store) => async (config) => {
+      store.config = config;
+      return { data: 'ok', status: 200, statusText: 'OK', headers: {}, config };
+    };
+
+    it('should not treat an async interceptor as synchronous when synchronous is inherited', async () => {
+      Object.prototype.synchronous = true;
+
+      const store = {};
+      const instance = axios.create({ adapter: okAdapter(store) });
+
+      instance.interceptors.request.use(
+        async (config) => {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          config.headers.set('X-Async', 'yes');
+          return config;
+        },
+        null,
+        {}
+      );
+
+      // On the unfixed code this rejects with ERR_INVALID_URL because the
+      // interceptor's promise is dispatched as the request config.
+      const response = await instance.get('http://example.com/');
+
+      assert.strictEqual(response.data, 'ok');
+      assert.strictEqual(store.config.headers.get('X-Async'), 'yes');
+    });
+
+    it('should not skip an interceptor when runWhen is inherited', async () => {
+      Object.prototype.runWhen = () => false;
+
+      const store = {};
+      const instance = axios.create({ adapter: okAdapter(store) });
+
+      instance.interceptors.request.use(
+        (config) => {
+          config.headers.set('X-Run', 'yes');
+          return config;
+        },
+        null,
+        {}
+      );
+
+      await instance.get('http://example.com/');
+
+      assert.strictEqual(store.config.headers.get('X-Run'), 'yes');
+    });
+
+    it('should still honor explicit synchronous and runWhen options', async () => {
+      const store = {};
+      const instance = axios.create({ adapter: okAdapter(store) });
+
+      instance.interceptors.request.use(
+        (config) => {
+          config.headers.set('X-Skipped', 'ran');
+          return config;
+        },
+        null,
+        { synchronous: true, runWhen: () => false }
+      );
+
+      instance.interceptors.request.use(
+        (config) => {
+          config.headers.set('X-Run', 'yes');
+          return config;
+        },
+        null,
+        { synchronous: true, runWhen: () => true }
+      );
+
+      const handlers = instance.interceptors.request.handlers;
+
+      assert.strictEqual(handlers[0].synchronous, true);
+      assert.strictEqual(typeof handlers[0].runWhen, 'function');
+
+      await instance.get('http://example.com/');
+
+      assert.strictEqual(store.config.headers.get('X-Skipped'), undefined);
+      assert.strictEqual(store.config.headers.get('X-Run'), 'yes');
+    });
   });
 });

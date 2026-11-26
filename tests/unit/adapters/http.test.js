@@ -3896,6 +3896,66 @@ describe('supports http with nodejs', () => {
       assert.strictEqual(options.headers.host, '127.0.0.1:4000');
     });
 
+    it('brackets an IPv6 literal target in the default Host header', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '::1',
+        port: 8080,
+      };
+
+      __setProxy(options, proxyConfig, 'http://[::1]:8080/');
+
+      assert.strictEqual(options.headers.host, '[::1]:8080');
+    });
+
+    it('brackets an IPv6 literal target without a port in the default Host header', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '2001:db8::1',
+        port: '',
+      };
+
+      __setProxy(options, proxyConfig, 'http://[2001:db8::1]/');
+
+      assert.strictEqual(options.headers.host, '[2001:db8::1]');
+    });
+
+    it('does not double-bracket an already bracketed IPv6 hostname', () => {
+      const options = {
+        headers: {},
+        beforeRedirects: {},
+        hostname: '[::1]',
+        port: 8080,
+      };
+
+      __setProxy(options, proxyConfig, 'http://[::1]:8080/');
+
+      assert.strictEqual(options.headers.host, '[::1]:8080');
+    });
+
+    it('sends a bracketed IPv6 Host header to a forward proxy', async () => {
+      const proxy = await startHTTPServer((req, res) => {
+        res.end(JSON.stringify({ url: req.url, host: req.headers.host }));
+      });
+
+      try {
+        const proxyPort = proxy.address().port;
+
+        for (const maxRedirects of [undefined, 0]) {
+          const { data } = await axios.get('http://[::1]:8080/path', {
+            proxy: { protocol: 'http', host: '127.0.0.1', port: proxyPort },
+            maxRedirects,
+          });
+
+          assert.deepStrictEqual(data, { url: 'http://[::1]:8080/path', host: '[::1]:8080' });
+        }
+      } finally {
+        await stopHTTPServer(proxy);
+      }
+    });
+
     it('preserves a user-supplied lowercase host header', () => {
       const options = {
         headers: { host: 'example.com' },

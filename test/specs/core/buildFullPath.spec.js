@@ -19,4 +19,12 @@ describe('helpers::buildFullPath', function () {
   it('should not combine the URLs when the requestedURL is absolute, allowAbsoluteUrls is false, and the baseURL is not configured', function () {
     expect(buildFullPath(undefined, 'https://api.example.com/users', false)).toBe('https://api.example.com/users');
   });
+
+  it('should keep the request on the current origin with a slash-only baseURL when allowAbsoluteUrls is false', function () {
+    ['\\\\evil.example/users', '/\\evil.example/users', '\t/evil.example/users', '//evil.example/users'].forEach(function (url) {
+      var fullPath = buildFullPath('/', url, false);
+
+      expect(resolveHost(fullPath)).toBe(resolveHost('/'));
+    });
+  });
 });

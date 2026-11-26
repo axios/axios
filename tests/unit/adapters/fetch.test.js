@@ -1410,6 +1410,137 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       }
     });
 
+    it('should send the fields of a form-data package object', async () => {
+      const form = new NodeFormData();
+      form.append('foo', 'bar');
+      form.append('file', Buffer.from('file content'), {
+        filename: 'a.txt',
+        contentType: 'text/plain',
+      });
+
+      const server = await startHTTPServer(
+        async (req, res) => {
+          const chunks = [];
+          for await (const chunk of req) chunks.push(chunk);
+          try {
+            const received = await new Response(Buffer.concat(chunks), {
+              headers: { 'Content-Type': req.headers['content-type'] },
+            }).formData();
+            const file = received.get('file');
+            res.end(
+              JSON.stringify({ foo: received.get('foo'), file: await file.text(), name: file.name })
+            );
+          } catch (err) {
+            res.end(JSON.stringify({ error: err.message, body: Buffer.concat(chunks).toString() }));
+          }
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const { data } = await fetchAxios.post(
+          `http://localhost:${server.address().port}/form`,
+          form
+        );
+
+        assert.deepStrictEqual(data, { foo: 'bar', file: 'file content', name: 'a.txt' });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should send objects serialized by postForm as multipart fields', async () => {
+      const server = await startHTTPServer(
+        async (req, res) => {
+          const chunks = [];
+          for await (const chunk of req) chunks.push(chunk);
+          try {
+            const received = await new Response(Buffer.concat(chunks), {
+              headers: { 'Content-Type': req.headers['content-type'] },
+            }).formData();
+            res.end(JSON.stringify([...received.entries()]));
+          } catch (err) {
+            res.end(JSON.stringify({ error: err.message, body: Buffer.concat(chunks).toString() }));
+          }
+        },
+        { port: SERVER_PORT }
+      );
+
+      try {
+        const { data } = await fetchAxios.postForm(
+          `http://localhost:${server.address().port}/form`,
+          { foo: 'bar', list: ['a', 'b'] }
+        );
+
+        assert.deepStrictEqual(data, [
+          ['foo', 'bar'],
+          ['list[]', 'a'],
+          ['list[]', 'b'],
+        ]);
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should check maxBodyLength before serializing a form-data package object', async () => {
+      const form = new NodeFormData();
+      form.append('foo', 'x'.repeat(100));
+      form.getBuffer = () => {
+        throw new Error('getBuffer should not be called');
+      };
+
+      const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
+
+      try {
+        await assert.rejects(
+          fetchAxios.post(`http://localhost:${server.address().port}/form`, form, {
+            maxBodyLength: 10,
+          }),
+          (err) => err instanceof AxiosError && err.code === AxiosError.ERR_BAD_REQUEST
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should keep the cause when a form-data package object cannot be serialized', async () => {
+      const form = new NodeFormData();
+      form.append('file', stream.Readable.from(['file content']), {
+        filename: 'a.txt',
+        knownLength: 12,
+      });
+
+      const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
+
+      try {
+        await assert.rejects(
+          fetchAxios.post(`http://localhost:${server.address().port}/form`, form),
+          (err) =>
+            err instanceof AxiosError &&
+            err.code === AxiosError.ERR_NOT_SUPPORT &&
+            err.cause instanceof TypeError
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should reject a form-data package object with stream values', async () => {
+      const form = new NodeFormData();
+      form.append('file', stream.Readable.from(['file content']), { filename: 'a.txt' });
+
+      const server = await startHTTPServer((req, res) => res.end('OK'), { port: SERVER_PORT });
+
+      try {
+        await assert.rejects(
+          fetchAxios.post(`http://localhost:${server.address().port}/form`, form),
+          (err) => err instanceof AxiosError && err.code === AxiosError.ERR_NOT_SUPPORT
+        );
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
     it('should remove manually set Content-Type without boundary for FormData', async () => {
       const form = new FormData();
       form.append('foo', 'bar');

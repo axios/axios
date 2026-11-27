@@ -4199,36 +4199,36 @@ describe('supports http with nodejs', () => {
       );
     });
 
-    it('evicts the least recently used tunneling agent when proxy credentials vary', () => {
-      const agentFor = (username) => {
-        const options = buildOptions();
-        __setProxy(
-          options,
-          { ...proxyConfig, auth: { username, password: 'pw' } },
-          'https://example.com/'
-        );
-        return options.agent;
-      };
-
-      const first = agentFor('first');
-      const hot = agentFor('hot');
-      for (let i = 0; i < 300; i++) {
-        agentFor(`tenant-${i}`);
-        if (i % 10 === 0) {
-          assert.strictEqual(
-            agentFor('hot'),
-            hot,
-            'a recently used proxy config must keep its agent'
+    for (const [name, httpsAgent] of [
+      ['the global cache', undefined],
+      ['a supplied httpsAgent', new https.Agent()],
+    ]) {
+      it(`keeps the 100 most recently used tunneling agents in ${name}`, () => {
+        const agentFor = (username) => {
+          const options = buildOptions();
+          __setProxy(
+            options,
+            { ...proxyConfig, auth: { username, password: 'pw' } },
+            'https://example.com/',
+            false,
+            httpsAgent
           );
-        }
-      }
+          return options.agent;
+        };
+        // Push out entries left by other tests so the cache holds only this test's keys.
+        for (let i = 0; i < 100; i++) agentFor(`filler-${i}`);
 
-      assert.notStrictEqual(
-        agentFor('first'),
-        first,
-        'the cache must not keep every proxy credential'
-      );
-    });
+        const first = agentFor('first');
+        const hot = agentFor('hot');
+        const tenants = Array.from({ length: 98 }, (_, i) => agentFor(`tenant-${i}`));
+        assert.strictEqual(agentFor('hot'), hot, '100 entries must all stay cached');
+
+        agentFor('tenant-98'); // the 101st entry evicts the least recently used one
+        assert.strictEqual(agentFor('tenant-0'), tenants[0]);
+        assert.notStrictEqual(agentFor('first'), first, 'the least recently used entry is evicted');
+        assert.strictEqual(agentFor('hot'), hot, 'a recently used entry is kept');
+      });
+    }
 
     it('still tunnels through the proxy when a non-proxy httpsAgent is supplied', () => {
       const userAgent = new https.Agent({ rejectUnauthorized: false });

@@ -531,4 +531,58 @@ describe('core::createRefreshCoordinator', () => {
     expect(seenStreams[0]).toBe(firstStream);
     expect(seenStreams[1]).toBe(freshStream);
   });
+
+  it('still runs transformRequest when a request interceptor replaces config.data on retry or rejects with 401 before dispatch', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+    const seenBodies = [];
+
+    const client = axios.create({
+      transformRequest: [(data) => (typeof data === 'object' ? JSON.stringify(data) : data)],
+      adapter: async (config) => {
+        seenBodies.push(config.data);
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+    client.interceptors.request.use((config) => {
+      config.data = { fresh: true };
+      return config;
+    });
+    coordinator.attachInterceptor(client);
+
+    const res = await client.post('/submit', { initial: true });
+    expect(res.data).toEqual({ ok: true });
+    expect(seenBodies).toEqual(['{"fresh":true}', '{"fresh":true}']);
+
+    // 401 raised by a request interceptor before dispatchRequest must still transform on retry
+    const preDispatchRefreshFn = vi.fn(async () => 'fresh-token');
+    const preDispatchCoordinator = createRefreshCoordinator(preDispatchRefreshFn);
+    const preDispatchBodies = [];
+    const preDispatchClient = axios.create({
+      transformRequest: [(data) => `encoded=${data}`],
+      adapter: async (config) => {
+        preDispatchBodies.push(config.data);
+        return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+      },
+    });
+    let failFirst = true;
+    preDispatchClient.interceptors.request.use((config) => {
+      if (failFirst) {
+        failFirst = false;
+        const err = new AxiosError('Unauthorized', AxiosError.ERR_BAD_RESPONSE, config);
+        return Promise.reject(err);
+      }
+      return config;
+    });
+    preDispatchCoordinator.attachInterceptor(preDispatchClient, {
+      shouldRefresh: (err) => err.message === 'Unauthorized',
+    });
+
+    const preRes = await preDispatchClient.post('/pre-dispatch', 'raw');
+    expect(preRes.data).toEqual({ ok: true });
+    expect(preDispatchBodies).toEqual(['encoded=raw']);
+  });
 });

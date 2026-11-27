@@ -96,6 +96,17 @@ describe('transform (vitest browser)', () => {
     await responsePromise;
   });
 
+  it('should send only the selected bytes of an ArrayBuffer view', async () => {
+    const buffer = new Uint8Array([1, 2, 3, 4]).buffer;
+    const responsePromise = axios.post('/binary', new DataView(buffer, 1, 2));
+    const request = getLastRequest();
+
+    expect(Array.from(new Uint8Array(request.params))).toEqual([2, 3]);
+
+    request.respondWith();
+    await responsePromise;
+  });
+
   it('should transform string to JSON', async () => {
     const responsePromise = axios('/foo');
     const request = getLastRequest();

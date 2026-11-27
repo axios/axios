@@ -461,4 +461,74 @@ describe('core::createRefreshCoordinator', () => {
     });
     expect(refreshFn).not.toHaveBeenCalled();
   });
+
+  it('does not re-run transformRequest on already transformed body when retrying 401', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+    const seenBodies = [];
+
+    const client = axios.create({
+      transformRequest: [(data) => `payload=${data}`],
+      adapter: async (config) => {
+        seenBodies.push(config.data);
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+
+    coordinator.attachInterceptor(client);
+
+    const res = await client.post('/submit', 'x');
+    expect(res.data).toEqual({ ok: true });
+    expect(seenBodies).toEqual(['payload=x', 'payload=x']);
+  });
+
+  it('rejects retrying non-replayable stream bodies by default and allows retry when onRefreshed recreates the body', async () => {
+    const { Readable } = await import('node:stream');
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+
+    const streamClient = axios.create({
+      adapter: async (config) => {
+        throw make401Error(config, 401);
+      },
+    });
+    coordinator.attachInterceptor(streamClient);
+
+    const consumedStream = Readable.from(['hello world']);
+    await expect(streamClient.post('/upload', consumedStream)).rejects.toMatchObject({
+      response: { status: 401 },
+    });
+    expect(refreshFn).not.toHaveBeenCalled();
+
+    // When onRefreshed replaces `retryConfig.data` with a fresh stream, the retry succeeds.
+    const recreateRefreshFn = vi.fn(async () => 'fresh-token');
+    const recreateCoordinator = createRefreshCoordinator(recreateRefreshFn);
+    const seenStreams = [];
+    const recreateClient = axios.create({
+      adapter: async (config) => {
+        seenStreams.push(config.data);
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { uploaded: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+    const firstStream = Readable.from(['chunk-1']);
+    const freshStream = Readable.from(['chunk-1']);
+    recreateCoordinator.attachInterceptor(recreateClient, {
+      onRefreshed: (token, retryConfig) => {
+        retryConfig.headers.set('Authorization', `Bearer ${token}`);
+        retryConfig.data = freshStream;
+      },
+    });
+
+    const uploadRes = await recreateClient.post('/upload', firstStream);
+    expect(uploadRes.data).toEqual({ uploaded: true });
+    expect(recreateRefreshFn).toHaveBeenCalledTimes(1);
+    expect(seenStreams[0]).toBe(firstStream);
+    expect(seenStreams[1]).toBe(freshStream);
+  });
 });

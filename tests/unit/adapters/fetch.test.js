@@ -1457,6 +1457,73 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
         await stopHTTPServer(server);
       }
     });
+
+    it('should send native FormData as multipart/form-data when no Content-Type is set', async () => {
+      const server = await startHTTPServer(async (req, res) => {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const contentType = req.headers['content-type'] || '';
+        const foo = await new Response(Buffer.concat(chunks), {
+          headers: { 'Content-Type': contentType },
+        })
+          .formData()
+          .then(
+            (form) => form.get('foo'),
+            (err) => err.message
+          );
+        res.end(JSON.stringify({ contentType, foo }));
+      });
+
+      try {
+        for (const method of ['post', 'put', 'patch']) {
+          const form = new FormData();
+          form.append('foo', 'bar');
+
+          const { data } = await fetchAxios[method](
+            `http://localhost:${server.address().port}/form`,
+            form
+          );
+
+          assert.match(data.contentType, /^multipart\/form-data; boundary=/i, method);
+          assert.strictEqual(data.foo, 'bar', method);
+        }
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should replace a non-multipart Content-Type for native FormData', async () => {
+      const form = new FormData();
+      form.append('foo', 'bar');
+
+      const server = await startHTTPServer(async (req, res) => {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const contentType = req.headers['content-type'] || '';
+        const foo = await new Response(Buffer.concat(chunks), {
+          headers: { 'Content-Type': contentType },
+        })
+          .formData()
+          .then(
+            (form) => form.get('foo'),
+            (err) => err.message
+          );
+        res.end(JSON.stringify({ contentType, foo }));
+      });
+
+      try {
+        const { data } = await fetchAxios.post(
+          `http://localhost:${server.address().port}/form`,
+          form,
+          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        assert.match(data.contentType, /^multipart\/form-data; boundary=/i);
+        assert.strictEqual(data.foo, 'bar');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
   });
 
   describe('fetch adapter - User-Agent header', () => {

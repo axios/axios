@@ -93,6 +93,24 @@ describe('HTTP adapter UTF-8 BOM handling for responseEncoding', () => {
       });
     });
 
+    it('keeps the BOM bytes of a stream response', async () => {
+      await withBomServer(Buffer.from('hello'), async (url) => {
+        const { data } = await axios.get(url, {
+          adapter: 'http',
+          proxy: false,
+          responseEncoding: 'utf-8',
+          responseType: 'stream',
+        });
+
+        const chunks = [];
+        for await (const chunk of data) {
+          chunks.push(Buffer.from(chunk));
+        }
+
+        assert.deepEqual(Buffer.concat(chunks), Buffer.concat([BOM, Buffer.from('hello')]));
+      });
+    });
+
     it('does not strip anything when the response is decoded as latin1', async () => {
       await withBomServer(Buffer.from('hello'), async (url) => {
         const { data } = await axios.get(url, {

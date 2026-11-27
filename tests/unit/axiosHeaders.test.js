@@ -879,6 +879,77 @@ describe('AxiosHeaders', () => {
         }
       );
     });
+
+    it('should merge externally defined case variants into the first name', () => {
+      const headers = new AxiosHeaders();
+
+      headers['x-a'] = 1;
+      headers.other = 'kept';
+      headers['X-A'] = 2;
+      headers['X-a'] = 3;
+
+      headers.normalize();
+
+      assert.deepStrictEqual(Object.keys(headers), ['x-a', 'other']);
+      assert.deepStrictEqual({ ...headers.toJSON() }, { 'x-a': '3', other: 'kept' });
+    });
+
+    it('should resolve a case variant to the most recently added name', () => {
+      const headers = new AxiosHeaders();
+
+      // The padded names do not match `Foo` case-insensitively, so trimming them
+      // leaves two names that differ only by case. `FOO` then matches both and
+      // goes to the one that was added last.
+      headers.Foo = 1;
+      headers[' foo'] = 2;
+      headers[' Foo'] = 3;
+      headers.FOO = 4;
+
+      headers.normalize();
+
+      assert.deepStrictEqual(Object.keys(headers), ['Foo', 'foo']);
+      assert.deepStrictEqual({ ...headers.toJSON() }, { Foo: '3', foo: '4' });
+    });
+
+    it('should keep the order and names of many headers', () => {
+      const source = {};
+      const expected = {};
+
+      for (let i = 0; i < 30; i++) {
+        source[(i % 2 ? 'x-header-' : 'X-Header-') + i] = i;
+        expected[(i % 2 ? 'x-header-' : 'X-Header-') + i] = String(i);
+      }
+
+      const headers = new AxiosHeaders(source);
+
+      for (let i = 0; i < 30; i += 3) {
+        headers[(i % 2 ? 'X-HEADER-' : 'x-header-') + i] = 'duplicate ' + i;
+        expected[(i % 2 ? 'x-header-' : 'X-Header-') + i] = 'duplicate ' + i;
+      }
+
+      headers.normalize();
+
+      assert.deepStrictEqual(Object.keys(headers), Object.keys(source));
+      assert.deepStrictEqual({ ...headers.toJSON() }, expected);
+
+      headers.normalize();
+
+      assert.deepStrictEqual(Object.keys(headers), Object.keys(source));
+      assert.deepStrictEqual({ ...headers.toJSON() }, expected);
+    });
+
+    it('should merge a case variant of the __proto__ header into its slot', () => {
+      const headers = new AxiosHeaders();
+
+      headers.set('__proto__', 'a');
+      headers.__PROTO__ = 'b';
+
+      headers.normalize();
+
+      assert.deepStrictEqual(Object.keys(headers), ['__Proto__']);
+      assert.strictEqual(headers.get('__proto__'), 'b');
+      assert.strictEqual(Object.getPrototypeOf(headers), AxiosHeaders.prototype);
+    });
   });
 
   describe('AxiosHeaders.concat', () => {

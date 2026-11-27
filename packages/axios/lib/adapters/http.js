@@ -84,12 +84,8 @@ function handleSocketError(err) {
 const kAxiosInstalledTunnel = Symbol('axios.http.installedTunnel');
 
 // Cache of CONNECT-tunneling agents keyed by proxy config so repeat requests
-// through the same proxy reuse a single agent. The key includes the proxy
-// credentials, so per-user credentials or rotating proxy ports would grow an
-// unbounded cache for the life of the process: keep the most recently used
-// MAX_CACHED_TUNNELING_AGENTS per cache. HttpsProxyAgent (agent-base v6) keeps
-// no idle sockets, so an evicted agent needs no cleanup and requests still
-// holding it finish normally.
+// through the same proxy reuse a single agent. Keys include credentials, so keep
+// only the most recently used; evicted agents hold no sockets and need no cleanup.
 const MAX_CACHED_TUNNELING_AGENTS = 100;
 const tunnelingAgentCache = new Map();
 const tunnelingAgentCacheUser = new WeakMap();
@@ -243,7 +239,7 @@ function getTunnelingAgent(agentOptions, userHttpsAgent) {
     : tunnelingAgentCache;
   let agent = cache.get(key);
   if (agent) {
-    // Map iteration follows insertion order: re-insert to mark it most recently used.
+    // Re-insert to mark as most recently used.
     cache.delete(key);
     cache.set(key, agent);
     return agent;

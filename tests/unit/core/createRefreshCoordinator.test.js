@@ -619,4 +619,67 @@ describe('core::createRefreshCoordinator', () => {
     expect(res.data).toEqual({ ok: true });
     expect(seenSteps).toEqual(['1', '1']);
   });
+
+  it('preserves unchanged Buffer bodies with custom onRefreshed and reruns transforms when onRefreshed mutates a Buffer in place', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+    const seenPayloads = [];
+
+    const encodeClient = axios.create({
+      transformRequest: [(data) => Buffer.concat([Buffer.from('enc:'), data])],
+      adapter: async (config) => {
+        seenPayloads.push(config.data.toString());
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+    coordinator.attachInterceptor(encodeClient, {
+      onRefreshed: (token, retryConfig) => {
+        retryConfig.headers.set('Authorization', `Bearer ${token}`);
+      },
+    });
+
+    const encodeRes = await encodeClient.post('/binary', Buffer.from('raw'));
+    expect(encodeRes.data).toEqual({ ok: true });
+    expect(seenPayloads).toEqual(['enc:raw', 'enc:raw']);
+
+    // When onRefreshed mutates the Buffer in place, transformRequest must re-run to update checksums.
+    const checksumRefreshFn = vi.fn(async () => 'fresh-token');
+    const checksumCoordinator = createRefreshCoordinator(checksumRefreshFn);
+    const seenChecksums = [];
+    const checksumClient = axios.create({
+      transformRequest: [
+        (data, headers) => {
+          const sum = data.reduce((acc, b) => acc + b, 0);
+          headers['X-Checksum'] = String(sum);
+          return data;
+        },
+      ],
+      adapter: async (config) => {
+        seenChecksums.push({
+          body: Buffer.from(config.data).toString(),
+          checksum: config.headers.get('X-Checksum'),
+        });
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+    checksumCoordinator.attachInterceptor(checksumClient, {
+      onRefreshed: (token, retryConfig) => {
+        retryConfig.headers.set('Authorization', `Bearer ${token}`);
+        retryConfig.data[0] = 0x42; // 'A' (0x41) -> 'B' (0x42)
+      },
+    });
+
+    const checksumRes = await checksumClient.post('/binary-edit', Buffer.from('A'));
+    expect(checksumRes.data).toEqual({ ok: true });
+    expect(seenChecksums).toEqual([
+      { body: 'A', checksum: String(0x41) },
+      { body: 'B', checksum: String(0x42) },
+    ]);
+  });
 });

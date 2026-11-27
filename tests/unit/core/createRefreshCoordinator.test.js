@@ -585,4 +585,38 @@ describe('core::createRefreshCoordinator', () => {
     expect(preRes.data).toEqual({ ok: true });
     expect(preDispatchBodies).toEqual(['encoded=raw']);
   });
+
+  it('normalizes headers between fallback transformRequest callbacks when a request interceptor replaces config.data on retry', async () => {
+    const refreshFn = vi.fn(async () => 'fresh-token');
+    const coordinator = createRefreshCoordinator(refreshFn);
+    const seenSteps = [];
+
+    const client = axios.create({
+      transformRequest: [
+        (data, headers) => {
+          headers['X-Step'] = 1;
+          return data;
+        },
+        (data, headers) => {
+          seenSteps.push(headers['X-Step'].trim());
+          return JSON.stringify(data);
+        },
+      ],
+      adapter: async (config) => {
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+    client.interceptors.request.use((config) => {
+      config.data = { fresh: true };
+      return config;
+    });
+    coordinator.attachInterceptor(client);
+
+    const res = await client.post('/normalized', { initial: true });
+    expect(res.data).toEqual({ ok: true });
+    expect(seenSteps).toEqual(['1', '1']);
+  });
 });

@@ -681,5 +681,45 @@ describe('core::createRefreshCoordinator', () => {
       { body: 'A', checksum: String(0x41) },
       { body: 'B', checksum: String(0x42) },
     ]);
+
+    // When a request interceptor mutates the same Buffer in place on retry, checksum still updates.
+    const interceptorRefreshFn = vi.fn(async () => 'fresh-token');
+    const interceptorCoordinator = createRefreshCoordinator(interceptorRefreshFn);
+    const interceptorChecksums = [];
+    const interceptorClient = axios.create({
+      transformRequest: [
+        (data, headers) => {
+          const sum = data.reduce((acc, b) => acc + b, 0);
+          headers['X-Checksum'] = String(sum);
+          return data;
+        },
+      ],
+      adapter: async (config) => {
+        interceptorChecksums.push({
+          body: Buffer.from(config.data).toString(),
+          checksum: config.headers.get('X-Checksum'),
+        });
+        if (config.headers.get('Authorization') === 'Bearer fresh-token') {
+          return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+        }
+        throw make401Error(config, 401);
+      },
+    });
+    let attempt = 0;
+    interceptorClient.interceptors.request.use((config) => {
+      attempt += 1;
+      if (attempt === 2 && Buffer.isBuffer(config.data)) {
+        config.data[0] = 0x43; // 'A' -> 'C'
+      }
+      return config;
+    });
+    interceptorCoordinator.attachInterceptor(interceptorClient);
+
+    const interceptorRes = await interceptorClient.post('/binary-interceptor-edit', Buffer.from('A'));
+    expect(interceptorRes.data).toEqual({ ok: true });
+    expect(interceptorChecksums).toEqual([
+      { body: 'A', checksum: String(0x41) },
+      { body: 'C', checksum: String(0x43) },
+    ]);
   });
 });

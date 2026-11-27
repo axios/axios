@@ -82,4 +82,43 @@ describe('AxiosTransformStream', function () {
       });
     });
   });
+
+  it('keeps pacing after a backward system clock step instead of stalling', function () {
+    var moduleURL = new URL('../../../lib/helpers/AxiosTransformStream.js', import.meta.url).href;
+    var source = [
+      'import Transform from ' + JSON.stringify(moduleURL) + ';',
+      'var realNow = Date.now;',
+      'var offset = 0;',
+      'Date.now = function() { return realNow() - offset; };',
+      'var started = realNow();',
+      'var stream = new Transform({maxRate: 25, timeWindow: 20});',
+      'var chunks = [];',
+      'stream.on("data", function(chunk) {',
+      '  offset = 3600000; // clock steps one hour back after the first chunk',
+      '  chunks.push({bytes: chunk.length, elapsed: realNow() - started});',
+      '});',
+      'stream.on("error", function(error) { throw error; });',
+      'stream.on("end", function() { console.log(JSON.stringify(chunks)); });',
+      'stream.end(Buffer.alloc(5));',
+    ].join('\n');
+
+    // Without a reset of the accounting window, the negative elapsed time
+    // schedules a retry as large as the clock step (~1 hour) and the child
+    // process is killed by the 3s timeout in runModuleInChildProcess.
+    return runModuleInChildProcess(source).then(function (stdout) {
+      var chunks = JSON.parse(stdout);
+      assert.ok(chunks.length > 1);
+      assert.strictEqual(
+        chunks.reduce(function (bytes, chunk) {
+          return bytes + chunk.bytes;
+        }, 0),
+        5
+      );
+      var last = chunks[chunks.length - 1];
+      assert.ok(last.elapsed < 2000, 'stream should finish quickly, took ' + last.elapsed + 'ms');
+      // The window after the clock step must still pace the remaining bytes:
+      // 4 bytes left at 1 byte per ~20ms window cannot all arrive at once.
+      assert.ok(last.elapsed >= 40, 'stream should stay paced after the clock step, finished in ' + last.elapsed + 'ms');
+    });
+  });
 });

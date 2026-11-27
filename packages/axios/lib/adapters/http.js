@@ -84,9 +84,13 @@ function handleSocketError(err) {
 const kAxiosInstalledTunnel = Symbol('axios.http.installedTunnel');
 
 // Cache of CONNECT-tunneling agents keyed by proxy config so repeat requests
-// through the same proxy reuse a single agent (and its socket pool). The
-// keyspace is bounded by the set of distinct proxy configs the process uses,
-// so unbounded growth is not a concern in practice.
+// through the same proxy reuse a single agent. The key includes the proxy
+// credentials, so per-user credentials or rotating proxy ports would grow an
+// unbounded cache for the life of the process: keep the most recently used
+// MAX_CACHED_TUNNELING_AGENTS per cache. HttpsProxyAgent (agent-base v6) keeps
+// no idle sockets, so an evicted agent needs no cleanup and requests still
+// holding it finish normally.
+const MAX_CACHED_TUNNELING_AGENTS = 100;
 const tunnelingAgentCache = new Map();
 const tunnelingAgentCacheUser = new WeakMap();
 const directAgents = new WeakMap();
@@ -238,7 +242,12 @@ function getTunnelingAgent(agentOptions, userHttpsAgent) {
       tunnelingAgentCacheUser.set(userHttpsAgent, new Map()).get(userHttpsAgent)
     : tunnelingAgentCache;
   let agent = cache.get(key);
-  if (agent) return agent;
+  if (agent) {
+    // Map iteration follows insertion order: re-insert to mark it most recently used.
+    cache.delete(key);
+    cache.set(key, agent);
+    return agent;
+  }
   // Preserve per-request TLS options for the proxy connection, with our proxy
   // fields taking precedence. Global-agent options belong only to the origin
   // TLS upgrade in the callback below.
@@ -259,6 +268,9 @@ function getTunnelingAgent(agentOptions, userHttpsAgent) {
   };
   agent[kAxiosInstalledTunnel] = true;
   cache.set(key, agent);
+  if (cache.size > MAX_CACHED_TUNNELING_AGENTS) {
+    cache.delete(cache.keys().next().value);
+  }
   return agent;
 }
 

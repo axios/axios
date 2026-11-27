@@ -4199,6 +4199,37 @@ describe('supports http with nodejs', () => {
       );
     });
 
+    it('evicts the least recently used tunneling agent when proxy credentials vary', () => {
+      const agentFor = (username) => {
+        const options = buildOptions();
+        __setProxy(
+          options,
+          { ...proxyConfig, auth: { username, password: 'pw' } },
+          'https://example.com/'
+        );
+        return options.agent;
+      };
+
+      const first = agentFor('first');
+      const hot = agentFor('hot');
+      for (let i = 0; i < 300; i++) {
+        agentFor(`tenant-${i}`);
+        if (i % 10 === 0) {
+          assert.strictEqual(
+            agentFor('hot'),
+            hot,
+            'a recently used proxy config must keep its agent'
+          );
+        }
+      }
+
+      assert.notStrictEqual(
+        agentFor('first'),
+        first,
+        'the cache must not keep every proxy credential'
+      );
+    });
+
     it('still tunnels through the proxy when a non-proxy httpsAgent is supplied', () => {
       const userAgent = new https.Agent({ rejectUnauthorized: false });
       const options = buildOptions();

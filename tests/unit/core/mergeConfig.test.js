@@ -386,6 +386,68 @@ describe('core::mergeConfig', () => {
       expect(merged[symbol]).toEqual({ a: 1, b: 3, c: 4 });
     });
 
+    it('visits enumerable keys of both configs once, in spread order', () => {
+      const symbol = Symbol('flag');
+      const config1 = { a: 1, b: 2, [symbol]: 'default' };
+      Object.defineProperty(config1, 'hidden', { value: 'default', enumerable: false });
+      Object.defineProperty(config1, 'shadowed', { value: 'default', enumerable: false });
+      const config2 = { c: 3, shadowed: 'request', a: 4 };
+      Object.defineProperty(config2, 'hiddenToo', { value: 'request', enumerable: false });
+
+      const merged = mergeConfig(config1, config2);
+
+      expect(Object.keys(merged)).toEqual(['a', 'b', 'c', 'shadowed']);
+      expect(merged).toEqual({ a: 4, b: 2, c: 3, shadowed: 'request', [symbol]: 'default' });
+      expect(Object.getOwnPropertySymbols(merged)).toEqual([symbol]);
+    });
+
+    it('reads each config getter once instead of copying both configs first', () => {
+      let defaultReads = 0;
+      let requestReads = 0;
+      const config1 = {
+        get timeout() {
+          defaultReads++;
+          return 1000;
+        },
+      };
+      const config2 = {
+        get url() {
+          requestReads++;
+          return '/foo';
+        },
+      };
+
+      const merged = mergeConfig(config1, config2);
+
+      expect(merged).toEqual({ timeout: 1000, url: '/foo' });
+      expect(defaultReads).toBe(1);
+      expect(requestReads).toBe(1);
+    });
+
+    it('never reads getters on the skipped __proto__, constructor and prototype keys', () => {
+      const reads = [];
+      const withGuardedGetters = (config, label) => {
+        ['__proto__', 'constructor', 'prototype'].forEach((key) => {
+          Object.defineProperty(config, key, {
+            enumerable: true,
+            get() {
+              reads.push(`${label}.${key}`);
+              return { polluted: true };
+            },
+          });
+        });
+        return config;
+      };
+      const config1 = withGuardedGetters({ timeout: 1000 }, 'config1');
+      const config2 = withGuardedGetters({ url: '/foo' }, 'config2');
+
+      const merged = mergeConfig(config1, config2);
+
+      expect(merged).toEqual({ timeout: 1000, url: '/foo' });
+      expect(Object.keys(merged)).toEqual(['timeout', 'url']);
+      expect(reads).toEqual([]);
+    });
+
     it('preserves request-only symbol keys', () => {
       const symbol = Symbol('some flag used in request interceptor');
       const merged = mergeConfig(defaults, { [symbol]: true });

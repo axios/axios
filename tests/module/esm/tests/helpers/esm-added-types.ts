@@ -20,6 +20,11 @@ const utf8AuthConfig: AxiosRequestConfig = {
   auth: { username: 'π', password: 'x' },
   transitional: { encodeBasicAuthUsername: true },
 };
+const progressConfig: AxiosRequestConfig = { progressUpdateIntervalMs: 50 };
+const invalidProgressConfig: AxiosRequestConfig = {
+  // @ts-expect-error -- progress intervals are numeric milliseconds
+  progressUpdateIntervalMs: '50',
+};
 const legacyAuthConfig: AxiosRequestConfig = {
   transitional: { encodeBasicAuthUsername: false },
 };

@@ -143,6 +143,47 @@ describe('progress (vitest browser)', () => {
     vi.useRealTimers();
   });
 
+  it.each([50, 1000])(
+    'uses a %i ms interval for upload and download progress',
+    async (interval) => {
+      vi.useFakeTimers();
+      const upload = vi.fn();
+      const download = vi.fn();
+      const responsePromise = axios.post('/foo', 'abc', {
+        progressUpdateIntervalMs: interval,
+        onUploadProgress: upload,
+        onDownloadProgress: download,
+      });
+      const request = getLastRequest();
+      for (const target of ['upload', 'request']) {
+        request.emit('progress', target, { loaded: 1 });
+        request.emit('progress', target, { loaded: 2 });
+      }
+      expect(upload).toHaveBeenCalledOnce();
+      expect(download).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(interval - 1);
+      expect(upload).toHaveBeenCalledOnce();
+      expect(download).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(upload).toHaveBeenCalledTimes(2);
+      expect(download).toHaveBeenCalledTimes(2);
+      expect(upload.mock.calls[1][0]).toMatchObject({ loaded: 2, upload: true });
+      expect(download.mock.calls[1][0]).toMatchObject({ loaded: 2, download: true });
+
+      request.emit('progress', 'upload', { loaded: 3 });
+      request.emit('progress', 'request', { loaded: 3 });
+      request.respondWith({ responseText: 'abc' });
+      await responsePromise;
+      expect(upload).toHaveBeenCalledTimes(3);
+      expect(download).toHaveBeenCalledTimes(3);
+      expect(upload.mock.calls[2][0].loaded).toBe(3);
+      expect(download.mock.calls[2][0].loaded).toBe(3);
+      await vi.runAllTimersAsync();
+      expect(upload).toHaveBeenCalledTimes(3);
+      expect(download).toHaveBeenCalledTimes(3);
+    }
+  );
+
   it.each(['success', 'cancellation'])(
     'removes progress listeners from a native XHR after %s',
     async (kind) => {

@@ -421,6 +421,11 @@ export interface AxiosRequestConfig<D = any, P = any> {
   xsrfHeaderName?: string;
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
   onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void;
+  /**
+   * Minimum interval between progress callbacks in milliseconds (1-2147483647).
+   * Defaults to 1000 / 3. Pending final updates may be delivered sooner.
+   */
+  progressUpdateIntervalMs?: number;
   maxContentLength?: number;
   validateStatus?: ((status: number) => boolean) | null;
   maxBodyLength?: number;

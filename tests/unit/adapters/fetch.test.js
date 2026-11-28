@@ -1894,6 +1894,431 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       }
     });
 
+    it('should allow HEAD, 204, and 304 responses whose Content-Length exceeds maxContentLength, matching http adapter', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          const status =
+            req.url === '/304' ? 304 : req.url === '/204' ? 204 : req.url === '/404' ? 404 : 200;
+          res.writeHead(status, { 'Content-Length': '5000' });
+          res.end();
+        },
+        { port: 0 }
+      );
+
+      try {
+        const baseURL = `http://127.0.0.1:${server.address().port}`;
+        const cases = [
+          ['head', '/', 200],
+          ['head', '/404', 404],
+          ['get', '/304', 304],
+          ['get', '/204', 204],
+        ];
+
+        for (const maxContentLength of [1, 0]) {
+          for (const [method, path, expectedStatus] of cases) {
+            const [httpRes, fetchRes] = await Promise.all(
+              ['http', 'fetch'].map((adapter) =>
+                axios({
+                  adapter,
+                  method,
+                  url: `${baseURL}${path}`,
+                  maxContentLength,
+                  validateStatus: () => true,
+                  proxy: false,
+                })
+              )
+            );
+
+            assert.strictEqual(fetchRes.status, expectedStatus);
+            assert.strictEqual(fetchRes.status, httpRes.status);
+            assert.strictEqual(fetchRes.data, '');
+            assert.strictEqual(fetchRes.data, httpRes.data);
+            assert.strictEqual(fetchRes.headers.get('content-length'), '5000');
+            assert.strictEqual(
+              fetchRes.headers.get('content-length'),
+              httpRes.headers.get('content-length')
+            );
+          }
+        }
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should allow bodyless HEAD, 204, 205, and 304 responses across response types under maxContentLength', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          const status =
+            req.url === '/304' ? 304 : req.url === '/205' ? 205 : req.url === '/204' ? 204 : 200;
+          res.writeHead(status, { 'Content-Length': '5000' });
+          res.end();
+        },
+        { port: 0 }
+      );
+
+      try {
+        const baseURL = `http://127.0.0.1:${server.address().port}`;
+
+        for (const [method, path, expectedStatus] of [
+          ['head', '/', 200],
+          ['get', '/304', 304],
+          ['get', '/204', 204],
+          ['get', '/205', 205],
+        ]) {
+          for (const maxContentLength of [1, 0]) {
+            const textRes = await fetchAxios({
+              method,
+              url: `${baseURL}${path}`,
+              maxContentLength,
+              validateStatus: () => true,
+            });
+            assert.strictEqual(textRes.status, expectedStatus);
+            assert.strictEqual(textRes.data, '');
+            assert.strictEqual(textRes.headers.get('content-length'), '5000');
+          }
+
+          const arrayBufferRes = await fetchAxios({
+            method,
+            url: `${baseURL}${path}`,
+            responseType: 'arraybuffer',
+            maxContentLength: 1,
+            validateStatus: () => true,
+          });
+          assert.strictEqual(arrayBufferRes.status, expectedStatus);
+          assert.strictEqual(arrayBufferRes.data.byteLength, 0);
+          assert.strictEqual(arrayBufferRes.headers.get('content-length'), '5000');
+
+          const blobRes = await fetchAxios({
+            method,
+            url: `${baseURL}${path}`,
+            responseType: 'blob',
+            maxContentLength: 1,
+            validateStatus: () => true,
+          });
+          assert.strictEqual(blobRes.status, expectedStatus);
+          assert.strictEqual(blobRes.data.size, 0);
+
+          const streamRes = await fetchAxios({
+            method,
+            url: `${baseURL}${path}`,
+            responseType: 'stream',
+            maxContentLength: 1,
+            validateStatus: () => true,
+          });
+          assert.strictEqual(streamRes.status, expectedStatus);
+          assert.strictEqual(streamRes.data, null);
+        }
+
+        const defaultStatus205 = await fetchAxios.get(`${baseURL}/205`, {
+          maxContentLength: 1,
+        });
+        assert.strictEqual(defaultStatus205.status, 205);
+        assert.strictEqual(defaultStatus205.data, '');
+        assert.strictEqual(defaultStatus205.headers.get('content-length'), '5000');
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should reject 304 and HEAD 404 with status errors instead of maxContentLength errors under default validateStatus', async () => {
+      const server = await startHTTPServer(
+        (req, res) => {
+          const status = req.url === '/304' ? 304 : 404;
+          res.writeHead(status, { 'Content-Length': '5000' });
+          res.end();
+        },
+        { port: 0 }
+      );
+
+      try {
+        const baseURL = `http://127.0.0.1:${server.address().port}`;
+
+        await assert.rejects(fetchAxios.get(`${baseURL}/304`, { maxContentLength: 1 }), (err) => {
+          assert.ok(err instanceof AxiosError);
+          assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+          assert.strictEqual(err.message, 'Request failed with status code 304');
+          assert.strictEqual(err.response.status, 304);
+          assert.strictEqual(err.response.headers.get('content-length'), '5000');
+          return true;
+        });
+
+        await assert.rejects(fetchAxios.head(`${baseURL}/404`, { maxContentLength: 1 }), (err) => {
+          assert.ok(err instanceof AxiosError);
+          assert.strictEqual(err.code, AxiosError.ERR_BAD_REQUEST);
+          assert.strictEqual(err.message, 'Request failed with status code 404');
+          assert.strictEqual(err.response.status, 404);
+          assert.strictEqual(err.response.headers.get('content-length'), '5000');
+          return true;
+        });
+      } finally {
+        await stopHTTPServer(server);
+      }
+    });
+
+    it('should skip declared Content-Length pre-check for uppercase HEAD when invoking fetch adapter directly', async () => {
+      const fetchAdapter = getFetch({
+        env: {
+          fetch: async () =>
+            new Response(null, {
+              status: 200,
+              headers: { 'Content-Length': '5000' },
+            }),
+        },
+      });
+
+      const response = await fetchAdapter({
+        url: 'http://localhost/metadata',
+        method: 'HEAD',
+        maxContentLength: 1,
+        headers: {},
+      });
+
+      assert.strictEqual(response.status, 200);
+      assert.strictEqual(response.data, '');
+      assert.strictEqual(response.headers.get('content-length'), '5000');
+    });
+
+    it('should allow bodyless HEAD, 204, 205, and 304 responses in custom fetch environments without Response', async () => {
+      for (const [method, status] of [
+        ['head', 200],
+        ['get', 204],
+        ['get', 205],
+        ['get', 304],
+      ]) {
+        const response = await fetchAxios({
+          method,
+          url: `/no-response-${status}`,
+          maxContentLength: 1,
+          validateStatus: () => true,
+          env: {
+            Response: null,
+            fetch: async () => ({
+              status,
+              statusText: '',
+              headers: { 'content-length': '5000' },
+              text: async () => '',
+            }),
+          },
+        });
+
+        assert.strictEqual(response.status, status);
+        assert.strictEqual(response.data, '');
+        assert.strictEqual(response.headers.get('content-length'), '5000');
+      }
+    });
+
+    it('should still reject non-bodyless responses with oversized Content-Length even when body is null or Response is unavailable', async () => {
+      for (const ResponseImpl of [Response, null]) {
+        const text = vi.fn(async () => '');
+
+        await assert.rejects(
+          fetchAxios.get('/null-body-200', {
+            maxContentLength: 1,
+            env: {
+              Response: ResponseImpl,
+              fetch: async () => ({
+                status: 200,
+                statusText: 'OK',
+                headers: { 'content-length': '5000' },
+                body: null,
+                text,
+              }),
+            },
+          }),
+          (err) => {
+            assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+            assert.strictEqual(err.message, 'maxContentLength size of 1 exceeded');
+            return true;
+          }
+        );
+
+        assert.strictEqual(text.mock.calls.length, 0);
+      }
+    });
+
+    it('should not let polluted Object.prototype.status bypass the Content-Length pre-check', async () => {
+      for (const pollutedStatus of [204, 205, 304]) {
+        Object.prototype.status = pollutedStatus;
+
+        try {
+          await assert.rejects(
+            fetchAxios.get('/polluted-status', {
+              maxContentLength: 1,
+              validateStatus: () => true,
+              env: {
+                Response: null,
+                fetch: async () => ({
+                  headers: { 'content-length': '5000' },
+                  text: async () => '',
+                }),
+              },
+            }),
+            (err) => {
+              assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+              assert.strictEqual(err.message, 'maxContentLength size of 1 exceeded');
+              return true;
+            }
+          );
+        } finally {
+          delete Object.prototype.status;
+        }
+      }
+    });
+
+    it('should still enforce maxContentLength on actual response bytes if a custom fetch returns a body for HEAD', async () => {
+      for (const ResponseImpl of [Response, null]) {
+        await assert.rejects(
+          fetchAxios.head('/non-compliant-head', {
+            maxContentLength: 4,
+            env: {
+              Response: ResponseImpl,
+              fetch: async () =>
+                ResponseImpl
+                  ? new Response('oversized', {
+                      status: 200,
+                      headers: { 'Content-Length': '5000' },
+                    })
+                  : {
+                      status: 200,
+                      statusText: 'OK',
+                      headers: { 'content-length': '5000' },
+                      text: async () => 'oversized',
+                    },
+            },
+          }),
+          (err) => {
+            assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+            assert.strictEqual(err.message, 'maxContentLength size of 4 exceeded');
+            return true;
+          }
+        );
+      }
+    });
+
+    it('should enforce maxContentLength on materialized data when a custom fetch returns a falsy body even if Response supports streams', async () => {
+      const responseCases = [
+        ['head', 200, { 'content-length': '5000' }],
+        ['get', 204, { 'content-length': '5000' }],
+        ['get', 205, { 'content-length': '5000' }],
+        ['get', 304, { 'content-length': '5000' }],
+        ['get', 200, {}],
+      ];
+      const payloadCases = [
+        ['text', { text: async () => 'oversized' }],
+        ['arraybuffer', { arrayBuffer: async () => new Uint8Array(9).buffer }],
+        ['blob', { blob: async () => new Blob(['oversized']) }],
+        ['response', { text: async () => 'oversized' }],
+      ];
+
+      for (const body of [null, undefined]) {
+        for (const [method, status, headers] of responseCases) {
+          for (const [responseType, resolver] of payloadCases) {
+            await assert.rejects(
+              fetchAxios({
+                method,
+                url: `/falsy-body-${status}-${responseType}`,
+                responseType,
+                maxContentLength: 4,
+                validateStatus: () => true,
+                env: {
+                  fetch: async () => ({
+                    status,
+                    statusText: '',
+                    headers,
+                    body,
+                    ...resolver,
+                  }),
+                },
+              }),
+              (err) => {
+                assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE);
+                assert.strictEqual(err.message, 'maxContentLength size of 4 exceeded');
+                return true;
+              }
+            );
+          }
+        }
+      }
+    });
+
+    it('should count UTF-8 bytes for materialized text responses when TextEncoder is unavailable', async () => {
+      const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'TextEncoder');
+      const cases = [
+        ['2-byte character', 'é', 2],
+        ['3-byte CJK character', '界', 3],
+        ['4-byte surrogate pair emoji', '😀', 4],
+        ['mixed ASCII and multibyte text', 'a界😀', 8],
+        ['lone high surrogate', '\uD800', 3],
+        ['lone high surrogate before surrogate pair', '\uD800😀', 7],
+        ['lone low surrogate', '\uDC00', 3],
+      ];
+
+      Object.defineProperty(globalThis, 'TextEncoder', {
+        value: undefined,
+        writable: true,
+        enumerable: false,
+        configurable: true,
+      });
+
+      try {
+        for (const [label, payload, expectedBytes] of cases) {
+          for (const [method, headers] of [
+            ['get', {}],
+            ['head', { 'content-length': '5000' }],
+          ]) {
+            await assert.rejects(
+              fetchAxios({
+                method,
+                url: `/utf8-reject-${expectedBytes}`,
+                maxContentLength: expectedBytes - 1,
+                env: {
+                  fetch: async () => ({
+                    status: 200,
+                    statusText: 'OK',
+                    headers,
+                    body: null,
+                    text: async () => payload,
+                  }),
+                },
+              }),
+              (err) => {
+                assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE, label);
+                assert.strictEqual(
+                  err.message,
+                  `maxContentLength size of ${expectedBytes - 1} exceeded`,
+                  label
+                );
+                return true;
+              }
+            );
+
+            const response = await fetchAxios({
+              method,
+              url: `/utf8-allow-${expectedBytes}`,
+              maxContentLength: expectedBytes,
+              env: {
+                fetch: async () => ({
+                  status: 200,
+                  statusText: 'OK',
+                  headers,
+                  body: null,
+                  text: async () => payload,
+                }),
+              },
+            });
+
+            assert.strictEqual(response.data, payload, label);
+          }
+        }
+      } finally {
+        if (originalDescriptor) {
+          Object.defineProperty(globalThis, 'TextEncoder', originalDescriptor);
+        } else {
+          delete globalThis.TextEncoder;
+        }
+      }
+    });
+
     it('should handle plain object response headers while enforcing maxContentLength', async () => {
       const { data, headers } = await fetchAxios.get('/', {
         maxContentLength: 10,
@@ -2041,9 +2466,7 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       });
 
       const results = await Promise.all(
-        ['/oversized', '/exact', '/empty'].map((path) =>
-          client.get(path).catch((error) => error)
-        )
+        ['/oversized', '/exact', '/empty'].map((path) => client.get(path).catch((error) => error))
       );
 
       assert.ok(results[0] instanceof AxiosError);

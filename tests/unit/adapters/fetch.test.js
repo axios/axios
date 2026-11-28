@@ -1505,6 +1505,41 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
     });
   });
 
+  describe('fetch adapter - credentials', () => {
+    const captureCredentials = async (withCredentials) => {
+      let credentials;
+
+      await fetchAxios.get('http://localhost/credentials', {
+        withCredentials,
+        env: {
+          fetch: async (request) => {
+            credentials = request.credentials;
+            return new Response('ok');
+          },
+        },
+      });
+
+      return credentials;
+    };
+
+    it('should keep same-origin credentials when withCredentials is false', async () => {
+      assert.strictEqual(await captureCredentials(false), 'same-origin');
+    });
+
+    it('should use same-origin credentials when withCredentials is not set', async () => {
+      assert.strictEqual(await captureCredentials(undefined), 'same-origin');
+    });
+
+    it('should keep omitting credentials for other falsy withCredentials values', async () => {
+      assert.strictEqual(await captureCredentials(null), 'omit');
+      assert.strictEqual(await captureCredentials(0), 'omit');
+    });
+
+    it('should include credentials when withCredentials is true', async () => {
+      assert.strictEqual(await captureCredentials(true), 'include');
+    });
+  });
+
   describe('env config', () => {
     it('should fallback to globalThis when utils.global is temporarily undefined', () => {
       const originalGlobal = utils.global;

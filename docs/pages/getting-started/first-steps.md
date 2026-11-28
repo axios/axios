@@ -36,6 +36,12 @@ bun add axios
 deno install npm:axios
 ```
 
+#### Using vlt
+
+```bash
+vlt install axios
+```
+
 #### Using jsDelivr
 
 When using jsDelivr we recommend using the minified version as well as pinning the version number to avoid unexpected changes. If you would like to use the latest version you can do so by dropping the version number. This is strongly discouraged for production use as it can lead to unexpected changes in your application.

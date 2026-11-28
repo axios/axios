@@ -36,6 +36,12 @@ bun add axios
 deno install npm:axios
 ```
 
+#### 使用 vlt
+
+```bash
+vlt install axios
+```
+
 #### 使用 jsDelivr
 
 使用 jsDelivr 时，建议使用压缩版本并固定版本号，以避免意外更新。如需使用最新版本，可以去掉版本号，但强烈不建议在生产环境这样做，因为可能导致应用出现意外变化。

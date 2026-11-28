@@ -470,7 +470,7 @@ La propiedad `transitional` te permite habilitar o deshabilitar ciertas caracter
   :::
 
 - `forcedJSONParsing`: Fuerza a axios a analizar la cadena de respuesta como JSON incluso si `responseType` no es `'json'`.
-- `clarifyTimeoutError`: Clarifica el mensaje de error cuando una solicitud expira. Es útil cuando depuras problemas de timeout.
+- `clarifyTimeoutError`: Establece esta opción en `true` para usar `ETIMEDOUT` cuando se agota el tiempo de espera en los adaptadores `http` y `xhr`. Por defecto usan `ECONNABORTED`. El adaptador `fetch` usa `ETIMEDOUT` independientemente de esta opción.
 - `validateStatusUndefinedResolves`: Si se establece en `true` _(predeterminado)_, un `validateStatus: undefined` explícito resuelve todos los estados de respuesta por compatibilidad. Establécelo en `false` para tratar `undefined` explícito como si `validateStatus` se hubiera omitido, de modo que axios use el validador configurado/predeterminado. Usa `validateStatus: null` o un validador que devuelva `true` cuando quieras intencionalmente resolver todos los estados.
 - `advertiseZstdAcceptEncoding`: Cuando se establece en `true`, axios añade `zstd` al encabezado `Accept-Encoding` predeterminado cuando el runtime actual de Node.js soporta descompresión zstd. Las respuestas zstd se descomprimen automáticamente cuando son compatibles y `decompress` es `true`.
 - `legacyInterceptorReqResOrdering`: Cuando se establece en `true`, se usará el orden de solicitud/respuesta de interceptores heredado.

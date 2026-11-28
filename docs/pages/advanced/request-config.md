@@ -470,7 +470,7 @@ The `transitional` property allows you to enable or disable certain transitional
   :::
 
 - `forcedJSONParsing`: Forces axios to parse the response string as JSON even if `responseType` is not `'json'`.
-- `clarifyTimeoutError`: Clarifies the error message when a request times out. This is useful when you are debugging timeout issues.
+- `clarifyTimeoutError`: Set to `true` to use `ETIMEDOUT` for timeouts in the `http` and `xhr` adapters. They use `ECONNABORTED` by default. The `fetch` adapter uses `ETIMEDOUT` regardless of this setting.
 - `validateStatusUndefinedResolves`: If set to `true` _(default)_, explicit `validateStatus: undefined` resolves every response status for backward compatibility. Set to `false` to treat explicit `undefined` as if `validateStatus` was omitted, so axios uses the configured/default validator. Use `validateStatus: null` or a validator that returns `true` when you intentionally want all statuses to resolve.
 - `advertiseZstdAcceptEncoding`: When set to `true`, axios adds `zstd` to the default `Accept-Encoding` request header when the current Node.js runtime supports zstd decompression. zstd responses are still decompressed automatically when supported and `decompress` is `true`.
 - `legacyInterceptorReqResOrdering`: When set to true we will use the legacy interceptor request/response ordering.

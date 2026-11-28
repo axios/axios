@@ -17,8 +17,8 @@ Below is a list of potential axios identified error
 | ------------------------- | --------------------------------------------------------------------------------------------- |
 | ERR_BAD_OPTION_VALUE      | Invalid or unsupported value provided in axios configuration.                                 |
 | ERR_BAD_OPTION            | Invalid option provided in axios configuration.                                               |
-| ECONNABORTED              | Typically indicates that the request has been timed out (unless `transitional.clarifyTimeoutError` is set) or aborted by the browser or its plugin. |
-| ETIMEDOUT                 | Request timed out due to exceeding the default axios timelimit. `transitional.clarifyTimeoutError` must be set to `true`, otherwise a generic `ECONNABORTED` error will be thrown instead |
+| ECONNABORTED              | The `http` and `xhr` adapters use this code for timeouts by default. The `xhr` adapter can also use it when the browser aborts a request.           |
+| ETIMEDOUT                 | For Axios timeout errors, the `fetch` adapter uses this code regardless of `transitional.clarifyTimeoutError`. The `http` and `xhr` adapters use it when that option is `true`. |
 | ECONNREFUSED              | The server refused the connection. Set by the Node.js `http` adapter, with the original system error on `error.cause`; the `xhr` and `fetch` adapters report `ERR_NETWORK` instead. |
 | ERR_NETWORK               | Network-related issue. In the browser, this error can also be caused by a [CORS](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/CORS) or [Mixed Content](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content) policy violation. The browser does not allow the JS code to clarify the real reason for the error caused by security issues, so please check the console. |
 | ERR_FR_TOO_MANY_REDIRECTS | Request is redirected too many times; exceeds max redirects specified in axios configuration. |
@@ -150,7 +150,7 @@ Keep the following in mind:
 
 ## Handling timeouts
 
-When a request exceeds its configured `timeout`, axios rejects with `ECONNABORTED` by default. Set `transitional.clarifyTimeoutError: true` to receive `ETIMEDOUT` instead, which makes timeout errors easier to distinguish from other aborts.
+For Axios timeout errors, the `http` and `xhr` adapters reject with `ECONNABORTED` by default. Set `transitional.clarifyTimeoutError: true` to get `ETIMEDOUT` from those adapters. The `fetch` adapter uses `ETIMEDOUT` regardless of this setting.
 
 ```js
 async function fetchWithTimeout() {
@@ -158,7 +158,7 @@ async function fetchWithTimeout() {
     const response = await axios.get("https://example.com/data", {
       timeout: 5000, // 5 seconds
       transitional: {
-        // set to true if you prefer ETIMEDOUT over ECONNABORTED
+        // Use ETIMEDOUT for timeouts in the http and xhr adapters.
         clarifyTimeoutError: true,
       },
     });

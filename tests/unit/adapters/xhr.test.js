@@ -162,6 +162,82 @@ describe('xhr adapter status 0 handling', () => {
   );
 });
 
+describe('xhr adapter negative timeout', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it.each([
+    [-1, undefined],
+    [-0.5, undefined],
+    ['-1', undefined],
+    [-1n, undefined],
+    [-Infinity, undefined],
+    ['-1e-324', undefined],
+    ['-1e-7', undefined],
+  ])(
+    'should reject a negative timeout %s as an immediate timeout without sending',
+    async (timeout) => {
+      const axios = await importAxiosForPage('http://localhost/index.html');
+      const send = vi.spyOn(StubXMLHttpRequest.prototype, 'send');
+      const reason = await axios
+        .get('https://api.example.com/things', { adapter: 'xhr', timeout })
+        .catch((error) => error);
+      expect(reason).toBeInstanceOf(axios.AxiosError);
+      expect(reason.code).toBe(axios.AxiosError.ECONNABORTED);
+      expect(reason.message).toBe(`timeout of ${timeout}ms exceeded`);
+      expect(send).not.toHaveBeenCalled();
+    }
+  );
+
+  it('should report ETIMEDOUT when transitional.clarifyTimeoutError is set', async () => {
+    const axios = await importAxiosForPage('http://localhost/index.html');
+    const send = vi.spyOn(StubXMLHttpRequest.prototype, 'send');
+    const reason = await axios
+      .get('https://api.example.com/things', {
+        adapter: 'xhr',
+        timeout: -1,
+        transitional: { clarifyTimeoutError: true },
+      })
+      .catch((error) => error);
+    expect(reason.code).toBe(axios.AxiosError.ETIMEDOUT);
+    expect(reason.message).toBe('timeout of -1ms exceeded');
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('should honor timeoutErrorMessage for a negative timeout', async () => {
+    const axios = await importAxiosForPage('http://localhost/index.html');
+    const reason = await axios
+      .get('https://api.example.com/things', {
+        adapter: 'xhr',
+        timeout: -1,
+        timeoutErrorMessage: 'deadline passed',
+      })
+      .catch((error) => error);
+    expect(reason.code).toBe(axios.AxiosError.ECONNABORTED);
+    expect(reason.message).toBe('deadline passed');
+  });
+
+  it('should report other config errors before a negative timeout', async () => {
+    const axios = await importAxiosForPage('http://localhost/index.html');
+    const reason = await axios
+      .get('foo://api.example.com/things', { adapter: 'xhr', timeout: -1 })
+      .catch((error) => error);
+    expect(reason.code).toBe(axios.AxiosError.ERR_BAD_REQUEST);
+    expect(reason.message).toMatch(/Unsupported protocol/);
+  });
+
+  it('should still send requests with a zero or positive timeout', async () => {
+    const axios = await importAxiosForPage('file:///app/index.html');
+    const send = vi.spyOn(StubXMLHttpRequest.prototype, 'send');
+    const response = await axios.get('data.json', { adapter: 'xhr', timeout: 5000 });
+    expect(response.status).toBe(0);
+    expect(send).toHaveBeenCalledOnce();
+  });
+});
+
 describe('xhr adapter progress listener cleanup', () => {
   let axios, controller, source, subscribe, unsubscribe, addListener, removeListener;
 

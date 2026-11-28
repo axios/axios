@@ -494,5 +494,68 @@ describe('core::Axios', () => {
       expect(adapter).not.toHaveBeenCalled();
       expect(responseRejectedSpy).toHaveBeenCalledWith(getterError);
     });
+
+    it('waits for a native Promise that fulfills and dispatches with the last valid config', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+      const skippedInterceptor = vi.fn((config) => config);
+      let resolvePromise;
+
+      instance.interceptors.request.use(skippedInterceptor, null, { synchronous: true });
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () =>
+          new Promise((resolve) => {
+            resolvePromise = resolve;
+          }),
+        { synchronous: true }
+      );
+      instance.interceptors.request.use(
+        (config) => {
+          config.headers.set('X-Last-Valid', 'kept');
+          return config;
+        },
+        null,
+        { synchronous: true }
+      );
+
+      const requestPromise = instance.get('/original');
+      await Promise.resolve();
+      expect(adapter).not.toHaveBeenCalled();
+
+      resolvePromise({ url: '/ignored-replacement' });
+
+      const response = await requestPromise;
+      expect(response.data).toBe('sent');
+      expect(adapter).toHaveBeenCalledTimes(1);
+      expect(adapter.mock.calls[0][0].url).toBe('/original');
+      expect(adapter.mock.calls[0][0].headers.get('X-Last-Valid')).toBe('kept');
+      expect(skippedInterceptor).not.toHaveBeenCalled();
+    });
+
+    it('assimilates a rejecting native Promise without dispatching the adapter', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+      const recoveryError = new Error('native promise rejection');
+      const skippedInterceptor = vi.fn((config) => config);
+      const responseRejectedSpy = vi.fn((reason) => Promise.reject(reason));
+
+      instance.interceptors.request.use(skippedInterceptor, null, { synchronous: true });
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () => Promise.reject(recoveryError),
+        { synchronous: true }
+      );
+      instance.interceptors.response.use(null, responseRejectedSpy);
+
+      await expect(instance.get('/test')).rejects.toBe(recoveryError);
+      expect(adapter).not.toHaveBeenCalled();
+      expect(skippedInterceptor).not.toHaveBeenCalled();
+      expect(responseRejectedSpy).toHaveBeenCalledWith(recoveryError);
+    });
   });
 });

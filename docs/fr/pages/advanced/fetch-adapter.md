@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 ```
 
-Le suivi de la progression des envois nécessite la prise en charge des flux de requête et un constructeur `Request` utilisable. Le suivi de la progression des téléchargements nécessite la prise en charge des flux de réponse et un corps de réponse lisible. L'adaptateur supporte également des types de réponse supplémentaires tels que `stream` et `formdata` (si l'environnement les prend en charge).
+Le suivi de la progression des envois nécessite la prise en charge des flux de requête et un constructeur `Request` utilisable, et n'est signalé que pour un corps de requête non vide. Le suivi de la progression des téléchargements nécessite la prise en charge des flux de réponse et un corps de réponse lisible. L'adaptateur supporte également des types de réponse supplémentaires tels que `stream` et `formdata` (si l'environnement les prend en charge).
 
 Lorsque `auth` est omis, l'adaptateur fetch peut lire les identifiants HTTP Basic depuis l'URL de requête, par exemple `https://user:pass@example.com`. Les identifiants d'URL encodés en pourcentage sont décodés avant la génération de l'en-tête `Authorization`, et `auth` prend le dessus sur les identifiants intégrés à l'URL.
 

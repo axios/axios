@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 ```
 
-Upload progress requires request stream support and a usable `Request` constructor. Download progress requires response stream support and a readable response body. The adapter also supports additional response types such as `stream` and `formdata` (if supported by the environment).
+Upload progress requires request stream support and a usable `Request` constructor, and is reported only for a non-empty request body. Download progress requires response stream support and a readable response body. The adapter also supports additional response types such as `stream` and `formdata` (if supported by the environment).
 
 When `auth` is omitted, the fetch adapter can read HTTP Basic auth credentials from the request URL, for example `https://user:pass@example.com`. Percent-encoded URL credentials are decoded before the `Authorization` header is generated, and `auth` takes precedence over URL-embedded credentials.
 

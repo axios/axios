@@ -310,4 +310,252 @@ describe('core::Axios', () => {
       expect(retainedResponse).toHaveBeenCalledTimes(1);
     }
   );
+
+  describe('synchronous request interceptor rejection thenables', () => {
+    const createMockAdapter = () =>
+      vi.fn(async (config) => ({
+        data: 'sent',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      }));
+
+    it.each([
+      [
+        'object thenable without catch',
+        (reason, onAssimilated) => ({
+          then(resolve, reject) {
+            onAssimilated();
+            reject(reason);
+          },
+        }),
+      ],
+      [
+        'function thenable without catch',
+        (reason, onAssimilated) =>
+          Object.assign(() => {}, {
+            then(resolve, reject) {
+              onAssimilated();
+              reject(reason);
+            },
+          }),
+      ],
+    ])(
+      'assimilates a rejecting %s without dispatching the adapter',
+      async (_, createRejectingThenable) => {
+        const adapter = createMockAdapter();
+        const instance = axios.create({ adapter });
+        const recoveryError = new Error('rejected recovery');
+        const skippedInterceptor = vi.fn((config) => config);
+        const responseRejectedSpy = vi.fn((reason) => Promise.reject(reason));
+        let assimilated = 0;
+
+        // Request interceptors run LIFO by default; skippedInterceptor would run after the throw.
+        instance.interceptors.request.use(skippedInterceptor, null, { synchronous: true });
+        instance.interceptors.request.use(
+          () => {
+            throw new Error('interceptor failed');
+          },
+          () =>
+            createRejectingThenable(recoveryError, () => {
+              assimilated++;
+            }),
+          { synchronous: true }
+        );
+        instance.interceptors.response.use(null, responseRejectedSpy);
+
+        await expect(instance.get('/test')).rejects.toBe(recoveryError);
+        expect(assimilated).toBe(1);
+        expect(adapter).not.toHaveBeenCalled();
+        expect(skippedInterceptor).not.toHaveBeenCalled();
+        expect(responseRejectedSpy).toHaveBeenCalledWith(recoveryError);
+      }
+    );
+
+    it('waits for a pending thenable without catch and dispatches with the last valid config', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+      const skippedInterceptor = vi.fn((config) => config);
+      let resolveThenable;
+      let assimilated = 0;
+
+      // LIFO order: header setter runs first, throwing interceptor runs second, skippedInterceptor would run third.
+      instance.interceptors.request.use(skippedInterceptor, null, { synchronous: true });
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () => ({
+          then(resolve) {
+            assimilated++;
+            resolveThenable = resolve;
+          },
+        }),
+        { synchronous: true }
+      );
+      instance.interceptors.request.use(
+        (config) => {
+          config.headers.set('X-Last-Valid', 'kept');
+          return config;
+        },
+        null,
+        { synchronous: true }
+      );
+
+      const requestPromise = instance.get('/original');
+
+      // Flush microtasks so Promise.resolve invokes the thenable's .then handler.
+      await Promise.resolve();
+      expect(assimilated).toBe(1);
+      expect(adapter).not.toHaveBeenCalled();
+
+      resolveThenable({ url: '/ignored-replacement' });
+
+      const response = await requestPromise;
+      expect(response.data).toBe('sent');
+      expect(adapter).toHaveBeenCalledTimes(1);
+      expect(adapter.mock.calls[0][0].url).toBe('/original');
+      expect(adapter.mock.calls[0][0].headers.get('X-Last-Valid')).toBe('kept');
+      expect(skippedInterceptor).not.toHaveBeenCalled();
+    });
+
+    it('waits for a pending thenable without catch that rejects asynchronously', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+      const asyncError = new Error('async thenable rejection');
+      const responseRejectedSpy = vi.fn((reason) => Promise.reject(reason));
+      let rejectThenable;
+
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () => ({
+          then(resolve, reject) {
+            rejectThenable = reject;
+          },
+        }),
+        { synchronous: true }
+      );
+      instance.interceptors.response.use(null, responseRejectedSpy);
+
+      const requestPromise = instance.get('/test');
+      await Promise.resolve();
+      expect(adapter).not.toHaveBeenCalled();
+
+      rejectThenable(asyncError);
+
+      await expect(requestPromise).rejects.toBe(asyncError);
+      expect(adapter).not.toHaveBeenCalled();
+      expect(responseRejectedSpy).toHaveBeenCalledWith(asyncError);
+    });
+
+    it('treats objects with a non-callable then property as synchronous recovery', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () => ({ then: 'not-a-function', url: '/ignored' }),
+        { synchronous: true }
+      );
+
+      const requestPromise = instance.get('/original');
+
+      // Synchronous recovery dispatches immediately without waiting for a microtask.
+      expect(adapter).toHaveBeenCalledTimes(1);
+      expect(adapter.mock.calls[0][0].url).toBe('/original');
+      expect((await requestPromise).data).toBe('sent');
+    });
+
+    it('rejects without dispatching when reading then throws on the rejection handler result', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+      const getterError = new Error('then getter threw');
+      const responseRejectedSpy = vi.fn((reason) => Promise.reject(reason));
+
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () => ({
+          get then() {
+            throw getterError;
+          },
+        }),
+        { synchronous: true }
+      );
+      instance.interceptors.response.use(null, responseRejectedSpy);
+
+      await expect(instance.get('/test')).rejects.toBe(getterError);
+      expect(adapter).not.toHaveBeenCalled();
+      expect(responseRejectedSpy).toHaveBeenCalledWith(getterError);
+    });
+
+    it('waits for a native Promise that fulfills and dispatches with the last valid config', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+      const skippedInterceptor = vi.fn((config) => config);
+      let resolvePromise;
+
+      instance.interceptors.request.use(skippedInterceptor, null, { synchronous: true });
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () =>
+          new Promise((resolve) => {
+            resolvePromise = resolve;
+          }),
+        { synchronous: true }
+      );
+      instance.interceptors.request.use(
+        (config) => {
+          config.headers.set('X-Last-Valid', 'kept');
+          return config;
+        },
+        null,
+        { synchronous: true }
+      );
+
+      const requestPromise = instance.get('/original');
+      await Promise.resolve();
+      expect(adapter).not.toHaveBeenCalled();
+
+      resolvePromise({ url: '/ignored-replacement' });
+
+      const response = await requestPromise;
+      expect(response.data).toBe('sent');
+      expect(adapter).toHaveBeenCalledTimes(1);
+      expect(adapter.mock.calls[0][0].url).toBe('/original');
+      expect(adapter.mock.calls[0][0].headers.get('X-Last-Valid')).toBe('kept');
+      expect(skippedInterceptor).not.toHaveBeenCalled();
+    });
+
+    it('assimilates a rejecting native Promise without dispatching the adapter', async () => {
+      const adapter = createMockAdapter();
+      const instance = axios.create({ adapter });
+      const recoveryError = new Error('native promise rejection');
+      const skippedInterceptor = vi.fn((config) => config);
+      const responseRejectedSpy = vi.fn((reason) => Promise.reject(reason));
+
+      instance.interceptors.request.use(skippedInterceptor, null, { synchronous: true });
+      instance.interceptors.request.use(
+        () => {
+          throw new Error('interceptor failed');
+        },
+        () => Promise.reject(recoveryError),
+        { synchronous: true }
+      );
+      instance.interceptors.response.use(null, responseRejectedSpy);
+
+      await expect(instance.get('/test')).rejects.toBe(recoveryError);
+      expect(adapter).not.toHaveBeenCalled();
+      expect(skippedInterceptor).not.toHaveBeenCalled();
+      expect(responseRejectedSpy).toHaveBeenCalledWith(recoveryError);
+    });
+  });
 });

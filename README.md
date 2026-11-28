@@ -88,33 +88,6 @@
         </td>
         <td align="center" width="33.333333333333336%">
             <a
-                href="https://opensource.sap.com?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship"
-                style="padding: 10px; display: inline-block"
-                target="_blank"
-            >
-                <img
-                    width="90px"
-                    height="90px"
-                    src="https://avatars.githubusercontent.com/u/2531208?s=200&v=4"
-                    alt="SAP"
-                />
-            </a>
-            <p
-                align="center"
-                title="SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications."
-            >
-                SAP SE, a global software company, is one of the largest vendors of ERP and other enterprise applications.
-            </p>
-            <p align="center">
-                <a
-                    href="https://opensource.sap.com?utm_source&#x3D;axios&amp;utm_medium&#x3D;readme_sponsorlist&amp;utm_campaign&#x3D;sponsorship"
-                    target="_blank"
-                    ><b>opensource.sap.com</b></a
-                >
-            </p>
-        </td>
-        <td align="center" width="33.333333333333336%">
-            <a
                 href="https://www.descope.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;referral&amp;utm_campaign&#x3D;axios-oss-sponsorship"
                 style="padding: 10px; display: inline-block"
                 target="_blank"
@@ -140,8 +113,6 @@
                    >
               </p>
         </td>
-    </tr>
-    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://rxdb.info/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship&utm_content=logo"
@@ -168,6 +139,8 @@
                 >
             </p>
         </td>
+    </tr>
+    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://poprey.com/?utm_source&#x3D;axios&amp;utm_medium&#x3D;sponsorlist&amp;utm_campaign&#x3D;sponsorship"
@@ -218,8 +191,6 @@
                 >
             </p>
         </td>
-    </tr>
-    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://www.jbo88b.com/vn/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
@@ -246,6 +217,8 @@
                 >
             </p>
         </td>
+    </tr>
+    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://www.jbo579.com/th/?utm_source=axios_docs_website&utm_medium=website&utm_campaign=axios_open_collective_sponsorship"
@@ -298,8 +271,6 @@
                 >
             </p>
         </td>
-    </tr>
-    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://www.herodevs.com/support/nes-for-axios?utm_source=axios-site&amp;utm_medium=referral&amp;utm_campaign=nes-for-axios_global&amp;utm_content=landing-page_none_20260924_a"
@@ -326,6 +297,8 @@
                 >
             </p>
         </td>
+    </tr>
+    <tr width="33.333333333333336%">
         <td align="center" width="33.333333333333336%">
             <a
                 href="https://opencollective.com/sweepico-promo-code"
@@ -513,6 +486,12 @@ Using Deno:
 
 ```bash
 $ deno add axios
+```
+
+Using vlt:
+
+```bash
+$ vlt install axios
 ```
 
 Once the package is installed, import it with `import` or `require`:

@@ -127,4 +127,4 @@ We have made changes to the request config object. Please review the [config ref
 
 ### Missed breaking changes
 
-This guide is not exhaustive and may not cover all breaking changes. Should you encounter any issue, please open an issue on the [docs GitHub repository](https://github.com/axios/docs) with the label `breaking change`.
+This guide is not exhaustive and may not cover all breaking changes. Should you encounter any issue, please open an issue on the [axios GitHub repository](https://github.com/axios/axios/issues).

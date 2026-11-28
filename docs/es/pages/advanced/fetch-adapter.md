@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 ```
 
-El seguimiento del progreso de carga requiere compatibilidad con streams de solicitud y un constructor `Request` utilizable, y solo se informa cuando la solicitud tiene un cuerpo no vacío. El seguimiento del progreso de descarga requiere compatibilidad con streams de respuesta y un cuerpo de respuesta legible. El adaptador también admite tipos de respuesta adicionales como `stream` y `formdata` (si el entorno lo soporta).
+El seguimiento del progreso de carga requiere compatibilidad con streams de solicitud y solo se informa en métodos distintos de `GET` y `HEAD` cuando la solicitud tiene un cuerpo no vacío. El seguimiento del progreso de descarga requiere compatibilidad con streams de respuesta y un cuerpo de respuesta legible. El adaptador también admite tipos de respuesta adicionales como `stream` y `formdata` (si el entorno lo soporta).
 
 Cuando `auth` se omite, el adaptador fetch puede leer credenciales de autenticación HTTP Basic desde la URL de la solicitud, por ejemplo `https://user:pass@example.com`. Las credenciales de URL codificadas con porcentaje se decodifican antes de generar el encabezado `Authorization`, y `auth` tiene prioridad sobre las credenciales incluidas en la URL.
 

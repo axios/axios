@@ -2501,7 +2501,7 @@ const fetchAxios = axios.create({
 const { data } = fetchAxios.get(url);
 ```
 
-Upload progress requires request stream support and a usable `Request` constructor, and is reported only for a non-empty request body.
+Upload progress requires request stream support and is reported only for methods other than `GET` and `HEAD` with a non-empty request body.
 Download progress requires response stream support and a readable response body.
 The adapter also supports response types such as `stream` and `formdata` when the environment supports them.
 

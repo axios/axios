@@ -2241,6 +2241,84 @@ describe.runIf(typeof fetch === 'function')('supports fetch with nodejs', () => 
       }
     });
 
+    it('should count UTF-8 bytes for materialized text responses when TextEncoder is unavailable', async () => {
+      const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'TextEncoder');
+      const cases = [
+        ['2-byte character', 'é', 2],
+        ['3-byte CJK character', '界', 3],
+        ['4-byte surrogate pair emoji', '😀', 4],
+        ['mixed ASCII and multibyte text', 'a界😀', 8],
+        ['lone high surrogate', '\uD800', 3],
+        ['lone high surrogate before surrogate pair', '\uD800😀', 7],
+        ['lone low surrogate', '\uDC00', 3],
+      ];
+
+      Object.defineProperty(globalThis, 'TextEncoder', {
+        value: undefined,
+        writable: true,
+        enumerable: false,
+        configurable: true,
+      });
+
+      try {
+        for (const [label, payload, expectedBytes] of cases) {
+          for (const [method, headers] of [
+            ['get', {}],
+            ['head', { 'content-length': '5000' }],
+          ]) {
+            await assert.rejects(
+              fetchAxios({
+                method,
+                url: `/utf8-reject-${expectedBytes}`,
+                maxContentLength: expectedBytes - 1,
+                env: {
+                  fetch: async () => ({
+                    status: 200,
+                    statusText: 'OK',
+                    headers,
+                    body: null,
+                    text: async () => payload,
+                  }),
+                },
+              }),
+              (err) => {
+                assert.strictEqual(err.code, AxiosError.ERR_BAD_RESPONSE, label);
+                assert.strictEqual(
+                  err.message,
+                  `maxContentLength size of ${expectedBytes - 1} exceeded`,
+                  label
+                );
+                return true;
+              }
+            );
+
+            const response = await fetchAxios({
+              method,
+              url: `/utf8-allow-${expectedBytes}`,
+              maxContentLength: expectedBytes,
+              env: {
+                fetch: async () => ({
+                  status: 200,
+                  statusText: 'OK',
+                  headers,
+                  body: null,
+                  text: async () => payload,
+                }),
+              },
+            });
+
+            assert.strictEqual(response.data, payload, label);
+          }
+        }
+      } finally {
+        if (originalDescriptor) {
+          Object.defineProperty(globalThis, 'TextEncoder', originalDescriptor);
+        } else {
+          delete globalThis.TextEncoder;
+        }
+      }
+    });
+
     it('should handle plain object response headers while enforcing maxContentLength', async () => {
       const { data, headers } = await fetchAxios.get('/', {
         maxContentLength: 10,

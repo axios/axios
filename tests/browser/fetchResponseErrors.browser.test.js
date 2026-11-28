@@ -178,4 +178,71 @@ describe('fetch response size errors', () => {
       }
     });
   }
+
+  it('counts UTF-8 bytes for materialized text responses when TextEncoder is unavailable', async () => {
+    const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'TextEncoder');
+    const url = new URL('/utf8-materialized', window.location.href).href;
+
+    Object.defineProperty(globalThis, 'TextEncoder', {
+      value: undefined,
+      writable: true,
+      enumerable: false,
+      configurable: true,
+    });
+
+    try {
+      for (const [payload, expectedBytes] of [
+        ['界', 3],
+        ['😀', 4],
+      ]) {
+        const error = await axios({
+          adapter: 'fetch',
+          method: 'head',
+          url,
+          maxContentLength: expectedBytes - 1,
+          env: {
+            async fetch() {
+              return {
+                status: 200,
+                statusText: 'OK',
+                headers: { 'content-length': '5000' },
+                body: null,
+                text: async () => payload,
+              };
+            },
+          },
+        }).catch((err) => err);
+
+        expect(error).toBeInstanceOf(axios.AxiosError);
+        expect(error.code).toBe(axios.AxiosError.ERR_BAD_RESPONSE);
+        expect(error.message).toBe(`maxContentLength size of ${expectedBytes - 1} exceeded`);
+
+        const response = await axios({
+          adapter: 'fetch',
+          method: 'head',
+          url,
+          maxContentLength: expectedBytes,
+          env: {
+            async fetch() {
+              return {
+                status: 200,
+                statusText: 'OK',
+                headers: { 'content-length': '5000' },
+                body: null,
+                text: async () => payload,
+              };
+            },
+          },
+        });
+
+        expect(response.data).toBe(payload);
+      }
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(globalThis, 'TextEncoder', originalDescriptor);
+      } else {
+        delete globalThis.TextEncoder;
+      }
+    }
+  });
 });
